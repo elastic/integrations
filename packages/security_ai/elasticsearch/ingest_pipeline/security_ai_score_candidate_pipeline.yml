@@ -2,20 +2,20 @@
 description: Score one encoding candidate and keep detections at or above the threshold.
 processors:
   - set:
-      tag: ml-prompt-detect-copy-features
-      description: Read the current candidate
+      tag: ml_prompt_detect_copy_features
+      description: Read the current candidate.
       field: _ml_candidate_features
       copy_from: "_ingest._value"
 
   - script:
-      tag: ml-prompt-detect-nest-features
-      description: Prepare the candidate features for inference
+      tag: ml_prompt_detect_nest_features
+      description: Prepare the candidate features for inference.
       lang: painless
       source: |-
-        ctx['f'] = ctx['_ml_candidate_features']['f'];
+        ctx.f = ctx._ml_candidate_features.f;
 
   - inference:
-      tag: ml-prompt-detect-inference
+      tag: ml_prompt_detect_inference
       field_map: {}
       inference_config:
         classification:
@@ -24,30 +24,30 @@ processors:
       target_field: ml_b64_one_result
 
   - script:
-      tag: ml-prompt-detect-append-score
-      description: Retain positive candidates with their source and probability
+      tag: ml_prompt_detect_append_score
+      description: Retain positive candidates with their source and probability.
       lang: painless
       params:
         threshold: 0.1890
       source: |-
-        def result = ctx['ml_b64_one_result'];
+        def result = ctx.ml_b64_one_result;
         double probability = 0.0;
-        if (result['top_classes'] != null) {
-          for (def item : result['top_classes']) {
-            if (item['class_name'] == "1") {
-              probability = (double) item['class_probability'];
+        if (result.top_classes != null) {
+          for (def item : result.top_classes) {
+            if (item.class_name == "1") {
+              probability = (double) item.class_probability;
             }
           }
         }
         if (probability >= (double) params.threshold) {
-          def candidate = ctx['_ml_candidate_features'];
+          def candidate = ctx._ml_candidate_features;
           def scored = new HashMap();
-          scored['probability'] = probability;
-          scored['string'] = (candidate != null && candidate['s'] instanceof String) ? candidate['s'] : null;
-          scored['type']   = (candidate != null && candidate['t'] instanceof String) ? candidate['t'] : "encoding";
-          scored['src']    = (candidate != null && candidate['src'] instanceof String) ? candidate['src'] : "input_messages";
-          if (ctx['ml_b64_scores'] == null) { ctx['ml_b64_scores'] = new ArrayList(); }
-          ctx['ml_b64_scores'].add(scored);
+          scored.probability = probability;
+          scored.string = (candidate != null && candidate.s instanceof String) ? candidate.s : null;
+          scored.type   = (candidate != null && candidate.t instanceof String) ? candidate.t : "encoding";
+          scored.src    = (candidate != null && candidate.src instanceof String) ? candidate.src : "input_messages";
+          if (ctx.ml_b64_scores == null) { ctx.ml_b64_scores = new ArrayList(); }
+          ctx.ml_b64_scores.add(scored);
         }
         ctx.remove('f');
         ctx.remove('_ml_candidate_features');

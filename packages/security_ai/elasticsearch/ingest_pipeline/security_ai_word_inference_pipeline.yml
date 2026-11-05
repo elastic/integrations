@@ -1,40 +1,29 @@
 ---
 description: Detect disguised words in input and output messages.
 processors:
-  - remove:
-      tag: ml-prompt-detect-word-init
-      description: Clear temporary fields before resolving the input
-      field:
-        - ml_word_prompt_text
-        - ml_word_completion_text
-        - ml_word_candidate_inputs
-        - ml_word_scores
-        - ml_word_one_result
-        - _ml_word_candidate_features
-        - f
-      ignore_missing: true
-
   - set:
-      tag: ml-prompt-detect-word-resolve-prompt
-      description: Use the prompt text resolved by the entry pipeline
+      tag: ml_prompt_detect_word_resolve_prompt
+      description: Use the prompt text resolved by the entry pipeline.
       field: ml_word_prompt_text
       copy_from: _ml_prompt_text
       if: ctx._ml_prompt_text instanceof String
 
   - set:
-      tag: ml-prompt-detect-word-resolve-completion
-      description: Use the completion text resolved by the entry pipeline
+      tag: ml_prompt_detect_word_resolve_completion
+      description: Use the completion text resolved by the entry pipeline.
       field: ml_word_completion_text
       copy_from: _ml_completion_text
       if: ctx._ml_completion_text instanceof String
 
   - script:
-      tag: ml-prompt-detect-word-featurize
+      tag: ml_prompt_detect_word_featurize
       lang: painless
       if: >-
         (ctx.ml_word_prompt_text instanceof String && !ctx.ml_word_prompt_text.isEmpty()) ||
         (ctx.ml_word_completion_text instanceof String && !ctx.ml_word_completion_text.isEmpty())
       params:
+        max_text_chars: 4096
+        max_candidates: 256
         min_token_length: 2
         min_letter_run: 3
         blob_min_length: 14
@@ -95,7 +84,14 @@ processors:
           - forget
           - pretend
           - roleplay
+        # Beyond single-character folds, this map carries the tables for the
+        # mathematical alphanumeric block (U+1D400-U+1D6A3). Their keys are longer
+        # than one code point, so they cannot collide with a token.
+        # math_lo / math_hi: inclusive range bounds; math_first: the base letter of each range.
         latin_folds:
+          math_lo: [119808, 119834, 119860, 119886, 119894, 119912, 119938, 119964, 119966, 119970, 119973, 119977, 119982, 119990, 119995, 119997, 120005, 120016, 120042, 120068, 120071, 120077, 120086, 120094, 120120, 120123, 120128, 120134, 120138, 120146, 120172, 120198, 120224, 120250, 120276, 120302, 120328, 120354, 120380, 120406, 120432, 120458]
+          math_hi: [119833, 119859, 119885, 119892, 119911, 119937, 119963, 119964, 119967, 119970, 119974, 119980, 119989, 119993, 119995, 120003, 120015, 120041, 120067, 120069, 120074, 120084, 120092, 120119, 120121, 120126, 120132, 120134, 120144, 120171, 120197, 120223, 120249, 120275, 120301, 120327, 120353, 120379, 120405, 120431, 120457, 120483]
+          math_first: "aaaaiaaacgjnsafhpaaadjsaadiosaaaaaaaaaaaaa"
           "ª": "a"
           "º": "o"
           "ſ": "s"
@@ -295,30 +291,16 @@ processors:
           return token.equals("a") || token.equals("i") || token.equals("A") || token.equals("I");
         }
 
-        String mathLatin(int cp) {
-          if (cp < 0x1D400 || cp > 0x1D6A3) {
+        String mathLatin(int cp, Map folds) {
+          if (cp < 0x1D400 || cp > 0x1D6A3 || folds == null) {
             return null;
           }
-          int[] lo = new int[] {
-            0x1D400, 0x1D41A, 0x1D434, 0x1D44E, 0x1D456, 0x1D468, 0x1D482,
-            0x1D49C, 0x1D49E, 0x1D4A2, 0x1D4A5, 0x1D4A9, 0x1D4AE, 0x1D4B6,
-            0x1D4BB, 0x1D4BD, 0x1D4C5, 0x1D4D0, 0x1D4EA, 0x1D504, 0x1D507,
-            0x1D50D, 0x1D516, 0x1D51E, 0x1D538, 0x1D53B, 0x1D540, 0x1D546,
-            0x1D54A, 0x1D552, 0x1D56C, 0x1D586, 0x1D5A0, 0x1D5BA, 0x1D5D4,
-            0x1D5EE, 0x1D608, 0x1D622, 0x1D63C, 0x1D656, 0x1D670, 0x1D68A
-          };
-          int[] hi = new int[] {
-            0x1D419, 0x1D433, 0x1D44D, 0x1D454, 0x1D467, 0x1D481, 0x1D49B,
-            0x1D49C, 0x1D49F, 0x1D4A2, 0x1D4A6, 0x1D4AC, 0x1D4B5, 0x1D4B9,
-            0x1D4BB, 0x1D4C3, 0x1D4CF, 0x1D4E9, 0x1D503, 0x1D505, 0x1D50A,
-            0x1D514, 0x1D51C, 0x1D537, 0x1D539, 0x1D53E, 0x1D544, 0x1D546,
-            0x1D550, 0x1D56B, 0x1D585, 0x1D59F, 0x1D5B9, 0x1D5D3, 0x1D5ED,
-            0x1D607, 0x1D621, 0x1D63B, 0x1D655, 0x1D66F, 0x1D689, 0x1D6A3
-          };
-          String first = "aaaaiaaacgjnsafhpaaadjsaadiosaaaaaaaaaaaaa";
-          for (int i = 0; i < lo.length; i++) {
-            if (cp >= lo[i] && cp <= hi[i]) {
-              return latinLower(first.charAt(i) + (cp - lo[i]));
+          List lo = (List) folds.get("math_lo");
+          List hi = (List) folds.get("math_hi");
+          String first = (String) folds.get("math_first");
+          for (int i = 0; i < lo.size(); i++) {
+            if (cp >= (int) lo.get(i) && cp <= (int) hi.get(i)) {
+              return latinLower(first.charAt(i) + (cp - (int) lo.get(i)));
             }
           }
           return null;
@@ -348,7 +330,7 @@ processors:
             def folded = folds.get(token);
             return folded == null ? null : folded.toString();
           }
-          return mathLatin(cp);
+          return mathLatin(cp, folds);
         }
 
         String collapsedLetters(List run, Map folds) {
@@ -506,13 +488,30 @@ processors:
           return tokens;
         }
 
+        // Clip to max characters without splitting the last word: if the cut lands
+        // inside a word, back up to the previous whitespace. A single word longer
+        // than max is kept cut at max.
+        String clip(String s, int max) {
+          if (s.length() <= max) { return s; }
+          if (Character.isWhitespace(s.charAt(max))) { return s.substring(0, max); }
+          for (int i = max - 1; i > 0; i--) {
+            if (Character.isWhitespace(s.charAt(i))) { return s.substring(0, i); }
+          }
+          return s.substring(0, max);
+        }
+
         List addSpan(List candidates, String s, int start, int end) {
+          for (def existing : candidates) {
+            if (((Map) existing).s.equals(s)) {
+              return candidates;
+            }
+          }
           Map span = new HashMap();
-          span['s'] = s;
+          span.s = s;
           def startObj = start;
           def endObj = end;
-          span['start'] = startObj;
-          span['end'] = endObj;
+          span.start = startObj;
+          span.end = endObj;
           candidates.add(span);
           return candidates;
         }
@@ -584,31 +583,31 @@ processors:
         Map tokenFeatures(String token, String hexAlphabet, String vowels, String seps, String morse) {
           Map values = new HashMap();
           values['length'] = 0.0;
-          values['digit_ratio'] = 0.0;
-          values['letter_ratio'] = 0.0;
-          values['punct_ratio'] = 0.0;
-          values['space_ratio'] = 0.0;
-          values['upper_ratio'] = 0.0;
-          values['case_flips'] = 0.0;
-          values['unique_ratio'] = 0.0;
-          values['entropy'] = 0.0;
-          values['letter_digit_flips'] = 0.0;
-          values['sep_between_letters'] = 0.0;
-          values['starts_0x'] = 0.0;
-          values['hex_ratio'] = 0.0;
-          values['morse_ratio'] = 0.0;
-          values['non_ascii_ratio'] = 0.0;
-          values['script_count'] = 0.0;
-          values['block_circled'] = 0.0;
-          values['block_fullwidth'] = 0.0;
-          values['block_super'] = 0.0;
-          values['block_smallcaps'] = 0.0;
-          values['block_math'] = 0.0;
-          values['block_braille'] = 0.0;
-          values['block_cyrillic'] = 0.0;
-          values['zw_count'] = 0.0;
-          values['combining_count'] = 0.0;
-          values['vowel_ratio'] = 0.0;
+          values.digit_ratio = 0.0;
+          values.letter_ratio = 0.0;
+          values.punct_ratio = 0.0;
+          values.space_ratio = 0.0;
+          values.upper_ratio = 0.0;
+          values.case_flips = 0.0;
+          values.unique_ratio = 0.0;
+          values.entropy = 0.0;
+          values.letter_digit_flips = 0.0;
+          values.sep_between_letters = 0.0;
+          values.starts_0x = 0.0;
+          values.hex_ratio = 0.0;
+          values.morse_ratio = 0.0;
+          values.non_ascii_ratio = 0.0;
+          values.script_count = 0.0;
+          values.block_circled = 0.0;
+          values.block_fullwidth = 0.0;
+          values.block_super = 0.0;
+          values.block_smallcaps = 0.0;
+          values.block_math = 0.0;
+          values.block_braille = 0.0;
+          values.block_cyrillic = 0.0;
+          values.zw_count = 0.0;
+          values.combining_count = 0.0;
+          values.vowel_ratio = 0.0;
           if (token == null || token.length() == 0) {
             return values;
           }
@@ -750,31 +749,31 @@ processors:
           }
 
           values['length'] = (double) n;
-          values['digit_ratio'] = (double) nDigit / n;
-          values['letter_ratio'] = (double) nLetter / n;
-          values['punct_ratio'] = (double) nPunct / n;
-          values['space_ratio'] = (double) nSpace / n;
-          values['upper_ratio'] = nLetter > 0 ? (double) nUpper / nLetter : 0.0;
-          values['case_flips'] = (double) caseFlips;
-          values['unique_ratio'] = (double) counts.size() / n;
-          values['entropy'] = entropy;
-          values['letter_digit_flips'] = (double) letterDigitFlips;
-          values['sep_between_letters'] = (double) nSepBetween;
-          values['starts_0x'] = starts0x;
-          values['hex_ratio'] = (double) nHex / n;
-          values['morse_ratio'] = (double) nMorse / n;
-          values['non_ascii_ratio'] = (double) nNonAscii / n;
-          values['script_count'] = (double) scripts.size();
-          values['block_circled'] = (double) nCircled;
-          values['block_fullwidth'] = (double) nFullwidth;
-          values['block_super'] = (double) nSuper;
-          values['block_smallcaps'] = (double) nSmallcaps;
-          values['block_math'] = (double) nMath;
-          values['block_braille'] = (double) nBraille;
-          values['block_cyrillic'] = (double) nCyrillic;
-          values['zw_count'] = (double) nZw;
-          values['combining_count'] = (double) nCombining;
-          values['vowel_ratio'] = nAsciiLetter > 0 ? (double) nVowel / nAsciiLetter : 0.0;
+          values.digit_ratio = (double) nDigit / n;
+          values.letter_ratio = (double) nLetter / n;
+          values.punct_ratio = (double) nPunct / n;
+          values.space_ratio = (double) nSpace / n;
+          values.upper_ratio = nLetter > 0 ? (double) nUpper / nLetter : 0.0;
+          values.case_flips = (double) caseFlips;
+          values.unique_ratio = (double) counts.size() / n;
+          values.entropy = entropy;
+          values.letter_digit_flips = (double) letterDigitFlips;
+          values.sep_between_letters = (double) nSepBetween;
+          values.starts_0x = starts0x;
+          values.hex_ratio = (double) nHex / n;
+          values.morse_ratio = (double) nMorse / n;
+          values.non_ascii_ratio = (double) nNonAscii / n;
+          values.script_count = (double) scripts.size();
+          values.block_circled = (double) nCircled;
+          values.block_fullwidth = (double) nFullwidth;
+          values.block_super = (double) nSuper;
+          values.block_smallcaps = (double) nSmallcaps;
+          values.block_math = (double) nMath;
+          values.block_braille = (double) nBraille;
+          values.block_cyrillic = (double) nCyrillic;
+          values.zw_count = (double) nZw;
+          values.combining_count = (double) nCombining;
+          values.vowel_ratio = nAsciiLetter > 0 ? (double) nVowel / nAsciiLetter : 0.0;
           return values;
         }
 
@@ -806,18 +805,20 @@ processors:
         int minLetterRun = ((Number) params.min_letter_run).intValue();
         int minTokenLength = ((Number) params.min_token_length).intValue();
         int blobMinLength = ((Number) params.blob_min_length).intValue();
+        int maxTextChars = ((Number) params.max_text_chars).intValue();
+        int maxCandidates = ((Number) params.max_candidates).intValue();
         int maxNgramLength = ((Number) params.max_ngram_length).intValue();
         double cpRadix = ((Number) params.cp_radix).doubleValue();
         Map latinFolds = params.latin_folds instanceof Map ? (Map) params.latin_folds : new HashMap();
 
         List sourceTexts = new ArrayList();
         List sourceNames = new ArrayList();
-        if (ctx['ml_word_prompt_text'] instanceof String && !((String) ctx['ml_word_prompt_text']).isEmpty()) {
-          sourceTexts.add(ctx['ml_word_prompt_text']);
+        if (ctx.ml_word_prompt_text instanceof String && !((String) ctx.ml_word_prompt_text).isEmpty()) {
+          sourceTexts.add(clip(ctx.ml_word_prompt_text, maxTextChars));
           sourceNames.add('input_messages');
         }
-        if (ctx['ml_word_completion_text'] instanceof String && !((String) ctx['ml_word_completion_text']).isEmpty()) {
-          sourceTexts.add(ctx['ml_word_completion_text']);
+        if (ctx.ml_word_completion_text instanceof String && !((String) ctx.ml_word_completion_text).isEmpty()) {
+          sourceTexts.add(clip(ctx.ml_word_completion_text, maxTextChars));
           sourceNames.add('output_messages');
         }
 
@@ -905,27 +906,32 @@ processors:
             i += 1;
           }
 
+          // Bound inference work: duplicates were dropped (first span kept) and at
+          // most max_candidates are scored per source.
+          if (candidates.size() > maxCandidates) {
+            candidates = candidates.subList(0, maxCandidates);
+          }
           for (def candObj : candidates) {
             Map candMap = (Map) candObj;
-            String cand = (String) candMap['s'];
+            String cand = (String) candMap.s;
             Map features = tokenFeatures(cand, params.hex_alphabet, params.vowels, params.seps, params.morse);
             addNgrams(features, cand, maxNgramLength, cpRadix);
             Map entry = new HashMap();
-            entry['s'] = cand;
-            entry['t'] = "word_obfuscation";
-            entry['src'] = src;
-            entry['start'] = candMap['start'];
-            entry['end'] = candMap['end'];
-            entry['f'] = features;
+            entry.s = cand;
+            entry.t = "word_obfuscation";
+            entry.src = src;
+            entry.start = candMap.start;
+            entry.end = candMap.end;
+            entry.f = features;
             candidateInputs.add(entry);
           }
         }
 
-        ctx['ml_word_candidate_inputs'] = candidateInputs;
-        ctx['ml_word_scores'] = new ArrayList();
+        ctx.ml_word_candidate_inputs = candidateInputs;
+        ctx.ml_word_scores = new ArrayList();
 
   - foreach:
-      tag: ml-prompt-detect-word-score-foreach
+      tag: ml_prompt_detect_word_score_foreach
       if: ctx.ml_word_candidate_inputs != null && ctx.ml_word_candidate_inputs.size() > 0
       field: ml_word_candidate_inputs
       processor:
@@ -933,7 +939,7 @@ processors:
           name: '{{ IngestPipeline "security_ai_word_score_candidate_pipeline" }}'
 
   - script:
-      tag: ml-prompt-detect-word-promote-score
+      tag: ml_prompt_detect_word_promote_score
       description: >
         Write kept strings and probabilities. Store the sentence around a hit
         in contexts only when its probability is above params.min_context_probability.
@@ -1000,37 +1006,37 @@ processors:
           return text.substring(from, to).trim();
         }
 
-        String promptText = ctx['ml_word_prompt_text'] instanceof String ? (String) ctx['ml_word_prompt_text'] : "";
-        String completionText = ctx['ml_word_completion_text'] instanceof String ? (String) ctx['ml_word_completion_text'] : "";
+        String promptText = ctx.ml_word_prompt_text instanceof String ? (String) ctx.ml_word_prompt_text : "";
+        String completionText = ctx.ml_word_completion_text instanceof String ? (String) ctx.ml_word_completion_text : "";
         int maxChars = params.max_context_chars instanceof Number ? ((Number) params.max_context_chars).intValue() : 512;
         double minContextP = params.min_context_probability instanceof Number ? ((Number) params.min_context_probability).doubleValue() : 0.98;
         Map stringsBySrc = new HashMap();
         Map probsBySrc = new HashMap();
         Map contextsBySrc = new HashMap();
-        stringsBySrc['input_messages'] = new ArrayList();
-        stringsBySrc['output_messages'] = new ArrayList();
-        probsBySrc['input_messages'] = new ArrayList();
-        probsBySrc['output_messages'] = new ArrayList();
-        contextsBySrc['input_messages'] = new ArrayList();
-        contextsBySrc['output_messages'] = new ArrayList();
-        for (def r : ctx['ml_word_scores']) {
-          if (r == null || !(r['string'] instanceof String)) {
+        stringsBySrc.input_messages = new ArrayList();
+        stringsBySrc.output_messages = new ArrayList();
+        probsBySrc.input_messages = new ArrayList();
+        probsBySrc.output_messages = new ArrayList();
+        contextsBySrc.input_messages = new ArrayList();
+        contextsBySrc.output_messages = new ArrayList();
+        for (def r : ctx.ml_word_scores) {
+          if (r == null || !(r.string instanceof String)) {
             continue;
           }
-          String src = (r['src'] instanceof String) ? (String) r['src'] : 'input_messages';
+          String src = (r.src instanceof String) ? (String) r.src : 'input_messages';
           if (src != 'input_messages' && src != 'output_messages') {
             src = 'input_messages';
           }
           List strings = (List) stringsBySrc[src];
-          String s = (String) r['string'];
+          String s = (String) r.string;
           if (!strings.contains(s)) {
             strings.add(s);
-            double p = r['probability'] != null ? ((Number) r['probability']).doubleValue() : 0.0;
+            double p = r.probability != null ? ((Number) r.probability).doubleValue() : 0.0;
             ((List) probsBySrc[src]).add(p);
             if (p > minContextP) {
               String text = src == 'output_messages' ? completionText : promptText;
-              int start = r['start'] instanceof Number ? ((Number) r['start']).intValue() : 0;
-              int end = r['end'] instanceof Number ? ((Number) r['end']).intValue() : start;
+              int start = r.start instanceof Number ? ((Number) r.start).intValue() : 0;
+              int end = r.end instanceof Number ? ((Number) r.end).intValue() : start;
               String context = sentenceContext(text, start, end, maxChars);
               List contexts = (List) contextsBySrc[src];
               if (context.length() > 0 && !contexts.contains(context)) {
@@ -1046,25 +1052,25 @@ processors:
             continue;
           }
           Map side = new HashMap();
-          side['strings'] = strings;
-          side['probabilities'] = probsBySrc[srcName];
+          side.strings = strings;
+          side.probabilities = probsBySrc[srcName];
           List contexts = (List) contextsBySrc[srcName];
           if (!contexts.isEmpty()) {
-            side['contexts'] = contexts;
+            side.contexts = contexts;
           }
           word[srcName] = side;
         }
         if (word.isEmpty()) {
           return;
         }
-        word['model_version'] = ctx['_ml_model_version'] instanceof String ? (String) ctx['_ml_model_version'] : '0.0.1';
-        if (ctx['security_ai'] == null) {
-          ctx['security_ai'] = new HashMap();
+        word.model_version = ctx._ml_model_version instanceof String ? (String) ctx._ml_model_version : '0.0.1';
+        if (ctx.security_ai == null) {
+          ctx.security_ai = new HashMap();
         }
-        ctx['security_ai']['word_obfuscation'] = word;
+        ctx.security_ai.word_obfuscation = word;
 
   - remove:
-      tag: ml-prompt-detect-word-cleanup
+      tag: ml_prompt_detect_word_cleanup
       field:
         - ml_word_candidate_inputs
         - ml_word_scores

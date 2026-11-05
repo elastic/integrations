@@ -1,26 +1,10 @@
 ---
 description: Detect encoded strings and hashes in input and output messages.
 processors:
-  - remove:
-      tag: ml-prompt-detect-init
-      description: >-
-        Clear temporary fields before resolving the input
-      field:
-        - _ml_prompt_parsed
-        - ml_prompt_text
-        - ml_completion_text
-        - ml_b64_candidate_inputs
-        - ml_b64_scores
-        - ml_b64_one_result
-        - ml_b64_strings
-        - _ml_candidate_features
-        - f
-      ignore_missing: true
-
   - script:
-      tag: ml-prompt-detect-resolve-text
+      tag: ml_prompt_detect_resolve_text
       description: >-
-        Clip the prompt and completion text resolved by the entry pipeline
+        Clip the prompt and completion text resolved by the entry pipeline.
       lang: painless
       source: |-
         String clip(def s) {
@@ -28,44 +12,60 @@ processors:
           return s.length() <= 4096 ? s : s.substring(0, 4096);
         }
 
-        if (ctx['_ml_prompt_text'] instanceof String) {
-          ctx['ml_prompt_text'] = clip(ctx['_ml_prompt_text']);
+        if (ctx._ml_prompt_text instanceof String) {
+          ctx.ml_prompt_text = clip(ctx._ml_prompt_text);
         }
-        if (ctx['_ml_completion_text'] instanceof String) {
-          ctx['ml_completion_text'] = clip(ctx['_ml_completion_text']);
+        if (ctx._ml_completion_text instanceof String) {
+          ctx.ml_completion_text = clip(ctx._ml_completion_text);
         }
   - gsub:
-      tag: ml-prompt-detect-strip-uuid-prompt
+      tag: ml_prompt_detect_strip_uuid_prompt
+      description: Remove UUIDs from the prompt so they are not scored as hashes.
       field: ml_prompt_text
       pattern: "(?i)\\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\b"
       replacement: " "
       ignore_missing: true
 
   - gsub:
-      tag: ml-prompt-detect-strip-non-b64-prompt
+      tag: ml_prompt_detect_strip_non_b64_prompt
+      description: >-
+        Delete characters outside the base64 alphabet so the text
+        reduces to what could be the underlying encoded payload. Prompts are
+        user-controlled and an encoded payload may be split with dashes, line breaks
+        or other punctuation, so deleting rather than replacing rejoins the pieces.
+        This differs from the completion side on purpose. A side effect is that
+        adjacent values separated only by punctuation or a newline, such as two
+        hashes on separate lines, are merged into one candidate.
       field: ml_prompt_text
       pattern: "[^A-Za-z0-9+/= ]"
       replacement: ""
       ignore_missing: true
 
   - gsub:
-      tag: ml-prompt-detect-strip-uuid-completion
+      tag: ml_prompt_detect_strip_uuid_completion
+      description: Remove UUIDs from the completion so they are not scored as hashes.
       field: ml_completion_text
       pattern: "(?i)\\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\b"
       replacement: " "
       ignore_missing: true
 
   - gsub:
-      tag: ml-prompt-detect-strip-non-b64-completion
+      tag: ml_prompt_detect_strip_non_b64_completion
+      description: >-
+        Replace characters outside the base64 alphabet with spaces so they become
+        token boundaries. Unlike the prompt side, completions are model output that
+        often contains JSON, markdown, code and lists. Deleting characters there
+        would glue neighboring values together (for example a key onto a hash, or
+        two hashes into one), so each stripped character separates tokens instead.
       field: ml_completion_text
       pattern: "[^A-Za-z0-9+/= ]"
       replacement: " "
       ignore_missing: true
 
   - script:
-      tag: ml-prompt-detect-featurize
+      tag: ml_prompt_detect_featurize
       description: >-
-        Build encoding features for prompt and completion candidates
+        Build encoding features for prompt and completion candidates.
       lang: painless
       if: ctx.ml_prompt_text != null || ctx.ml_completion_text != null
       params:
@@ -79,6 +79,16 @@ processors:
         hex_alphabet: "0123456789abcdefABCDEF"
         vowels: "aeiouAEIOU"
       source: |-
+        // Approach: for each source (prompt, completion), split the cleaned text
+        // on spaces and keep tokens of at least min_token_length as candidates.
+        // If none qualify, fall back to the whole text with spaces removed, which
+        // catches base64 split by stray separators. Each candidate is typed as a
+        // hash (all hex) or an encoding, then turned into the numeric features
+        // the classifier expects: positional 1/2/3-gram codes, a length bucket,
+        // entropy, mod-4 position means and character-class ratios.
+        // Output: ml_b64_candidate_inputs, a list of {s, t, src, f}.
+
+        // Encode a gram as a base-`radix` number over the base64 alphabet.
         int codeOf(String alphabet, int radix, String gram) {
           int code = 0;
           for (int i = 0; i < gram.length(); i++) {
@@ -89,15 +99,16 @@ processors:
           return code;
         }
 
+        // Collect the non-empty sources to scan.
         List sourceNames = new ArrayList();
         List sourceTexts = new ArrayList();
-        if (ctx['ml_prompt_text'] instanceof String && !((String) ctx['ml_prompt_text']).isEmpty()) {
+        if (ctx.ml_prompt_text instanceof String && !((String) ctx.ml_prompt_text).isEmpty()) {
           sourceNames.add('input_messages');
-          sourceTexts.add((String) ctx['ml_prompt_text']);
+          sourceTexts.add((String) ctx.ml_prompt_text);
         }
-        if (ctx['ml_completion_text'] instanceof String && !((String) ctx['ml_completion_text']).isEmpty()) {
+        if (ctx.ml_completion_text instanceof String && !((String) ctx.ml_completion_text).isEmpty()) {
           sourceNames.add('output_messages');
-          sourceTexts.add((String) ctx['ml_completion_text']);
+          sourceTexts.add((String) ctx.ml_completion_text);
         }
 
         String[] prefixes = new String[] {"u", "b", "t"};
@@ -108,13 +119,14 @@ processors:
           String src = (String) sourceNames.get(si);
           String fullText = (String) sourceTexts.get(si);
           String[] tokens = fullText.splitOnToken(' ');
+          // Candidate selection: unique long-enough tokens, or the collapsed fallback.
           List allCandidates = new ArrayList();
           StringBuilder collapsed = new StringBuilder();
 
           for (int i = 0; i < tokens.length; i++) {
             String token = tokens[i];
             collapsed.append(token);
-            if (token.length() >= params.min_token_length) {
+            if (token.length() >= params.min_token_length && !allCandidates.contains(token)) {
               allCandidates.add(token);
             }
           }
@@ -125,6 +137,7 @@ processors:
             allCandidates.add(c);
           }
 
+          // Per-candidate featurization.
           for (String cand : allCandidates) {
             String c = cand.length() > params.max_length ? cand.substring(0, params.max_length) : cand;
 
@@ -138,6 +151,7 @@ processors:
 
             Map features = new HashMap();
 
+            // Positional n-gram features: u<i> unigrams, b<i> bigrams, t<i> trigrams.
             for (int n = 1; n <= 3; n++) {
               String prefix = prefixes[n - 1];
               for (int i = 0; i + n <= c.length(); i++) {
@@ -145,11 +159,13 @@ processors:
               }
             }
 
+            // Statistics are computed over a bounded prefix (stats_max_length).
             String sw = cand.length() > params.stats_max_length
                 ? cand.substring(0, params.stats_max_length)
                 : cand;
             int swLen = sw.length();
 
+            // Length bucket: how many length_buckets thresholds the candidate reaches.
             int lenb = 0;
             List lengthBuckets = params.length_buckets;
             for (int bi = 0; bi < lengthBuckets.size(); bi++) {
@@ -157,15 +173,19 @@ processors:
                 lenb++;
               }
             }
-            features['lenb'] = lenb;
+            features.lenb = lenb;
 
             if (swLen == 0) {
               Map entry = new HashMap();
-              entry['s'] = cand; entry['t'] = candType; entry['src'] = src; entry['f'] = features;
+              entry.s = cand;
+              entry.t = candType;
+              entry.src = src;
+              entry.f = features;
               candidateInputs.add(entry);
               continue;
             }
 
+            // Single pass over the prefix: char counts, mod-4 position sums, class counts.
             Map charCounts = new HashMap();
             double[] modSums = new double[]{0.0, 0.0, 0.0, 0.0};
             int[] modCnts  = new int[]{0, 0, 0, 0};
@@ -199,6 +219,7 @@ processors:
               }
             }
 
+            // Shannon entropy (bits) of the prefix, raw and normalised.
             double ent = 0.0;
             if (swLen >= 2) {
               for (def e : charCounts.entrySet()) {
@@ -206,11 +227,12 @@ processors:
                 ent -= p * Math.log(p) / log2;
               }
             }
-            features['ent'] = ent;
+            features.ent = ent;
 
             double normDenom = Math.log((double) Math.min(Math.max(swLen, 2), params.stats_max_length)) / log2;
-            features['entn'] = ent / normDenom;
+            features.entn = ent / normDenom;
 
+            // Entropy of the tail, which helps separate padded encodings.
             String tail = cand.length() > params.tail_length
                 ? cand.substring(cand.length() - params.tail_length)
                 : cand;
@@ -226,8 +248,9 @@ processors:
                 tent -= p * Math.log(p) / log2;
               }
             }
-            features['tent'] = tent;
+            features.tent = tent;
 
+            // Sorted per-position (mod 4) mean character index.
             if (modCnts[0] > 0 && modCnts[1] > 0 && modCnts[2] > 0 && modCnts[3] > 0) {
               double[] means = new double[]{
                 modSums[0] / (double) modCnts[0],
@@ -240,38 +263,39 @@ processors:
                 while (b >= 0 && means[b] > key) { means[b + 1] = means[b]; b--; }
                 means[b + 1] = key;
               }
-              features['ms0'] = means[0];
-              features['ms1'] = means[1];
-              features['ms2'] = means[2];
-              features['ms3'] = means[3];
-              features['msd'] = means[3] - means[0];
+              features.ms0 = means[0];
+              features.ms1 = means[1];
+              features.ms2 = means[2];
+              features.ms3 = means[3];
+              features.msd = means[3] - means[0];
             }
 
+            // Class ratios over the prefix.
             double swLenD = (double) swLen;
-            features['fup'] = (double) up  / swLenD;
-            features['flo'] = (double) lo  / swLenD;
-            features['fdi'] = (double) di  / swLenD;
-            features['fsp'] = (double) sp  / swLenD;
-            features['fhx'] = (double) hx  / swLenD;
-            features['fvw'] = (double) vw  / swLenD;
-            features['cxr'] = swLen > 1 ? (double) cxr / (double)(swLen - 1) : 0.0;
-            features['dcv'] = (double) charCounts.size() / (double) Math.min(swLen, 64);
+            features.fup = (double) up  / swLenD;
+            features.flo = (double) lo  / swLenD;
+            features.fdi = (double) di  / swLenD;
+            features.fsp = (double) sp  / swLenD;
+            features.fhx = (double) hx  / swLenD;
+            features.fvw = (double) vw  / swLenD;
+            features.cxr = swLen > 1 ? (double) cxr / (double)(swLen - 1) : 0.0;
+            features.dcv = (double) charCounts.size() / (double) Math.min(swLen, 64);
 
             Map entry = new HashMap();
-            entry['s'] = cand;
-            entry['t'] = candType;
-            entry['src'] = src;
-            entry['f'] = features;
+            entry.s = cand;
+            entry.t = candType;
+            entry.src = src;
+            entry.f = features;
             candidateInputs.add(entry);
           }
         }
 
-        ctx['ml_b64_candidate_inputs'] = candidateInputs;
-        ctx['ml_b64_scores'] = new ArrayList();
+        ctx.ml_b64_candidate_inputs = candidateInputs;
+        ctx.ml_b64_scores = new ArrayList();
 
   - foreach:
-      tag: ml-prompt-detect-score-foreach
-      description: Score each encoding candidate
+      tag: ml_prompt_detect_score_foreach
+      description: Score each encoding candidate.
       if: ctx.ml_b64_candidate_inputs != null && ctx.ml_b64_candidate_inputs.size() > 0
       field: ml_b64_candidate_inputs
       processor:
@@ -279,11 +303,11 @@ processors:
           name: '{{ IngestPipeline "security_ai_score_candidate_pipeline" }}'
 
   - script:
-      tag: ml-prompt-detect-promote-score
+      tag: ml_prompt_detect_promote_score
       description: >-
-        Group positive detections by encoding type and source, with best-effort decoding
+        Group positive detections by encoding type and source, with best-effort decoding.
       lang: painless
-      if: ctx.ml_b64_scores != null && ctx.ml_b64_scores.size() > 0
+      if: (!ctx.ml_b64_scores.isEmpty())
       source: |-
         boolean isBase32(String s) {
           if (s.length() == 0 || s.length() % 8 != 0) { return false; }
@@ -302,9 +326,23 @@ processors:
           return s.substring(0, end);
         }
 
+        // Best-effort UTF-8 decode; invalid or truncated sequences become U+FFFD.
         String bytesToString(byte[] b) {
           StringBuilder sb = new StringBuilder();
-          for (int i = 0; i < b.length; i++) { sb.append((char)(b[i] & 0xFF)); }
+          int i = 0;
+          while (i < b.length) {
+            int c = b[i] & 0xFF;
+            int need = c < 0x80 ? 0 : (c >= 0xC2 && c < 0xE0) ? 1 : (c >= 0xE0 && c < 0xF0) ? 2 : (c >= 0xF0 && c < 0xF5) ? 3 : -1;
+            int cp = need == 0 ? c : (c & (0x3F >> need));
+            int j = 1;
+            while (need > 0 && j <= need && i + j < b.length && (b[i + j] & 0xC0) == 0x80) {
+              cp = (cp << 6) | (b[i + j] & 0x3F);
+              j++;
+            }
+            boolean ok = need >= 0 && j == need + 1 && cp <= 0x10FFFF && !(cp >= 0xD800 && cp <= 0xDFFF);
+            sb.appendCodePoint(ok ? cp : 0xFFFD);
+            i += ok ? j : 1;
+          }
           return sb.toString();
         }
 
@@ -346,14 +384,16 @@ processors:
           }
         }
 
+        // Group scored candidates by type and source, dropping repeats and
+        // decoding each unique string where possible.
         Map byType = new HashMap();
 
-        for (def r : ctx['ml_b64_scores']) {
-          if (r == null || !(r['string'] instanceof String)) { continue; }
-          String type = (r['type'] instanceof String) ? (String) r['type'] : "encoding";
-          String src  = (r['src']  instanceof String) ? (String) r['src']  : "input_messages";
+        for (def r : ctx.ml_b64_scores) {
+          if (r == null || !(r.string instanceof String)) { continue; }
+          String type = (r.type instanceof String) ? (String) r.type : "encoding";
+          String src  = (r.src  instanceof String) ? (String) r.src  : "input_messages";
           if (src != 'input_messages' && src != 'output_messages') { src = 'input_messages'; }
-          String s = (String) r['string'];
+          String s = (String) r.string;
 
           def bySrc = byType[type];
           if (bySrc == null) {
@@ -363,22 +403,22 @@ processors:
           def bucket = bySrc[src];
           if (bucket == null) {
             bucket = new HashMap();
-            bucket['strings']       = new ArrayList();
-            bucket['probabilities'] = new ArrayList();
-            bucket['decoded']       = new ArrayList();
+            bucket.strings       = new ArrayList();
+            bucket.probabilities = new ArrayList();
+            bucket.decoded       = new ArrayList();
             bySrc[src] = bucket;
           }
-          if (!bucket['strings'].contains(s)) {
-            bucket['strings'].add(s);
-            double p = r['probability'] != null ? ((Number) r['probability']).doubleValue() : 0.0;
-            bucket['probabilities'].add(p);
-            bucket['decoded'].add(tryDecode(s, type));
+          if (!bucket.strings.contains(s)) {
+            bucket.strings.add(s);
+            double p = r.probability != null ? ((Number) r.probability).doubleValue() : 0.0;
+            bucket.probabilities.add(p);
+            bucket.decoded.add(tryDecode(s, type));
           }
         }
 
         if (byType.isEmpty()) { return; }
 
-        if (ctx['security_ai'] == null) { ctx['security_ai'] = new HashMap(); }
+        if (ctx.security_ai == null) { ctx.security_ai = new HashMap(); }
 
         for (def typeEntry : byType.entrySet()) {
           String typeName = (String) typeEntry.getKey();
@@ -388,17 +428,17 @@ processors:
             String srcName = (String) srcEntry.getKey();
             def bucket = srcEntry.getValue();
             Map side = new HashMap();
-            side['strings']       = bucket['strings'];
-            side['probabilities'] = bucket['probabilities'];
-            side['decoded']       = bucket['decoded'];
+            side.strings       = bucket.strings;
+            side.probabilities = bucket.probabilities;
+            side.decoded       = bucket.decoded;
             typeOut[srcName] = side;
           }
-          typeOut['model_version'] = ctx['_ml_model_version'] instanceof String ? (String) ctx['_ml_model_version'] : '0.0.1';
-          ctx['security_ai'][typeName] = typeOut;
+          typeOut.model_version = ctx._ml_model_version instanceof String ? (String) ctx._ml_model_version : '0.0.1';
+          ctx.security_ai[typeName] = typeOut;
         }
 
   - remove:
-      tag: ml-prompt-detect-cleanup
+      tag: ml_prompt_detect_cleanup
       field:
         - ml_b64_candidate_inputs
         - ml_b64_scores
