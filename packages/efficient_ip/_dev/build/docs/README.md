@@ -10,7 +10,7 @@ The EfficientIP integration for Elastic collects and parses logs from [Efficient
 This integration is tested with EfficientIP version 8.4.7e.
 
 This integration requires:
-- Elastic Stack version `9.1.0` or later.
+- Elastic Stack version `9.4.0` or later.
 - An active Elastic Agent enrolled in a Fleet policy.
 
 ### How it works
