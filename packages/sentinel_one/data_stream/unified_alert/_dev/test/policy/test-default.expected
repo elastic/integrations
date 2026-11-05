@@ -30,8 +30,13 @@ inputs:
                   "queried_at": queried_at,
                 }))
             ).as(state, state.start_time >= state.end_time ?
-              // The window is only empty if the clock has gone back. Wait for it to catch up.
-              state.with({"events": [], "want_more": false})
+              // The window is empty if the clock has gone back, or on a first poll with no
+              // initial interval. Keep the cursor, or start it at the end of the window.
+              state.with({
+                "events": [],
+                "want_more": false,
+                "cursor": state.?cursor.orValue({"last_timestamp": state.end_time, "queried_at": state.queried_at}),
+              })
             : state.with(
               post_request(
                 state.url.trim_right("/") + "/web/api/v2.1/unifiedalerts/graphql",
