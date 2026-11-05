@@ -131,9 +131,3 @@ The `log` data stream collects EfficientIP DNS and DHCP syslog events.
 ### Inputs used
 
 {{ inputDocs }}
-
-### Future updates
-
-Working on future updates:
-- IPAM auditing and infrastructure compliance
-- Network anomaly identification and security investigations
