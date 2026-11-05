@@ -245,10 +245,13 @@ processors:
     fields:
       - shodan.ip_str
       - shodan.port
+      - shodan.transport
       - '@timestamp'
     target_field: _id
     ignore_missing: true
     description: >-
+      Includes transport so a TCP and UDP banner for the same ip:port don't
+      collide if a page publishes them with the same millisecond @timestamp.
       Includes @timestamp so each poll's observation of an indicator is its
       own document - data streams reject a duplicate _id outright rather
       than updating it, so without this the latest-state transform would

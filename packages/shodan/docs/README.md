@@ -392,7 +392,7 @@ The raw `host` data stream is append-only, so re-detecting the same `ip:port` do
 ### Transforms used
 
 #### host
-* Description: Latest state of each Shodan host indicator, unique by IP and port. Keeps only the most recently seen document per indicator, and drops indicators not re-confirmed within the retention window, so this index reflects current exposure rather than accumulating unbounded history.
+* Description: Latest state of each Shodan host indicator, unique by IP, port, transport and namespace. Transport keeps a TCP and UDP banner on the same port from collapsing into one record; namespace keeps policies in different Fleet namespaces from overwriting each other's observations. Keeps only the most recently seen document per indicator, and drops indicators not re-confirmed within the retention window, so this index reflects current exposure rather than accumulating unbounded history.
 * Source Index: logs-shodan.host\*
 * Destination Index: logs-shodan_latest.host-1
 
@@ -402,7 +402,7 @@ The raw `host` data stream is append-only, so re-detecting the same `ip:port` do
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.namespace | Data stream namespace. Not constant_keyword: the source pattern spans every namespace, and documents from a second namespace would otherwise be rejected once the destination index locked onto the first value seen. | keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |

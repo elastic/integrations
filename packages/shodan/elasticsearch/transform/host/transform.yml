@@ -15,12 +15,17 @@ latest:
   unique_key:
     - threat.indicator.ip
     - threat.indicator.port
+    - network.transport
+    - data_stream.namespace
   sort: "@timestamp"
 description: >-
-  Latest state of each Shodan host indicator, unique by IP and port. Keeps
-  only the most recently seen document per indicator, and drops indicators
-  not re-confirmed within the retention window, so this index reflects
-  current exposure rather than accumulating unbounded history.
+  Latest state of each Shodan host indicator, unique by IP, port, transport
+  and namespace. Transport keeps a TCP and UDP banner on the same port from
+  collapsing into one record; namespace keeps policies in different Fleet
+  namespaces from overwriting each other's observations. Keeps only the most
+  recently seen document per indicator, and drops indicators not re-confirmed
+  within the retention window, so this index reflects current exposure
+  rather than accumulating unbounded history.
 frequency: 30s
 settings:
   deduce_mappings: false
