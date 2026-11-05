@@ -48,40 +48,44 @@ program: |-
         ).do_request().as(resp,
           (resp.StatusCode != 200) ?
             {
-              "events": {
-                "error": {
-                  "code": string(resp.StatusCode),
-                  "id": resp.Status,
-                  "message": "GET /api/usergroups.list: " + ((size(resp.Body) != 0) ? string(resp.Body) : resp.Status),
+              "events": [
+                {
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": resp.Status,
+                    "message": "GET /api/usergroups.list: " + ((size(resp.Body) != 0) ? string(resp.Body) : resp.Status),
+                  },
                 },
-              },
-              "want_more": false,
+              ],
+              "want_more": true,
               "cursor": {
-                "phase": "users_active",
+                "phase": (size(tail(ctx.workspace_ids)) > 0) ? "groups" : "emit",
                 "page_cursor": "",
-                "workspace_ids": [],
-                "groups_by_user": {},
-                "users": [],
+                "workspace_ids": tail(ctx.workspace_ids),
+                "groups_by_user": ctx.groups_by_user,
+                "users": ctx.users,
               },
             }
           :
             resp.Body.decode_json().as(body,
               (body.?ok.orValue(false) != true) ?
                 {
-                  "events": {
-                    "error": {
-                      "code": string(body.?error.orValue("slack_error")),
-                      "id": string(body.?error.orValue("slack_error")),
-                      "message": "GET /api/usergroups.list: " + string(body.?error.orValue("ok=false")),
+                  "events": [
+                    {
+                      "error": {
+                        "code": string(body.?error.orValue("slack_error")),
+                        "id": string(body.?error.orValue("slack_error")),
+                        "message": "GET /api/usergroups.list: " + string(body.?error.orValue("ok=false")),
+                      },
                     },
-                  },
-                  "want_more": false,
+                  ],
+                  "want_more": true,
                   "cursor": {
-                    "phase": "users_active",
+                    "phase": (size(tail(ctx.workspace_ids)) > 0) ? "groups" : "emit",
                     "page_cursor": "",
-                    "workspace_ids": [],
-                    "groups_by_user": {},
-                    "users": [],
+                    "workspace_ids": tail(ctx.workspace_ids),
+                    "groups_by_user": ctx.groups_by_user,
+                    "users": ctx.users,
                   },
                 }
               :
@@ -162,13 +166,15 @@ program: |-
         ).do_request().as(resp,
           (resp.StatusCode != 200) ?
             {
-              "events": {
-                "error": {
-                  "code": string(resp.StatusCode),
-                  "id": resp.Status,
-                  "message": "GET /api/admin.users.list: " + ((size(resp.Body) != 0) ? string(resp.Body) : resp.Status),
+              "events": [
+                {
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": resp.Status,
+                    "message": "GET /api/admin.users.list: " + ((size(resp.Body) != 0) ? string(resp.Body) : resp.Status),
+                  },
                 },
-              },
+              ],
               "want_more": false,
               "cursor": {
                 "phase": "users_active",
@@ -182,13 +188,15 @@ program: |-
             resp.Body.decode_json().as(body,
               (body.?ok.orValue(false) != true) ?
                 {
-                  "events": {
-                    "error": {
-                      "code": string(body.?error.orValue("slack_error")),
-                      "id": string(body.?error.orValue("slack_error")),
-                      "message": "GET /api/admin.users.list: " + string(body.?error.orValue("ok=false")),
+                  "events": [
+                    {
+                      "error": {
+                        "code": string(body.?error.orValue("slack_error")),
+                        "id": string(body.?error.orValue("slack_error")),
+                        "message": "GET /api/admin.users.list: " + string(body.?error.orValue("ok=false")),
+                      },
                     },
-                  },
+                  ],
                   "want_more": false,
                   "cursor": {
                     "phase": "users_active",

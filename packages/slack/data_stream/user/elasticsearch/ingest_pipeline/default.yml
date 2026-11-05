@@ -124,27 +124,28 @@ processors:
       description: Translate known Slack admin role IDs to names.
       lang: painless
       if: ctx.slack?.user?.roles instanceof List
+      params:
+        role_names:
+          Rl01: Channel Admin
+          Rl02: Role Admin
+          Rl04: Legal Holds Admin
+          Rl05: Conversation Admin
+          Rl09: DLP Admin
+          Rl0A: Channel Manager
+          Rl0C: Audit Logs Admin
+          Rl0D: Integrations Manager
+          Rl0E: Message Activity Manager
+          Rl0F: Exports Admin
+          Rl0J: Org Security Admin
+          Rl0L: Analytics Admin
       source: |-
-        def known = new HashMap();
-        known.put('Rl01', 'Channel Admin');
-        known.put('Rl02', 'Role Admin');
-        known.put('Rl04', 'Legal Holds Admin');
-        known.put('Rl05', 'Conversation Admin');
-        known.put('Rl09', 'DLP Admin');
-        known.put('Rl0A', 'Channel Manager');
-        known.put('Rl0C', 'Audit Logs Admin');
-        known.put('Rl0D', 'Integrations Manager');
-        known.put('Rl0E', 'Message Activity Manager');
-        known.put('Rl0F', 'Exports Admin');
-        known.put('Rl0J', 'Org Security Admin');
-        known.put('Rl0L', 'Analytics Admin');
         def names = new ArrayList();
         for (id in ctx.slack.user.roles) {
           if (id == null) {
             continue;
           }
           def key = id.toString();
-          names.add(known.containsKey(key) ? known.get(key) : key);
+          names.add(params.role_names.containsKey(key) ? params.role_names[key] : key);
         }
         if (!names.isEmpty()) {
           ctx.slack.user.role_names = names;
