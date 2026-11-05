@@ -8,9 +8,6 @@ processors:
       lang: painless
       tag: set_usage_lookup_keys
       source: |
-        if (ctx.project_id == null && ctx.cluster_name != null) {
-          ctx.project_id = ctx.cluster_name;
-        }
         if (ctx['@timestamp'] != null && ctx.project_id != null) {
           def date = ZonedDateTime.parse(ctx['@timestamp']).toLocalDate().toString();
           ctx.composite_key = date + '_' + ctx.project_id;
@@ -88,9 +85,6 @@ processors:
             }
           }
           ctx.project_name = picked != null ? picked : ctx.project_id;
-        }
-        if (ctx.datastream != null && ctx.project_id != null) {
-          ctx.cluster_name = ctx.project_id;
         }
         if (ctx.project_type instanceof Map) {
           def buckets = ctx.project_type.buckets;

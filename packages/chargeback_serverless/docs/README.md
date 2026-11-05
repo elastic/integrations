@@ -119,9 +119,6 @@ The Chargeback Serverless integration collects two metrics data streams:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| deployment_id | Legacy compatibility field for project_id (dual-written for ES|QL compatibility). | keyword |
-| deployment_name | Legacy compatibility field for project_name (dual-written for ES|QL compatibility). | keyword |
-| deployment_type | Legacy compatibility field for project_type (dual-written for ES|QL compatibility). | keyword |
 | event.ingested | Ingest pipeline execution timestamp. | date |
 | is_allocatable | True if charge is allocatable to project data streams. | boolean |
 | project_id | Serverless project identifier. | keyword |
@@ -142,7 +139,6 @@ The Chargeback Serverless integration collects two metrics data streams:
 | average_duration_ms | Average synthetic check duration in milliseconds. | double |
 | average_inference_time_ms | Average latency per inference in milliseconds. | double |
 | check_count | Number of synthetic test check executions. | long |
-| cluster_name | Legacy compatibility field for project_id (dual-written for ES|QL compatibility). | keyword |
 | composite_key | Date and project ID composite key (YYYY-MM-DD_project_id). | keyword |
 | conf_chargeable_unit_rate | Configured currency conversion multiplier. | double |
 | conf_chargeable_unit_rate_unit | Configured currency unit label. | keyword |
