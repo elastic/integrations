@@ -1342,7 +1342,8 @@ processors:
         Builds user.roles from nested_roles, admin_roles and roles, user.entity.attributes.permissions
         from user_permissions and nested_permissions, and user.entity.relationships from
         associated_employees (supervises), nested_applications with administrative permissions
-        (administers), associated_devices (owns) and provider_name (depends_on), with deduplication.
+        (administers), associated_devices (owns, including host entity IDs) and provider_name (depends_on),
+        with deduplication.
       if: ctx.axonius?.identity != null
       source: |-
         void addValue(Map container, String field, def value) {
@@ -1411,7 +1412,16 @@ processors:
         Map owned = [:];
         collect(src.associated_devices, 'internal_axon_id', owned, 'id');
         collect(src.associated_devices, 'device_caption', owned, 'name');
-        if (!owned.isEmpty()) rels.owns = ['host': owned];
+        if (!owned.isEmpty()) {
+          Map owns = ['host': owned];
+          if (owned.id != null) {
+            // Entity store host IDs are 'host:' + host.id, and device records use internal_axon_id as host.id.
+            Map ownedEntity = [:];
+            for (def id : owned.id) addValue(ownedEntity, 'id', 'host:' + id);
+            owns.entity = ownedEntity;
+          }
+          rels.owns = owns;
+        }
 
         Map provider = [:];
         addValue(provider, 'name', src.provider_name);

@@ -113,6 +113,10 @@ Bundled dashboards summarize these data streams for day-to-day monitoring, risk 
 
 **Entity Store** support: user assets from the `identity` data stream and Axonius console accounts from the `user` data stream populate ECS entity fields, so they appear as user entities in the Elastic Security Entity Store. A user is identified by `user.email` when any of its adapters reports an email address, and otherwise by `user.id`, which is the Axonius `internal_axon_id` for identity assets. Axonius notes that `internal_axon_id` may change in the future, for example when assets are re-correlated; if it changes, a user without an email address appears as a new entity. A console account whose email address matches an inventoried user is merged into the same entity.
 
+Device assets from the `compute` data stream populate ECS host entity fields, so they appear as host entities. A host is identified by `host.id`, which is the Axonius `internal_axon_id`, so every adapter record of a device contributes to the same entity; the same re-correlation caveat applies. The device UUID reported by an adapter is kept in `axonius.compute.uuid`. The last activity of a host comes from agent check-in times (`last_contact_time`, then `last_seen_agents`), so devices seen only by scanners or CMDB adapters have no last activity. User assets link to the devices Axonius associates with them through `user.entity.relationships.owns`; Axonius associates a device with the users that last used it.
+
+This identification, the host and user attributes, the last activity, and the relationships apply to the Entity Store from Kibana 9.4. On Kibana 8.19 and 9.3, the Entity Store identifies hosts by `host.name` and users by `user.name` only, so adapter records of one device that report different names appear as separate hosts.
+
 ## What do I need to use this integration?
 
 ### From Elastic
@@ -3177,6 +3181,8 @@ The `compute` data stream provides compute asset logs from axonius.
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| host.entity.attributes.managed | Indicates whether the entity is managed by an external administration or control system. Typically applicable to Host and Service entities. | boolean |
+| host.entity.lifecycle.last_activity | Timestamp of the most recent action performed by or attributed to this entity (active use). Distinct from `entity.last_seen_timestamp`, which records when the entity was last observed in data; `last_activity` implies the entity was active, not only seen. Typically applicable to User, Host, and Service entities. | date |
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Indicates whether a compute event is in the raw source data stream, or in the latest destination index. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
@@ -3188,30 +3194,24 @@ An example event for `compute` looks as following:
 {
     "@timestamp": "2025-12-05T00:02:00.000Z",
     "agent": {
-        "ephemeral_id": "ef953a4a-0c2d-413a-8180-529bd686bb14",
-        "id": "80bc8918-8f12-4faf-b69f-14eae4d5990a",
-        "name": "elastic-agent-26769",
+        "ephemeral_id": "31c8a857-aff1-44bf-b2db-add34788eeef",
+        "id": "26da61c9-1d88-4bea-b966-1c2b15afe4cc",
+        "name": "elastic-agent-31719",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "9.5.0"
     },
     "axonius": {
         "compute": {
             "accurate_for_datetime": "2025-12-05T00:02:00.000Z",
             "adapter_list_length": 1,
-            "adapters": [
-                "azure_adapter"
-            ],
+            "adapters": "azure_adapter",
             "application_and_account_name": "azure/azure-demo",
             "asset_entity_info": "AzureEntityType.KubernetesCluster",
             "asset_type": "containers",
-            "connected_assets": [
-                "subscription_id::969f0354-b771-4580-8a84-0634c45bbd5b"
-            ],
+            "connected_assets": "subscription_id::969f0354-b771-4580-8a84-0634c45bbd5b",
             "data_asset_type": "Kubernetes Container",
             "event": {
-                "adapter_categories": [
-                    "Cloud Infra"
-                ],
+                "adapter_categories": "Cloud Infra",
                 "client_used": "67fd09ca731ccb5730923106",
                 "initial_plugin_unique_name": "azure_adapter_0",
                 "plugin_name": "azure_adapter",
@@ -3234,55 +3234,57 @@ An example event for `compute` looks as following:
             "source_application": "Azure",
             "subscription_id": "f7f03c3d-a8aa-443d-94ea-f0948fdda5fe",
             "subscription_name": "Azure Public Cloud",
-            "tags": [
-                {
-                    "tag_key": "AUDIT SCOPE",
-                    "tag_value": "Yes"
-                },
-                {
-                    "tag_key": "Application",
-                    "tag_value": "Shared"
-                },
-                {
-                    "tag_key": "Assigned VP",
-                    "tag_value": "Chris Swarey"
-                }
-            ],
-            "tenant_number": [
-                4
-            ],
+            "tags": {
+                "tag_key": [
+                    "AUDIT SCOPE",
+                    "Application",
+                    "Assigned VP"
+                ],
+                "tag_value": [
+                    "Yes",
+                    "Shared",
+                    "Chris Swarey"
+                ]
+            },
+            "tenant_number": 4,
             "transform_unique_id": "1qDt9m3qt7HtGa9rDHmFXO6zQ4A=",
             "type": "Containers"
         }
     },
     "data_stream": {
         "dataset": "axonius.compute",
-        "namespace": "71660",
+        "namespace": "96121",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "80bc8918-8f12-4faf-b69f-14eae4d5990a",
+        "id": "26da61c9-1d88-4bea-b966-1c2b15afe4cc",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "9.5.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
-            "host",
-            "vulnerability"
+            "host"
         ],
         "dataset": "axonius.compute",
-        "ingested": "2026-06-03T07:45:10Z",
+        "ingested": "2026-11-04T17:32:19Z",
         "kind": "event",
+        "module": "axonius",
         "type": [
             "info"
         ]
     },
     "input": {
         "type": "cel"
+    },
+    "labels": {
+        "is_transform_source": "true"
+    },
+    "observer": {
+        "vendor": "Axonius"
     },
     "tags": [
         "forwarded",
@@ -3751,6 +3753,8 @@ The `application` data stream provides application asset logs from axonius.
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| host.entity.attributes.managed | Indicates whether the entity is managed by an external administration or control system. Typically applicable to Host and Service entities. | boolean |
+| host.entity.lifecycle.last_activity | Timestamp of the most recent action performed by or attributed to this entity (active use). Distinct from `entity.last_seen_timestamp`, which records when the entity was last observed in data; `last_activity` implies the entity was active, not only seen. Typically applicable to User, Host, and Service entities. | date |
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Indicates whether a compute event is in the raw source data stream, or in the latest destination index. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
