@@ -176,6 +176,28 @@ The following are the names of the nine sample rules:
 | Google Threat Intelligence IP Address IOC Stream Correlation | Detects and alerts on matches between IP Address IOCs collected by GTI IOC Stream data with user's selected Elastic environment data. |
 | Google Threat Intelligence Vulnerability Correlation         | Detects and alerts on matches between Vulnerabilities collected by GTI data with user's selected Elastic environment data.            |
 
+#### Overlap with Elastic's built-in Threat Intel Indicator Match rules
+
+In addition to the GTI detection rules described above, Elastic ships built-in **Threat Intel Indicator Match** rules (Hash, IP Address, URL, Email, and Windows Registry) that match against every `logs-ti_*` index, including the indices written by this package. Both rule sets can match against the same GTI latest destination indices: the GTI rules use `logs-ti_google_threat_intelligence_latest.dest_*` indices directly, and the built-in Threat Intel rules include those indices through their `logs-ti_*` threat index pattern. If you enable both, you may see duplicate alerts for file hash, IP address, and URL matches, and the two rule sets are not interchangeable.
+
+|  | GTI rules | Elastic built-in Threat Intel rules |
+| --- | --- | --- |
+| Installed from | Add Elastic Rules → Google Threat Intelligence | Add Elastic Rules → Threat Intel |
+| Indicator source | GTI only (`logs-ti_google_threat_intelligence_latest.dest_*`) | All installed Threat Intelligence integrations (`logs-ti_*`, `filebeat-*`) |
+| Indicator types | File, IP, URL, Domain (Threat List and IOC Stream), Vulnerability | File hash, IP, URL, Email, Windows Registry |
+| Hash event fields matched | `file.hash.sha256`, `email.attachments.file.hash.sha256` | md5, sha1, and sha256 on `file`, `process`, and `dll` |
+| URL fields | `url.original` | Uses `url.full` in the event query and also maps `url.original` |
+| GTI enrichment fields on alerts (`gti.threat.indicator.*`: verdict, severity, threat score, attributes; `gti.vulnerability`) | Yes | No (ECS `threat.indicator.*` fields only) |
+| Feeds GTI enrichment dashboards (`Threat Intelligence`, `Adversary Intelligence`, `IOC Stream Threat Intelligence`, `Vulnerability Intelligence`) | Yes | No |
+
+**Which to use:**
+
+- Use the **GTI detection rules** if you want alerts to populate GTI's enrichment dashboards, need Domain or Vulnerability matching, or want GTI-specific fields attached to alerts. The GTI alert transforms read alerts tagged `Google Threat Intelligence` and populate the `Threat Intelligence`, `Adversary Intelligence`, `IOC Stream Threat Intelligence`, and `Vulnerability Intelligence` dashboards. Alerts from the built-in Threat Intel rules do not have this tag, so the GTI alert transforms do not copy them into the enriched GTI data streams.
+- Use the **built-in Indicator Match rules** if you want a single rule set that covers all of your installed Threat Intelligence integrations, not just GTI, or need the broader hash coverage for `process` and `dll` fields.
+- If you enable both, expect duplicate alerts for File, IP, and URL matches against GTI indicators. To avoid this, turn off the overlapping built-in rules, add a rule exception, or duplicate the built-in rule and add `and not event.module: ti_google_threat_intelligence` to its threat query so it excludes GTI indicators.
+
+The built-in Threat Intel rules exclude documents with `labels.is_ioc_transform_source: true`. This package currently marks transform source documents with `labels.is_transform_source`, so deployments can see additional built-in rule matches against GTI source documents until that label handling is updated.
+
 **Note:** The following three transforms are available to filter relevant data from alerts.
 
 - Detected IOC Transform (ID: `logs-ti_google_threat_intelligence.rule`)
@@ -188,6 +210,8 @@ These transforms are automatically started to populate `Threat Intelligence`, `A
 
 1. If an event contains multiple matching mappings (e.g., two file hash fields within the same event match GTI data), only one alert per detection rule will be generated for that event.
 2. If GTI information is ingested and processed by a transform, and the GTI source information is updated later, the changes are not reflected in the dashboards because the Elastic detection rules only run on the transformed (destination) data.
+3. Enabling both the GTI detection rules and Elastic's built-in Threat Intel Indicator Match rules can result in duplicate alerts for file hash, IP address, and URL matches. See [Overlap with Elastic's built-in Threat Intel Indicator Match rules](#overlap-with-elastics-built-in-threat-intel-indicator-match-rules) above for guidance on choosing rules and avoiding duplicate alerts.
+
 
 ## Troubleshooting
 
