@@ -11,7 +11,7 @@ The EfficientIP integration for Elastic collects and parses logs from [Efficient
 This integration is tested with EfficientIP version 8.4.7e.
 
 This integration requires:
-- Elastic Stack version `9.1.0` or later.
+- Elastic Stack version `9.4.0` or later.
 - An active Elastic Agent enrolled in a Fleet policy.
 
 ### How it works
@@ -131,9 +131,9 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2026-04-17T12:39:52.000Z",
     "agent": {
-        "ephemeral_id": "80c4a1f4-b121-403b-bc2a-a885b9f64ba5",
-        "id": "aa0852d8-0034-4841-87fb-595076144d3a",
-        "name": "elastic-agent-74438",
+        "ephemeral_id": "c33476a5-d907-4676-b791-3a073f2eee11",
+        "id": "dc897f51-6c16-4577-8c88-100730e0261f",
+        "name": "elastic-agent-50791",
         "type": "filebeat",
         "version": "9.3.3"
     },
@@ -143,7 +143,7 @@ An example event for `log` looks as following:
     },
     "data_stream": {
         "dataset": "efficient_ip.log",
-        "namespace": "93151",
+        "namespace": "71473",
         "type": "logs"
     },
     "dns": {
@@ -170,7 +170,7 @@ An example event for `log` looks as following:
         }
     },
     "elastic_agent": {
-        "id": "aa0852d8-0034-4841-87fb-595076144d3a",
+        "id": "dc897f51-6c16-4577-8c88-100730e0261f",
         "snapshot": false,
         "version": "9.3.3"
     },
@@ -181,9 +181,10 @@ An example event for `log` looks as following:
         ],
         "created": "2026-04-17T12:39:52.000Z",
         "dataset": "efficient_ip.log",
-        "ingested": "2026-09-26T08:32:25Z",
+        "ingested": "2026-11-05T16:09:51Z",
         "kind": "event",
         "module": "efficient_ip",
+        "timezone": "+00:00",
         "type": [
             "protocol"
         ]
@@ -196,12 +197,13 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.19.0.3:58104"
+            "address": "172.19.0.3:44771"
         },
         "syslog": {
             "priority": 13
         }
     },
+    "message": "client 10.1.0.42#56474: query: euc-common.online.example.com IN A  (10.100.0.1)",
     "network": {
         "protocol": "dns"
     },
@@ -286,3 +288,4 @@ To collect logs via UDP, select **Collect logs via UDP** and configure the follo
 - Read Buffer - UDP socket read buffer size for handling bursts of messages
 - Read Timeout - How long to wait for incoming packets before checking for shutdown
 </details>
+

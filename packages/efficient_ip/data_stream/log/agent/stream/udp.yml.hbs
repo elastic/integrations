@@ -21,14 +21,17 @@ fields_under_root: true
 fields:
   _conf:
 {{#if tz_offset}}
-    tz_offset: {{tz_offset}}
+    tz_offset: '{{tz_offset}}'
 {{/if}}
 
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
 
-{{#if processors}}
 processors:
+ - add_locale:
+     when.equals:
+       _conf.tz_offset: local
+{{#if processors}}
 {{processors}}
 {{/if}}
