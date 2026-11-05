@@ -37,7 +37,7 @@ Configure your Organization ID, unified Elastic Cloud API key, lookbehind window
 
 ## Dashboards
 
-In Kibana, open **Analytics → Dashboards** and filter by the **Chargeback** tag. Use the shared top navigation bar on any dashboard to switch views while preserving your active time range and filters (`Project type`, `Project name`, `Cost category`, `Cost type`, and `Allocation driver`).
+In Kibana, open **Dashboards** and filter by the **Chargeback** tag. Use the shared top navigation bar on any dashboard to switch views while preserving your active time range and filters (`Project type`, `Project name`, `Cost category`, `Cost type`, and `Allocation driver`).
 
 ### Billing Components Overview
 
