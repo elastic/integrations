@@ -89,20 +89,18 @@ program: |-
                               all_pkeys.filter(k,
                                 k.startsWith(p.id + ":") || (has(p.name) && p.name != null && p.name != "" && k.startsWith(p.name + ":"))
                               ).as(pkeys,
-                                all_pkeys.map(k,
+                                (all_pkeys.map(k,
                                   k.startsWith(p.id + ":") ? k.substring(size(p.id) + 1, size(k)) : (
                                     (has(p.name) && p.name != null && p.name != "" && k.startsWith(p.name + ":")) ? k.substring(size(p.name) + 1, size(k)) : k
                                   )
-                                ).as( stripped_keys,
+                                ) + (state.hub_es_api_key != "" ? [state.hub_es_api_key, state.api_key] : [state.api_key])).as( stripped_keys,
                                   (size(pkeys) > 0 ? (
                                     pkeys[0].startsWith(p.id + ":") ? pkeys[0].substring(size(p.id) + 1, size(pkeys[0])) : pkeys[0].substring(size(p.name) + 1, size(pkeys[0]))
-                                  ) : (
-                                    state.hub_es_api_key != "" ? state.hub_es_api_key : state.api_key
-                                  )).as(primary_key,
+                                  ) : state.api_key).as(primary_key,
                                     (string(dyn(p.endpoints).elasticsearch).trimRight("/") + "/_cat/indices?h=index,dataset.size,indexing.index_time,search.query_time&format=json&bytes=b&time=ms&expand_wildcards=open,hidden").as(cat_url,
                                       get_request(cat_url).with({ "Header": { "Authorization": ["ApiKey " + primary_key] } }).do_request().as(resp0,
                                         (resp0.StatusCode == 200) ?
-                                          { "resp": resp0, "key": primary_key, "ktype": size(pkeys) > 0 ? "remote_key" : "hub_key" }
+                                          { "resp": resp0, "key": primary_key, "ktype": size(pkeys) > 0 ? "remote_key" : "cloud_key" }
                                         : (size(stripped_keys) > 0 ?
                                           get_request(cat_url).with({ "Header": { "Authorization": ["ApiKey " + stripped_keys[0]] } }).do_request().as(resp1,
                                             (resp1.StatusCode == 200) ?
