@@ -18,18 +18,19 @@ processors:
         - '^%{DATA:system.auth.ssh.event} %{DATA:system.auth.ssh.method} for (invalid user)?%{DATA:user.name} from %{IPORHOST:source.address} port %{NUMBER:source.port:long} ssh2(: %{GREEDYDATA:system.auth.ssh.signature})?'
         - '^%{DATA:system.auth.ssh.event} user %{DATA:user.name} from %{IPORHOST:source.address}'
         - '^Did not receive identification string from %{IPORHOST:system.auth.ssh.dropped_ip}'
-        # sudo log line layout (sudoers(5) EVENT LOGGING; lib/eventlog/eventlog.c in the sudo source):
+        # sudo log line layout, see https://www.sudo.ws/docs/man/sudoers.man/#EVENT_LOGGING
+        # and new_logline() in lib/eventlog/eventlog.c of the sudo source:
         #   user : [error ;] [HOST=h ;] [TTY=t ;] [CHROOT=r ;] PWD=p ; USER=u ; [GROUP=g ;] [TSID=i ;] [ENV=e ;] COMMAND=c [; SIGNAL=s] [; EXIT=n]
-        # Every bracketed field is optional, so each is matched by its key and
-        # the free-text error group must not swallow any of them. SIGNAL= and
-        # EXIT= follow the command when the log_exit_status option is set.
-        - '^%{SPACE}%{DATA:user.name} :(?: ((?!%{SUDO_KEY}=)%{DATA:system.auth.sudo.error}) ;)?(?: HOST=%{DATA:system.auth.sudo.host} ;)?(?: TTY=%{DATA:system.auth.sudo.tty} ;)?(?: CHROOT=%{DATA:system.auth.sudo.chroot} ;)? PWD=%{DATA:system.auth.sudo.pwd} ; USER=%{DATA:system.auth.sudo.user} ;(?: GROUP=%{DATA:system.auth.sudo.group} ;)?(?: TSID=%{DATA:system.auth.sudo.tsid} ;)?(?: ENV=%{DATA:system.auth.sudo.env} ;)? COMMAND=%{DATA:system.auth.sudo.command}(?: ; SIGNAL=%{DATA:system.auth.sudo.signal})?(?: ; EXIT=%{INT:system.auth.sudo.exit:long})?$'
+        # Bracketed fields are optional and depend on sudoers options, so each
+        # is matched by its key and the free-text error group excludes them.
+        - '^%{SPACE}%{DATA:user.name} :(?: ((?!%{SUDO_KEY}=)%{DATA:system.auth.sudo.error}) ;)?(?: HOST=%{DATA:system.auth.sudo.host} ;)?(?: TTY=%{DATA:system.auth.sudo.tty} ;)?(?: CHROOT=%{DATA:system.auth.sudo.chroot} ;)? PWD=%{DATA:system.auth.sudo.pwd} ; USER=%{DATA:system.auth.sudo.user} ;(?: GROUP=%{DATA:system.auth.sudo.group} ;)?(?: TSID=%{DATA:system.auth.sudo.tsid} ;)?(?: ENV=%{DATA:system.auth.sudo.env} ;)? COMMAND=%{DATA:system.auth.sudo.command}(?: ; SIGNAL=%{SUDO_SIGNAL:system.auth.sudo.signal})?(?: ; EXIT=%{INT:system.auth.sudo.exit:long})?$'
         - '^new group: name=%{DATA:group.name}, GID=%{NUMBER:group.id}'
         - '^new user: name=%{DATA:user.target.name}, UID=%{NUMBER:user.target.id}, GID=%{NUMBER:group.id}, home=%{DATA:system.auth.useradd.home}, shell=%{DATA:system.auth.useradd.shell}$'
         - '^group added to /etc/(?:group|gshadow): name=%{DATA:group.name}(?:, GID=%{NUMBER:group.id})?$'
         - "^group '%{DATA:group.name}' removed(?: from /etc/(?:group|gshadow))?$"
       pattern_definitions:
         SUDO_KEY: '(?:HOST|TTY|CHROOT|PWD|USER|GROUP|TSID|ENV|COMMAND)'
+        SUDO_SIGNAL: '[A-Z0-9]+'
   - append:
       tag: append_category_process
       field: event.category
@@ -41,7 +42,21 @@ processors:
       field: event.type
       value: start
       allow_duplicates: false
-      if: ctx.system?.auth?.sudo?.command != null
+      if: ctx.system?.auth?.sudo?.command != null && ctx.system.auth.sudo.exit == null && ctx.system.auth.sudo.signal == null
+  - append:
+      description: >-
+        The exit line written by sudo when log_exit_status is set marks the end
+        of the command, not another start.
+      tag: append_type_end_sudo
+      field: event.type
+      value: end
+      allow_duplicates: false
+      if: ctx.system?.auth?.sudo?.exit != null || ctx.system?.auth?.sudo?.signal != null
+  - set:
+      tag: set_process_exit_code_sudo
+      field: process.exit_code
+      copy_from: system.auth.sudo.exit
+      if: ctx.system?.auth?.sudo?.exit != null
   - grok:
       description: Extract username from pam_faillock account lockout messages.
       tag: grok-pam-faillock
@@ -549,7 +564,10 @@ processors:
           ctx.event = [:];
         }
         ctx.event.action = action;
-        ctx.event.type = [eventType];
+        if (ctx.system.auth.sudo.exit == null && ctx.system.auth.sudo.signal == null) {
+          // Keep event.type end on the log_exit_status exit line.
+          ctx.event.type = [eventType];
+        }
   - convert:
       tag: convert_dropped-ip
       field: system.auth.ssh.dropped_ip
