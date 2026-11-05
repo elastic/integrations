@@ -610,6 +610,7 @@ An example event for `telemetry` looks as following:
 | jamf_protect.telemetry.instigator.responsible.user.id | Effective user ID of the instigator's responsible process. | keyword |
 | jamf_protect.telemetry.instigator.responsible.user.name | Effective user name of the instigator's responsible process. | keyword |
 | jamf_protect.telemetry.instigator.start | Start time of the instigator process. | date |
+| jamf_protect.telemetry.instigator.tty | Software terminal device file associated with the instigator process. | keyword |
 | jamf_protect.telemetry.instigator.user.id | Effective user ID of the instigator process. | keyword |
 | jamf_protect.telemetry.instigator.user.name | Effective user name of the instigator process. | keyword |
 | jamf_protect.telemetry.log_entries | Log entries being collected in an event | object |

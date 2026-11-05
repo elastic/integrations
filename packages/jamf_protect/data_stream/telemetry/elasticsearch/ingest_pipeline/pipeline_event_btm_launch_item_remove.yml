@@ -162,6 +162,12 @@ processors:
         copy_from: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.is_es_client
         ignore_empty_value: true
         if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_remove?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_remove?.instigator != null
+    - set:
+        tag: set_jamf_protect_telemetry_instigator_tty
+        field: jamf_protect.telemetry.instigator.tty
+        copy_from: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.tty.path
+        ignore_empty_value: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_remove?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_remove?.instigator != null
     - convert:
         tag: convert_jamf_protect_telemetry_instigator_user_id_ffee25ca
         field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.audit_token.euid
@@ -454,7 +460,7 @@ processors:
         tag: set_process_interactive_f3841dd8
         field: process.interactive
         value: false
-        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app?.tty == null
+        if: ctx.process?.interactive == null && ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app?.tty == null
     - set:
         tag: set_process_interactive_03c78afc
         field: process.interactive

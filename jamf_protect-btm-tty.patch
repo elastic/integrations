@@ -1,0 +1,494 @@
+diff --git a/packages/jamf_protect/changelog.yml b/packages/jamf_protect/changelog.yml
+index 815405d0da..96d7462be7 100644
+--- a/packages/jamf_protect/changelog.yml
++++ b/packages/jamf_protect/changelog.yml
+@@ -4,6 +4,9 @@
+     - description: Keep the BTM launch item instigator under `jamf_protect.telemetry.instigator.*` when the app is mapped to `process.*`, and include its hashes in `related.hash`.
+       type: enhancement
+       link: https://github.com/elastic/integrations/pull/22270
++    - description: Keep a BTM launch item instigator TTY on `jamf_protect.telemetry.instigator.tty` when the app is mapped to `process.*`, and preserve `process.interactive` for an instigator-only removal that has a TTY.
++      type: bugfix
++      link: https://github.com/elastic/integrations/pull/22270
+ - version: "3.5.1"
+   changes:
+     - description: Prefer `app` process fields over `instigator` fields in BTM telemetry pipelines so events that contain both objects no longer fail ingest.
+diff --git a/packages/jamf_protect/data_stream/telemetry/_dev/test/pipeline/test-btm-app-priority.log b/packages/jamf_protect/data_stream/telemetry/_dev/test/pipeline/test-btm-app-priority.log
+index 91390617cd..93043fde4c 100644
+--- a/packages/jamf_protect/data_stream/telemetry/_dev/test/pipeline/test-btm-app-priority.log
++++ b/packages/jamf_protect/data_stream/telemetry/_dev/test/pipeline/test-btm-app-priority.log
+@@ -3,3 +3,5 @@
+ {"action":{"result":{"result":{"auth":0},"result_type":0}},"action_type":1,"deadline":0,"event":{"btm_launch_item_remove":{"item":{"app_url":"file:///Applications/ExampleApp.app/","item_type":2,"item_url":"file:///Library/LaunchAgents/com.example.login.plist","legacy":true,"managed":false,"uid":501},"app":{"audit_token":{"asid":100001,"auid":3001,"egid":301,"euid":3001,"pid":311,"pidversion":1,"rgid":301,"ruid":3001,"uuid":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa3","e_username":"app-user"},"cdhash":"app-cdhash-3","codesigning_flags":311,"executable":{"path":"/Applications/ExampleApp.app/Contents/MacOS/ExampleApp","sha1":"app-sha1-3","sha256":"app-sha256-3"},"is_es_client":false,"is_platform_binary":false,"parent_audit_token":{"asid":100001,"auid":3001,"egid":301,"euid":3001,"pid":31,"pidversion":1,"rgid":301,"ruid":3001,"uuid":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa31","e_username":"app-parent","signing_id":"com.example.parent","exec_path":"/bin/app-parent"},"responsible_audit_token":{"asid":100001,"auid":3001,"egid":301,"euid":3001,"pid":311,"pidversion":1,"rgid":301,"ruid":3001,"uuid":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa32","e_username":"app-responsible","signing_id":"com.example.responsible","exec_path":"/bin/app-responsible"},"signing_id":"com.example.app","start_time":"2024-06-03T00:00:01.000Z","team_id":"APPTEAM001","tty":{"path":"/dev/ttys003"}},"instigator":{"audit_token":{"asid":100001,"auid":3002,"egid":302,"euid":3002,"pid":399,"pidversion":1,"rgid":302,"ruid":3002,"uuid":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb3","e_username":"instigator-user"},"cdhash":"instigator-cdhash-3","codesigning_flags":399,"executable":{"path":"/usr/bin/instigator-bin","sha1":"instigator-sha1-3","sha256":"instigator-sha256-3"},"is_es_client":true,"is_platform_binary":true,"parent_audit_token":{"asid":100001,"auid":3002,"egid":302,"euid":3002,"pid":39,"pidversion":1,"rgid":302,"ruid":3002,"uuid":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb31","e_username":"instigator-parent","signing_id":"com.example.instigator-parent","exec_path":"/bin/instigator-parent"},"responsible_audit_token":{"asid":100001,"auid":3002,"egid":302,"euid":3002,"pid":399,"pidversion":1,"rgid":302,"ruid":3002,"uuid":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb32","e_username":"instigator-responsible","signing_id":"com.example.instigator-responsible","exec_path":"/bin/instigator-responsible"},"signing_id":"com.example.instigator","start_time":"2024-06-03T00:00:02.000Z","team_id":"INSTTEAM01"}}},"event_type":125,"glob_seq_num":1003,"host":{"hostname":"test-host","ips":["192.0.2.10"],"os":"Version 15.0 (Build TEST)","protectVersion":"1.0.0-test","provisioningUDID":"00000000-0000-4000-8000-000000000001","serial":"TESTSERIAL001"},"mach_time":1000,"metadata":{"product":"Device Telemetry Stream","schemaVersion":"1.0","vendor":"Jamf"},"seq_num":1,"thread":{"thread_id":9001,"uuid":"00000000-0000-4000-8000-000000000099"},"time":"2024-06-03T12:00:00.000Z","uuid":"33333333-3333-4333-8333-333333333333","version":7}
+ {"action":{"result":{"result":{"auth":0},"result_type":0}},"action_type":1,"deadline":0,"event":{"btm_launch_item_add":{"item":{"app_url":"file:///Applications/ExampleApp.app/","item_type":3,"item_url":"file:///Library/LaunchAgents/com.example.agent.plist","legacy":false,"managed":true,"uid":501},"executable_path":"Contents/Library/LaunchAgents/com.example.agent","instigator":{"audit_token":{"asid":100001,"auid":1002,"egid":202,"euid":1002,"pid":199,"pidversion":1,"rgid":202,"ruid":1002,"uuid":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb1","e_username":"instigator-user"},"cdhash":"instigator-cdhash-1","codesigning_flags":199,"executable":{"path":"/usr/bin/instigator-bin","sha1":"instigator-sha1-1","sha256":"instigator-sha256-1"},"is_es_client":true,"is_platform_binary":true,"parent_audit_token":{"asid":100001,"auid":1002,"egid":101,"euid":1002,"pid":19,"pidversion":1,"rgid":101,"ruid":1002,"uuid":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb11","e_username":"instigator-parent","signing_id":"com.example.instigator-parent","exec_path":"/bin/instigator-parent"},"responsible_audit_token":{"asid":100001,"auid":1002,"egid":202,"euid":1002,"pid":199,"pidversion":1,"rgid":202,"ruid":1002,"uuid":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb12","e_username":"instigator-responsible","signing_id":"com.example.instigator-responsible","exec_path":"/bin/instigator-responsible"},"signing_id":"com.example.instigator","start_time":"2024-06-01T00:00:02.000Z","team_id":"INSTTEAM01"}}},"event_type":124,"glob_seq_num":1001,"host":{"hostname":"test-host","ips":["192.0.2.10"],"os":"Version 15.0 (Build TEST)","protectVersion":"1.0.0-test","provisioningUDID":"00000000-0000-4000-8000-000000000001","serial":"TESTSERIAL001"},"mach_time":1000,"metadata":{"product":"Device Telemetry Stream","schemaVersion":"1.0","vendor":"Jamf"},"seq_num":1,"thread":{"thread_id":9001,"uuid":"00000000-0000-4000-8000-000000000099"},"time":"2024-06-01T12:00:00.000Z","uuid":"11111111-1111-4111-8111-111111111111","version":7}
+ {"action":{"result":{"result":{"auth":0},"result_type":0}},"action_type":1,"deadline":0,"event":{"btm_launch_item_remove":{"item":{"app_url":"file:///Applications/ExampleApp.app/","item_type":2,"item_url":"file:///Library/LaunchAgents/com.example.login.plist","legacy":true,"managed":false,"uid":501},"instigator":{"audit_token":{"asid":100001,"auid":3002,"egid":302,"euid":3002,"pid":399,"pidversion":1,"rgid":302,"ruid":3002,"uuid":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb3","e_username":"instigator-user"},"cdhash":"instigator-cdhash-3","codesigning_flags":399,"executable":{"path":"/usr/bin/instigator-bin","sha1":"instigator-sha1-3","sha256":"instigator-sha256-3"},"is_es_client":true,"is_platform_binary":true,"parent_audit_token":{"asid":100001,"auid":3002,"egid":302,"euid":3002,"pid":39,"pidversion":1,"rgid":302,"ruid":3002,"uuid":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb31","e_username":"instigator-parent","signing_id":"com.example.instigator-parent","exec_path":"/bin/instigator-parent"},"responsible_audit_token":{"asid":100001,"auid":3002,"egid":302,"euid":3002,"pid":399,"pidversion":1,"rgid":302,"ruid":3002,"uuid":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb32","e_username":"instigator-responsible","signing_id":"com.example.instigator-responsible","exec_path":"/bin/instigator-responsible"},"signing_id":"com.example.instigator","start_time":"2024-06-03T00:00:02.000Z","team_id":"INSTTEAM01"}}},"event_type":125,"glob_seq_num":1003,"host":{"hostname":"test-host","ips":["192.0.2.10"],"os":"Version 15.0 (Build TEST)","protectVersion":"1.0.0-test","provisioningUDID":"00000000-0000-4000-8000-000000000001","serial":"TESTSERIAL001"},"mach_time":1000,"metadata":{"product":"Device Telemetry Stream","schemaVersion":"1.0","vendor":"Jamf"},"seq_num":1,"thread":{"thread_id":9001,"uuid":"00000000-0000-4000-8000-000000000099"},"time":"2024-06-03T12:00:00.000Z","uuid":"33333333-3333-4333-8333-333333333333","version":7}
++{"action":{"result":{"result":{"auth":0},"result_type":0}},"action_type":1,"deadline":0,"event":{"btm_launch_item_remove":{"item":{"app_url":"file:///Applications/ExampleApp.app/","item_type":2,"item_url":"file:///Library/LaunchAgents/com.example.login.plist","legacy":true,"managed":false,"uid":501},"app":{"audit_token":{"asid":100001,"auid":3001,"egid":301,"euid":3001,"pid":311,"pidversion":1,"rgid":301,"ruid":3001,"uuid":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa3","e_username":"app-user"},"cdhash":"app-cdhash-3","codesigning_flags":311,"executable":{"path":"/Applications/ExampleApp.app/Contents/MacOS/ExampleApp","sha1":"app-sha1-3","sha256":"app-sha256-3"},"is_es_client":false,"is_platform_binary":false,"parent_audit_token":{"asid":100001,"auid":3001,"egid":301,"euid":3001,"pid":31,"pidversion":1,"rgid":301,"ruid":3001,"uuid":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa31","e_username":"app-parent","signing_id":"com.example.parent","exec_path":"/bin/app-parent"},"responsible_audit_token":{"asid":100001,"auid":3001,"egid":301,"euid":3001,"pid":311,"pidversion":1,"rgid":301,"ruid":3001,"uuid":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa32","e_username":"app-responsible","signing_id":"com.example.responsible","exec_path":"/bin/app-responsible"},"signing_id":"com.example.app","start_time":"2024-06-03T00:00:01.000Z","team_id":"APPTEAM001"},"instigator":{"audit_token":{"asid":100001,"auid":3002,"egid":302,"euid":3002,"pid":399,"pidversion":1,"rgid":302,"ruid":3002,"uuid":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb3","e_username":"instigator-user"},"cdhash":"instigator-cdhash-3","codesigning_flags":399,"executable":{"path":"/usr/bin/instigator-bin","sha1":"instigator-sha1-3","sha256":"instigator-sha256-3"},"is_es_client":true,"is_platform_binary":true,"parent_audit_token":{"asid":100001,"auid":3002,"egid":302,"euid":3002,"pid":39,"pidversion":1,"rgid":302,"ruid":3002,"uuid":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb31","e_username":"instigator-parent","signing_id":"com.example.instigator-parent","exec_path":"/bin/instigator-parent"},"responsible_audit_token":{"asid":100001,"auid":3002,"egid":302,"euid":3002,"pid":399,"pidversion":1,"rgid":302,"ruid":3002,"uuid":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb32","e_username":"instigator-responsible","signing_id":"com.example.instigator-responsible","exec_path":"/bin/instigator-responsible"},"signing_id":"com.example.instigator","start_time":"2024-06-03T00:00:02.000Z","team_id":"INSTTEAM01","tty":{"path":"/dev/ttys011"}}}},"event_type":125,"glob_seq_num":1004,"host":{"hostname":"test-host","ips":["192.0.2.10"],"os":"Version 15.0 (Build TEST)","protectVersion":"1.0.0-test","provisioningUDID":"00000000-0000-4000-8000-000000000001","serial":"TESTSERIAL001"},"mach_time":1000,"metadata":{"product":"Device Telemetry Stream","schemaVersion":"1.0","vendor":"Jamf"},"seq_num":1,"thread":{"thread_id":9001,"uuid":"00000000-0000-4000-8000-000000000099"},"time":"2024-06-04T12:00:00.000Z","uuid":"44444444-4444-4444-8444-444444444444","version":7}
++{"action":{"result":{"result":{"auth":0},"result_type":0}},"action_type":1,"deadline":0,"event":{"btm_launch_item_remove":{"item":{"app_url":"file:///Applications/ExampleApp.app/","item_type":2,"item_url":"file:///Library/LaunchAgents/com.example.login.plist","legacy":true,"managed":false,"uid":501},"instigator":{"audit_token":{"asid":100001,"auid":3002,"egid":302,"euid":3002,"pid":399,"pidversion":1,"rgid":302,"ruid":3002,"uuid":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb3","e_username":"instigator-user"},"cdhash":"instigator-cdhash-3","codesigning_flags":399,"executable":{"path":"/usr/bin/instigator-bin","sha1":"instigator-sha1-3","sha256":"instigator-sha256-3"},"is_es_client":true,"is_platform_binary":true,"parent_audit_token":{"asid":100001,"auid":3002,"egid":302,"euid":3002,"pid":39,"pidversion":1,"rgid":302,"ruid":3002,"uuid":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb31","e_username":"instigator-parent","signing_id":"com.example.instigator-parent","exec_path":"/bin/instigator-parent"},"responsible_audit_token":{"asid":100001,"auid":3002,"egid":302,"euid":3002,"pid":399,"pidversion":1,"rgid":302,"ruid":3002,"uuid":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb32","e_username":"instigator-responsible","signing_id":"com.example.instigator-responsible","exec_path":"/bin/instigator-responsible"},"signing_id":"com.example.instigator","start_time":"2024-06-03T00:00:02.000Z","team_id":"INSTTEAM01","tty":{"path":"/dev/ttys007"}}}},"event_type":125,"glob_seq_num":1005,"host":{"hostname":"test-host","ips":["192.0.2.10"],"os":"Version 15.0 (Build TEST)","protectVersion":"1.0.0-test","provisioningUDID":"00000000-0000-4000-8000-000000000001","serial":"TESTSERIAL001"},"mach_time":1000,"metadata":{"product":"Device Telemetry Stream","schemaVersion":"1.0","vendor":"Jamf"},"seq_num":1,"thread":{"thread_id":9001,"uuid":"00000000-0000-4000-8000-000000000099"},"time":"2024-06-05T12:00:00.000Z","uuid":"55555555-5555-4555-8555-555555555555","version":7}
+diff --git a/packages/jamf_protect/data_stream/telemetry/_dev/test/pipeline/test-btm-app-priority.log-expected.json b/packages/jamf_protect/data_stream/telemetry/_dev/test/pipeline/test-btm-app-priority.log-expected.json
+index 062f5f09db..e232f0bc2d 100644
+--- a/packages/jamf_protect/data_stream/telemetry/_dev/test/pipeline/test-btm-app-priority.log-expected.json
++++ b/packages/jamf_protect/data_stream/telemetry/_dev/test/pipeline/test-btm-app-priority.log-expected.json
+@@ -313,12 +313,12 @@
+                             }
+                         },
+                         "start": "2024-06-02T00:00:02.000Z",
++                        "tty": "/dev/ttys009",
+                         "user": {
+                             "id": "2002",
+                             "name": "instigator-user"
+                         }
+-                    },
+-                    "tty": "/dev/ttys009"
++                    }
+                 }
+             },
+             "observer": {
+@@ -341,7 +341,7 @@
+                     "sha1": "app-sha1-2",
+                     "sha256": "instigator-sha256-2"
+                 },
+-                "interactive": true,
++                "interactive": false,
+                 "name": "ExampleApp",
+                 "parent": {
+                     "code_signature": {
+@@ -902,6 +902,354 @@
+                     ]
+                 }
+             }
++        },
++        {
++            "device": {
++                "id": "TESTSERIAL001",
++                "manufacturer": "Apple",
++                "serial_number": "TESTSERIAL001"
++            },
++            "ecs": {
++                "version": "8.17.0"
++            },
++            "event": {
++                "action": "btm_launch_item_remove",
++                "category": [
++                    "process",
++                    "configuration"
++                ],
++                "code": "125",
++                "id": "44444444-4444-4444-8444-444444444444",
++                "kind": "event",
++                "provider": "Jamf Protect",
++                "reason": "Apple’s Background Task Manager notified that an existing item has been removed",
++                "sequence": 1004,
++                "start": "2024-06-04T12:00:00.000Z",
++                "type": [
++                    "info",
++                    "change"
++                ]
++            },
++            "host": {
++                "hostname": "test-host",
++                "id": "00000000-0000-4000-8000-000000000001",
++                "ip": [
++                    "192.0.2.10"
++                ],
++                "name": "test-host",
++                "os": {
++                    "family": "macos",
++                    "full": "15.0 (Build TEST)",
++                    "name": "macOS",
++                    "type": "macos",
++                    "version": "15.0"
++                }
++            },
++            "jamf_protect": {
++                "telemetry": {
++                    "btm_item_app_url": "file:///Applications/ExampleApp.app/",
++                    "btm_item_is_legacy": true,
++                    "btm_item_is_managed": false,
++                    "btm_item_type": "LoginItem",
++                    "btm_item_url": "file:///Library/LaunchAgents/com.example.login.plist",
++                    "btm_item_user_uid": "501",
++                    "event_allowed_by_esclient": true,
++                    "instigator": {
++                        "code_signature": {
++                            "flags": "399",
++                            "signing_id": "com.example.instigator",
++                            "team_id": "INSTTEAM01"
++                        },
++                        "endpoint_security_client": true,
++                        "entity_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb3",
++                        "executable": "/usr/bin/instigator-bin",
++                        "hash": {
++                            "cdhash": "instigator-cdhash-3",
++                            "sha1": "instigator-sha1-3",
++                            "sha256": "instigator-sha256-3"
++                        },
++                        "name": "instigator-bin",
++                        "parent": {
++                            "code_signature": {
++                                "signing_id": "com.example.instigator-parent"
++                            },
++                            "entity_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb31",
++                            "executable": "/bin/instigator-parent",
++                            "pid": 39,
++                            "real_group": {
++                                "id": "302"
++                            },
++                            "real_user": {
++                                "id": "3002"
++                            },
++                            "user": {
++                                "id": "3002",
++                                "name": "instigator-parent"
++                            }
++                        },
++                        "pid": 399,
++                        "platform_binary": true,
++                        "responsible": {
++                            "code_signature": {
++                                "signing_id": "com.example.instigator-responsible"
++                            },
++                            "entity_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb32",
++                            "executable": "/bin/instigator-responsible",
++                            "pid": 399,
++                            "real_group": {
++                                "id": "302"
++                            },
++                            "real_user": {
++                                "id": "3002"
++                            },
++                            "user": {
++                                "id": "3002",
++                                "name": "instigator-responsible"
++                            }
++                        },
++                        "start": "2024-06-03T00:00:02.000Z",
++                        "tty": "/dev/ttys011",
++                        "user": {
++                            "id": "3002",
++                            "name": "instigator-user"
++                        }
++                    }
++                }
++            },
++            "observer": {
++                "product": "Jamf Protect",
++                "type": "Endpoint Security",
++                "vendor": "Jamf",
++                "version": "1.0.0-test"
++            },
++            "process": {
++                "code_signature": {
++                    "flags": "311",
++                    "signing_id": "com.example.app",
++                    "team_id": "APPTEAM001"
++                },
++                "endpoint_security_client": false,
++                "entity_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa3",
++                "executable": "/Applications/ExampleApp.app/Contents/MacOS/ExampleApp",
++                "hash": {
++                    "cdhash": "app-cdhash-3",
++                    "sha1": "app-sha1-3",
++                    "sha256": "app-sha256-3"
++                },
++                "interactive": false,
++                "name": "ExampleApp",
++                "parent": {
++                    "code_signature": {
++                        "signing_id": "com.example.parent"
++                    },
++                    "entity_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa31",
++                    "executable": "/bin/app-parent",
++                    "pid": 31,
++                    "real_group": {
++                        "id": "301"
++                    },
++                    "real_user": {
++                        "id": "3001"
++                    },
++                    "user": {
++                        "id": "3001",
++                        "name": "app-parent"
++                    }
++                },
++                "pid": 311,
++                "platform_binary": false,
++                "responsible": {
++                    "code_signature": {
++                        "signing_id": "com.example.responsible"
++                    },
++                    "entity_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa32",
++                    "executable": "/bin/app-responsible",
++                    "pid": 311,
++                    "real_group": {
++                        "id": "301"
++                    },
++                    "real_user": {
++                        "id": "3001"
++                    },
++                    "user": {
++                        "id": "3001",
++                        "name": "app-responsible"
++                    }
++                },
++                "start": "2024-06-03T00:00:01.000Z",
++                "thread": {
++                    "id": 9001
++                },
++                "user": {
++                    "name": "app-user"
++                }
++            },
++            "related": {
++                "hash": [
++                    "app-sha1-3",
++                    "app-sha256-3",
++                    "app-cdhash-3",
++                    "instigator-sha1-3",
++                    "instigator-sha256-3",
++                    "instigator-cdhash-3"
++                ],
++                "hosts": [
++                    "test-host"
++                ],
++                "ip": [
++                    "192.0.2.10"
++                ]
++            },
++            "user": {
++                "effective": {
++                    "id": [
++                        "3001"
++                    ]
++                }
++            }
++        },
++        {
++            "device": {
++                "id": "TESTSERIAL001",
++                "manufacturer": "Apple",
++                "serial_number": "TESTSERIAL001"
++            },
++            "ecs": {
++                "version": "8.17.0"
++            },
++            "event": {
++                "action": "btm_launch_item_remove",
++                "category": [
++                    "process",
++                    "configuration"
++                ],
++                "code": "125",
++                "id": "55555555-5555-4555-8555-555555555555",
++                "kind": "event",
++                "provider": "Jamf Protect",
++                "reason": "Apple’s Background Task Manager notified that an existing item has been removed",
++                "sequence": 1005,
++                "start": "2024-06-05T12:00:00.000Z",
++                "type": [
++                    "info",
++                    "change"
++                ]
++            },
++            "host": {
++                "hostname": "test-host",
++                "id": "00000000-0000-4000-8000-000000000001",
++                "ip": [
++                    "192.0.2.10"
++                ],
++                "name": "test-host",
++                "os": {
++                    "family": "macos",
++                    "full": "15.0 (Build TEST)",
++                    "name": "macOS",
++                    "type": "macos",
++                    "version": "15.0"
++                }
++            },
++            "jamf_protect": {
++                "telemetry": {
++                    "btm_item_app_url": "file:///Applications/ExampleApp.app/",
++                    "btm_item_is_legacy": true,
++                    "btm_item_is_managed": false,
++                    "btm_item_type": "LoginItem",
++                    "btm_item_url": "file:///Library/LaunchAgents/com.example.login.plist",
++                    "btm_item_user_uid": "501",
++                    "event_allowed_by_esclient": true,
++                    "tty": "/dev/ttys007"
++                }
++            },
++            "observer": {
++                "product": "Jamf Protect",
++                "type": "Endpoint Security",
++                "vendor": "Jamf",
++                "version": "1.0.0-test"
++            },
++            "process": {
++                "code_signature": {
++                    "flags": "399",
++                    "signing_id": "com.example.instigator",
++                    "team_id": "INSTTEAM01"
++                },
++                "endpoint_security_client": true,
++                "entity_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb3",
++                "executable": "/usr/bin/instigator-bin",
++                "hash": {
++                    "cdhash": "instigator-cdhash-3",
++                    "sha1": "instigator-sha1-3",
++                    "sha256": "instigator-sha256-3"
++                },
++                "interactive": true,
++                "name": "instigator-bin",
++                "parent": {
++                    "code_signature": {
++                        "signing_id": "com.example.instigator-parent"
++                    },
++                    "entity_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb31",
++                    "executable": "/bin/instigator-parent",
++                    "pid": 39,
++                    "real_group": {
++                        "id": "302"
++                    },
++                    "real_user": {
++                        "id": "3002"
++                    },
++                    "user": {
++                        "id": "3002",
++                        "name": "instigator-parent"
++                    }
++                },
++                "pid": 399,
++                "platform_binary": true,
++                "responsible": {
++                    "code_signature": {
++                        "signing_id": "com.example.instigator-responsible"
++                    },
++                    "entity_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb32",
++                    "executable": "/bin/instigator-responsible",
++                    "pid": 399,
++                    "real_group": {
++                        "id": "302"
++                    },
++                    "real_user": {
++                        "id": "3002"
++                    },
++                    "user": {
++                        "id": "3002",
++                        "name": "instigator-responsible"
++                    }
++                },
++                "start": "2024-06-03T00:00:02.000Z",
++                "thread": {
++                    "id": 9001
++                },
++                "user": {
++                    "name": "instigator-user"
++                }
++            },
++            "related": {
++                "hash": [
++                    "instigator-sha1-3",
++                    "instigator-sha256-3",
++                    "instigator-cdhash-3"
++                ],
++                "hosts": [
++                    "test-host"
++                ],
++                "ip": [
++                    "192.0.2.10"
++                ]
++            },
++            "user": {
++                "effective": {
++                    "id": [
++                        "3002"
++                    ]
++                }
++            }
+         }
+     ]
+ }
+diff --git a/packages/jamf_protect/data_stream/telemetry/elasticsearch/ingest_pipeline/pipeline_event_btm_launch_item_add.yml b/packages/jamf_protect/data_stream/telemetry/elasticsearch/ingest_pipeline/pipeline_event_btm_launch_item_add.yml
+index 0a75877471..bcac821764 100644
+--- a/packages/jamf_protect/data_stream/telemetry/elasticsearch/ingest_pipeline/pipeline_event_btm_launch_item_add.yml
++++ b/packages/jamf_protect/data_stream/telemetry/elasticsearch/ingest_pipeline/pipeline_event_btm_launch_item_add.yml
+@@ -167,6 +167,12 @@ processors:
+         copy_from: jamf_protect.telemetry.event.btm_launch_item_add.instigator.is_es_client
+         ignore_empty_value: true
+         if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
++    - set:
++        tag: set_jamf_protect_telemetry_instigator_tty
++        field: jamf_protect.telemetry.instigator.tty
++        copy_from: jamf_protect.telemetry.event.btm_launch_item_add.instigator.tty.path
++        ignore_empty_value: true
++        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+     - convert:
+         tag: convert_jamf_protect_telemetry_instigator_user_id_46718291
+         field: jamf_protect.telemetry.event.btm_launch_item_add.instigator.audit_token.euid
+@@ -442,7 +448,7 @@ processors:
+         field: jamf_protect.telemetry.event.btm_launch_item_add.instigator.tty.path
+         target_field: jamf_protect.telemetry.tty
+         ignore_missing: true
+-        if: ctx.jamf_protect?.telemetry?.tty == null
++        if: ctx.jamf_protect?.telemetry?.tty == null && ctx.jamf_protect.telemetry?.event?.btm_launch_item_add?.app == null
+     - set:
+         tag: set_process_interactive_b6ee088c
+         field: process.interactive
+@@ -452,7 +458,7 @@ processors:
+         tag: set_process_interactive_6f6f127f
+         field: process.interactive
+         value: true
+-        if: ctx.process?.interactive == null && ctx.jamf_protect.telemetry?.event?.btm_launch_item_add?.instigator?.tty != null
++        if: ctx.process?.interactive == null && ctx.jamf_protect.telemetry?.event?.btm_launch_item_add?.app == null && ctx.jamf_protect.telemetry?.event?.btm_launch_item_add?.instigator?.tty != null
+     - set:
+         tag: set_process_interactive_57ca4ec7
+         field: process.interactive
+diff --git a/packages/jamf_protect/data_stream/telemetry/elasticsearch/ingest_pipeline/pipeline_event_btm_launch_item_remove.yml b/packages/jamf_protect/data_stream/telemetry/elasticsearch/ingest_pipeline/pipeline_event_btm_launch_item_remove.yml
+index c55dcbb38e..5c6b2a82ad 100644
+--- a/packages/jamf_protect/data_stream/telemetry/elasticsearch/ingest_pipeline/pipeline_event_btm_launch_item_remove.yml
++++ b/packages/jamf_protect/data_stream/telemetry/elasticsearch/ingest_pipeline/pipeline_event_btm_launch_item_remove.yml
+@@ -162,6 +162,12 @@ processors:
+         copy_from: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.is_es_client
+         ignore_empty_value: true
+         if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_remove?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_remove?.instigator != null
++    - set:
++        tag: set_jamf_protect_telemetry_instigator_tty
++        field: jamf_protect.telemetry.instigator.tty
++        copy_from: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.tty.path
++        ignore_empty_value: true
++        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_remove?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_remove?.instigator != null
+     - convert:
+         tag: convert_jamf_protect_telemetry_instigator_user_id_ffee25ca
+         field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.audit_token.euid
+@@ -454,7 +460,7 @@ processors:
+         tag: set_process_interactive_f3841dd8
+         field: process.interactive
+         value: false
+-        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app?.tty == null
++        if: ctx.process?.interactive == null && ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app?.tty == null
+     - set:
+         tag: set_process_interactive_03c78afc
+         field: process.interactive
+diff --git a/packages/jamf_protect/data_stream/telemetry/fields/fields.yml b/packages/jamf_protect/data_stream/telemetry/fields/fields.yml
+index 76b820d919..1e79e2613d 100644
+--- a/packages/jamf_protect/data_stream/telemetry/fields/fields.yml
++++ b/packages/jamf_protect/data_stream/telemetry/fields/fields.yml
+@@ -111,6 +111,9 @@
+         - name: endpoint_security_client
+           type: boolean
+           description: Indicates if the instigator process is an Endpoint Security client.
++        - name: tty
++          type: keyword
++          description: Software terminal device file associated with the instigator process.
+         - name: parent
+           type: group
+           fields:
+diff --git a/packages/jamf_protect/docs/README.md b/packages/jamf_protect/docs/README.md
+index 17cbf998cd..c46a77c4cc 100644
+--- a/packages/jamf_protect/docs/README.md
++++ b/packages/jamf_protect/docs/README.md
+@@ -610,6 +610,7 @@ An example event for `telemetry` looks as following:
+ | jamf_protect.telemetry.instigator.responsible.user.id | Effective user ID of the instigator's responsible process. | keyword |
+ | jamf_protect.telemetry.instigator.responsible.user.name | Effective user name of the instigator's responsible process. | keyword |
+ | jamf_protect.telemetry.instigator.start | Start time of the instigator process. | date |
++| jamf_protect.telemetry.instigator.tty | Software terminal device file associated with the instigator process. | keyword |
+ | jamf_protect.telemetry.instigator.user.id | Effective user ID of the instigator process. | keyword |
+ | jamf_protect.telemetry.instigator.user.name | Effective user name of the instigator process. | keyword |
+ | jamf_protect.telemetry.log_entries | Log entries being collected in an event | object |
