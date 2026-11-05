@@ -173,40 +173,28 @@ processors:
       tag: remarshal_bodies_d3252fa8
       lang: painless
       source: |
+        // Sort object keys so that the output is stable.
+        def sortKeys(def val) {
+          if (val instanceof Map) {
+            TreeMap out = new TreeMap();
+            for (def entry : val.entrySet()) {
+              out.put(entry.getKey(), sortKeys(entry.getValue()));
+            }
+            return out;
+          } else if (val instanceof List) {
+            List out = new ArrayList();
+            for (def item : val) {
+              out.add(sortKeys(item));
+            }
+            return out;
+          }
+          return val;
+        }
         String json(def val) {
           if (val == null) {
             return null;
           }
-          if (val instanceof Map) {
-            String out = '{';
-            List keyList = new ArrayList(val.keySet());
-            Collections.sort(keyList);
-            for (int i=0; i < keyList.length; i++){
-              if (i != 0) {
-                out += ',';
-              }
-              String key = keyList[i];
-              out += '"' +  key + '"';
-              if (val[key] instanceof String){
-                out += ':"' + val[key] + '"';
-              } else {
-                out += ':' + json(val[key]);
-              }
-            }
-            return out + '}';
-          } else if (val instanceof ArrayList) {
-            String out = '[';
-            for (int i = 0; i < val.length; i++){
-              if (i != 0) {
-                  out += ',';
-              }
-              out = out + json(val[i]);
-            }
-            return out + ']';
-          } else if (val instanceof String) {
-            return '"' + val + '"'; // This may not be valid JSON depending on code points in val. TODO: Add escape helper.
-          }
-          return val.toString();
+          return Json.dump(sortKeys(val));
         }
         ctx.gen_ai.prompt = json(ctx.aws_bedrock?.invocation?.input?.inputBodyJson);
         ctx.gen_ai.completion = json(ctx.aws_bedrock?.invocation?.output?.outputBodyJson);
