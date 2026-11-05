@@ -385,11 +385,11 @@ An example event for `user` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-11-03T15:59:19.087Z",
+    "@timestamp": "2026-11-05T17:03:19.115Z",
     "agent": {
-        "ephemeral_id": "516a4819-1ede-4432-9abb-94f637ec59f9",
-        "id": "426653e3-0d3e-4f55-8868-723152acccf1",
-        "name": "elastic-agent-99477",
+        "ephemeral_id": "eb88dba6-b5b2-4493-be46-c0cf9c31da91",
+        "id": "5753c4eb-0fc2-4026-93c3-ef30446774eb",
+        "name": "elastic-agent-68260",
         "type": "filebeat",
         "version": "9.5.0"
     },
@@ -414,14 +414,14 @@ An example event for `user` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.user",
-        "namespace": "48333",
+        "namespace": "28696",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "426653e3-0d3e-4f55-8868-723152acccf1",
+        "id": "5753c4eb-0fc2-4026-93c3-ef30446774eb",
         "snapshot": false,
         "version": "9.5.0"
     },
@@ -431,7 +431,7 @@ An example event for `user` looks as following:
             "iam"
         ],
         "dataset": "axonius.user",
-        "ingested": "2026-11-03T15:59:23Z",
+        "ingested": "2026-11-05T17:03:23Z",
         "kind": "asset",
         "module": "axonius",
         "original": "{\"allowed_scopes_impersonation\":[\"63622d93d27cvdsfa4d9489db6a1cf\",\"63622d93d2dvfwe74d9489db6a1cc\"],\"data_scope_id\":\"fgreg63622d93d274d9489db6a1cf\",\"data_scope_name\":\"test data scope\",\"department\":\"test\",\"email\":\"alias.doe@example.com\",\"first_name\":\"alias\",\"last_login\":\"Sun, 09 Mar 2025 18:53:09 GMT\",\"last_name\":\"doe\",\"last_updated\":\"Sun, 11 Mar 2025 18:53:09 GMT\",\"role_id\":\"63622vfed93d274d9489dbbgresdcv6a1cf\",\"role_name\":\"test role\",\"source\":\"test source\",\"title\":\"Security Analyst\",\"user_name\":\"alias.doe\",\"uuid\":\"63622d93d274ihvbngvbhd9489db6a1cf\"}",
@@ -466,9 +466,12 @@ An example event for `user` looks as following:
         "domain": "example.com",
         "email": "alias.doe@example.com",
         "entity": {
+            "id": "63622d93d274ihvbngvbhd9489db6a1cf",
+            "last_seen_timestamp": "2026-11-05T17:03:19.115Z",
             "lifecycle": {
                 "last_activity": "2025-03-09T18:53:09.000Z"
             },
+            "source": "axonius",
             "type": [
                 "user"
             ]
@@ -2532,9 +2535,9 @@ An example event for `identity` looks as following:
 {
     "@timestamp": "2025-12-09T12:02:11.000Z",
     "agent": {
-        "ephemeral_id": "8823c103-919a-484f-9264-917d2bf029e0",
-        "id": "95176b3c-9937-4f1f-b9d2-3b423f3d37f0",
-        "name": "elastic-agent-74343",
+        "ephemeral_id": "cf0a3bcd-f1e7-4728-a1b7-d24251b861ec",
+        "id": "bcc53809-0ef7-4e62-a523-ebb921c70211",
+        "name": "elastic-agent-90754",
         "type": "filebeat",
         "version": "9.5.0"
     },
@@ -2635,14 +2638,14 @@ An example event for `identity` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.identity",
-        "namespace": "38075",
+        "namespace": "20087",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "95176b3c-9937-4f1f-b9d2-3b423f3d37f0",
+        "id": "bcc53809-0ef7-4e62-a523-ebb921c70211",
         "snapshot": false,
         "version": "9.5.0"
     },
@@ -2653,7 +2656,7 @@ An example event for `identity` looks as following:
         ],
         "created": "2024-06-28T08:49:28.000Z",
         "dataset": "axonius.identity",
-        "ingested": "2026-10-07T14:07:01Z",
+        "ingested": "2026-11-05T17:02:32Z",
         "kind": "asset",
         "module": "axonius",
         "type": [
@@ -2688,9 +2691,12 @@ An example event for `identity` looks as following:
                     "OnlineMeetings.ReadWrite"
                 ]
             },
+            "id": "bc11b2989fc0f69708b6865d172a49fe",
+            "last_seen_timestamp": "2025-12-09T12:02:11.000Z",
             "lifecycle": {
                 "last_activity": "2025-11-30T18:50:39.000Z"
             },
+            "source": "axonius",
             "type": [
                 "user"
             ]
