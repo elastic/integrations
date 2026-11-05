@@ -84,11 +84,15 @@ program: |-
                             ).as(projects,
                               ((has(body.instances) && body.instances != null) ?
                                 body.instances.filter(instance,
-                                  (has(instance.product_line_items) && instance.product_line_items != null && size(instance.product_line_items) > 0) ||
-                                  (has(instance.total_ecu) && instance.total_ecu != null && double(instance.total_ecu) > 0.0) ||
-                                  (!has(instance.type) || instance.type == null || (
-                                    instance.type != "kibana" && instance.type != "enterprise_search" && instance.type != "integrations_server" && instance.type != "appsearch" && instance.type != "fleet_server" && instance.type != "apm"
-                                  ))
+                                  size(projects.filter(p, has(instance.id) && instance.id != null && p.id == instance.id)) > 0 ||
+                                  (has(instance.product_line_items) && instance.product_line_items != null && size(instance.product_line_items.filter(li,
+                                    has(li.sku) && li.sku != null && (
+                                      li.sku.contains("-vcu") || li.sku.contains(".observability.") || li.sku.contains(".security.") ||
+                                      li.sku.contains(".search.") || li.sku.startsWith("serverless.") || li.sku.startsWith("observability.") ||
+                                      li.sku.startsWith("security.") || li.sku.startsWith("search.") || li.sku.contains("synthetic") ||
+                                      li.sku.contains(".retained")
+                                    )
+                                  )) > 0)
                                 )
                               : []).as(sls_instances,
                                 sls_instances.map(instance,
@@ -106,21 +110,47 @@ program: |-
                                     )).as(resolved_type,
                                       ((has(instance.id) && instance.id != null && string(instance.id) != "") ? string(instance.id) : ("unassociated_" + resolved_type)).as(inst_id,
                                         ((size(matched_projs) > 0 && has(matched_projs[0].name) && matched_projs[0].name != null && matched_projs[0].name != "" && matched_projs[0].name != inst_id) ? matched_projs[0].name : ((has(instance.name) && instance.name != null && instance.name != "") ? instance.name : ((has(instance.id) && instance.id != null && string(instance.id) != "") ? inst_id : ("Unassociated (" + resolved_type + ")")))).as(resolved_name,
-                                          (has(instance.product_line_items) && instance.product_line_items != null && size(instance.product_line_items) > 0) ?
-                                            instance.product_line_items.map(line_item,
-                                              {
-                                                "@timestamp": req.from.format(time_layout.RFC3339),
-                                                "period_start": req.from.format(time_layout.RFC3339),
-                                                "project_id": inst_id,
-                                                "project_name": resolved_name,
-                                                "project_type": resolved_type,
-                                                "sku": line_item.sku,
-                                                "total_ecu": double(line_item.total_ecu),
-                                                "quantity_value": (has(line_item.quantity) && line_item.quantity != null && has(line_item.quantity.value) && line_item.quantity.value != null) ? double(line_item.quantity.value) : 0.0,
-                                                "conf_chargeable_unit_rate": double(state.conf_unit_rate),
-                                                "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-                                                "conf_currency_symbol": state.conf_currency_symbol,
-                                              }
+                                          (has(instance.product_line_items) && instance.product_line_items != null) ?
+                                            instance.product_line_items.filter(line_item,
+                                              has(line_item.sku) && line_item.sku != null && (
+                                                line_item.sku.contains("-vcu") || line_item.sku.contains(".observability.") || line_item.sku.contains(".security.") ||
+                                                line_item.sku.contains(".search.") || line_item.sku.startsWith("serverless.") || line_item.sku.startsWith("observability.") ||
+                                                line_item.sku.startsWith("security.") || line_item.sku.startsWith("search.") || line_item.sku.contains("synthetic") ||
+                                                line_item.sku.contains(".retained")
+                                              )
+                                            ).as(sls_line_items,
+                                              size(sls_line_items) > 0 ?
+                                                sls_line_items.map(line_item,
+                                                  {
+                                                    "@timestamp": req.from.format(time_layout.RFC3339),
+                                                    "period_start": req.from.format(time_layout.RFC3339),
+                                                    "project_id": inst_id,
+                                                    "project_name": resolved_name,
+                                                    "project_type": resolved_type,
+                                                    "sku": line_item.sku,
+                                                    "total_ecu": double(line_item.total_ecu),
+                                                    "quantity_value": (has(line_item.quantity) && line_item.quantity != null && has(line_item.quantity.value) && line_item.quantity.value != null) ? double(line_item.quantity.value) : 0.0,
+                                                    "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                    "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                    "conf_currency_symbol": state.conf_currency_symbol,
+                                                  }
+                                                )
+                                              :
+                                                [
+                                                  {
+                                                    "@timestamp": req.from.format(time_layout.RFC3339),
+                                                    "period_start": req.from.format(time_layout.RFC3339),
+                                                    "project_id": inst_id,
+                                                    "project_name": resolved_name,
+                                                    "project_type": resolved_type,
+                                                    "sku": "none",
+                                                    "total_ecu": 0.0,
+                                                    "quantity_value": 0.0,
+                                                    "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                    "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                    "conf_currency_symbol": state.conf_currency_symbol,
+                                                  }
+                                                ]
                                             )
                                           :
                                             [
@@ -150,22 +180,47 @@ program: |-
                                         ((has(prod.type) && prod.type != null && string(prod.type) != "" && string(prod.type) != "serverless" && string(prod.type) != "deployment") ? string(prod.type) : "elasticsearch").as(prod_type,
                                           (has(prod.product_line_items) && prod.product_line_items != null) ?
                                             prod.product_line_items.filter(li,
-                                              has(li.sku) && li.sku != null && size(instance_evts.filter(e, e.sku == li.sku)) == 0
+                                              has(li.sku) && li.sku != null && (
+                                                li.sku.contains("-vcu") || li.sku.contains(".observability.") || li.sku.contains(".security.") ||
+                                                li.sku.contains(".search.") || li.sku.startsWith("serverless.") || li.sku.startsWith("observability.") ||
+                                                li.sku.startsWith("security.") || li.sku.startsWith("search.") || li.sku.contains("synthetic") ||
+                                                li.sku.contains(".retained")
+                                              )
                                             ).map(li,
-                                              {
-                                                "@timestamp": req.from.format(time_layout.RFC3339),
-                                                "period_start": req.from.format(time_layout.RFC3339),
-                                                "project_id": "deleted_or_unassociated_" + prod_type,
-                                                "project_name": "Deleted / Unassociated (" + prod_type + ")",
-                                                "project_type": prod_type,
-                                                "sku": li.sku,
-                                                "total_ecu": (has(li.total_ecu) && li.total_ecu != null) ? double(li.total_ecu) : 0.0,
-                                                "quantity_value": (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null) ? double(li.quantity.value) : 0.0,
-                                                "conf_chargeable_unit_rate": double(state.conf_unit_rate),
-                                                "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-                                                "conf_currency_symbol": state.conf_currency_symbol,
-                                              }
-                                            )
+                                              instance_evts.filter(e, e.sku == li.sku).map(e, e.total_ecu).as(matched_ecus,
+                                                (size(matched_ecus) == 0 ? 0.0 : matched_ecus.sum()).as(day_sku_ecu,
+                                                  instance_evts.filter(e, e.sku == li.sku).map(e, e.quantity_value).as(matched_qtys,
+                                                    (size(matched_qtys) == 0 ? 0.0 : matched_qtys.sum()).as(day_sku_qty,
+                                                      ((has(li.total_ecu) && li.total_ecu != null) ? double(li.total_ecu) : 0.0).as(item_ecu,
+                                                        ((has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null) ? double(li.quantity.value) : 0.0).as(item_qty,
+                                                          (item_ecu - day_sku_ecu).as(diff_ecu,
+                                                            (max(0.0, item_qty - day_sku_qty)).as(diff_qty,
+                                                              (diff_ecu > 0.0001 || (day_sku_ecu == 0.0 && item_qty > 0.0)) ?
+                                                                [
+                                                                  {
+                                                                    "@timestamp": req.from.format(time_layout.RFC3339),
+                                                                    "period_start": req.from.format(time_layout.RFC3339),
+                                                                    "project_id": "deleted_or_unassociated_" + prod_type,
+                                                                    "project_name": "Deleted / Unassociated (" + prod_type + ")",
+                                                                    "project_type": prod_type,
+                                                                    "sku": li.sku,
+                                                                    "total_ecu": max(0.0, diff_ecu),
+                                                                    "quantity_value": diff_qty,
+                                                                    "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                                    "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                                    "conf_currency_symbol": state.conf_currency_symbol,
+                                                                  }
+                                                                ]
+                                                              : []
+                                                            )
+                                                          )
+                                                        )
+                                                      )
+                                                    )
+                                                  )
+                                                )
+                                              )
+                                            ).flatten()
                                           : []
                                         )
                                       ).flatten()

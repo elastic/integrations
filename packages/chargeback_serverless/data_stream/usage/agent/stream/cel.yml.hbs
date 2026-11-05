@@ -37,11 +37,10 @@ program: |-
               dyn(state.project_keys).map(k, string(dyn(state.project_keys)[k]))
             )
           ).filter(k, k != "" && k != "null" && !k.startsWith("$co.elastic.secret")).as(all_pkeys,
-          (now.format(time_layout.RFC3339)).as(cursor_key,
-          false ?
+          (state.?cursor.last_day.orValue("") == day_ts) ?
             {
               "events": [],
-              "cursor": { "last_day": cursor_key },
+              "cursor": { "last_day": day_ts },
               "want_more": false,
             }
           :
@@ -149,7 +148,10 @@ program: |-
                                                             "size": 0,
                                                             "query": {
                                                               "bool": {
-                                                                "filter": [{ "exists": { "field": "monitor.id" } }],
+                                                                "filter": [
+                                                                  { "exists": { "field": "monitor.id" } },
+                                                                  { "range": { "@timestamp": { "gte": day_start.format(time_layout.RFC3339), "lt": day_end.format(time_layout.RFC3339) } } }
+                                                                ],
                                                                 "must_not": [{ "terms": { "event.dataset": ["browser.network", "browser.screenshot"] } }]
                                                               }
                                                             },
@@ -329,7 +331,7 @@ program: |-
                             size(usage_evts) > 0 ?
                             {
                               "events": usage_evts,
-                              "cursor": { "last_day": cursor_key },
+                              "cursor": { "last_day": day_ts },
                               "want_more": false,
                             }
                             :
@@ -344,7 +346,6 @@ program: |-
                 )
               )
             )
-          )
           )
           )
           )

@@ -55,7 +55,7 @@ The **`[Chargeback Serverless] Billing Components Overview`** dashboard provides
 
 The **`[Chargeback Serverless] Usage & Cost Allocation`** dashboard attributes allocatable SKU pools to projects, namespaces, and data streams:
 
-- **Workload pool summary KPIs**: Dedicated KPI tiles for the Indexing pool (`ingest-vcu`), Search and Query pool (`search-vcu`), Storage pool (`retained`), AI and ML pool (`ml-vcu`), and Synthetics pool.
+- **Workload pool summary KPIs**: Dedicated KPI tiles for the Indexing pool (`ingest-vcu`), Search and Query pool (`search-vcu`), Storage pool (`retained`), AI and ML pool (`ml-vcu`), and Synthetics pool. Telemetry counters (`indexing.index_time`, `search.query_time`) harvested via `_cat/indices` are cumulative lifetime counters per backing index; allocation divides daily VCU pools by each stream's relative share, with automatic proportional fallback to storage size share (`dataset.size`) when indexing or query time across a project is zero.
 - **Daily allocatable cost by workload driver**: Stacked time series tracking daily spend across indexing, search, storage, AI, and Synthetics drivers.
 - **Per-project allocation breakdown**: Driver spend attributed to each Serverless project.
 - **Data stream cost attribution**: Storage, ingest, and search spend broken down by namespace (`ds_namespace`), data stream type (`ds_type`, such as `logs`, `metrics`, `traces`, `.kibana`, and `.alerts`), and dataset (`ds_dataset`).
