@@ -129,12 +129,12 @@ The `labels.is_transform_source` field indicates log origin:
 - **False** for transformed index
 - **True** for source index
 
-> **Deprecated:** `labels.is_transform_source` is deprecated in favor of `labels.is_ioc_transform_source` (`"true"` on the raw source data streams, `"false"` on the transformed destination indices). New queries, dashboards, and detection rules should use `labels.is_ioc_transform_source`; this is the field Elastic's built-in Threat Intel Indicator Match rules rely on to exclude raw source documents. `labels.is_transform_source` continues to work and will be removed in a future major version. On upgrade, only newly written source documents and newly built destination indices carry `labels.is_ioc_transform_source`; documents in backing indices created before the upgrade keep their original mapping until they roll over or age out of the detection rules' 30-day window.
+> **Deprecated:** `labels.is_transform_source` is deprecated in favor of `labels.is_ioc_transform_source` (`"true"` on the raw source data streams, `"false"` on the transformed destination indices). New queries, dashboards, and detection rules should use `labels.is_ioc_transform_source`; this is the field Elastic's built-in Threat Intel Indicator Match rules rely on to exclude raw source documents. `labels.is_transform_source` continues to work and will be removed in a future major version. On upgrade the `"true"` label is added in place to the current write index of each source data stream, so every document already in that index (old and new) is labeled at once; older source backing indices are not relabeled and keep matching the built-in rules until their documents age out of the rules' 30-day window. The transform destination `_latest` indices only receive `labels.is_ioc_transform_source: "false"` on a fresh install or when the transforms are next rebuilt, so on an upgraded install select the latest transformed data with `NOT labels.is_ioc_transform_source: "true"` rather than `labels.is_ioc_transform_source: "false"`.
 
 For example:
 
-- The query `event.module: ti_google_threat_intelligence and labels.is_transform_source: true` indicates that the logs originate from the **source index**.
-- The query `event.module: ti_google_threat_intelligence and labels.is_transform_source: false` indicates that the logs originate from the **transformed index**.
+- The query `event.module: ti_google_threat_intelligence and labels.is_ioc_transform_source: "true"` indicates that the logs originate from the **source index**.
+- The query `event.module: ti_google_threat_intelligence and NOT labels.is_ioc_transform_source: "true"` returns the latest **transformed index** data (this form also matches on upgraded installs, where the destination field may not be set yet).
 
 A **retention policy** is used to remove data older than the default retention period. For more details, refer to the [Retention Policy Documentation](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-transform-put-transform#operation-transform-put-transform-body-application-json-retention_policy).
 
