@@ -23,7 +23,9 @@ processors:
         #   user : [error ;] [HOST=h ;] [TTY=t ;] [CHROOT=r ;] PWD=p ; USER=u ; [GROUP=g ;] [TSID=i ;] [ENV=e ;] COMMAND=c [; SIGNAL=s] [; EXIT=n]
         # Bracketed fields are optional and depend on sudoers options, so each
         # is matched by its key and the free-text error group excludes them.
-        - '^%{SPACE}%{DATA:user.name} :(?: ((?!%{SUDO_KEY}=)%{DATA:system.auth.sudo.error}) ;)?(?: HOST=%{DATA:system.auth.sudo.host} ;)?(?: TTY=%{DATA:system.auth.sudo.tty} ;)?(?: CHROOT=%{DATA:system.auth.sudo.chroot} ;)? PWD=%{DATA:system.auth.sudo.pwd} ; USER=%{DATA:system.auth.sudo.user} ;(?: GROUP=%{DATA:system.auth.sudo.group} ;)?(?: TSID=%{DATA:system.auth.sudo.tsid} ;)?(?: ENV=%{DATA:system.auth.sudo.env} ;)? COMMAND=%{DATA:system.auth.sudo.command}(?: ; SIGNAL=%{SUDO_SIGNAL:system.auth.sudo.signal})?(?: ; EXIT=%{INT:system.auth.sudo.exit:long})?$'
+        # EXIT= is always present on the exit line, and SIGNAL= only ever
+        # precedes it, so SIGNAL= is matched only together with EXIT=.
+        - '^%{SPACE}%{DATA:user.name} :(?: ((?!%{SUDO_KEY}=)%{DATA:system.auth.sudo.error}) ;)?(?: HOST=%{DATA:system.auth.sudo.host} ;)?(?: TTY=%{DATA:system.auth.sudo.tty} ;)?(?: CHROOT=%{DATA:system.auth.sudo.chroot} ;)? PWD=%{DATA:system.auth.sudo.pwd} ; USER=%{DATA:system.auth.sudo.user} ;(?: GROUP=%{DATA:system.auth.sudo.group} ;)?(?: TSID=%{DATA:system.auth.sudo.tsid} ;)?(?: ENV=%{DATA:system.auth.sudo.env} ;)? COMMAND=%{DATA:system.auth.sudo.command}(?:(?: ; SIGNAL=%{SUDO_SIGNAL:system.auth.sudo.signal})? ; EXIT=%{INT:system.auth.sudo.exit:long})?$'
         - '^new group: name=%{DATA:group.name}, GID=%{NUMBER:group.id}'
         - '^new user: name=%{DATA:user.target.name}, UID=%{NUMBER:user.target.id}, GID=%{NUMBER:group.id}, home=%{DATA:system.auth.useradd.home}, shell=%{DATA:system.auth.useradd.shell}$'
         - '^group added to /etc/(?:group|gshadow): name=%{DATA:group.name}(?:, GID=%{NUMBER:group.id})?$'
@@ -42,7 +44,7 @@ processors:
       field: event.type
       value: start
       allow_duplicates: false
-      if: ctx.system?.auth?.sudo?.command != null && ctx.system.auth.sudo.exit == null && ctx.system.auth.sudo.signal == null
+      if: ctx.system?.auth?.sudo?.command != null && ctx.system.auth.sudo.exit == null
   - append:
       description: >-
         The exit line written by sudo when log_exit_status is set marks the end
@@ -51,7 +53,7 @@ processors:
       field: event.type
       value: end
       allow_duplicates: false
-      if: ctx.system?.auth?.sudo?.exit != null || ctx.system?.auth?.sudo?.signal != null
+      if: ctx.system?.auth?.sudo?.exit != null
   - set:
       tag: set_process_exit_code_sudo
       field: process.exit_code
@@ -564,7 +566,7 @@ processors:
           ctx.event = [:];
         }
         ctx.event.action = action;
-        if (ctx.system.auth.sudo.exit == null && ctx.system.auth.sudo.signal == null) {
+        if (ctx.system.auth.sudo.exit == null) {
           // Keep event.type end on the log_exit_status exit line.
           ctx.event.type = [eventType];
         }
