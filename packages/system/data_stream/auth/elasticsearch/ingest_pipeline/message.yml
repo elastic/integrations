@@ -18,11 +18,12 @@ processors:
         - '^%{DATA:system.auth.ssh.event} %{DATA:system.auth.ssh.method} for (invalid user)?%{DATA:user.name} from %{IPORHOST:source.address} port %{NUMBER:source.port:long} ssh2(: %{GREEDYDATA:system.auth.ssh.signature})?'
         - '^%{DATA:system.auth.ssh.event} user %{DATA:user.name} from %{IPORHOST:source.address}'
         - '^Did not receive identification string from %{IPORHOST:system.auth.ssh.dropped_ip}'
-        # sudo log line layout (lib/eventlog/eventlog.c in the sudo source):
-        #   user : [error ;] [HOST=h ;] [TTY=t ;] [CHROOT=r ;] PWD=p ; USER=u ; [GROUP=g ;] [TSID=i ;] [ENV=e ;] COMMAND=c
+        # sudo log line layout (sudoers(5) EVENT LOGGING; lib/eventlog/eventlog.c in the sudo source):
+        #   user : [error ;] [HOST=h ;] [TTY=t ;] [CHROOT=r ;] PWD=p ; USER=u ; [GROUP=g ;] [TSID=i ;] [ENV=e ;] COMMAND=c [; SIGNAL=s] [; EXIT=n]
         # Every bracketed field is optional, so each is matched by its key and
-        # the free-text error group must not swallow any of them.
-        - '^%{SPACE}%{DATA:user.name} :(?: ((?!%{SUDO_KEY}=)%{DATA:system.auth.sudo.error}) ;)?(?: HOST=%{DATA:system.auth.sudo.host} ;)?(?: TTY=%{DATA:system.auth.sudo.tty} ;)?(?: CHROOT=%{DATA:system.auth.sudo.chroot} ;)? PWD=%{DATA:system.auth.sudo.pwd} ; USER=%{DATA:system.auth.sudo.user} ;(?: GROUP=%{DATA:system.auth.sudo.group} ;)?(?: TSID=%{DATA:system.auth.sudo.tsid} ;)?(?: ENV=%{DATA:system.auth.sudo.env} ;)? COMMAND=%{GREEDYDATA:system.auth.sudo.command}'
+        # the free-text error group must not swallow any of them. SIGNAL= and
+        # EXIT= follow the command when the log_exit_status option is set.
+        - '^%{SPACE}%{DATA:user.name} :(?: ((?!%{SUDO_KEY}=)%{DATA:system.auth.sudo.error}) ;)?(?: HOST=%{DATA:system.auth.sudo.host} ;)?(?: TTY=%{DATA:system.auth.sudo.tty} ;)?(?: CHROOT=%{DATA:system.auth.sudo.chroot} ;)? PWD=%{DATA:system.auth.sudo.pwd} ; USER=%{DATA:system.auth.sudo.user} ;(?: GROUP=%{DATA:system.auth.sudo.group} ;)?(?: TSID=%{DATA:system.auth.sudo.tsid} ;)?(?: ENV=%{DATA:system.auth.sudo.env} ;)? COMMAND=%{DATA:system.auth.sudo.command}(?: ; SIGNAL=%{DATA:system.auth.sudo.signal})?(?: ; EXIT=%{INT:system.auth.sudo.exit:long})?$'
         - '^new group: name=%{DATA:group.name}, GID=%{NUMBER:group.id}'
         - '^new user: name=%{DATA:user.target.name}, UID=%{NUMBER:user.target.id}, GID=%{NUMBER:group.id}, home=%{DATA:system.auth.useradd.home}, shell=%{DATA:system.auth.useradd.shell}$'
         - '^group added to /etc/(?:group|gshadow): name=%{DATA:group.name}(?:, GID=%{NUMBER:group.id})?$'

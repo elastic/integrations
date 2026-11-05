@@ -1134,9 +1134,11 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | system.auth.sudo.command | The command executed via sudo. | keyword |
 | system.auth.sudo.env | Environment variables passed to the sudo command. | keyword |
 | system.auth.sudo.error | The error message in case the sudo command failed. | keyword |
+| system.auth.sudo.exit | The exit value of the sudo command, as logged when the sudoers log_exit_status option is enabled. | long |
 | system.auth.sudo.group | The target group to which the sudo command is switching. | keyword |
 | system.auth.sudo.host | The host on which the sudo command was submitted, as logged when the sudoers log_host option is enabled. | keyword |
 | system.auth.sudo.pwd | The current directory where the sudo command is executed. | keyword |
+| system.auth.sudo.signal | The name of the signal that terminated the sudo command, as logged when the sudoers log_exit_status option is enabled. | keyword |
 | system.auth.sudo.tsid | The sudo I/O log session ID, as logged when sudo I/O logging is enabled. | keyword |
 | system.auth.sudo.tty | The TTY where the sudo command is executed. | keyword |
 | system.auth.sudo.user | The target user to which the sudo command is switching. | keyword |
