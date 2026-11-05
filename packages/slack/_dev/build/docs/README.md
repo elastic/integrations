@@ -53,11 +53,11 @@ Audit logs summarize the history of changes made within the Slack Enterprise.
 
 The users data stream collects a daily snapshot of Slack Enterprise Grid user accounts from [`admin.users.list`](https://docs.slack.dev/reference/methods/admin.users.list). Each document is one user, for Elastic Security entity analytics.
 
-It then collects user groups from [`usergroups.list`](https://docs.slack.dev/reference/methods/usergroups.list) for each workspace on those users, and attaches matching groups to `slack.user.groups`. The **[Logs Slack Logs] Users** dashboard includes user and group panels.
+It then collects user groups from [`usergroups.list`](https://docs.slack.dev/reference/methods/usergroups.list) for each workspace on those users, and attaches matching groups to `slack.user.groups`. The **[Logs Slack] Users** dashboard includes user and group panels.
 
 The token must be an org-level user token (`xoxp-`) with the `admin.users:read` and `usergroups:read` scopes. The app must be installed on the Enterprise organization, not on a single workspace.
 
-**Active Users Only** chooses which accounts are collected. Enabled collects active users. Disabled collects deactivated users. Slack cannot return both in one request.
+Each collection walks `admin.users.list` twice (`is_active=true`, then `is_active=false`) so a snapshot includes both active and deactivated accounts.
 
 {{fields "user"}}
 

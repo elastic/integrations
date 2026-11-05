@@ -18,14 +18,13 @@ resource.url: {{api_url}}
 state:
   oauth_token: {{oauth_token}}
   limit: {{limit}}
-  is_active: {{is_active}}
 redact:
   fields:
     - oauth_token
 max_executions: 10000
 program: |-
   {
-    "phase": state.?cursor.phase.orValue("users"),
+    "phase": state.?cursor.phase.orValue("users_active"),
     "page_cursor": state.?cursor.page_cursor.orValue(""),
     "workspace_ids": state.?cursor.workspace_ids.orValue([]),
     "groups_by_user": state.?cursor.groups_by_user.orValue({}),
@@ -58,7 +57,7 @@ program: |-
               },
               "want_more": false,
               "cursor": {
-                "phase": "users",
+                "phase": "users_active",
                 "page_cursor": "",
                 "workspace_ids": [],
                 "groups_by_user": {},
@@ -78,7 +77,7 @@ program: |-
                   },
                   "want_more": false,
                   "cursor": {
-                    "phase": "users",
+                    "phase": "users_active",
                     "page_cursor": "",
                     "workspace_ids": [],
                     "groups_by_user": {},
@@ -138,7 +137,7 @@ program: |-
             dyn([{"message": "retry"}]),
           "want_more": false,
           "cursor": {
-            "phase": "users",
+            "phase": "users_active",
             "page_cursor": "",
             "workspace_ids": [],
             "groups_by_user": {},
@@ -150,7 +149,7 @@ program: |-
           "GET",
           state.url.trim_right("/") + "/api/admin.users.list?" + {
             "limit": [string(int(state.limit))],
-            "is_active": [state.is_active ? "true" : "false"],
+            "is_active": [(ctx.phase == "users_inactive") ? "false" : "true"],
             "include_deactivated_user_workspaces": ["true"],
           }.with((ctx.page_cursor != "") ? {"cursor": [ctx.page_cursor]} : {}).format_query()
         ).with(
@@ -172,7 +171,7 @@ program: |-
               },
               "want_more": false,
               "cursor": {
-                "phase": "users",
+                "phase": "users_active",
                 "page_cursor": "",
                 "workspace_ids": [],
                 "groups_by_user": {},
@@ -192,7 +191,7 @@ program: |-
                   },
                   "want_more": false,
                   "cursor": {
-                    "phase": "users",
+                    "phase": "users_active",
                     "page_cursor": "",
                     "workspace_ids": [],
                     "groups_by_user": {},
@@ -222,7 +221,7 @@ program: |-
                       "events": [{"message": "retry"}],
                       "want_more": true,
                       "cursor": {
-                        "phase": (next_cursor != "") ? "users" : ((page.workspace_ids.size() > 0) ? "groups" : "emit"),
+                        "phase": (next_cursor != "") ? ctx.phase : ((ctx.phase == "users_active") ? "users_inactive" : ((page.workspace_ids.size() > 0) ? "groups" : "emit")),
                         "page_cursor": next_cursor,
                         "workspace_ids": page.workspace_ids,
                         "groups_by_user": ctx.groups_by_user,

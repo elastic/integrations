@@ -112,11 +112,42 @@ processors:
         if (ctx.slack?.user?.is_bot == true) {
           roles.add('bot');
         }
-        if (!roles.isEmpty()) {
-          if (ctx.user == null) {
-            ctx.user = new HashMap();
+        if (roles.isEmpty()) {
+          roles.add('member');
+        }
+        if (ctx.user == null) {
+          ctx.user = new HashMap();
+        }
+        ctx.user.roles = roles;
+  - script:
+      tag: set_slack_user_role_names
+      description: Translate known Slack admin role IDs to names.
+      lang: painless
+      if: ctx.slack?.user?.roles instanceof List
+      source: |-
+        def known = new HashMap();
+        known.put('Rl01', 'Channel Admin');
+        known.put('Rl02', 'Role Admin');
+        known.put('Rl04', 'Legal Holds Admin');
+        known.put('Rl05', 'Conversation Admin');
+        known.put('Rl09', 'DLP Admin');
+        known.put('Rl0A', 'Channel Manager');
+        known.put('Rl0C', 'Audit Logs Admin');
+        known.put('Rl0D', 'Integrations Manager');
+        known.put('Rl0E', 'Message Activity Manager');
+        known.put('Rl0F', 'Exports Admin');
+        known.put('Rl0J', 'Org Security Admin');
+        known.put('Rl0L', 'Analytics Admin');
+        def names = new ArrayList();
+        for (id in ctx.slack.user.roles) {
+          if (id == null) {
+            continue;
           }
-          ctx.user.roles = roles;
+          def key = id.toString();
+          names.add(known.containsKey(key) ? known.get(key) : key);
+        }
+        if (!names.isEmpty()) {
+          ctx.slack.user.role_names = names;
         }
   - set:
       field: user.entity.id
@@ -288,6 +319,30 @@ processors:
           }
           if (label != '') {
             group['label'] = label;
+          }
+          if (ctx.user == null) {
+            ctx.user = new HashMap();
+          }
+          if (ctx.user.group == null) {
+            ctx.user.group = new HashMap();
+          }
+          if (ctx.user.group.id == null) {
+            ctx.user.group.id = new ArrayList();
+          }
+          if (ctx.user.group.name == null) {
+            ctx.user.group.name = new ArrayList();
+          }
+          if (group.containsKey('id') && group['id'] != null) {
+            def gid = group['id'].toString();
+            if (!ctx.user.group.id.contains(gid)) {
+              ctx.user.group.id.add(gid);
+            }
+          }
+          if (group.containsKey('name') && group['name'] != null) {
+            def gname = group['name'].toString();
+            if (!ctx.user.group.name.contains(gname)) {
+              ctx.user.group.name.add(gname);
+            }
           }
         }
   - append:

@@ -224,11 +224,11 @@ An example event for `audit` looks as following:
 
 The users data stream collects a daily snapshot of Slack Enterprise Grid user accounts from [`admin.users.list`](https://docs.slack.dev/reference/methods/admin.users.list). Each document is one user, for Elastic Security entity analytics.
 
-It then collects user groups from [`usergroups.list`](https://docs.slack.dev/reference/methods/usergroups.list) for each workspace on those users, and attaches matching groups to `slack.user.groups`. The **[Logs Slack Logs] Users** dashboard includes user and group panels.
+It then collects user groups from [`usergroups.list`](https://docs.slack.dev/reference/methods/usergroups.list) for each workspace on those users, and attaches matching groups to `slack.user.groups`. The **[Logs Slack] Users** dashboard includes user and group panels.
 
 The token must be an org-level user token (`xoxp-`) with the `admin.users:read` and `usergroups:read` scopes. The app must be installed on the Enterprise organization, not on a single workspace.
 
-**Active Users Only** chooses which accounts are collected. Enabled collects active users. Disabled collects deactivated users. Slack cannot return both in one request.
+Each collection walks `admin.users.list` twice (`is_active=true`, then `is_active=false`) so a snapshot includes both active and deactivated accounts.
 
 **Exported fields**
 
@@ -284,6 +284,7 @@ The token must be an org-level user token (`xoxp-`) with the `admin.users:read` 
 | slack.user.is_restricted | Whether the user is a guest. | boolean |
 | slack.user.is_ultra_restricted | Whether the user is a single-channel guest. | boolean |
 | slack.user.last_active_ts | When Slack last recorded activity for the user. Copied to user.entity.lifecycle.last_activity. | date |
+| slack.user.role_names | Slack admin role names translated from known role IDs. | keyword |
 | slack.user.roles | Slack admin role IDs assigned to the user, when the API returns them. | keyword |
 | slack.user.workspaces | Workspace IDs the user belongs to. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
@@ -301,6 +302,8 @@ The token must be an org-level user token (`xoxp-`) with the `admin.users:read` 
 | user.entity.type | A standardized high-level classification of the entity. This provides a normalized way to group similar entities across different providers or systems. Example values: `bucket`, `database`, `container`, `function`, `queue`, `host`, `user`, `application`, `session`, `cloud`, `orchestrator`, etc. If an entity is nested under a top-level namespace like `host` or `cloud`, or similar, its type array should include the matching value — for example, `host` or `cloud`. | keyword |
 | user.full_name | User's full name, if available. | keyword |
 | user.full_name.text | Multi-field of `user.full_name`. | match_only_text |
+| user.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.group.name | Name of the group. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
