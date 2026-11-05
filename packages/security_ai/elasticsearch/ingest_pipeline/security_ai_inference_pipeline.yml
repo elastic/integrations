@@ -326,22 +326,32 @@ processors:
           return s.substring(0, end);
         }
 
-        // Best-effort UTF-8 decode; invalid or truncated sequences become U+FFFD.
+        // Best-effort UTF-8 decode. Each ill-formed sequence (a stray or truncated
+        // lead byte, an overlong form, a surrogate, or a value above U+10FFFF)
+        // becomes a single U+FFFD, the same replacement rule as Python's
+        // bytes.decode("utf-8", errors="replace"). The second byte's allowed range
+        // is narrowed for E0, ED, F0 and F4, which is what excludes overlong
+        // forms, surrogates and out-of-range values.
         String bytesToString(byte[] b) {
           StringBuilder sb = new StringBuilder();
           int i = 0;
           while (i < b.length) {
             int c = b[i] & 0xFF;
-            int need = c < 0x80 ? 0 : (c >= 0xC2 && c < 0xE0) ? 1 : (c >= 0xE0 && c < 0xF0) ? 2 : (c >= 0xF0 && c < 0xF5) ? 3 : -1;
-            int cp = need == 0 ? c : (c & (0x3F >> need));
-            int j = 1;
-            while (need > 0 && j <= need && i + j < b.length && (b[i + j] & 0xC0) == 0x80) {
-              cp = (cp << 6) | (b[i + j] & 0x3F);
-              j++;
+            i++;
+            if (c < 0x80) { sb.appendCodePoint(c); continue; }
+            int need = (c >= 0xC2 && c <= 0xDF) ? 1 : (c >= 0xE0 && c <= 0xEF) ? 2 : (c >= 0xF0 && c <= 0xF4) ? 3 : 0;
+            if (need == 0) { sb.appendCodePoint(0xFFFD); continue; }
+            int cp = c & (0x3F >> need);
+            int lower = c == 0xE0 ? 0xA0 : c == 0xF0 ? 0x90 : 0x80;
+            int upper = c == 0xED ? 0x9F : c == 0xF4 ? 0x8F : 0xBF;
+            for (int k = 0; k < need; k++) {
+              if (i >= b.length || (b[i] & 0xFF) < lower || (b[i] & 0xFF) > upper) { cp = -1; break; }
+              cp = (cp << 6) | (b[i] & 0x3F);
+              i++;
+              lower = 0x80;
+              upper = 0xBF;
             }
-            boolean ok = need >= 0 && j == need + 1 && cp <= 0x10FFFF && !(cp >= 0xD800 && cp <= 0xDFFF);
-            sb.appendCodePoint(ok ? cp : 0xFFFD);
-            i += ok ? j : 1;
+            sb.appendCodePoint(cp < 0 ? 0xFFFD : cp);
           }
           return sb.toString();
         }

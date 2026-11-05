@@ -963,8 +963,10 @@ processors:
           if (start > end) {
             start = end;
           }
+          // Scans stop after maxChars: the context is clipped to maxChars anyway, so
+          // there is no need to walk the rest of a long unpunctuated message.
           int from = start;
-          while (from > 0) {
+          while (from > 0 && start - from <= maxChars) {
             int cp = text.charAt(from - 1);
             if (cp == 10 || cp == 13 || cp == 46 || cp == 33 || cp == 63) {
               break;
@@ -980,7 +982,7 @@ processors:
             }
           }
           int to = end;
-          while (to < text.length()) {
+          while (to < text.length() && to - end <= maxChars) {
             int cp = text.charAt(to);
             if (cp == 10 || cp == 13) {
               break;
