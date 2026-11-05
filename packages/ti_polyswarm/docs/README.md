@@ -14,7 +14,7 @@ This integration has been tested against PolySwarm CTI API `v3` (`GET /v3/search
 
 The Elastic Agent uses the [CEL input](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel) to poll the PolySwarm metadata search API on a configurable interval. Each poll submits a server-side metadata query — by default `artifact.created:>now-1d AND scan.detections.malicious:>0`, a rolling one-day window restricted to artifacts at least one engine flagged as malicious — and pages through the results using the cursor PolySwarm returns in `offset`, continuing while `has_more` is `true`.
 
-Every returned artifact becomes one indicator document. The ingest pipeline maps the artifact hashes, file metadata, and scan timestamps to ECS, derives `threat.indicator.confidence` from the PolyScore, and records the raw vendor payload under the `polyswarm.*` field group. A non-200 response from the API is indexed as a single `event.kind: pipeline_error` document carrying `error.code`, `error.message`, and `http.response.status_code`, rather than as a false indicator.
+Every returned artifact becomes one indicator document. The ingest pipeline maps the artifact hashes, file metadata, and scan timestamps to ECS, derives `threat.indicator.confidence` from the PolyScore, and records the raw vendor payload under the `polyswarm.*` field group. A non-200 response from the API is indexed as a single `event.kind: pipeline_error` document carrying `error.code` and `error.message`, rather than as a false indicator.
 
 ## What data does this integration collect?
 
@@ -126,6 +126,14 @@ Enable the prebuilt detection rule **"Threat Intel Hash Indicator Match"** (**Se
 - **Indicator index patterns**: `logs-ti_polyswarm_latest.scans`.
 - **Indicator mapping**: `file.hash.sha256` MATCHES `threat.indicator.file.hash.sha256`. Add OR clauses for `sha1` and `md5` to widen coverage.
 
+### Saved search
+
+The integration ships one saved search, **[PolySwarm] Current indicators (re-asserted in the last 48h)**, available under **Discover**. It scopes to the deduplicated tier (`labels.is_ioc_transform_source: "false"`) and bounds `event.ingested` to the last 48 hours, so it reflects only indicators PolySwarm is still re-asserting.
+
+That `event.ingested` bound is what makes the view correct during an outage. As described in [Expiration depends on continued ingestion](#expiration-depends-on-continued-ingestion), the transform cannot expire indicators while collection is stopped, so a query without a freshness bound keeps returning them. Use this saved search wherever acting on stale intelligence would be a problem.
+
+Note that the prebuilt rules do not apply such a bound: their indicator query filters on `labels.is_ioc_transform_source` and on `@timestamp`, which for this integration carries the artifact's creation time rather than when the indicator was last re-asserted. If that distinction matters to you, build a custom rule on the saved search's criteria instead.
+
 ## Troubleshooting
 
 ### No indicators appear after install
@@ -134,7 +142,7 @@ The first poll happens after one **Interval** (default `5m`), and the transform 
 
 1. **Verify the agent is healthy and on the current policy revision.** Fleet → Agents → your agent should report `Healthy` with the latest revision.
 2. **Enable agent monitoring to see CEL polling logs.** Fleet → Agent policies → your policy → Settings → Agent monitoring → enable "Collect agent logs". Then Fleet → Agents → your agent → Logs and search for `cel` or `polyswarm`.
-3. **Check for error documents.** A non-200 response is indexed rather than dropped: search `logs-ti_polyswarm.scans-*` for `event.kind: pipeline_error` and read `http.response.status_code`. `401`/`403` means the API key is invalid, expired, or lacks metadata-search entitlement; `429` means you are exceeding your plan's rate limit — increase **Interval**.
+3. **Check for error documents.** A non-200 response is indexed rather than dropped: search `logs-ti_polyswarm.scans-*` for `event.kind: pipeline_error` and read `error.code`. `401`/`403` means the API key is invalid, expired, or lacks metadata-search entitlement; `429` means you are exceeding your plan's rate limit — increase **Interval**.
 4. **Confirm the query returns results.** A narrow **Query** or a community with no recent malicious artifacts legitimately yields zero documents. Widen the `artifact.created` window temporarily to confirm connectivity.
 
 ### Mapping failures
@@ -182,7 +190,6 @@ If you need broader coverage, prefer a wider **Query** on a moderate interval ov
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| http.response.status_code | HTTP response status code. | long |
 | input.type | Type of Filebeat input. | keyword |
 | labels.interval | Configured polling interval, recorded for IOC expiration diagnostics. | keyword |
 | labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or in the latest destination index. | constant_keyword |

@@ -44,10 +44,6 @@ stdout '^0$'
 exec jq '[.hits.hits[]._source | select(.event.type != null)] | length' got_docs.json
 stdout '^0$'
 
-# The upstream status code is recorded for troubleshooting.
-exec jq -r '.hits.hits[0]._source.http.response.status_code' got_docs.json
-stdout '^401$'
-
 remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
 uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
 docker_down polyswarm-error-mock
