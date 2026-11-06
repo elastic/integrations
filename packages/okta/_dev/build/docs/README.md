@@ -14,6 +14,16 @@ For more information, refer to [Elastic Managed integrations](https://www.elasti
 
 The Okta System Log records system events related to your organization in order to provide an audit trail that can be used to understand platform activity and to diagnose problems. This module is implemented using the httpjson input and is configured to paginate through the logs while honoring any rate-limiting headers sent by Okta.
 
+#### User fields
+
+The System Log identifies the actor of each event by its Okta id, login and display name. These values are mapped to the ECS user fields as follows:
+
+- `user.id`: the Okta user id (for example `00u1abvz4pYqdM8ms4x6`) of the actor. It is set only when `okta.actor.type` is `User`, and it holds the same value as `user.id` in the [Okta Entity Analytics](https://www.elastic.co/docs/reference/integrations/entityanalytics_okta) integration.
+- `user.name`, `source.user.name`, `client.user.name`: the actor's login (`okta.actor.alternate_id`).
+- `user.email`, `source.user.email`, `client.user.email`: a copy of the actor's login when the login contains `@`. The System Log does not include the user's primary email, so this value is the login and can differ from the primary email (`profile.email`) that Okta Entity Analytics stores in `user.email`.
+- `user.target.id` and `user.target.email`: the Okta user id and the login of the first target user, with the same caveat for `user.target.email`.
+- `client.user.id`, `source.user.id`: the actor's Okta id for every actor type, including apps and system principals.
+
 ## Types Of Authentication
 ### API Key
 In this type of authentication, we only require an API Key for authenticating the client and polling for Okta System Logs.
