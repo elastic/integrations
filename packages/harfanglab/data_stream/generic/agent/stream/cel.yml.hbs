@@ -1,0 +1,57 @@
+interval: {{interval}}
+resource.url: {{url}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+state:
+  token: "{{api_token}}"
+redact:
+  fields:
+    - token
+program: |
+  state.with(
+    get_request(state.url.trim_right("/") + "/api/data/connectors/elastic/pull/").with({
+      "Header": {
+        "Authorization": ["Token " + state.token],
+      },
+    }).do_request().as(resp,
+      {
+        "events": (resp.StatusCode == 200 && size(resp.Body) > 0) ?
+          resp.Body.decode_json().map(e, {"event": {"original": e.encode_json()}})
+        : resp.StatusCode != 200 ?
+          dyn({
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": resp.Status,
+              "message": "GET " + state.url.trim_right("/") + "/api/data/connectors/elastic/pull/: " + (
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  resp.Status + " (" + string(resp.StatusCode) + ")"
+              )
+            }
+          })
+        :
+          [],
+        "want_more": true, // This will be ignored if the events field has no elements.
+      }
+    )
+  )
+# Events always describe the remote host the HarfangLab agent runs on, and already
+# carry their own host fields, so agent host metadata must not be added.
+publisher_pipeline.disable_host: true
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

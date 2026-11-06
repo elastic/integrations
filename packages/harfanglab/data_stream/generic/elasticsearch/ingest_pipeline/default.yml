@@ -1,0 +1,116 @@
+---
+description: "Parses ECS-formatted JSON events received from the HarfangLab EDR."
+processors:
+  - set:
+      tag: copy_event_original_to_tmp
+      field: _original
+      copy_from: event.original
+  - json:
+      tag: json_decode_event_original
+      field: _original
+      add_to_root: true
+      add_to_root_conflict_strategy: replace
+  - set:
+      tag: restore_event_original
+      field: event.original
+      copy_from: _original
+  - set:
+      tag: set_host_name_from_hostname
+      field: host.name
+      copy_from: host.hostname
+      ignore_empty_value: true
+      override: false
+  - set:
+      tag: set_user_name_from_process_user
+      field: user.name
+      copy_from: process.user.name
+      ignore_empty_value: true
+      override: false
+  - set:
+      tag: set_labels_agent_type
+      field: labels.agent_type
+      copy_from: agent.type
+      ignore_empty_value: true
+      override: false
+      if: ctx.process?.entity_id != null
+  - set:
+      tag: set_agent_type_winlogbeat
+      field: agent.type
+      value: winlogbeat
+      if: ctx.process?.entity_id != null
+  - set:
+      tag: set_event_module_sysmon
+      field: event.module
+      value: sysmon
+      if: ctx.process?.entity_id != null
+  # The agent reports process creation as event.type "creation", which ECS does not
+  # allow for the process category (access, change, end, info, start). Map it to the
+  # ECS value. Only process events are touched: "creation" is a valid event.type for
+  # other categories, such as file.
+  - script:
+      tag: map_process_event_type_creation_to_start
+      lang: painless
+      if: >-
+        ctx.event?.category instanceof List && ctx.event.category.contains('process')
+        && ctx.event?.type instanceof List
+      source: |
+        for (int i = 0; i < ctx.event.type.size(); i++) {
+          if (ctx.event.type[i] == 'creation') {
+            ctx.event.type[i] = 'start';
+          }
+        }
+  # The agent emits fields that ECS does not define. Move them into the harfanglab
+  # vendor namespace rather than extending ECS objects in place.
+  - rename:
+      tag: rename_hlab_to_vendor_namespace
+      field: hlab
+      target_field: harfanglab
+      ignore_missing: true
+  - rename:
+      tag: rename_process_grandparent_entity_id
+      field: process.parent.parent.entity_id
+      target_field: harfanglab.process.parent.parent.entity_id
+      ignore_missing: true
+  - rename:
+      tag: rename_process_grandparent_command_line
+      field: process.parent.parent.command_line
+      target_field: harfanglab.process.parent.parent.command_line
+      ignore_missing: true
+  - rename:
+      tag: rename_process_grandparent_executable
+      field: process.parent.parent.executable
+      target_field: harfanglab.process.parent.parent.executable
+      ignore_missing: true
+  - remove:
+      tag: remove_tmp_fields
+      field:
+        - _original
+        - json
+        - process.parent.parent
+      ignore_missing: true
+  - drop:
+      tag: drop_empty_events
+      if: "ctx.event?.original == null || ctx.event?.original == '{}'"
+  # Must stay after drop_empty_events, which tests event.original.
+  - remove:
+      tag: remove_event_original
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_missing: true
+on_failure:
+  - set:
+      tag: set_event_kind_pipeline_error
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event_tag
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
+      tag: append_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
