@@ -1,0 +1,501 @@
+---
+description: Pipeline for BloodHound Enterprise attack path findings.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: "9.3.0"
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_json
+      if: ctx.event?.original != null
+  - script:
+      tag: snapshot_full_finding_instance
+      description: Shallow-copy the parsed API document before renames strip top-level json keys
+      lang: painless
+      source: |
+        if (ctx.json != null && ctx.json.collection_absent_reason == null) {
+          if (ctx.bloodhound_enterprise == null) {
+            ctx.bloodhound_enterprise = new HashMap();
+          }
+          ctx.bloodhound_enterprise.instance = new HashMap(ctx.json);
+        }
+      if: ctx.error?.message == null
+  - rename:
+      field: json.change_type
+      target_field: bloodhound_enterprise.change_type
+      tag: rename_change_type
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+      if: ctx.error?.message == null
+  - rename:
+      field: json.id
+      target_field: event.id
+      tag: rename_id_to_event_id
+      ignore_missing: true
+  - rename:
+      field: json.finding_type
+      target_field: bloodhound_enterprise.finding_type
+      tag: rename_finding_type
+      ignore_missing: true
+  - set:
+      field: bloodhound_enterprise.finding_type
+      copy_from: json.Finding
+      tag: set_finding_type_from_finding
+      ignore_empty_value: true
+      if: ctx.bloodhound_enterprise?.finding_type == null && ctx.json?.Finding != null
+  - rename:
+      field: json.Finding
+      target_field: event.action
+      tag: rename_finding_to_event_action
+      ignore_missing: true
+  - rename:
+      field: json.category
+      target_field: bloodhound_enterprise.category
+      tag: rename_category
+      ignore_missing: true
+  - rename:
+      field: json.severity
+      target_field: log.level
+      tag: rename_severity_to_log_level
+      ignore_missing: true
+  - rename:
+      field: json.Severity
+      target_field: log.level
+      tag: rename_severity_capitalized_to_log_level
+      ignore_missing: true
+      if: ctx.log?.level == null
+  - script:
+      tag: normalize_severity
+      description: Keep the BloodHound severity label, mapping moderate to medium
+      lang: painless
+      source: |
+        if (ctx.log != null && ctx.log.level != null) {
+          def lvl = ctx.log.level.toString().toLowerCase();
+          if (lvl == 'moderate') { lvl = 'medium'; }
+          ctx.log.level = lvl;
+        }
+  - set:
+      field: source.domain
+      tag: set_source_domain_from_domain_name
+      copy_from: json.domain_name
+      ignore_empty_value: true
+      if: ctx.source?.domain == null
+  - set:
+      field: source.domain
+      tag: set_source_domain_from_json_environment
+      copy_from: json.environment
+      ignore_empty_value: true
+      if: ctx.source?.domain == null
+  - rename:
+      field: json.environment
+      target_field: bloodhound_enterprise.environment
+      tag: rename_collection_environment
+      ignore_missing: true
+  - rename:
+      field: json.zone
+      target_field: bloodhound_enterprise.zone
+      tag: rename_collection_zone
+      ignore_missing: true
+  - rename:
+      field: json.collection_absent_reason
+      target_field: bloodhound_enterprise.collection_absent_reason
+      tag: rename_collection_absent_reason
+      ignore_missing: true
+  - rename:
+      field: json.collection_data_source
+      target_field: bloodhound_enterprise.collection_data_source
+      tag: rename_collection_data_source
+      ignore_missing: true
+  - rename:
+      field: json.collection_message
+      target_field: bloodhound_enterprise.collection_message
+      tag: rename_collection_message
+      ignore_missing: true
+  - set:
+      field: message
+      tag: set_message_from_collection_status
+      copy_from: bloodhound_enterprise.collection_message
+      ignore_empty_value: true
+      if: ctx.event?.action == 'collection_status' && ctx.bloodhound_enterprise?.collection_message != null
+  - set:
+      field: source.domain
+      tag: set_source_domain_from_environment
+      copy_from: json.Environment
+      ignore_empty_value: true
+      if: ctx.source?.domain == null
+  - rename:
+      field: json.DomainSID
+      target_field: bloodhound_enterprise.domain_sid
+      tag: rename_domain_sid
+      ignore_missing: true
+  - set:
+      field: user.domain
+      tag: set_user_domain
+      copy_from: json.Environment
+      ignore_empty_value: true
+  - set:
+      field: event.url
+      tag: set_event_url_from_graph_url
+      copy_from: json.graph_url
+      ignore_empty_value: true
+  - set:
+      field: event.url
+      tag: set_event_url_from_graph_url_capitalized
+      copy_from: json.GraphURL
+      ignore_empty_value: true
+      if: ctx.event?.url == null
+  - rename:
+      field: json.principal.name
+      target_field: user.name
+      tag: rename_principal_name_to_user_name
+      ignore_missing: true
+  - rename:
+      field: json.PrincipalName
+      target_field: user.name
+      tag: rename_api_principal_name_to_user_name
+      ignore_missing: true
+      if: ctx.user?.name == null
+  - rename:
+      field: json.Principal
+      target_field: user.id
+      tag: rename_api_principal_to_user_id
+      ignore_missing: true
+      if: ctx.user?.id == null
+  - rename:
+      field: json.PrincipalKind
+      target_field: bloodhound_enterprise.principal.kind
+      tag: rename_api_principal_kind
+      ignore_missing: true
+      if: ctx.bloodhound_enterprise?.principal?.kind == null
+  - rename:
+      field: json.FromPrincipalName
+      target_field: user.name
+      tag: rename_from_principal_name_to_user_name
+      ignore_missing: true
+      if: ctx.user?.name == null
+  - rename:
+      field: json.FromPrincipal
+      target_field: user.id
+      tag: rename_from_principal_to_user_id
+      ignore_missing: true
+  - rename:
+      field: json.FromPrincipalKind
+      target_field: bloodhound_enterprise.principal.kind
+      tag: rename_from_principal_kind
+      ignore_missing: true
+  - rename:
+      field: json.target.name
+      target_field: destination.user.name
+      tag: rename_target_name_to_destination_user_name
+      ignore_missing: true
+  - rename:
+      field: json.ToPrincipalName
+      target_field: destination.user.name
+      tag: rename_to_principal_name_to_destination_user_name
+      ignore_missing: true
+      if: ctx.destination?.user?.name == null
+  - rename:
+      field: json.ToPrincipal
+      target_field: destination.user.id
+      tag: rename_to_principal_to_destination_user_id
+      ignore_missing: true
+  - rename:
+      field: json.ToPrincipalKind
+      target_field: bloodhound_enterprise.target.kind
+      tag: rename_to_principal_kind
+      ignore_missing: true
+  - rename:
+      field: json.remediation.summary
+      target_field: bloodhound_enterprise.remediation
+      tag: rename_remediation_summary
+      ignore_missing: true
+  - rename:
+      field: json.remediation.documentation_url
+      target_field: rule.reference
+      tag: rename_remediation_documentation_url
+      ignore_missing: true
+  - rename:
+      field: json.impact_score
+      target_field: bloodhound_enterprise.impact_score
+      tag: rename_impact_score
+      ignore_missing: true
+  - rename:
+      field: json.ImpactPercentage
+      target_field: bloodhound_enterprise.impact_percentage
+      tag: rename_impact_percentage
+      ignore_missing: true
+  - rename:
+      field: json.ImpactCount
+      target_field: bloodhound_enterprise.impact_count
+      tag: rename_impact_count
+      ignore_missing: true
+  - rename:
+      field: json.ExposurePercentage
+      target_field: bloodhound_enterprise.exposure_percentage
+      tag: rename_exposure_percentage
+      ignore_missing: true
+  - rename:
+      field: json.ExposureCount
+      target_field: bloodhound_enterprise.exposure_count
+      tag: rename_exposure_count
+      ignore_missing: true
+  - rename:
+      field: json.AssetGroupTagID
+      target_field: bloodhound_enterprise.asset_group_tag_id
+      tag: rename_asset_group_tag_id
+      ignore_missing: true
+  - rename:
+      field: json.PrincipalHash
+      target_field: bloodhound_enterprise.principal_hash
+      tag: rename_principal_hash
+      ignore_missing: true
+  - rename:
+      field: json.Accepted
+      target_field: bloodhound_enterprise.accepted
+      tag: rename_accepted
+      ignore_missing: true
+  - rename:
+      field: json.IsInherited
+      target_field: bloodhound_enterprise.is_inherited
+      tag: rename_is_inherited
+      ignore_missing: true
+      if: ctx.json?.IsInherited instanceof Boolean
+  - rename:
+      field: json.FromPrincipalProps.operatingsystem
+      target_field: host.os.full
+      tag: rename_operating_system
+      ignore_missing: true
+  - rename:
+      field: json.attack_path_details.path_length
+      target_field: bloodhound_enterprise.attack_path.length
+      tag: rename_attack_path_length
+      ignore_missing: true
+  - rename:
+      field: json.attack_path_details.relationships
+      target_field: bloodhound_enterprise.attack_path.relationships
+      tag: rename_attack_path_relationships
+      ignore_missing: true
+  # Keep @timestamp as agent ingest/collection time so dashboards show when
+  # data was collected. Persist BloodHound's finding creation time on event.created.
+  - date:
+      field: json.created_at
+      target_field: event.created
+      tag: parse_event_created
+      formats:
+        - ISO8601
+      if: ctx.json?.created_at != null
+  - rename:
+      field: json.remediation
+      target_field: bloodhound_enterprise.remediation
+      tag: rename_remediation_string
+      ignore_missing: true
+      if: ctx.json?.remediation instanceof String
+  - rename:
+      field: json.finding_title
+      target_field: bloodhound_enterprise.title
+      tag: rename_finding_title
+      ignore_missing: true
+  - set:
+      field: bloodhound_enterprise.title
+      copy_from: json.title
+      tag: set_title_from_instance
+      ignore_empty_value: true
+      if: ctx.bloodhound_enterprise?.title == null && ctx.json?.title != null
+  - rename:
+      field: json.short_remediation
+      target_field: bloodhound_enterprise.short_remediation
+      tag: rename_short_remediation
+      ignore_missing: true
+  - rename:
+      field: json.long_remediation
+      target_field: bloodhound_enterprise.long_remediation
+      tag: rename_long_remediation
+      ignore_missing: true
+  - rename:
+      field: json.short_description
+      target_field: bloodhound_enterprise.short_description
+      tag: rename_short_description
+      ignore_missing: true
+  - rename:
+      field: json.long_description
+      target_field: bloodhound_enterprise.long_description
+      tag: rename_long_description
+      ignore_missing: true
+  - rename:
+      field: json.finding_references
+      target_field: bloodhound_enterprise.references
+      tag: rename_finding_references
+      ignore_missing: true
+  - remove:
+      field: bloodhound_enterprise.title
+      tag: remove_empty_finding_title
+      ignore_missing: true
+      if: ctx.bloodhound_enterprise?.title == ''
+  - rename:
+      field: json.finding_layout
+      target_field: bloodhound_enterprise.finding_layout
+      tag: rename_finding_layout
+      ignore_missing: true
+  - rename:
+      field: json.ComboGraphRelationID
+      target_field: bloodhound_enterprise.combo_graph_relation_id
+      tag: rename_combo_graph_relation_id
+      ignore_missing: true
+  - script:
+      tag: classify_finding_layout_and_copy_props
+      description: Classify API shape, copy Props objects, and preserve the full instance document for alerts and search
+      lang: painless
+      source: |
+        if (ctx.json == null || ctx.event?.action == 'collection_status') {
+          return;
+        }
+        if (ctx.bloodhound_enterprise == null) {
+          ctx.bloodhound_enterprise = new HashMap();
+        }
+        if (ctx.bloodhound_enterprise.finding_layout == null) {
+          if (ctx.json.FromPrincipal != null || ctx.json.ToPrincipal != null) {
+            ctx.bloodhound_enterprise.finding_layout = 'relationship';
+          } else if (ctx.json.Principal != null || ctx.json.PrincipalName != null) {
+            ctx.bloodhound_enterprise.finding_layout = 'single_principal';
+          } else if (ctx.json.principal != null) {
+            ctx.bloodhound_enterprise.finding_layout = 'legacy_nested';
+          }
+        }
+        if (ctx.json.Props != null) {
+          if (ctx.bloodhound_enterprise.principal == null) {
+            ctx.bloodhound_enterprise.principal = new HashMap();
+          }
+          ctx.bloodhound_enterprise.principal.properties = ctx.json.Props;
+        }
+        if (ctx.json.FromPrincipalProps != null) {
+          if (ctx.bloodhound_enterprise.from_principal == null) {
+            ctx.bloodhound_enterprise.from_principal = new HashMap();
+          }
+          ctx.bloodhound_enterprise.from_principal.properties = ctx.json.FromPrincipalProps;
+        }
+        if (ctx.json.ToPrincipalProps != null) {
+          if (ctx.bloodhound_enterprise.to_principal == null) {
+            ctx.bloodhound_enterprise.to_principal = new HashMap();
+          }
+          ctx.bloodhound_enterprise.to_principal.properties = ctx.json.ToPrincipalProps;
+        }
+        if (ctx.json.RelProps != null) {
+          if (ctx.bloodhound_enterprise.relationship == null) {
+            ctx.bloodhound_enterprise.relationship = new HashMap();
+          }
+          ctx.bloodhound_enterprise.relationship.properties = ctx.json.RelProps;
+        }
+        if (ctx.json.IsInherited instanceof String) {
+          def inherited = ctx.json.IsInherited.toString().equalsIgnoreCase('true');
+          ctx.bloodhound_enterprise.is_inherited = inherited;
+        }
+      if: ctx.error?.message == null
+  - script:
+      tag: set_host_name_from_computer
+      description: Use the BloodHound computer principal as the alert host
+      lang: painless
+      source: |
+        if (ctx.bloodhound_enterprise?.principal?.kind == 'Computer' && ctx.user?.name != null) {
+          if (ctx.host == null) { ctx.host = new HashMap(); }
+          ctx.host.name = ctx.user.name;
+        } else if (ctx.bloodhound_enterprise?.target?.kind == 'Computer' && ctx.destination?.user?.name != null) {
+          if (ctx.host == null) { ctx.host = new HashMap(); }
+          ctx.host.name = ctx.destination.user.name;
+        }
+      if: ctx.error?.message == null
+  - script:
+      tag: set_message_from_bloodhound_values
+      description: Build the alert message from the BloodHound finding, principals, environment, and zone
+      lang: painless
+      source: |
+        def title = ctx.bloodhound_enterprise?.title;
+        def kind = (title != null && title != '') ? title : ctx.event?.action;
+        if (kind != null && kind != '') {
+          def msg = kind;
+          if (ctx.user?.name != null && ctx.user.name != '') {
+            msg = msg + ': ' + ctx.user.name;
+            if (ctx.destination?.user?.name != null && ctx.destination.user.name != '') {
+              msg = msg + ' -> ' + ctx.destination.user.name;
+            }
+          } else if (ctx.destination?.user?.name != null && ctx.destination.user.name != '') {
+            msg = msg + ': ' + ctx.destination.user.name;
+          }
+          if (ctx.source?.domain != null && ctx.source.domain != '') {
+            msg = msg + ' (' + ctx.source.domain;
+            if (ctx.bloodhound_enterprise?.category != null && ctx.bloodhound_enterprise.category != '') {
+              msg = msg + ' / ' + ctx.bloodhound_enterprise.category;
+            }
+            msg = msg + ')';
+          }
+          ctx.message = msg;
+        }
+      if: ctx.error?.message == null
+  - append:
+      field: related.user
+      tag: append_user_name_to_related
+      value: "{{{user.name}}}"
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.user
+      tag: append_user_id_to_related
+      value: "{{{user.id}}}"
+      allow_duplicates: false
+      if: ctx.user?.id != null
+  - append:
+      field: related.user
+      tag: append_destination_user_name_to_related
+      value: "{{{destination.user.name}}}"
+      allow_duplicates: false
+      if: ctx.destination?.user?.name != null
+  - append:
+      field: related.user
+      tag: append_destination_user_id_to_related
+      value: "{{{destination.user.id}}}"
+      allow_duplicates: false
+      if: ctx.destination?.user?.id != null
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      tag: append_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event
+      value: preserve_original_event
+      allow_duplicates: false
