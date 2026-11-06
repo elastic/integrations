@@ -1,0 +1,72 @@
+{
+  "id": "gcp_bigquery_otel-batch-job-backlog-not-draining-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP BigQuery OTel] Batch job backlog not draining",
+        "description": "Alerts when non-interactive BigQuery jobs (batch-priority queries and load, copy, or extract jobs) have been pending in at least 90 one-minute samples of the last 2 hours without the queue draining to zero once. Batch work is expected to wait, so this is a warning-level backlog rule. One alert per project, location, and job type.",
+        "tags": [
+          "observability",
+          "gcp",
+          "bigquery",
+          "otel",
+          "queueing",
+          "jobs",
+          "batch"
+        ]
+      },
+      "schedule": {
+        "every": "15m",
+        "lookback": "120m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.bigquery.otel-*\n// Non-interactive jobs in PENDING state: batch-priority queries plus load/copy/extract jobs.\n// Batch work is designed to wait for idle capacity, so this rule only fires when the queue never drains.\n| WHERE resource.attributes.gcp.resource_type == \"bigquery_project\"\n  AND attributes.state == \"pending\"\n  AND NOT (attributes.job_type == \"query\" AND attributes.priority == \"interactive\")\n// Stage 1: one value per minute per logical series (MAX collapses fragmented TSIDs of the same series)\n| STATS pending = MAX(MAX_OVER_TIME(`metrics.bigquery.googleapis.com/job/num_in_flight`))\n    BY @timestamp = TBUCKET(1 minute), resource.attributes.project_id, resource.attributes.location, attributes.job_type, attributes.priority\n// Stage 2: pending jobs per job type per minute (summed across priorities)\n| STATS pending = SUM(pending)\n    BY @timestamp, resource.attributes.project_id, resource.attributes.location, attributes.job_type\n| WHERE pending IS NOT NULL\n// Customise: minimum pending jobs for a minute to count as backlogged\n| STATS backlogged_minutes = COUNT(*) WHERE pending >= 1,\n        drained_minutes = COUNT(*) WHERE pending < 1,\n        min_pending_jobs = MIN(pending),\n        peak_pending_jobs = MAX(pending),\n        latest_pending_jobs = LAST(pending, @timestamp)\n    BY resource.attributes.project_id, resource.attributes.location, attributes.job_type",
+        "breach": {
+          "segment": "// Customise: alert when jobs were pending in >= 90 one-minute samples and the queue never drained.\n// job/num_in_flight publishes up to ~12 minutes late, so a 120-minute window holds ~108 visible minutes.\nWHERE backlogged_minutes >= 90 AND drained_minutes == 0\n| SORT backlogged_minutes DESC, peak_pending_jobs DESC\n| LIMIT 50"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.project_id",
+          "resource.attributes.location",
+          "attributes.job_type"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_bigquery_otel-batch-job-backlog-not-draining-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## BigQuery batch job backlog not draining\n\nBatch-priority work, which waits for idle capacity by design, has not been able to start for about two hours. Pipelines that depend on these jobs (ETL, loads, exports) are falling behind.\n\n### Condition\n- Per minute: `job/num_in_flight` with `state == \"pending\"`, excluding interactive-priority queries, summed per project, location, and job type.\n- Alert when >= 1 job is pending in >= 90 one-minute samples within the 2-hour look-back, and no reported minute had an empty queue. About 108 minutes are visible because of the ~12-minute publish delay.\n\n### Triage\n1. Open the [GCP OTel] BigQuery dashboard and check jobs in flight by state, slots allocated, and reservation utilisation.\n2. Pending batch queries: the reservation or on-demand pool has had no idle capacity for hours. Check the reservation saturation alert.\n3. Pending load jobs: the shared load slot pool or the assigned `PIPELINE` reservation is exhausted, or load quotas are being hit.\n4. Check for a single long-running job holding capacity.\n\n### Tuning\n- `backlogged_minutes >= 90`: persistence.\n- `drained_minutes == 0`: remove this condition to alert on mostly-pending queues that occasionally drain.\n- To page on this rule, also route it by job type. Load backlogs usually matter more than batch query backlogs.\n\n### Notes\n- Data: `metrics-gcp.bigquery.otel-*` (OTel `googlecloudmonitoring` receiver). Dashboard: [GCP OTel] BigQuery.\n- GCP publishes BigQuery metrics with a delay, so the look-back is longer than the condition and the newest minutes are never treated as zero.\n- The query returns at most 50 breaching rows; each returned row is one alert. Thresholds are marked `// Customise:` in the query."
+          }
+        },
+        {
+          "id": "gcp_bigquery_otel-batch-job-backlog-not-draining-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_bigquery_otel-600aa5b2-b9c4-4a6f-88a6-065d465b968d"
+          }
+        }
+      ]
+    }
+  }
+}
