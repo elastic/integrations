@@ -115,7 +115,9 @@ Bundled dashboards summarize these data streams for day-to-day monitoring, risk 
 
 Device assets from the `compute` data stream populate ECS host entity fields, so they appear as host entities. A host is identified by `host.id`, which is the Axonius `internal_axon_id`, so every adapter record of a device contributes to the same entity; the same re-correlation caveat applies. The device UUID reported by an adapter is kept in `axonius.compute.uuid`. The last activity of a host comes from agent check-in times (`last_contact_time`, then `last_seen_agents`), so devices seen only by scanners or CMDB adapters have no last activity. User assets link to the devices Axonius associates with them through `user.entity.relationships.owns`; Axonius associates a device with the users that last used it.
 
-This identification, the host and user attributes, the last activity, and the relationships apply to the Entity Store from Kibana 9.4. On Kibana 8.19 and 9.3, the Entity Store identifies hosts by `host.name` and users by `user.name` only, so adapter records of one device that report different names appear as separate hosts.
+SaaS applications, business applications, admin managed extensions, user initiated extensions and application add-ons from the `application` data stream populate ECS service entity fields, so they appear as service entities. The Entity Store identifies a service only by `service.name`, which is the Axonius application name, so every record with the same name merges into one entity, whatever its asset type. For example, a SaaS application named `Bamboo HR` and `Bamboo HR` extensions found in Okta or Microsoft Entra ID become one service entity. Identity `accounts` records also carry the name of the product they connect to in `service.name`, so they merge into the service of the same name. On application assets, `service.id` and `service.entity.id` hold the Axonius `internal_axon_id`, so a service merged from several Axonius assets lists all of their IDs in `service.id`, together with the adapter application IDs of any identity `accounts` records merged into it; the same re-correlation caveat applies. Per-user extension instances, application keys and the other application asset types don't create service entities. Extensions link to the platform that holds the grant (`source_application`) through `service.entity.relationships.depends_on`, and user assets link to the applications they administer through `user.entity.relationships.administers`, which matches a service entity only when the names are identical.
+
+This identification, the host, user and service attributes, the last activity, and the relationships apply to the Entity Store from Kibana 9.4. On Kibana 8.19 and 9.3, the Entity Store identifies hosts by `host.name` and users by `user.name` only, so adapter records of one device that report different names appear as separate hosts. Services are identified by `service.name` on those versions too, but their attributes, last activity and relationships aren't read.
 
 ## What do I need to use this integration?
 
@@ -1200,26 +1202,22 @@ An example event for `storage` looks as following:
 {
     "@timestamp": "2025-12-09T00:02:07.000Z",
     "agent": {
-        "ephemeral_id": "3b94b470-a638-445f-b513-7e99edec75cb",
-        "id": "309c48b0-7459-46eb-a2f8-dcde33d565ba",
-        "name": "elastic-agent-15395",
+        "ephemeral_id": "3ca3f35a-60aa-4229-a4d2-3803a824522c",
+        "id": "adf89da7-1f7e-47b9-b1e6-8d3301711d42",
+        "name": "elastic-agent-50889",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "9.5.0"
     },
     "axonius": {
         "storage": {
             "accurate_for_datetime": "2025-12-09T00:02:07.000Z",
             "adapter_list_length": 1,
-            "adapters": [
-                "aws_adapter"
-            ],
+            "adapters": "aws_adapter",
             "application_and_account_name": "aws/aws-demo",
             "asset_type": "object_storages",
             "data_asset_type": "AWS S3",
             "event": {
-                "adapter_categories": [
-                    "Cloud Infra"
-                ],
+                "adapter_categories": "Cloud Infra",
                 "client_used": "67fd09ab731ccb57309230fc",
                 "initial_plugin_unique_name": "aws_adapter_0",
                 "plugin_name": "aws_adapter",
@@ -1240,45 +1238,47 @@ An example event for `storage` looks as following:
             "name": "dacFdDeed650092F-core-dev",
             "not_fetched_count": 0,
             "source_application": "AWS",
-            "tenant_number": [
-                3
-            ],
+            "tenant_number": 3,
             "transform_unique_id": "F4v8WC8HAVaWiuI1JMnuCrtPcl8=",
             "type": "ObjectStorage",
-            "urls": [
-                "https://dacFdDeed650092F-core-dev.s3.amazonaws.com"
-            ]
+            "urls": "https://dacFdDeed650092F-core-dev.s3.amazonaws.com"
         }
     },
     "data_stream": {
         "dataset": "axonius.storage",
-        "namespace": "71306",
+        "namespace": "74788",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "309c48b0-7459-46eb-a2f8-dcde33d565ba",
+        "id": "adf89da7-1f7e-47b9-b1e6-8d3301711d42",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "9.5.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
-            "file",
-            "host"
+            "configuration"
         ],
         "created": "2024-12-25T22:16:51.000Z",
         "dataset": "axonius.storage",
-        "ingested": "2026-06-03T07:51:11Z",
+        "ingested": "2026-11-06T08:36:07Z",
         "kind": "event",
+        "module": "axonius",
         "type": [
             "info"
         ]
     },
     "input": {
         "type": "cel"
+    },
+    "labels": {
+        "is_transform_source": "true"
+    },
+    "observer": {
+        "vendor": "Axonius"
     },
     "tags": [
         "forwarded",
@@ -3194,9 +3194,9 @@ An example event for `compute` looks as following:
 {
     "@timestamp": "2025-12-05T00:02:00.000Z",
     "agent": {
-        "ephemeral_id": "31c8a857-aff1-44bf-b2db-add34788eeef",
-        "id": "26da61c9-1d88-4bea-b966-1c2b15afe4cc",
-        "name": "elastic-agent-31719",
+        "ephemeral_id": "1fcb4690-3e1d-491d-841b-4294531fdb5e",
+        "id": "738df7e7-01e0-4cc5-9063-ccab1964645e",
+        "name": "elastic-agent-53802",
         "type": "filebeat",
         "version": "9.5.0"
     },
@@ -3253,24 +3253,24 @@ An example event for `compute` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.compute",
-        "namespace": "96121",
+        "namespace": "47318",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "26da61c9-1d88-4bea-b966-1c2b15afe4cc",
+        "id": "738df7e7-01e0-4cc5-9063-ccab1964645e",
         "snapshot": false,
         "version": "9.5.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
-            "host"
+            "configuration"
         ],
         "dataset": "axonius.compute",
-        "ingested": "2026-11-04T17:32:19Z",
+        "ingested": "2026-11-06T08:37:17Z",
         "kind": "event",
         "module": "axonius",
         "type": [
@@ -3304,460 +3304,472 @@ The `application` data stream provides application asset logs from axonius.
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
-| axonius.compute.accurate_for_datetime | Timestamp indicating when this asset information was accurate. | date |
-| axonius.compute.adapter_list_length | How many adapters contributed to this asset. | long |
-| axonius.compute.adapter_properties | Properties or metadata from the adapter that collected this data. | keyword |
-| axonius.compute.adapters | List of adapters that created this asset. | keyword |
-| axonius.compute.agent_versions.adapter_name | The name of the adapter. | keyword |
-| axonius.compute.agent_versions.agent_version | The version of the agent. | keyword |
-| axonius.compute.agent_versions.agent_version_raw | The raw version string of the agent. | keyword |
-| axonius.compute.all_associated_email_addresses | All email addresses associated with this asset. | keyword |
-| axonius.compute.anti_malware_agent_status | The status of the anti-malware agent on this asset. | keyword |
-| axonius.compute.anti_malware_agent_status_message | Status message from the anti-malware agent. | keyword |
-| axonius.compute.anti_malware_state | The current state of anti-malware protection. | keyword |
-| axonius.compute.appliance_sites | The appliance sites for this compute asset. | keyword |
-| axonius.compute.application_and_account_name | The application and account name associated with the asset. | keyword |
-| axonius.compute.architecture | The architecture for this compute asset. | keyword |
-| axonius.compute.arp_interface | The ARP (Address Resolution Protocol) interface identifier. | keyword |
-| axonius.compute.arp_port | The port associated with the ARP interface. | keyword |
-| axonius.compute.arp_status | The operational status of the ARP protocol on this interface. | keyword |
-| axonius.compute.arp_ttl | The Time-To-Live (TTL) value for ARP packets. | long |
-| axonius.compute.assessed_for_policies | Indicates whether this asset has been assessed for policies. | boolean |
-| axonius.compute.assessed_for_vulnerabilities | Indicates whether this asset has been assessed for vulnerabilities. | boolean |
-| axonius.compute.asset_entity_info | Information about the asset entity and its properties. | keyword |
-| axonius.compute.asset_install_status | The installation status of software or services on this asset. | keyword |
-| axonius.compute.asset_tag | A custom tag or label assigned to this asset. | keyword |
-| axonius.compute.asset_type | The type of asset. | keyword |
-| axonius.compute.asset_user_name | The asset user name for this compute asset. | keyword |
-| axonius.compute.associated_device_users.internal_axon_id | Internal Axonius ID of the associated user. | keyword |
-| axonius.compute.associated_device_users.is_latest_used_user | Indicates if this is the most recently used user on the device. | boolean |
-| axonius.compute.associated_device_users.last_used_departments | Departments associated with the last used user. | keyword |
-| axonius.compute.associated_device_users.last_used_email | Email address of the last used user. | keyword |
-| axonius.compute.associated_device_users.last_used_email_domain | Email domain of the last used user. | keyword |
-| axonius.compute.associated_device_users.last_used_user_manager | Manager of the last used user. | keyword |
-| axonius.compute.associated_saas_applications.internal_axon_id | Internal Axonius ID of the SaaS application. | keyword |
-| axonius.compute.associated_saas_applications.name | Name of the SaaS application. | keyword |
-| axonius.compute.aws_organization.arn | The arn on the aws organization for this compute asset. | keyword |
-| axonius.compute.aws_organization.available_policy_types.status | The status on the available policy types for this compute asset. | keyword |
-| axonius.compute.aws_organization.available_policy_types.type | The type on the available policy types for this compute asset. | keyword |
-| axonius.compute.aws_organization.feature_set | The feature set on the aws organization for this compute asset. | keyword |
-| axonius.compute.aws_organization.id | The id on the aws organization for this compute asset. | keyword |
-| axonius.compute.aws_organization.master_account_arn | The master account arn on the aws organization for this compute asset. | keyword |
-| axonius.compute.aws_organization.master_account_email | The master account email on the aws organization for this compute asset. | keyword |
-| axonius.compute.aws_organization.master_account_id | The master account id on the aws organization for this compute asset. | keyword |
-| axonius.compute.aws_region | The aws region for this compute asset. | keyword |
-| axonius.compute.axon_id | The unique Axonius identifier for this asset. | keyword |
-| axonius.compute.axonius_instance_name | The name of the Axonius instance that collected this data. | keyword |
-| axonius.compute.browsers.channel | The distribution channel reported for the browser. | keyword |
-| axonius.compute.browsers.version | The version of the browser. | keyword |
-| axonius.compute.capture_device | The capture device for this compute asset. | keyword |
-| axonius.compute.category | The category or classification of the compute device or entity. | keyword |
-| axonius.compute.certificate_expiry_date | The date when the SSL/TLS certificate expires. | date |
-| axonius.compute.chrome_device_type | The Chrome device type classification. | keyword |
-| axonius.compute.cisa_vulnerabilities.action | Recommended action for this vulnerability. | keyword |
-| axonius.compute.cisa_vulnerabilities.added | Date when this vulnerability was added to CISA list. | date |
-| axonius.compute.cisa_vulnerabilities.cve_id | CVE (Common Vulnerabilities and Exposures) identifier. | keyword |
-| axonius.compute.cisa_vulnerabilities.desc | Description of the vulnerability. | keyword |
-| axonius.compute.cisa_vulnerabilities.due_date | Due date for remediation of this vulnerability. | date |
-| axonius.compute.cisa_vulnerabilities.notes | Additional notes about the vulnerability. | keyword |
-| axonius.compute.cisa_vulnerabilities.product | Product affected by this vulnerability. | keyword |
-| axonius.compute.cisa_vulnerabilities.used_in_ransomware | Indicates if this vulnerability is known to be used in ransomware attacks. | boolean |
-| axonius.compute.cisa_vulnerabilities.vendor | Vendor of the affected product. | keyword |
-| axonius.compute.cisa_vulnerabilities.vulnerability_name | Name or title of the vulnerability. | keyword |
-| axonius.compute.class_name | The class name or system classification of this asset. | keyword |
-| axonius.compute.class_title | The display title or human-readable name of the class. | keyword |
-| axonius.compute.class_type | The type of class or classification category. | keyword |
-| axonius.compute.cloud_provider_account_id | The account ID in the cloud provider where this asset is located. | keyword |
-| axonius.compute.cmdb_business_applications.app_owner | Owner of the application. | keyword |
-| axonius.compute.cmdb_business_applications.assignment_group | Assignment group responsible for the application. | keyword |
-| axonius.compute.cmdb_business_applications.business_criticality | Business criticality rating of the application. | keyword |
-| axonius.compute.cmdb_business_applications.install_status | Installation status of the application. | keyword |
-| axonius.compute.cmdb_business_applications.managed_by | Entity or team managing this application. | keyword |
-| axonius.compute.cmdb_business_applications.name | Name of the business application. | keyword |
-| axonius.compute.cmdb_business_applications.number | Reference number in CMDB. | keyword |
-| axonius.compute.cmdb_business_applications.u_architect | Architect responsible for the application. | keyword |
-| axonius.compute.cmdb_business_applications.u_availability_criticality | Availability criticality rating. | keyword |
-| axonius.compute.cmdb_business_applications.u_confidentiality_criticality | Confidentiality criticality rating. | keyword |
-| axonius.compute.cmdb_business_applications.u_crown_jewel | Indicates if this is a crown jewel application. | boolean |
-| axonius.compute.cmdb_business_applications.u_integrity_criticality | Integrity criticality rating. | keyword |
-| axonius.compute.cmdb_business_applications.u_privacy_criticality | Privacy criticality rating. | keyword |
-| axonius.compute.color | A color code or label assigned to this asset for visual organization. | keyword |
-| axonius.compute.common_users | Users commonly associated with or using this asset. | keyword |
-| axonius.compute.company | The company or organization that owns or manages this asset. | keyword |
-| axonius.compute.confidence_level | The confidence level or score for the asset data (0-100). | long |
-| axonius.compute.connected_assets | Other assets connected to or associated with this compute device. | keyword |
-| axonius.compute.connected_devices | Devices directly connected to this compute device. | keyword |
-| axonius.compute.cp_type | CloudPath or custom property type classification. | keyword |
-| axonius.compute.cpus.cores | Number of CPU cores. | long |
-| axonius.compute.cpus.ghz | CPU speed in gigahertz (GHz). | double |
-| axonius.compute.cpus.manufacturer | Manufacturer of the CPU. | keyword |
-| axonius.compute.cpus.name | Model name of the CPU. | keyword |
-| axonius.compute.create_time | The create time for this compute asset. | date |
-| axonius.compute.creation_date | The creation date for this compute asset. | date |
-| axonius.compute.criticality | The criticality level assigned to this asset. | keyword |
-| axonius.compute.custom_risk_owner | Custom owner or stakeholder assigned for risk management. | keyword |
-| axonius.compute.data_asset_type | The asset type from compute event data, distinguishing from root asset_type. | keyword |
-| axonius.compute.data_center | The data center location or identifier for this compute device. | keyword |
-| axonius.compute.description | The description of the asset. | text |
-| axonius.compute.device_manufacturer | The manufacturer of the compute device. | keyword |
-| axonius.compute.device_model | The model of the compute device. | keyword |
-| axonius.compute.device_serial | The serial number of the compute device. | keyword |
-| axonius.compute.device_type | The type or form factor of the compute device. | keyword |
-| axonius.compute.disk_encryption_configuration | Configuration details for disk encryption on this asset. | keyword |
-| axonius.compute.domain | The DNS domain or network domain this asset belongs to. | keyword |
-| axonius.compute.ebs_volumes.create_time | The create time on the ebs volumes for this compute asset. | date |
-| axonius.compute.ebs_volumes.encrypted | The encrypted on the ebs volumes for this compute asset. | boolean |
-| axonius.compute.ebs_volumes.iops | The iops on the ebs volumes for this compute asset. | long |
-| axonius.compute.ebs_volumes.name | The name on the ebs volumes for this compute asset. | keyword |
-| axonius.compute.ebs_volumes.size | The size on the ebs volumes for this compute asset. | double |
-| axonius.compute.ebs_volumes.snapshot_id | The snapshot id on the ebs volumes for this compute asset. | keyword |
-| axonius.compute.ebs_volumes.volume_type | The volume type on the ebs volumes for this compute asset. | keyword |
-| axonius.compute.encrypted | The encrypted for this compute asset. | boolean |
-| axonius.compute.enrichment_type | The enrichment type for this compute asset. | keyword |
-| axonius.compute.entity_id | The unique entity identifier within the system. | keyword |
-| axonius.compute.entry_point | The entry point for this compute asset. | keyword |
-| axonius.compute.environment | The environment for this compute asset. | keyword |
-| axonius.compute.epo_host | The epo host for this compute asset. | keyword |
-| axonius.compute.epo_id | The epo id for this compute asset. | keyword |
-| axonius.compute.epo_products | The epo products for this compute asset. | keyword |
-| axonius.compute.event.accurate_for_datetime | Timestamp indicating when the event data was accurate. | date |
-| axonius.compute.event.action_if_exists | The action to apply when processing this device event, if present. | keyword |
-| axonius.compute.event.adapter_categories | List of adapter categories that this event belongs to. | keyword |
-| axonius.compute.event.associated_adapter_plugin_name | The associated plugin name that created or processed the event. | keyword |
-| axonius.compute.event.association_type | The type of association between the event and related entities. | keyword |
-| axonius.compute.event.client_used | The client identifier that was used to process the event. | keyword |
-| axonius.compute.event.enrichment_type | The enrichment type applied to this event. | keyword |
-| axonius.compute.event.entity | The entity type represented by this event. | keyword |
-| axonius.compute.event.hidden_for_gui | Indicates whether this event is hidden from the Axonius GUI. | boolean |
-| axonius.compute.event.initial_plugin_unique_name | The initial plugin name that created or processed the event. | keyword |
-| axonius.compute.event.name | The Axonius event name. | keyword |
-| axonius.compute.event.plugin_name | The name of the plugin that processed the event. | keyword |
-| axonius.compute.event.plugin_type | The type or category of the plugin that processed the event. | keyword |
-| axonius.compute.event.plugin_unique_name | The unique identifier of the plugin instance that processed the event. | keyword |
-| axonius.compute.event.quick_id | A quick reference identifier combining plugin and entity information. | keyword |
-| axonius.compute.event.type | The Axonius event type classification. | keyword |
-| axonius.compute.excluded_software_cves | The excluded software cves for this compute asset. | keyword |
-| axonius.compute.external_cloud_account_id | The external cloud account id for this compute asset. | keyword |
-| axonius.compute.external_ip | The external ip for this compute asset. | ip |
-| axonius.compute.external_nat_ip | The external nat ip for this compute asset. | ip |
-| axonius.compute.fetch_proto | The fetch proto for this compute asset. | keyword |
-| axonius.compute.fetch_time | The date and time when the compute device data was last fetched. | date |
-| axonius.compute.fields_to_unset | The fields to unset for this compute asset. | keyword |
-| axonius.compute.fingerprint | The fingerprint for this compute asset. | keyword |
-| axonius.compute.firewall_enabled | The firewall enabled for this compute asset. | boolean |
-| axonius.compute.firewall_rules.direction | The direction on the firewall rules for this compute asset. | keyword |
-| axonius.compute.firewall_rules.from_port | The from port on the firewall rules for this compute asset. | long |
-| axonius.compute.firewall_rules.name | The name on the firewall rules for this compute asset. | keyword |
-| axonius.compute.firewall_rules.protocol | The protocol on the firewall rules for this compute asset. | keyword |
-| axonius.compute.firewall_rules.source | The source on the firewall rules for this compute asset. | keyword |
-| axonius.compute.firewall_rules.target_ip | The target ip on the firewall rules for this compute asset. | ip |
-| axonius.compute.firewall_rules.target_subnet_count | The target subnet count on the firewall rules for this compute asset. | long |
-| axonius.compute.firewall_rules.target_subnet_mask | The target subnet mask on the firewall rules for this compute asset. | long |
-| axonius.compute.firewall_rules.to_port | The to port on the firewall rules for this compute asset. | long |
-| axonius.compute.firewall_rules.type | The type on the firewall rules for this compute asset. | keyword |
-| axonius.compute.first_fetch_time | The date and time when this compute device was first fetched. | date |
-| axonius.compute.first_seen | The date and time when this compute device was first observed. | date |
-| axonius.compute.fqdn | Fully Qualified Domain Name of this asset. | keyword |
-| axonius.compute.free_physical_memory | The free physical memory for this compute asset. | double |
-| axonius.compute.from_last_fetch | Indicates whether this compute device was modified since the last fetch. | boolean |
-| axonius.compute.general.extension_name | The extension name on the general for this compute asset. | keyword |
-| axonius.compute.general.extension_value | The extension value on the general for this compute asset. | keyword |
-| axonius.compute.generic_encryption.status | The status on the generic encryption for this compute asset. | boolean |
-| axonius.compute.ghost | The ghost for this compute asset. | boolean |
-| axonius.compute.guest_dns_name | The guest dns name for this compute asset. | keyword |
-| axonius.compute.guest_family | The guest family for this compute asset. | keyword |
-| axonius.compute.guest_name | The guest name for this compute asset. | keyword |
-| axonius.compute.guest_state | The guest state for this compute asset. | keyword |
-| axonius.compute.hard_drives.free_size | The free size on the hard drives for this compute asset. | double |
-| axonius.compute.hard_drives.is_encrypted | The is encrypted on the hard drives for this compute asset. | boolean |
-| axonius.compute.hard_drives.total_size | The total size on the hard drives for this compute asset. | double |
-| axonius.compute.hardware_status | The hardware status for this compute asset. | keyword |
-| axonius.compute.hostname | The hostname for this compute asset. | keyword |
-| axonius.compute.hosts.last_vm_scan_date | The last vm scan date on the hosts for this compute asset. | date |
-| axonius.compute.hosts.last_vm_scan_duration | The last vm scan duration on the hosts for this compute asset. | double |
-| axonius.compute.hosts.last_vulm_scan_datetime | The last vulm scan datetime on the hosts for this compute asset. | date |
-| axonius.compute.id | Unique identifier for the compute device. | keyword |
-| axonius.compute.id_raw | Raw unique identifier for the compute device. | keyword |
-| axonius.compute.identifier.lifecycle_status | The lifecycle status of the asset. | keyword |
-| axonius.compute.identifier.os_family | The operating system family of the asset. | keyword |
-| axonius.compute.in_groups | The in groups for this compute asset. | keyword |
-| axonius.compute.install_status | The install status for this compute asset. | keyword |
-| axonius.compute.installed_software.generated_cpe | The generated cpe on the installed software for this compute asset. | keyword |
-| axonius.compute.installed_software.name | The name on the installed software for this compute asset. | keyword |
-| axonius.compute.installed_software.name_version | The name version on the installed software for this compute asset. | keyword |
-| axonius.compute.installed_software.sw_uid | The sw uid on the installed software for this compute asset. | keyword |
-| axonius.compute.installed_software.vendor | The vendor on the installed software for this compute asset. | keyword |
-| axonius.compute.installed_software.vendor_publisher | The vendor publisher on the installed software for this compute asset. | boolean |
-| axonius.compute.installed_software.version | The version on the installed software for this compute asset. | keyword |
-| axonius.compute.installed_software.version_raw | The version raw on the installed software for this compute asset. | keyword |
-| axonius.compute.internal_axon_id | Internal Axonius identifier for this asset, which may change across normalizations. | keyword |
-| axonius.compute.ip_address_guid | The ip address guid for this compute asset. | keyword |
-| axonius.compute.is_authenticated_scan | The is authenticated scan for this compute asset. | boolean |
-| axonius.compute.is_fetched_from_adapter | Indicates whether this compute device data was fetched from an adapter. | boolean |
-| axonius.compute.is_fragile | Indicates whether this device is considered fragile for automated actions. | boolean |
-| axonius.compute.is_latest_last_seen | Indicates if this is the latest recorded last-seen timestamp. | boolean |
-| axonius.compute.is_managed | The is managed for this compute asset. | boolean |
-| axonius.compute.is_network_infra_device | Indicates whether this device is classified as network infrastructure. | boolean |
-| axonius.compute.is_purchased | The is purchased for this compute asset. | boolean |
-| axonius.compute.jamf_groups | The jamf groups for this compute asset. | keyword |
-| axonius.compute.jamf_groups_detailed.group_id | The group id on the jamf groups detailed for this compute asset. | keyword |
-| axonius.compute.jamf_groups_detailed.group_name | The group name on the jamf groups detailed for this compute asset. | keyword |
-| axonius.compute.jamf_groups_detailed.smart_group | The smart group on the jamf groups detailed for this compute asset. | boolean |
-| axonius.compute.jamf_id | The jamf id for this compute asset. | keyword |
-| axonius.compute.jamf_location.building | The building on the jamf location for this compute asset. | keyword |
-| axonius.compute.jamf_location.email_address | The email address on the jamf location for this compute asset. | keyword |
-| axonius.compute.jamf_location.phone_number | The phone number on the jamf location for this compute asset. | keyword |
-| axonius.compute.jamf_location.position | The position on the jamf location for this compute asset. | keyword |
-| axonius.compute.jamf_location.real_name | The real name on the jamf location for this compute asset. | keyword |
-| axonius.compute.jamf_location.room | The room on the jamf location for this compute asset. | keyword |
-| axonius.compute.jamf_location.username | The username on the jamf location for this compute asset. | keyword |
-| axonius.compute.jamf_version | The jamf version for this compute asset. | keyword |
-| axonius.compute.keep_hostname_empty | The keep hostname empty for this compute asset. | boolean |
-| axonius.compute.labels | Labels or tags associated with this compute device. | keyword |
-| axonius.compute.last_agent_import | The last agent import for this compute asset. | date |
-| axonius.compute.last_auth_run | The last auth run for this compute asset. | date |
-| axonius.compute.last_contact_time | The last contact time for this compute asset. | date |
-| axonius.compute.last_enrolled_date_utc | The last enrolled date utc for this compute asset. | date |
-| axonius.compute.last_fetch_connection_id | The connection ID of the adapter that last fetched this data. | keyword |
-| axonius.compute.last_fetch_connection_label | The label of the connection that last fetched this compute device data. | keyword |
-| axonius.compute.last_scan | The last scan for this compute asset. | date |
-| axonius.compute.last_seen | The date and time when this compute device was last observed. | date |
-| axonius.compute.last_seen_agents | The last seen agents for this compute asset. | date |
-| axonius.compute.last_unauth_run | The last unauth run for this compute asset. | date |
-| axonius.compute.last_used_users | The last used users for this compute asset. | keyword |
-| axonius.compute.last_used_users_departments_association | Association between last used users and their departments. | keyword |
-| axonius.compute.last_used_users_email_domain_association | Association between last used users and their email domains. | keyword |
-| axonius.compute.last_used_users_internal_axon_id_association | Association between last used users and their internal Axonius IDs. | keyword |
-| axonius.compute.last_used_users_mail_association | Association between last used users and their email addresses. | keyword |
-| axonius.compute.last_used_users_user_manager_association | Association between last used users and their managers. | keyword |
-| axonius.compute.last_used_users_user_manager_mail_association | Association between last used users and their managers' email addresses. | keyword |
-| axonius.compute.last_used_users_user_status_association | Association between last used users and their account status. | keyword |
-| axonius.compute.last_used_users_user_title_association | Association between last used users and their job titles. | keyword |
-| axonius.compute.last_vuln_scan | The last vuln scan for this compute asset. | date |
-| axonius.compute.latest_used_user | The most recently used user account on this asset. | keyword |
-| axonius.compute.latest_used_user_department | Department of the most recently used user. | keyword |
-| axonius.compute.latest_used_user_email_domain | Email domain of the most recently used user. | keyword |
-| axonius.compute.latest_used_user_mail | Email address of the most recently used user. | keyword |
-| axonius.compute.latest_used_user_user_manager | Manager of the most recently used user. | keyword |
-| axonius.compute.latest_used_user_user_status | Account status of the most recently used user. | keyword |
-| axonius.compute.latest_used_user_user_title | Job title of the most recently used user. | keyword |
-| axonius.compute.linked_tickets.category | The category on the linked tickets for this compute asset. | keyword |
-| axonius.compute.linked_tickets.created | The created on the linked tickets for this compute asset. | date |
-| axonius.compute.linked_tickets.description | The description on the linked tickets for this compute asset. | text |
-| axonius.compute.linked_tickets.display_id | The display id on the linked tickets for this compute asset. | keyword |
-| axonius.compute.linked_tickets.priority | The priority on the linked tickets for this compute asset. | keyword |
-| axonius.compute.linked_tickets.reporter | The reporter on the linked tickets for this compute asset. | keyword |
-| axonius.compute.linked_tickets.status | The status on the linked tickets for this compute asset. | keyword |
-| axonius.compute.linked_tickets.summary | The summary on the linked tickets for this compute asset. | text |
-| axonius.compute.linked_tickets.updated | The updated on the linked tickets for this compute asset. | date |
-| axonius.compute.lock | The lock for this compute asset. | keyword |
-| axonius.compute.meeting_id | The meeting id for this compute asset. | keyword |
-| axonius.compute.memory_size | The memory size for this compute asset. | double |
-| axonius.compute.microphone | The microphone for this compute asset. | keyword |
-| axonius.compute.name | The name or identifier of the compute device. | keyword |
-| axonius.compute.nat_policy_ips.address | The address on the nat policy ips for this compute asset. | ip |
-| axonius.compute.nat_policy_ips.direction | The direction on the nat policy ips for this compute asset. | keyword |
-| axonius.compute.nat_policy_ips.matched_on | The matched on on the nat policy ips for this compute asset. | keyword |
-| axonius.compute.nat_policy_ips.policy_name | The policy name on the nat policy ips for this compute asset. | keyword |
-| axonius.compute.nat_policy_ips.rule_num | The rule num on the nat policy ips for this compute asset. | long |
-| axonius.compute.nat_policy_ips.uid | The uid on the nat policy ips for this compute asset. | keyword |
-| axonius.compute.network | The network for this compute asset. | keyword |
-| axonius.compute.network_interfaces.ips | The ips on the network interfaces for this compute asset. | keyword |
-| axonius.compute.network_interfaces.ips_raw | The ips raw on the network interfaces for this compute asset. | long |
-| axonius.compute.network_interfaces.ips_v4 | The ips v4 on the network interfaces for this compute asset. | keyword |
-| axonius.compute.network_interfaces.ips_v4_raw | The ips v4 raw on the network interfaces for this compute asset. | long |
-| axonius.compute.network_interfaces.mac | The mac on the network interfaces for this compute asset. | keyword |
-| axonius.compute.network_interfaces.manufacturer | The manufacturer on the network interfaces for this compute asset. | keyword |
-| axonius.compute.network_interfaces.subnets | The subnets on the network interfaces for this compute asset. | keyword |
-| axonius.compute.network_status | The network status for this compute asset. | keyword |
-| axonius.compute.network_type | The network type for this compute asset. | keyword |
-| axonius.compute.nexpose_id | The nexpose id for this compute asset. | keyword |
-| axonius.compute.nexpose_type | The nexpose type for this compute asset. | keyword |
-| axonius.compute.node_id | The Axonius server node ID. | keyword |
-| axonius.compute.node_name | The Axonius server node name. | keyword |
-| axonius.compute.normalization_reasons.calculated_time | The calculated time on the normalization reasons for this compute asset. | date |
-| axonius.compute.normalization_reasons.key | The key on the normalization reasons for this compute asset. | keyword |
-| axonius.compute.normalization_reasons.original | The original on the normalization reasons for this compute asset. | keyword |
-| axonius.compute.normalization_reasons.reason | The reason on the normalization reasons for this compute asset. | keyword |
-| axonius.compute.not_fetched_count | The number of times this asset failed to be fetched. | long |
-| axonius.compute.open_ports.port_id | The port id on the open ports for this compute asset. | keyword |
-| axonius.compute.open_ports.protocol | The protocol on the open ports for this compute asset. | keyword |
-| axonius.compute.operational_status | The operational status for this compute asset. | keyword |
-| axonius.compute.organizational_unit | The organizational unit for this compute asset. | keyword |
-| axonius.compute.os.codename | The codename on the os for this compute asset. | keyword |
-| axonius.compute.os.distribution | The distribution on the os for this compute asset. | keyword |
-| axonius.compute.os.distribution_name | The distribution name on the os for this compute asset. | keyword |
-| axonius.compute.os.end_of_life | The end of life on the os for this compute asset. | date |
-| axonius.compute.os.end_of_support | The end of support on the os for this compute asset. | date |
-| axonius.compute.os.is_end_of_life | The is end of life on the os for this compute asset. | boolean |
-| axonius.compute.os.is_end_of_support | The is end of support on the os for this compute asset. | boolean |
-| axonius.compute.os.is_latest_os_version | The is latest os version on the os for this compute asset. | boolean |
-| axonius.compute.os.is_windows_server | The is windows server on the os for this compute asset. | boolean |
-| axonius.compute.os.latest_os_version | The latest os version on the os for this compute asset. | keyword |
-| axonius.compute.os.major | The major on the os for this compute asset. | long |
-| axonius.compute.os.minor | The minor on the os for this compute asset. | long |
-| axonius.compute.os.os_cpe | The os cpe on the os for this compute asset. | keyword |
-| axonius.compute.os.os_dotted | The os dotted on the os for this compute asset. | keyword |
-| axonius.compute.os.os_dotted_raw | The os dotted raw on the os for this compute asset. | keyword |
-| axonius.compute.os.os_str | The os str on the os for this compute asset. | keyword |
-| axonius.compute.os.type | The type on the os for this compute asset. | keyword |
-| axonius.compute.os.type_distribution | The type distribution on the os for this compute asset. | keyword |
-| axonius.compute.os_ext_attributes.attr_name | The attr name on the os ext attributes for this compute asset. | keyword |
-| axonius.compute.os_ext_attributes.data_type | The data type on the os ext attributes for this compute asset. | keyword |
-| axonius.compute.os_ext_attributes.definition_id | The definition id on the os ext attributes for this compute asset. | keyword |
-| axonius.compute.os_ext_attributes.ext_description | The ext description on the os ext attributes for this compute asset. | text |
-| axonius.compute.os_ext_attributes.input_type | The input type on the os ext attributes for this compute asset. | keyword |
-| axonius.compute.os_ext_attributes.is_enabled | The is enabled on the os ext attributes for this compute asset. | boolean |
-| axonius.compute.os_ext_attributes.is_multivalue | The is multivalue on the os ext attributes for this compute asset. | boolean |
-| axonius.compute.os_ext_attributes.values | The values on the os ext attributes for this compute asset. | keyword |
-| axonius.compute.owner | The owner for this compute asset. | keyword |
-| axonius.compute.paloalto_device_type | The paloalto device type for this compute asset. | keyword |
-| axonius.compute.part_of_domain | The part of domain for this compute asset. | boolean |
-| axonius.compute.physical_location | The physical location for this compute asset. | keyword |
-| axonius.compute.physical_memory_percentage | The physical memory percentage for this compute asset. | double |
-| axonius.compute.plugin_and_severities.cve | The cve on the plugin and severities for this compute asset. | keyword |
-| axonius.compute.plugin_and_severities.has_been_mitigated | The has been mitigated on the plugin and severities for this compute asset. | boolean |
-| axonius.compute.plugin_and_severities.mitigated | The mitigated on the plugin and severities for this compute asset. | boolean |
-| axonius.compute.plugin_and_severities.plugin | The plugin on the plugin and severities for this compute asset. | keyword |
-| axonius.compute.policy_id | The policy id for this compute asset. | keyword |
-| axonius.compute.policy_name | The policy name for this compute asset. | keyword |
-| axonius.compute.power_state | The power state for this compute asset. | keyword |
-| axonius.compute.pretty_id | A human-readable identifier for the compute device. | keyword |
-| axonius.compute.protocols | The protocols for this compute asset. | keyword |
-| axonius.compute.qualys_agent_vulns.first_found | The first found on the qualys agent vulns for this compute asset. | date |
-| axonius.compute.qualys_agent_vulns.last_found | The last found on the qualys agent vulns for this compute asset. | date |
-| axonius.compute.qualys_agent_vulns.qid | The qid on the qualys agent vulns for this compute asset. | keyword |
-| axonius.compute.qualys_agent_vulns.qualys_cve_id | The qualys cve id on the qualys agent vulns for this compute asset. | keyword |
-| axonius.compute.qualys_agent_vulns.qualys_solution | The qualys solution on the qualys agent vulns for this compute asset. | keyword |
-| axonius.compute.qualys_agent_vulns.severity | The severity on the qualys agent vulns for this compute asset. | long |
-| axonius.compute.qualys_agent_vulns.vuln_id | The vuln id on the qualys agent vulns for this compute asset. | keyword |
-| axonius.compute.ranger_version | The ranger version for this compute asset. | keyword |
-| axonius.compute.raw_hostname | The raw hostname for this compute asset. | keyword |
-| axonius.compute.read_only | The read only for this compute asset. | boolean |
-| axonius.compute.recording | The recording for this compute asset. | boolean |
-| axonius.compute.relatable_ids | IDs used to relate this identity to other assets. | keyword |
-| axonius.compute.relative_path | The relative path for this compute asset. | keyword |
-| axonius.compute.report_date | The report date for this compute asset. | date |
-| axonius.compute.resource_group | The resource group for this compute asset. | keyword |
-| axonius.compute.risk_level | The risk level for this compute asset. | keyword |
-| axonius.compute.roles | The roles for this compute asset. | keyword |
-| axonius.compute.scan_results | The scan results for this compute asset. | keyword |
-| axonius.compute.scan_results_objs.id | The id on the scan results objs for this compute asset. | keyword |
-| axonius.compute.scan_results_objs.name | The name on the scan results objs for this compute asset. | keyword |
-| axonius.compute.scan_results_objs.status | The status on the scan results objs for this compute asset. | keyword |
-| axonius.compute.scanner | Indicates whether the asset is a vulnerability scanner. | boolean |
-| axonius.compute.security_updates_last_changed | The security updates last changed for this compute asset. | date |
-| axonius.compute.security_updates_status | The security updates status for this compute asset. | keyword |
-| axonius.compute.services.display_name | The display name on the services for this compute asset. | keyword |
-| axonius.compute.services.hash_id | The hash id on the services for this compute asset. | keyword |
-| axonius.compute.services.state | The state on the services for this compute asset. | keyword |
-| axonius.compute.severity_critical | The severity critical for this compute asset. | long |
-| axonius.compute.severity_high | The severity high for this compute asset. | long |
-| axonius.compute.severity_info | The severity info for this compute asset. | long |
-| axonius.compute.severity_low | The severity low for this compute asset. | long |
-| axonius.compute.severity_medium | The severity medium for this compute asset. | long |
-| axonius.compute.share_application | The share application for this compute asset. | boolean |
-| axonius.compute.share_desktop | The share desktop for this compute asset. | boolean |
-| axonius.compute.share_whiteboard | The share whiteboard for this compute asset. | boolean |
-| axonius.compute.sip_status | The sip status for this compute asset. | boolean |
-| axonius.compute.site_name | The site name for this compute asset. | keyword |
-| axonius.compute.size | The size for this compute asset. | double |
-| axonius.compute.software_cves.axonius_risk_score | The axonius risk score on the software cves for this compute asset. | double |
-| axonius.compute.software_cves.axonius_status | The axonius status on the software cves for this compute asset. | keyword |
-| axonius.compute.software_cves.axonius_status_last_update | The axonius status last update on the software cves for this compute asset. | date |
-| axonius.compute.software_cves.custom_software_cves_business_unit | The custom software cves business unit on the software cves for this compute asset. | keyword |
-| axonius.compute.software_cves.custom_software_cves_exception_justification | The custom software cves exception justification on the software cves for this compute asset. | keyword |
-| axonius.compute.software_cves.custom_software_cves_exception_status | The custom software cves exception status on the software cves for this compute asset. | keyword |
-| axonius.compute.software_cves.cve_from_sw_analysis | The cve from sw analysis on the software cves for this compute asset. | boolean |
-| axonius.compute.software_cves.cve_id | The cve id on the software cves for this compute asset. | keyword |
-| axonius.compute.software_cves.cve_list | The cve list on the software cves for this compute asset. | keyword |
-| axonius.compute.software_cves.cve_severity | The cve severity on the software cves for this compute asset. | keyword |
-| axonius.compute.software_cves.cve_synopsis | The cve synopsis on the software cves for this compute asset. | keyword |
-| axonius.compute.software_cves.cvss | The cvss on the software cves for this compute asset. | float |
-| axonius.compute.software_cves.cvss2_score | The cvss2 score on the software cves for this compute asset. | float |
-| axonius.compute.software_cves.cvss2_score_num | The cvss2 score num on the software cves for this compute asset. | float |
-| axonius.compute.software_cves.cvss3_score | The cvss3 score on the software cves for this compute asset. | float |
-| axonius.compute.software_cves.cvss3_score_num | The cvss3 score num on the software cves for this compute asset. | float |
-| axonius.compute.software_cves.cvss4_score | The cvss4 score on the software cves for this compute asset. | float |
-| axonius.compute.software_cves.cvss4_score_num | The cvss4 score num on the software cves for this compute asset. | float |
-| axonius.compute.software_cves.cvss_str | The cvss str on the software cves for this compute asset. | keyword |
-| axonius.compute.software_cves.cvss_vector | The cvss vector on the software cves for this compute asset. | keyword |
-| axonius.compute.software_cves.cvss_version | The cvss version on the software cves for this compute asset. | keyword |
-| axonius.compute.software_cves.cwe_id | The cwe id on the software cves for this compute asset. | keyword |
-| axonius.compute.software_cves.epss.creation_date | The creation date on the epss for this compute asset. | date |
-| axonius.compute.software_cves.epss.cve_id | The cve id on the epss for this compute asset. | keyword |
-| axonius.compute.software_cves.epss.percentile | The percentile on the epss for this compute asset. | double |
-| axonius.compute.software_cves.epss.score | The score on the epss for this compute asset. | double |
-| axonius.compute.software_cves.exploitability_score | The exploitability score on the software cves for this compute asset. | float |
-| axonius.compute.software_cves.first_fetch_time | The first fetch time on the software cves for this compute asset. | date |
-| axonius.compute.software_cves.hash_id | The hash id on the software cves for this compute asset. | keyword |
-| axonius.compute.software_cves.impact_score | The impact score on the software cves for this compute asset. | float |
-| axonius.compute.software_cves.last_fetch_time | The last fetch time on the software cves for this compute asset. | date |
-| axonius.compute.software_cves.last_modified_date | The last modified date on the software cves for this compute asset. | date |
-| axonius.compute.software_cves.mitigated | The mitigated on the software cves for this compute asset. | boolean |
-| axonius.compute.software_cves.msrc.creation_date | The creation date on the msrc for this compute asset. | date |
-| axonius.compute.software_cves.msrc.cve_id | The cve id on the msrc for this compute asset. | keyword |
-| axonius.compute.software_cves.msrc.title | The title on the msrc for this compute asset. | keyword |
-| axonius.compute.software_cves.nvd_publish_age | The nvd publish age on the software cves for this compute asset. | long |
-| axonius.compute.software_cves.publish_date | The publish date on the software cves for this compute asset. | date |
-| axonius.compute.software_cves.software_name | The software name on the software cves for this compute asset. | keyword |
-| axonius.compute.software_cves.software_type | The software type on the software cves for this compute asset. | keyword |
-| axonius.compute.software_cves.software_vendor | The software vendor on the software cves for this compute asset. | keyword |
-| axonius.compute.software_cves.software_version | The software version on the software cves for this compute asset. | keyword |
-| axonius.compute.software_cves.solution_hash_id | The solution hash id on the software cves for this compute asset. | keyword |
-| axonius.compute.software_cves.status | The status on the software cves for this compute asset. | keyword |
-| axonius.compute.software_cves.version_raw | The version raw on the software cves for this compute asset. | keyword |
-| axonius.compute.source_application | The source application that provided this identity data. | keyword |
-| axonius.compute.speaker | The speaker for this compute asset. | keyword |
-| axonius.compute.special_hint | The special hint for this compute asset. | long |
-| axonius.compute.special_hint_underscore | The special hint underscore for this compute asset. | keyword |
-| axonius.compute.state | The current state or operational condition of the compute device. | keyword |
-| axonius.compute.status | Current status of the identity account. | keyword |
-| axonius.compute.subnet_tag | The subnet tag for this compute asset. | keyword |
-| axonius.compute.subscription_id | The subscription id for this compute asset. | keyword |
-| axonius.compute.subscription_name | The subscription name for this compute asset. | keyword |
-| axonius.compute.swap_free | The swap free for this compute asset. | float |
-| axonius.compute.swap_total | The swap total for this compute asset. | long |
-| axonius.compute.sys_id | The sys id for this compute asset. | keyword |
-| axonius.compute.table_type | The table type for this compute asset. | keyword |
-| axonius.compute.tags.tag_key | The tag key on the tags for this compute asset. | keyword |
-| axonius.compute.tags.tag_source | The tag source on the tags for this compute asset. | keyword |
-| axonius.compute.tags.tag_value | The tag value on the tags for this compute asset. | keyword |
-| axonius.compute.tenant_number | Tenant number associated with this identity. | long |
-| axonius.compute.threat_level | The threat level for this compute asset. | keyword |
-| axonius.compute.threats | The threats for this compute asset. | keyword |
-| axonius.compute.total | The total for this compute asset. | long |
-| axonius.compute.total_number_of_cores | The total number of cores for this compute asset. | long |
-| axonius.compute.total_physical_memory | The total physical memory for this compute asset. | double |
-| axonius.compute.transform_unique_id | Unique identifier for this asset in the transformation process. | keyword |
-| axonius.compute.type | The type or classification of the compute device. | keyword |
-| axonius.compute.u_business_owner | The u business owner for this compute asset. | keyword |
-| axonius.compute.u_business_unit | The u business unit for this compute asset. | keyword |
-| axonius.compute.uniq_sites_count | The uniq sites count for this compute asset. | long |
-| axonius.compute.uri | The uri for this compute asset. | keyword |
-| axonius.compute.uuid | The uuid for this compute asset. | keyword |
-| axonius.compute.vendor | The vendor for this compute asset. | keyword |
-| axonius.compute.virtual_host | Indicates whether the asset is a virtual host. | boolean |
-| axonius.compute.virtual_zone | The virtual zone for this compute asset. | keyword |
-| axonius.compute.vpn_domain | The vpn domain for this compute asset. | keyword |
-| axonius.compute.vpn_is_local | The vpn is local for this compute asset. | boolean |
-| axonius.compute.vpn_lifetime | The vpn lifetime for this compute asset. | long |
-| axonius.compute.vpn_public_ip | The vpn public ip for this compute asset. | ip |
-| axonius.compute.vpn_tunnel_type | The vpn tunnel type for this compute asset. | keyword |
-| axonius.compute.vpn_type | The vpn type for this compute asset. | keyword |
-| axonius.compute.z_sys_class_name | The z sys class name for this compute asset. | keyword |
-| axonius.compute.z_table_hierarchy.name | The name on the z table hierarchy for this compute asset. | keyword |
-| axonius.compute.zoom_ip | The zoom ip for this compute asset. | ip |
+| axonius.application._id |  | keyword |
+| axonius.application.account_name |  | keyword |
+| axonius.application.accurate_for_datetime |  | date |
+| axonius.application.action.name |  | keyword |
+| axonius.application.action.timestamp |  | date |
+| axonius.application.action.type |  | keyword |
+| axonius.application.active_licenses |  | long |
+| axonius.application.active_licenses_link.bracketWeight |  | long |
+| axonius.application.active_licenses_link.compOp |  | keyword |
+| axonius.application.active_licenses_link.field |  | keyword |
+| axonius.application.active_licenses_link.leftBracket |  | long |
+| axonius.application.active_licenses_link.logicOp |  | keyword |
+| axonius.application.active_licenses_link.not |  | boolean |
+| axonius.application.active_licenses_link.rightBracket |  | long |
+| axonius.application.active_licenses_link.value |  | keyword |
+| axonius.application.active_users |  | long |
+| axonius.application.active_users_saved_query_id |  | keyword |
+| axonius.application.activity_status |  | keyword |
+| axonius.application.activity_status_active |  | long |
+| axonius.application.activity_status_active_hyperlink.bracketWeight |  | long |
+| axonius.application.activity_status_active_hyperlink.compOp |  | keyword |
+| axonius.application.activity_status_active_hyperlink.field |  | keyword |
+| axonius.application.activity_status_active_hyperlink.leftBracket |  | long |
+| axonius.application.activity_status_active_hyperlink.logicOp |  | keyword |
+| axonius.application.activity_status_active_hyperlink.not |  | boolean |
+| axonius.application.activity_status_active_hyperlink.rightBracket |  | long |
+| axonius.application.activity_status_active_hyperlink.value |  | keyword |
+| axonius.application.activity_status_inactive |  | long |
+| axonius.application.activity_status_inactive_hyperlink.bracketWeight |  | long |
+| axonius.application.activity_status_inactive_hyperlink.compOp |  | keyword |
+| axonius.application.activity_status_inactive_hyperlink.field |  | keyword |
+| axonius.application.activity_status_inactive_hyperlink.leftBracket |  | long |
+| axonius.application.activity_status_inactive_hyperlink.logicOp |  | keyword |
+| axonius.application.activity_status_inactive_hyperlink.not |  | boolean |
+| axonius.application.activity_status_inactive_hyperlink.rightBracket |  | long |
+| axonius.application.activity_status_inactive_hyperlink.value |  | keyword |
+| axonius.application.actor.remote_id |  | keyword |
+| axonius.application.actor.username |  | keyword |
+| axonius.application.actor_state.location.country |  | keyword |
+| axonius.application.actor_state.location.remote_ip |  | ip |
+| axonius.application.actor_state.remote_ip |  | ip |
+| axonius.application.actual_renewal_date |  | date |
+| axonius.application.adapter_list_length |  | long |
+| axonius.application.adapters |  | keyword |
+| axonius.application.admin_non_operational_users |  | long |
+| axonius.application.admin_non_operational_users_saved_query_id |  | keyword |
+| axonius.application.admin_operational_active_users |  | long |
+| axonius.application.admin_operational_active_users_saved_query_id |  | keyword |
+| axonius.application.admin_operational_inactive_users |  | long |
+| axonius.application.admin_operational_inactive_users_saved_query_id |  | keyword |
+| axonius.application.admin_operational_users |  | long |
+| axonius.application.admin_operational_users_saved_query_id |  | keyword |
+| axonius.application.admins |  | long |
+| axonius.application.admins_saved_query_id |  | keyword |
+| axonius.application.affiliated_users |  | long |
+| axonius.application.affiliated_users_saved_query_id |  | keyword |
+| axonius.application.aggregated_extension_types |  | keyword |
+| axonius.application.amount |  | double |
+| axonius.application.app_id |  | keyword |
+| axonius.application.application_and_account_name |  | keyword |
+| axonius.application.application_resource_id |  | keyword |
+| axonius.application.application_resource_type |  | keyword |
+| axonius.application.application_type |  | keyword |
+| axonius.application.approval_status |  | keyword |
+| axonius.application.approval_status_meta.last_modified |  | date |
+| axonius.application.approval_status_meta.last_modified_by |  | keyword |
+| axonius.application.approval_status_meta.software_name |  | keyword |
+| axonius.application.approval_status_meta.software_vendor |  | keyword |
+| axonius.application.approval_status_meta.source |  | keyword |
+| axonius.application.asset_type |  | keyword |
+| axonius.application.associated_license_users.email |  | keyword |
+| axonius.application.associated_license_users.internal_axon_id |  | keyword |
+| axonius.application.associated_license_users.username |  | keyword |
+| axonius.application.associated_users.user_activity_status |  | keyword |
+| axonius.application.associated_users.username |  | keyword |
+| axonius.application.association_scope |  | keyword |
+| axonius.application.auth_type |  | keyword |
+| axonius.application.base_url |  | keyword |
+| axonius.application.business_criticality |  | keyword |
+| axonius.application.business_owner |  | keyword |
+| axonius.application.categories |  | keyword |
+| axonius.application.category |  | keyword |
+| axonius.application.cloud_id |  | keyword |
+| axonius.application.cloud_provider |  | keyword |
+| axonius.application.compliance.name |  | keyword |
+| axonius.application.configuration_values.configuration_value |  | keyword |
+| axonius.application.configuration_values.entity_remote_id |  | keyword |
+| axonius.application.configuration_values.is_valid |  | boolean |
+| axonius.application.configuration_values.name |  | keyword |
+| axonius.application.configuration_values.raw_setting_name |  | keyword |
+| axonius.application.configuration_values.recommendation |  | keyword |
+| axonius.application.configuration_values.role.display_name |  | keyword |
+| axonius.application.configuration_values.role.remote_id |  | keyword |
+| axonius.application.configuration_values.value |  | keyword |
+| axonius.application.cost |  | double |
+| axonius.application.created |  | date |
+| axonius.application.custom_properties.is_identity |  | boolean |
+| axonius.application.data_asset_type |  | keyword |
+| axonius.application.data_at_rest_encryption |  | boolean |
+| axonius.application.data_hold_IP |  | boolean |
+| axonius.application.data_hold_PII |  | boolean |
+| axonius.application.data_hold_customers_data |  | boolean |
+| axonius.application.data_transport_encryption |  | boolean |
+| axonius.application.deleted_users |  | long |
+| axonius.application.deleted_users_saved_query_id |  | keyword |
+| axonius.application.department |  | keyword |
+| axonius.application.description |  | text |
+| axonius.application.devices_count |  | long |
+| axonius.application.devices_count_link.bracketWeight |  | long |
+| axonius.application.devices_count_link.comp_op |  | keyword |
+| axonius.application.devices_count_link.field |  | keyword |
+| axonius.application.devices_count_link.leftBracket |  | long |
+| axonius.application.devices_count_link.logic_op |  | keyword |
+| axonius.application.devices_count_link.not |  | boolean |
+| axonius.application.devices_count_link.rightBracket |  | long |
+| axonius.application.devices_count_link.value |  | keyword |
+| axonius.application.direct_not_sso_users |  | long |
+| axonius.application.direct_not_sso_users_saved_query_id |  | keyword |
+| axonius.application.discovery_indicators |  | keyword |
+| axonius.application.dns_discovered_users |  | long |
+| axonius.application.dns_discovered_users_saved_query_id |  | keyword |
+| axonius.application.domain |  | keyword |
+| axonius.application.employees_count |  | keyword |
+| axonius.application.end_date |  | date |
+| axonius.application.event.accurate_for_datetime |  | date |
+| axonius.application.event.action_if_exists |  | keyword |
+| axonius.application.event.adapter_categories |  | keyword |
+| axonius.application.event.associated_adapter_plugin_name |  | keyword |
+| axonius.application.event.association_type |  | keyword |
+| axonius.application.event.client_used |  | keyword |
+| axonius.application.event.entity |  | keyword |
+| axonius.application.event.hidden_for_gui |  | boolean |
+| axonius.application.event.initial_plugin_unique_name |  | keyword |
+| axonius.application.event.name |  | keyword |
+| axonius.application.event.plugin_name |  | keyword |
+| axonius.application.event.plugin_type |  | keyword |
+| axonius.application.event.plugin_unique_name |  | keyword |
+| axonius.application.event.quick_id |  | keyword |
+| axonius.application.event.type |  | keyword |
+| axonius.application.excessive_read |  | long |
+| axonius.application.excessive_read_link.bracketWeight |  | long |
+| axonius.application.excessive_read_link.compOp |  | keyword |
+| axonius.application.excessive_read_link.field |  | keyword |
+| axonius.application.excessive_read_link.leftBracket |  | long |
+| axonius.application.excessive_read_link.logicOp |  | keyword |
+| axonius.application.excessive_read_link.not |  | boolean |
+| axonius.application.excessive_read_link.rightBracket |  | long |
+| axonius.application.excessive_read_link.value |  | keyword |
+| axonius.application.excessive_write |  | long |
+| axonius.application.excessive_write_link.bracketWeight |  | long |
+| axonius.application.excessive_write_link.compOp |  | keyword |
+| axonius.application.excessive_write_link.field |  | keyword |
+| axonius.application.excessive_write_link.leftBracket |  | long |
+| axonius.application.excessive_write_link.logicOp |  | keyword |
+| axonius.application.excessive_write_link.not |  | boolean |
+| axonius.application.excessive_write_link.rightBracket |  | long |
+| axonius.application.excessive_write_link.value |  | keyword |
+| axonius.application.expense_amount |  | long |
+| axonius.application.expense_amount_hyperlink.bracketWeight |  | long |
+| axonius.application.expense_amount_hyperlink.compOp |  | keyword |
+| axonius.application.expense_amount_hyperlink.field |  | keyword |
+| axonius.application.expense_amount_hyperlink.leftBracket |  | long |
+| axonius.application.expense_amount_hyperlink.logicOp |  | keyword |
+| axonius.application.expense_amount_hyperlink.not |  | boolean |
+| axonius.application.expense_amount_hyperlink.rightBracket |  | long |
+| axonius.application.expense_amount_hyperlink.value |  | keyword |
+| axonius.application.extension_type |  | keyword |
+| axonius.application.external_users |  | double |
+| axonius.application.external_users_saved_query_id |  | keyword |
+| axonius.application.fetch_time |  | date |
+| axonius.application.first_fetch_time |  | date |
+| axonius.application.first_seen |  | date |
+| axonius.application.founding_year |  | keyword |
+| axonius.application.from_last_fetch |  | boolean |
+| axonius.application.funds_raised |  | keyword |
+| axonius.application.generated_from_entities |  | keyword |
+| axonius.application.grant_types |  | keyword |
+| axonius.application.hints |  | keyword |
+| axonius.application.hq |  | keyword |
+| axonius.application.id |  | keyword |
+| axonius.application.id_raw |  | keyword |
+| axonius.application.impact |  | keyword |
+| axonius.application.inactive_licenses |  | long |
+| axonius.application.inactive_licenses_link.bracketWeight |  | long |
+| axonius.application.inactive_licenses_link.compOp |  | keyword |
+| axonius.application.inactive_licenses_link.field |  | keyword |
+| axonius.application.inactive_licenses_link.leftBracket |  | long |
+| axonius.application.inactive_licenses_link.logicOp |  | keyword |
+| axonius.application.inactive_licenses_link.not |  | boolean |
+| axonius.application.inactive_licenses_link.rightBracket |  | long |
+| axonius.application.inactive_licenses_link.value |  | keyword |
+| axonius.application.inactive_users |  | long |
+| axonius.application.inactive_users_saved_query_id |  | keyword |
+| axonius.application.install_status |  | keyword |
+| axonius.application.installed_software.end_of_life |  | date |
+| axonius.application.installed_software.end_of_support |  | date |
+| axonius.application.installed_software.generated_cpe |  | keyword |
+| axonius.application.installed_software.has_reached_end_of_life |  | boolean |
+| axonius.application.installed_software.has_reached_end_of_support |  | boolean |
+| axonius.application.installed_software.last_used_date |  | date |
+| axonius.application.installed_software.name |  | keyword |
+| axonius.application.installed_software.name_version |  | keyword |
+| axonius.application.installed_software.publisher |  | keyword |
+| axonius.application.installed_software.source |  | keyword |
+| axonius.application.installed_software.sw_hash |  | keyword |
+| axonius.application.installed_software.sw_uid |  | keyword |
+| axonius.application.installed_software.vendor |  | keyword |
+| axonius.application.installed_software.vendor_publisher |  | keyword |
+| axonius.application.installed_software.version |  | keyword |
+| axonius.application.installed_software.version_raw |  | keyword |
+| axonius.application.installed_sw |  | keyword |
+| axonius.application.integration_type |  | keyword |
+| axonius.application.internal_axon_id |  | keyword |
+| axonius.application.internet_exposure |  | keyword |
+| axonius.application.ip_addresses |  | ip |
+| axonius.application.is_active_license |  | boolean |
+| axonius.application.is_active_license_from_adapter |  | boolean |
+| axonius.application.is_adapter_exists |  | boolean |
+| axonius.application.is_admin |  | long |
+| axonius.application.is_admin_hyperlink.bracketWeight |  | long |
+| axonius.application.is_admin_hyperlink.compOp |  | keyword |
+| axonius.application.is_admin_hyperlink.field |  | keyword |
+| axonius.application.is_admin_hyperlink.leftBracket |  | long |
+| axonius.application.is_admin_hyperlink.logicOp |  | keyword |
+| axonius.application.is_admin_hyperlink.not |  | boolean |
+| axonius.application.is_admin_hyperlink.rightBracket |  | long |
+| axonius.application.is_admin_hyperlink.value |  | keyword |
+| axonius.application.is_discovered |  | boolean |
+| axonius.application.is_excluded |  | boolean |
+| axonius.application.is_fetched_from_adapter |  | boolean |
+| axonius.application.is_from_axonius_catalog |  | boolean |
+| axonius.application.is_identity |  | long |
+| axonius.application.is_identity_hyperlink.bracketWeight |  | long |
+| axonius.application.is_identity_hyperlink.compOp |  | keyword |
+| axonius.application.is_identity_hyperlink.field |  | keyword |
+| axonius.application.is_identity_hyperlink.leftBracket |  | long |
+| axonius.application.is_identity_hyperlink.logicOp |  | keyword |
+| axonius.application.is_identity_hyperlink.not |  | boolean |
+| axonius.application.is_identity_hyperlink.rightBracket |  | long |
+| axonius.application.is_identity_hyperlink.value |  | keyword |
+| axonius.application.is_managed |  | boolean |
+| axonius.application.is_managed_by_connected_app |  | boolean |
+| axonius.application.is_managed_by_sso |  | boolean |
+| axonius.application.is_managed_or_admin_consent |  | boolean |
+| axonius.application.is_managed_or_bookmark |  | boolean |
+| axonius.application.is_managed_or_bookmark_or_admin_consent |  | boolean |
+| axonius.application.is_operational |  | boolean |
+| axonius.application.it_application_owner |  | keyword |
+| axonius.application.labels |  | keyword |
+| axonius.application.last_access |  | date |
+| axonius.application.last_enrichment_run |  | date |
+| axonius.application.last_fetch_connection_id |  | keyword |
+| axonius.application.last_fetch_connection_label |  | keyword |
+| axonius.application.last_seen |  | date |
+| axonius.application.last_used |  | date |
+| axonius.application.last_used_date |  | date |
+| axonius.application.level |  | keyword |
+| axonius.application.license_cost |  | double |
+| axonius.application.license_cost_hyperlink.bracketWeight |  | long |
+| axonius.application.license_cost_hyperlink.compOp |  | keyword |
+| axonius.application.license_cost_hyperlink.field |  | keyword |
+| axonius.application.license_cost_hyperlink.leftBracket |  | long |
+| axonius.application.license_cost_hyperlink.logicOp |  | keyword |
+| axonius.application.license_cost_hyperlink.not |  | boolean |
+| axonius.application.license_cost_hyperlink.rightBracket |  | long |
+| axonius.application.license_cost_hyperlink.value |  | keyword |
+| axonius.application.license_estimated_monthly_cost |  | double |
+| axonius.application.license_estimated_yearly_cost |  | double |
+| axonius.application.license_name |  | keyword |
+| axonius.application.license_status |  | keyword |
+| axonius.application.license_type |  | keyword |
+| axonius.application.link |  | keyword |
+| axonius.application.link_path |  | keyword |
+| axonius.application.managed_by |  | keyword |
+| axonius.application.managed_non_operational_users |  | long |
+| axonius.application.managed_non_operational_users_saved_query_id |  | keyword |
+| axonius.application.managed_operational_users |  | long |
+| axonius.application.managed_operational_users_saved_query_id |  | keyword |
+| axonius.application.managed_users |  | long |
+| axonius.application.managed_users_by_app |  | long |
+| axonius.application.managed_users_by_app_saved_query_id |  | keyword |
+| axonius.application.managed_users_by_sso |  | long |
+| axonius.application.managed_users_by_sso_saved_query_id |  | keyword |
+| axonius.application.managed_users_saved_query_id |  | keyword |
+| axonius.application.name |  | keyword |
+| axonius.application.never_accessed |  | boolean |
+| axonius.application.not_fetched_count |  | long |
+| axonius.application.number |  | keyword |
+| axonius.application.number_of_active_associated_users |  | long |
+| axonius.application.number_of_associated_users |  | long |
+| axonius.application.number_of_inactive_associated_users |  | long |
+| axonius.application.operational_status |  | keyword |
+| axonius.application.orphaned_users |  | long |
+| axonius.application.orphaned_users_saved_query_id |  | keyword |
+| axonius.application.owner |  | keyword |
+| axonius.application.paid_users |  | long |
+| axonius.application.paid_users_saved_query_id |  | keyword |
+| axonius.application.parent_company |  | keyword |
+| axonius.application.permissions.alias |  | keyword |
+| axonius.application.permissions.hash_id |  | keyword |
+| axonius.application.permissions.is_admin |  | boolean |
+| axonius.application.permissions.name |  | keyword |
+| axonius.application.permissions.scope_tag |  | keyword |
+| axonius.application.permissions.users_amount |  | long |
+| axonius.application.policy_DPA |  | keyword |
+| axonius.application.policy_password_policy |  | keyword |
+| axonius.application.policy_privacy_policy |  | keyword |
+| axonius.application.policy_security_policy |  | keyword |
+| axonius.application.policy_termination_notice |  | keyword |
+| axonius.application.policy_user_terms |  | keyword |
+| axonius.application.possible_savings_of_inactive_associated_users |  | double |
+| axonius.application.pretty_id |  | keyword |
+| axonius.application.pricing_unit |  | keyword |
+| axonius.application.product_name |  | keyword |
+| axonius.application.public |  | keyword |
+| axonius.application.quantity |  | long |
+| axonius.application.raw_ip_addresses |  | long |
+| axonius.application.raw_setting_name |  | keyword |
+| axonius.application.raw_setting_value |  | keyword |
+| axonius.application.recommendation |  | keyword |
+| axonius.application.recommendation_description |  | keyword |
+| axonius.application.recommendations.description |  | text |
+| axonius.application.recommendations.name |  | keyword |
+| axonius.application.recommendations.quantity |  | long |
+| axonius.application.recommendations.quantity_link.bracketWeight |  | long |
+| axonius.application.recommendations.quantity_link.compOp |  | keyword |
+| axonius.application.recommendations.quantity_link.field |  | keyword |
+| axonius.application.recommendations.quantity_link.leftBracket |  | long |
+| axonius.application.recommendations.quantity_link.logicOp |  | keyword |
+| axonius.application.recommendations.quantity_link.not |  | boolean |
+| axonius.application.recommendations.quantity_link.rightBracket |  | long |
+| axonius.application.recommendations.quantity_link.value |  | long |
+| axonius.application.recommendations.remediation |  | keyword |
+| axonius.application.recommendations.severity |  | keyword |
+| axonius.application.redirect_uris |  | keyword |
+| axonius.application.related_network_route_ids |  | keyword |
+| axonius.application.related_user.email |  | keyword |
+| axonius.application.related_user.full_name |  | flattened |
+| axonius.application.related_user.remote_id |  | keyword |
+| axonius.application.related_user.username |  | keyword |
+| axonius.application.related_vendor_name |  | keyword |
+| axonius.application.remote_id |  | keyword |
+| axonius.application.risk |  | keyword |
+| axonius.application.role.display_name |  | keyword |
+| axonius.application.role.remote_id |  | keyword |
+| axonius.application.scope_tag_calendar |  | long |
+| axonius.application.scope_tag_calendar_hyperlink.bracketWeight |  | long |
+| axonius.application.scope_tag_calendar_hyperlink.compOp |  | keyword |
+| axonius.application.scope_tag_calendar_hyperlink.field |  | keyword |
+| axonius.application.scope_tag_calendar_hyperlink.leftBracket |  | long |
+| axonius.application.scope_tag_calendar_hyperlink.logicOp |  | keyword |
+| axonius.application.scope_tag_calendar_hyperlink.not |  | boolean |
+| axonius.application.scope_tag_calendar_hyperlink.rightBracket |  | long |
+| axonius.application.scope_tag_calendar_hyperlink.value |  | keyword |
+| axonius.application.scope_tag_drive |  | long |
+| axonius.application.scope_tag_drive_hyperlink.bracketWeight |  | long |
+| axonius.application.scope_tag_drive_hyperlink.compOp |  | keyword |
+| axonius.application.scope_tag_drive_hyperlink.field |  | keyword |
+| axonius.application.scope_tag_drive_hyperlink.leftBracket |  | long |
+| axonius.application.scope_tag_drive_hyperlink.logicOp |  | keyword |
+| axonius.application.scope_tag_drive_hyperlink.not |  | boolean |
+| axonius.application.scope_tag_drive_hyperlink.rightBracket |  | long |
+| axonius.application.scope_tag_drive_hyperlink.value |  | keyword |
+| axonius.application.scope_tag_mail |  | long |
+| axonius.application.scope_tag_mail_hyperlink.bracketWeight |  | long |
+| axonius.application.scope_tag_mail_hyperlink.compOp |  | keyword |
+| axonius.application.scope_tag_mail_hyperlink.field |  | keyword |
+| axonius.application.scope_tag_mail_hyperlink.leftBracket |  | long |
+| axonius.application.scope_tag_mail_hyperlink.logicOp |  | keyword |
+| axonius.application.scope_tag_mail_hyperlink.not |  | boolean |
+| axonius.application.scope_tag_mail_hyperlink.rightBracket |  | long |
+| axonius.application.scope_tag_mail_hyperlink.value |  | keyword |
+| axonius.application.security_MFA |  | boolean |
+| axonius.application.security_SSO |  | boolean |
+| axonius.application.security_bug_bounty |  | boolean |
+| axonius.application.security_email_for_issues |  | keyword |
+| axonius.application.setting_description |  | keyword |
+| axonius.application.setting_name |  | keyword |
+| axonius.application.setting_type |  | keyword |
+| axonius.application.settings_score |  | double |
+| axonius.application.settings_status |  | keyword |
+| axonius.application.short_description |  | keyword |
+| axonius.application.sm_entity_type |  | keyword |
+| axonius.application.source |  | keyword |
+| axonius.application.source_application |  | keyword |
+| axonius.application.standards.name |  | keyword |
+| axonius.application.standards.sections |  | keyword |
+| axonius.application.standards.version |  | keyword |
+| axonius.application.start_date |  | date |
+| axonius.application.sub_category |  | keyword |
+| axonius.application.subscription_term |  | keyword |
+| axonius.application.suspended_users |  | long |
+| axonius.application.suspended_users_saved_query_id |  | keyword |
+| axonius.application.tenant_number |  | long |
+| axonius.application.total_accounts |  | long |
+| axonius.application.total_expenses_by_adapter_connection.amount |  | double |
+| axonius.application.total_expenses_by_adapter_connection.connection_label |  | keyword |
+| axonius.application.total_misconfigured_settings |  | long |
+| axonius.application.transaction_time |  | date |
+| axonius.application.transform_unique_id |  | keyword |
+| axonius.application.type |  | keyword |
+| axonius.application.unit_price |  | double |
+| axonius.application.unlinked_users |  | long |
+| axonius.application.unlinked_users_saved_query_id |  | keyword |
+| axonius.application.unmanaged_users |  | long |
+| axonius.application.unmanaged_users_device_software_only |  | long |
+| axonius.application.unmanaged_users_device_software_only_saved_query_id |  | keyword |
+| axonius.application.unmanaged_users_saved_query_id |  | keyword |
+| axonius.application.upcoming_renewals |  | long |
+| axonius.application.urls |  | keyword |
+| axonius.application.used_as_override |  | boolean |
+| axonius.application.user_account.email |  | keyword |
+| axonius.application.user_account.remote_id |  | keyword |
+| axonius.application.user_account.username |  | keyword |
+| axonius.application.user_count |  | long |
+| axonius.application.user_count_link.bracketWeight |  | long |
+| axonius.application.user_count_link.compOp |  | keyword |
+| axonius.application.user_count_link.field |  | keyword |
+| axonius.application.user_count_link.leftBracket |  | long |
+| axonius.application.user_count_link.logicOp |  | keyword |
+| axonius.application.user_count_link.not |  | boolean |
+| axonius.application.user_count_link.rightBracket |  | long |
+| axonius.application.user_count_link.value |  | keyword |
+| axonius.application.user_email |  | keyword |
+| axonius.application.user_extensions_used_by_app |  | long |
+| axonius.application.username_formats |  | keyword |
+| axonius.application.users_amount |  | long |
+| axonius.application.vendor_category |  | keyword |
+| axonius.application.vendor_documentation |  | keyword |
+| axonius.application.vendor_setting._id |  | keyword |
+| axonius.application.vendor_setting.documentation_link |  | keyword |
+| axonius.application.vendor_setting.exceptions.level |  | keyword |
+| axonius.application.vendor_setting.exceptions.link |  | keyword |
+| axonius.application.vendor_setting.exceptions.link_path |  | keyword |
+| axonius.application.vendor_setting.exceptions.raw_setting_name |  | keyword |
+| axonius.application.vendor_setting.exceptions.raw_setting_value_type |  | keyword |
+| axonius.application.vendor_setting.exceptions.setting_id |  | keyword |
+| axonius.application.vendor_setting.is_relevant |  | boolean |
+| axonius.application.vendor_setting.lambda_name |  | keyword |
+| axonius.application.vendor_setting.lambda_variable |  | keyword |
+| axonius.application.vendor_setting.level |  | keyword |
+| axonius.application.vendor_setting.link |  | keyword |
+| axonius.application.vendor_setting.link_path |  | keyword |
+| axonius.application.vendor_setting.product |  | keyword |
+| axonius.application.vendor_setting.raw_setting_name |  | keyword |
+| axonius.application.vendor_setting.raw_setting_value_type |  | keyword |
+| axonius.application.vendor_setting.raw_validation_rule |  | keyword |
+| axonius.application.vendor_setting.recommendation_reason |  | keyword |
+| axonius.application.vendor_setting.scope |  | keyword |
+| axonius.application.vendor_setting.setting_description |  | keyword |
+| axonius.application.vendor_setting.xsetting._id |  | keyword |
+| axonius.application.vendor_setting.xsetting.impact |  | long |
+| axonius.application.vendor_setting.xsetting.setting_type.name |  | keyword |
+| axonius.application.vendor_setting.xsetting.xsetting_name |  | keyword |
+| axonius.application.vendors_application_category |  | keyword |
+| axonius.application.z_table_hierarchy |  | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
-| host.entity.attributes.managed | Indicates whether the entity is managed by an external administration or control system. Typically applicable to Host and Service entities. | boolean |
-| host.entity.lifecycle.last_activity | Timestamp of the most recent action performed by or attributed to this entity (active use). Distinct from `entity.last_seen_timestamp`, which records when the entity was last observed in data; `last_activity` implies the entity was active, not only seen. Typically applicable to User, Host, and Service entities. | date |
 | input.type | Type of filebeat input. | keyword |
-| labels.is_transform_source | Indicates whether a compute event is in the raw source data stream, or in the latest destination index. | constant_keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
+| service.entity.attributes.managed | Indicates whether the entity is managed by an external administration or control system. Typically applicable to Host and Service entities. | boolean |
+| service.entity.lifecycle.last_activity | Timestamp of the most recent action performed by or attributed to this entity (active use). Distinct from `entity.last_seen_timestamp`, which records when the entity was last observed in data; `last_activity` implies the entity was active, not only seen. Typically applicable to User, Host, and Service entities. | date |
 
 
 An example event for `application` looks as following:

@@ -53,6 +53,17 @@ processors:
       field: event.category
       value: host
       tag: category_host_5098f71a
+      if: ctx.axonius?.compute?.asset_type == 'devices'
+  - append:
+      field: event.category
+      value: database
+      tag: category_database_b5dfff36
+      if: ctx.axonius?.compute?.asset_type == 'databases'
+  - append:
+      field: event.category
+      value: configuration
+      tag: category_configuration_d2ce7dd1
+      if: ctx.axonius?.compute?.asset_type != 'devices' && ctx.axonius?.compute?.asset_type != 'databases'
   - append:
       field: event.type
       value: info

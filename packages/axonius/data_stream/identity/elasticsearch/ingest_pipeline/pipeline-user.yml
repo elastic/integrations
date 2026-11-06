@@ -1342,7 +1342,8 @@ processors:
         Builds user.roles from nested_roles, admin_roles and roles, user.entity.attributes.permissions
         from user_permissions and nested_permissions, and user.entity.relationships from
         associated_employees (supervises), nested_applications with administrative permissions
-        (administers), associated_devices (owns, including host entity IDs) and provider_name (depends_on),
+        (administers, including service entity IDs), associated_devices (owns, including host entity IDs)
+        and provider_name (depends_on),
         with deduplication.
       if: ctx.axonius?.identity != null
       source: |-
@@ -1407,7 +1408,16 @@ processors:
             }
           }
         }
-        if (!administered.isEmpty()) rels.administers = ['service': administered];
+        if (!administered.isEmpty()) {
+          Map administers = ['service': administered];
+          if (administered.name != null) {
+            // Entity store service IDs are 'service:' + service.name, so these link only if a service entity with exactly that name exists.
+            Map administeredEntity = [:];
+            for (def name : administered.name) addValue(administeredEntity, 'id', 'service:' + name);
+            administers.entity = administeredEntity;
+          }
+          rels.administers = administers;
+        }
 
         Map owned = [:];
         collect(src.associated_devices, 'internal_axon_id', owned, 'id');
