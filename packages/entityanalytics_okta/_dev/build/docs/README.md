@@ -23,7 +23,7 @@ The Okta Entity Analytics integration collects two types of data: user and devic
 
 Elastic Agent must be installed for standard deployments. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
-The minimum **kibana.version** required is **9.5.0**, and the minimum Elastic Agent version is **9.5.0**.
+The minimum **kibana.version** required is **9.5.0**.
 
 ## Setup
 
@@ -76,7 +76,7 @@ The Okta provider periodically contacts the Okta API, retrieving updates for use
 
 Fetching and shipping updates occurs in one of two processes: **full synchronizations** and **incremental updates**. Full synchronizations send the entire list of users and devices in state. Incremental updates send only records that changed since the last sync. Changes include metadata updates, additions, and deletions. By default, full synchronizations occur every 24 hours and incremental updates occur every 15 minutes. These intervals may be customized to suit your use case.
 
-By default this integration uses **minimal-state sync**, which routes user and device documents directly to the `user` and `device` data streams. Existing policies are updated to use minimal-state sync on upgrade.
+By default this integration uses **minimal-state sync**, which routes user and device documents directly to the `user` and `device` data streams. Existing policies are updated to use minimal-state sync on upgrade. Minimal-state sync requires Elastic Agent 9.5.0 or later; older agents use the legacy sync.
 
 This integration provides an **asset inventory**, a point-in-time snapshot of which users and devices exist and their current properties. It does not provide an audit trail of who changed what, or when. If you need to track administrative changes to Okta objects, use the [Okta integration's](https://docs.elastic.co/integrations/okta) system log data stream, which collects the [Okta System Log](https://developer.okta.com/docs/reference/api/system-log/).
 

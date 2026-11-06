@@ -1,6 +1,8 @@
 provider: okta
 {{#if use_minimal_state}}
+{{#semverSatisfies _meta.agent.version ">=9.5.0"}}
 use_minimal_state: true
+{{/semverSatisfies}}
 {{/if}}
 tracer.enabled: {{enable_request_tracer}}
 tracer.filename: "../../logs/okta/http-request-trace-*.ndjson"
@@ -57,10 +59,14 @@ enrich_with:
 {{#if enrich_user_perms}}
 {{!-- The minimal-state provider validates enrich_with strictly and names
       this enrichment "permissions"; the legacy path only understands
-      "perms". Collapse to "permissions" once the minimum supported agent
-      accepts it on the legacy path too. --}}
+      "perms". When _meta.agent.version is absent (base policy) or older
+      than 9.5, treat as legacy path regardless of use_minimal_state. --}}
 {{#if use_minimal_state}}
+{{#semverSatisfies _meta.agent.version ">=9.5.0"}}
   - permissions
+{{else}}
+  - perms
+{{/semverSatisfies}}
 {{else}}
   - perms
 {{/if}}
