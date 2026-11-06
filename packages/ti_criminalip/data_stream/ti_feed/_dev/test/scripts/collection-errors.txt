@@ -1,0 +1,71 @@
+# Intentional collection errors must degrade the input. System tests reject all
+# DEGRADED transitions, so test these paths here with the real Elastic Agent and
+# explicit assertions. Do not suppress Agent errors or change production CEL.
+[!external_stack] skip 'Requires a running Elastic stack.'
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Start with a clean package installation, as system tests also do. This removes
+# stale managed Transform resources left by previous local validation runs.
+remove_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# A valid HTTP response with an invalid feed body must emit sanitized errors,
+# degrade the input, and keep polling rather than losing its URL/secret state.
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 3m -container_name AGENT_CONTAINER -network_name AGENT_NETWORK
+# Use an explicit network alias: attaching a compose service to a second network
+# does not preserve that service's short DNS name on the Agent's network.
+exec docker run -d --rm --name ${AGENT_CONTAINER}-mock --network ${AGENT_NETWORK} --network-alias mock --mount type=bind,source=${PACKAGE_ROOT}/_dev/deploy/docker/api.yml,target=/config/api.yml,readonly docker.elastic.co/observability/stream:v0.25.0 http-server --addr=:8080 --config=/config/api.yml
+date LOG_START
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} response-error.yaml RESPONSE_STREAM
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -timeout 2m ${RESPONSE_STREAM}
+stdout '"event.outcome":\s*\[\s*"failure"'
+stdout 'Criminal IP TI Feed response did not contain a valid body.data list\.'
+stdout '"http.response.status_code":\s*\[\s*200'
+! stdout 'pipeline_error|unit-test-key|SYNTHETIC-TI-TRANSPORT-KEY'
+exec docker logs --since ${LOG_START} ${AGENT_CONTAINER}
+stderr '->DEGRADED.*Recoverable: criminalip\.ti_feed: single event error object returned by evaluation:'
+stderr 'Criminal IP TI Feed response did not contain a valid body.data list\.'
+! stdout 'unit-test-key|SYNTHETIC-TI-TRANSPORT-KEY|->FAILED|max_attempts must be greater than zero|undeclared reference|no matching overload'
+! stderr 'unit-test-key|SYNTHETIC-TI-TRANSPORT-KEY|->FAILED|max_attempts must be greater than zero|undeclared reference|no matching overload'
+exec docker stop ${AGENT_CONTAINER}-mock
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE}
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${RESPONSE_STREAM}
+
+# A refused connection includes the synthetic license key in the request URL.
+# Check actual Agent logs as well as indexed events; document-only assertions
+# cannot detect an HTTP retry logger exposing that key.
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 3m -container_name AGENT_CONTAINER
+date LOG_START
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} transport-error.yaml TRANSPORT_STREAM
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -timeout 2m ${TRANSPORT_STREAM}
+stdout '"event.outcome":\s*\[\s*"failure"'
+stdout 'Criminal IP TI Feed request or response decoding failed; check endpoint, connectivity, and response format\.'
+! stdout 'pipeline_error|SYNTHETIC-TI-TRANSPORT-KEY|unit-test-key'
+exec docker logs --since ${LOG_START} ${AGENT_CONTAINER}
+stderr '->DEGRADED.*Recoverable: criminalip\.ti_feed: single event error object returned by evaluation:'
+stderr 'Criminal IP TI Feed request or response decoding failed; check endpoint, connectivity, and response format\.'
+! stdout 'SYNTHETIC-TI-TRANSPORT-KEY|unit-test-key|->FAILED|max_attempts must be greater than zero|undeclared reference|no matching overload'
+! stderr 'SYNTHETIC-TI-TRANSPORT-KEY|unit-test-key|->FAILED|max_attempts must be greater than zero|undeclared reference|no matching overload'
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE}
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${TRANSPORT_STREAM}
+remove_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+-- response-error.yaml --
+input: cel
+data_stream:
+  vars:
+    api_key: unit-test-key
+    feed_url: http://mock:8080/ti/v1/feed/response-error
+    interval: 5s
+    tags:
+      - synthetic
+
+-- transport-error.yaml --
+input: cel
+data_stream:
+  vars:
+    api_key: SYNTHETIC-TI-TRANSPORT-KEY
+    feed_url: http://127.0.0.1:1/feed
+    interval: 5s
+    tags:
+      - synthetic

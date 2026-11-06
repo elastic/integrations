@@ -1,0 +1,19 @@
+deployer: docker
+service: fortigate-tcp
+service_notify_signal: SIGUSR1
+input: tcp
+agent:
+  ports:
+    - "19514:9514/tcp"
+data_stream:
+  vars:
+    host: "0.0.0.0:9514"
+assert:
+  min_count: 3
+  hit_count: 3
+  fields_present:
+    - source.ip
+    - destination.ip
+    - event.action
+    - tags
+wait_for_data_timeout: 90s

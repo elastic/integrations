@@ -1,0 +1,89 @@
+# Exercise the reviewed CEL error paths with a real Agent. Intentional collection
+# failures may degrade the input, so use explicit assertions instead of system
+# tests, whose generic Agent-log checks reject DEGRADED transitions.
+[!external_stack] skip 'Requires a running Elastic stack.'
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 3m -container_name AGENT_CONTAINER -network_name AGENT_NETWORK
+exec docker run -d --rm --name ${AGENT_CONTAINER}-mock --network ${AGENT_NETWORK} --network-alias mock --mount type=bind,source=${PACKAGE_ROOT}/_dev/deploy/docker/api.yml,target=/config/api.yml,readonly docker.elastic.co/observability/stream:v0.25.0 http-server --addr=:8080 --config=/config/api.yml
+date LOG_START
+
+# HTTP errors keep their code under error.code, without the redundant HTTP field.
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} http-error.yaml HTTP_STREAM
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -timeout 2m ${HTTP_STREAM}
+stdout '"event.outcome":\s*\[\s*"failure"'
+stdout '"error.code":\s*\[\s*"403"'
+stdout 'GET /v1/asset/ip/report/http-error: 403 Forbidden \(403\)'
+! stdout 'http.response.status_code|pipeline_error|unit-test-key'
+exec docker logs --since ${LOG_START} ${AGENT_CONTAINER}
+! stdout 'unit-test-key|->FAILED|undeclared reference|no matching overload'
+! stderr 'unit-test-key|->FAILED|undeclared reference|no matching overload'
+exec docker stop ${AGENT_CONTAINER}-mock
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE}
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${HTTP_STREAM}
+
+# JSON failures include the actual decoding error rather than a generic message.
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 3m -container_name AGENT_CONTAINER -network_name AGENT_NETWORK
+exec docker run -d --rm --name ${AGENT_CONTAINER}-mock --network ${AGENT_NETWORK} --network-alias mock --mount type=bind,source=${PACKAGE_ROOT}/_dev/deploy/docker/api.yml,target=/config/api.yml,readonly docker.elastic.co/observability/stream:v0.25.0 http-server --addr=:8080 --config=/config/api.yml
+date LOG_START
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} invalid-json.yaml JSON_STREAM
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -timeout 2m ${JSON_STREAM}
+stdout '"event.outcome":\s*\[\s*"failure"'
+stdout 'Criminal IP request or JSON decoding failed; check endpoint and connectivity:'
+stdout 'failed to unmarshal JSON message: invalid character'
+! stdout 'http.response.status_code|pipeline_error|unit-test-key'
+exec docker logs --since ${LOG_START} ${AGENT_CONTAINER}
+! stdout 'unit-test-key|->FAILED|undeclared reference|no matching overload'
+! stderr 'unit-test-key|->FAILED|undeclared reference|no matching overload'
+exec docker stop ${AGENT_CONTAINER}-mock
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE}
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${JSON_STREAM}
+
+# Connection failures must also retain their cause and keep polling successfully.
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 3m -container_name AGENT_CONTAINER
+date LOG_START
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} transport-error.yaml TRANSPORT_STREAM
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -timeout 2m ${TRANSPORT_STREAM}
+stdout '"event.outcome":\s*\[\s*"failure"'
+stdout 'Criminal IP request or JSON decoding failed; check endpoint and connectivity:'
+stdout 'connection refused'
+! stdout 'http.response.status_code|pipeline_error|unit-test-key|SYNTHETIC-IP-REPORT-KEY'
+exec docker logs --since ${LOG_START} ${AGENT_CONTAINER}
+! stdout 'unit-test-key|SYNTHETIC-IP-REPORT-KEY|->FAILED|undeclared reference|no matching overload'
+! stderr 'unit-test-key|SYNTHETIC-IP-REPORT-KEY|->FAILED|undeclared reference|no matching overload'
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE}
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${TRANSPORT_STREAM}
+remove_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+-- http-error.yaml --
+input: cel
+data_stream:
+  vars:
+    api_key: unit-test-key
+    ip: 192.0.2.10
+    url: http://mock:8080/v1/asset/ip/report/http-error
+    interval: 5s
+    tags:
+      - synthetic
+
+-- invalid-json.yaml --
+input: cel
+data_stream:
+  vars:
+    api_key: unit-test-key
+    ip: 192.0.2.10
+    url: http://mock:8080/v1/asset/ip/report/invalid-json
+    interval: 5s
+    tags:
+      - synthetic
+
+-- transport-error.yaml --
+input: cel
+data_stream:
+  vars:
+    api_key: SYNTHETIC-IP-REPORT-KEY
+    ip: 192.0.2.10
+    url: http://127.0.0.1:1/report
+    interval: 5s
+    tags:
+      - synthetic
