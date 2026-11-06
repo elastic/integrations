@@ -1,0 +1,20 @@
+wait_for_data_timeout: 1m
+input: cel
+service: upwind-threat-detections-mock
+vars:
+  url: http://{{Hostname}}:{{Port}}
+  token_url: http://{{Hostname}}:{{Port}}/oauth/token
+  client_id: test-client-id
+  client_secret: test-client-secret
+  organization_id: org-example-0001
+data_stream:
+  vars:
+    interval: 2s
+    initial_interval: 24h
+    http_client_timeout: 60s
+    preserve_original_event: true
+assert:
+  # Initial lookback window (2) plus the cursor-resume poll (1).
+  # Later polls use the caught-up bookmark and return an empty array.
+  # A regressed cursor re-requests the lookback and indexes three extra events.
+  hit_count: 3

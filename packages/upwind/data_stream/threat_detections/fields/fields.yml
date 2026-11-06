@@ -1,0 +1,81 @@
+- name: resource
+  type: group
+  fields:
+    - name: id
+      type: keyword
+      description: The unique identifier of the resource affected by this detection.
+    - name: name
+      type: keyword
+      description: The name of the resource affected by this detection.
+    - name: type
+      type: keyword
+      description: The type of the resource affected by this detection.
+- name: upwind.threat_detections
+  type: group
+  fields:
+    - name: type
+      type: keyword
+      description: The type of detection.
+    - name: category
+      type: keyword
+      description: The category of this detection.
+    - name: severity
+      type: keyword
+      description: The severity level of this detection.
+    - name: status
+      type: keyword
+      description: The status of this detection.
+    - name: occurrence_count
+      type: long
+      description: The count of occurrences for this detection.
+    - name: evidences
+      type: match_only_text
+      description: The evidence records behind this detection, each serialized as a JSON string.
+    - name: links
+      type: flattened
+      description: Hypermedia links related to this detection.
+    - name: metadata
+      type: group
+      fields:
+        - name: vendor_name
+          type: keyword
+          description: The vendor that produced this detection.
+    - name: resource
+      type: group
+      fields:
+        - name: cloud_account_tags
+          type: flattened
+          description: List of tags associated with the cloud account the resource belongs to.
+        - name: external_id
+          type: keyword
+          description: The external unique identifier for this resource.
+        - name: risk_categories
+          type: keyword
+          description: Risk categories associated with this resource.
+        - name: upwind_asset_id
+          type: keyword
+          description: The Upwind asset identifier for this resource.
+        - name: internet_exposure
+          type: flattened
+          description: Information about internet-facing communication activities of the resource.
+    - name: mitre_attacks
+      type: group
+      fields:
+        - name: tactic_id
+          type: keyword
+          description: The MITRE ATT&CK tactic identifier related to this detection.
+        - name: tactic_name
+          type: keyword
+          description: The MITRE ATT&CK tactic name related to this detection.
+        - name: technique_id
+          type: keyword
+          description: The MITRE ATT&CK technique identifier related to this detection.
+        - name: technique_name
+          type: keyword
+          description: The MITRE ATT&CK technique name related to this detection.
+        - name: links
+          type: flattened
+          description: Links to the MITRE ATT&CK tactic and technique pages.
+    - name: triggers
+      type: flattened
+      description: List of triggers associated with this detection. Each trigger indicates a policy violation that caused this detection.
