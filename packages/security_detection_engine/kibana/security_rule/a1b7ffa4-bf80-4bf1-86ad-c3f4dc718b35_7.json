@@ -13,10 +13,6 @@
         "query": "from logs-nginx.access-*, logs-apache.access-*, logs-apache_tomcat.access-*, logs-iis.access-*, logs-traefik.access-*\n\n| eval Esql.user_agent_original_to_lower = to_lower(user_agent.original), Esql.url_original_to_lower = to_lower(url.original)\n\n| where\n    Esql.user_agent_original_to_lower like \"mozilla/5.0 (windows nt 10.0; win64; x64) applewebkit/537.36 (khtml, like gecko) chrome/74.0.3729.169 safari/537.36\" or // Nikto\n    Esql.user_agent_original_to_lower like \"nikto*\" or // Nikto\n    Esql.user_agent_original_to_lower like \"mozilla/4.0 (compatible; msie 8.0; windows nt 5.1; trident/4.0)\" or // Nessus Vulnerability Scanner\n    Esql.user_agent_original_to_lower like \"*nessus*\" or // Nessus Vulnerability Scanner\n    Esql.user_agent_original_to_lower like \"sqlmap/*\" or // SQLMap\n    Esql.user_agent_original_to_lower like \"wpscan*\" or // WPScan\n    Esql.user_agent_original_to_lower like \"feroxbuster/*\" or // Feroxbuster\n    Esql.user_agent_original_to_lower like \"masscan*\" or // Masscan & masscan-ng\n    Esql.user_agent_original_to_lower like \"fuzz*\" or // Ffuf\n    Esql.user_agent_original_to_lower like \"mozilla/5.0 (windows nt 10.0; win64; x64) applewebkit/537.36 (khtml, like gecko) chrome/user_agent.original like~ 87.0.4280.88 safari/537.36\" or // Dirsearch\n    Esql.user_agent_original_to_lower like \"mozilla/4.0 (compatible; msie 6.0; windows nt 5.1)\" or // Dirb\n    Esql.user_agent_original_to_lower like \"dirbuster*\" or // Dirbuster\n    Esql.user_agent_original_to_lower like \"gobuster/*\" or // Gobuster\n    Esql.user_agent_original_to_lower like \"*dirsearch*\" or // dirsearch\n    Esql.user_agent_original_to_lower like \"*nmap*\" or // Nmap Scripting Engine\n    Esql.user_agent_original_to_lower like \"*hydra*\" or // Hydra Brute Forcer\n    Esql.user_agent_original_to_lower like \"*w3af*\" or // w3af Web Application Attack and Audit Framework\n    Esql.user_agent_original_to_lower like \"*arachni*\" or // Arachni Web Application Security Scanner\n    Esql.user_agent_original_to_lower like \"*skipfish*\" or // Skipfish Web Application Security Scanner\n    Esql.user_agent_original_to_lower like \"*openvas*\" or // OpenVAS Vulnerability Scanner\n    Esql.user_agent_original_to_lower like \"*acunetix*\" or // Acunetix Vulnerability Scanner\n    Esql.user_agent_original_to_lower like \"*zap*\" or // OWASP ZAP\n    Esql.user_agent_original_to_lower like \"*burp*\" // Burp Suite\n\n| keep\n    @timestamp,\n    data_stream.dataset,\n    user_agent.original,\n    source.ip,\n    agent.id,\n    agent.name,\n    Esql.url_original_to_lower,\n    Esql.user_agent_original_to_lower,\n    data_stream.namespace\n| stats\n    Esql.event_count = count(),\n    Esql.url_original_count_distinct = count_distinct(Esql.url_original_to_lower),\n    Esql.agent_name_values = values(agent.name),\n    Esql.agent_id_values = values(agent.id),\n    Esql.url_original_values = values(Esql.url_original_to_lower),\n    Esql.user_agent_original_values = values(Esql.user_agent_original_to_lower),\n    Esql.data_stream_dataset_values = values(data_stream.dataset),\n    Esql.data_stream_namespace_values = values(data_stream.namespace)\n    by source.ip, agent.id\n| where\n    Esql.event_count > 50 and Esql.url_original_count_distinct > 10\n",
         "related_integrations": [
             {
-                "package": "nginx",
-                "version": ">=3.0.0"
-            },
-            {
                 "package": "apache",
                 "version": ">=3.0.0"
             },
@@ -27,6 +23,10 @@
             {
                 "package": "iis",
                 "version": ">=1.21.0"
+            },
+            {
+                "package": "nginx",
+                "version": ">=3.0.0"
             },
             {
                 "package": "traefik",
