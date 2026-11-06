@@ -27,6 +27,11 @@ redact:
   fields:
     - api_token
 program: |
+  // Pages backwards from newest to oldest, stopping when it reaches events
+  // it has already seen (created at or before the cursor). The cursor keeps
+  // its previous value until the last page of a pagination sequence, so a
+  // restart part way through repeats the sequence rather than skipping
+  // events.
   state.with(
     (
       state.want_more ?
