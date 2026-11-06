@@ -1,0 +1,60 @@
+{
+  "attributes": {
+    "name": "[GCP Cloud SQL SQL Server OTel] Average lock wait duration 99% rolling 30 days",
+    "description": "Tracks lock contention latency on each Cloud SQL for SQL Server instance. Each 5-minute slice is good when the average lock wait duration is 500 ms or less. Total lock wait time (ms) and lock wait count come from the SQL Server-only DELTA metrics cloudsql.googleapis.com/database/sqlserver/transactions/lock_wait_time and lock_wait_count, summed across all locked_resource series. The equation A - 500 * B <= 0 is the same as total wait / wait count <= 500 ms, and a slice with no lock waits counts as good. The objective is that 99% of slices are good over a rolling 30-day window. Long average lock waits usually come from blocking chains, long transactions, missing indexes or lock escalation, and they show up as slow statements and application timeouts. Caveats: SQL Server records lock wait time when each wait completes, so a blocking chain that is still running is not counted until it clears. A long incident can appear as only a few bad slices; use the blocked-processes panels and alerts for ongoing blocking. Intentional waits, such as sp_getapplock queues or batch jobs blocking each other, can inflate the average. The 500 ms threshold is a starting point to tune per workload. This SLO does not cover latency from CPU, I/O or memory-grant pressure. It uses only SQL Server-specific metrics, so no engine marker is needed. It has no data while the instance is stopped or down and does not measure availability; instance-down alerts cover that. Cloud Monitoring data reaches Elasticsearch 3-5 minutes late, so set the SLO sync delay to at least 5m when you create it.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"gcp.cloudsql_sqlserver.otel\" and attributes.locked_resource: *",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "sum",
+              "field": "cloudsql.googleapis.com/database/sqlserver/transactions/lock_wait_time"
+            },
+            {
+              "name": "B",
+              "aggregation": "sum",
+              "field": "cloudsql.googleapis.com/database/sqlserver/transactions/lock_wait_count"
+            }
+          ],
+          "equation": "A - 500 * B",
+          "comparator": "LTE",
+          "threshold": 0
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.99,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "5m"
+    },
+    "tags": [
+      "gcp",
+      "cloudsql",
+      "sqlserver",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.project_id",
+      "resource.attributes.region",
+      "resource.attributes.database_id"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {"id": "gcp_cloudsql_sqlserver_otel-46d11bef-3642-4b3f-b979-d748c687acd6"},
+        {"id": "gcp_cloudsql_sqlserver_otel-0953c329-69c9-4605-9c7c-b2c2d5b10846"}
+      ]
+    }
+  },
+  "id": "gcp_cloudsql_sqlserver_otel-avg-lock-wait-duration-99-Rolling30Days",
+  "type": "slo_template"
+}

@@ -1,0 +1,74 @@
+{
+  "id": "gcp_cloudsql_sqlserver_otel-failed-connection-attempts-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud SQL SQL Server OTel] Failed or anomalous connection attempts",
+        "description": "Alerts when a SQL Server instance has 100 or more failed connection attempts in 15 minutes, or any connection attempt that Cloud SQL flagged as anomalous (e.g. brute-force login). Failed logins indicate misconfigured credentials after a rotation or deploy, or an attack. Applies the SQL Server engine marker. Grouped by database_id.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudsql",
+          "sqlserver"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "15m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudsql_sqlserver.otel-*\n| WHERE gcp.resource_type == \"cloudsql_database\"\n// connection_attempt_count is a DELTA metric (attempts per 60 s sample) labelled by\n// login_status (succeeded / failed) and anomaly_detected.\n| STATS attempts = SUM(SUM_OVER_TIME(`cloudsql.googleapis.com/database/network/connection_attempt_count`)),\n        failed = SUM(SUM_OVER_TIME(`cloudsql.googleapis.com/database/network/connection_attempt_count`)) WHERE attributes.login_status == \"failed\",\n        anomalous = SUM(SUM_OVER_TIME(`cloudsql.googleapis.com/database/network/connection_attempt_count`))\n            WHERE attributes.anomaly_detected IS NOT NULL AND attributes.anomaly_detected != \"no anomaly detected\",\n        throttled = SUM(SUM_OVER_TIME(`cloudsql.googleapis.com/database/network/connection_attempt_count`)) WHERE attributes.anomalous_connection_throttled == \"true\",\n        ss = SUM(COUNT_OVER_TIME(`cloudsql.googleapis.com/database/sqlserver/memory/page_life_expectancy`))\n    BY `@timestamp` = TBUCKET(1 minute), database_id\n| STATS attempts = SUM(attempts),\n        failed = SUM(failed),\n        anomalous = SUM(anomalous),\n        throttled = SUM(throttled),\n        ss = SUM(ss)\n    BY database_id",
+        "breach": {
+          "segment": "// SQL Server engine marker: excludes MySQL / PostgreSQL instances that share this metric\nWHERE ss > 0 AND attempts > 0\n| EVAL failed = COALESCE(failed, 0),\n       anomalous = COALESCE(anomalous, 0),\n       throttled = COALESCE(throttled, 0)\n| EVAL failed_pct = ROUND(failed * 100.0 / attempts, 1)\n// Alert thresholds:\n//  - failed attempts in the rule window (100 in 15 minutes ~ 7 per minute)\n//  - any attempt Cloud SQL flagged as anomalous (brute-force pattern)\n| WHERE failed >= 100 OR anomalous > 0\n| EVAL reason = CASE(anomalous > 0, \"anomalous connection attempts detected\", \"failed connection attempts high\")\n| KEEP database_id, reason, failed, failed_pct, anomalous, throttled, attempts\n| SORT failed DESC\n| LIMIT 100"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "database_id"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudsql_sqlserver_otel-failed-connection-attempts-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud SQL for SQL Server failed or anomalous connection attempts\n\nThe instance is rejecting many connection attempts, or Cloud SQL flagged attempts as anomalous (for example a brute-force login pattern).\n\n### Triage\n1. `anomalous connection attempts detected`: treat as a potential security incident. Check `throttled` (whether Cloud SQL throttled them), the instance's authorized networks / public IP exposure, and Cloud Audit Logs for source addresses. Involve security.\n2. `failed connection attempts high`: usually an application with wrong or expired credentials (after a password rotation or a deploy), or a client retrying in a tight loop. Check recent changes and which clients are failing in the SQL Server error log (error 18456).\n3. Compare with SQL Server login attempts and connections on the Overview dashboard: a retry storm can also raise CPU.\n\n### Tuning\n- `failed >= 100`: raise for large fleets of clients; lower to catch smaller credential problems.\n- Remove `OR anomalous > 0` if anomaly signals are handled by a separate security pipeline.\n\n### Behaviour notes\n- Healthy: fewer than 100 failed attempts in 15 minutes and none flagged anomalous. Breaching: 100 or more failed attempts (exactly 100 breaches) or at least 1 anomalous attempt. Fires on the first breaching check.\n- Missing data: instances without connection attempt samples in the window are not evaluated."
+          }
+        },
+        {
+          "id": "gcp_cloudsql_sqlserver_otel-failed-connection-attempts-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_sqlserver_otel-46d11bef-3642-4b3f-b979-d748c687acd6"
+          }
+        },
+        {
+          "id": "gcp_cloudsql_sqlserver_otel-failed-connection-attempts-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_sqlserver_otel-0953c329-69c9-4605-9c7c-b2c2d5b10846"
+          }
+        }
+      ]
+    }
+  }
+}

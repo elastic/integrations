@@ -1,0 +1,74 @@
+{
+  "id": "gcp_cloudsql_sqlserver_otel-replica-lag-high-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud SQL SQL Server OTel] Read replica lag high or replication stopped",
+        "description": "Alerts when a SQL Server read replica stays at least 120 seconds behind its primary for the whole 15-minute window (minimum lag at or above the threshold, with at least 5 samples), or its latest replica_lag sample is negative (replication inactive), for 2 consecutive checks. replica_lag is only reported on replica instances, so primaries are never evaluated. Applies the SQL Server engine marker. Grouped by the replica's database_id.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudsql",
+          "sqlserver"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "15m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudsql_sqlserver.otel-*\n| WHERE gcp.resource_type == \"cloudsql_database\"\n// replica_lag (seconds) is reported on the REPLICA instance only; the rule is\n// silent for primaries and instances without read replicas.\n| STATS lag_lo = MIN(MIN_OVER_TIME(`cloudsql.googleapis.com/database/replication/replica_lag`)),\n        lag_hi = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/replication/replica_lag`)),\n        network_lag = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/replication/network_lag`)),\n        ss = SUM(COUNT_OVER_TIME(`cloudsql.googleapis.com/database/sqlserver/memory/page_life_expectancy`))\n    BY `@timestamp` = TBUCKET(1 minute), database_id\n| EVAL lag_ts = CASE(lag_hi IS NOT NULL, `@timestamp`, NULL)\n| STATS lag_min = MIN(lag_lo),\n        lag_max = MAX(lag_hi),\n        lag_last = LAST(lag_hi, lag_ts),\n        lag_n = COUNT(lag_hi),\n        network_lag_max = MAX(network_lag),\n        ss = SUM(ss)\n    BY database_id",
+        "breach": {
+          "segment": "// SQL Server engine marker: excludes MySQL / PostgreSQL replicas that share this metric\nWHERE ss > 0 AND lag_n > 0\n// Breach conditions (either):\n//  - lagging: the replica stayed behind for the WHOLE window (minimum lag >= 120 s),\n//    i.e. it is not catching up after bursts. Requires ~5 minutes of samples.\n//    Lower for latency-sensitive reads; raise for cross-region replicas.\n//  - stopped: the latest sample is negative, meaning replication is inactive.\n| EVAL lag_breach = lag_n >= 5 AND lag_min >= 120,\n       stopped = lag_last < 0\n| WHERE lag_breach OR stopped\n| EVAL reason = CASE(stopped, \"replication inactive (negative lag)\", \"replica lagging\")\n| KEEP database_id, reason, lag_min, lag_max, lag_last, network_lag_max\n| SORT lag_max DESC\n| LIMIT 100"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 1
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "database_id"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudsql_sqlserver_otel-replica-lag-high-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud SQL for SQL Server read replica lag high or replication stopped\n\nA read replica is serving stale data: it has been at least 120 seconds behind its primary for 15 minutes, or replication has stopped (negative `replica_lag`).\n\n### Triage\n1. `replication inactive`: check the replica's status in the Cloud SQL console and operations log (replication paused, primary unreachable, replica being rebuilt). Reads from it are stale until replication resumes.\n2. `replica lagging`: compare `network_lag_max` with the overall lag. High network lag points to network/cross-region transfer; low network lag with high replica lag means the replica cannot apply changes fast enough (undersized replica, heavy write bursts or index maintenance on the primary, long-running read queries blocking redo).\n3. Open the Instance Detail dashboard for the replica: CPU, disk write IOPS and blocking.\n4. Consider routing reads to the primary until the replica catches up.\n\n### Tuning\n- `lag_min >= 120`: lag threshold in seconds.\n- Remove `OR stopped` from the breach filter if replicas are intentionally paused.\n\n### Behaviour notes\n- Healthy: lag dips below 120 s at least once in the window and the latest sample is >= 0. Breaching: every sample >= 120 s (exactly 120 breaches) across 5+ samples, or latest sample < 0, for 2 consecutive checks.\n- Missing data: primaries and instances without replicas do not report replica_lag and are never evaluated. A replica that stops reporting entirely is not flagged here."
+          }
+        },
+        {
+          "id": "gcp_cloudsql_sqlserver_otel-replica-lag-high-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_sqlserver_otel-46d11bef-3642-4b3f-b979-d748c687acd6"
+          }
+        },
+        {
+          "id": "gcp_cloudsql_sqlserver_otel-replica-lag-high-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_sqlserver_otel-0953c329-69c9-4605-9c7c-b2c2d5b10846"
+          }
+        }
+      ]
+    }
+  }
+}
