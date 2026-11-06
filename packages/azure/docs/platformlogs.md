@@ -92,16 +92,29 @@ An example event for `platformlogs` looks as following:
             }
         },
         "resource": {
-            "group": "OBS-TEST",
-            "id": "/SUBSCRIPTIONS/7657426D-C4C3-44AC-88A2-3B2CD59E6DBA/RESOURCEGROUPS/OBS-TEST/PROVIDERS/MICROSOFT.EVENTHUB/NAMESPACES/OBSTESTEVENTHUBS",
             "name": "OBSTESTEVENTHUBS",
+            "id": "/SUBSCRIPTIONS/7657426D-C4C3-44AC-88A2-3B2CD59E6DBA/RESOURCEGROUPS/OBS-TEST/PROVIDERS/MICROSOFT.EVENTHUB/NAMESPACES/OBSTESTEVENTHUBS",
+            "group": "OBS-TEST",
             "provider": "MICROSOFT.EVENTHUB/NAMESPACES"
         },
-        "subscription_id": "7657426D-C4C3-44AC-88A2-3B2CD59E6DBA"
+        "subscription": {
+            "id": "7657426D-C4C3-44AC-88A2-3B2CD59E6DBA"
+        },
+        "subscription_id": "7657426D-C4C3-44AC-88A2-3B2CD59E6DBA",
+        "resource_group": {
+            "name": "OBS-TEST"
+        },
+        "resource_provider": {
+            "namespace": "MICROSOFT.EVENTHUB"
+        }
     },
     "cloud": {
         "provider": "azure",
-        "region": "West Europe"
+        "region": "West Europe",
+        "resource_id": "/SUBSCRIPTIONS/7657426D-C4C3-44AC-88A2-3B2CD59E6DBA/RESOURCEGROUPS/OBS-TEST/PROVIDERS/MICROSOFT.EVENTHUB/NAMESPACES/OBSTESTEVENTHUBS",
+        "account": {
+            "id": "7657426D-C4C3-44AC-88A2-3B2CD59E6DBA"
+        }
     },
     "data_stream": {
         "dataset": "azure.platformlogs",
@@ -138,7 +151,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| azure.correlation_id | Correlation ID | keyword |
+| azure.correlation.id | Correlation ID for grouping related operations. | keyword |
+| azure.correlation_id | [Deprecated] Legacy flat name for the correlation ID. Populated only in data streams that set it before 1.41.0. Planned to become an alias of `azure.correlation.id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.correlation.id` instead. | keyword |
 | azure.platformlogs.ActivityId | ActivityId | keyword |
 | azure.platformlogs.Caller | Caller | keyword |
 | azure.platformlogs.Cloud | Cloud | keyword |
@@ -148,6 +162,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.platformlogs.EventStampType | The stamp type for the event | keyword |
 | azure.platformlogs.EventTimeString | EventTimeString | keyword |
 | azure.platformlogs.ScaleUnit | ScaleUnit | keyword |
+| azure.platformlogs.TenantId | Tenant ID from the log envelope (capitalised variant), as sent by Azure. Also copied to `azure.tenant.id`. | keyword |
 | azure.platformlogs.category | Category | keyword |
 | azure.platformlogs.ccpNamespace | ccpNamespace | keyword |
 | azure.platformlogs.event_category | Event Category | keyword |
@@ -158,18 +173,24 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.platformlogs.result_signature | Result signature | keyword |
 | azure.platformlogs.result_type | Result type | keyword |
 | azure.platformlogs.status | Status | keyword |
-| azure.resource.authorization_rule | Authorization rule | keyword |
-| azure.resource.group | Resource group | keyword |
-| azure.resource.id | Resource ID | keyword |
-| azure.resource.name | Name | keyword |
-| azure.resource.namespace | Resource type/namespace | keyword |
-| azure.resource.provider | Resource type/namespace | keyword |
-| azure.subscription_id | Azure subscription ID | keyword |
-| azure.tenant_id | tenant ID | keyword |
+| azure.platformlogs.tenantId | Tenant ID from the log envelope, as sent by Azure. Also copied to `azure.tenant.id`. | keyword |
+| azure.resource.authorization_rule | Authorization rule. | keyword |
+| azure.resource.group | [Deprecated] Legacy name for the resource group. Still populated. Planned to become an alias of `azure.resource_group.name` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.resource_group.name` instead. | keyword |
+| azure.resource.id | [Deprecated] Legacy name for the ARM resource ID. Still populated. Planned to become an alias of `cloud.resource_id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `cloud.resource_id` instead. | keyword |
+| azure.resource.name | Resource name. | keyword |
+| azure.resource.namespace | Event Hub namespace parsed from the ARM resource ID. | keyword |
+| azure.resource.provider | [Deprecated] Legacy name for the resource provider namespace. Still populated. Unlike `azure.resource_provider.namespace`, it includes the resource type (for example `Microsoft.KeyVault/vaults`). Planned to become an alias of `azure.resource_provider.namespace` about six months after 1.41.0, after which it is no longer stored in `_source` and returns the namespace only. Use `azure.resource_provider.namespace` instead. | keyword |
+| azure.resource_group.name | Azure resource group name. | keyword |
+| azure.resource_provider.namespace | Azure resource provider namespace (e.g., Microsoft.EventHub). | keyword |
+| azure.subscription.id | Azure subscription ID. | keyword |
+| azure.subscription_id | [Deprecated] Legacy flat name for the subscription ID. Still populated. Planned to become an alias of `azure.subscription.id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.subscription.id` instead. | keyword |
+| azure.tenant.id | Azure tenant ID. | keyword |
+| azure.tenant_id | [Deprecated] Legacy flat name for the tenant ID. Populated only in data streams that set it before 1.41.0. Planned to become an alias of `azure.tenant.id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.tenant.id` instead. | keyword |
 | azure_log_forwarder.category | Azure log category | keyword |
 | azure_log_forwarder.resource_type | Azure resource type | keyword |
 | azure_log_forwarder.service_provider | Azure service provider | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.resource_id | Fully-qualified Azure Resource Manager (ARM) resource ID. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
