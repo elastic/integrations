@@ -26,24 +26,26 @@ program: |
       }.format_query()
     ).do_request().as(resp, resp.StatusCode == 200 ?
       resp.Body.decode_json().as(body,
-        (has(body.matches) && size(body.matches) > 0 &&
-          (!has(state.max_pages) ||
-            (has(state.?next.page) ? int(state.next.page) : 1) < int(state.max_pages))
-        ).as(wantMore, {
-          "events": dyn(
-            has(body.matches) && type(body.matches) == list ?
-              body.matches.map(e, {
-                "message": e.encode_json(),
-              })
+        (has(state.?next.page) ? int(state.next.page) : 1).as(currentPage,
+          (has(body.matches) && size(body.matches) > 0 &&
+            (!has(state.max_pages) || currentPage < int(state.max_pages)) &&
+            (!has(body.total) || currentPage * 100 < int(body.total))
+          ).as(wantMore, {
+            "events": dyn(
+              has(body.matches) && type(body.matches) == list ?
+                body.matches.map(e, {
+                  "message": e.encode_json(),
+                })
+              :
+                []
+            ),
+            "want_more": wantMore,
+            "next": wantMore ?
+              {"page": currentPage + 1}
             :
-              []
-          ),
-          "want_more": wantMore,
-          "next": wantMore ?
-            {"page": (has(state.?next.page) ? int(state.next.page) : 1) + 1}
-          :
-            {},
-        })
+              {},
+          })
+        )
       )
     :
       {
