@@ -4,50 +4,73 @@ ESET PROTECT enables you to manage ESET products on workstations and servers in 
 
 ## Data streams
 
+The ESET PROTECT integration collects five data streams:
+
+**[Detection](https://help.eset.com/eset_connect/en-US/incident_management_v1_detections_get.html)** retrieves detections from the ESET Connect Incident Management API.
+
+**[Device](https://help.eset.com/eset_connect/en-US/device_management_v1_devices_get.html)** retrieves managed-device inventory from the ESET Connect Device Management API.
+
+**[Device Task](https://help.eset.com/eset_connect/en-US/automation_v1_device_tasks_get.html)** retrieves task definitions from the ESET Connect Automation API.
+
+**[Device Vulnerability](https://help.eset.com/eset_connect/en-US/vulnerability_management_v1_device-vulnerabilities_get.html)** retrieves current per-device vulnerability findings from the ESET Connect Vulnerability Management API.
+
+**Event** receives JSON security and audit events from the [ESET PROTECT Syslog Forwarder](https://help.eset.com/protect_cloud/en-US/syslog_forwarder.html). ESET notifications are also received, but their message content is administrator-defined plain text.
+
 ## Elastic Managed enabled integration
 
 Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it.
 
 For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
-
-The ESET PROTECT integration collects three types of logs: Detection, Device Task and Event.
-
-**[Detection](https://help.eset.com/protect_cloud/en-US/admin_ct.html?threats.html)** is used to retrieve detections via the [Incident Management - List detections v1](https://help.eset.com/eset_connect/en-US/incident_management_v1_detections_get.html) endpoint.
-
-**[Device Task](https://help.eset.com/protect_cloud/en-US/admin_ct.html?admin_ct.html)** is used to retrieve device tasks via the [Automation - List tasks](https://help.eset.com/eset_connect/en-US/automation_v1_device_tasks_get.html) endpoint.
-
-**Event** is used to retrieve Detection, Firewall, HIPS, Audit, and ESET Inspect logs using the [Syslog Server](https://help.eset.com/protect_cloud/en-US/admin_server_settings_export_to_syslog.html). ESET notifications are also retrieved but in plain text.
-
 ## Requirements
 
-Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
+The ESET Connect API data streams require a dedicated API user with **Integrations** access, read permissions for the intended products and static groups, and outbound HTTPS access to the regional ESET authentication and API endpoints.
+
+The Event data stream requires a self-managed Elastic Agent with a TCP/TLS listener that ESET PROTECT can reach. For installation guidance, refer to [Install Elastic Agents](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
 
 ### Collect data from ESET Connect
 
-1. [Create API User Account](https://help.eset.com/eset_connect/en-US/create_api_user_account.html)
-2. Retrieve the username and password generated during the creation of an API user account.
-3. Retrieve the region from the ESET Web Console URL.
+1. [Create a dedicated API user account](https://help.eset.com/eset_connect/en-US/create_api_user_account.html). Enable **Integrations** access and assign the required read permissions.
+2. Complete the API user invitation. An ESET PROTECT Hub API user must sign in to the Hub at least once before using the API.
+3. Record the API user's username and password.
+4. Identify the service region used by the ESET tenant: `eu`, `de`, `us`, `ca`, or `jpn`.
 
 ### Collect data from ESET PROTECT via Syslog
 
-Follow these steps to [configure syslog server](https://help.eset.com/protect_cloud/en-US/admin_server_settings_syslog.html):
+Use a self-managed Elastic Agent for this data stream. In ESET PROTECT, open **Marketplace** → **Integrations**, add [Syslog Forwarder](https://help.eset.com/protect_cloud/en-US/syslog_forwarder.html), and configure the following settings:
 
-1. Set the format of the payload to **JSON** (Hint: ESET Notifications are sent as plain text, regardless of the selection made https://help.eset.com/protect_admin/12.0/en-US/events-exported-to-json-format.html).
-2. Set the format of the envelope to **Syslog**.
-3. Set the minimal log level to **Information** to collect all data.
-4. Select all checkboxes to collect logs for all event types.
-5. Enter the **IP Address** or **FQDN** of the Elastic Agent that is running the integration in the Destination IP field.
+1. Set **Payload** to **JSON**. Notifications remain administrator-defined plain text.
+2. Set **Envelope** to **Syslog**.
+3. Set the minimum log level to **Information** to collect all severities.
+4. Select the required Antivirus, HIPS, Firewall, Web protection, Audit Log, Blocked files, ESET Inspect, and Incident event types.
+5. Enter the public IPv4 address or FQDN and port that route to the Elastic Agent. The integration's default port is `6514`.
+6. Enable TLS and configure certificate validation as required. The server certificate presented by Elastic Agent must match the destination name and include the complete trusted certificate chain.
+
+ESET enables RFC 6587 octet-counted framing by default. When octet counting is enabled in ESET, add the following under **Custom TCP Options**:
+
+```yaml
+framing: rfc6587
+max_message_size: 50KiB
+```
+
+Alternatively, turn off octet-counted framing in ESET and use the integration's default delimiter framing.
+
+ESET truncates exported messages larger than 8 KB, sends a `HEARTBEAT` message every one to three minutes, and does not buffer events while the destination is unavailable. Events generated during an outage are not replayed after connectivity is restored. For more information, refer to [Syslog restrictions and limits](https://help.eset.com/protect_cloud/en-US/syslogexportsettingsconstraints.html) and [Events exported as JSON](https://help.eset.com/protect_cloud/en-US/events-exported-to-json-format.html).
 
 ### Enable the integration in Elastic
 
-1. In Kibana navigate to **Management** > **Integrations**.
+1. In Kibana navigate to **Management** → **Integrations**.
 2. In the search bar, type **ESET PROTECT**.
 3. Select the **ESET PROTECT** integration and add it.
-4. Configure all required integration parameters, including username, password, and region, to enable data collection from the ESET Connect REST API. For syslog data collection, provide parameters such as listen address, listen port, and SSL settings.
-5. Save the integration.
+4. To collect from ESET Connect, enable the required API data streams and configure the API username, password, and region.
+5. To collect events from Syslog Forwarder, enable the Event data stream and configure:
+   - **Listen Address** as `0.0.0.0` or a specific interface reachable through the destination configured in ESET.
+   - **Listen Port** to match the ESET destination port.
+   - **SSL Configuration** with the server certificate and matching private key.
+   - **Custom TCP Options** with `framing: rfc6587` when ESET octet-counted framing is enabled.
+6. Save the integration.
 
 ## Logs Reference
 
@@ -61,6 +84,16 @@ This is the `Detection` dataset.
 
 {{fields "detection"}}
 
+### Device
+
+This is the `Device` dataset.
+
+#### Example
+
+{{event "device"}}
+
+{{fields "device"}}
+
 ### Device Task
 
 This is the `Device Task` dataset.
@@ -70,6 +103,16 @@ This is the `Device Task` dataset.
 {{event "device_task"}}
 
 {{fields "device_task"}}
+
+### Device Vulnerability
+
+This is the `Device Vulnerability` dataset.
+
+#### Example
+
+{{event "device_vulnerability"}}
+
+{{fields "device_vulnerability"}}
 
 ### Event
 
