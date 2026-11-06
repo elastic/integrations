@@ -29,8 +29,10 @@ state:
     max_page_limit: 3000 — Cato EventsFeed API returns at most 3000 records per call.
     want_more is true when a full page is returned, indicating more data may be available.
     With filters, Cato scans the event queue until it finds matches or hits a search limit, so a
-    page can be short while more events are pending. A short page still ends the cycle, because
-    Cato does not document what the returned marker looks like once the end of the queue is reached.
+    page can be short while more events are pending. A short page still ends the cycle. For
+    unfiltered requests Cato documents an empty marker when there are no new events (API
+    changelog, 2025-04-27). For filtered requests it documents only that the marker is where the
+    scan stopped, not how to tell that from the end of the queue, so the marker is not relied on.
   --}}
   max_page_limit: 3000
   query: >-
