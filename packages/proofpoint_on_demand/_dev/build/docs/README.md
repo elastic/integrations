@@ -32,6 +32,22 @@ The **Cluster ID** is displayed in the upper-right corner of the management inte
 4. Add all the required integration configuration parameters, including Cluster ID and Access Token.
 5. Save the integration.
 
+### WebSocket keep-alive
+
+Keep Alive is off by default. When turned on, the Audit, Mail and Message
+streams send a ping every 10 seconds by default.
+
+With Keep Alive turned on, the Filebeat streaming input drops the connection
+if no pong arrives within 30 seconds. This limit cannot be changed in the
+integration. A **Keep Alive Interval** of 30 seconds or more can let the read
+timeout expire before a pong arrives, causing repeated `read ... i/o timeout`
+errors and reconnects. Use a positive value below 30 seconds.
+
+Upgrading the integration does not change intervals saved in existing
+policies. If you turned on Keep Alive in version 1.11.0 or earlier, check
+**Keep Alive Interval** in each stream that uses it, and change any value of
+`30s` or longer to `10s` or another positive value below `30s`.
+
 ## Logs Reference
 
 ### Audit

@@ -1130,9 +1130,16 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | system.auth.ssh.event | The SSH event as found in the logs (Accepted, Invalid, Failed, etc.) | keyword |
 | system.auth.ssh.method | The SSH authentication method. Can be one of "password" or "publickey". | keyword |
 | system.auth.ssh.signature | The signature of the client public key. | keyword |
+| system.auth.sudo.chroot | The root directory the sudo command is executed in, as logged when sudo is run with a chroot. | keyword |
 | system.auth.sudo.command | The command executed via sudo. | keyword |
+| system.auth.sudo.env | Environment variables passed to the sudo command. | keyword |
 | system.auth.sudo.error | The error message in case the sudo command failed. | keyword |
+| system.auth.sudo.exit | The exit value of the sudo command, as logged when the sudoers log_exit_status option is enabled. | long |
+| system.auth.sudo.group | The target group to which the sudo command is switching. | keyword |
+| system.auth.sudo.host | The host on which the sudo command was submitted, as logged when the sudoers log_host option is enabled. | keyword |
 | system.auth.sudo.pwd | The current directory where the sudo command is executed. | keyword |
+| system.auth.sudo.signal | The name of the signal that terminated the sudo command, as logged when the sudoers log_exit_status option is enabled. | keyword |
+| system.auth.sudo.tsid | The sudo I/O log session ID, as logged when sudo I/O logging is enabled. | keyword |
 | system.auth.sudo.tty | The TTY where the sudo command is executed. | keyword |
 | system.auth.sudo.user | The target user to which the sudo command is switching. | keyword |
 | system.auth.syslog.version |  | keyword |
@@ -1744,6 +1751,8 @@ The System `process` data stream provides process statistics. One document is
 provided for each process. 
 Refer to the [Configuration](beats://reference/metricbeat/metricbeat-metricset-system-process.md##_configuration_12) section for more details on how to change the process configuration.
 
+> Note: On macOS, `system.process.memory.rss.bytes` can differ a lot from the memory that `top` and Activity Monitor show. To match the MEM column of `top` and the Memory column of Activity Monitor, use `system.process.memory.footprint`. Elastic Agent 9.6.0 and later send this field.
+
 #### Supported operating systems
 
 - FreeBSD
@@ -1919,6 +1928,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | system.process.io.write_bytes | The number of bytes written to the storage layer. | long | byte | counter |
 | system.process.io.write_char | The number of bytes sent to syscalls for writing. | long | byte | counter |
 | system.process.io.write_ops | The count of write-related syscalls. | long |  | counter |
+| system.process.memory.footprint | The physical memory footprint of the process, the value shown in the MEM column of top and the Memory column of Activity Monitor (supported only on macOS). It is a different metric from rss.bytes: clean file-backed pages count toward the Resident Set Size but not toward the footprint, and compressed memory counts toward the footprint but not toward the Resident Set Size. | long | byte | gauge |
 | system.process.memory.rss.bytes | The Resident Set Size. The amount of memory the process occupied in main memory (RAM). On Windows this represents the current working set size, in bytes. | long | byte | gauge |
 | system.process.memory.rss.pct | The percentage of memory the process occupied in main memory (RAM). | scaled_float | percent | gauge |
 | system.process.memory.share | The shared memory the process uses. | long | byte | gauge |
