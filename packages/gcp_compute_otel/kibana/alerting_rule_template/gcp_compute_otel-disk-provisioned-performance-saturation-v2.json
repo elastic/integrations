@@ -1,0 +1,77 @@
+{
+  "id": "gcp_compute_otel-disk-provisioned-performance-saturation-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Compute OTel] Disk at provisioned IOPS or throughput limit",
+        "description": "Alerts when a disk with independently provisioned performance (Hyperdisk, pd-extreme) uses at least 90% of its provisioned IOPS or provisioned throughput, averaged over 15 minutes. Disks without provisioning metrics (pd-standard, pd-balanced, pd-ssd) are skipped. Returns one row per saturated disk.",
+        "tags": [
+          "observability",
+          "gcp",
+          "gcp_compute",
+          "compute_engine"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "15m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.compute.otel-*\n// Compute Engine VM instances only\n| WHERE resource.attributes.gcp.resource_type == \"gce_instance\"\n// *_ops_count and *_bytes_count are DELTA metrics stored as gauges (per 60s sample): divide by 60 for per-second rates. Never use RATE().\n// provisioning/iops and provisioning/throughput (bytes/s) are only emitted for Hyperdisk and pd-extreme.\n// OTel TSDS can split one entity's history into several series (_metric_names_hash is a dimension).\n// Collapse to one row per minute first, then: means = SUM(sums) / SUM(counts); latest value = LAST(x, minute).\n| STATS\n    rops_sum = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/disk/read_ops_count`)),\n    rops_n = SUM(COUNT_OVER_TIME(`compute.googleapis.com/instance/disk/read_ops_count`)),\n    wops_sum = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/disk/write_ops_count`)),\n    wops_n = SUM(COUNT_OVER_TIME(`compute.googleapis.com/instance/disk/write_ops_count`)),\n    rbytes_sum = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/disk/read_bytes_count`)),\n    rbytes_n = SUM(COUNT_OVER_TIME(`compute.googleapis.com/instance/disk/read_bytes_count`)),\n    wbytes_sum = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/disk/write_bytes_count`)),\n    wbytes_n = SUM(COUNT_OVER_TIME(`compute.googleapis.com/instance/disk/write_bytes_count`)),\n    prov_iops = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/disk/provisioning/iops`)),\n    prov_bps = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/disk/provisioning/throughput`))\n  // provisioning/* series carry no instance_name, so key disks on instance_id + device_name to join them with the ops/bytes series.\n  BY minute = TBUCKET(1 minute), resource.attributes.project_id, resource.attributes.zone, resource.attributes.instance_id, attributes.device_name\n// Ceilings: the latest provisioned value by timestamp (a disk can be re-provisioned within the window)\n| STATS\n    rops_sum = SUM(rops_sum), rops_n = SUM(rops_n),\n    wops_sum = SUM(wops_sum), wops_n = SUM(wops_n),\n    rbytes_sum = SUM(rbytes_sum), rbytes_n = SUM(rbytes_n),\n    wbytes_sum = SUM(wbytes_sum), wbytes_n = SUM(wbytes_n),\n    provisioned_iops = LAST(prov_iops, minute) WHERE prov_iops IS NOT NULL,\n    provisioned_throughput_bps = LAST(prov_bps, minute) WHERE prov_bps IS NOT NULL\n  BY resource.attributes.project_id, resource.attributes.zone, resource.attributes.instance_id, attributes.device_name\n| EVAL\n    read_iops = CASE(rops_n > 0, TO_DOUBLE(rops_sum) / rops_n / 60.0, null),\n    write_iops = CASE(wops_n > 0, TO_DOUBLE(wops_sum) / wops_n / 60.0, null),\n    read_bps = CASE(rbytes_n > 0, TO_DOUBLE(rbytes_sum) / rbytes_n / 60.0, null),\n    write_bps = CASE(wbytes_n > 0, TO_DOUBLE(wbytes_sum) / wbytes_n / 60.0, null)\n| DROP rops_*, wops_*, rbytes_*, wbytes_*",
+        "breach": {
+          "segment": "// Only disks with a provisioned performance ceiling\nWHERE provisioned_iops > 0 OR provisioned_throughput_bps > 0\n| EVAL\n    iops = COALESCE(read_iops, 0.0) + COALESCE(write_iops, 0.0),\n    throughput_bps = COALESCE(read_bps, 0.0) + COALESCE(write_bps, 0.0)\n| EVAL\n    iops_util_pct = CASE(provisioned_iops > 0, ROUND(iops * 100.0 / provisioned_iops, 1), null),\n    throughput_util_pct = CASE(provisioned_throughput_bps > 0, ROUND(throughput_bps * 100.0 / provisioned_throughput_bps, 1), null)\n// Breach: >= 90% of either provisioned ceiling. Tune for earlier warning (for example 80).\n| WHERE iops_util_pct >= 90 OR throughput_util_pct >= 90\n| KEEP resource.attributes.project_id, resource.attributes.zone, resource.attributes.instance_id, attributes.device_name, iops_util_pct, throughput_util_pct, iops, provisioned_iops, throughput_bps, provisioned_throughput_bps\n| SORT iops_util_pct DESC NULLS LAST\n| LIMIT 100"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 1
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.project_id",
+          "resource.attributes.zone",
+          "resource.attributes.instance_id",
+          "attributes.device_name"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_compute_otel-disk-provisioned-performance-saturation-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Disk at provisioned IOPS or throughput limit\n\nThis Hyperdisk or pd-extreme disk is using at least 90% of its provisioned IOPS or throughput. Once the ceiling is reached, further I/O queues and latency rises.\n\n### Triage\n1. Check which limit is hit (`iops_util_pct` or `throughput_util_pct`) and whether reads or writes dominate.\n2. Check queue depth and latency for the same device to confirm user-visible impact.\n3. Determine whether the load is expected growth or a one-off (backup, reindex, batch job).\n\n### Remediation\nRaise provisioned IOPS or throughput on the Hyperdisk (this can be changed online, subject to modification limits), check that the VM machine type's own disk performance limits are not the bottleneck, or reduce/spread the I/O.\n\n### Tuning\nChange the `>= 90` thresholds. Size-based disk types do not emit provisioning metrics and are covered by the persistent disk I/O saturation rule instead. GCP Cloud Monitoring metrics typically arrive several minutes late, so the most recent minutes of the lookback window may be empty; the window is sized to tolerate this."
+          }
+        },
+        {
+          "id": "gcp_compute_otel-disk-provisioned-performance-saturation-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_compute_otel-00311620-fcdf-435c-945b-3d912867b913"
+          }
+        },
+        {
+          "id": "gcp_compute_otel-disk-provisioned-performance-saturation-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_compute_otel-62a27720-651a-4446-a1ba-0512a69a6ced"
+          }
+        }
+      ]
+    }
+  }
+}

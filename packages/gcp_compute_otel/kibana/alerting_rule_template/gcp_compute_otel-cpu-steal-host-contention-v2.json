@@ -1,0 +1,75 @@
+{
+  "id": "gcp_compute_otel-cpu-steal-host-contention-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Compute OTel] CPU steal from host contention",
+        "description": "Alerts when VMs in a zone spend at least 10% of their vCPU time ready to run but not scheduled by the hypervisor (CPU steal, from scheduler_wait_time) over 15 minutes. Shared-core VMs, which are throttled by design, are excluded. Returns one row per affected project and zone.",
+        "tags": [
+          "observability",
+          "gcp",
+          "gcp_compute",
+          "compute_engine"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "15m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.compute.otel-*\n// Compute Engine VM instances only\n| WHERE resource.attributes.gcp.resource_type == \"gce_instance\"\n// scheduler_wait_time is a DELTA metric stored as a gauge: seconds of wait in each 60s sample,\n// accumulated across all vCPUs. Never use RATE().\n// OTel TSDS can split one entity's history into several series (_metric_names_hash is a dimension).\n// Collapse to one row per minute first, then: means = SUM(sums) / SUM(counts); latest value = LAST(x, minute).\n| STATS\n    wait_sum = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/cpu/scheduler_wait_time`)),\n    wait_n = SUM(COUNT_OVER_TIME(`compute.googleapis.com/instance/cpu/scheduler_wait_time`)),\n    vcpus = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/cpu/guest_visible_vcpus`)),\n    reserved_cores = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/cpu/reserved_cores`))\n  BY minute = TBUCKET(1 minute), resource.attributes.project_id, resource.attributes.zone, resource.attributes.instance_id, attributes.instance_name\n| STATS\n    wait_sum = SUM(wait_sum),\n    wait_n = SUM(wait_n),\n    vcpus = LAST(vcpus, minute) WHERE vcpus IS NOT NULL,\n    reserved_cores = LAST(reserved_cores, minute) WHERE reserved_cores IS NOT NULL\n  BY resource.attributes.project_id, resource.attributes.zone, resource.attributes.instance_id, attributes.instance_name\n// Exclude shared-core VMs (reserved cores < visible vCPUs): their wait time reflects intentional throttling.\n| WHERE wait_n > 0 AND vcpus > 0 AND reserved_cores >= vcpus\n// Mean wait seconds per minute, as a percentage of total vCPU time available in a minute\n| EVAL wait_s_per_min = TO_DOUBLE(wait_sum) / wait_n\n| EVAL steal_pct = wait_s_per_min * 100.0 / (60.0 * vcpus)\n// Per-VM steal threshold (%). 10% sustained is significant contention; lower to 5% for latency-sensitive fleets.\n| EVAL is_affected = steal_pct >= 10\n| STATS\n    affected_instances = COUNT(*) WHERE is_affected,\n    instances = COUNT(*),\n    max_steal_pct = ROUND(MAX(steal_pct), 2),\n    affected_instance_names = VALUES(attributes.instance_name) WHERE is_affected\n  BY resource.attributes.project_id, resource.attributes.zone",
+        "breach": {
+          "segment": "// Breach: at least 1 VM in the zone is affected. Raise to require a zone-wide pattern (host overcommit wave).\nWHERE affected_instances >= 1\n| KEEP resource.attributes.project_id, resource.attributes.zone, affected_instances, instances, max_steal_pct, affected_instance_names\n| SORT max_steal_pct DESC\n| LIMIT 50"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 1
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.project_id",
+          "resource.attributes.zone"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_compute_otel-cpu-steal-host-contention-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## CPU steal from host contention\n\nOne or more VMs in this zone are losing at least 10% of their vCPU time waiting for the hypervisor to schedule them (`instance/cpu/scheduler_wait_time`). This is host-level contention, not a workload problem: the guest is ready to run but the physical host is not giving it CPU.\n\n### Triage\n1. Check whether steal is isolated to one VM (likely a noisy neighbour on that host) or spread across several VMs in the zone (possible GCE infrastructure event).\n2. Correlate with `instance/interruption_count`: recent live migrations can temporarily raise wait time.\n3. Check application latency on the affected VMs; steal directly inflates request latency even when CPU utilisation looks normal.\n\n### Remediation\nFor an isolated VM, stopping and starting it (not rebooting) moves it to a different host. For sole-tenant nodes, review the CPU overcommit ratio. If the zone shows a widespread pattern, check the Google Cloud status dashboard and open a support case.\n\n### Tuning\nShared-core VMs (reserved cores below visible vCPUs) are excluded because throttling is expected. Adjust `steal_pct >= 10` and `affected_instances >= 1`. GCP Cloud Monitoring metrics typically arrive several minutes late, so the most recent minutes of the lookback window may be empty; the window is sized to tolerate this."
+          }
+        },
+        {
+          "id": "gcp_compute_otel-cpu-steal-host-contention-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_compute_otel-00311620-fcdf-435c-945b-3d912867b913"
+          }
+        },
+        {
+          "id": "gcp_compute_otel-cpu-steal-host-contention-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_compute_otel-62a27720-651a-4446-a1ba-0512a69a6ced"
+          }
+        }
+      ]
+    }
+  }
+}
