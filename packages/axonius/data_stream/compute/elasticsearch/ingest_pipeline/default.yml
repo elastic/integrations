@@ -4,7 +4,7 @@ processors:
   - set:
       field: ecs.version
       tag: set_ecs_version_8efb762c
-      value: 9.3.0
+      value: 9.5.0
   - terminate:
       description: error message set and no data to process.
       tag: terminate_data_collection_error_f2e4d3c3
@@ -53,10 +53,6 @@ processors:
       field: event.category
       value: host
       tag: category_host_5098f71a
-  - append:
-      field: event.category
-      value: vulnerability
-      tag: category_vulnerability_30f59663
   - append:
       field: event.type
       value: info
@@ -320,11 +316,9 @@ processors:
         - axonius.compute.fqdn
         - axonius.compute.hostname
         - axonius.compute.os.distribution_name
-        - axonius.compute.os.latest_os_version
         - axonius.compute.os.type_distribution
         - axonius.compute.severity_critical
         - axonius.compute.uri
-        - axonius.compute.uuid
         - axonius.compute.vendor
         - axonius.compute.event.enrichment_type
       tag: remove_compute_fields_mapped_to_ecs_7913b6e7
@@ -355,6 +349,12 @@ processors:
           });
         }
         handleMap(ctx);
+  # Must run after empty values are dropped: vulnerability fields are appended from templates that can render empty.
+  - append:
+      field: event.category
+      value: vulnerability
+      tag: category_vulnerability_30f59663
+      if: ctx.vulnerability?.id != null || ctx.vulnerability?.description != null || ctx.vulnerability?.severity != null
   - set:
       field: event.kind
       tag: set_pipeline_error_into_event_kind_4fd8ffa8

@@ -111,6 +111,12 @@ This integration brings Axonius asset and security data into Elastic so teams ca
 
 Bundled dashboards summarize these data streams for day-to-day monitoring, risk and backlog sizing, access hygiene checks, and incident investigation with correlated operational, identity, asset, and event context.
 
+**Entity Store** support: user assets from the `identity` data stream and Axonius console accounts from the `user` data stream populate ECS entity fields, so they appear as user entities in the Elastic Security Entity Store. A user is identified by `user.email` when any of its adapters reports an email address, and otherwise by `user.id`, which is the Axonius `internal_axon_id` for identity assets. Axonius notes that `internal_axon_id` may change in the future, for example when assets are re-correlated; if it changes, a user without an email address appears as a new entity. A console account whose email address matches an inventoried user is merged into the same entity.
+
+Device assets from the `compute` data stream populate ECS host entity fields, so they appear as host entities. A host is identified by `host.id`, which is the Axonius `internal_axon_id`, so every adapter record of a device contributes to the same entity; the same re-correlation caveat applies. The device UUID reported by an adapter is kept in `axonius.compute.uuid`. The last activity of a host comes from agent check-in times (`last_contact_time`, then `last_seen_agents`), so devices seen only by scanners or CMDB adapters have no last activity. User assets link to the devices Axonius associates with them through `user.entity.relationships.owns`; Axonius associates a device with the users that last used it.
+
+This identification, the host and user attributes, the last activity, and the relationships apply to the Entity Store from Kibana 9.4. On Kibana 8.19 and 9.3, the Entity Store identifies hosts by `host.name` and users by `user.name` only, so adapter records of one device that report different names appear as separate hosts.
+
 ## What do I need to use this integration?
 
 ### From Elastic
@@ -315,7 +321,7 @@ An example event for `adapter` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
         "id": "14821fc1-2179-4137-b70d-b1273d706291",
@@ -376,19 +382,20 @@ The `user` data stream provides user events from axonius.
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Indicates whether a user is in the raw source data stream, or in the latest destination index. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
+| user.entity.lifecycle.last_activity | Timestamp of the most recent action performed by or attributed to this entity (active use). Distinct from `entity.last_seen_timestamp`, which records when the entity was last observed in data; `last_activity` implies the entity was active, not only seen. Typically applicable to User, Host, and Service entities. | date |
 
 
 An example event for `user` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-06-03T08:32:50.343Z",
+    "@timestamp": "2026-11-05T17:03:19.115Z",
     "agent": {
-        "ephemeral_id": "a1c19a6d-3aa1-47d3-a3bb-a16a21544746",
-        "id": "e51be873-4470-4ac9-b544-f8d1cd55df45",
-        "name": "elastic-agent-19686",
+        "ephemeral_id": "eb88dba6-b5b2-4493-be46-c0cf9c31da91",
+        "id": "5753c4eb-0fc2-4026-93c3-ef30446774eb",
+        "name": "elastic-agent-68260",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "9.5.0"
     },
     "axonius": {
         "user": {
@@ -411,26 +418,40 @@ An example event for `user` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.user",
-        "namespace": "57839",
+        "namespace": "28696",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "e51be873-4470-4ac9-b544-f8d1cd55df45",
+        "id": "5753c4eb-0fc2-4026-93c3-ef30446774eb",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "9.5.0"
     },
     "event": {
         "agent_id_status": "verified",
+        "category": [
+            "iam"
+        ],
         "dataset": "axonius.user",
-        "ingested": "2026-06-03T08:32:53Z",
-        "kind": "event",
-        "original": "{\"allowed_scopes_impersonation\":[\"63622d93d27cvdsfa4d9489db6a1cf\",\"63622d93d2dvfwe74d9489db6a1cc\"],\"data_scope_id\":\"fgreg63622d93d274d9489db6a1cf\",\"data_scope_name\":\"test data scope\",\"department\":\"test\",\"email\":\"alias.doe@example.com\",\"first_name\":\"alias\",\"last_login\":\"Sun, 09 Mar 2025 18:53:09 GMT\",\"last_name\":\"doe\",\"last_updated\":\"Sun, 11 Mar 2025 18:53:09 GMT\",\"role_id\":\"63622vfed93d274d9489dbbgresdcv6a1cf\",\"role_name\":\"test role\",\"source\":\"test source\",\"title\":\"Security Analyst\",\"user_name\":\"alias.doe\",\"uuid\":\"63622d93d274ihvbngvbhd9489db6a1cf\"}"
+        "ingested": "2026-11-05T17:03:23Z",
+        "kind": "asset",
+        "module": "axonius",
+        "original": "{\"allowed_scopes_impersonation\":[\"63622d93d27cvdsfa4d9489db6a1cf\",\"63622d93d2dvfwe74d9489db6a1cc\"],\"data_scope_id\":\"fgreg63622d93d274d9489db6a1cf\",\"data_scope_name\":\"test data scope\",\"department\":\"test\",\"email\":\"alias.doe@example.com\",\"first_name\":\"alias\",\"last_login\":\"Sun, 09 Mar 2025 18:53:09 GMT\",\"last_name\":\"doe\",\"last_updated\":\"Sun, 11 Mar 2025 18:53:09 GMT\",\"role_id\":\"63622vfed93d274d9489dbbgresdcv6a1cf\",\"role_name\":\"test role\",\"source\":\"test source\",\"title\":\"Security Analyst\",\"user_name\":\"alias.doe\",\"uuid\":\"63622d93d274ihvbngvbhd9489db6a1cf\"}",
+        "type": [
+            "info",
+            "user"
+        ]
     },
     "input": {
         "type": "cel"
+    },
+    "labels": {
+        "is_transform_source": "true"
+    },
+    "observer": {
+        "vendor": "Axonius"
     },
     "related": {
         "user": [
@@ -448,6 +469,17 @@ An example event for `user` looks as following:
     "user": {
         "domain": "example.com",
         "email": "alias.doe@example.com",
+        "entity": {
+            "id": "63622d93d274ihvbngvbhd9489db6a1cf",
+            "last_seen_timestamp": "2026-11-05T17:03:19.115Z",
+            "lifecycle": {
+                "last_activity": "2025-03-09T18:53:09.000Z"
+            },
+            "source": "axonius",
+            "type": [
+                "user"
+            ]
+        },
         "full_name": "alias doe",
         "id": "63622d93d274ihvbngvbhd9489db6a1cf",
         "name": "alias.doe",
@@ -530,7 +562,7 @@ An example event for `gateway` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
         "id": "48b8f756-211b-4384-876b-8344e3695645",
@@ -781,7 +813,7 @@ An example event for `exposure` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
         "id": "c984995b-1d3f-4883-bb15-c9434aca184b",
@@ -908,7 +940,7 @@ An example event for `alert_finding` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
         "id": "a06a56bf-4d9f-43fe-b5de-7e0a8ef420a7",
@@ -1078,7 +1110,7 @@ An example event for `incident` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
         "id": "4a19befd-dfeb-490a-ae01-9c5af81e6225",
@@ -1224,7 +1256,7 @@ An example event for `storage` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
         "id": "309c48b0-7459-46eb-a2f8-dcde33d565ba",
@@ -1385,7 +1417,7 @@ An example event for `ticket` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
         "id": "adf692ff-579e-49bd-88bc-fa14bf027e3b",
@@ -2016,7 +2048,7 @@ An example event for `network` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
         "id": "10b8b948-620f-4a69-ac44-12197b5c5a65",
@@ -2090,6 +2122,7 @@ The `identity` data stream provides identity asset logs from axonius.
 | axonius.identity.application_id | Unique identifier of the application. | keyword |
 | axonius.identity.application_name | Name of the application associated with this identity. | keyword |
 | axonius.identity.asset_entity_info | Information about the asset entity and its properties. | keyword |
+| axonius.identity.asset_mail | First email address, in lexical order, reported by any adapter for this user asset. Used to give every adapter record of the asset the same user.email. | keyword |
 | axonius.identity.asset_type | The type of asset. | keyword |
 | axonius.identity.associated_devices.device_associated_saas_apps_names | Names of SaaS applications associated with the device. | keyword |
 | axonius.identity.associated_devices.device_caption | Caption or display name of the associated device. | keyword |
@@ -2496,6 +2529,8 @@ The `identity` data stream provides identity asset logs from axonius.
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
+| user.entity.attributes.mfa_enabled | Indicates whether multi-factor authentication is enabled for this entity. Typically applicable to User entities. | boolean |
+| user.entity.lifecycle.last_activity | Timestamp of the most recent action performed by or attributed to this entity (active use). Distinct from `entity.last_seen_timestamp`, which records when the entity was last observed in data; `last_activity` implies the entity was active, not only seen. Typically applicable to User, Host, and Service entities. | date |
 
 
 An example event for `identity` looks as following:
@@ -2504,11 +2539,11 @@ An example event for `identity` looks as following:
 {
     "@timestamp": "2025-12-09T12:02:11.000Z",
     "agent": {
-        "ephemeral_id": "9bf5d9aa-5fef-4f19-a5fe-5780fcd649a2",
-        "id": "57760dc1-591b-4a34-ba06-c4f7604fdb10",
-        "name": "elastic-agent-81971",
+        "ephemeral_id": "cf0a3bcd-f1e7-4728-a1b7-d24251b861ec",
+        "id": "bcc53809-0ef7-4e62-a523-ebb921c70211",
+        "name": "elastic-agent-90754",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "9.5.0"
     },
     "axonius": {
         "identity": {
@@ -2521,12 +2556,11 @@ An example event for `identity` looks as following:
             ],
             "application_and_account_name": "microsoft/azure_ad-demo",
             "asset_type": "users",
-            "associated_groups": [
-                {
-                    "display_name": "developers-group",
-                    "remote_id": "a3e70162"
-                }
-            ],
+            "associated_groups": {
+                "display_name": "developers-group",
+                "remote_id": "a3e70162"
+            },
+            "azure_account_id": "c8103abe-eda9-472b-894a-6260bb2ba8cc",
             "email_activity": {
                 "is_deleted": false,
                 "product_license": "MICROSOFT FABRIC (FREE)+MICROSOFT TEAMS PHONE STANDARD+MICROSOFT DEFENDER FOR OFFICE365 (PLAN 2)+MICROSOFT 365 AUDIO CONFERENCING+ENTERPRISE MOBILITY + SECURITY E3+OFFICE365 E3+MICROSOFT 365 E3 EXTRA FEATURES",
@@ -2568,69 +2602,56 @@ An example event for `identity` looks as following:
             "last_fetch_connection_label": "azure_ad-demo",
             "last_logon": "2025-11-30T18:50:39.000Z",
             "last_seen": "2025-11-10T22:18:25.000Z",
-            "nested_applications": [
-                {
-                    "app_display_name": "Calendly",
-                    "assignment_type": "Direct",
-                    "extension_type": "User Consent",
-                    "is_managed": false,
-                    "is_unmanaged_extension": true,
-                    "name": "Calendly",
-                    "permissions": [
-                        {
-                            "name": "openid"
-                        }
-                    ],
-                    "relation_extension_name": "Calendly",
-                    "source_application": "Microsoft",
-                    "value": "2E2a2e7c9f758BDcC0E2",
-                    "vendor_category": "Productivity"
-                }
-            ],
+            "nested_applications": {
+                "app_display_name": "Calendly",
+                "assignment_type": "Direct",
+                "extension_type": "User Consent",
+                "is_managed": false,
+                "is_unmanaged_extension": true,
+                "name": "Calendly",
+                "permissions": {
+                    "name": "openid"
+                },
+                "relation_extension_name": "Calendly",
+                "source_application": "Microsoft",
+                "value": "2E2a2e7c9f758BDcC0E2",
+                "vendor_category": "Productivity"
+            },
             "nested_grants_last_updated": "2025-12-09T12:10:06.000Z",
             "nested_grants_managers_last_updated": "2025-12-09T12:10:10.000Z",
-            "nested_groups": [
-                {
-                    "assignment_type": "Direct",
-                    "name": "Office365 Users",
-                    "value": "d8e66837"
-                }
-            ],
+            "nested_groups": {
+                "assignment_type": "Direct",
+                "name": "Office365 Users",
+                "value": "d8e66837"
+            },
             "not_fetched_count": 0,
             "sm_entity_type": "saas_user",
             "source_application": "Microsoft",
-            "tenant_number": [
-                2
-            ],
-            "transform_unique_id": "N8G3qDAOmSElCdviQ3d6FpD76pE=",
-            "user_permissions": [
-                {
-                    "is_admin": false,
-                    "name": "OnlineMeetings.ReadWrite"
-                }
-            ],
+            "tenant_number": 2,
+            "transform_unique_id": "09Q/WYs96pJRgipkiF/gFbvKBho=",
+            "user_permissions": {
+                "is_admin": false,
+                "name": "OnlineMeetings.ReadWrite"
+            },
             "user_remote_id": "63d52bb0-7ce0-4467-9004-2b19c06b86ae",
             "user_type": "Member"
         }
     },
     "cloud": {
-        "account": {
-            "id": "c8103abe-eda9-472b-894a-6260bb2ba8cc"
-        },
         "provider": "Azure"
     },
     "data_stream": {
         "dataset": "axonius.identity",
-        "namespace": "52896",
+        "namespace": "20087",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "57760dc1-591b-4a34-ba06-c4f7604fdb10",
+        "id": "bcc53809-0ef7-4e62-a523-ebb921c70211",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "9.5.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -2639,18 +2660,25 @@ An example event for `identity` looks as following:
         ],
         "created": "2024-06-28T08:49:28.000Z",
         "dataset": "axonius.identity",
-        "ingested": "2026-06-03T07:48:12Z",
-        "kind": "event",
+        "ingested": "2026-11-05T17:02:32Z",
+        "kind": "asset",
+        "module": "axonius",
         "type": [
-            "info"
+            "info",
+            "user"
         ]
     },
     "input": {
         "type": "cel"
     },
+    "labels": {
+        "is_transform_source": "true"
+    },
+    "observer": {
+        "vendor": "Axonius"
+    },
     "related": {
         "user": [
-            "developers-group",
             "helen.jordan@demo.local"
         ]
     },
@@ -2661,6 +2689,33 @@ An example event for `identity` looks as following:
     "user": {
         "domain": "demo.local",
         "email": "helen.jordan@demo.local",
+        "entity": {
+            "attributes": {
+                "permissions": [
+                    "OnlineMeetings.ReadWrite"
+                ]
+            },
+            "id": "bc11b2989fc0f69708b6865d172a49fe",
+            "last_seen_timestamp": "2025-12-09T12:02:11.000Z",
+            "lifecycle": {
+                "last_activity": "2025-11-30T18:50:39.000Z"
+            },
+            "source": "axonius",
+            "type": [
+                "user"
+            ]
+        },
+        "group": {
+            "id": [
+                "a3e70162",
+                "d8e66837"
+            ],
+            "name": [
+                "developers-group",
+                "Office365 Users"
+            ]
+        },
+        "id": "bc11b2989fc0f69708b6865d172a49fe",
         "name": "helen.jordan@demo.local"
     }
 }
@@ -3126,6 +3181,8 @@ The `compute` data stream provides compute asset logs from axonius.
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| host.entity.attributes.managed | Indicates whether the entity is managed by an external administration or control system. Typically applicable to Host and Service entities. | boolean |
+| host.entity.lifecycle.last_activity | Timestamp of the most recent action performed by or attributed to this entity (active use). Distinct from `entity.last_seen_timestamp`, which records when the entity was last observed in data; `last_activity` implies the entity was active, not only seen. Typically applicable to User, Host, and Service entities. | date |
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Indicates whether a compute event is in the raw source data stream, or in the latest destination index. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
@@ -3137,30 +3194,24 @@ An example event for `compute` looks as following:
 {
     "@timestamp": "2025-12-05T00:02:00.000Z",
     "agent": {
-        "ephemeral_id": "ef953a4a-0c2d-413a-8180-529bd686bb14",
-        "id": "80bc8918-8f12-4faf-b69f-14eae4d5990a",
-        "name": "elastic-agent-26769",
+        "ephemeral_id": "31c8a857-aff1-44bf-b2db-add34788eeef",
+        "id": "26da61c9-1d88-4bea-b966-1c2b15afe4cc",
+        "name": "elastic-agent-31719",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "9.5.0"
     },
     "axonius": {
         "compute": {
             "accurate_for_datetime": "2025-12-05T00:02:00.000Z",
             "adapter_list_length": 1,
-            "adapters": [
-                "azure_adapter"
-            ],
+            "adapters": "azure_adapter",
             "application_and_account_name": "azure/azure-demo",
             "asset_entity_info": "AzureEntityType.KubernetesCluster",
             "asset_type": "containers",
-            "connected_assets": [
-                "subscription_id::969f0354-b771-4580-8a84-0634c45bbd5b"
-            ],
+            "connected_assets": "subscription_id::969f0354-b771-4580-8a84-0634c45bbd5b",
             "data_asset_type": "Kubernetes Container",
             "event": {
-                "adapter_categories": [
-                    "Cloud Infra"
-                ],
+                "adapter_categories": "Cloud Infra",
                 "client_used": "67fd09ca731ccb5730923106",
                 "initial_plugin_unique_name": "azure_adapter_0",
                 "plugin_name": "azure_adapter",
@@ -3183,55 +3234,57 @@ An example event for `compute` looks as following:
             "source_application": "Azure",
             "subscription_id": "f7f03c3d-a8aa-443d-94ea-f0948fdda5fe",
             "subscription_name": "Azure Public Cloud",
-            "tags": [
-                {
-                    "tag_key": "AUDIT SCOPE",
-                    "tag_value": "Yes"
-                },
-                {
-                    "tag_key": "Application",
-                    "tag_value": "Shared"
-                },
-                {
-                    "tag_key": "Assigned VP",
-                    "tag_value": "Chris Swarey"
-                }
-            ],
-            "tenant_number": [
-                4
-            ],
+            "tags": {
+                "tag_key": [
+                    "AUDIT SCOPE",
+                    "Application",
+                    "Assigned VP"
+                ],
+                "tag_value": [
+                    "Yes",
+                    "Shared",
+                    "Chris Swarey"
+                ]
+            },
+            "tenant_number": 4,
             "transform_unique_id": "1qDt9m3qt7HtGa9rDHmFXO6zQ4A=",
             "type": "Containers"
         }
     },
     "data_stream": {
         "dataset": "axonius.compute",
-        "namespace": "71660",
+        "namespace": "96121",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "80bc8918-8f12-4faf-b69f-14eae4d5990a",
+        "id": "26da61c9-1d88-4bea-b966-1c2b15afe4cc",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "9.5.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
-            "host",
-            "vulnerability"
+            "host"
         ],
         "dataset": "axonius.compute",
-        "ingested": "2026-06-03T07:45:10Z",
+        "ingested": "2026-11-04T17:32:19Z",
         "kind": "event",
+        "module": "axonius",
         "type": [
             "info"
         ]
     },
     "input": {
         "type": "cel"
+    },
+    "labels": {
+        "is_transform_source": "true"
+    },
+    "observer": {
+        "vendor": "Axonius"
     },
     "tags": [
         "forwarded",
@@ -3700,6 +3753,8 @@ The `application` data stream provides application asset logs from axonius.
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| host.entity.attributes.managed | Indicates whether the entity is managed by an external administration or control system. Typically applicable to Host and Service entities. | boolean |
+| host.entity.lifecycle.last_activity | Timestamp of the most recent action performed by or attributed to this entity (active use). Distinct from `entity.last_seen_timestamp`, which records when the entity was last observed in data; `last_activity` implies the entity was active, not only seen. Typically applicable to User, Host, and Service entities. | date |
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Indicates whether a compute event is in the raw source data stream, or in the latest destination index. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
@@ -3768,7 +3823,7 @@ An example event for `application` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
         "id": "7d8c1499-c3fc-4215-a47f-e1b1d1497a8b",
