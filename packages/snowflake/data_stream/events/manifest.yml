@@ -3,15 +3,13 @@ type: logs
 streams:
   - input: cel
     title: Collect Snowflake event table telemetry
-    description: >-
-      Collect handler log messages (RECORD_TYPE LOG) from the Snowflake event table via the SQL API. SPAN, SPAN_EVENT, METRIC, and EVENT rows are dropped during ingest.
+    description: Handler log messages (RECORD_TYPE LOG) from the event table. SPAN, SPAN_EVENT, METRIC, and EVENT rows are dropped.
     template_path: cel.yml.hbs
     vars:
       - name: event_table
         type: text
         title: Event table
-        description: >-
-          Fully qualified event table or view (1–3 part identifier). Default is SNOWFLAKE.TELEMETRY.EVENTS_VIEW, which SNOWFLAKE.EVENTS_VIEWER can read. Set this to a custom event table if you do not use the account view. Discover the account table with SHOW PARAMETERS LIKE 'EVENT_TABLE' IN ACCOUNT.
+        description: "Fully qualified event table or view. Default SNOWFLAKE.TELEMETRY.EVENTS_VIEW is readable by EVENTS_VIEWER. Find a custom table with SHOW PARAMETERS LIKE 'EVENT_TABLE' IN ACCOUNT."
         multi: false
         required: true
         show_user: true
@@ -19,8 +17,7 @@ streams:
       - name: interval
         type: text
         title: Interval
-        description: >-
-          How often to query the event table. Telemetry is nearer real time than ACCOUNT_USAGE views; a 2 hour interval is a conservative starting point.
+        description: "How often to poll. Event tables are nearer real time than ACCOUNT_USAGE views. Units: h, m, s."
         multi: false
         required: true
         show_user: true
@@ -28,8 +25,7 @@ streams:
       - name: initial_interval
         type: text
         title: Initial interval
-        description: >-
-          How far back to query on the first run when no cursor exists. Supported units are h/m/s.
+        description: "How far back to collect on the first poll. Units: h, m, s."
         multi: false
         required: true
         show_user: true
@@ -37,8 +33,7 @@ streams:
       - name: lag_time
         type: text
         title: Lag time
-        description: >-
-          Overlap subtracted from the stored TIMESTAMP watermark after a short (caught-up) page so late-arriving telemetry rows are included. Lag is not applied while paging through a full LIMIT batch. Event tables have no published ACCOUNT_USAGE latency; 15m is the default overlap. Supported units are h/m/s.
+        description: "How far before the last event to read again so late rows are included. Event tables have no published latency. Units: h, m, s."
         multi: false
         required: true
         show_user: true
