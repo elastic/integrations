@@ -1,0 +1,99 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when Dependabot alerts or security updates are disabled at the repository, organization, or enterprise level in GitHub. Adversaries may turn off Dependabot to reduce the chance that a malicious or vulnerable dependency they introduced is flagged; disabling it for an organization or enterprise removes this coverage across many repositories at once.",
+        "false_positives": [
+            "Repository admins disabling Dependabot on archival, template, or non-code repos. Confirm the change was intended and that production application repos remain covered."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "user.name",
+                "github.org",
+                "github.repo",
+                "github.actor_ip",
+                "github.hashed_token",
+                "github.programmatic_access_type",
+                "github.user_agent"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "GitHub Dependabot Alerts or Security Updates Disabled",
+        "note": "## Triage and analysis\n\n### Investigating GitHub Dependabot Alerts or Security Updates Disabled\n\nDisabling Dependabot removes automated visibility into vulnerable and malicious packages. This can precede a supply-chain commit or lockfile change. Repository-level actions affect a single repo, while `dependabot_*` (organization) and `business_dependabot_*` (enterprise) actions remove coverage across many repositories at once.\n\n### Possible investigation steps\n\n- Identify `user.name`, `github.org`, `github.repo`, `event.action`, and `github.programmatic_access_type`, and note whether the action is repository-, organization-, or enterprise-scoped.\n- Review commits and dependency manifest changes around the disable timestamp.\n- Check whether Secret Scanning, code scanning, or the org security configuration were also changed.\n- Re-enable Dependabot unless there is an approved exception.\n\n### False positive analysis\n\n- Bulk disable on forks, mirrors, or documentation-only repositories.\n- Org-policy automation that detaches a security configuration.\n\n### Response and remediation\n\n- Re-enable Dependabot alerts (and security updates if required by policy).\n- Audit recently added dependencies and workflow files.\n- Rotate credentials if the actor is not a known admin.\n",
+        "query": "from logs-github.audit-* metadata _id, _index, _version\n| where\n  event.module == \"github\" and data_stream.dataset == \"github.audit\"\n    and event.action in (\n      \"repository_vulnerability_alerts.disable\",\n      \"repository_security_updates.disable\",\n      \"dependabot_alerts.disable\",\n      \"dependabot_alerts_new_repos.disable\",\n      \"dependabot_security_updates.disable\",\n      \"dependabot_security_updates_new_repos.disable\",\n      \"business_dependabot_alerts.disable\",\n      \"business_dependabot_alerts_new_repos.disable\"\n    )\n| keep\n    _id,\n    _index,\n    _version,\n    @timestamp,\n    event.action,\n    user.name,\n    github.org,\n    github.repo,\n    github.actor_ip,\n    github.hashed_token,\n    github.programmatic_access_type,\n    github.user_agent\n",
+        "references": [
+            "https://docs.github.com/en/code-security/getting-started/dependabot-quickstart-guide"
+        ],
+        "related_integrations": [
+            {
+                "package": "github",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "9164d803-bc5f-4197-a242-a3008707336c",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: SaaS",
+            "Platform: GitHub",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: Github",
+            "Data Source: GitHub Audit Logs",
+            "Rule Type: ESQL",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.001",
+                                "name": "Disable or Modify Tools",
+                                "reference": "https://attack.mitre.org/techniques/T1562/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "9164d803-bc5f-4197-a242-a3008707336c_1",
+    "type": "security-rule"
+}

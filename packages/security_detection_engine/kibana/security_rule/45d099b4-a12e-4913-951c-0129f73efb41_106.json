@@ -13,10 +13,6 @@
         "query": "from\n  logs-nginx.access-*,\n  logs-apache.access-*,\n  logs-apache_tomcat.access-*,\n  logs-iis.access-*,\n  logs-traefik.access-*\n| where\n    http.request.method == \"GET\" and\n    http.response.status_code == 200 and\n    url.original like \"*=*\"\n\n| eval Esql.url_original_url_decoded_to_lower = to_lower(URL_DECODE(url.original))\n\n| where\n    Esql.url_original_url_decoded_to_lower like \"*=http://*\" or\n    Esql.url_original_url_decoded_to_lower like \"*=https://*\" or\n    Esql.url_original_url_decoded_to_lower like \"*=ftp://*\" or\n    Esql.url_original_url_decoded_to_lower like \"*=smb://*\" or\n    Esql.url_original_url_decoded_to_lower like \"*=file://*\" or\n    Esql.url_original_url_decoded_to_lower rlike \"\"\".*=.*[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}.*\"\"\"\n\n| keep\n    @timestamp,\n    Esql.url_original_url_decoded_to_lower,\n    source.ip,\n    agent.id,\n    agent.name,\n    http.request.method,\n    http.response.status_code,\n    data_stream.dataset,\n    data_stream.namespace\n\n| stats\n    Esql.event_count = count(),\n    Esql.url_original_url_decoded_to_lower_count_distinct = count_distinct(Esql.url_original_url_decoded_to_lower),\n    Esql.agent_name_values = values(agent.name),\n    Esql.agent_id_values = values(agent.id),\n    Esql.http_request_method_values = values(http.request.method),\n    Esql.http_response_status_code_values = values(http.response.status_code),\n    Esql.url_original_url_decoded_to_lower_values = values(Esql.url_original_url_decoded_to_lower),\n    Esql.data_stream_dataset_values = values(data_stream.dataset),\n    Esql.data_stream_namespace_values = values(data_stream.namespace)\n    by source.ip\n",
         "related_integrations": [
             {
-                "package": "nginx",
-                "version": "^3.0.0"
-            },
-            {
                 "package": "apache",
                 "version": "^3.0.0"
             },
@@ -27,6 +23,10 @@
             {
                 "package": "iis",
                 "version": "^1.21.0"
+            },
+            {
+                "package": "nginx",
+                "version": "^3.0.0"
             },
             {
                 "package": "traefik",

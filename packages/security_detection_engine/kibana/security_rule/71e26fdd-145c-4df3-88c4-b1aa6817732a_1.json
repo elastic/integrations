@@ -1,0 +1,118 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when the organization control that restricts personal access token (PAT) access to GitHub organization resources is disabled. With the restriction enabled, classic and fine-grained PATs cannot reach organization-owned resources; once disabled, any member's PAT can access private repositories again without owner enforcement. Following an account takeover, an adversary may disable this restriction so that a leaked or attacker-created PAT regains access to organization data, establishing token-based persistence and a data-exfiltration path, making this a high-impact change to the organization's programmatic-access controls.",
+        "false_positives": [
+            "Temporarily allowing PATs during a documented migration off GitHub Apps, then re-enabling the restriction. Confirm with organization owners."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "user.name",
+                "github.org",
+                "github.repo",
+                "github.actor_ip",
+                "github.hashed_token",
+                "github.programmatic_access_type",
+                "github.user_agent",
+                "github.token_scopes"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "GitHub PAT Access Restriction Disabled",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating GitHub PAT Access Restriction Disabled\n\nThis rule triggers on `personal_access_token.access_restriction_disabled`, the audit action emitted when an organization owner stops restricting personal access token (PAT) access to organization-owned resources. With the restriction enabled, classic and fine-grained PATs cannot reach organization resources; once disabled, any member's PAT can access private repositories again. An adversary who has taken over an owner account may disable this control so a leaked or attacker-created PAT regains organization access, establishing token-based persistence and a data-exfiltration path that survives password and session resets.\n\nGitHub emits this single audit action for both classic and fine-grained personal access tokens; there is no separate per-type action. Use the organization audit log or the actor context to determine whether the classic or fine-grained restriction (or both) was relaxed. Enabling the restriction (`personal_access_token.access_restriction_enabled`) is hardening and is not alerted.\n\nThis is a different control from fine-grained PAT *approval*. Auto-approve (`auto_approve_personal_access_token_requests.enable`) is covered by the GitHub Fine-Grained PAT Auto-Approve Enabled rule; turning approval *on* is hardening and is not suspicious here.\n\n### Possible investigation steps\n\n- Identify the actor from `user.name`, `github.actor_ip`, `github.user_agent`, and `github.programmatic_access_type`, and confirm whether they legitimately hold organization owner privileges.\n- Determine whether the change was expected by checking change-management records and the affected `github.org`, and whether classic PATs, fine-grained PATs, or both were unrestricted.\n- Review PAT grants and usage after the change, such as `personal_access_token.access_granted` events and subsequent private `git.clone`, `git.push`, or `repo.download_zip` activity by the affected tokens (`github.hashed_token`, `github.token_scopes`).\n- Review authentication context for the actor around the event time for signs of takeover, such as sign-ins from new `github.actor_ip` addresses, unfamiliar user agents, or token-based access (`github.programmatic_access_type`) instead of normal interactive activity.\n- Correlate for other high-impact identity or policy changes near the same timestamp, including owner or member additions, OAuth App restriction changes, SSO/SAML changes, 2FA requirement changes, and IP allow-list modifications.\n\n### False positive analysis\n\n- A ticketed migration or cutover (for example, moving automation off GitHub Apps) may require temporarily allowing classic PATs; this should be time-bounded, approved by organization owners, and followed by re-enabling the restriction.\n- A planned governance change performed by a known administrator can generate this event as expected activity.\n\n### Response and remediation\n\n- Re-enable the PAT access restriction for the organization as soon as the change is confirmed unauthorized, and prefer restricting classic PATs while requiring approval for fine-grained PATs.\n- Review and revoke PATs created or used while the restriction was off, prioritizing tokens with broad scopes (`github.token_scopes`) or no business justification.\n- Rotate credentials and secrets potentially exposed through those tokens, and audit recent private repository clones, pushes, and ZIP downloads for data access.\n- Review org audit logs for other changes made by the actor after the disable event, and revert any unauthorized modifications.\n- Escalate to incident response if the actor is unknown or unauthorized, or if the disable event is followed by new PAT grants, owner additions, or sign-ins from unfamiliar infrastructure.\n- Harden by enforcing PAT access restrictions org-wide, disabling classic PATs, requiring approval and expiry for fine-grained PATs, and alerting on future changes to the PAT access policy.\n",
+        "query": "from logs-github.audit-* metadata _id, _index, _version\n| where\n  data_stream.dataset == \"github.audit\"\n    and event.action == \"personal_access_token.access_restriction_disabled\"\n| keep\n    _id,\n    _index,\n    _version,\n    @timestamp,\n    event.action,\n    user.name,\n    github.org,\n    github.repo,\n    github.actor_ip,\n    github.hashed_token,\n    github.programmatic_access_type,\n    github.user_agent,\n    github.token_scopes\n",
+        "references": [
+            "https://github.blog/security/application-security/introducing-fine-grained-personal-access-tokens-for-github/",
+            "https://docs.github.com/en/organizations/managing-programmatic-access-to-your-organization/setting-a-personal-access-token-policy-for-your-organization",
+            "https://docs.github.com/en/organizations/keeping-your-organization-secure/managing-security-settings-for-your-organization/audit-log-events-for-your-organization"
+        ],
+        "related_integrations": [
+            {
+                "package": "github",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "71e26fdd-145c-4df3-88c4-b1aa6817732a",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: SaaS",
+            "Platform: GitHub",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Tactic: Persistence",
+            "Data Source: Github",
+            "Data Source: GitHub Audit Logs",
+            "Rule Type: ESQL",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.001",
+                                "name": "Disable or Modify Tools",
+                                "reference": "https://attack.mitre.org/techniques/T1562/001/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1484",
+                        "name": "Domain or Tenant Policy Modification",
+                        "reference": "https://attack.mitre.org/techniques/T1484/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "71e26fdd-145c-4df3-88c4-b1aa6817732a_1",
+    "type": "security-rule"
+}

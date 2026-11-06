@@ -1,0 +1,192 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects a process descended from Visual Studio Code or Cursor opening at least two distinct sensitive files, such as browser credential stores, cloud tokens, or SSH and package-manager secrets. Malicious IDE extensions use the editor process tree to harvest more than one credential store in a single session.",
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "host.name",
+                "host.os.type",
+                "user.name",
+                "process.name",
+                "process.executable",
+                "file.name",
+                "file.path",
+                "Esql.file_names"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Multiple Credential Access by VS Code or Cursor IDE Descendant",
+        "note": "## Triage and analysis\n\n### Investigating Multiple Credential Access by VS Code or Cursor IDE Descendant\n\nA process whose ancestry includes Visual Studio Code or Cursor opened at least two different sensitive files. The files\ninclude browser stores (`logins.json`, `Login Data`, `Cookies`), cloud and token files, and SSH or package-manager\nsecrets. One such file can be normal for a language server or CLI. Two or more in the same process is credential\nharvesting behavior associated with a malicious extension or a prompt-injected agent.\n\n### Possible investigation steps\n\n- Review `Esql.file_names` and `file.path` for which stores were opened and whether the paths sit under a browser profile, `.aws`, `.ssh`, `.azure`, or an npm/vault config directory.\n- Review `process.executable`, `process.command_line`, and `process.parent.command_line` for `extensionHost` or a path under `.vscode/extensions` or `.cursor/extensions`.\n- Identify the extension id from that path and compare it with the installed extension.\n- On the same host and user, look for a preceding VSIX install, a suspicious shell spawned by `Code.exe` or `Cursor`, and outbound connections from the same process.\n\n### False positive analysis\n\n- Developer tools launched by the IDE can read `known_hosts` and `.npmrc`, or both `credentials` and `credentials.toml`, during normal git, npm, or cloud CLI use. Confirm the process path and the two file names before excluding.\n- Scope exceptions to a known process executable, extension path, host, or user. Do not broadly exclude `Code.exe` or `Cursor`.\n\n### Response and remediation\n\n- If the access is unapproved, stop the process, uninstall the extension, and disconnect the host from networks that hold the exposed accounts.\n- Rotate the credentials in the opened files, including browser passwords, cloud tokens, SSH keys, and npm or vault tokens.\n- Hunt `Esql.file_names` and the process executable on other hosts.\n",
+        "query": "FROM logs-endpoint.events.process-*, logs-endpoint.events.file-*\n  METADATA _id, _index, _version\n\n// Normalize sensitive filenames for case-insensitive matching.\n| EVAL sensitive_name = TO_LOWER(file.name)\n\n// Identify processes launched by VS Code or Cursor.\n| EVAL is_editor_spawn =\n    event.dataset == \"endpoint.events.process\"\n    AND process.parent.name IN (\n      \"Code\",\n      \"Code.exe\",\n      \"Code Helper\",\n      \"Code Helper (Plugin)\",\n      \"code\",\n      \"Cursor\",\n      \"Cursor.exe\",\n      \"Cursor Helper\",\n      \"Cursor Helper (Plugin)\",\n      \"cursor\"\n    )\n\n// Identify sensitive file-open events.\n| EVAL is_sensitive_read =\n    event.dataset == \"endpoint.events.file\"\n    AND MV_CONTAINS(event.action, \"open\")\n    AND sensitive_name IN (\n      \"logins.json\", \"login data\", \"local state\",\n      \"signons.sqlite\", \"cookies\", \"cookies.sqlite\",\n      \"cookies.binarycookies\", \"token\",\n      \"credentials.db\", \"credentials\", \"credentials.toml\",\n      \"access_tokens.db\", \"accesstokens.json\",\n      \"azureprofile.json\", \"rdcman.settings\",\n      \"keepass.config.xml\", \".npmrc\", \"auth.json\", \".vault-token\",\n      \"application_default_credentials.json\"\n    )\n\n// Retain editor-associated process events and sensitive file opens.\n| WHERE host.id IS NOT NULL\n    AND (is_editor_spawn OR is_sensitive_read)\n\n// Capture editor parent entity IDs as ancestry anchors.\n| EVAL editor_anchor_id = CASE(\n    is_editor_spawn, process.parent.entity_id, NULL\n  )\n\n// Share editor ancestor IDs within each host.\n| INLINE STATS\n    editor_anchor_ids = VALUES(editor_anchor_id)\n  BY host.id\n\n// Retain sensitive file opens with valid process identity and ancestry.\n| WHERE is_sensitive_read\n    AND process.Ext.ancestry IS NOT NULL\n    AND process.entity_id IS NOT NULL\n\n// Match file-opening processes to VS Code or Cursor ancestors.\n| EVAL editor_ancestor_ids = MV_INTERSECTION(\n    editor_anchor_ids, process.Ext.ancestry\n  )\n| WHERE editor_ancestor_ids IS NOT NULL\n\n// Require at least 2 distinct sensitive filenames per process.\n| INLINE STATS\n    unique_sensitive_files = COUNT_DISTINCT(sensitive_name),\n    Esql.file_names = VALUES(sensitive_name)\n  BY host.id, process.entity_id\n\n| WHERE unique_sensitive_files >= 2\n\n// Preserve event-level investigation context.\n| KEEP\n    @timestamp,\n    host.id, host.name, host.os.type,\n    user.name,\n    event.action, event.outcome,\n    file.name, Esql.file_names, file.path,\n    unique_sensitive_files,\n    process.entity_id, process.name, process.executable,\n    editor_ancestor_ids,\n    _id, _index, _version\n",
+        "references": [
+            "https://www.mdsec.co.uk/2021/01/macos-post-exploitation-shenanigans-with-vscode-extensions/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "editor_ancestor_ids",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "editor_anchor_id",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "editor_anchor_ids",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "is_editor_spawn",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "is_sensitive_read",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.ancestry",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "sensitive_name",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "unique_sensitive_files",
+                "type": "unknown"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "f27228e4-0792-4681-a965-9937ed6e4e00",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Tactic: Persistence",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Platform: Windows",
+            "Platform: macOS"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.001",
+                                "name": "Credentials In Files",
+                                "reference": "https://attack.mitre.org/techniques/T1552/001/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1555",
+                        "name": "Credentials from Password Stores",
+                        "reference": "https://attack.mitre.org/techniques/T1555/",
+                        "subtechnique": [
+                            {
+                                "id": "T1555.003",
+                                "name": "Credentials from Web Browsers",
+                                "reference": "https://attack.mitre.org/techniques/T1555/003/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1176",
+                        "name": "Software Extensions",
+                        "reference": "https://attack.mitre.org/techniques/T1176/",
+                        "subtechnique": [
+                            {
+                                "id": "T1176.002",
+                                "name": "IDE Extensions",
+                                "reference": "https://attack.mitre.org/techniques/T1176/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "f27228e4-0792-4681-a965-9937ed6e4e00_1",
+    "type": "security-rule"
+}
