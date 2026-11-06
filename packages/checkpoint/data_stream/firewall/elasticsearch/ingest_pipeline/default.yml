@@ -1682,7 +1682,13 @@ processors:
       field: @timestamp
       copy_from: checkpoint.lastupdatetime
       override: true
-      if: "ctx.checkpoint?.lastupdatetime != null && ctx.checkpoint.packet_capture_time != null"
+      if: "ctx.checkpoint?.lastupdatetime != null && ( ctx.checkpoint.packet_capture_time != null || ctx.checkpoint.packet_capture_time != null)"
+  - set:
+      tag: set_checkpoint_creation_time_to_event_start
+      field: event.start
+      copy_from: checkpoint.creation_time
+      override: true
+      if: "ctx.checkpoint?.creation_time != null"
   - rename:
       tag: rename_checkpoint_duration_to_event_duration_f53d9a8c
       field: checkpoint.duration
