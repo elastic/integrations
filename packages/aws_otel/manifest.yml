@@ -1,0 +1,91 @@
+format_version: "3.6.5"
+name: aws_otel
+title: "AWS (OpenTelemetry)"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: >-
+  Collect AWS service metrics from CloudWatch using the OTel Collector
+  awscloudwatch receiver. Each service is a separate data stream.
+type: integration
+categories:
+  - aws
+  - cloud
+  - observability
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.5.0"
+  elastic:
+    subscription: basic
+icons:
+  - src: /img/aws_otel_logo.svg
+    title: AWS OpenTelemetry logo
+    size: 32x32
+    type: image/svg+xml
+requires:
+  input:
+    - package: aws_cloudwatch_input_otel
+      version: "1.0.0"
+  content:
+    - package: aws_ec2_otel
+      version: "0.14.0"
+    - package: aws_lambda_otel
+      version: "0.12.0"
+    - package: aws_rds_otel
+      version: "0.12.0"
+    - package: aws_sqs_otel
+      version: "0.13.0"
+    - package: aws_elb_metrics_otel
+      version: "0.12.1"
+    - package: aws_ecs_otel
+      version: "0.12.0"
+policy_templates:
+  - name: aws
+    title: AWS metrics
+    description: Collect CloudWatch metrics for AWS services
+    data_streams:
+      - ec2
+      - lambda
+      - rds
+      - sqs
+      - elb
+      - elb_classic
+      - elb_network
+      - elb_gateway
+      - ecs
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        is_default: true
+        release: beta
+        organization: observability
+        division: engineering
+        team: obs-signals-integrations-team
+    inputs:
+      - package: aws_cloudwatch_input_otel
+        title: AWS CloudWatch
+        description: >-
+          Collect AWS service metrics using the OTel Collector awscloudwatch
+          receiver.
+        # Definitions stay on aws_cloudwatch_input_otel. Listing a variable
+        # here makes it one shared input setting. show_user only controls
+        # whether that shared setting is on the main form.
+        vars:
+          - name: region
+            show_user: true
+          - name: access_key_id
+            show_user: true
+          - name: secret_access_key
+            show_user: true
+          - name: session_token
+            show_user: true
+          - name: role_arn
+            show_user: false
+          - name: external_id
+            show_user: false
+owner:
+  type: elastic
+  github: elastic/obs-signals-integrations-team
