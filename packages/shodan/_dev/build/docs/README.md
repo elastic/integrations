@@ -11,7 +11,7 @@ The Shodan integration collects internet-exposure threat intelligence from [Shod
 
 **Host Search** polls on an interval and pages through results up to **Max Pages Per Collection Interval** (default `10` pages, 100 results each; leave empty for no cap). Shodan bills API credits per page, so this cap protects against a broad query burning through your credit balance in a single interval — see [Performance and scaling](#performance-and-scaling) below. Each poll keeps every observation of a host as its own record; see [Latest host indicator state](#latest-host-indicator-state) below for the deduplicated current-state view.
 
-**Certificate Transparency** polls once per interval and returns every certificate for the domain in a single request — no pagination, no credit cost. Re-observing the same certificate (same hash) doesn't create a duplicate.
+**Certificate Transparency** polls once per interval and returns every certificate for the domain in a single request — no pagination, no credit cost. Each poll keeps every observation of a certificate as its own record; see [Latest certificate indicator state](#latest-certificate-indicator-state) below for the deduplicated current-state view.
 
 ## What data does this integration collect?
 
@@ -142,5 +142,7 @@ The `domain` data stream provides certificate transparency records for a configu
 
 The raw `host` data stream is append-only, so re-detecting the same `ip:port` doesn't update the existing document. For a current, deduplicated view, this integration installs a transform that rolls the raw stream up into a "latest state" index keyed by IP and port, dropping indicators not re-confirmed within 7 days. Query it at `logs-shodan_latest.host`.
 
-`domain` has no equivalent transform — certificates are already deduplicated by hash, so there's no "latest state" to roll up to.
+### Latest certificate indicator state
+
+The raw `domain` data stream is append-only in the same way — re-observing the same certificate doesn't update the existing document. This integration installs an equivalent transform that rolls the raw stream up into a "latest state" index keyed by certificate hash, dropping certificates not re-confirmed within 7 days. Query it at `logs-shodan_latest.domain`.
 {{ transform }}
