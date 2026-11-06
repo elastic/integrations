@@ -19,6 +19,11 @@ The Amazon Bedrock AgentCore integration collects runtime metrics and observabil
 
 Data streams:
  - `metrics`: Collects Amazon Bedrock AgentCore runtime metrics including invocations, sessions, latency, performance indicators, error rates, throttling metrics, token counts, target execution metrics, and authorization metrics from the following AgentCore components: Agent runtime, Gateway, Memory, Identity, Browser Tool and Code Interpreter.
+ - `runtime_application_logs`: Collects agent runtime application logs (vended `APPLICATION_LOGS`) describing `InvokeAgentRuntime` operations.
+ - `memory_application_logs`: Collects AgentCore Memory application logs (vended `APPLICATION_LOGS`).
+ - `gateway_application_logs`: Collects AgentCore Gateway application logs (vended `APPLICATION_LOGS`).
+ - `code_interpreter_application_logs`: Collects Code Interpreter application logs (vended `APPLICATION_LOGS`) with one record per `InvokeCodeInterpreter` invocation, including the executed code or shell command and its stdout, stderr, and exit code.
+ - `runtime_logs`: Collects agent runtime container logs (stdout/stderr) from the auto-created `/aws/bedrock-agentcore/runtimes/*` CloudWatch log groups, including the service-written audit line for `InvokeAgentRuntimeCommand` shell command executions.
 
 ## What do I need to use this integration?
 
@@ -116,3 +121,17 @@ For more details about enabling logs for the AgentCore Gateway, see the [Amazon 
 
 {{event "gateway_application_logs"}}
 {{fields "gateway_application_logs"}}
+
+### Code Interpreter Application Logs
+
+Vended Code Interpreter `APPLICATION_LOGS` (`InvokeCodeInterpreter`). Enable log delivery on custom interpreters in the AgentCore console. See [Configure observability](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/observability-configure.html).
+
+{{event "code_interpreter_application_logs"}}
+{{fields "code_interpreter_application_logs"}}
+
+### Runtime Container Logs
+
+Auto-created runtime container log groups under `/aws/bedrock-agentcore/runtimes/*`. See the [Observability guide](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/observability-view.html).
+
+{{event "runtime_logs"}}
+{{fields "runtime_logs"}}
