@@ -183,7 +183,9 @@ _int_
 
 `migrate_checkpoint` :
 _bool_
-(Processor v2 only) Controls whether the processor migrates checkpoint information from the v1 format to the v2 format at startup, so it resumes from where v1 left off instead of reprocessing the event hub retention window. Defaults to `true`.
+(Processor v2 only) Import v1 checkpoints at startup for partitions without a v2 checkpoint. Defaults to `true`.
+
+Setting this to `false` skips the import; it does not reset existing v2 checkpoints. For partitions without a v2 checkpoint, `processor_start_position` determines where collection starts.
 
 `transport` :
 _string_
