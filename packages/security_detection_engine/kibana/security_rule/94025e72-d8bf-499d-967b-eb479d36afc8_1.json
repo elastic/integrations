@@ -1,0 +1,214 @@
+{
+    "attributes": {
+        "alert_suppression": {
+            "duration": {
+                "unit": "h",
+                "value": 4
+            },
+            "group_by": [
+                "Esql.identity"
+            ],
+            "missing_fields_strategy": "suppress"
+        },
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects the same AWS principal invoking Amazon Bedrock models (InvokeModel, Converse, and their streaming variants) from geographically distant source IPs within a short window at an impossible travel speed. Stolen access keys and session credentials are frequently resold or reused for LLMjacking, and an inference call from a second continent minutes after a legitimate one is a strong indicator that the credential is being used by someone else.",
+        "false_positives": [
+            "Multi-region automation or CI pipelines that share one IAM user or role session across distant egress IPs. Prefer per-region identities, or raise the distance and speed thresholds.",
+            "VPN, proxy, or cloud egress that geolocates incorrectly or jumps between distant points of presence. Validate the IP locations and ASNs before rotating credentials."
+        ],
+        "from": "now-60m",
+        "interval": "10m",
+        "investigation_fields": {
+            "field_names": [
+                "Esql.identity",
+                "cloud.account.id",
+                "source.ip",
+                "Esql.distance_km",
+                "Esql.travel_kmh",
+                "Esql.window_seconds",
+                "Esql.country_count",
+                "Esql.event_count",
+                "Esql.source_ip_values",
+                "Esql.source_geo_country_name_values",
+                "Esql.source_geo_city_name_values",
+                "Esql.source_as_organization_name_values",
+                "Esql.user_agent_original_values",
+                "Esql.aws_cloudtrail_user_identity_arn_values",
+                "Esql.aws_cloudtrail_user_identity_access_key_id_values"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "AWS Bedrock Model Invocation Impossible Travel",
+        "note": "## Triage and analysis\n\n### Investigating AWS Bedrock Model Invocation Impossible Travel\n\nThe same AWS principal (role issuer ARN when present, otherwise `aws.cloudtrail.user_identity.arn`) invoked Amazon\nBedrock models from source IPs whose geolocation implies travel faster than the rule thresholds (default at least\n500 km and 800 km/h) inside the lookback window. Assumed-role sessions are grouped by the issuing role so re-assumes\nof the same role still correlate. Bedrock runtime calls are CloudTrail management events, so this works without model\ninvocation logging.\n\n#### Possible investigation steps\n\n- Review `Esql.source_ip_values`, `Esql.source_geo_country_name_values`, `Esql.source_geo_city_name_values`,\n  `Esql.source_as_organization_name_values`, `Esql.distance_km`, `Esql.travel_kmh`, and `Esql.window_seconds`.\n- Identify the credential type from `Esql.aws_cloudtrail_user_identity_type_values` and\n  `Esql.aws_cloudtrail_user_identity_access_key_id_values`. Long-term `AKIA` keys used from two continents are a\n  stronger signal than a shared role session.\n- Compare `Esql.user_agent_original_values` across the two locations. A change from an SDK or console agent to a\n  generic HTTP client or LLM proxy is common in LLMjacking.\n- Search CloudTrail for the same principal around the distant event for `ListFoundationModels`,\n  `GetFoundationModelAvailability`, model access changes, or guardrail and logging changes.\n- If Bedrock model invocation logging is enabled, review prompts and token volume from the unfamiliar location.\n\n### False positive analysis\n\n- Shared credentials used by multi-region workloads or CI runners. Move these workloads to region-scoped roles.\n- VPN or proxy egress that geolocates inconsistently. Corroborate with ASN and user agent before acting.\n\n### Response and remediation\n\n- If the travel is not explained, deactivate the access key or revoke the role session, rotate credentials, and\n  review IAM policies that grant `bedrock:InvokeModel*`.\n- Review Bedrock usage and billing for the period and enable service quotas or budgets to cap abuse.\n",
+        "query": "from logs-aws.cloudtrail-*\n| where\n    data_stream.dataset == \"aws.cloudtrail\" and\n    event.provider == \"bedrock.amazonaws.com\" and\n    event.action in (\"InvokeModel\", \"InvokeModelWithResponseStream\", \"Converse\", \"ConverseStream\") and\n    event.outcome == \"success\" and\n    aws.cloudtrail.user_identity.arn is not null and\n    source.ip is not null and\n    source.geo.location is not null and\n    source.geo.country_name is not null\n| eval\n    Esql.identity = coalesce(\n        aws.cloudtrail.user_identity.session_context.session_issuer.arn,\n        aws.cloudtrail.user_identity.arn\n    ),\n    Esql.source_geo_lat = st_y(source.geo.location),\n    Esql.source_geo_lon = st_x(source.geo.location)\n| where Esql.source_geo_lat is not null and Esql.source_geo_lon is not null\n| stats\n    Esql.first_lat = first(Esql.source_geo_lat, @timestamp),\n    Esql.first_lon = first(Esql.source_geo_lon, @timestamp),\n    Esql.last_lat = last(Esql.source_geo_lat, @timestamp),\n    Esql.last_lon = last(Esql.source_geo_lon, @timestamp),\n    Esql.event_count = count(*),\n    Esql.country_count = count_distinct(source.geo.country_name),\n    Esql.source_ip_values = values(source.ip),\n    Esql.source_geo_country_name_values = values(source.geo.country_name),\n    Esql.source_geo_city_name_values = values(source.geo.city_name),\n    Esql.source_as_organization_name_values = values(source.as.organization.name),\n    Esql.event_action_values = values(event.action),\n    Esql.user_agent_original_values = values(user_agent.original),\n    Esql.aws_cloudtrail_user_identity_arn_values = values(aws.cloudtrail.user_identity.arn),\n    Esql.aws_cloudtrail_user_identity_type_values = values(aws.cloudtrail.user_identity.type),\n    Esql.aws_cloudtrail_user_identity_access_key_id_values = values(aws.cloudtrail.user_identity.access_key_id),\n    Esql.cloud_region_values = values(cloud.region),\n    Esql.timestamp_first_seen = min(@timestamp),\n    Esql.timestamp_last_seen = max(@timestamp)\n  by\n    Esql.identity,\n    cloud.account.id\n| where Esql.event_count >= 2 and Esql.country_count >= 2\n| eval\n    Esql.p1 = to_geopoint(concat(\"POINT(\", to_string(Esql.first_lon), \" \", to_string(Esql.first_lat), \")\")),\n    Esql.p2 = to_geopoint(concat(\"POINT(\", to_string(Esql.last_lon), \" \", to_string(Esql.last_lat), \")\"))\n| eval\n    Esql.distance_km = round(st_distance(Esql.p1, Esql.p2) / 1000.0, 0),\n    Esql.window_seconds = date_diff(\"second\", Esql.timestamp_first_seen, Esql.timestamp_last_seen),\n    Esql.travel_kmh = case(Esql.window_seconds > 0, round(Esql.distance_km * 3600.0 / Esql.window_seconds, 0), null),\n    source.ip = mv_first(Esql.source_ip_values)\n| where Esql.distance_km >= 500 and Esql.travel_kmh >= 800\n| keep\n    Esql.identity,\n    cloud.account.id,\n    source.ip,\n    Esql.source_ip_values,\n    Esql.source_geo_country_name_values,\n    Esql.source_geo_city_name_values,\n    Esql.source_as_organization_name_values,\n    Esql.event_action_values,\n    Esql.user_agent_original_values,\n    Esql.aws_cloudtrail_user_identity_arn_values,\n    Esql.aws_cloudtrail_user_identity_type_values,\n    Esql.aws_cloudtrail_user_identity_access_key_id_values,\n    Esql.cloud_region_values,\n    Esql.distance_km,\n    Esql.travel_kmh,\n    Esql.window_seconds,\n    Esql.country_count,\n    Esql.event_count,\n    Esql.timestamp_first_seen,\n    Esql.timestamp_last_seen\n",
+        "references": [
+            "https://docs.aws.amazon.com/bedrock/latest/userguide/logging-using-cloudtrail.html",
+            "https://www.elastic.co/docs/reference/integrations/aws/cloudtrail"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": ">=7.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.user_identity.access_key_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.user_identity.arn",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.user_identity.session_context.session_issuer.arn",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.user_identity.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.account.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.region",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.as.organization.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.geo.city_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.geo.country_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.geo.location",
+                "type": "geo_point"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "94025e72-d8bf-499d-967b-eb479d36afc8",
+        "setup": "## Setup\n\nThis rule requires AWS CloudTrail management events ingested via the AWS integration (`aws.cloudtrail` data stream)\nwith `source.geo.location` and `source.geo.country_name` populated by the integration's GeoIP enrichment. Bedrock\nruntime operations are logged as management events by default; no Bedrock model invocation logging is required.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: GenAI",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS CloudTrail",
+            "Platform: AWS",
+            "Service: AWS Bedrock",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Tactic: Initial Access",
+            "Threat: Impossible Travel",
+            "Threat: LLMjacking",
+            "Threat: Unauthorized AI Usage",
+            "Mitre Atlas: AML.T0012",
+            "Mitre Atlas: AML.T0091",
+            "Mitre Atlas: AML.T0091.000",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1528",
+                        "name": "Steal Application Access Token",
+                        "reference": "https://attack.mitre.org/techniques/T1528/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/",
+                        "subtechnique": [
+                            {
+                                "id": "T1078.004",
+                                "name": "Cloud Accounts",
+                                "reference": "https://attack.mitre.org/techniques/T1078/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "94025e72-d8bf-499d-967b-eb479d36afc8_1",
+    "type": "security-rule"
+}
