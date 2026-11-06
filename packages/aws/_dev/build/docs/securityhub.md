@@ -11,7 +11,7 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 
 ## Compatibility
 
-  1. The Findings and Findings Full Posture data streams need Elastic Agent 8.19.18 or a later 8.19 release, or 9.4.0 or later. The Insights data stream needs Elastic Agent 8.19.15 or a later 8.19 release, or 9.3.0 or later.
+  1. The Findings and Findings Full Posture data streams need Elastic Agent 8.19.18 or a later 8.19 release, or 9.4.0 or later. The Insights data stream needs Elastic Agent 8.19.15 or a later 8.19 release, or 9.3.0 or later. On older agents these data streams do not work and report errors.
   2. This module is tested against `AWS Security Hub API version 1.0`.
 
 ## To collect data from AWS Security Hub APIs, users must have AWS credentials
