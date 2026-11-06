@@ -1,0 +1,18 @@
+wait_for_data_timeout: 1m
+input: cel
+service: leakdata
+data_stream:
+  vars:
+    url: http://{{Hostname}}:{{Port}}
+    token: synthetic-system-test-token-not-a-credential
+    interval: 1s
+    batch_size: 1
+    tags:
+      - forwarded
+      - leakdata
+      - secops
+assert:
+  hit_count: 2
+  fields_present:
+    - event.id
+    - leakdata.exposure.finding_count

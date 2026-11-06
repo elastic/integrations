@@ -1,0 +1,82 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: leakdata
+      name: test-default-leakdata
+      streams:
+        - config_version: 2
+          data_stream:
+            dataset: leakdata.exposure
+          interval: 5m
+          program: |-
+            request(
+              "GET",
+              state.url.trim_right("/") + "/api/integrations/elastic-security/v1/events?" + {
+                "limit": [string(int(state.batch_size))],
+                ?"cursor": state.?cursor.value.optMap(v, [v]),
+              }.format_query()
+            ).with({
+              "Header": {
+                "Authorization": ["Bearer " + state.token],
+                "Accept": ["application/json"],
+              },
+            }).do_request().as(resp, resp.StatusCode != 200 ?
+              state.with({
+                "events": {
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": resp.Status,
+                    // A response body is not guaranteed to honor the feed allowlist.
+                    // Keep errors actionable without indexing a reflected token/body.
+                    "message": "GET LeakData feed: " + resp.Status,
+                  },
+                },
+                "want_more": false,
+              })
+            :
+              resp.Body.decode_json().as(body,
+                state.with({
+                  "events": body.events.map(e, {"message": e.encode_json()}),
+                  "cursor": {"value": body.next_cursor},
+                  "want_more": body.has_more && size(body.events) > 0,
+                })
+              )
+            )
+          publisher_pipeline.disable_host: true
+          redact:
+            fields:
+                - token
+          resource.timeout: 30s
+          resource.tracer:
+            enabled: false
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
+          resource.url: https://leakdata.example
+          state:
+            batch_size: 100
+            token: ${SECRET_0}
+            want_more: false
+          tags:
+            - forwarded
+            - leakdata
+            - secops
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-leakdata.exposure-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}
