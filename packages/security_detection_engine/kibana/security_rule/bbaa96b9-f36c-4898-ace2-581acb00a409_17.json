@@ -1,0 +1,169 @@
+{
+    "attributes": {
+        "alert_suppression": {
+            "duration": {
+                "unit": "h",
+                "value": 1
+            }
+        },
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule identifies a potential low-packet port scan. It detects final flows or firewall connection attempts from one internal source to many destination ports on one destination and transport, while requiring no more than two packets in each matching observation. Attackers can use low-packet scans to identify exposed services while minimizing completed connections. Low packet count is a scan heuristic and does not by itself prove that the traffic contains bare TCP SYN packets.",
+        "from": "now-9m",
+        "index": [
+            "logs-network_traffic.*",
+            "packetbeat-*",
+            "filebeat-*",
+            "logs-panw.panos*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "max_signals": 5,
+        "name": "Potential Low-Packet Port Scan Detected",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Low-Packet Port Scan Detected\n\nLow-packet port scanning is a reconnaissance technique where an actor probes many ports while completing little or no\napplication exchange. This method helps adversaries identify exposed services for potential exploitation. The rule\nflags final flows or firewall attempt records from an internal source to many ports on one destination and transport\nwhen each observation contains no more than two packets. The heuristic does not verify TCP SYN flags.\n\n### Possible investigation steps\n\n- Review the source IP address involved in the alert to determine if it belongs to a known or authorized scanner. Check for any recent changes or unusual activity associated with this IP.\n- Analyze the destination ports targeted by the scan to identify any patterns or specific services that may be of interest to the attacker. Determine if these ports are associated with critical or vulnerable services.\n- Review `network.transport` and raw flow or firewall records. For TCP, inspect TCP flags or connection state from another source before classifying the activity as a SYN scan.\n- Examine historical logs to identify any previous scanning activity from the same source IP or similar patterns of behavior. This can help establish whether the activity is part of a larger reconnaissance effort.\n- Correlate the alert with other security events or alerts to assess if there is a broader attack campaign underway. Look for related alerts that might indicate subsequent exploitation attempts.\n- Investigate the timing and frequency of the scan attempts to understand if they coincide with other suspicious activities or known attack windows. This can provide context on the attacker's intent and urgency.\n- Assess the network's current security posture and ensure that appropriate defenses, such as firewalls and intrusion detection systems, are configured to mitigate potential exploitation of identified open ports.\n\n### False positive analysis\n\n- Internal network scanning tools or scripts used by IT teams for legitimate network mapping can trigger this rule. To manage this, create exceptions for known internal IP addresses or subnets used by IT for network discovery.\n- Automated monitoring systems or security appliances that perform regular port checks might be flagged. Identify these systems and exclude their IP addresses from the rule to prevent false positives.\n- Software updates or patch management systems that check multiple ports for service availability can be mistaken for a low-packet port scan. Add exceptions for these systems after validation.\n- Load balancers or network devices that perform health checks across multiple ports may trigger the rule. Exclude these devices from the rule to ensure accurate detection.\n- Development or testing environments where multiple port scans are part of routine operations can cause false positives. Implement exceptions for these environments to maintain focus on genuine threats.\n\n### Response and remediation\n\n- Isolate the affected internal IP address to prevent further reconnaissance or potential exploitation of identified open ports.\n- Conduct a thorough review of firewall and network access control lists to ensure that only necessary ports are open and accessible from internal networks.\n- Implement appropriate connection-attempt rate limits or access controls to reduce unauthorized scanning.\n- Monitor the network for any unusual outbound traffic from the affected IP address, which may indicate further malicious activity or data exfiltration attempts.\n- Escalate the incident to the security operations team for further analysis and to determine if additional network segments or systems are affected.\n- Update intrusion detection and prevention systems to enhance detection capabilities for similar low-packet scanning activity.\n- Review and update network segmentation policies to limit the exposure of critical services and systems to internal reconnaissance activities.",
+        "query": "(\n  (\n    data_stream.dataset:network_traffic.flow and\n    event.action:network_flow and\n    network_traffic.flow.final:true\n  ) or\n  (\n    type:flow and\n    event.action:network_flow and\n    flow.final:true\n  ) or\n  (\n    (data_stream.dataset:panw.panos or event.dataset:panw.panos) and\n    panw.panos.type:TRAFFIC and\n    event.action:flow_started\n  )\n) and\ndestination.port:* and\nnetwork.transport:(tcp or udp) and\nnetwork.packets <= 2 and\nsource.ip:(10.0.0.0/8 or 172.16.0.0/12 or 192.168.0.0/16)\n",
+        "related_integrations": [
+            {
+                "package": "network_traffic",
+                "version": "^1.1.0"
+            },
+            {
+                "package": "panw",
+                "version": "^5.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "destination.port",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "flow.final",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "network.packets",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "network.transport",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "network_traffic.flow.final",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "panw.panos.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": false,
+                "name": "type",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "bbaa96b9-f36c-4898-ace2-581acb00a409",
+        "setup": "## Setup\n\nThis rule supports final flow records from the Elastic Network Packet Capture integration and PAN-OS traffic attempt\nrecords. It also retains a compatibility branch for standalone Packetbeat.\n\nNetwork Packet Capture 2.0.0 and later always applies ECS compatibility remapping. On earlier integration versions,\nenable `map_to_ecs` (the default since 1.31.1) so completed flows contain\n`data_stream.dataset:network_traffic.flow`, `event.action:network_flow`, and\n`network_traffic.flow.final:true`. The standalone Packetbeat branch uses the root `flow.final` field and requires\n`type:flow`.\n\nThis rule requires cumulative lifetime flow counters. For standalone Packetbeat, configure\n`packetbeat.flows.enable_delta_flow_reports: false`. Network Packet Capture package 1.34.3 does not expose that setting\nin its Fleet policy template and uses cumulative reports by default; verify the deployed package and agent version\nbefore relying on the rule. Delta flow reporting is unsupported because a final delta can contain zero or few packets\neven when the complete connection transferred many packets.\n\nFor PAN-OS, ingest TRAFFIC records through the PAN-OS integration. The rule counts session starts and does not include\nterminated, dropped, or denied flows.\n\nThe rule evaluates TCP and UDP separately. The `network.packets <= 2` condition identifies low-packet observations but\nis not TCP-flag evidence. Create exceptions for approved scanners and monitoring infrastructure after validation.\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Network",
+            "Tactic: Discovery",
+            "Tactic: Reconnaissance",
+            "Use Case: Network Security Monitoring",
+            "Data Source: PAN-OS",
+            "Resources: Investigation Guide",
+            "Noise: High",
+            "Performance: Normal",
+            "Profile: Aggressive",
+            "Rule Type: Threshold",
+            "Data Source: Network Packet Capture"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1046",
+                        "name": "Network Service Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1046/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0043",
+                    "name": "Reconnaissance",
+                    "reference": "https://attack.mitre.org/tactics/TA0043/"
+                },
+                "technique": [
+                    {
+                        "id": "T1595",
+                        "name": "Active Scanning",
+                        "reference": "https://attack.mitre.org/techniques/T1595/",
+                        "subtechnique": [
+                            {
+                                "id": "T1595.001",
+                                "name": "Scanning IP Blocks",
+                                "reference": "https://attack.mitre.org/techniques/T1595/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "threshold": {
+            "cardinality": [
+                {
+                    "field": "destination.port",
+                    "value": 250
+                }
+            ],
+            "field": [
+                "destination.ip",
+                "source.ip",
+                "network.transport"
+            ],
+            "value": 1
+        },
+        "timestamp_override": "event.ingested",
+        "type": "threshold",
+        "version": 17
+    },
+    "id": "bbaa96b9-f36c-4898-ace2-581acb00a409_17",
+    "type": "security-rule"
+}

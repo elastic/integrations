@@ -1,0 +1,108 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects GitHub secret scanning creating an alert for a secret that it has determined is publicly leaked (\"github.publicly_leaked == true\"). Unlike a generic secret-scanning finding, a publicly leaked secret means GitHub observed the credential exposed outside the repository's access boundary (for example in a public repository, gist, or other public location), so it should be treated as a confirmed credential compromise requiring immediate rotation rather than a low-signal scanner event. Gating on the public-leak flag also removes most of the noise from dummy strings and test fixtures, which are typically confined to private repositories and are not flagged as publicly leaked.",
+        "false_positives": [
+            "Example or dummy tokens that are themselves committed to a public repository can still be flagged as publicly leaked. Tune by repository, pattern name (`github.secret_type`), or known test org when such keys are expected."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "user.name",
+                "github.org",
+                "github.repo",
+                "github.actor_ip",
+                "github.hashed_token",
+                "github.programmatic_access_type",
+                "github.user_agent",
+                "github.secret_type",
+                "github.secret_type_display_name",
+                "github.publicly_leaked",
+                "github.multi_repo"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "GitHub Secret Scanning Alert for a Publicly Leaked Secret",
+        "note": "## Triage and analysis\n\n### Investigating GitHub Secret Scanning Alert for a Publicly Leaked Secret\n\n`secret_scanning_alert.create` with `github.publicly_leaked == true` means GitHub determined the matched secret is exposed in a public location, not just committed to the repository. Treat the credential as compromised and rotate it immediately.\n\n### Possible investigation steps\n\n- Identify the exposed credential type from `github.secret_type` / `github.secret_type_display_name` and the affected `github.repo` and `github.org`.\n- Review `github.multi_repo`; if true, the same secret was detected across multiple repositories, widening the blast radius.\n- Identify the committer via `user.name` (vs the `github` service actor) and corroborate with `github.actor_ip` and `github.user_agent`.\n- Determine the source and scope of the public exposure and whether the secret grants access to production systems.\n\n### False positive analysis\n\n- Example or dummy keys intentionally published to a public repository can be flagged as publicly leaked. Scope these by repository or `github.secret_type`.\n\n### Response and remediation\n\n- Revoke and rotate the exposed credential immediately, then invalidate any sessions or tokens derived from it.\n- Remove the secret from git history if required by policy and audit for any use of the credential prior to rotation.\n",
+        "query": "from logs-github.audit-* metadata _id, _index, _version\n| where\n  event.module == \"github\" and data_stream.dataset == \"github.audit\"\n    and event.action == \"secret_scanning_alert.create\"\n    and github.publicly_leaked == true\n| keep\n    _id,\n    _index,\n    _version,\n    @timestamp,\n    event.action,\n    user.name,\n    github.org,\n    github.repo,\n    github.actor_ip,\n    github.hashed_token,\n    github.programmatic_access_type,\n    github.user_agent,\n    github.secret_type,\n    github.secret_type_display_name,\n    github.publicly_leaked,\n    github.multi_repo\n",
+        "references": [
+            "https://docs.github.com/en/code-security/secret-scanning/introduction/about-secret-scanning"
+        ],
+        "related_integrations": [
+            {
+                "package": "github",
+                "version": "^2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.publicly_leaked",
+                "type": "boolean"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "305f8b49-ac0a-4f08-82fe-560cd30d66fd",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: SaaS",
+            "Platform: GitHub",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: GitHub Audit Logs",
+            "Service: GitHub Code Scanning",
+            "Rule Type: ESQL",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.001",
+                                "name": "Credentials In Files",
+                                "reference": "https://attack.mitre.org/techniques/T1552/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "305f8b49-ac0a-4f08-82fe-560cd30d66fd_1",
+    "type": "security-rule"
+}

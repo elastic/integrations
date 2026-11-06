@@ -1,0 +1,118 @@
+{
+    "attributes": {
+        "author": [
+            "Thijs Xhaflaire"
+        ],
+        "description": "Identifies a high volume of `pbpaste` executions, which may indicate a bash loop continuously collecting clipboard contents, potentially allowing an attacker to harvest user credentials or other sensitive information.",
+        "from": "now-9m",
+        "index": [
+            "logs-jamf_protect*",
+            "logs-endpoint.events.process-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious pbpaste High Volume Activity",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious pbpaste High Volume Activity\n\n`pbpaste` is a native macOS utility that writes the current contents of the general pasteboard (clipboard) to standard output. Adversaries and infostealers can call it repeatedly from a shell loop or script to harvest anything the user copies, such as passwords pasted from a password manager, tokens, or seed phrases. This rule alerts when `pbpaste` is executed at least five times on the same host within one minute, a pattern consistent with automated clipboard collection rather than interactive use.\n\n### Possible investigation steps\n\n- Review the sequence of `pbpaste` executions and their timing to determine whether they occur at regular intervals, which suggests a loop or scheduled task.\n- Identify the parent and responsible process of the `pbpaste` executions to find the script, interpreter, or application driving the activity. For Elastic Defend data, review `process.parent.executable`, `process.parent.command_line`, and `process.group_leader.executable`; for Jamf Protect data, review `process.parent.executable` and `process.responsible.executable`.\n  - !{investigate{\"label\":\"Show events having the same responsible process\",\"providers\":[[{\"excluded\":false,\"field\":\"host.hostname\",\"queryType\":\"phrase\",\"value\":\"{{host.hostname}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.group_leader.entity_id}}\",\"valueType\":\"string\"}]]}}\n  - !{investigate{\"label\":\"Show events having the same parent process\",\"providers\":[[{\"excluded\":false,\"field\":\"host.hostname\",\"queryType\":\"phrase\",\"value\":\"{{host.hostname}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.parent.entity_id}}\",\"valueType\":\"string\"}]]}}\n- If the parent is a shell or script interpreter (`bash`, `zsh`, `sh`, `osascript`, `python`), recover the script content from the command line or from the script file on disk and look for redirection of output to files or network utilities.\n- Check whether the responsible process is signed and trusted (`process.code_signature.*`), and whether its executable lives in a user-writable or temporary location such as `/tmp`, `/Users/Shared`, or a hidden directory under the user's home.\n- Look for file creation events from the same process tree that may store the collected clipboard data, and for outbound network connections (for example via `curl`, `nc`, or the interpreter itself) that may exfiltrate it.\n- Determine how the responsible process was established on the host, such as a recently created LaunchAgent, LaunchDaemon, login item, or a recently downloaded application.\n- Review other alerts for the same `host.id` and `user.name` around the alert time to identify related credential access, persistence, or exfiltration activity.\n\n### False positive analysis\n\n- Clipboard managers, text expansion tools, and developer utilities may call `pbpaste` frequently. Verify the responsible application is a known, signed tool approved for use in the environment.\n- Users or administrators running shell scripts or automation (for example Shortcuts, Automator, or terminal workflows) can produce bursts of `pbpaste` executions. Confirm the script and its author with the user.\n- When the activity is confirmed benign, create an exception scoped to the specific responsible process executable or parent command line rather than to `pbpaste` itself.\n\n### Response and remediation\n\n- Isolate the affected host from the network to prevent further collection and exfiltration of clipboard data.\n- Terminate the process tree responsible for the `pbpaste` executions and remove the associated script or binary.\n- Remove any persistence mechanism that launches the collection script, such as LaunchAgents, LaunchDaemons, cron jobs, or login items.\n- Assume that any credentials, tokens, or secrets copied to the clipboard during the activity window are compromised: rotate them and revoke active sessions.\n- Review the host for additional infostealer behavior, such as access to browser credential stores or the user's keychain.\n- Escalate to the incident response team if exfiltration is confirmed or if other hosts show the same responsible process or script.\n",
+        "query": "sequence by host.hostname, host.id with maxspan=1m\n[process where host.os.type == \"macos\" and event.type == \"start\" and event.action == \"exec\" and process.name: \"pbpaste\"] with runs = 5\n",
+        "references": [
+            "https://www.loobins.io/binaries/pbpaste/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "jamf_protect",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.hostname",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "e29599ee-d6ad-46a9-9c6a-dc39f361890d",
+        "setup": "## Setup\n\nThis rule requires data coming in from Jamf Protect.\n\n### Jamf Protect Integration Setup\nJamf Protect is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events incoming events and send data to the Elastic.\n\n#### Prerequisite Requirements:\n- Fleet is required for Jamf Protect.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Jamf Protect integration:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Jamf Protect\" and select the integration to see more details about it.\n- Click \"Add Jamf Protect\".\n- Configure the integration name.\n- Click \"Save and Continue\".\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Jamf Protect",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide",
+            "Noise: High",
+            "Performance: Normal",
+            "Profile: Aggressive",
+            "Rule Type: Event Correlation (EQL)",
+            "Platform: macOS"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1056",
+                        "name": "Input Capture",
+                        "reference": "https://attack.mitre.org/techniques/T1056/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0009",
+                    "name": "Collection",
+                    "reference": "https://attack.mitre.org/tactics/TA0009/"
+                },
+                "technique": [
+                    {
+                        "id": "T1115",
+                        "name": "Clipboard Data",
+                        "reference": "https://attack.mitre.org/techniques/T1115/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 8
+    },
+    "id": "e29599ee-d6ad-46a9-9c6a-dc39f361890d_8",
+    "type": "security-rule"
+}
