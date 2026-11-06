@@ -8,10 +8,9 @@ data_stream:
   vars:
     account_ids:
       - 33333
-    # Longer than wait_for_data_timeout: both events must come from consecutive
-    # requests in the first cycle, which requires pagination to continue while the
-    # filtered marker advances even though each page has fewer than 3000 events.
-    interval: 5m
+    # Each filtered page has fewer than 3000 events, so each request is its own cycle:
+    # one request per interval, following the markers in the mock server rules.
+    interval: 5s
     filters: |-
       - fieldName: event_sub_type
         operator: in
