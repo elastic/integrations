@@ -67,6 +67,25 @@
                     "type": "optionsListControl",
                     "width": "medium"
                 },
+                "c8f2a1d0-4b6e-4c91-9f3a-7e2d81b5c440": {
+                    "explicitInput": {
+                        "dataViewId": "logs-*",
+                        "exclude": false,
+                        "existsSelected": false,
+                        "fieldName": "slack.user.is_active",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Active"
+                    },
+                    "grow": false,
+                    "order": 5,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
                 "e24084cc-14e0-499e-a2e0-66b6e704436c": {
                     "explicitInput": {
                         "dataViewId": "logs-*",
@@ -102,25 +121,6 @@
                     },
                     "grow": false,
                     "order": 1,
-                    "type": "optionsListControl",
-                    "width": "medium"
-                },
-                "c8f2a1d0-4b6e-4c91-9f3a-7e2d81b5c440": {
-                    "explicitInput": {
-                        "dataViewId": "logs-*",
-                        "exclude": false,
-                        "existsSelected": false,
-                        "fieldName": "slack.user.is_active",
-                        "searchTechnique": "prefix",
-                        "selectedOptions": [],
-                        "sort": {
-                            "by": "_count",
-                            "direction": "desc"
-                        },
-                        "title": "Active"
-                    },
-                    "grow": false,
-                    "order": 5,
                     "type": "optionsListControl",
                     "width": "medium"
                 }
@@ -1006,35 +1006,9 @@
                                         "6578cc2e-52e8-4cb7-b977-1f33e55d4146": {
                                             "columnOrder": [
                                                 "c2db117b-0f9b-4b62-acfe-72b2291e8d18",
-                                                "37bd6ce7-aca9-4833-8fbe-9118e3b94192",
                                                 "9b060b2a-693c-4908-aa51-28b842091034"
                                             ],
                                             "columns": {
-                                                "37bd6ce7-aca9-4833-8fbe-9118e3b94192": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "User ID",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "9b060b2a-693c-4908-aa51-28b842091034",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 10
-                                                    },
-                                                    "sourceField": "user.id"
-                                                },
                                                 "9b060b2a-693c-4908-aa51-28b842091034": {
                                                     "customLabel": true,
                                                     "dataType": "number",
@@ -1123,11 +1097,6 @@
                                 "columns": [
                                     {
                                         "columnId": "c2db117b-0f9b-4b62-acfe-72b2291e8d18",
-                                        "isMetric": false,
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "37bd6ce7-aca9-4833-8fbe-9118e3b94192",
                                         "isMetric": false,
                                         "isTransposed": false
                                     },
@@ -1291,14 +1260,14 @@
                                                 },
                                                 "84f98e62-d21e-4783-be6e-2b65b9cd6674": {
                                                     "customLabel": true,
-                                                    "dataType": "number",
+                                                    "dataType": "date",
                                                     "isBucketed": false,
-                                                    "label": "Unique Users",
-                                                    "operationType": "unique_count",
+                                                    "label": "Last active",
+                                                    "operationType": "max",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "emptyAsNull": true
                                                     },
-                                                    "sourceField": "user.id"
+                                                    "sourceField": "user.entity.lifecycle.last_activity"
                                                 },
                                                 "ac160da6-b936-4ad4-9b09-6998ca94b0ba": {
                                                     "customLabel": true,
@@ -1382,7 +1351,8 @@
                                     {
                                         "columnId": "2e1b2c72-0547-415e-81c9-efd5c056f6fd",
                                         "isMetric": false,
-                                        "isTransposed": false
+                                        "isTransposed": false,
+                                        "width": 128.2
                                     },
                                     {
                                         "columnId": "0b82bd8a-f69b-4985-bd91-c711695cbcdc",
@@ -1392,7 +1362,8 @@
                                     {
                                         "columnId": "0ed8fbbd-29f4-486e-934f-5d1a02fb0a8d",
                                         "isMetric": false,
-                                        "isTransposed": false
+                                        "isTransposed": false,
+                                        "width": 121.19999999999999
                                     },
                                     {
                                         "columnId": "ac160da6-b936-4ad4-9b09-6998ca94b0ba",
@@ -1820,6 +1791,10 @@
                 "type": "lens"
             }
         ],
+        "refreshInterval": {
+            "pause": true,
+            "value": 60000
+        },
         "timeFrom": "now-30d",
         "timeRestore": true,
         "timeTo": "now",
@@ -1827,7 +1802,7 @@
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-11-05T06:49:54.562Z",
+    "created_at": "2026-11-06T06:42:52.940Z",
     "id": "slack-cacf653e-8fd7-4131-b348-afb391c6afd0",
     "references": [
         {
