@@ -1,0 +1,303 @@
+{
+    "attributes": {
+        "alert_suppression": {
+            "duration": {
+                "unit": "m",
+                "value": 60
+            },
+            "group_by": [
+                "Esql.token_id",
+                "azure.tenant_id"
+            ],
+            "missing_fields_strategy": "suppress"
+        },
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a successful non-interactive Microsoft Entra ID client sign-in for Microsoft Graph that carries managed, joined device context and reports an Edge client when the exact access token is subsequently used by a scripted client to query at least three distinct Microsoft Graph directory-enumeration paths. The rule correlates the Entra sign-in token identifier with Microsoft Graph activity rather than relying on the broader session identifier, which can be shared by legitimate application activity and multiple tokens.",
+        "false_positives": [
+            "Administrators and developers may legitimately acquire tokens and use them with PowerShell, command-line tools, or custom scripts to query Microsoft Graph. Confirm that the client application, account, enumeration target, and timing are expected before escalating."
+        ],
+        "from": "now-60m",
+        "investigation_fields": {
+            "field_names": [
+                "Esql.token_id",
+                "Esql.session_id",
+                "Esql.user_id",
+                "Esql_priv.azure_signinlogs_properties_user_principal_name_values",
+                "Esql.app_id",
+                "Esql.azure_signinlogs_properties_app_display_name_values",
+                "Esql.user_agent_original_client_signin_values",
+                "Esql.user_agent_original_scripted_enum_values",
+                "Esql.url_original_values",
+                "Esql.url_path_values",
+                "Esql.url_path_lower_count_distinct",
+                "Esql.source_ip_values",
+                "Esql.device_id"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Entra ID Managed Device Client Sign-In to Graph Enumeration",
+        "note": "## Triage and analysis\n\n### Investigating Entra ID Managed Device Client Sign-In to Graph Enumeration\n\nThis rule joins a non-interactive Entra sign-in to Microsoft Graph activity using the exact token identifier:\n`azure.signinlogs.properties.unique_token_identifier` on the sign-in and `token.id` on Graph activity. The shared\nsession ID, user ID, and application ID provide supporting context but are not sufficient correlation keys by\nthemselves.\n\nThe sign-in half requires an `Azure AD joined` trust type, a non-empty device ID, managed device status, an incoming\nrefresh token or Primary Refresh Token, the Microsoft Graph resource, a mobile or desktop client, and a parsed Edge\nuser agent. These values describe the device and client context asserted in the sign-in; they do not prove the request\noriginated from that physical device or that WAM/WinRT generated it.\n\n### Possible investigation steps\n\n- Review `Esql.token_id`, `Esql.azure_signinlogs_properties_id_values`, and\n  `Esql.azure_graphactivitylogs_properties_operation_id_values` to pivot to the original events.\n- Compare `Esql.user_agent_original_client_signin_values` with\n  `Esql.user_agent_original_scripted_enum_values`. A client sign-in followed by PowerShell, Python,\n  AzureHound, a generic HTTP library, or another scripted Graph client using the same token can indicate unauthorized\n  access-token use.\n- A browser-like Graph user agent does not clear the activity. GraphRunner and Graphpython can forge browser strings;\n  this rule intentionally avoids matching broad Mozilla, Chrome, Edge, or Safari values because they are too noisy.\n- Review `Esql.url_original_values` and `Esql.url_path_values` to determine what identities, groups, applications,\n  service principals, roles, or tenant metadata were enumerated. `Esql.url_path_lower_count_distinct` must be at least\n  three. The count uses the lowercased path, so casing variants of the same path count once. Query parameters and\n  pagination are not part of `url.path` and do not increase this count.\n- Validate `Esql.app_id`, `Esql.user_id`, `Esql.session_id`, `Esql.device_id`, and source addresses.\n- Review adjacent Endpoint telemetry for unusual access to\n  `Microsoft\\TokenBroker\\Cache\\*.tbres`, WAM-related call stacks, or untrusted processes loading `vaultcli.dll`.\n- Do not require `azure.graphactivitylogs.properties.token_issued_at` to equal the sign-in time. Access-token issue\n  times can be backdated for clock-skew tolerance; the token identifier is the precise join key.\n\n### False positive analysis\n\n- First-party Microsoft desktop applications commonly satisfy the sign-in half of this rule. The suspicious behavior\n  is the same access token subsequently appearing from a scripted client against a directory-enumeration path.\n- Confirm whether the user routinely uses Microsoft Graph PowerShell, custom administration scripts, or development\n  tools that acquire and use delegated access tokens.\n- Determine whether the requested paths align with an approved administrative workflow.\n- Prefer narrowly scoped exceptions for reviewed user and application combinations rather than excluding a scripted\n  user agent globally.\n\n### Response and remediation\n\n- Revoke active user sessions and refresh tokens if the activity is unauthorized.\n- Review all Graph activity associated with the token ID and session ID for additional discovery or data access.\n- Investigate the originating endpoint for token theft, export, or unauthorized scripted use.\n- Review Conditional Access and token-protection controls for the affected user and application.\n",
+        "query": "FROM logs-azure.signinlogs-*, logs-azure.graphactivitylogs-* METADATA _id, _version, _index\n\n// normalize the token, user, app, device and session ids\n| EVAL\n    Esql.token_id = COALESCE(\n        azure.signinlogs.properties.unique_token_identifier,\n        token.id\n    ),\n    Esql.session_id = COALESCE(\n        azure.signinlogs.properties.session_id,\n        azure.graphactivitylogs.properties.c_sid\n    ),\n    Esql.user_id = COALESCE(\n        azure.signinlogs.properties.user_id,\n        azure.graphactivitylogs.properties.user_principal_object_id\n    ),\n    Esql.app_id = COALESCE(\n        azure.signinlogs.properties.app_id,\n        azure.graphactivitylogs.properties.app_id\n    ),\n    Esql.device_id = COALESCE(\n        azure.signinlogs.properties.device_detail.device_id,\n        azure.graphactivitylogs.properties.c_device_id\n    ),\n    Esql.user_agent_original_lower = TO_LOWER(user_agent.original),\n    Esql.url_path_lower = TO_LOWER(url.path)\n\n// filter for Entra ID client sign-in and token acquisition context\n| WHERE\n    Esql.token_id IS NOT NULL AND\n    Esql.session_id IS NOT NULL AND\n    Esql.user_id IS NOT NULL AND\n    Esql.app_id IS NOT NULL AND\n    Esql.device_id IS NOT NULL AND\n    Esql.device_id != \"\"\n| EVAL Esql.azure_signinlogs_is_client_signin =\n    event.dataset == \"azure.signinlogs\" AND\n    azure.signinlogs.properties.status.error_code == 0 AND\n    azure.signinlogs.properties.device_detail.trust_type == \"Azure AD joined\" AND\n    azure.signinlogs.properties.device_detail.device_id IS NOT NULL AND\n    azure.signinlogs.properties.device_detail.device_id != \"\" AND\n    azure.signinlogs.properties.device_detail.is_managed == true AND\n    azure.signinlogs.properties.is_interactive == false AND\n    azure.signinlogs.properties.incoming_token_type IN (\"refreshToken\", \"primaryRefreshToken\") AND\n    azure.signinlogs.properties.client_app_used == \"Mobile Apps and Desktop clients\" AND\n    azure.signinlogs.properties.resource_id == \"00000003-0000-0000-c000-000000000000\" AND\n    user_agent.name == \"Edge\"\n\n// filter for scripted Graph enumeration for a user identity\n// based on red teaming tooling and in-the-wild observations\n| EVAL Esql.azure_graphactivitylogs_is_scripted_enum =\n    event.dataset == \"azure.graphactivitylogs\" AND\n    azure.graphactivitylogs.properties.c_idtyp == \"user\" AND\n    azure.graphactivitylogs.properties.client_auth_method == 0 AND\n    http.request.method == \"GET\" AND\n    (\n        Esql.user_agent_original_lower LIKE \"*powershell*\" OR\n        Esql.user_agent_original_lower LIKE \"*python-requests/*\" OR\n        Esql.user_agent_original_lower LIKE \"*python-httpx/*\" OR\n        Esql.user_agent_original_lower LIKE \"*curl/*\" OR\n        Esql.user_agent_original_lower LIKE \"*aiohttp/*\" OR\n        Esql.user_agent_original_lower LIKE \"*fasthttp*\" OR\n        Esql.user_agent_original_lower LIKE \"*go-http-client/*\" OR\n        Esql.user_agent_original_lower LIKE \"*go-resty/*\" OR\n        Esql.user_agent_original_lower LIKE \"*okhttp/*\" OR\n        Esql.user_agent_original_lower LIKE \"*restsharp/*\" OR\n        Esql.user_agent_original_lower LIKE \"*postmanruntime/*\" OR\n        Esql.user_agent_original_lower LIKE \"*axios/*\" OR\n        Esql.user_agent_original_lower == \"node\" OR\n        Esql.user_agent_original_lower LIKE \"*node-fetch/*\" OR\n        Esql.user_agent_original_lower LIKE \"*undici*\" OR\n        Esql.user_agent_original_lower LIKE \"*azurehound/*\" OR\n        Esql.user_agent_original_lower LIKE \"*sharphound/*\" OR\n        Esql.user_agent_original_lower LIKE \"*bloodhound/*\" OR\n        Esql.user_agent_original_lower LIKE \"*aadinternals*\" OR\n        Esql.user_agent_original_lower LIKE \"*bav2ropc*\" OR\n        Esql.user_agent_original_lower LIKE \"*roadtools*\" OR\n        Esql.user_agent_original_lower LIKE \"*roadrecon*\" OR\n        Esql.user_agent_original_lower LIKE \"*roadtx*\" OR\n        Esql.user_agent_original_lower LIKE \"*graphpython*\" OR\n        Esql.user_agent_original_lower LIKE \"*msgraphx*\"\n    ) AND\n    (\n        // Documented collection reads. Query parameters are not part of url.path.\n        Esql.url_path_lower IN (\n            \"/v1.0/users\",\n            \"/beta/users\",\n            \"/v1.0/groups\",\n            \"/beta/groups\",\n            \"/v1.0/applications\",\n            \"/beta/applications\",\n            \"/v1.0/serviceprincipals\",\n            \"/beta/serviceprincipals\",\n            \"/v1.0/devices\",\n            \"/beta/devices\",\n            \"/v1.0/directoryroles\",\n            \"/beta/directoryroles\",\n            \"/v1.0/organization\",\n            \"/beta/organization\",\n            \"/v1.0/subscribedskus\",\n            \"/beta/subscribedskus\",\n            \"/v1.0/rolemanagement/directory/roledefinitions\",\n            \"/beta/rolemanagement/directory/roledefinitions\",\n            \"/v1.0/rolemanagement/directory/roleassignments\",\n            \"/beta/rolemanagement/directory/roleassignments\",\n            \"/v1.0/rolemanagement/directory/roleeligibilityschedules\",\n            \"/beta/rolemanagement/directory/roleeligibilityschedules\",\n            \"/v1.0/rolemanagement/directory/roleeligibilityscheduleinstances\",\n            \"/beta/rolemanagement/directory/roleeligibilityscheduleinstances\"\n        )\n    )\n| WHERE Esql.azure_signinlogs_is_client_signin OR Esql.azure_graphactivitylogs_is_scripted_enum\n\n// aggregate the events for the rule by session, user, app, device, token and tenant\n| STATS\n    Esql.azure_signinlogs_properties_id_count_distinct = COUNT_DISTINCT(\n        azure.signinlogs.properties.id\n    ) WHERE Esql.azure_signinlogs_is_client_signin,\n    Esql.azure_graphactivitylogs_properties_operation_id_count_distinct = COUNT_DISTINCT(\n        azure.graphactivitylogs.properties.operation_id\n    ) WHERE Esql.azure_graphactivitylogs_is_scripted_enum,\n    Esql.url_path_lower_count_distinct = COUNT_DISTINCT(\n        Esql.url_path_lower\n    ) WHERE Esql.azure_graphactivitylogs_is_scripted_enum,\n    Esql.timestamp_client_signin_min = MIN(\n        CASE(Esql.azure_signinlogs_is_client_signin, @timestamp, NULL)\n    ),\n    Esql.timestamp_scripted_enum_min = MIN(\n        CASE(Esql.azure_graphactivitylogs_is_scripted_enum, @timestamp, NULL)\n    ),\n    Esql.user_agent_original_client_signin_values = VALUES(\n        user_agent.original\n    ) WHERE Esql.azure_signinlogs_is_client_signin,\n    Esql.user_agent_original_scripted_enum_values = VALUES(\n        user_agent.original\n    ) WHERE Esql.azure_graphactivitylogs_is_scripted_enum,\n    Esql.url_path_values = VALUES(url.path) WHERE Esql.azure_graphactivitylogs_is_scripted_enum,\n    Esql.url_original_values = VALUES(url.original) WHERE Esql.azure_graphactivitylogs_is_scripted_enum,\n    Esql.source_ip_values = VALUES(source.ip),\n    Esql.azure_signinlogs_properties_id_values = VALUES(\n        azure.signinlogs.properties.id\n    ) WHERE Esql.azure_signinlogs_is_client_signin,\n    Esql.azure_graphactivitylogs_properties_operation_id_values = VALUES(\n        azure.graphactivitylogs.properties.operation_id\n    ) WHERE Esql.azure_graphactivitylogs_is_scripted_enum,\n    Esql.azure_signinlogs_properties_app_display_name_values = VALUES(\n        azure.signinlogs.properties.app_display_name\n    ) WHERE Esql.azure_signinlogs_is_client_signin,\n    Esql_priv.azure_signinlogs_properties_user_principal_name_values = VALUES(\n        azure.signinlogs.properties.user_principal_name\n    ) WHERE Esql.azure_signinlogs_is_client_signin\n  BY\n    Esql.token_id,\n    Esql.session_id,\n    Esql.user_id,\n    Esql.app_id,\n    Esql.device_id,\n    azure.tenant_id\n\n// filter by client sign-in and scripted Graph enumeration events\n| WHERE\n    Esql.azure_signinlogs_properties_id_count_distinct > 0 AND\n    Esql.azure_graphactivitylogs_properties_operation_id_count_distinct > 0 AND\n    Esql.url_path_lower_count_distinct >= 3 AND\n    Esql.timestamp_client_signin_min IS NOT NULL AND\n    Esql.timestamp_scripted_enum_min IS NOT NULL AND\n    Esql.timestamp_scripted_enum_min >= Esql.timestamp_client_signin_min\n| KEEP Esql.*, Esql_priv.*, azure.tenant_id\n",
+        "references": [
+            "https://github.com/dirkjanm/askWAM",
+            "https://github.com/SpecterOps/AzureHound",
+            "https://github.com/dafthack/GraphRunner",
+            "https://github.com/mlcsec/Graphpython"
+        ],
+        "related_integrations": [
+            {
+                "integration": "graphactivitylogs",
+                "package": "azure",
+                "version": "^1.22.0"
+            },
+            {
+                "integration": "adlogs",
+                "package": "azure",
+                "version": "^1.22.0"
+            },
+            {
+                "integration": "events",
+                "package": "azure",
+                "version": "^1.22.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "azure.graphactivitylogs.properties.app_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.graphactivitylogs.properties.c_device_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.graphactivitylogs.properties.c_idtyp",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.graphactivitylogs.properties.c_sid",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.graphactivitylogs.properties.client_auth_method",
+                "type": "integer"
+            },
+            {
+                "ecs": false,
+                "name": "azure.graphactivitylogs.properties.operation_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.graphactivitylogs.properties.user_principal_object_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.app_display_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.app_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.client_app_used",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.device_detail.device_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.device_detail.is_managed",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.device_detail.trust_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.incoming_token_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.is_interactive",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.resource_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.session_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.status.error_code",
+                "type": "integer"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.unique_token_identifier",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.user_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.user_principal_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.tenant_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "http.request.method",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": false,
+                "name": "token.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "url.original",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "url.path",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "8d5d35b3-8c52-4229-964f-df3bab3e2cb5",
+        "setup": "#### Required Microsoft Entra ID and Microsoft Graph logs\n\nEnable Microsoft Entra ID sign-in logs and Microsoft Graph activity logs through the Azure integration. The rule\nrequires `azure.signinlogs.properties.unique_token_identifier` and the normalized Graph `token.id` field so it can\njoin issuance and use of the same access token.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Identity",
+            "Data Source: Azure",
+            "Data Source: Microsoft Graph Activity Logs",
+            "Platform: Entra ID",
+            "Use Case: Identity and Access Audit",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide",
+            "Rule Type: ESQL",
+            "Tactic: Defense Evasion",
+            "Tactic: Discovery"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1087",
+                        "name": "Account Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1087/",
+                        "subtechnique": [
+                            {
+                                "id": "T1087.004",
+                                "name": "Cloud Account",
+                                "reference": "https://attack.mitre.org/techniques/T1087/004/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1526",
+                        "name": "Cloud Service Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1526/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1550",
+                        "name": "Use Alternate Authentication Material",
+                        "reference": "https://attack.mitre.org/techniques/T1550/",
+                        "subtechnique": [
+                            {
+                                "id": "T1550.001",
+                                "name": "Application Access Token",
+                                "reference": "https://attack.mitre.org/techniques/T1550/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "8d5d35b3-8c52-4229-964f-df3bab3e2cb5_1",
+    "type": "security-rule"
+}

@@ -1,0 +1,89 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies when a child process is spawned by the screensaver engine process, which is consistent with an attacker's malicious payload being executed after the screensaver activated on the endpoint. An adversary can maintain persistence on a macOS endpoint by creating a malicious screensaver (.saver) file and configuring the screensaver plist file to execute code each time the screensaver is activated.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Unexpected Child Process of macOS Screensaver Engine",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Unexpected Child Process of macOS Screensaver Engine\n\n`ScreenSaverEngine` is the macOS process that starts and manages the active screensaver. Screensavers are packaged as `.saver` bundles; on macOS 10.15 and later, third-party modules are loaded by the `legacyScreenSaver` helper rather than directly inside `ScreenSaverEngine`. A malicious `.saver` bundle configured as the active screensaver can run arbitrary code every time the screensaver activates. This rule alerts on any process whose parent is `ScreenSaverEngine`, which is uncommon in normal operation.\n\n### Possible investigation steps\n\n- Review the child process details (`process.executable`, `process.command_line`, `process.code_signature.*`) and determine whether it is a known component of a legitimate screensaver.\n- Analyze the descendant processes of the child for suspicious behavior, such as script interpreters, downloads of payloads from remote servers, or network connections to unusual destinations.\n- Identify the active screensaver for the user by reviewing the `com.apple.screensaver.*.plist` files under `~/Library/Preferences/ByHost/` and the module path they reference. On macOS 14 and later, the screensaver selection may also be stored in `~/Library/Application Support/com.apple.wallpaper/Store/Index.plist`.\n- Review process activity of `legacyScreenSaver` on the same host around the alert time, as code from third-party screensaver modules runs under that process on recent macOS versions.\n- Locate the `.saver` bundle in use (commonly under `~/Library/Screen Savers/` or `/Library/Screen Savers/`) and check its code signature, creation time, origin, and contents.\n- Review recent file events for the creation of `.saver` bundles or modification of screensaver plist files, and identify the process that performed them.\n- Review other alerts for the same `host.id` and `user.name` to identify how the screensaver was delivered and whether other persistence mechanisms were added.\n\n### False positive analysis\n\n- Some third-party screensavers legitimately launch helper processes. Verify the screensaver is installed from a trusted source and that the child process is signed by the same vendor.\n- When the activity is confirmed benign, create an exception for the specific signed child executable rather than for all children of `ScreenSaverEngine`.\n\n### Response and remediation\n\n- Isolate the affected host from the network if the child process or screensaver is determined to be malicious.\n- Terminate the malicious child process and its descendants.\n- Reset the active screensaver to a built-in Apple screensaver, and remove the malicious `.saver` bundle after preserving a copy for analysis.\n- Revert any unauthorized changes to the screensaver plist files.\n- Investigate how the malicious screensaver was delivered and remediate the initial access vector.\n- Escalate to the incident response team and search for the same `.saver` bundle or child process on other macOS hosts.\n",
+        "query": "process where host.os.type == \"macos\" and event.type == \"start\" and process.parent.name == \"ScreenSaverEngine\"\n",
+        "references": [
+            "https://posts.specterops.io/saving-your-access-d562bf5bf90b",
+            "https://github.com/D00MFist/PersistentJXA"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "48d7f54d-c29e-4430-93a9-9db6b5892270",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a macOS System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, for MacOS it is recommended to select \"Traditional Endpoints\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/current/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide",
+            "Noise: Low",
+            "Performance: Normal",
+            "Rule Type: Event Correlation (EQL)",
+            "Platform: macOS"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1546",
+                        "name": "Event Triggered Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1546/",
+                        "subtechnique": [
+                            {
+                                "id": "T1546.002",
+                                "name": "Screensaver",
+                                "reference": "https://attack.mitre.org/techniques/T1546/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 113
+    },
+    "id": "48d7f54d-c29e-4430-93a9-9db6b5892270_113",
+    "type": "security-rule"
+}
