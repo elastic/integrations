@@ -47,14 +47,14 @@ program: |
           "page_size": [string(state.page_size)],
           "page": [string(state.page)],
           "ordering": ["-created"],
-          ?"search": (has(state.custom_filter) && state.custom_filter != "") ? optional.of([state.custom_filter]) : optional.none(),
+          ?"search": state.?custom_filter.optMap(v, [v]),
         }.format_query()
       ).with({
         "Header": {
           "Authorization": ["Bearer " + state.api_token],
         }
       }).do_request().as(resp, resp.StatusCode == 200 ?
-        bytes(resp.Body).decode_json().as(body,
+        resp.Body.decode_json().as(body,
           body.?results.orValue([]).as(results,
             results.filter(e, has(e.created) && timestamp(e.created) > timestamp(state.cutoff)).as(new_events,
               (
@@ -83,10 +83,7 @@ program: |
                     "cutoff": state.cutoff,
                     "newest_timestamp": page_newest,
                     "cursor": {
-                      "last_timestamp": want_more ?
-                        state.?cursor.last_timestamp.orValue(state.cutoff)
-                      :
-                        page_newest,
+                      "last_timestamp": want_more ? state.cutoff : page_newest,
                     },
                   }
                 )
@@ -100,7 +97,7 @@ program: |
             "error": {
               "code": string(resp.StatusCode),
               "id": string(resp.Status),
-              "message": "GET:" + (
+              "message": "GET " + state.url.trim_right("/") + "/api/v3/events/events/: " + (
                 size(resp.Body) != 0 ?
                   string(resp.Body)
                 :
