@@ -45,7 +45,7 @@ Every data stream collects on a 5-minute interval, waits 5 minutes for late Clou
 
 | Setting | Description |
 |---|---|
-| Period | CloudWatch aggregation window for that service. Shown on each data stream. |
+| Period | CloudWatch aggregation window for that service. Advanced setting on each data stream. |
 | AWS Region | AWS region to query, for example `us-east-1`. Defined on the CloudWatch input and shown on the main form. Required. |
 | AWS Access Key ID | Access key from the CloudWatch input. Shown on the main form. |
 | AWS Secret Access Key | Secret key from the CloudWatch input. Shown on the main form. |
