@@ -1,0 +1,18 @@
+input: cel
+service: ti-polyswarm-scans
+data_stream:
+  vars:
+    url: http://{{Hostname}}:{{Port}}
+    api_key: test-api-key
+    community: default
+    batch_size: 2
+    preserve_original_event: true
+wait_for_data_timeout: 1m
+# Pins the preserve_original_event toggle end to end: the template must render
+# the tags block, and the pipeline's tag-gated remove must then keep
+# event.original. Without the tags block the variable is inert and the raw
+# payload is dropped, which is invisible in the default system test.
+assert:
+  hit_count: 3
+  fields_present:
+    - event.original

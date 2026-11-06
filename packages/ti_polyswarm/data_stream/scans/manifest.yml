@@ -1,0 +1,97 @@
+title: PolySwarm indicators
+type: logs
+ilm_policy: logs-ti_polyswarm.scans-default_policy
+streams:
+  - input: cel
+    title: PolySwarm malicious artifact indicators
+    description: Poll the PolySwarm metadata search API for malicious artifacts.
+    template_path: cel.yml.hbs
+    vars:
+      - name: url
+        type: text
+        title: URL
+        description: PolySwarm API base URL, without a trailing slash.
+        required: true
+        show_user: true
+        default: https://api.polyswarm.network
+      - name: api_key
+        type: password
+        title: API Key
+        description: PolySwarm API key. Sent as a raw Authorization header token.
+        required: true
+        show_user: true
+        secret: true
+      - name: interval
+        type: text
+        title: Interval
+        description: How often to poll the API. Supported units are h/m/s.
+        required: true
+        show_user: true
+        default: 5m
+      - name: query
+        type: text
+        title: Query
+        description: Server-side metadata query. Keep the malicious-detections filter so only true indicators are ingested.
+        required: true
+        show_user: true
+        default: "artifact.created:>now-1d AND scan.detections.malicious:>0"
+      - name: community
+        type: text
+        title: Community
+        required: true
+        show_user: true
+        default: default
+      - name: batch_size
+        type: integer
+        title: Batch Size
+        description: Number of results requested per poll.
+        required: true
+        show_user: false
+        default: 100
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Ensure the username and password are URL encoded.
+        multi: false
+        required: false
+        show_user: false
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: SSL configuration options. See [documentation](https://www.elastic.co/docs/reference/beats/filebeat/configuration-ssl) for details.
+        multi: false
+        required: false
+        show_user: false
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
+        multi: false
+        required: false
+        show_user: false
+        default: 30s
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - ti_polyswarm-scans
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: >-
+          Preserves a raw copy of the original event, added to the field `event.original`.
+        required: true
+        show_user: true
+        default: false
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracer
+        description: >-
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. The traces contain the API key in the `Authorization` header as well as response data, so treat the files as credentials and do not share them. Disabling the request tracer will delete any stored traces. See [documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel#_resource_tracer_enable) for details.
+        required: false
+        show_user: false
+        default: false
