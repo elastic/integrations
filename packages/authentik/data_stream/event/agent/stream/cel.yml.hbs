@@ -28,7 +28,7 @@ redact:
     - api_token
 program: |
   // Pages backwards from newest to oldest, stopping when it reaches events
-  // it has already seen (created at or before the cursor). The cursor keeps
+  // it knows it has already seen (before the cursor). The cursor keeps
   // its previous value until the last page of a pagination sequence, so a
   // restart part way through repeats the sequence rather than skipping
   // events.
@@ -41,9 +41,11 @@ program: |
           "cutoff": state.?cursor.last_timestamp.orValue(
             (now - duration(state.initial_interval)).format(time_layout.RFC3339Nano)
           ),
+          "cutoff_ids": state.?cursor.last_ids.orValue([]),
           "newest_timestamp": state.?cursor.last_timestamp.orValue(
             (now - duration(state.initial_interval)).format(time_layout.RFC3339Nano)
           ),
+          "newest_ids": state.?cursor.last_ids.orValue([]),
         })
     ).as(state,
       request(
@@ -61,20 +63,26 @@ program: |
       }).do_request().as(resp, resp.StatusCode == 200 ?
         resp.Body.decode_json().as(body,
           body.?results.orValue([]).as(results,
-            results.filter(e, has(e.created) && timestamp(e.created) > timestamp(state.cutoff)).as(new_events,
+            results.filter(e, has(e.created) && (
+              timestamp(e.created) > timestamp(state.cutoff) ||
+              (timestamp(e.created) == timestamp(state.cutoff) && !(e.pk in state.cutoff_ids))
+            )).as(new_events,
               (
-                (size(new_events) > 0) ?
-                  (
-                    new_events.map(e, timestamp(e.created)) +
-                    [timestamp(state.newest_timestamp)]
-                  ).max().format(time_layout.RFC3339Nano)
-                :
-                  state.newest_timestamp
+                new_events.map(e, timestamp(e.created)) +
+                [timestamp(state.newest_timestamp)]
+              ).max().as(newest,
+                ((newest == timestamp(state.newest_timestamp)) ? state.newest_ids : []).as(seen_ids,
+                  {
+                    "timestamp": newest.format(time_layout.RFC3339Nano),
+                    "ids": seen_ids + new_events.filter(e,
+                      timestamp(e.created) == newest && !(e.pk in seen_ids)
+                    ).map(e, e.pk),
+                  }
+                )
               ).as(page_newest,
                 (
                   body.?pagination.next.orValue(0) != 0 &&
-                  size(results) > 0 &&
-                  size(new_events) == size(results)
+                  !results.exists(e, has(e.created) && timestamp(e.created) < timestamp(state.cutoff))
                 ).as(want_more,
                   {
                     "events": (size(new_events) == 0) ?
@@ -86,10 +94,13 @@ program: |
                     "page": want_more ? body.pagination.next : 1,
                     "want_more": want_more,
                     "cutoff": state.cutoff,
-                    "newest_timestamp": page_newest,
-                    "cursor": {
-                      "last_timestamp": want_more ? state.cutoff : page_newest,
-                    },
+                    "cutoff_ids": state.cutoff_ids,
+                    "newest_timestamp": page_newest.timestamp,
+                    "newest_ids": page_newest.ids,
+                    "cursor": want_more ?
+                      {"last_timestamp": state.cutoff, "last_ids": state.cutoff_ids}
+                    :
+                      {"last_timestamp": page_newest.timestamp, "last_ids": page_newest.ids},
                   }
                 )
               )
