@@ -1,0 +1,216 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies deletion of Azure diagnostic settings for a resource group that has not had this operation in the prior 7 days. Diagnostic settings send platform logs and metrics to Log Analytics, Event Hubs, or storage; removing them blinds monitoring and detection. This rule uses an ES|QL first-seen (new terms) approach keyed on the resource group so groups that constantly churn logging configuration are suppressed after the first occurrence, while a newly seen group still alerts.",
+        "false_positives": [
+            "Infrastructure-as-code, CI/CD, and platform automation (for example Crossplane, Terraform, ARM/Bicep) commonly delete diagnostic settings during environment teardown or redeploy. The first occurrence per resource group in 7 days will alert; groups that are rebuilt often will then go quiet.",
+            "Microsoft-owned resource providers (for example Azure Cosmos DB networking) may remove diagnostic settings as part of private-endpoint or control-plane lifecycle. Confirm the actor, app, and whether the group is non-production before treating the event as malicious."
+        ],
+        "from": "now-7d",
+        "investigation_fields": {
+            "field_names": [
+                "azure.resource.group",
+                "Esql.first_time_seen",
+                "Esql.event_action_values",
+                "Esql.source_ip_values",
+                "Esql.principal_type_values",
+                "Esql.role_assignment_scope_values",
+                "Esql.appid_values",
+                "Esql.resource_name_values",
+                "Esql.resource_provider_values",
+                "Esql.principal_id_values",
+                "Esql.initiated_by_user_values",
+                "Esql.resource_id_values",
+                "Esql.session_id_values",
+                "Esql.unique_token_id_values",
+                "Esql.correlation_id_values",
+                "Esql.role_values",
+                "Esql.role_assignment_id_values",
+                "Esql.source_country_values",
+                "Esql.source_as_number_values",
+                "Esql.subscription_id_values"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Azure Diagnostic Settings Deleted",
+        "note": "## Triage and analysis\n\n### Investigating Azure Diagnostic Settings Deleted\n\nAzure Diagnostic Settings are crucial for monitoring and logging platform activities, sending data to various destinations for analysis. Adversaries may delete these settings to hinder detection and analysis of their activities, effectively evading defenses. The detection rule identifies such deletions by aggregating successful `DIAGNOSTICSETTINGS/DELETE` operations over a 7-day lookback and alerting when a resource group's first delete in that window falls in the current schedule interval.\n\n### Possible investigation steps\n\n- Identify the user or service principal responsible for the deletion from `Esql.principal_id_values` and `Esql.principal_type_values`. Resolve the human-readable name from `Esql.initiated_by_user_values`.\n- If this is a service principal, determine which application is associated with it via `Esql.appid_values` and examine credential use with authentication sources to identify potential compromise.\n- Examine the resource group (`azure.resource.group`) and subscription (`Esql.subscription_id_values`) context to understand the scope of the deletion and whether it affects critical resources.\n- Check `Esql.first_time_seen` to determine when the diagnostic settings were removed and correlate this with other security events or alerts around the same time. Pivot on `Esql.session_id_values`, `Esql.unique_token_id_values`, and `Esql.correlation_id_values`.\n- Investigate the affected resources by identifying which diagnostic settings were deleted (`Esql.resource_name_values`, `Esql.resource_id_values`) and assess the potential impact on monitoring and logging capabilities.\n- Review any recent changes or activities performed by the identified user or service principal to determine if there are other suspicious actions that might indicate malicious intent. Review `Esql.role_values` and `Esql.role_assignment_id_values`.\n- Assess the current security posture by ensuring that diagnostic settings are reconfigured and that logging and monitoring are restored to maintain visibility into platform activities.\n\n### False positive analysis\n\n- Examine the service principal or user account involved in the deletion to determine if it is part of an automated process or legitimate administrative activity.\n- Automated scripts or tools used for managing Azure resources might delete diagnostic settings as part of their operation. Review and whitelist these scripts if they are verified as non-threatening.\n- Changes in organizational policy or compliance requirements could lead to legitimate deletions. Confirm with relevant teams if such policy changes are in effect.\n- Test environments often undergo frequent configuration changes, including the deletion of diagnostic settings. Consider excluding these environments from the rule or adjusting the rule to account for their unique behavior.\n- Ensure that any third-party integrations or services with access to Azure resources are reviewed, as they might inadvertently delete diagnostic settings during their operations.\n\n### Response and remediation\n\n- Immediately isolate affected Azure resources to prevent further unauthorized changes or deletions. This may involve temporarily restricting access to the affected subscriptions or resource groups.\n- Review the Azure activity logs to identify the source of the deletion request, including the user account, service principal and IP address involved. This will help determine if the action was authorized or malicious.\n- Recreate the deleted diagnostic settings as soon as possible to restore logging and monitoring capabilities. Ensure that logs are being sent to secure and appropriate destinations.\n- Conduct a thorough investigation of the user account or service principal involved in the deletion. If the account is compromised, reset credentials, and review permissions to ensure they are appropriate and follow the principle of least privilege.\n- Escalate the incident to the security operations team for further analysis and to determine if additional resources or expertise are needed to address the threat.\n- Implement additional monitoring and alerting for similar deletion activities to ensure rapid detection and response to future attempts.\n- Review and update access controls and policies related to diagnostic settings to prevent unauthorized deletions, ensuring that only trusted and necessary personnel have the ability to modify these settings.\n",
+        "query": "FROM logs-azure.activitylogs-*\n| WHERE data_stream.dataset == \"azure.activitylogs\"\n    AND event.action == \"MICROSOFT.INSIGHTS/DIAGNOSTICSETTINGS/DELETE\"\n    AND event.outcome IN (\"success\", \"Success\")\n    AND azure.resource.group IS NOT NULL\n| STATS Esql.first_time_seen = MIN(@timestamp),\n        Esql.last_time_seen = MAX(@timestamp),\n        Esql.event_count = COUNT(*),\n        Esql.event_action_values = VALUES(event.action),\n        Esql.resource_name_values = VALUES(azure.resource.name),\n        Esql.resource_id_values = VALUES(azure.resource.id),\n        Esql.resource_provider_values = VALUES(azure.resource.provider),\n        Esql.principal_id_values = VALUES(azure.activitylogs.identity.authorization.evidence.principal_id),\n        Esql.principal_type_values = VALUES(azure.activitylogs.identity.authorization.evidence.principal_type),\n        Esql.initiated_by_user_values = VALUES(azure.activitylogs.identity.claims_initiated_by_user.name),\n        Esql.appid_values = VALUES(azure.activitylogs.identity.claims.appid),\n        Esql.session_id_values = VALUES(azure.activitylogs.identity.claims.sid),\n        Esql.unique_token_id_values = VALUES(azure.activitylogs.identity.claims.uti),\n        Esql.correlation_id_values = VALUES(azure.correlation_id),\n        Esql.role_values = VALUES(azure.activitylogs.identity.authorization.evidence.role),\n        Esql.role_assignment_id_values = VALUES(azure.activitylogs.identity.authorization.evidence.role_assignment_id),\n        Esql.role_assignment_scope_values = VALUES(azure.activitylogs.identity.authorization.evidence.role_assignment_scope),\n        Esql.source_ip_values = VALUES(source.ip),\n        Esql.source_country_values = VALUES(source.geo.country_name),\n        Esql.source_as_number_values = VALUES(source.`as`.number),\n        Esql.subscription_id_values = VALUES(azure.subscription_id)\n        BY azure.resource.group\n// new terms emulation: fire when this resource group's first_seen falls in the current interval\n// (schedule + ingest-lag buffer), i.e. it was absent from the rest of the 7-day window\n| EVAL Esql.recent_minutes = DATE_DIFF(\"minute\", Esql.first_time_seen, NOW())\n| WHERE Esql.recent_minutes <= 10\n| KEEP azure.*, Esql.*\n",
+        "references": [
+            "https://docs.microsoft.com/en-us/azure/azure-monitor/platform/diagnostic-settings",
+            "https://www.microsoft.com/en-us/security/blog/2025/10/20/inside-the-attack-chain-threat-activity-targeting-azure-blob-storage/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "activitylogs",
+                "package": "azure",
+                "version": "^1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "azure.activitylogs.identity.authorization.evidence.principal_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.activitylogs.identity.authorization.evidence.principal_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.activitylogs.identity.authorization.evidence.role",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.activitylogs.identity.authorization.evidence.role_assignment_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.activitylogs.identity.authorization.evidence.role_assignment_scope",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.activitylogs.identity.claims.appid",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.activitylogs.identity.claims.sid",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.activitylogs.identity.claims.uti",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.activitylogs.identity.claims_initiated_by_user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.correlation_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.resource.group",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.resource.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.resource.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.resource.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.subscription_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.as.number",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "source.geo.country_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "5370d4cd-2bb3-4d71-abf5-1e1d0ff5a2de",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: Azure",
+            "Data Source: Azure Activity Logs",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide",
+            "Noise: Low",
+            "Performance: Normal",
+            "Profile: Recommended",
+            "Rule Type: ES|QL",
+            "Platform: Azure",
+            "Service: Azure Resource Manager"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.001",
+                                "name": "Disable or Modify Tools",
+                                "reference": "https://attack.mitre.org/techniques/T1562/001/"
+                            },
+                            {
+                                "id": "T1562.008",
+                                "name": "Disable or Modify Cloud Logs",
+                                "reference": "https://attack.mitre.org/techniques/T1562/008/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 112
+    },
+    "id": "5370d4cd-2bb3-4d71-abf5-1e1d0ff5a2de_112",
+    "type": "security-rule"
+}

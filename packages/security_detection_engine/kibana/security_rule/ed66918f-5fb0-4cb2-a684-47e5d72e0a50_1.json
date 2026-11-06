@@ -1,0 +1,159 @@
+{
+    "attributes": {
+        "alert_suppression": {
+            "duration": {
+                "unit": "m",
+                "value": 30
+            },
+            "group_by": [
+                "azure.tenant_id",
+                "azure.graphactivitylogs.properties.service_principal_id"
+            ],
+            "missing_fields_strategy": "suppress"
+        },
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a Microsoft Graph application querying multiple directory collections and encountering access denials. Adversaries with compromised application credentials may enumerate users, groups, applications, service principals, directory roles, role assignments, and OAuth grants to identify privileged identities and opportunities for further access.",
+        "false_positives": [
+            "Application onboarding, directory synchronization, inventory tools, and permission-validation scripts may query multiple directory collections and encounter expected access denials."
+        ],
+        "from": "now-30m",
+        "interval": "5m",
+        "investigation_fields": {
+            "field_names": [
+                "azure.tenant_id",
+                "azure.graphactivitylogs.properties.service_principal_id",
+                "Esql.paths",
+                "Esql.status_codes",
+                "Esql.source_ips",
+                "Esql.time_window"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Microsoft Graph Application Directory Reconnaissance with Denied Requests",
+        "note": "## Triage and analysis\n\n### Investigating Microsoft Graph Application Directory Reconnaissance with Denied Requests\n\nMicrosoft Graph exposes directory information that can help an adversary identify accounts, privileged identities, and applications to target. This rule identifies app-only requests to at least three common directory discovery collections (applications, service principals, users, groups, directory roles, role assignments, and OAuth permission grants) within a 15-minute window, with at least one HTTP 403 response. The denial requirement reduces noise from authorized inventory applications that succeed across the collections they are granted. A denied request shows attempted discovery, not successful retrieval of that collection.\n\n### Possible investigation steps\n\n- Identify the calling principal using `azure.tenant_id` and `azure.graphactivitylogs.properties.service_principal_id`. Review `Esql.app_ids` and resolve the application owner and expected directory permissions.\n- Review `Esql.time_window`, `Esql.request_count`, `Esql.category_count`, and `Esql.denied_count` to establish the scope of the discovery. Use `Esql.paths`, `Esql.status_codes`, and `Esql.source_ips` to review the targeted collections, outcomes, and sources.\n- Examine the original Graph events to distinguish successfully accessed collections from denied requests. Determine whether the queried collections are needed for the application's documented purpose.\n- Correlate the principal with service-principal sign-ins, recent application credential additions, and changes to application permissions. Where available, compare `azure.signinlogs.properties.service_principal_credential_key_id` with the credential added in audit records.\n- Look for related role-assignment attempts, successful privilege changes, secret access, and access to other services. Distinguish the calling application from applications returned or targeted by its requests.\n- Confirm whether an inventory, directory synchronization, onboarding, or permission-validation workflow explains the activity.\n\n### False positive analysis\n\n- Directory inventory and synchronization applications may access several collections and encounter expected permission denials. Validate the activity with the application owner and compare it with normal sources and access patterns.\n- Onboarding and permission-validation scripts may generate similar requests. Scope any justified exception to the tenant, principal, and expected workflow, and reassess it when permissions or ownership change.\n\n### Response and remediation\n\n- If compromise is confirmed, restrict the affected principal and remove the specific compromised credential and unnecessary permissions according to the incident response process.\n- Review and remediate unauthorized privilege changes or downstream resource access associated with the principal.\n- Verify that subsequent access is denied after containment; credential removal alone does not establish that previously issued access tokens are unusable.\n- Preserve the original Graph activity, audit, and sign-in events for investigation.\n",
+        "query": "from logs-azure.graphactivitylogs-* metadata _id, _index\n| where data_stream.dataset == \"azure.graphactivitylogs\"\n  and azure.graphactivitylogs.properties.c_idtyp == \"app\"\n  and azure.tenant_id is not null and azure.tenant_id != \"\"\n  and azure.graphactivitylogs.properties.service_principal_id is not null\n  and azure.graphactivitylogs.properties.service_principal_id != \"\"\n  and http.request.method == \"GET\"\n  and http.response.status_code in (200, 403)\n  and url.path in (\n      \"/v1.0/applications\",\n      \"/v1.0/servicePrincipals\",\n      \"/v1.0/users\",\n      \"/v1.0/groups\",\n      \"/v1.0/directoryRoles\",\n      \"/v1.0/roleManagement/directory/roleAssignments\",\n      \"/v1.0/oauth2PermissionGrants\"\n)\n| eval Esql.time_window = date_trunc(15 minutes, @timestamp)\n| stats\n    Esql.request_count = count(*),\n    Esql.category_count = count_distinct(url.path),\n    Esql.denied_count = sum(case(http.response.status_code == 403, 1, 0)),\n    Esql.paths = values(url.path),\n    Esql.status_codes = values(http.response.status_code),\n    Esql.app_ids = values(azure.graphactivitylogs.properties.app_id),\n    Esql.source_ips = values(source.ip),\n    Esql.first_seen = min(@timestamp),\n    Esql.last_seen = max(@timestamp)\n  by Esql.time_window, azure.tenant_id, azure.graphactivitylogs.properties.service_principal_id\n| where Esql.category_count >= 3 and Esql.denied_count >= 1\n| keep azure.tenant_id, azure.graphactivitylogs.properties.service_principal_id, Esql.*\n",
+        "references": [
+            "https://www.microsoft.com/en-us/security/blog/2026/10/21/storm-0940-uses-artex-agentic-ai-connectwise-supply-chain-compromise/",
+            "https://learn.microsoft.com/en-us/graph/microsoft-graph-activity-logs-overview"
+        ],
+        "related_integrations": [
+            {
+                "integration": "graphactivitylogs",
+                "package": "azure",
+                "version": "^1.10.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "azure.graphactivitylogs.properties.app_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.graphactivitylogs.properties.c_idtyp",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.graphactivitylogs.properties.service_principal_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.tenant_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "http.request.method",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "http.response.status_code",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "url.path",
+                "type": "wildcard"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "ed66918f-5fb0-4cb2-a684-47e5d72e0a50",
+        "setup": "#### Microsoft Graph Activity Logs\n\nEnable Microsoft Graph Activity Logs and ingest them through the Azure integration into\n`logs-azure.graphactivitylogs-*`. Retain the tenant and service-principal IDs, HTTP method, URL path, and response\nstatus. The `azure.graphactivitylogs.properties.c_idtyp` field must be populated with the token actor type;\nthis rule selects `app` and does not infer app-only authentication from an application ID alone.\n\nThe rule evaluates a 30-minute ingestion lookback every five minutes and groups requests into fixed 15-minute\nevent-time windows. Requests split across window boundaries or ingested more than 30 minutes apart may not be\ncombined. Review delivery latency and repeated aggregate alerts when tuning the schedule. The rule covers\nthe direct v1.0 collection paths in the query; beta endpoints and other request paths are outside its scope.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Identity",
+            "Data Source: Azure",
+            "Data Source: Microsoft Graph Activity Logs",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Platform: Microsoft Graph",
+            "Platform: Azure"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1069",
+                        "name": "Permission Groups Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1069/",
+                        "subtechnique": [
+                            {
+                                "id": "T1069.003",
+                                "name": "Cloud Groups",
+                                "reference": "https://attack.mitre.org/techniques/T1069/003/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1087",
+                        "name": "Account Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1087/",
+                        "subtechnique": [
+                            {
+                                "id": "T1087.004",
+                                "name": "Cloud Account",
+                                "reference": "https://attack.mitre.org/techniques/T1087/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "ed66918f-5fb0-4cb2-a684-47e5d72e0a50_1",
+    "type": "security-rule"
+}
