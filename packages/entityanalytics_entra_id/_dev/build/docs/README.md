@@ -16,11 +16,15 @@ Elastic Agent must be installed for standard deployments. For more details, chec
 
 ## Setup
 
-### Elastic Managed deployment
+### Elastic Managed enabled integration
 
-This integration supports Elastic Managed deployment, where the collection agent runs in Elastic's cloud rather than inside your network. The Microsoft Graph API is a public HTTPS endpoint, so no special connectivity configuration is required.
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-When using Elastic Managed deployment, the **request tracer** option is not available because it writes to the agent's local filesystem.
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
+
+The Microsoft Graph API is a public HTTPS endpoint, so no special connectivity configuration is required.
+
+When using an Elastic Managed integration, the **request tracer** option is not available because it writes to the agent's local filesystem.
 
 ### Collect data from Microsoft Graph REST API
 
@@ -72,7 +76,7 @@ The integration periodically contacts Microsoft Entra ID using the Graph API, re
 
 Fetching and shipping updates occurs in one of two processes: **full synchronizations** and **incremental updates**. Full synchronizations send the entire list of users and devices in state. Incremental updates send only records that changed since the last sync. Changes include metadata updates, additions, deletions, and group membership changes (direct or transitive). By default, full synchronizations occur every 24 hours and incremental updates occur every 15 minutes. These intervals may be customized to suit your use case.
 
-By default this integration uses **minimal-state sync**, which routes user and device documents directly to the `user` and `device` data streams. Existing policies are updated to use minimal-state sync on upgrade.
+By default this integration uses **minimal-state sync**, which routes user and device documents directly to the `user` and `device` data streams. Existing policies are updated to use minimal-state sync on upgrade. Minimal-state sync and the **User Sign-in Activity** enrichment require Elastic Agent 9.5.0 or later; older agents use the legacy sync without sign-in activity.
 
 This integration provides an **asset inventory**, a point-in-time snapshot of which users and devices exist and their current properties. It does not provide an audit trail of who changed what, or when. If you need to track administrative changes to Entra ID objects (user modifications, deletions, group membership changes by an administrator, etc.), use the [Azure integration's](https://docs.elastic.co/integrations/azure) audit logs data stream, which collects [Entra ID audit logs](https://learn.microsoft.com/en-us/entra/identity/monitoring-health/concept-audit-logs) via Event Hub.
 
