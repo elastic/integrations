@@ -1180,9 +1180,9 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.action_user_session_id
-      tag: convert_action_user_session_id_to_long_c3d8f04e
+      tag: convert_action_user_session_id_to_string_e7a41c90
       target_field: panw_cortex.xdr.event.action.user_session_id
-      type: long
+      type: string
       ignore_missing: true
       on_failure:
         - append:
@@ -1232,6 +1232,30 @@ processors:
       target_field: panw_cortex.xdr.event.address_mapping
       ignore_missing: true
       description: Keep Cortex XDR address_mapping records under the vendor field name.
+  - script:
+      tag: script_stringify_address_mapping_codes_f2b83d15
+      lang: painless
+      description: Store address range type and PE section flags as keywords because they are matched exactly.
+      if: ctx.panw_cortex?.xdr?.event?.address_mapping != null
+      source: |
+        def mappings = ctx.panw_cortex.xdr.event.address_mapping;
+        if (mappings instanceof Map) {
+          mappings = [mappings];
+        }
+        if (!(mappings instanceof List)) {
+          return;
+        }
+        for (def record : mappings) {
+          if (!(record instanceof Map)) {
+            continue;
+          }
+          if (record.address_range_type != null) {
+            record.address_range_type = record.address_range_type.toString();
+          }
+          if (record.section_characteristics != null) {
+            record.section_characteristics = record.section_characteristics.toString();
+          }
+        }
   - rename:
       field: json.agent_content_version
       tag: rename_agent_content_version_4f71c230

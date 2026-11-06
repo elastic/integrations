@@ -607,11 +607,13 @@ This is the `Event` dataset.
 | panw_cortex.xdr.event.action.file.last_writer_actor |  | keyword |
 | panw_cortex.xdr.event.action.file.md5 |  | keyword |
 | panw_cortex.xdr.event.action.file.mod_time |  | date |
+| panw_cortex.xdr.event.action.file.mode | UNIX file permissions mask record. | flattened |
 | panw_cortex.xdr.event.action.file.name |  | keyword |
 | panw_cortex.xdr.event.action.file.operation_flags |  | keyword |
 | panw_cortex.xdr.event.action.file.owner |  | keyword |
 | panw_cortex.xdr.event.action.file.owner_name |  | keyword |
 | panw_cortex.xdr.event.action.file.path |  | keyword |
+| panw_cortex.xdr.event.action.file.pe_info | PE information record, usually present on some write-file events. | flattened |
 | panw_cortex.xdr.event.action.file.prev_type |  | keyword |
 | panw_cortex.xdr.event.action.file.previous_file_name |  | keyword |
 | panw_cortex.xdr.event.action.file.previous_file_path |  | keyword |
@@ -646,6 +648,7 @@ This is the `Event` dataset.
 | panw_cortex.xdr.event.action.network.protocol |  | keyword |
 | panw_cortex.xdr.event.action.network.stats_is_last |  | boolean |
 | panw_cortex.xdr.event.action.powered_off | Whether the host was powered off. | boolean |
+| panw_cortex.xdr.event.action.process.fds | Unix file-descriptor information for stdin, stdout, and stderr. | flattened |
 | panw_cortex.xdr.event.action.process.image_command_line |  | keyword |
 | panw_cortex.xdr.event.action.process.image_extension |  | keyword |
 | panw_cortex.xdr.event.action.process.image_md5 |  | keyword |
@@ -658,6 +661,7 @@ This is the `Event` dataset.
 | panw_cortex.xdr.event.action.process.integrity_level |  | keyword |
 | panw_cortex.xdr.event.action.process.last_writer_actor |  | keyword |
 | panw_cortex.xdr.event.action.process.os_pid |  | long |
+| panw_cortex.xdr.event.action.process.pe_load_info | Windows information about the loaded PE image. | flattened |
 | panw_cortex.xdr.event.action.process.peb |  | keyword |
 | panw_cortex.xdr.event.action.process.peb32 |  | keyword |
 | panw_cortex.xdr.event.action.process.privileges |  | keyword |
@@ -668,6 +672,7 @@ This is the `Event` dataset.
 | panw_cortex.xdr.event.action.process.signature_vendor |  | keyword |
 | panw_cortex.xdr.event.action.process.termination_code |  | long |
 | panw_cortex.xdr.event.action.process.termination_date |  | date |
+| panw_cortex.xdr.event.action.process.token | Security context of the process. | flattened |
 | panw_cortex.xdr.event.action.process.user_sid |  | keyword |
 | panw_cortex.xdr.event.action.process.username |  | keyword |
 | panw_cortex.xdr.event.action.registry.data |  | keyword |
@@ -699,14 +704,14 @@ This is the `Event` dataset.
 | panw_cortex.xdr.event.action.total_download |  | long |
 | panw_cortex.xdr.event.action.total_upload |  | long |
 | panw_cortex.xdr.event.action.user_is_local_session |  | boolean |
-| panw_cortex.xdr.event.action.user_session_id | Windows session identifier. | long |
+| panw_cortex.xdr.event.action.user_session_id | Windows session identifier. | keyword |
 | panw_cortex.xdr.event.action.user_status |  | keyword |
 | panw_cortex.xdr.event.action.user_status_sid |  | keyword |
 | panw_cortex.xdr.event.action.username |  | keyword |
-| panw_cortex.xdr.event.address_mapping.address_range_type | Address range type code. Observed in Cortex XDR events and not documented in the XQL schema. | long |
+| panw_cortex.xdr.event.address_mapping.address_range_type | Address range type code. Observed in Cortex XDR events and not documented in the XQL schema. | keyword |
 | panw_cortex.xdr.event.address_mapping.image_path | Path of the image containing the function or the image injected into. | keyword |
 | panw_cortex.xdr.event.address_mapping.index | Mapping index. Defaults to 1. In syscall events, the function parameter number. | long |
-| panw_cortex.xdr.event.address_mapping.section_characteristics | PE section characteristics flags. Observed in Cortex XDR events and not documented in the XQL schema. | long |
+| panw_cortex.xdr.event.address_mapping.section_characteristics | PE section characteristics flags. Observed in Cortex XDR events and not documented in the XQL schema. | keyword |
 | panw_cortex.xdr.event.address_mapping.section_name | PE section name. Observed in Cortex XDR events and not documented in the XQL schema. | keyword |
 | panw_cortex.xdr.event.address_mapping.symbol_name | Name of the suspicious function. | keyword |
 | panw_cortex.xdr.event.agent.content_version |  | keyword |
