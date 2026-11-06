@@ -26,6 +26,8 @@ This integration collects log messages of the following type:
 
 **Note**: This integration uses Elastic transforms to deduplicate **incident** data and maintain the latest view of each incident for analysis and reporting.
 
+> **Deprecated:** `labels.is_transform_source` is deprecated in favor of `labels.is_ioc_transform_source` (`"true"` on the raw source data streams, `"false"` on the transformed destination indices). New queries, dashboards, and detection rules should use `labels.is_ioc_transform_source`; this is the field Elastic's built-in Threat Intel Indicator Match rules rely on to exclude raw source documents. `labels.is_transform_source` continues to work and will be removed in a future major version. On upgrade the `"true"` label is added in place to the current write index of each source data stream, so every document already in that index (old and new) is labeled at once; older source backing indices are not relabeled and keep matching the built-in rules until their documents age out of the rules' 30-day window. The transform destination `_latest` indices only receive `labels.is_ioc_transform_source: "false"` on a fresh install or when the transforms are next rebuilt, so on an upgraded install select the latest transformed data with `NOT labels.is_ioc_transform_source: "true"` rather than `labels.is_ioc_transform_source: "false"`.
+
 **Note**: The `Sighting` and `Breach` data streams are disabled by default and require a Flashpoint Compromised Credentials Monitoring - Enterprise (CCM-E) entitlement on the API token. Enable them explicitly when adding the integration.
 
 ### Supported use cases
