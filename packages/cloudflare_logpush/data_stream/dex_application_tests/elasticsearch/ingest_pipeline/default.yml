@@ -1,0 +1,795 @@
+---
+description: Pipeline for parsing Cloudflare DEX Application Tests logs.
+processors:
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: '9.3.0'
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      tag: json_event_original_to_json
+      field: event.original
+      target_field: json
+      if: ctx.event?.original != null
+  - append:
+      field: event.category
+      tag: append_network_into_event_category
+      value: network
+  - append:
+      field: event.type
+      tag: append_info_into_event_type
+      value: info
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+  ## AWS S3 input does _id Based Deduplication and generates "_id" by default.
+  ## When "Data Deduplication" is not enabled, this field must be removed.
+  ## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
+  - remove:
+      field: _id
+      tag: remove_id_based_deduplication
+      description: >
+        When data deduplication is disabled, the _id field (used for _id Based Deduplication)
+        must be removed.
+      if: ctx._conf?.enable_deduplication == false && ctx.input?.type == 'aws-s3'
+      ignore_missing: true
+  - convert:
+      tag: convert_json_Timestamp_to_long
+      field: json.Timestamp
+      type: long
+      if: ctx.json?.Timestamp != null && ctx.json.Timestamp != ''
+      ignore_failure: true
+  - script:
+      lang: painless
+      tag: script_timestamp_to_milli
+      description: Normalises epoch Timestamp and TracerouteTimeEnd values (seconds/micros/nanos) to milliseconds so the date processors can parse them consistently.
+      source: |
+        def convertToMillis(long timestamp) {
+          if (timestamp > (long)(1e18)) {
+            return timestamp/(long)(1e6)
+          } else if (timestamp < (long)(1e10))  {
+            return timestamp*(long)(1e3)
+          }
+          return timestamp
+        }
+        if (ctx.json?.Timestamp != null && ctx.json.Timestamp instanceof Number) {
+          ctx.json.Timestamp = convertToMillis(((Number)ctx.json.Timestamp).longValue());
+        }
+        if (ctx.json?.TracerouteTimeEnd != null && ctx.json.TracerouteTimeEnd instanceof Number) {
+          ctx.json.TracerouteTimeEnd = convertToMillis(((Number)ctx.json.TracerouteTimeEnd).longValue());
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_timestamp_script
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_json_Timestamp
+      field: json.Timestamp
+      target_field: '@timestamp'
+      if: ctx.json?.Timestamp != null && ctx.json.Timestamp != ''
+      formats:
+        - UNIX_MS
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ssZ
+      timezone: UTC
+      on_failure:
+        - remove:
+            tag: remove_json_Timestamp
+            field: json.Timestamp
+            ignore_missing: true
+        - append:
+            tag: append_error_message_date
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # cloudflare_logpush.dex_application_tests.account.*
+  - convert:
+      tag: convert_json_AccountID_to_account_id
+      field: json.AccountID
+      target_field: cloudflare_logpush.dex_application_tests.account_id
+      type: string
+      ignore_missing: true
+
+  # host.*, device.* and user_agent.*
+  - rename:
+      tag: rename_json_ClientPlatform_to_host_os_name
+      field: json.ClientPlatform
+      target_field: host.os.name
+      ignore_missing: true
+  - script:
+      tag: script_map_host_os_type
+      lang: painless
+      description: Dynamically set host.os.type from the client platform. host.os.type only accepts a fixed set of ECS values, so the client platform string is matched against them.
+      if: ctx.host?.os?.name != null
+      params:
+        os_type:
+          - linux
+          - macos
+          - unix
+          - windows
+          - ios
+          - android
+      source: |
+        String os_name = ctx.host.os.name.toLowerCase();
+        for (String os: params.os_type) {
+          if (os_name.contains(os) || os.contains(os_name)) {
+            ctx.host.os.put('type', os);
+            return;
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_json_ClientVersion_to_version
+      field: json.ClientVersion
+      target_field: cloudflare_logpush.dex_application_tests.version
+      type: string
+      ignore_missing: true
+  - set:
+      tag: set_user_agent_version_from_client_version
+      field: user_agent.version
+      copy_from: cloudflare_logpush.dex_application_tests.version
+      ignore_empty_value: true
+  - rename:
+      tag: rename_json_ColoCode_to_colo_code
+      field: json.ColoCode
+      target_field: cloudflare_logpush.dex_application_tests.colo.code
+      ignore_missing: true
+  - convert:
+      tag: convert_json_DeviceID_to_device_id
+      field: json.DeviceID
+      target_field: device.id
+      type: string
+      ignore_missing: true
+  - set:
+      tag: set_host_id_from_device_id
+      field: host.id
+      copy_from: device.id
+      ignore_empty_value: true
+  - convert:
+      tag: convert_json_DeviceRegistrationID_to_device_registration_id
+      field: json.DeviceRegistrationID
+      target_field: cloudflare_logpush.dex_application_tests.device.registration_id
+      type: string
+      ignore_missing: true
+  - rename:
+      tag: rename_json_ExecutionContext_to_execution_context
+      field: json.ExecutionContext
+      target_field: cloudflare_logpush.dex_application_tests.execution_context
+      ignore_missing: true
+  - convert:
+      tag: convert_json_TestID_to_test_id
+      field: json.TestID
+      target_field: cloudflare_logpush.dex_application_tests.test.id
+      type: string
+      ignore_missing: true
+  - rename:
+      tag: rename_json_TestType_to_test_type
+      field: json.TestType
+      target_field: cloudflare_logpush.dex_application_tests.test.type
+      ignore_missing: true
+  - rename:
+      tag: rename_json_TunnelType_to_tunnel_type
+      field: json.TunnelType
+      target_field: cloudflare_logpush.dex_application_tests.tunnel_type
+      ignore_missing: true
+
+  # user.*
+  - rename:
+      tag: rename_json_UserEmail_to_user_email
+      field: json.UserEmail
+      target_field: user.email
+      ignore_missing: true
+  - convert:
+      tag: convert_json_UserID_to_user_id
+      field: json.UserID
+      target_field: user.id
+      type: string
+      ignore_missing: true
+
+  # HTTP test: client IP -> source.*
+  - convert:
+      tag: convert_json_HTTPClientIPAddress_to_source_ip
+      field: json.HTTPClientIPAddress
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.HTTPClientIPAddress != null && ctx.json.HTTPClientIPAddress != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_json_HTTPClientIPASN_to_source_as_number
+      field: json.HTTPClientIPASN
+      target_field: source.as.number
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      tag: rename_json_HTTPClientIPASO_to_source_as_organization_name
+      field: json.HTTPClientIPASO
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - rename:
+      tag: rename_json_HTTPClientIPCity_to_source_geo_city_name
+      field: json.HTTPClientIPCity
+      target_field: source.geo.city_name
+      ignore_missing: true
+  - rename:
+      tag: rename_json_HTTPClientIPCountryISO_to_source_geo_country_iso_code
+      field: json.HTTPClientIPCountryISO
+      target_field: source.geo.country_iso_code
+      ignore_missing: true
+  - rename:
+      tag: rename_json_HTTPClientIPStateISO_to_source_geo_region_iso_code
+      field: json.HTTPClientIPStateISO
+      target_field: source.geo.region_iso_code
+      ignore_missing: true
+  - rename:
+      tag: rename_json_HTTPClientIPZip_to_source_geo_postal_code
+      field: json.HTTPClientIPZip
+      target_field: source.geo.postal_code
+      ignore_missing: true
+  - convert:
+      tag: convert_json_HTTPClientIPNetmask_to_client_ip_netmask
+      field: json.HTTPClientIPNetmask
+      target_field: cloudflare_logpush.dex_application_tests.http.client_ip.netmask
+      type: string
+      ignore_missing: true
+  - convert:
+      tag: convert_json_HTTPClientIPVersion_to_client_ip_version
+      field: json.HTTPClientIPVersion
+      target_field: cloudflare_logpush.dex_application_tests.http.client_ip.version
+      type: string
+      ignore_missing: true
+
+  # HTTP test: server IP -> destination.*
+  - convert:
+      tag: convert_json_HTTPServerIPAddress_to_destination_ip
+      field: json.HTTPServerIPAddress
+      target_field: destination.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.HTTPServerIPAddress != null && ctx.json.HTTPServerIPAddress != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_json_HTTPServerIPASN_to_destination_as_number
+      field: json.HTTPServerIPASN
+      target_field: destination.as.number
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      tag: rename_json_HTTPServerIPASO_to_destination_as_organization_name
+      field: json.HTTPServerIPASO
+      target_field: destination.as.organization.name
+      ignore_missing: true
+  - rename:
+      tag: rename_json_HTTPServerIPCity_to_destination_geo_city_name
+      field: json.HTTPServerIPCity
+      target_field: destination.geo.city_name
+      ignore_missing: true
+  - rename:
+      tag: rename_json_HTTPServerIPCountryISO_to_destination_geo_country_iso_code
+      field: json.HTTPServerIPCountryISO
+      target_field: destination.geo.country_iso_code
+      ignore_missing: true
+  - rename:
+      tag: rename_json_HTTPServerIPStateISO_to_destination_geo_region_iso_code
+      field: json.HTTPServerIPStateISO
+      target_field: destination.geo.region_iso_code
+      ignore_missing: true
+  - rename:
+      tag: rename_json_HTTPServerIPZip_to_destination_geo_postal_code
+      field: json.HTTPServerIPZip
+      target_field: destination.geo.postal_code
+      ignore_missing: true
+  - convert:
+      tag: convert_json_HTTPServerIPNetmask_to_server_ip_netmask
+      field: json.HTTPServerIPNetmask
+      target_field: cloudflare_logpush.dex_application_tests.http.server_ip.netmask
+      type: string
+      ignore_missing: true
+  - convert:
+      tag: convert_json_HTTPServerIPVersion_to_server_ip_version
+      field: json.HTTPServerIPVersion
+      target_field: cloudflare_logpush.dex_application_tests.http.server_ip.version
+      type: string
+      ignore_missing: true
+
+  # HTTP test: request / response
+  - rename:
+      tag: rename_json_HTTPMethod_to_http_request_method
+      field: json.HTTPMethod
+      target_field: http.request.method
+      ignore_missing: true
+  - convert:
+      tag: convert_json_HTTPStatusCode_to_http_response_status_code
+      field: json.HTTPStatusCode
+      target_field: http.response.status_code
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      tag: rename_json_HTTPURL_to_url_full
+      field: json.HTTPURL
+      target_field: url.full
+      ignore_missing: true
+  - uri_parts:
+      tag: uri_parts_url_full
+      field: url.full
+      target_field: url
+      keep_original: true
+      if: ctx.url?.full != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      tag: rename_json_HTTPErrorMessage_to_http_error_message
+      field: json.HTTPErrorMessage
+      target_field: cloudflare_logpush.dex_application_tests.http.error_message
+      ignore_missing: true
+  - rename:
+      tag: rename_json_HTTPResponseBody_to_http_response_body_content
+      field: json.HTTPResponseBody
+      target_field: http.response.body.content
+      ignore_missing: true
+  - convert:
+      tag: convert_json_HTTPResponseBodyBytes_to_http_response_body_bytes
+      field: json.HTTPResponseBodyBytes
+      target_field: http.response.body.bytes
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_json_HTTPResponseHeaderBytes_to_response_header_bytes
+      field: json.HTTPResponseHeaderBytes
+      target_field: cloudflare_logpush.dex_application_tests.http.response.header_bytes
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      tag: rename_json_HTTPResponseHeaders_to_response_headers
+      field: json.HTTPResponseHeaders
+      target_field: cloudflare_logpush.dex_application_tests.http.response.headers
+      ignore_missing: true
+
+  # HTTP test: navigation timings (milliseconds)
+  - convert:
+      tag: convert_json_HTTPConnectStartMs
+      field: json.HTTPConnectStartMs
+      target_field: cloudflare_logpush.dex_application_tests.http.timings.connect_start_ms
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_json_HTTPConnectEndMs
+      field: json.HTTPConnectEndMs
+      target_field: cloudflare_logpush.dex_application_tests.http.timings.connect_end_ms
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_json_HTTPDomainLookupStartMs
+      field: json.HTTPDomainLookupStartMs
+      target_field: cloudflare_logpush.dex_application_tests.http.timings.domain_lookup_start_ms
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_json_HTTPDomainLookupEndMs
+      field: json.HTTPDomainLookupEndMs
+      target_field: cloudflare_logpush.dex_application_tests.http.timings.domain_lookup_end_ms
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_json_HTTPRedirectStartMs
+      field: json.HTTPRedirectStartMs
+      target_field: cloudflare_logpush.dex_application_tests.http.timings.redirect_start_ms
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_json_HTTPRedirectEndMs
+      field: json.HTTPRedirectEndMs
+      target_field: cloudflare_logpush.dex_application_tests.http.timings.redirect_end_ms
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_json_HTTPRequestStartMs
+      field: json.HTTPRequestStartMs
+      target_field: cloudflare_logpush.dex_application_tests.http.timings.request_start_ms
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_json_HTTPResponseStartMs
+      field: json.HTTPResponseStartMs
+      target_field: cloudflare_logpush.dex_application_tests.http.timings.response_start_ms
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_json_HTTPResponseEndMs
+      field: json.HTTPResponseEndMs
+      target_field: cloudflare_logpush.dex_application_tests.http.timings.response_end_ms
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_json_HTTPSecureConnectionStartMs
+      field: json.HTTPSecureConnectionStartMs
+      target_field: cloudflare_logpush.dex_application_tests.http.timings.secure_connection_start_ms
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Traceroute test: destination.*
+  - rename:
+      tag: rename_json_TracerouteDestinationHostname_to_destination_domain
+      field: json.TracerouteDestinationHostname
+      target_field: destination.domain
+      ignore_missing: true
+  - convert:
+      tag: convert_json_TracerouteDestinationIPAddress_to_destination_ip
+      field: json.TracerouteDestinationIPAddress
+      target_field: destination.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.TracerouteDestinationIPAddress != null && ctx.json.TracerouteDestinationIPAddress != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_json_TracerouteDestinationIPASN_to_destination_as_number
+      field: json.TracerouteDestinationIPASN
+      target_field: destination.as.number
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      tag: rename_json_TracerouteDestinationIPASO_to_destination_as_organization_name
+      field: json.TracerouteDestinationIPASO
+      target_field: destination.as.organization.name
+      ignore_missing: true
+  - rename:
+      tag: rename_json_TracerouteDestinationIPCity_to_destination_geo_city_name
+      field: json.TracerouteDestinationIPCity
+      target_field: destination.geo.city_name
+      ignore_missing: true
+  - rename:
+      tag: rename_json_TracerouteDestinationIPCountryISO_to_destination_geo_country_iso_code
+      field: json.TracerouteDestinationIPCountryISO
+      target_field: destination.geo.country_iso_code
+      ignore_missing: true
+  - rename:
+      tag: rename_json_TracerouteDestinationIPStateISO_to_destination_geo_region_iso_code
+      field: json.TracerouteDestinationIPStateISO
+      target_field: destination.geo.region_iso_code
+      ignore_missing: true
+  - rename:
+      tag: rename_json_TracerouteDestinationIPZip_to_destination_geo_postal_code
+      field: json.TracerouteDestinationIPZip
+      target_field: destination.geo.postal_code
+      ignore_missing: true
+  - convert:
+      tag: convert_json_TracerouteDestinationIPNetmask
+      field: json.TracerouteDestinationIPNetmask
+      target_field: cloudflare_logpush.dex_application_tests.traceroute.destination_ip.netmask
+      type: string
+      ignore_missing: true
+  - convert:
+      tag: convert_json_TracerouteDestinationIPVersion
+      field: json.TracerouteDestinationIPVersion
+      target_field: cloudflare_logpush.dex_application_tests.traceroute.destination_ip.version
+      type: string
+      ignore_missing: true
+
+  # Traceroute test: source.*
+  - convert:
+      tag: convert_json_TracerouteSourceIPAddress_to_source_ip
+      field: json.TracerouteSourceIPAddress
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.TracerouteSourceIPAddress != null && ctx.json.TracerouteSourceIPAddress != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_json_TracerouteSourceIPASN_to_source_as_number
+      field: json.TracerouteSourceIPASN
+      target_field: source.as.number
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      tag: rename_json_TracerouteSourceIPASO_to_source_as_organization_name
+      field: json.TracerouteSourceIPASO
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - rename:
+      tag: rename_json_TracerouteSourceIPCity_to_source_geo_city_name
+      field: json.TracerouteSourceIPCity
+      target_field: source.geo.city_name
+      ignore_missing: true
+  - rename:
+      tag: rename_json_TracerouteSourceIPCountryISO_to_source_geo_country_iso_code
+      field: json.TracerouteSourceIPCountryISO
+      target_field: source.geo.country_iso_code
+      ignore_missing: true
+  - rename:
+      tag: rename_json_TracerouteSourceIPStateISO_to_source_geo_region_iso_code
+      field: json.TracerouteSourceIPStateISO
+      target_field: source.geo.region_iso_code
+      ignore_missing: true
+  - rename:
+      tag: rename_json_TracerouteSourceIPZip_to_source_geo_postal_code
+      field: json.TracerouteSourceIPZip
+      target_field: source.geo.postal_code
+      ignore_missing: true
+  - convert:
+      tag: convert_json_TracerouteSourceIPNetmask
+      field: json.TracerouteSourceIPNetmask
+      target_field: cloudflare_logpush.dex_application_tests.traceroute.source_ip.netmask
+      type: string
+      ignore_missing: true
+  - convert:
+      tag: convert_json_TracerouteSourceIPVersion
+      field: json.TracerouteSourceIPVersion
+      target_field: cloudflare_logpush.dex_application_tests.traceroute.source_ip.version
+      type: string
+      ignore_missing: true
+
+  # Traceroute test: metrics
+  - rename:
+      tag: rename_json_TracerouteProtocol_to_network_transport
+      field: json.TracerouteProtocol
+      target_field: network.transport
+      ignore_missing: true
+  - convert:
+      tag: convert_json_TracerouteDurationMs
+      field: json.TracerouteDurationMs
+      target_field: cloudflare_logpush.dex_application_tests.traceroute.duration_ms
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      tag: rename_json_TracerouteHops
+      field: json.TracerouteHops
+      target_field: cloudflare_logpush.dex_application_tests.traceroute.hops
+      ignore_missing: true
+  - convert:
+      tag: convert_json_TracerouteMaxTTL
+      field: json.TracerouteMaxTTL
+      target_field: cloudflare_logpush.dex_application_tests.traceroute.max_ttl
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_json_TracerouteSize
+      field: json.TracerouteSize
+      target_field: cloudflare_logpush.dex_application_tests.traceroute.size
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      tag: rename_json_TracerouteStatus
+      field: json.TracerouteStatus
+      target_field: cloudflare_logpush.dex_application_tests.traceroute.status
+      ignore_missing: true
+  - convert:
+      tag: convert_json_TracerouteVersion
+      field: json.TracerouteVersion
+      target_field: cloudflare_logpush.dex_application_tests.traceroute.version
+      type: string
+      ignore_missing: true
+  # TracerouteTimeEnd is documented as "int or string". When it arrives as a
+  # number, its epoch scale is normalised to milliseconds in the shared
+  # script_timestamp_to_milli script above; ISO8601 strings are parsed directly.
+  - date:
+      tag: date_traceroute_time_end
+      field: json.TracerouteTimeEnd
+      target_field: cloudflare_logpush.dex_application_tests.traceroute.time_end
+      if: ctx.json?.TracerouteTimeEnd != null && ctx.json.TracerouteTimeEnd != ''
+      formats:
+        - UNIX_MS
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ssZ
+      timezone: UTC
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # related.*
+  - append:
+      tag: append_host_id_into_related_hosts
+      field: related.hosts
+      value: '{{{host.id}}}'
+      if: ctx.host?.id != null
+      allow_duplicates: false
+  - append:
+      tag: append_host_name_into_related_hosts
+      field: related.hosts
+      value: '{{{host.name}}}'
+      if: ctx.host?.name != null
+      allow_duplicates: false
+  - append:
+      tag: append_destination_domain_into_related_hosts
+      field: related.hosts
+      value: '{{{destination.domain}}}'
+      if: ctx.destination?.domain != null
+      allow_duplicates: false
+  - append:
+      tag: append_url_domain_into_related_hosts
+      field: related.hosts
+      value: '{{{url.domain}}}'
+      if: ctx.url?.domain != null
+      allow_duplicates: false
+  - append:
+      tag: append_source_ip_into_related_ip
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+  - append:
+      tag: append_destination_ip_into_related_ip
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      if: ctx.destination?.ip != null
+      allow_duplicates: false
+  - append:
+      tag: append_user_email_into_related_user
+      field: related.user
+      value: '{{{user.email}}}'
+      if: ctx.user?.email != null
+      allow_duplicates: false
+  - append:
+      tag: append_user_id_into_related_user
+      field: related.user
+      value: '{{{user.id}}}'
+      if: ctx.user?.id != null
+      allow_duplicates: false
+  - remove:
+      tag: remove_json_conf
+      field:
+        - json
+        - _conf
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || v == 'N/A' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      tag: append_preserve_original_event_tag
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      tag: append_pipeline_error_message
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event_tag_on_failure
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

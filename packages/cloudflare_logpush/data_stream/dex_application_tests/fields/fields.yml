@@ -1,0 +1,233 @@
+- name: cloudflare_logpush.dex_application_tests
+  type: group
+  fields:
+    - name: account_id
+      type: keyword
+      description: The Cloudflare account ID that owns the device under test.
+    - name: colo
+      type: group
+      fields:
+        - name: code
+          type: keyword
+          description: Cloudflare data center (colo) that served the test.
+    - name: device
+      type: group
+      fields:
+        - name: registration_id
+          type: keyword
+          description: Device registration ID.
+    - name: execution_context
+      type: keyword
+      description: Whether the test ran inside or outside the WARP tunnel (for example `inTunnel` or `outOfTunnel`).
+    - name: http
+      type: group
+      fields:
+        - name: client_ip
+          type: group
+          fields:
+            - name: netmask
+              type: keyword
+              description: Netmask of the client IP address observed during the HTTP test.
+            - name: version
+              type: keyword
+              description: IP version of the client IP address observed during the HTTP test.
+        - name: error_message
+          type: keyword
+          description: Error message returned by the HTTP test, if any.
+        - name: response
+          type: group
+          fields:
+            - name: header_bytes
+              type: long
+              unit: byte
+              metric_type: gauge
+              description: Size in bytes of the HTTP response headers.
+            - name: headers
+              type: nested
+              description: HTTP response headers returned during the test.
+              fields:
+                - name: name
+                  type: keyword
+                  description: HTTP response header name.
+                - name: value
+                  type: keyword
+                  description: HTTP response header value.
+        - name: server_ip
+          type: group
+          fields:
+            - name: netmask
+              type: keyword
+              description: Netmask of the server IP address observed during the HTTP test.
+            - name: version
+              type: keyword
+              description: IP version of the server IP address observed during the HTTP test.
+        - name: timings
+          type: group
+          fields:
+            - name: connect_end_ms
+              type: long
+              unit: ms
+              metric_type: gauge
+              description: Time in milliseconds when the connection completed.
+            - name: connect_start_ms
+              type: long
+              unit: ms
+              metric_type: gauge
+              description: Time in milliseconds when the connection started.
+            - name: domain_lookup_end_ms
+              type: long
+              unit: ms
+              metric_type: gauge
+              description: Time in milliseconds when the DNS lookup completed.
+            - name: domain_lookup_start_ms
+              type: long
+              unit: ms
+              metric_type: gauge
+              description: Time in milliseconds when the DNS lookup started.
+            - name: redirect_end_ms
+              type: long
+              unit: ms
+              metric_type: gauge
+              description: Time in milliseconds when the redirect completed.
+            - name: redirect_start_ms
+              type: long
+              unit: ms
+              metric_type: gauge
+              description: Time in milliseconds when the redirect started.
+            - name: request_start_ms
+              type: long
+              unit: ms
+              metric_type: gauge
+              description: Time in milliseconds when the request started.
+            - name: response_end_ms
+              type: long
+              unit: ms
+              metric_type: gauge
+              description: Time in milliseconds when the response completed.
+            - name: response_start_ms
+              type: long
+              unit: ms
+              metric_type: gauge
+              description: Time in milliseconds when the response started.
+            - name: secure_connection_start_ms
+              type: long
+              unit: ms
+              metric_type: gauge
+              description: Time in milliseconds when the TLS handshake started.
+    - name: test
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: Unique identifier of the DEX test.
+        - name: type
+          type: keyword
+          description: Type of the DEX test (for example `http` or `traceroute`).
+    - name: traceroute
+      type: group
+      fields:
+        - name: destination_ip
+          type: group
+          fields:
+            - name: netmask
+              type: keyword
+              description: Netmask of the traceroute destination IP address.
+            - name: version
+              type: keyword
+              description: IP version of the traceroute destination IP address.
+        - name: duration_ms
+          type: long
+          unit: ms
+          metric_type: gauge
+          description: Total duration of the traceroute test in milliseconds.
+        - name: hops
+          type: nested
+          description: Per-hop results collected during the traceroute test.
+          fields:
+            - name: errors
+              type: keyword
+              description: Errors encountered when probing the hop.
+            - name: ip
+              type: group
+              fields:
+                - name: address
+                  type: ip
+                  description: IP address of the hop.
+                - name: asn
+                  type: long
+                  description: Autonomous system number of the hop IP.
+                - name: aso
+                  type: keyword
+                  description: Autonomous system organization of the hop IP.
+                - name: location
+                  type: group
+                  fields:
+                    - name: city
+                      type: keyword
+                      description: City associated with the hop IP.
+                    - name: countryISO
+                      type: keyword
+                      description: Country ISO code associated with the hop IP.
+                    - name: stateISO
+                      type: keyword
+                      description: State or region ISO code associated with the hop IP.
+                    - name: zip
+                      type: keyword
+                      description: Postal code associated with the hop IP.
+                - name: netmask
+                  type: keyword
+                  description: Netmask of the hop IP.
+                - name: version
+                  type: keyword
+                  description: IP version of the hop IP.
+            - name: name
+              type: keyword
+              description: Hostname of the hop, if resolved.
+            - name: pathID
+              type: long
+              description: Identifier of the path the hop belongs to.
+            - name: received
+              type: long
+              description: Number of probe responses received from the hop.
+            - name: rtts
+              type: long
+              unit: ms
+              description: Round-trip times measured for the hop, in milliseconds.
+            - name: sent
+              type: long
+              description: Number of probe packets sent to the hop.
+            - name: ttl
+              type: long
+              description: Time-to-live (hop number) of the hop.
+        - name: max_ttl
+          type: long
+          description: Maximum time-to-live (number of hops) allowed for the traceroute test.
+        - name: size
+          type: long
+          unit: byte
+          metric_type: gauge
+          description: Size in bytes of the traceroute probe packets.
+        - name: source_ip
+          type: group
+          fields:
+            - name: netmask
+              type: keyword
+              description: Netmask of the traceroute source IP address.
+            - name: version
+              type: keyword
+              description: IP version of the traceroute source IP address.
+        - name: status
+          type: keyword
+          description: Final status of the traceroute test (for example `destinationReached`, `lastHopFailed` or `maxHopsExhausted`).
+        - name: time_end
+          type: date
+          description: Time when the traceroute test finished.
+        - name: version
+          type: keyword
+          description: Version of the traceroute test schema.
+    - name: tunnel_type
+      type: keyword
+      description: Tunnel protocol used during the test (for example `wireguard`, `masque` or `http2`).
+    - name: version
+      type: keyword
+      description: Version of the WARP client that ran the test.
