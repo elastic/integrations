@@ -91,6 +91,23 @@ processors:
       field: event.outcome
       value: failure
       if: ctx?.event?.outcome == "fail"
+  - script:
+      lang: painless
+      tag: replace_event_type_stop
+      description: Replace the ECS-invalid event.type value stop with end.
+      if: ctx.event?.type != null
+      source: |
+        if (ctx.event.type instanceof String) {
+          if (ctx.event.type == 'stop') {
+            ctx.event.type = ['end'];
+          }
+        } else if (ctx.event.type instanceof List) {
+          for (int i = 0; i < ctx.event.type.size(); i++) {
+            if (ctx.event.type.get(i) == 'stop') {
+              ctx.event.type.set(i, 'end');
+            }
+          }
+        }
   - rename:
       field: auditd.sequence
       target_field: event.sequence
