@@ -860,11 +860,6 @@ processors:
       value: "{{{checkpoint.cc}}}"
       if: "ctx?.checkpoint?.cc != null"
   - set:
-      tag: set_email_delivery_timestamp_6f69b5fb
-      field: email.delivery_timestamp
-      copy_from: checkpoint.delivery_time
-      if: "ctx?.checkpoint?.delivery_time != null"
-  - set:
       tag: set_email_message_id_80a4102f
       field: email.message_id
       copy_from: checkpoint.email_message_id
@@ -1666,6 +1661,11 @@ processors:
       target_field: "@timestamp"
       ignore_missing: true
   - set:
+      tag: set_email_delivery_timestamp_6f69b5fb
+      field: email.delivery_timestamp
+      copy_from: checkpoint.delivery_time
+      if: "ctx?.checkpoint?.delivery_time != null"
+  - set:
       tag: set_checkpoint_time_to_end_time
       field: event.end
       copy_from: @timestamp
@@ -1683,30 +1683,6 @@ processors:
       copy_from: checkpoint.lastupdatetime
       override: true
       if: "ctx.checkpoint?.lastupdatetime != null && ctx.checkpoint.packet_capture_time != null"
-  - date:
-      tag: date_checkpoint_last_hit_time_to_event_end_6aeafa0a
-      field: checkpoint.last_hit_time
-      formats: ["UNIX"]
-      target_field: event.end
-      if: "ctx.checkpoint?.last_hit_time != null"
-  - date:
-      tag: date_checkpoint_lastupdatetime_to_event_end_869e28e8
-      field: checkpoint.lastupdatetime
-      formats: ["UNIX", "ISO8601"]
-      target_field: event.end
-      if: "ctx.checkpoint?.lastupdatetime != null"
-  - date:
-      tag: date_checkpoint_creation_time_to_event_start_f2bceb79
-      field: checkpoint.creation_time
-      formats: ["UNIX", "ISO8601"]
-      target_field: event.start
-      if: "ctx.checkpoint?.creation_time != null"
-  - date:
-      tag: convert_login_timestamp
-      field: checkpoint.login_timestamp
-      formats: ["UNIX", "ISO8601"]
-      target_field: checkpoint.login_timestamp
-      if: "ctx.checkpoint?.login_timestamp != null"
   - rename:
       tag: rename_checkpoint_duration_to_event_duration_f53d9a8c
       field: checkpoint.duration
