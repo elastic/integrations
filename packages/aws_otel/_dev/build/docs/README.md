@@ -5,7 +5,14 @@
 
 The AWS OpenTelemetry integration collects CloudWatch metrics for AWS services. Each service is its own data stream. Collection uses the [AWS CloudWatch receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/awscloudwatchreceiver) from the `aws_cloudwatch_input_otel` input package, which supplies the receiver and the credentials extension.
 
-This integration adds metric discovery, poll settings, and processors on each data stream. EC2 and ECS also detect the collector host. EC2 uses only the EC2 detector. ECS uses only the ECS detector.
+This integration adds metric discovery and poll settings on each data stream. The input package flattens CloudWatch dimensions. Each data stream adds host resource detection. EC2 also adds only the EC2 detector, and ECS adds only the ECS detector.
+
+Installing this integration also installs the AWS OpenTelemetry content packages for EC2, Lambda, RDS, SQS, load balancers, and ECS. Classic Load Balancer has no content package yet. Fleet installs all of them together, not only the data streams enabled on a policy.
+
+## Deployment modes
+
+- **Elastic Managed** (default): Elastic manages the collector. There is no agent infrastructure to run.
+- **Elastic Agent**: Run the collector on your own Elastic Agent.
 
 ## Services
 
@@ -25,21 +32,23 @@ Every data stream collects on a 5-minute interval, waits 5 minutes for late Clou
 
 ## Requirements
 
-- An AWS account with the services you want to monitor.
-- AWS credentials with permission to read CloudWatch metrics. At minimum, the credentials must allow:
-  - `cloudwatch:ListMetrics`
-  - `cloudwatch:GetMetricData`
-- The AWS region your resources run in.
+| Requirement | Details |
+|---|---|
+| **AWS account** | Permission to read CloudWatch metrics (`cloudwatch:ListMetrics`, `cloudwatch:GetMetricData`) |
+| **AWS region** | The region your resources run in |
+| **Elastic Stack** | 9.5.0+ |
+| **Input package** | `aws_cloudwatch_input_otel` (installed automatically as a dependency) |
+| **Content packages** | `aws_ec2_otel`, `aws_lambda_otel`, `aws_rds_otel`, `aws_sqs_otel`, `aws_elb_metrics_otel`, `aws_ecs_otel` (installed automatically as dependencies) |
 
 ## Configuration
 
 | Setting | Description |
 |---|---|
-| AWS Region | The AWS region to collect metrics from (for example, `us-east-1`). Shared by every service. |
-| AWS Access Key ID | The access key used to authenticate to AWS. |
-| AWS Secret Access Key | The secret key paired with the access key. |
-| AWS Session Token | Required only when using temporary (STS) credentials. |
 | Period | CloudWatch aggregation window for that service. Shown on each data stream. |
+| AWS Region | AWS region to query, for example `us-east-1`. Defined on the CloudWatch input and shown on the main form. Required. |
+| AWS Access Key ID | Access key from the CloudWatch input. Shown on the main form. |
+| AWS Secret Access Key | Secret key from the CloudWatch input. Shown on the main form. |
+| AWS Session Token | Session token from the CloudWatch input. Shown on the main form. Required for temporary credentials. |
 
 ## Authentication
 

@@ -5,7 +5,7 @@
 
 The AWS CloudWatch OpenTelemetry Input collects Amazon CloudWatch metrics using the [AWS CloudWatch receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/awscloudwatchreceiver) from the OpenTelemetry Collector.
 
-This is a generic input package. It configures the `awscloudwatch` receiver and the `awscredentialsprovider` extension. It does not select a CloudWatch namespace, and it does not add processors. An integration data stream supplies metric discovery, poll settings, and any processors.
+This is a generic input package. It configures the `awscloudwatch` receiver, the `awscredentialsprovider` extension, and the dimension-flattening transform used by every service. It does not select a CloudWatch namespace. An integration data stream supplies metric discovery, poll settings, and any other processors.
 
 ## How it works
 
@@ -13,7 +13,8 @@ This input configures the AWS CloudWatch receiver in the EDOT (Elastic Distribut
 
 1. Authenticates to AWS with the credentials you provide, through the `awscredentialsprovider` extension.
 2. Queries CloudWatch in the AWS region you set.
-3. Forwards the metrics to Elastic Agent, which ships them to Elasticsearch for indexing and visualization.
+3. Flattens each metric's CloudWatch `Dimensions` map into top-level attributes.
+4. Forwards the metrics to Elastic Agent, which ships them to Elasticsearch for indexing and visualization.
 
 ## Deployment modes
 
@@ -34,19 +35,19 @@ This input can be deployed in two ways:
 
 ### Core settings
 
-| Setting | Description |
-|---|---|
-| AWS Region | The AWS region to query CloudWatch metrics from (for example, `us-east-1`). |
-| AWS Access Key ID | The access key used to authenticate to AWS. Mapped to `AWS_ACCESS_KEY_ID`. |
-| AWS Secret Access Key | The secret key paired with the access key. Mapped to `AWS_SECRET_ACCESS_KEY`. |
-| AWS Session Token | Required only when using temporary (STS) credentials. Mapped to `AWS_SESSION_TOKEN`. |
+| Setting | Description | Default |
+|---|---|---|
+| AWS Region | The AWS region to query CloudWatch metrics from (for example, `us-east-1`). | |
+| AWS Access Key ID | The access key used to authenticate to AWS. Mapped to `AWS_ACCESS_KEY_ID`. | |
+| AWS Secret Access Key | The secret key paired with the access key. Mapped to `AWS_SECRET_ACCESS_KEY`. | |
+| AWS Session Token | Required only when using temporary (STS) credentials. Mapped to `AWS_SESSION_TOKEN`. | |
 
 ### Advanced settings
 
-| Setting | Description |
-|---|---|
-| AWS Role ARN | Role to assume. Mapped to `AWS_ROLE_ARN`. |
-| AWS External ID | External ID for the assumed role. Mapped to `AWS_ROLE_EXTERNAL_ID`. |
+| Setting | Description | Default |
+|---|---|---|
+| AWS Role ARN | Role to assume. Mapped to `AWS_ROLE_ARN`. | |
+| AWS External ID | External ID for the assumed role. Mapped to `AWS_ROLE_EXTERNAL_ID`. | |
 
 ## Authentication
 
