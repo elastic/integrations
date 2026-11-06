@@ -1,6 +1,33 @@
 ---
 description: Pipeline for processing saas application logs.
 processors:
+  - set:
+      field: event.kind
+      tag: set_event_kind_asset_41719859
+      value: asset
+  - set:
+      field: service.name
+      tag: set_service_name_from_application_name_86164f78
+      copy_from: axonius.application.name
+      if: ctx.axonius?.application?.name instanceof String && ctx.axonius.application.name.trim() != ''
+  # internal_axon_id is the only identifier shared by every adapter record of an Axonius application asset.
+  - set:
+      field: service.id
+      tag: set_service_id_from_application_internal_axon_id_5c64cb1c
+      copy_from: axonius.application.internal_axon_id
+      ignore_empty_value: true
+  - set:
+      field: service.entity.id
+      tag: set_service_entity_id_from_application_internal_axon_id_b952973b
+      copy_from: axonius.application.internal_axon_id
+      ignore_empty_value: true
+  - append:
+      field: service.entity.type
+      tag: append_service_entity_type_95b06c9a
+      value:
+        - service
+        - application
+      allow_duplicates: false
   - convert:
       field: axonius.application.active_licenses
       tag: convert_active_licenses_to_long_a0803ed0
@@ -570,6 +597,11 @@ processors:
             tag: append_error_message_e8a1c125
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: service.entity.attributes.managed
+      tag: set_service_entity_attributes_managed_from_application_is_managed_96d8dbeb
+      copy_from: axonius.application.is_managed
+      if: ctx.axonius?.application?.is_managed instanceof Boolean
   - convert:
       field: axonius.application.is_managed_by_connected_app
       tag: convert_is_managed_by_connected_app_to_boolean_03947ce1

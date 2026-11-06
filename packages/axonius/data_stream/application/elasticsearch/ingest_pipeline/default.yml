@@ -4,7 +4,7 @@ processors:
   - set:
       field: ecs.version
       tag: set_ecs_version_8efb762c
-      value: 9.3.0
+      value: 9.5.0
   - terminate:
       description: error message set and no data to process.
       tag: terminate_data_collection_error_f2e4d3c3
@@ -1338,16 +1338,57 @@ processors:
                 tag: append_error_message_e6c9aec0
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: axonius.application.user_count_link
-      tag: foreach_user_count_link_value_c77d8e64
+  - script:
+      tag: script_split_user_count_link_value_into_related_user_760e5410
+      lang: painless
+      description: Appends each email of the user_count_link values to related.user, without duplicates. A value can be a comma-separated string or an array of strings, and each array element can itself be comma-separated.
       if: ctx.axonius?.application?.user_count_link instanceof List
-      processor:
-        append:
-          field: related.user
-          tag: append_user_count_link_value_into_related_user_36b6024d
-          value: '{{{_ingest._value.value}}}'
-          allow_duplicates: false
+      source: |-
+        void addUsers(List users, def value) {
+          if (!(value instanceof String)) {
+            return;
+          }
+          String text = value;
+          for (String part : text.splitOnToken(',')) {
+            String user = part.trim();
+            if (!user.isEmpty() && !users.contains(user)) {
+              users.add(user);
+            }
+          }
+        }
+        List users = new ArrayList();
+        for (def link : ctx.axonius.application.user_count_link) {
+          if (!(link instanceof Map)) {
+            continue;
+          }
+          def value = link.value;
+          if (value instanceof List) {
+            for (def element : value) {
+              addUsers(users, element);
+            }
+          } else {
+            addUsers(users, value);
+          }
+        }
+        if (users.isEmpty()) {
+          return;
+        }
+        if (!(ctx.related instanceof Map)) {
+          ctx.related = new HashMap();
+        }
+        if (!(ctx.related.user instanceof List)) {
+          ctx.related.user = ctx.related.user == null ? new ArrayList() : new ArrayList([ctx.related.user]);
+        }
+        for (String user : users) {
+          if (!ctx.related.user.contains(user)) {
+            ctx.related.user.add(user);
+          }
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_d50b46db
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.application.tenant_number
       tag: convert_tenant_number_to_long_2ab6a8b8
@@ -1411,6 +1452,11 @@ processors:
       tag: pipeline_expenses_d698627f
       if: >-
         ctx.axonius?.application?.asset_type == 'expenses'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_extensions" }}'
+      tag: pipeline_extensions_716def28
+      if: >-
+        ['admin_managed_extensions', 'user_initiated_extensions', 'application_addons'].contains(ctx.axonius?.application?.asset_type)
   - pipeline:
       name: '{{ IngestPipeline "pipeline_licenses" }}'
       tag: pipeline_licenses_2d459278

@@ -111,6 +111,14 @@ This integration brings Axonius asset and security data into Elastic so teams ca
 
 Bundled dashboards summarize these data streams for day-to-day monitoring, risk and backlog sizing, access hygiene checks, and incident investigation with correlated operational, identity, asset, and event context.
 
+**Entity Store** support: user assets from the `identity` data stream and Axonius console accounts from the `user` data stream populate ECS entity fields, so they appear as user entities in the Elastic Security Entity Store. A user is identified by `user.email` when any of its adapters reports an email address, and otherwise by `user.id`, which is the Axonius `internal_axon_id` for identity assets. Axonius notes that `internal_axon_id` may change in the future, for example when assets are re-correlated; if it changes, a user without an email address appears as a new entity. A console account whose email address matches an inventoried user is merged into the same entity.
+
+Device assets from the `compute` data stream populate ECS host entity fields, so they appear as host entities. A host is identified by `host.id`, which is the Axonius `internal_axon_id`, so every adapter record of a device contributes to the same entity; the same re-correlation caveat applies. The device UUID reported by an adapter is kept in `axonius.compute.uuid`. The last activity of a host comes from agent check-in times (`last_contact_time`, then `last_seen_agents`), so devices seen only by scanners or CMDB adapters have no last activity. User assets link to the devices Axonius associates with them through `user.entity.relationships.owns`; Axonius associates a device with the users that last used it.
+
+SaaS applications, business applications, admin managed extensions, user initiated extensions and application add-ons from the `application` data stream populate ECS service entity fields, so they appear as service entities. The Entity Store identifies a service only by `service.name`, which is the Axonius application name, so every record with the same name merges into one entity, whatever its asset type. For example, a SaaS application named `Bamboo HR` and `Bamboo HR` extensions found in Okta or Microsoft Entra ID become one service entity. Identity `accounts` records also carry the name of the product they connect to in `service.name`, so they merge into the service of the same name. On application assets, `service.id` and `service.entity.id` hold the Axonius `internal_axon_id`, so a service merged from several Axonius assets lists all of their IDs in `service.id`, together with the adapter application IDs of any identity `accounts` records merged into it; the same re-correlation caveat applies. Per-user extension instances, application keys and the other application asset types don't create service entities. Extensions link to the platform that holds the grant (`source_application`) through `service.entity.relationships.depends_on`, and user assets link to the applications they administer through `user.entity.relationships.administers`, which matches a service entity only when the names are identical.
+
+This identification, the host, user and service attributes, the last activity, and the relationships apply to the Entity Store from Kibana 9.4. On Kibana 8.19 and 9.3, the Entity Store identifies hosts by `host.name` and users by `user.name` only, so adapter records of one device that report different names appear as separate hosts. Services are identified by `service.name` on those versions too, but their attributes, last activity and relationships aren't read.
+
 ## What do I need to use this integration?
 
 ### From Elastic
@@ -327,7 +335,7 @@ The `application` data stream provides application asset logs from axonius.
 
 #### application fields
 
-{{ fields "compute" }}
+{{ fields "application" }}
 
 {{event "application"}}
 
