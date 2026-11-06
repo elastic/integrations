@@ -23,20 +23,37 @@ processors:
           def parts = ctx.datastream.splitOnToken('-');
           if (parts.length >= 3) {
             ctx.ds_type = parts[0];
-            ctx.ds_namespace = parts[parts.length - 1];
-            def mid = new ArrayList();
-            for (int i = 1; i < parts.length - 1; i++) {
-              mid.add(parts[i]);
+            def lastPart = parts[parts.length - 1];
+            if (/^v?\d+\.\d+(?:\.\d+.*)?$/.matcher(lastPart).matches()) {
+              ctx.ds_namespace = 'default';
+              def mid = new ArrayList();
+              for (int i = 1; i < parts.length; i++) {
+                mid.add(parts[i]);
+              }
+              ctx.ds_dataset = String.join('-', mid);
+            } else {
+              ctx.ds_namespace = lastPart;
+              def mid = new ArrayList();
+              for (int i = 1; i < parts.length - 1; i++) {
+                mid.add(parts[i]);
+              }
+              ctx.ds_dataset = String.join('-', mid);
             }
-            ctx.ds_dataset = String.join('-', mid);
           } else if (parts.length == 2) {
-            ctx.ds_type = parts[0];
-            ctx.ds_dataset = parts[0];
-            ctx.ds_namespace = parts[1];
+            if (/^v?\d+\.\d+(?:\.\d+.*)?$/.matcher(parts[1]).matches()) {
+              def p0 = parts[0].toLowerCase();
+              ctx.ds_type = p0.contains('metric') ? 'metrics' : (p0.contains('apm') || p0.contains('trace') ? 'traces' : (p0.contains('heartbeat') || p0.contains('synth') ? 'synthetics' : (p0.contains('beat') || p0.contains('log') ? 'logs' : 'other')));
+              ctx.ds_dataset = parts[0];
+              ctx.ds_namespace = 'default';
+            } else {
+              ctx.ds_type = parts[0];
+              ctx.ds_dataset = parts[0];
+              ctx.ds_namespace = parts[1];
+            }
           } else {
             ctx.ds_type = 'other';
             ctx.ds_dataset = ctx.datastream;
-            ctx.ds_namespace = 'other';
+            ctx.ds_namespace = 'default';
           }
         }
         if (ctx.monitor_name instanceof Map) {
@@ -143,8 +160,12 @@ processors:
           } else {
             vals.addAll(ctx.api_key_type.keySet());
           }
-          if (vals.contains('remote_key')) {
+          if (vals.contains('project_key')) {
+            ctx.api_key_type = 'project_key';
+          } else if (vals.contains('remote_key')) {
             ctx.api_key_type = 'remote_key';
+          } else if (vals.contains('cloud_key')) {
+            ctx.api_key_type = 'cloud_key';
           } else if (vals.contains('hub_key')) {
             ctx.api_key_type = 'hub_key';
           } else if (vals.contains('cloud_billing_only')) {

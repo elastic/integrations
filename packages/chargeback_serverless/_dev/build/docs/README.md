@@ -18,9 +18,9 @@ Use this integration when your central FinOps hub runs on **Elastic Cloud Server
 Prepare the following in your Elastic Cloud account before configuring the integration:
 
 1. **Elastic Cloud Organization ID**: Locate your numeric organization ID in the [Elastic Cloud Console](https://cloud.elastic.co) URL or under **Organization → Settings**.
-2. **Unified Elastic Cloud API key**: Open the [Elastic Cloud Console API keys page](https://cloud.elastic.co/deployment-features/keys), click **Create API key**, and under **Assign roles** turn on both roles:
-   - **Billing admin**: Required so the Elastic Cloud Billing API returns complete organization billing history, including deleted projects and decommissioned deployments.
-   - **Cloud resource access**: Select **All resources** (or all projects) and set **Access** to **`Cloud, Elasticsearch, and Kibana API`**.
+2. **Unified Elastic Cloud API key**: Open the [Elastic Cloud Console API keys page](https://cloud.elastic.co/deployment-features/keys) (**Organization → API keys**), click **Create API key**, and configure both settings:
+   - **Organization role**: Select **`Billing Admin`** so the Elastic Cloud Billing API returns complete organization billing history, including deleted Serverless projects.
+   - **Enable access to Cloud resources**: Toggle **ON**, select **All projects** (or selected projects), and in the separate per-project-type **Roles / API Access** dropdowns configure **`Elasticsearch`**, **`Observability`**, and **`Security`** (`Admin`).
 
 ## Configure the integration
 
@@ -29,7 +29,7 @@ Configure your Organization ID, unified Elastic Cloud API key, lookbehind window
 | Setting | Secret | Purpose |
 | --- | --- | --- |
 | **Organization ID** | No | Numeric Elastic Cloud organization ID |
-| **Elastic Cloud API Key** | Yes | Unified Elastic Cloud API key with **Billing admin** and **Cloud resource access** (`Cloud, Elasticsearch, and Kibana API`) turned on |
+| **Elastic Cloud API Key** | Yes | Unified Elastic Cloud API key with Organization role **`Billing Admin`** and **Cloud resource access** across `Elasticsearch`, `Observability`, and `Security` project types |
 | **Billing Lookbehind Days** | No | Historical UTC days of billing data to backfill on initial installation (default `60`) |
 | **Currency Unit** | No | Three-letter currency code (for example, `USD`, `EUR`, or `GBP`) |
 | **Currency Symbol** | No | Currency symbol displayed in KPI panels (for example, `\$`, `€`, or `£`) |
