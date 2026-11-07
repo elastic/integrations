@@ -1,0 +1,331 @@
+dashboards:
+  - id: qdrant-overview
+    name: '[Metrics Qdrant] Overview'
+    description: >-
+      Qdrant vector database: REST traffic, errors and response time, collection size, optimizations and update queue, replicas, shard transfers, snapshots and memory.
+    minimum_kibana_version: "9.2.0"
+    time_range:
+      from: "now-1h"
+      to: "now"
+    filters:
+      - field: data_stream.dataset
+        equals: qdrant.metrics
+    controls:
+      - type: options
+        label: Collection
+        data_view: metrics-*
+        field: qdrant.labels.id
+      - type: options
+        label: Node
+        data_view: metrics-*
+        field: service.address
+    panels:
+      - hide_title: true
+        size: {w: 16, h: 10}
+        markdown:
+          content: |
+            ## [Metrics Qdrant] Overview
+
+            Metrics scraped from the Qdrant `/metrics` endpoint.
+
+            - **REST API**: requests by endpoint and status, server errors, response time
+            - **Collections**: points per collection, running optimizations, update queue
+            - **Cluster**: dead replicas, shard transfers, snapshots, memory
+
+            An update queue that keeps growing means indexing does not keep up with writes. Dead replicas or failed shard transfers need attention before the next node failure.
+      - title: Points
+        description: >-
+          Points across all collections and nodes.
+        size: {w: 8, h: 5}
+        esql:
+          type: metric
+          query:
+            - TS metrics-qdrant.metrics-*
+            - WHERE data_stream.dataset == "qdrant.metrics"
+            - STATS points = SUM(LAST_OVER_TIME(qdrant.collection.points))
+          primary:
+            field: points
+            label: Total points
+            format:
+              type: number
+              decimals: 0
+      - title: REST requests/s
+        description: >-
+          REST responses per second, across all nodes.
+        size: {w: 8, h: 5}
+        esql:
+          type: metric
+          query:
+            - TS metrics-qdrant.metrics-*
+            - WHERE data_stream.dataset == "qdrant.metrics"
+            - STATS rps = SUM(RATE(qdrant.rest.responses.count))
+          primary:
+            field: rps
+            label: Requests/s
+            format:
+              type: number
+              decimals: 1
+      - title: REST 5xx ratio
+        description: >-
+          Share of REST responses with a 5xx status.
+        size: {w: 8, h: 5}
+        esql:
+          type: metric
+          query:
+            - TS metrics-qdrant.metrics-*
+            - WHERE data_stream.dataset == "qdrant.metrics"
+            - STATS rps = SUM(RATE(qdrant.rest.responses.count)) BY qdrant.labels.status
+            - EVAL is_5xx = CASE(STARTS_WITH(qdrant.labels.status, "5"), rps, 0.0)
+            - STATS errors = SUM(is_5xx), total = SUM(rps)
+            - EVAL ratio = CASE(total > 0, errors / total, 0.0)
+            - KEEP ratio
+          primary:
+            field: ratio
+            label: 5xx ratio
+            format:
+              type: percent
+              decimals: 2
+      - title: Dead replicas
+        description: >-
+          Highest number of replicas that are not active, among nodes. Anything above 0 means a shard has lost redundancy.
+        size: {w: 8, h: 5}
+        esql:
+          type: metric
+          query:
+            - TS metrics-qdrant.metrics-*
+            - WHERE data_stream.dataset == "qdrant.metrics"
+            - STATS dead = MAX(LAST_OVER_TIME(qdrant.replicas.dead))
+          primary:
+            field: dead
+            label: Max dead
+            format:
+              type: number
+              decimals: 0
+      - title: Requests by status
+        description: >-
+          REST responses per second by HTTP status.
+        size: {w: 16, h: 10}
+        esql:
+          type: bar
+          query:
+            - TS metrics-qdrant.metrics-*
+            - WHERE data_stream.dataset == "qdrant.metrics"
+            - STATS rps = SUM(RATE(qdrant.rest.responses.count)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), qdrant.labels.status
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+            label: Time
+          legend:
+            position: bottom
+          metrics:
+            - field: rps
+              label: Requests/s
+          breakdown:
+            field: qdrant.labels.status
+      - title: Requests by endpoint
+        description: >-
+          REST responses per second by endpoint.
+        size: {w: 16, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-qdrant.metrics-*
+            - WHERE data_stream.dataset == "qdrant.metrics"
+            - STATS rps = SUM(RATE(qdrant.rest.responses.count)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), qdrant.labels.endpoint
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+            label: Time
+          legend:
+            position: bottom
+          metrics:
+            - field: rps
+              label: Requests/s
+          breakdown:
+            field: qdrant.labels.endpoint
+      - title: REST response time
+        description: >-
+          Response time of the REST API, from the rest_responses_duration_seconds histogram.
+        size: {w: 16, h: 10}
+        lens:
+          type: line
+          data_view: metrics-*
+          dimension:
+            type: date_histogram
+            field: "@timestamp"
+            label: Time
+          legend:
+            position: bottom
+          metrics:
+            - aggregation: percentile
+              field: qdrant.rest.duration.histogram
+              percentile: 50
+              label: p50 (s)
+            - aggregation: percentile
+              field: qdrant.rest.duration.histogram
+              percentile: 95
+              label: p95 (s)
+      - title: Longest response time by endpoint
+        description: >-
+          Longest REST response time reported by Qdrant, in seconds, by endpoint.
+        size: {w: 16, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-qdrant.metrics-*
+            - WHERE data_stream.dataset == "qdrant.metrics"
+            - STATS max_duration = MAX(MAX_OVER_TIME(qdrant.rest.duration.max.sec)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), qdrant.labels.endpoint
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+            label: Time
+          legend:
+            position: bottom
+          metrics:
+            - field: max_duration
+              label: Max (s)
+          breakdown:
+            field: qdrant.labels.endpoint
+      - title: Points per collection
+        description: >-
+          Points in each collection, summed across nodes.
+        size: {w: 16, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-qdrant.metrics-*
+            - WHERE data_stream.dataset == "qdrant.metrics" AND qdrant.labels.id IS NOT NULL
+            - STATS points = SUM(LAST_OVER_TIME(qdrant.collection.points)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), qdrant.labels.id
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+            label: Time
+          legend:
+            position: bottom
+          metrics:
+            - field: points
+              label: Total points
+          breakdown:
+            field: qdrant.labels.id
+      - title: Update queue
+        description: >-
+          Update operations waiting and points whose update is deferred, across all collections.
+        size: {w: 16, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-qdrant.metrics-*
+            - WHERE data_stream.dataset == "qdrant.metrics"
+            - STATS queue = SUM(AVG_OVER_TIME(qdrant.collection.update_queue.length)), deferred = SUM(AVG_OVER_TIME(qdrant.collection.update_queue.deferred_points)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+            label: Time
+          legend:
+            position: bottom
+          metrics:
+            - field: queue
+              label: Queued updates
+            - field: deferred
+              label: Deferred points
+      - title: Replicas
+        description: >-
+          Lowest number of active replicas and number of dead replicas, among nodes.
+        size: {w: 16, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-qdrant.metrics-*
+            - WHERE data_stream.dataset == "qdrant.metrics"
+            - STATS active_min = MIN(MIN_OVER_TIME(qdrant.replicas.active.min)), dead = MAX(MAX_OVER_TIME(qdrant.replicas.dead)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+            label: Time
+          legend:
+            position: bottom
+          metrics:
+            - field: active_min
+              label: Active replicas (min)
+            - field: dead
+              label: Max dead
+      - title: Shard transfers
+        description: >-
+          Shard transfers in progress and failed transfers, across all collections and nodes.
+        size: {w: 16, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-qdrant.metrics-*
+            - WHERE data_stream.dataset == "qdrant.metrics"
+            - STATS incoming = SUM(AVG_OVER_TIME(qdrant.shard_transfers.incoming)), outgoing = SUM(AVG_OVER_TIME(qdrant.shard_transfers.outgoing)), failed = SUM(MAX_OVER_TIME(qdrant.shard_transfers.failed)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+            label: Time
+          legend:
+            position: bottom
+          metrics:
+            - field: incoming
+              label: Incoming
+            - field: outgoing
+              label: Outgoing
+            - field: failed
+              label: Failed
+      - title: Snapshots created
+        description: >-
+          Snapshots created per second, by collection.
+        size: {w: 16, h: 10}
+        esql:
+          type: bar
+          query:
+            - TS metrics-qdrant.metrics-*
+            - WHERE data_stream.dataset == "qdrant.metrics" AND qdrant.labels.id IS NOT NULL
+            - STATS created = SUM(RATE(qdrant.snapshots.created.count)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), qdrant.labels.id
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+            label: Time
+          legend:
+            position: bottom
+          metrics:
+            - field: created
+              label: Snapshots/s
+          breakdown:
+            field: qdrant.labels.id
+      - title: Memory
+        description: >-
+          Resident and allocated memory, by node.
+        size: {w: 16, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-qdrant.metrics-*
+            - WHERE data_stream.dataset == "qdrant.metrics"
+            - STATS resident = MAX(AVG_OVER_TIME(qdrant.memory.resident.bytes)), allocated = MAX(AVG_OVER_TIME(qdrant.memory.allocated.bytes)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), service.address
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+            label: Time
+          legend:
+            position: bottom
+          metrics:
+            - field: resident
+              label: Resident
+              format:
+                type: bytes
+            - field: allocated
+              label: Allocated
+              format:
+                type: bytes
+          breakdown:
+            field: service.address
