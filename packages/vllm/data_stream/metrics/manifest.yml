@@ -1,0 +1,74 @@
+title: vLLM metrics
+type: metrics
+streams:
+  - input: prometheus/metrics
+    title: vLLM metrics
+    description: Collect engine, request and latency metrics from vLLM.
+    vars:
+      - name: hosts
+        type: text
+        title: Hosts
+        description: vLLM servers to scrape, as host:port of the OpenAI-compatible API server.
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - localhost:8000
+      - name: metrics_path
+        type: text
+        title: Metrics Path
+        multi: false
+        required: true
+        show_user: false
+        default: /metrics
+      - name: period
+        type: text
+        title: Period
+        multi: false
+        required: true
+        show_user: true
+        default: 10s
+      - name: metrics_filters.include
+        type: text
+        title: Metrics Filters Include
+        description: Regular expressions of the metric names to collect. Metrics not mapped by this integration are dropped by the ingest pipeline.
+        multi: true
+        required: false
+        show_user: false
+        default:
+          - ^vllm:num_requests_(running|waiting)$
+          - ^vllm:kv_cache_usage_perc$
+          - ^vllm:(prompt|generation)_tokens_total$
+          - ^vllm:prefix_cache_(queries|hits)_total$
+          - ^vllm:num_preemptions_total$
+          - ^vllm:request_success_total$
+          - ^vllm:time_to_first_token_seconds$
+          - ^vllm:inter_token_latency_seconds$
+          - ^vllm:e2e_request_latency_seconds$
+          - ^vllm:request_(queue|inference|prefill|decode)_time_seconds$
+          - ^vllm:request_(prompt|generation)_tokens$
+      - name: bearer_token_file
+        type: text
+        title: Bearer Token File
+        description: File with a bearer token sent in the Authorization header, for endpoints behind an authenticating proxy.
+        multi: false
+        required: false
+        show_user: false
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: SSL options for HTTPS endpoints, in YAML format.
+        multi: false
+        required: false
+        show_user: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the events are shipped. See [Processors](https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html) for details.
+
+elasticsearch:
+  index_mode: time_series
