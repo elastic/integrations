@@ -8,24 +8,24 @@ This closes an Observability coverage gap versus Datadog's [SAP HANA integration
 
 ### Compatibility
 
-* Exporter: SUSE/hanadb_exporter (default listen port **9968**)
-* Metric catalog: **75** `hanadb_*` series (see `docs/metric-catalog.json`)
-* Kibana **9.2.0+** recommended for ES|QL `TS` / dashboard panels
+* Exporter: SUSE/hanadb_exporter (default listen port **9668**)
+* Metric catalog: **79** exposed `hanadb_*_<unit>` series (see `_dev/build/docs/metric-catalog.json`)
+* Kibana **9.2.0** or later is recommended for ES|QL dashboard panels
 
 ### How it works
 
 1. Deploy `hanadb_exporter` next to the HANA instance (SQL user with monitoring privileges).
-2. Add this integration to an Elastic Agent policy and set **Hosts** to `host:9968`.
-3. The ingest pipeline renames `prometheus.hanadb_*.value` → `sap_hana.<family>.*` and keeps exporter labels under `sap_hana.labels.*`.
+2. Add this integration to an Elastic Agent policy and set **Hosts** to `host:9668`.
+3. The ingest pipeline renames `prometheus.hanadb_*_<unit>.value` to `sap_hana.<family>.*` and keeps exporter labels under `sap_hana.labels.*`.
+
+Prometheus client appends the configured unit to each metric name (for example `hanadb_alerts_current` with unit `rating` is scraped as `hanadb_alerts_current_rating`).
 
 ## What data does this integration collect?
-
-Families (see `docs/metric-families.json`):
 
 | Family | Examples |
 | --- | --- |
 | memory | host memory used/peak/alloc limit, column tables, schema, service heap/shared |
-| cpu | user / system / waitio / busy / idle |
+| cpu | user / system / waitio / busy / idle (normalized to 0–1 for `unit: percent`) |
 | disk | data files size, IO latency / throughput / queue |
 | network | receive / transmit rates and errors |
 | sql | service executions, elapsed time, top consumers |
@@ -36,46 +36,45 @@ Families (see `docs/metric-families.json`):
 ### Supported use cases
 
 * Day-one HANA health: memory pressure, connection spikes, open HANA alerts
-* Capacity: host memory vs alloc limit, disk data file usage
+* Capacity: host memory versus alloc limit, disk data file usage
 * HA: system replication ship delay and secondary status
 
 ## What do I need to use this integration?
 
-* A reachable [hanadb_exporter](https://github.com/SUSE/hanadb_exporter) endpoint
+* A reachable [hanadb_exporter](https://github.com/SUSE/hanadb_exporter) endpoint (default port 9668)
 * Elastic Agent with connectivity to that endpoint
 
 ## How do I deploy this integration?
 
 ### Agent-based deployment
 
-1. Install and run SUSE `hanadb_exporter` against your HANA SID (port 9968).
-2. In Kibana, **Management > Integrations**, add **SAP HANA**.
-3. Set **Hosts** to the exporter address(es), e.g. `hana-exporter:9968`.
-4. Assign to an Agent policy and deploy.
+1. Install and run SUSE `hanadb_exporter` against your HANA SID (port 9668).
+2. In Kibana, go to **Management → Integrations** and add **SAP HANA**.
+3. Set **Hosts** to the exporter address(es), for example `hana-exporter:9668`.
+4. Assign to an Elastic Agent policy and deploy.
 
 ### Validation
 
 * Discover: `data_stream.dataset: sap_hana.metrics`
 * Confirm fields such as `sap_hana.memory.host_memory_used_total` and `sap_hana.connections.total`
 
-## Proposed product assets (this PR)
+## Proposed product assets (this draft)
 
 Shipped in this draft:
 
-* Metrics data stream + field mapping for the full exporter catalog
-* Metric catalog / family docs (`docs/metric-catalog.json`, `docs/metric-families.json`)
-* Asset specifications for dashboards, alerts, ML, and SLOs (`docs/asset-specs.json`)
+* Metrics data stream and field mapping for the exporter catalog
+* Catalog and asset specs under `_dev/build/docs/` (dashboard, alerts, ML, scrape-health SLO notes)
 
-Follow-ups before GA (Product / Integrations owners):
+Follow-ups before GA:
 
-1. Export a first-class Kibana overview dashboard (panel list in asset-specs)
-2. Package Universal / ES|QL alert rules from the three alert specs
-3. Optional ML job + availability SLO definitions
-4. Decide long-term collect path: keep Prometheus exporter scrape vs contribute an OTel `hanadb` receiver to collector-contrib and ship in Agent (see field guidance on Prom category (2) sources)
+1. Ship a Kibana overview dashboard from the panel list in asset specs
+2. Package alert rules and an optional ML job
+3. Define a scrape heartbeat for availability SLOs (do not treat absent alert samples as healthy zeros)
+4. Decide long-term collect path: keep the Prometheus exporter scrape versus contribute an OTel receiver to collector-contrib and ship it in Agent
 
 ## Troubleshooting
 
-* No data: `curl http://<exporter>:9968/metrics` should show lines starting with `hanadb_`
+* No data: `curl http://<exporter>:9668/metrics` should show lines that start with `hanadb_`
 * Partial metrics: some exporter collectors are optional; enable the corresponding SQL views in the exporter config
 
 ## Reference
@@ -107,7 +106,10 @@ Follow-ups before GA (Product / Integrations owners):
     },
     "service": {
         "type": "sap_hana",
-        "address": "localhost:9968"
+        "address": "localhost:9668"
+    },
+    "host": {
+        "name": "hana-01"
     },
     "sap_hana": {
         "labels": {
@@ -124,18 +126,11 @@ Follow-ups before GA (Product / Integrations owners):
         },
         "alerts": {
             "current": 0.0
-        },
-        "sql": {
-            "service_executions": 1200.0
         }
     }
 }
 ```
 
-### Catalog
+### Catalog and asset specs
 
-Full Prometheus metric definitions: [`docs/metric-catalog.json`](metric-catalog.json)
-
-### Asset specs
-
-Dashboard / alert / ML / SLO proposals: [`docs/asset-specs.json`](asset-specs.json)
+The full Prometheus metric catalog (exposed `hanadb_*_<unit>` names), family map, field map, and proposed dashboard/alert/ML/SLO asset specs are attached to this PR discussion and maintained alongside the field Prom-gap pack. Percentage metrics are stored as fractions (0–1) for Kibana `unit: percent`. Availability SLOs should use a scrape heartbeat, not absent alert samples.
