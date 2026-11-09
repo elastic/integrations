@@ -129,7 +129,7 @@ An instance fetches events sequentially: each request returns at most 3,000 even
 - `operator`: `in`, `not_in`, `is`, or `is_not`.
 - `values`: exact event type or subtype strings, as returned by Cato Networks.
 
-Leave `Filters` empty to collect all events. Fleet checks only that the value is valid YAML. Cato Networks checks the content: it rejects an unknown `fieldName` or `operator` (both are case-sensitive) with an error that the input reports. Unquoted numbers and booleans in `values` are sent as strings.
+Leave `Filters` empty to collect all events. A value that contains only comments or whitespace, or the YAML value `null`, is treated as empty. Fleet checks only that the value is valid YAML. Cato Networks checks the content: it rejects an unknown `fieldName` or `operator` (both are case-sensitive) with an error that the input reports. Unquoted numbers and booleans in `values` are sent as strings.
 
 For example, to collect WAN Firewall events, Internet Firewall events, and all remaining events with three instances:
 
