@@ -213,34 +213,53 @@ program: |-
                                               ).map(li,
                                                 string(li.sku).lowerAscii().as(ls,
                                                   ((prod_type != "") ? prod_type : ((ls.startsWith("observability.") || ls.startsWith("oblt.") || ls.startsWith("serverless.observability.") || ls.startsWith("serverless.oblt.") || ls.contains("synthetic")) ? "observability" : ((ls.startsWith("security.") || ls.startsWith("sec.") || ls.startsWith("serverless.security.") || ls.startsWith("serverless.sec.")) ? "security" : ((ls.startsWith("elasticsearch.") || ls.startsWith("es.") || ls.startsWith("serverless.elasticsearch.") || ls.startsWith("serverless.es.")) ? "elasticsearch" : ((ls.startsWith("search.") || ls.startsWith("serverless.search.")) ? "search" : "elasticsearch"))))).as(eff_prod_type,
-                                                    ((prod_type == "") ? instance_evts.filter(e, e.sku == li.sku) : instance_evts.filter(e, e.sku == li.sku && e.project_type == eff_prod_type)).as(matched_evts,
-                                                      matched_evts.map(e, e.total_ecu).as(matched_ecus,
-                                                        (size(matched_ecus) == 0 ? 0.0 : matched_ecus.sum()).as(day_sku_ecu,
-                                                          matched_evts.map(e, e.quantity_value).as(matched_qtys,
-                                                            (size(matched_qtys) == 0 ? 0.0 : matched_qtys.sum()).as(day_sku_qty,
-                                                              ((has(li.total_ecu) && li.total_ecu != null) ? double(li.total_ecu) : 0.0).as(item_ecu,
-                                                                ((has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null) ? double(li.quantity.value) : 0.0).as(item_qty,
-                                                                  (item_ecu - day_sku_ecu).as(diff_ecu,
-                                                                    (max(0.0, item_qty - day_sku_qty)).as(diff_qty,
-                                                                      (diff_ecu > 0.0001 || (day_sku_ecu == 0.0 && item_qty > 0.0)) ?
-                                                                        [
-                                                                          {
-                                                                            "@timestamp": req.from.format(time_layout.RFC3339),
-                                                                            "period_start": req.from.format(time_layout.RFC3339),
-                                                                            "project_id": "deleted_or_unassociated_" + eff_prod_type,
-                                                                            "project_name": "Deleted / Unassociated (" + eff_prod_type + ")",
-                                                                            "project_type": eff_prod_type,
-                                                                            "sku": li.sku,
-                                                                            "total_ecu": max(0.0, diff_ecu),
-                                                                            "quantity_value": diff_qty,
-                                                                            "conf_chargeable_unit_rate": double(state.conf_unit_rate),
-                                                                            "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-                                                                            "conf_currency_symbol": state.conf_currency_symbol,
-                                                                          }
-                                                                        ]
-                                                                      : []
-                                                                    )
-                                                                  )
+                                                    {
+                                                      "sku": string(li.sku),
+                                                      "prod_type": prod_type,
+                                                      "eff_prod_type": eff_prod_type,
+                                                      "item_ecu": (has(li.total_ecu) && li.total_ecu != null) ? double(li.total_ecu) : 0.0,
+                                                      "item_qty": (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null) ? double(li.quantity.value) : 0.0,
+                                                    }
+                                                  )
+                                                )
+                                              )
+                                            : []
+                                          )
+                                        )
+                                      ).flatten().as(raw_item_entries,
+                                        zip(
+                                          raw_item_entries.map(ie, ie.eff_prod_type + "\n" + ie.sku),
+                                          raw_item_entries
+                                        ).keys().map(ik,
+                                          raw_item_entries.filter(ie, (ie.eff_prod_type + "\n" + ie.sku) == ik).as(igrp,
+                                            igrp[0].eff_prod_type.as(eff_prod_type,
+                                              igrp[0].sku.as(isku,
+                                                (igrp.exists(ie, ie.prod_type == "") ? instance_evts.filter(e, e.sku == isku) : instance_evts.filter(e, e.sku == isku && e.project_type == eff_prod_type)).as(matched_evts,
+                                                  matched_evts.map(e, e.total_ecu).as(matched_ecus,
+                                                    (size(matched_ecus) == 0 ? 0.0 : matched_ecus.sum()).as(day_sku_ecu,
+                                                      matched_evts.map(e, e.quantity_value).as(matched_qtys,
+                                                        (size(matched_qtys) == 0 ? 0.0 : matched_qtys.sum()).as(day_sku_qty,
+                                                          igrp.map(ie, ie.item_ecu).sum().as(item_ecu,
+                                                            igrp.map(ie, ie.item_qty).sum().as(item_qty,
+                                                              (item_ecu - day_sku_ecu).as(diff_ecu,
+                                                                (max(0.0, item_qty - day_sku_qty)).as(diff_qty,
+                                                                  (diff_ecu > 0.0001 || (day_sku_ecu == 0.0 && item_qty > 0.0)) ?
+                                                                    [
+                                                                      {
+                                                                        "@timestamp": req.from.format(time_layout.RFC3339),
+                                                                        "period_start": req.from.format(time_layout.RFC3339),
+                                                                        "project_id": "deleted_or_unassociated_" + eff_prod_type,
+                                                                        "project_name": "Deleted / Unassociated (" + eff_prod_type + ")",
+                                                                        "project_type": eff_prod_type,
+                                                                        "sku": isku,
+                                                                        "total_ecu": max(0.0, diff_ecu),
+                                                                        "quantity_value": diff_qty,
+                                                                        "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                                        "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                                        "conf_currency_symbol": state.conf_currency_symbol,
+                                                                      }
+                                                                    ]
+                                                                  : []
                                                                 )
                                                               )
                                                             )
@@ -250,11 +269,11 @@ program: |-
                                                     )
                                                   )
                                                 )
-                                              ).flatten()
-                                            : []
+                                              )
+                                            )
                                           )
-                                        )
-                                      ).flatten()
+                                        ).flatten()
+                                      )
                                     : []) +
                                     projects.filter(p,
                                       size(sls_instances.filter(inst, has(inst.id) && inst.id == p.id)) == 0
@@ -274,14 +293,17 @@ program: |-
                                       }
                                     )
                                   ).as(raw_evts,
-                                    raw_evts.filter(d,
-                                      raw_evts.filter(x, x.project_id == d.project_id && x.sku == d.sku)[0] == d
-                                    ).map(d,
-                                      raw_evts.filter(x, x.project_id == d.project_id && x.sku == d.sku).as(grp,
-                                        d.with({
-                                          "total_ecu": grp.map(x, x.total_ecu).sum(),
-                                          "quantity_value": grp.map(x, x.quantity_value).sum(),
-                                        })
+                                    zip(
+                                      raw_evts.map(d, string(d.project_id) + "\n" + string(d.sku)),
+                                      raw_evts
+                                    ).keys().map(k,
+                                      raw_evts.filter(x, (string(x.project_id) + "\n" + string(x.sku)) == k).as(grp,
+                                        grp.filter(x, x.project_name != x.project_id).as(named_grp,
+                                          (size(named_grp) > 0 ? named_grp[0] : grp[0]).with({
+                                            "total_ecu": grp.map(x, x.total_ecu).sum(),
+                                            "quantity_value": grp.map(x, x.quantity_value).sum(),
+                                          })
+                                        )
                                       )
                                     ).as(evts,
                                       {
