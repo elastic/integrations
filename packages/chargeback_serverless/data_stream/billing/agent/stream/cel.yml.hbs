@@ -278,12 +278,10 @@ program: |-
                                       raw_evts.filter(x, x.project_id == d.project_id && x.sku == d.sku)[0] == d
                                     ).map(d,
                                       raw_evts.filter(x, x.project_id == d.project_id && x.sku == d.sku).as(grp,
-                                        grp.filter(x, x == d).as(dups,
-                                          d.with({
-                                            "total_ecu": grp.map(x, x.total_ecu).sum() / double(size(dups)),
-                                            "quantity_value": grp.map(x, x.quantity_value).sum() / double(size(dups)),
-                                          })
-                                        )
+                                        d.with({
+                                          "total_ecu": grp.map(x, x.total_ecu).sum(),
+                                          "quantity_value": grp.map(x, x.quantity_value).sum(),
+                                        })
                                       )
                                     ).as(evts,
                                       {

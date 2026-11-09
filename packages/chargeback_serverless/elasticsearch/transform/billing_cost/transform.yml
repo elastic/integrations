@@ -36,57 +36,11 @@ pivot:
         field: project_type
         size: 1
     total_ecu:
-      scripted_metric:
-        init_script: "state.by_batch = [:]"
-        map_script: |
-          def b = doc['event.ingested'].size() > 0 ? (doc['event.ingested'].value.toInstant().toEpochMilli() / 60000L).toString() : 'default';
-          def v = doc['total_ecu'].size() > 0 ? ((Number)doc['total_ecu'].value).doubleValue() : 0.0;
-          state.by_batch[b] = (state.by_batch.containsKey(b) ? state.by_batch[b] : 0.0) + v;
-        combine_script: "return state.by_batch;"
-        reduce_script: |
-          def merged = [:];
-          for (s in states) {
-            if (s != null) {
-              for (entry in s.entrySet()) {
-                def k = entry.getKey();
-                def v = entry.getValue();
-                merged[k] = (merged.containsKey(k) ? merged[k] : 0.0) + v;
-              }
-            }
-          }
-          def maxVal = 0.0;
-          for (v in merged.values()) {
-            if (v > maxVal) {
-              maxVal = v;
-            }
-          }
-          return maxVal;
+      max:
+        field: total_ecu
     quantity_value:
-      scripted_metric:
-        init_script: "state.by_batch = [:]"
-        map_script: |
-          def b = doc['event.ingested'].size() > 0 ? (doc['event.ingested'].value.toInstant().toEpochMilli() / 60000L).toString() : 'default';
-          def v = doc['quantity_value'].size() > 0 ? ((Number)doc['quantity_value'].value).doubleValue() : 0.0;
-          state.by_batch[b] = (state.by_batch.containsKey(b) ? state.by_batch[b] : 0.0) + v;
-        combine_script: "return state.by_batch;"
-        reduce_script: |
-          def merged = [:];
-          for (s in states) {
-            if (s != null) {
-              for (entry in s.entrySet()) {
-                def k = entry.getKey();
-                def v = entry.getValue();
-                merged[k] = (merged.containsKey(k) ? merged[k] : 0.0) + v;
-              }
-            }
-          }
-          def maxVal = 0.0;
-          for (v in merged.values()) {
-            if (v > maxVal) {
-              maxVal = v;
-            }
-          }
-          return maxVal;
+      max:
+        field: quantity_value
     conf_chargeable_unit_rate:
       max:
         field: conf_chargeable_unit_rate
