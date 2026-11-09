@@ -26,35 +26,6 @@ processors:
       field: event.original
       tag: json_event_original
       target_field: openshell.ocsf
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: event.kind
-      tag: set_pipeline_error_on_invalid_json
-      value: pipeline_error
-      if: ctx.openshell?.ocsf == null || !(ctx.openshell.ocsf instanceof Map)
-  - append:
-      field: tags
-      tag: append_preserve_original_event_on_invalid_json
-      value: preserve_original_event
-      allow_duplicates: false
-      if: ctx.openshell?.ocsf == null || !(ctx.openshell.ocsf instanceof Map)
-  - append:
-      field: error.message
-      tag: append_error_message_on_non_object_record
-      value: 'OCSF record is not a JSON object'
-      if: ctx.openshell?.ocsf != null && !(ctx.openshell.ocsf instanceof Map)
-  - remove:
-      field: openshell
-      tag: remove_non_object_record
-      ignore_missing: true
-      if: ctx.openshell?.ocsf != null && !(ctx.openshell.ocsf instanceof Map)
-  - terminate:
-      tag: terminate_on_invalid_json
-      if: ctx.openshell?.ocsf == null
-      description: Keep records that are not a JSON object as-is, flagged as pipeline errors.
   - script:
       tag: script_stringify_big_integers
       lang: painless
@@ -127,10 +98,6 @@ processors:
       target_field: event.code
       type: string
       ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: openshell.ocsf.severity_id
       tag: convert_severity_id_to_event_severity
@@ -208,9 +175,6 @@ processors:
       type: ip
       ignore_missing: true
       on_failure:
-        - remove:
-            field: openshell.ocsf.dst_endpoint.ip
-            ignore_missing: true
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -221,9 +185,6 @@ processors:
       type: long
       ignore_missing: true
       on_failure:
-        - remove:
-            field: openshell.ocsf.dst_endpoint.port
-            ignore_missing: true
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -242,9 +203,6 @@ processors:
       type: ip
       ignore_missing: true
       on_failure:
-        - remove:
-            field: openshell.ocsf.src_endpoint.ip
-            ignore_missing: true
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -255,9 +213,6 @@ processors:
       type: long
       ignore_missing: true
       on_failure:
-        - remove:
-            field: openshell.ocsf.src_endpoint.port
-            ignore_missing: true
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -267,9 +222,6 @@ processors:
       type: ip
       ignore_missing: true
       on_failure:
-        - remove:
-            field: openshell.ocsf.proxy_endpoint.ip
-            ignore_missing: true
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -356,9 +308,6 @@ processors:
       type: long
       ignore_missing: true
       on_failure:
-        - remove:
-            field: openshell.ocsf.http_response.code
-            ignore_missing: true
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -384,9 +333,6 @@ processors:
       type: long
       ignore_missing: true
       on_failure:
-        - remove:
-            field: openshell.ocsf.http_request.url.port
-            ignore_missing: true
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
