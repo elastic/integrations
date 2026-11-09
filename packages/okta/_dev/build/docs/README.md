@@ -21,7 +21,7 @@ The System Log identifies the actor of each event by its Okta id, login and disp
 - `user.id`: the Okta user id (for example `00u1abvz4pYqdM8ms4x6`) of the actor. It is set only when `okta.actor.type` is `User`, and it holds the same value as `user.id` in the [Okta Entity Analytics](https://www.elastic.co/docs/reference/integrations/entityanalytics_okta) integration.
 - `user.name`, `source.user.name`, `client.user.name`: the actor's login (`okta.actor.alternate_id`).
 - `user.email`, `source.user.email`, `client.user.email`: a copy of the actor's login when the login contains `@`. The System Log does not include the user's primary email, so this value is the login and can differ from the primary email (`profile.email`) that Okta Entity Analytics stores in `user.email`.
-- `user.target.id` and `user.target.email`: the Okta user id and the login of the first target user, with the same caveat for `user.target.email`.
+- `user.target.id`: the Okta user id of the first target of type `User`.
 - `client.user.id`, `source.user.id`: the actor's Okta id for every actor type, including apps and system principals.
 
 ## Types Of Authentication
