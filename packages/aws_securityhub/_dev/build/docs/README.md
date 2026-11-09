@@ -45,6 +45,8 @@ The credentials must have permission to perform the **securityhub:GetFindings** 
 
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
+The **finding** data stream signs its requests with the CEL input's `auth.aws` option, which requires Elastic Agent 8.19.15 or later on 8.19, or 9.3.0 or later. Older agents send unsigned requests and AWS rejects them, so upgrade those agents before you add this integration to their policy.
+
 Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
 
 ### Elastic Managed enabled integration
