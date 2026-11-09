@@ -23,15 +23,19 @@ The Okta Entity Analytics integration collects two types of data: user and devic
 
 Elastic Agent must be installed for standard deployments. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
-The minimum **kibana.version** required is **9.5.0**, and the minimum Elastic Agent version is **9.5.0**.
+The minimum **kibana.version** required is **9.5.0**.
 
 ## Setup
 
-### Elastic Managed deployment
+### Elastic Managed enabled integration
 
-This integration supports Elastic Managed deployment, where the collection agent runs in Elastic's cloud rather than inside your network. The Okta API is a public HTTPS endpoint, so no special connectivity configuration is required.
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-When using Elastic Managed deployment, the **JWK file** authentication option is not available because it relies on a file on the agent's local filesystem. Use **API token** or **JWK JSON** (inline key) authentication instead.
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
+
+The Okta API is a public HTTPS endpoint, so no special connectivity configuration is required.
+
+When using an Elastic Managed integration, the **JWK file** authentication option is not available because it relies on a file on the agent's local filesystem. Use **API token** or **JWK JSON** (inline key) authentication instead.
 
 ### Collect data from Okta
 
@@ -72,7 +76,7 @@ The Okta provider periodically contacts the Okta API, retrieving updates for use
 
 Fetching and shipping updates occurs in one of two processes: **full synchronizations** and **incremental updates**. Full synchronizations send the entire list of users and devices in state. Incremental updates send only records that changed since the last sync. Changes include metadata updates, additions, and deletions. By default, full synchronizations occur every 24 hours and incremental updates occur every 15 minutes. These intervals may be customized to suit your use case.
 
-By default this integration uses **minimal-state sync**, which routes user and device documents directly to the `user` and `device` data streams. Existing policies are updated to use minimal-state sync on upgrade.
+By default this integration uses **minimal-state sync**, which routes user and device documents directly to the `user` and `device` data streams. Existing policies are updated to use minimal-state sync on upgrade. Minimal-state sync requires Elastic Agent 9.5.0 or later; older agents use the legacy sync.
 
 This integration provides an **asset inventory**, a point-in-time snapshot of which users and devices exist and their current properties. It does not provide an audit trail of who changed what, or when. If you need to track administrative changes to Okta objects, use the [Okta integration's](https://docs.elastic.co/integrations/okta) system log data stream, which collects the [Okta System Log](https://developer.okta.com/docs/reference/api/system-log/).
 

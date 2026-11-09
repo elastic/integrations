@@ -97,6 +97,17 @@ processors:
       field: event.action
       copy_from: kubernetes.audit.verb
       ignore_empty_value: true
+  - script:
+      tag: script_gke_event_action
+      description: Derives event.action from the last segment of the GKE protoPayload.methodName (e.g. io.k8s.core.v1.secrets.get -> get).
+      lang: painless
+      if: ctx.event?.action == null && ctx.kubernetes?.audit?.protoPayload?.methodName instanceof String
+      source: >-
+        String[] parts = ctx.kubernetes.audit.protoPayload.methodName.splitOnToken('.');
+        String action = parts[parts.length - 1];
+        if (action != null && action != '') {
+          ctx.event.action = action;
+        }
   - rename:
       field: kubernetes.audit.insertId
       target_field: kubernetes.audit.auditID
@@ -166,6 +177,43 @@ processors:
       type: ip
       ignore_failure: true
       ignore_missing: true
+  # For GKE logs
+  - set:
+      tag: set_user_name_from_gke
+      if: ctx.kubernetes?.audit?.protoPayload?.authenticationInfo?.principalEmail != null
+      field: user.name
+      copy_from: kubernetes.audit.protoPayload.authenticationInfo.principalEmail
+      ignore_empty_value: true
+      override: false
+  - set:
+      tag: set_user_email_from_gke
+      if: ctx.kubernetes?.audit?.protoPayload?.authenticationInfo?.principalEmail instanceof String && ctx.kubernetes.audit.protoPayload.authenticationInfo.principalEmail.contains('@')
+      field: user.email
+      copy_from: kubernetes.audit.protoPayload.authenticationInfo.principalEmail
+      ignore_empty_value: true
+      override: false
+  - set:
+      tag: set_user_id_from_gke
+      if: ctx.kubernetes?.audit?.protoPayload?.authenticationInfo?.principalSubject != null
+      field: user.id
+      copy_from: kubernetes.audit.protoPayload.authenticationInfo.principalSubject
+      ignore_empty_value: true
+      override: false
+  - set:
+      tag: set_user_agent_original_from_gke
+      if: ctx.kubernetes?.audit?.protoPayload?.requestMetadata?.callerSuppliedUserAgent != null
+      field: user_agent.original
+      copy_from: kubernetes.audit.protoPayload.requestMetadata.callerSuppliedUserAgent
+      ignore_empty_value: true
+      override: false
+  - convert:
+      tag: convert_source_ip_from_gke
+      if: ctx.source?.ip == null && ctx.kubernetes?.audit?.protoPayload?.requestMetadata?.callerIp != null
+      field: kubernetes.audit.protoPayload.requestMetadata.callerIp
+      target_field: source.ip
+      type: ip
+      ignore_failure: true
+      ignore_missing: true
   - set:
       if: ctx.source?.ip != null
       field: client.ip
@@ -198,17 +246,61 @@ processors:
       copy_from: kubernetes.audit.objectRef.name
       ignore_empty_value: true
   # For GKE logs
-  - set:
-      if: ctx.kubernetes?.audit?.protoPayload?.resourceName != null
-      field: orchestrator.resource.name
-      copy_from: kubernetes.audit.protoPayload.resourceName
-      ignore_empty_value: true
-      override: false
-  - set:
-      if: ctx.kubernetes?.audit?.resource?.type != null
-      field: orchestrator.resource.type
-      copy_from: kubernetes.audit.resource.type
-      ignore_empty_value: true
+  - script:
+      tag: script_parse_gke_resource_name
+      description: >-
+        Parses protoPayload.resourceName, formatted as
+        {group}/{version}/[namespaces/{namespace}/]{resource}[/{name}[/{subresource}]],
+        into the orchestrator fields. Non-resource requests (methodName io.k8s.{verb}, e.g. readyz or API discovery paths) are skipped.
+      lang: painless
+      if: ctx.kubernetes?.audit?.protoPayload?.resourceName instanceof String && ctx.kubernetes?.audit?.objectRef == null && !(ctx.kubernetes?.audit?.protoPayload?.methodName instanceof String && ctx.kubernetes.audit.protoPayload.methodName =~ /^io\.k8s\.[a-z]+$/)
+      source: >-
+        String[] p = ctx.kubernetes.audit.protoPayload.resourceName.splitOnToken('/');
+        if (p.length < 3) {
+          return;
+        }
+        String type = null;
+        String name = null;
+        String ns = null;
+        if (p[2] == 'namespaces') {
+          if (p.length == 3) {
+            type = 'namespaces';
+          } else if (p.length == 4 || p[4] == 'status' || p[4] == 'finalize') {
+            type = 'namespaces';
+            name = p[3];
+            ns = p[3];
+          } else {
+            ns = p[3];
+            type = p[4];
+            if (p.length > 5) {
+              name = p[5];
+            }
+          }
+        } else {
+          type = p[2];
+          if (p.length > 3) {
+            name = p[3];
+          }
+        }
+        if (ctx.orchestrator.api_version == null && p[1] != '') {
+          ctx.orchestrator.api_version = (p[0] == 'core' || p[0] == '') ? p[1] : p[0] + '/' + p[1];
+        }
+        if (ns != null && ns != '') {
+          ctx.orchestrator.namespace = ns;
+        }
+        if ((type != null && type != '') || (name != null && name != '')) {
+          Map res = ctx.orchestrator.resource;
+          if (res == null) {
+            res = new HashMap();
+            ctx.orchestrator.resource = res;
+          }
+          if (type != null && type != '') {
+            res.type = type;
+          }
+          if (name != null && name != '') {
+            res.name = name;
+          }
+        }
   - set:
       if: ctx.kubernetes?.audit?.resource?.labels?.cluster_name != null
       field: orchestrator.cluster.name
@@ -246,6 +338,24 @@ processors:
       value: "{{{kubernetes.audit.user.username}}}"
       allow_duplicates: false
       if: ctx.kubernetes?.audit?.user?.username != null
+  - append:
+      tag: append_related_user_name_gke
+      field: related.user
+      value: "{{{kubernetes.audit.protoPayload.authenticationInfo.principalEmail}}}"
+      allow_duplicates: false
+      if: ctx.kubernetes?.audit?.protoPayload?.authenticationInfo?.principalEmail != null
+  - append:
+      tag: append_related_user_id_gke
+      field: related.user
+      value: "{{{kubernetes.audit.protoPayload.authenticationInfo.principalSubject}}}"
+      allow_duplicates: false
+      if: ctx.kubernetes?.audit?.protoPayload?.authenticationInfo?.principalSubject != null
+  - append:
+      tag: append_related_source_ip_string
+      field: related.ip
+      value: "{{{source.ip}}}"
+      allow_duplicates: false
+      if: ctx.source?.ip instanceof String
   - foreach:
       field: source.ip
       if: ctx.source?.ip != null && ctx.source.ip instanceof List
