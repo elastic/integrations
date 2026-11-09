@@ -33,6 +33,11 @@ The ProjectDiscovery integration collects the following types of data:
 - Find vulnerabilities in the Elastic Security Findings page by using the `security_solution-projectdiscovery.vulnerability_latest` index.
 - Enrich findings with asset context (host, IP, technologies, TLS, cloud provider) by using ES|QL `LOOKUP JOIN`.
 - Monitor remediation progress through the ProjectDiscovery vulnerability status (`open`, `fixed`, `false_positive`, and others).
+- Group findings and assets by root domain with `server.registered_domain`. For example, `codebox.example.co.uk` results in `example.co.uk`.
+
+### Root domain fields
+
+Both data streams split the host name (`host.name`, or `url.domain` when the host name is missing or is not a domain name) into `server.domain`, `server.registered_domain`, `server.subdomain` and `server.top_level_domain`. The split uses the public suffix list, so multi-part suffixes such as `co.uk` are handled correctly. IP addresses and names without a public suffix do not populate these fields.
 
 ## What do I need to use this integration?
 
@@ -137,7 +142,7 @@ The integration installs two transforms:
 
 Both destination indices use lookup mode, so you can join them in ES|QL. Findings reference their asset through `projectdiscovery.vulnerability.asset_metadata.id`, which matches `entity.id` in the asset index.
 
-`LOOKUP JOIN` replaces every column that also exists in the lookup index, including `@timestamp`, `event.*`, `host.*`, `url.*`, `tls.*` and `cloud.*`. When no asset matches, these columns become `null`. Copy the finding columns you need under new names and keep only those before the join:
+`LOOKUP JOIN` replaces every column that also exists in the lookup index, including `@timestamp`, `event.*`, `host.*`, `server.*`, `url.*`, `tls.*` and `cloud.*`. When no asset matches, these columns become `null`. Copy the finding columns you need under new names and keep only those before the join:
 
 ```esql
 FROM logs-projectdiscovery.vulnerability-*

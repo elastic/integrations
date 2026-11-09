@@ -34,6 +34,11 @@ The ProjectDiscovery integration collects the following types of data:
 - Find vulnerabilities in the Elastic Security Findings page by using the `security_solution-projectdiscovery.vulnerability_latest` index.
 - Enrich findings with asset context (host, IP, technologies, TLS, cloud provider) by using ES|QL `LOOKUP JOIN`.
 - Monitor remediation progress through the ProjectDiscovery vulnerability status (`open`, `fixed`, `false_positive`, and others).
+- Group findings and assets by root domain with `server.registered_domain`. For example, `codebox.example.co.uk` results in `example.co.uk`.
+
+### Root domain fields
+
+Both data streams split the host name (`host.name`, or `url.domain` when the host name is missing or is not a domain name) into `server.domain`, `server.registered_domain`, `server.subdomain` and `server.top_level_domain`. The split uses the public suffix list, so multi-part suffixes such as `co.uk` are handled correctly. IP addresses and names without a public suffix do not populate these fields.
 
 ## What do I need to use this integration?
 
@@ -163,7 +168,7 @@ The integration installs two transforms:
 
 Both destination indices use lookup mode, so you can join them in ES|QL. Findings reference their asset through `projectdiscovery.vulnerability.asset_metadata.id`, which matches `entity.id` in the asset index.
 
-`LOOKUP JOIN` replaces every column that also exists in the lookup index, including `@timestamp`, `event.*`, `host.*`, `url.*`, `tls.*` and `cloud.*`. When no asset matches, these columns become `null`. Copy the finding columns you need under new names and keep only those before the join:
+`LOOKUP JOIN` replaces every column that also exists in the lookup index, including `@timestamp`, `event.*`, `host.*`, `server.*`, `url.*`, `tls.*` and `cloud.*`. When no asset matches, these columns become `null`. Copy the finding columns you need under new names and keep only those before the join:
 
 ```esql
 FROM logs-projectdiscovery.vulnerability-*
@@ -310,6 +315,10 @@ The `vulnerability` data stream provides Nuclei vulnerability findings from Proj
 | related.ip | All of the IPs seen on your event. | ip |
 | resource.id | Identifier of the scanned resource. The ProjectDiscovery asset ID when available, otherwise the scan target. | keyword |
 | resource.name | Name of the scanned resource (the scan target). | keyword |
+| server.domain | The domain name of the server system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| server.registered_domain | The highest registered server domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (https://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
+| server.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
+| server.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (https://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
@@ -346,24 +355,24 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2026-04-01T12:00:00.420Z",
     "agent": {
-        "ephemeral_id": "5e877589-6f3b-4466-8ec4-70944a045ded",
-        "id": "8a702c97-ead5-4c70-8fd3-d80054fc489b",
-        "name": "elastic-agent-76665",
+        "ephemeral_id": "27473fa6-f8df-40aa-bb13-fac3afd5ee8f",
+        "id": "01c42930-4161-40be-91e5-dae8bc08c563",
+        "name": "elastic-agent-11358",
         "type": "filebeat",
-        "version": "9.5.5"
+        "version": "9.5.6"
     },
     "data_stream": {
         "dataset": "projectdiscovery.vulnerability",
-        "namespace": "64991",
+        "namespace": "49234",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "8a702c97-ead5-4c70-8fd3-d80054fc489b",
+        "id": "01c42930-4161-40be-91e5-dae8bc08c563",
         "snapshot": false,
-        "version": "9.5.5"
+        "version": "9.5.6"
     },
     "event": {
         "agent_id_status": "verified",
@@ -372,7 +381,7 @@ An example event for `vulnerability` looks as following:
         ],
         "dataset": "projectdiscovery.vulnerability",
         "id": "d7e0000000000000000e",
-        "ingested": "2026-11-03T00:15:56Z",
+        "ingested": "2026-11-09T11:23:54Z",
         "kind": "state",
         "module": "projectdiscovery",
         "original": "{\"created_at\":\"2026-03-15T09:00:00.98765\",\"description\":\"Weak TLS cipher suites are supported by the server.\",\"event\":[{\"extracted-results\":[\"[tls10 TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA]\"],\"host\":\"mail.example.com\",\"info\":{\"author\":[\"erin-p\"],\"metadata\":{\"max-request\":4},\"name\":\"Weak Cipher Suites Detection\",\"reference\":[\"https://www.example.com/tls-cipher-guidance\"],\"severity\":\"medium\",\"tags\":[\"ssl\",\"tls\",\"misconfig\"]},\"ip\":\"198.51.100.50\",\"matched-at\":\"mail.example.com:443\",\"matcher-name\":\"tls-1.0\",\"matcher-status\":true,\"port\":\"443\",\"template-id\":\"weak-cipher-suites\",\"template-path\":\"/ops/ssl/weak-cipher-suites.yaml\",\"timestamp\":\"2026-04-01T11:59:48.5012Z\",\"type\":\"ssl\"}],\"impact\":\"\",\"is_internal\":false,\"labels\":null,\"matcher_status\":true,\"port\":443,\"remediation\":\"Disable weak cipher suites.\",\"result_type\":\"scan\",\"scan_id\":\"d2o2aaaabbbbccccdd10\",\"target\":\"mail.example.com\",\"template_encoded\":\"\",\"template_id\":\"weak-cipher-suites\",\"template_path\":\"/ops/ssl/weak-cipher-suites.yaml\",\"template_url\":\"https://cloud.projectdiscovery.io/public/weak-cipher-suites\",\"updated_at\":\"2026-04-01T12:00:00.4201\",\"vuln_hash\":\"0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e\",\"vuln_id\":\"d7e0000000000000000e\",\"vuln_status\":\"triaged\"}",
@@ -403,6 +412,9 @@ An example event for `vulnerability` looks as following:
     },
     "input": {
         "type": "cel"
+    },
+    "labels": {
+        "is_transform_source": "true"
     },
     "message": "Weak Cipher Suites Detection",
     "observer": {
@@ -464,6 +476,12 @@ An example event for `vulnerability` looks as following:
     "resource": {
         "id": "mail.example.com",
         "name": "mail.example.com"
+    },
+    "server": {
+        "domain": "mail.example.com",
+        "registered_domain": "example.com",
+        "subdomain": "mail",
+        "top_level_domain": "com"
     },
     "tags": [
         "preserve_original_event",
@@ -585,7 +603,11 @@ The `asset` data stream provides the asset inventory discovered by ProjectDiscov
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
+| server.domain | The domain name of the server system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | server.port | Port of the server. | long |
+| server.registered_domain | The highest registered server domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (https://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
+| server.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
+| server.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (https://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | tls.server.x509.alternative_names | List of subject alternative names (SAN). Name types vary by certificate authority and certificate type but commonly contain IP addresses, DNS names (and wildcards), and email addresses. | keyword |
 | tls.server.x509.issuer.organization | List of organizations (O) of issuing certificate authority. | keyword |
@@ -615,24 +637,24 @@ An example event for `asset` looks as following:
 {
     "@timestamp": "2026-03-01T12:00:00.250Z",
     "agent": {
-        "ephemeral_id": "75f78861-7fe9-4009-bbf2-079abb0db529",
-        "id": "aeb53559-7f57-4ec4-9283-7e88c499ec2b",
-        "name": "elastic-agent-75763",
+        "ephemeral_id": "2b86f9c1-4781-4bee-a68c-a87ec71fe711",
+        "id": "66974224-6241-4ce2-9f34-ef70de3abba3",
+        "name": "elastic-agent-79073",
         "type": "filebeat",
-        "version": "9.5.5"
+        "version": "9.5.6"
     },
     "data_stream": {
         "dataset": "projectdiscovery.asset",
-        "namespace": "97042",
+        "namespace": "36573",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "aeb53559-7f57-4ec4-9283-7e88c499ec2b",
+        "id": "66974224-6241-4ce2-9f34-ef70de3abba3",
         "snapshot": false,
-        "version": "9.5.5"
+        "version": "9.5.6"
     },
     "entity": {
         "id": "4204700004",
@@ -651,7 +673,7 @@ An example event for `asset` looks as following:
         ],
         "dataset": "projectdiscovery.asset",
         "id": "4204700004",
-        "ingested": "2026-11-03T00:36:49Z",
+        "ingested": "2026-11-09T11:23:07Z",
         "kind": "asset",
         "module": "projectdiscovery",
         "original": "{\"asset_hash\":\"c3d4e5f60718293a4b5c6d7e8f90a1b2\",\"created_at\":\"2025-10-15T15:45:00.5Z\",\"domain_name\":\"example.com\",\"enumeration_id\":\"d0abcdefgh1234567890\",\"enumeration_name\":\"example.com\",\"host\":\"mail.example.com\",\"id\":4204700004,\"ip\":[\"192.0.2.25\"],\"is_new\":false,\"name\":\"mail.example.com\",\"port\":7785,\"source_type\":\"dns_passive\",\"technology_details\":{},\"tls_not_after\":\"0001-01-01T00:00:00Z\",\"tls_not_before\":\"0001-01-01T00:00:00Z\",\"updated_at\":\"2026-03-01T12:00:00.25Z\"}",
@@ -684,6 +706,9 @@ An example event for `asset` looks as following:
     "input": {
         "type": "cel"
     },
+    "labels": {
+        "is_transform_source": "true"
+    },
     "observer": {
         "product": "ProjectDiscovery Cloud Platform",
         "vendor": "ProjectDiscovery"
@@ -713,7 +738,11 @@ An example event for `asset` looks as following:
         ]
     },
     "server": {
-        "port": 7785
+        "domain": "mail.example.com",
+        "port": 7785,
+        "registered_domain": "example.com",
+        "subdomain": "mail",
+        "top_level_domain": "com"
     },
     "tags": [
         "preserve_original_event",
@@ -821,7 +850,11 @@ An example event for `asset` looks as following:
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
+| server.domain | The domain name of the server system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | server.port | Port of the server. | long |
+| server.registered_domain | The highest registered server domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (https://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
+| server.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
+| server.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (https://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | tls.server.x509.alternative_names | List of subject alternative names (SAN). Name types vary by certificate authority and certificate type but commonly contain IP addresses, DNS names (and wildcards), and email addresses. | keyword |
 | tls.server.x509.issuer.organization | List of organizations (O) of issuing certificate authority. | keyword |
@@ -975,6 +1008,10 @@ An example event for `asset` looks as following:
 | related.ip | All of the IPs seen on your event. | ip |
 | resource.id | Identifier of the scanned resource. The ProjectDiscovery asset ID when available, otherwise the scan target. | keyword |
 | resource.name | Name of the scanned resource (the scan target). | keyword |
+| server.domain | The domain name of the server system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| server.registered_domain | The highest registered server domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (https://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
+| server.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
+| server.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (https://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
