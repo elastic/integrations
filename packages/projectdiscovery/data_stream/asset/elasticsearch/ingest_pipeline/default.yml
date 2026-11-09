@@ -277,6 +277,37 @@ processors:
           ctx.cloud.provider = provider;
         }
 
+  # Autonomous system.
+  - gsub:
+      field: json.asn.as_number
+      tag: gsub_as_number
+      target_field: server.as.number
+      pattern: '^[Aa][Ss]'
+      replacement: ''
+      ignore_missing: true
+      description: The asset is the server side of the probe. ECS has no `host.as`, so the asset autonomous system goes to `server.as`.
+  - convert:
+      field: server.as.number
+      tag: convert_server_as_number
+      type: long
+      ignore_missing: true
+      description: An unparseable AS number is not an ingest error; the raw value is kept in the vendor `as_number` field.
+      on_failure:
+        - remove:
+            field: server.as.number
+            tag: remove_invalid_server_as_number
+            ignore_missing: true
+  - remove:
+      field: json.asn.as_number
+      tag: remove_as_number
+      ignore_missing: true
+      if: ctx.server?.as?.number != null
+  - rename:
+      field: json.asn.as_name
+      tag: rename_as_name
+      target_field: server.as.organization.name
+      ignore_missing: true
+
   # URL, service port and HTTP.
   - uri_parts:
       field: entity.name

@@ -26,7 +26,7 @@ Two transforms keep the latest state of each finding and each asset in lookup mo
 The ProjectDiscovery integration collects the following types of data:
 
 * `vulnerability`: Nuclei findings from `GET /v1/scans/results`, including the template metadata, classification (CVE, CWE, CVSS, EPSS), the vulnerability status and the metadata of the affected asset.
-* `asset`: Discovered assets from `GET /v1/asset/enumerate/contents`, including hosts, IPs, ports, technologies, TLS certificates and cloud provider. Assets are ingested as entities (`event.kind: asset`, `entity.*`).
+* `asset`: Discovered assets from `GET /v1/asset/enumerate/contents`, including hosts, IPs, autonomous systems, ports, technologies, TLS certificates and cloud provider. Assets are ingested as entities (`event.kind: asset`, `entity.*`).
 
 ### Supported use cases
 
@@ -35,6 +35,7 @@ The ProjectDiscovery integration collects the following types of data:
 - Enrich findings with asset context (host, IP, technologies, TLS, cloud provider) by using ES|QL `LOOKUP JOIN`.
 - Monitor remediation progress through the ProjectDiscovery vulnerability status (`open`, `fixed`, `false_positive`, and others).
 - Group findings and assets by root domain with `server.registered_domain`. For example, `codebox.example.co.uk` results in `example.co.uk`.
+- Group findings and assets by network owner with `server.as.number` and `server.as.organization.name`.
 
 ### Root domain fields
 
@@ -225,8 +226,7 @@ The `vulnerability` data stream provides Nuclei vulnerability findings from Proj
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 | package.name | Package name | keyword |
 | projectdiscovery.vulnerability.asset_metadata.asn.as_country | Country code of the autonomous system. | keyword |
-| projectdiscovery.vulnerability.asset_metadata.asn.as_name | Autonomous system name. | keyword |
-| projectdiscovery.vulnerability.asset_metadata.asn.as_number | Autonomous system number, prefixed with `AS`. | keyword |
+| projectdiscovery.vulnerability.asset_metadata.asn.as_number | Autonomous system number as reported, prefixed with `AS`. Only kept when it can't be parsed into `server.as.number`. | keyword |
 | projectdiscovery.vulnerability.asset_metadata.asn.as_range | IP ranges announced by the autonomous system. | keyword |
 | projectdiscovery.vulnerability.asset_metadata.cdn_name | CDN serving the asset. | keyword |
 | projectdiscovery.vulnerability.asset_metadata.chain_status_codes | Status codes of the redirect chain. | keyword |
@@ -244,7 +244,7 @@ The `vulnerability` data stream provides Nuclei vulnerability findings from Proj
 | projectdiscovery.vulnerability.asset_metadata.labels | Labels of the asset. | keyword |
 | projectdiscovery.vulnerability.asset_metadata.name | Asset name, usually the probed URL. | keyword |
 | projectdiscovery.vulnerability.asset_metadata.port | Asset port. | long |
-| projectdiscovery.vulnerability.asset_metadata.redirect_location | Redirect location returned when probing the asset. | keyword |
+| projectdiscovery.vulnerability.asset_metadata.redirect_location | Redirect location returned when probing the asset. | wildcard |
 | projectdiscovery.vulnerability.asset_metadata.screenshot_path | Relative path of the asset screenshot. | keyword |
 | projectdiscovery.vulnerability.asset_metadata.source.metadata.source | Discovery source detail. | keyword |
 | projectdiscovery.vulnerability.asset_metadata.source.source | Discovery source type. | keyword |
@@ -260,8 +260,8 @@ The `vulnerability` data stream provides Nuclei vulnerability findings from Proj
 | projectdiscovery.vulnerability.asset_metadata.webserver | Web server of the asset. | keyword |
 | projectdiscovery.vulnerability.created_at | Time the finding was first detected (UTC). | date |
 | projectdiscovery.vulnerability.event.curl_command | Equivalent curl command for the request. Can contain credentials of the scanned application. Not indexed. | keyword |
-| projectdiscovery.vulnerability.event.error | Error reported by Nuclei for the result. | keyword |
-| projectdiscovery.vulnerability.event.extracted_results | Values extracted by the template extractors. | keyword |
+| projectdiscovery.vulnerability.event.error | Error reported by Nuclei for the result. | match_only_text |
+| projectdiscovery.vulnerability.event.extracted_results | Values extracted by the template extractors. | wildcard |
 | projectdiscovery.vulnerability.event.extractor_name | Name of the extractor that produced results. | keyword |
 | projectdiscovery.vulnerability.event.host | Host the template was run against. | keyword |
 | projectdiscovery.vulnerability.event.info.author | Authors of the template. | keyword |
@@ -285,7 +285,7 @@ The `vulnerability` data stream provides Nuclei vulnerability findings from Proj
 | projectdiscovery.vulnerability.event.info.remediation | Remediation described by the template. | match_only_text |
 | projectdiscovery.vulnerability.event.info.severity | Severity of the template as reported by Nuclei (info, low, medium, high, critical or unknown). | keyword |
 | projectdiscovery.vulnerability.event.info.tags | Tags of the template. | keyword |
-| projectdiscovery.vulnerability.event.matched_at | URL or endpoint (`host:port`) where the match occurred. | keyword |
+| projectdiscovery.vulnerability.event.matched_at | URL or endpoint (`host:port`) where the match occurred. URLs are also parsed into `url.\*`. | wildcard |
 | projectdiscovery.vulnerability.event.matcher_name | Name of the matcher that matched, for multi-matcher templates. | keyword |
 | projectdiscovery.vulnerability.event.matcher_status | Whether the matcher matched. | boolean |
 | projectdiscovery.vulnerability.event.path | Request path. | keyword |
@@ -315,6 +315,9 @@ The `vulnerability` data stream provides Nuclei vulnerability findings from Proj
 | related.ip | All of the IPs seen on your event. | ip |
 | resource.id | Identifier of the scanned resource. The ProjectDiscovery asset ID when available, otherwise the scan target. | keyword |
 | resource.name | Name of the scanned resource (the scan target). | keyword |
+| server.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| server.as.organization.name | Organization name. | keyword |
+| server.as.organization.name.text | Multi-field of `server.as.organization.name`. | match_only_text |
 | server.domain | The domain name of the server system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | server.registered_domain | The highest registered server domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (https://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
 | server.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
@@ -560,8 +563,7 @@ The `asset` data stream provides the asset inventory discovered by ProjectDiscov
 | observer.product | The product name of the observer. | keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 | projectdiscovery.asset.asn.as_country | Country code of the autonomous system. | keyword |
-| projectdiscovery.asset.asn.as_name | Autonomous system name. | keyword |
-| projectdiscovery.asset.asn.as_number | Autonomous system number, prefixed with `AS`. | keyword |
+| projectdiscovery.asset.asn.as_number | Autonomous system number as reported, prefixed with `AS`. Only kept when it can't be parsed into `server.as.number`. | keyword |
 | projectdiscovery.asset.asn.as_range | IP ranges announced by the autonomous system. | keyword |
 | projectdiscovery.asset.asset_hash | Unique hash of the asset record. | keyword |
 | projectdiscovery.asset.body | Raw HTTP response (status line, headers and body) returned when probing the asset. Can be large. Not indexed. | keyword |
@@ -582,7 +584,7 @@ The `asset` data stream provides the asset inventory discovered by ProjectDiscov
 | projectdiscovery.asset.labels | Labels of the asset. | keyword |
 | projectdiscovery.asset.method | HTTP method used to probe the asset. | keyword |
 | projectdiscovery.asset.port | Port of the asset. `-1` for DNS-only host records. Service ports are also stored in `server.port`. | long |
-| projectdiscovery.asset.redirect_location | Redirect location returned when probing the asset. | keyword |
+| projectdiscovery.asset.redirect_location | Redirect location returned when probing the asset. | wildcard |
 | projectdiscovery.asset.scheme | Scheme of the asset, as reported by the export API. | keyword |
 | projectdiscovery.asset.screenshot_path | Signed URL of the asset screenshot, valid for 24 hours. Not indexed. | keyword |
 | projectdiscovery.asset.source | Discovery sources of the asset, with their metadata. | flattened |
@@ -603,6 +605,9 @@ The `asset` data stream provides the asset inventory discovered by ProjectDiscov
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
+| server.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| server.as.organization.name | Organization name. | keyword |
+| server.as.organization.name.text | Multi-field of `server.as.organization.name`. | match_only_text |
 | server.domain | The domain name of the server system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | server.port | Port of the server. | long |
 | server.registered_domain | The highest registered server domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (https://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
@@ -807,8 +812,7 @@ An example event for `asset` looks as following:
 | observer.product | The product name of the observer. | keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 | projectdiscovery.asset.asn.as_country | Country code of the autonomous system. | keyword |
-| projectdiscovery.asset.asn.as_name | Autonomous system name. | keyword |
-| projectdiscovery.asset.asn.as_number | Autonomous system number, prefixed with `AS`. | keyword |
+| projectdiscovery.asset.asn.as_number | Autonomous system number as reported, prefixed with `AS`. Only kept when it can't be parsed into `server.as.number`. | keyword |
 | projectdiscovery.asset.asn.as_range | IP ranges announced by the autonomous system. | keyword |
 | projectdiscovery.asset.asset_hash | Unique hash of the asset record. | keyword |
 | projectdiscovery.asset.body | Raw HTTP response (status line, headers and body) returned when probing the asset. Can be large. Not indexed. | keyword |
@@ -829,7 +833,7 @@ An example event for `asset` looks as following:
 | projectdiscovery.asset.labels | Labels of the asset. | keyword |
 | projectdiscovery.asset.method | HTTP method used to probe the asset. | keyword |
 | projectdiscovery.asset.port | Port of the asset. `-1` for DNS-only host records. Service ports are also stored in `server.port`. | long |
-| projectdiscovery.asset.redirect_location | Redirect location returned when probing the asset. | keyword |
+| projectdiscovery.asset.redirect_location | Redirect location returned when probing the asset. | wildcard |
 | projectdiscovery.asset.scheme | Scheme of the asset, as reported by the export API. | keyword |
 | projectdiscovery.asset.screenshot_path | Signed URL of the asset screenshot, valid for 24 hours. Not indexed. | keyword |
 | projectdiscovery.asset.source | Discovery sources of the asset, with their metadata. | flattened |
@@ -850,6 +854,9 @@ An example event for `asset` looks as following:
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
+| server.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| server.as.organization.name | Organization name. | keyword |
+| server.as.organization.name.text | Multi-field of `server.as.organization.name`. | match_only_text |
 | server.domain | The domain name of the server system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | server.port | Port of the server. | long |
 | server.registered_domain | The highest registered server domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (https://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
@@ -918,8 +925,7 @@ An example event for `asset` looks as following:
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 | package.name | Package name | keyword |
 | projectdiscovery.vulnerability.asset_metadata.asn.as_country | Country code of the autonomous system. | keyword |
-| projectdiscovery.vulnerability.asset_metadata.asn.as_name | Autonomous system name. | keyword |
-| projectdiscovery.vulnerability.asset_metadata.asn.as_number | Autonomous system number, prefixed with `AS`. | keyword |
+| projectdiscovery.vulnerability.asset_metadata.asn.as_number | Autonomous system number as reported, prefixed with `AS`. Only kept when it can't be parsed into `server.as.number`. | keyword |
 | projectdiscovery.vulnerability.asset_metadata.asn.as_range | IP ranges announced by the autonomous system. | keyword |
 | projectdiscovery.vulnerability.asset_metadata.cdn_name | CDN serving the asset. | keyword |
 | projectdiscovery.vulnerability.asset_metadata.chain_status_codes | Status codes of the redirect chain. | keyword |
@@ -937,7 +943,7 @@ An example event for `asset` looks as following:
 | projectdiscovery.vulnerability.asset_metadata.labels | Labels of the asset. | keyword |
 | projectdiscovery.vulnerability.asset_metadata.name | Asset name, usually the probed URL. | keyword |
 | projectdiscovery.vulnerability.asset_metadata.port | Asset port. | long |
-| projectdiscovery.vulnerability.asset_metadata.redirect_location | Redirect location returned when probing the asset. | keyword |
+| projectdiscovery.vulnerability.asset_metadata.redirect_location | Redirect location returned when probing the asset. | wildcard |
 | projectdiscovery.vulnerability.asset_metadata.screenshot_path | Relative path of the asset screenshot. | keyword |
 | projectdiscovery.vulnerability.asset_metadata.source.metadata.source | Discovery source detail. | keyword |
 | projectdiscovery.vulnerability.asset_metadata.source.source | Discovery source type. | keyword |
@@ -953,8 +959,8 @@ An example event for `asset` looks as following:
 | projectdiscovery.vulnerability.asset_metadata.webserver | Web server of the asset. | keyword |
 | projectdiscovery.vulnerability.created_at | Time the finding was first detected (UTC). | date |
 | projectdiscovery.vulnerability.event.curl_command | Equivalent curl command for the request. Can contain credentials of the scanned application. Not indexed. | keyword |
-| projectdiscovery.vulnerability.event.error | Error reported by Nuclei for the result. | keyword |
-| projectdiscovery.vulnerability.event.extracted_results | Values extracted by the template extractors. | keyword |
+| projectdiscovery.vulnerability.event.error | Error reported by Nuclei for the result. | match_only_text |
+| projectdiscovery.vulnerability.event.extracted_results | Values extracted by the template extractors. | wildcard |
 | projectdiscovery.vulnerability.event.extractor_name | Name of the extractor that produced results. | keyword |
 | projectdiscovery.vulnerability.event.host | Host the template was run against. | keyword |
 | projectdiscovery.vulnerability.event.info.author | Authors of the template. | keyword |
@@ -978,7 +984,7 @@ An example event for `asset` looks as following:
 | projectdiscovery.vulnerability.event.info.remediation | Remediation described by the template. | match_only_text |
 | projectdiscovery.vulnerability.event.info.severity | Severity of the template as reported by Nuclei (info, low, medium, high, critical or unknown). | keyword |
 | projectdiscovery.vulnerability.event.info.tags | Tags of the template. | keyword |
-| projectdiscovery.vulnerability.event.matched_at | URL or endpoint (`host:port`) where the match occurred. | keyword |
+| projectdiscovery.vulnerability.event.matched_at | URL or endpoint (`host:port`) where the match occurred. URLs are also parsed into `url.\*`. | wildcard |
 | projectdiscovery.vulnerability.event.matcher_name | Name of the matcher that matched, for multi-matcher templates. | keyword |
 | projectdiscovery.vulnerability.event.matcher_status | Whether the matcher matched. | boolean |
 | projectdiscovery.vulnerability.event.path | Request path. | keyword |
@@ -1008,6 +1014,9 @@ An example event for `asset` looks as following:
 | related.ip | All of the IPs seen on your event. | ip |
 | resource.id | Identifier of the scanned resource. The ProjectDiscovery asset ID when available, otherwise the scan target. | keyword |
 | resource.name | Name of the scanned resource (the scan target). | keyword |
+| server.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| server.as.organization.name | Organization name. | keyword |
+| server.as.organization.name.text | Multi-field of `server.as.organization.name`. | match_only_text |
 | server.domain | The domain name of the server system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | server.registered_domain | The highest registered server domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (https://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
 | server.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |

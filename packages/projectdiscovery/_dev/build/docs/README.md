@@ -25,7 +25,7 @@ Two transforms keep the latest state of each finding and each asset in lookup mo
 The ProjectDiscovery integration collects the following types of data:
 
 * `vulnerability`: Nuclei findings from `GET /v1/scans/results`, including the template metadata, classification (CVE, CWE, CVSS, EPSS), the vulnerability status and the metadata of the affected asset.
-* `asset`: Discovered assets from `GET /v1/asset/enumerate/contents`, including hosts, IPs, ports, technologies, TLS certificates and cloud provider. Assets are ingested as entities (`event.kind: asset`, `entity.*`).
+* `asset`: Discovered assets from `GET /v1/asset/enumerate/contents`, including hosts, IPs, autonomous systems, ports, technologies, TLS certificates and cloud provider. Assets are ingested as entities (`event.kind: asset`, `entity.*`).
 
 ### Supported use cases
 
@@ -34,6 +34,7 @@ The ProjectDiscovery integration collects the following types of data:
 - Enrich findings with asset context (host, IP, technologies, TLS, cloud provider) by using ES|QL `LOOKUP JOIN`.
 - Monitor remediation progress through the ProjectDiscovery vulnerability status (`open`, `fixed`, `false_positive`, and others).
 - Group findings and assets by root domain with `server.registered_domain`. For example, `codebox.example.co.uk` results in `example.co.uk`.
+- Group findings and assets by network owner with `server.as.number` and `server.as.organization.name`.
 
 ### Root domain fields
 
