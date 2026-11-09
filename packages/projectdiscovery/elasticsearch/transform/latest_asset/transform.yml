@@ -1,0 +1,54 @@
+# Use of "*" to use all namespaces defined.
+source:
+  index:
+    - "logs-projectdiscovery.asset-*"
+  query:
+    bool:
+      must_not:
+        - exists:
+            field: error.message
+        - term:
+            event.kind: pipeline_error
+        - terms:
+            _tier:
+              - data_frozen
+              - data_cold
+# The version suffix on the dest.index should be incremented if a breaking
+# change is made to the index mapping or settings (for example index.mode).
+# You must also bump the fleet_transform_version for any change to this
+# transform configuration to take effect.
+dest:
+  index: "logs-projectdiscovery_latest.dest_asset-1"
+  aliases:
+    - alias: "logs-projectdiscovery_latest.asset"
+      move_on_creation: true
+latest:
+  unique_key:
+    - event.dataset
+    - entity.id
+  sort: "@timestamp"
+description: >-
+  Latest ProjectDiscovery assets. As assets are re-enumerated, this transform keeps only the latest state of each asset in a lookup index. Assets not seen for 3 days are removed.
+frequency: 5m
+settings:
+  # This is required to prevent the transform from clobbering the Fleet-managed mappings.
+  deduce_mappings: false
+  unattended: true
+sync:
+  time:
+    field: "event.ingested"
+    # Updated to 120s because of refresh delay in Serverless. With default 60s,
+    # sometimes transform wouldn't process all documents.
+    delay: 120s
+# Assets that ProjectDiscovery has not seen recently are purged by the tenant's
+# asset policies and are never re-emitted, so last-seen age is the only removal signal.
+retention_policy:
+  time:
+    field: "entity.last_seen_timestamp"
+    max_age: 3d
+_meta:
+  managed: true
+  # Bump this version to delete, reinstall, and restart the transform during
+  # package installation.
+  fleet_transform_version: 0.1.0
+  run_as_kibana_system: false

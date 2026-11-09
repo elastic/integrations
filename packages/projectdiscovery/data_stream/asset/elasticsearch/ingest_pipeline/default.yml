@@ -1,0 +1,518 @@
+---
+description: Pipeline for processing ProjectDiscovery Cloud Platform asset inventory records.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.5.0'
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: json
+      tag: json_event_original
+      if: ctx.event?.original != null
+
+  # Normalization.
+  - script:
+      tag: script_drop_null_empty_values
+      description: Drops null and empty values recursively from the parsed asset.
+      lang: painless
+      if: ctx.json instanceof Map
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx.json);
+  - remove:
+      field:
+        - json.tls_not_before
+      tag: remove_tls_not_before_sentinel
+      description: Removes the `0001-01-01T00:00:00Z` sentinel that the API returns when the asset has no TLS certificate.
+      if: ctx.json?.tls_not_before instanceof String && ctx.json.tls_not_before.startsWith('0001-01-01')
+  - remove:
+      field:
+        - json.tls_not_after
+      tag: remove_tls_not_after_sentinel
+      description: Removes the `0001-01-01T00:00:00Z` sentinel that the API returns when the asset has no TLS certificate.
+      if: ctx.json?.tls_not_after instanceof String && ctx.json.tls_not_after.startsWith('0001-01-01')
+
+  # Categorization and constants.
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: asset
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: host
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: info
+      allow_duplicates: false
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: ProjectDiscovery
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: ProjectDiscovery Cloud Platform
+
+  # Timestamps. Asset timestamps are RFC 3339 in UTC.
+  - date:
+      field: json.updated_at
+      tag: date_updated_at_to_timestamp
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      timezone: UTC
+      if: ctx.json?.updated_at != null
+      on_failure:
+        - remove:
+            field: json.updated_at
+            tag: remove_invalid_updated_at
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_updated_at_error
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.updated_at
+      tag: date_updated_at
+      target_field: json.updated_at
+      formats:
+        - ISO8601
+      timezone: UTC
+      if: ctx.json?.updated_at != null
+  - date:
+      field: json.created_at
+      tag: date_created_at
+      target_field: json.created_at
+      formats:
+        - ISO8601
+      timezone: UTC
+      if: ctx.json?.created_at != null
+      on_failure:
+        - remove:
+            field: json.created_at
+            tag: remove_invalid_created_at
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_created_at_error
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Entity identity.
+  - convert:
+      field: json.id
+      tag: convert_id_to_string
+      type: string
+      ignore_missing: true
+  - set:
+      field: entity.id
+      tag: set_entity_id
+      copy_from: json.id
+      ignore_empty_value: true
+      description: The asset record id is the entity key. It equals `asset_metadata.id` on vulnerability findings.
+  - set:
+      field: event.id
+      tag: set_event_id
+      copy_from: json.id
+      ignore_empty_value: true
+  - rename:
+      field: json.name
+      tag: rename_name_to_entity_name
+      target_field: entity.name
+      ignore_missing: true
+  - set:
+      field: entity.type
+      tag: set_entity_type_host
+      value: [host]
+      description: DNS-only records (`port` is `-1`) describe a host name and its resolved IP addresses.
+      if: >-
+        (ctx.json?.port instanceof Number && ctx.json.port < 0) ||
+        (ctx.json?.port == null && !(ctx.entity?.name instanceof String && ctx.entity.name.contains('://')))
+  - set:
+      field: entity.type
+      tag: set_entity_type_service
+      value: [service]
+      description: Records with a port or a URL describe a network or web service.
+      if: ctx.entity?.type == null
+  - set:
+      field: entity.source
+      tag: set_entity_source
+      value: projectdiscovery
+  - set:
+      field: entity.last_seen_timestamp
+      tag: set_entity_last_seen_timestamp
+      copy_from: '@timestamp'
+      ignore_empty_value: true
+      description: >-
+        Last time a discovery run observed the asset (`updated_at`).
+        Falls back to the collection time when `updated_at` is missing or invalid.
+
+  # Host and cloud.
+  - rename:
+      field: json.host
+      tag: rename_host_to_host_name
+      target_field: host.name
+      if: ctx.json?.host instanceof String && !ctx.json.host.contains('://')
+  - rename:
+      field: json.domain_name
+      tag: rename_domain_name_to_host_domain
+      target_field: host.domain
+      ignore_missing: true
+  - script:
+      tag: script_host_ip
+      description: Moves the resolved IP addresses of the asset into `host.ip`. The listing returns an array, the single-asset API a string.
+      lang: painless
+      if: ctx.json?.ip != null
+      source: |
+        def raw = ctx.json.remove('ip');
+        if (raw instanceof String) {
+          raw = [raw];
+        }
+        List ips = new ArrayList();
+        if (raw instanceof List) {
+          for (def ip : raw) {
+            String s = ip.toString().trim();
+            if (!s.isEmpty() && !ips.contains(s)) {
+              ips.add(s);
+            }
+          }
+        }
+        if (!ips.isEmpty()) {
+          ctx.host = ctx.host == null ? new HashMap() : ctx.host;
+          ctx.host.ip = ips;
+        }
+  - convert:
+      field: host.ip
+      tag: convert_host_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: host.ip
+            tag: remove_invalid_host_ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_host_ip_error
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - geoip:
+      field: host.ip
+      tag: geoip_host_ip
+      target_field: host.geo
+      ignore_missing: true
+      if: ctx.host?.ip != null
+  - script:
+      tag: script_cloud_provider
+      description: >-
+        Sets `cloud.provider` from `cloud_name` (export and single-asset APIs) or infers it from the AS name of the asset.
+        The AS-based value is an inference; the ASN owner is not necessarily the cloud tenancy.
+      lang: painless
+      if: ctx.json?.cloud_name instanceof String || ctx.json?.asn?.as_name instanceof String
+      params:
+        prefixes:
+          google: gcp
+          amazon: aws
+          microsoft: azure
+      source: |
+        String provider = null;
+        for (def candidate : [ctx.json.cloud_name, ctx.json.asn?.as_name]) {
+          if (!(candidate instanceof String)) {
+            continue;
+          }
+          String name = candidate.trim().toLowerCase();
+          for (def e : params.prefixes.entrySet()) {
+            if (name.startsWith(e.getKey())) {
+              provider = e.getValue();
+              break;
+            }
+          }
+          if (provider != null) {
+            break;
+          }
+        }
+        if (provider != null) {
+          ctx.cloud = ctx.cloud == null ? new HashMap() : ctx.cloud;
+          ctx.cloud.provider = provider;
+        }
+
+  # URL, service port and HTTP.
+  - uri_parts:
+      field: entity.name
+      tag: uri_parts_name
+      target_field: url
+      keep_original: true
+      if: ctx.entity?.name instanceof String && ctx.entity.name.contains('://')
+      on_failure:
+        - remove:
+            field: url
+            tag: remove_url_on_failure
+            ignore_missing: true
+  - remove:
+      field: url.path
+      tag: remove_empty_url_path
+      ignore_missing: true
+      if: ctx.url?.path == ''
+  - set:
+      field: entity.sub_type
+      tag: set_entity_sub_type
+      copy_from: url.scheme
+      ignore_empty_value: true
+      if: ctx.url?.scheme != null
+  - set:
+      field: entity.sub_type
+      tag: set_entity_sub_type_from_scheme
+      copy_from: json.scheme
+      ignore_empty_value: true
+      description: The export API reports the scheme separately when `name` is a bare host.
+      if: ctx.entity?.sub_type == null && ctx.json?.scheme instanceof String
+  - set:
+      field: server.port
+      tag: set_server_port
+      copy_from: json.port
+      description: The service port. DNS-only records use `-1`, which is not a port.
+      if: ctx.json?.port instanceof Number && ctx.json.port >= 0
+  - rename:
+      field: json.status_code
+      tag: rename_status_code
+      target_field: http.response.status_code
+      ignore_missing: true
+  - rename:
+      field: json.content_length
+      tag: rename_content_length
+      target_field: http.response.body.bytes
+      ignore_missing: true
+  - convert:
+      field: json.chain_status_codes
+      tag: convert_chain_status_codes_to_string
+      type: string
+      ignore_missing: true
+  - append:
+      field: event.category
+      tag: append_event_category_web
+      value: web
+      allow_duplicates: false
+      if: ctx.http?.response?.status_code != null || ctx.url?.scheme == 'http' || ctx.url?.scheme == 'https'
+  - append:
+      field: event.category
+      tag: append_event_category_network
+      value: network
+      allow_duplicates: false
+      if: ctx.entity?.type instanceof List && ctx.entity.type.contains('service') && !ctx.event.category.contains('web')
+
+  # TLS certificate.
+  - append:
+      field: tls.server.x509.subject.common_name
+      tag: append_tls_subject_cn
+      value: '{{{json.tls_subject_cn}}}'
+      allow_duplicates: false
+      if: ctx.json?.tls_subject_cn instanceof String
+  - rename:
+      field: json.tls_subject_an
+      tag: rename_tls_subject_an
+      target_field: tls.server.x509.alternative_names
+      ignore_missing: true
+  - append:
+      field: tls.server.x509.subject.organization
+      tag: append_tls_subject_org
+      value: '{{{json.tls_subject_org}}}'
+      allow_duplicates: false
+      if: ctx.json?.tls_subject_org instanceof String
+  - append:
+      field: tls.server.x509.issuer.organization
+      tag: append_tls_issuer_org
+      value: '{{{json.tls_issuer_org}}}'
+      allow_duplicates: false
+      if: ctx.json?.tls_issuer_org instanceof String
+  - remove:
+      field:
+        - json.tls_subject_cn
+        - json.tls_subject_org
+        - json.tls_issuer_org
+      tag: remove_moved_tls_fields
+      ignore_missing: true
+  - script:
+      tag: script_tls_serial_number
+      description: Moves the certificate serial number into `tls.server.x509.serial_number` as uppercase hexadecimal without separators, as recommended by ECS.
+      lang: painless
+      if: ctx.json?.tls_serial_number instanceof String
+      source: |
+        String serial = ctx.json.remove('tls_serial_number').replace(':', '').replace(' ', '').toUpperCase();
+        if (!serial.isEmpty()) {
+          ctx.tls = ctx.tls == null ? new HashMap() : ctx.tls;
+          ctx.tls.server = ctx.tls.server == null ? new HashMap() : ctx.tls.server;
+          ctx.tls.server.x509 = ctx.tls.server.x509 == null ? new HashMap() : ctx.tls.server.x509;
+          ctx.tls.server.x509.serial_number = serial;
+        }
+  - date:
+      field: json.tls_not_before
+      tag: date_tls_not_before
+      target_field: tls.server.x509.not_before
+      formats:
+        - ISO8601
+      timezone: UTC
+      if: ctx.json?.tls_not_before != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_tls_not_before_error
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.tls_not_after
+      tag: date_tls_not_after
+      target_field: tls.server.x509.not_after
+      formats:
+        - ISO8601
+      timezone: UTC
+      if: ctx.json?.tls_not_after != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_tls_not_after_error
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field:
+        - json.tls_not_before
+        - json.tls_not_after
+      tag: remove_tls_validity_dates
+      ignore_missing: true
+
+  # Related.
+  - foreach:
+      field: host.ip
+      tag: foreach_host_ip
+      if: ctx.host?.ip instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_host_ip_to_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - script:
+      tag: script_related_hosts
+      description: >-
+        Collects the host name, URL domain, CNAMEs and certificate names of the asset into `related.hosts`.
+        Values that are not host names (for example a certificate common name with spaces) are skipped,
+        and the `*.` prefix of wildcard names is removed.
+      lang: painless
+      source: |
+        List candidates = new ArrayList();
+        if (ctx.host?.name != null) {
+          candidates.add(ctx.host.name);
+        }
+        if (ctx.url?.domain != null) {
+          candidates.add(ctx.url.domain);
+        }
+        if (ctx.json?.cname instanceof List) {
+          candidates.addAll(ctx.json.cname);
+        } else if (ctx.json?.cname != null) {
+          candidates.add(ctx.json.cname);
+        }
+        def x509 = ctx.tls?.server?.x509;
+        if (x509 != null) {
+          for (def v : [x509.subject?.common_name, x509.alternative_names]) {
+            if (v instanceof List) {
+              candidates.addAll(v);
+            } else if (v != null) {
+              candidates.add(v);
+            }
+          }
+        }
+        List hosts = new ArrayList();
+        for (def c : candidates) {
+          if (!(c instanceof String)) {
+            continue;
+          }
+          String h = c.trim();
+          if (h.startsWith('*.')) {
+            h = h.substring(2);
+          }
+          if (h.isEmpty() || h.contains(' ') || h.contains('/') || h.contains('*')) {
+            continue;
+          }
+          if (!hosts.contains(h)) {
+            hosts.add(h);
+          }
+        }
+        if (!hosts.isEmpty()) {
+          ctx.related = ctx.related == null ? new HashMap() : ctx.related;
+          ctx.related.hosts = hosts;
+        }
+  - append:
+      field: related.hash
+      tag: append_asset_hash_to_related_hash
+      value: '{{{json.asset_hash}}}'
+      allow_duplicates: false
+      if: ctx.json?.asset_hash != null
+
+  # Custom fields.
+  - rename:
+      field: json
+      tag: rename_json_to_projectdiscovery_asset
+      target_field: projectdiscovery.asset
+      ignore_missing: true
+  - append:
+      field: tags
+      value: preserve_original_event
+      tag: append_preserve_original_event_on_error
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      tag: append_preserve_original_event_on_pipeline_error
+      allow_duplicates: false

@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  projectdiscovery-vulnerability:
+    image: docker.elastic.co/observability/stream:v0.22.0
+    hostname: projectdiscovery-vulnerability
+    ports:
+      - 8090
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: '8090'
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/files/config-vulnerability.yml
+  projectdiscovery-asset:
+    image: docker.elastic.co/observability/stream:v0.22.0
+    hostname: projectdiscovery-asset
+    ports:
+      - 8090
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: '8090'
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/files/config-asset.yml
