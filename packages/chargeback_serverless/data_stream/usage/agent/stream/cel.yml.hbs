@@ -45,320 +45,473 @@ program: |-
             ).with(
               { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
             ).do_request().as(es_resp,
-              ((es_resp.StatusCode == 200) ? bytes(es_resp.Body).decode_json() : { "items": [] }).as(es_body,
+              get_request(
+                state.cloud_api_base + "/api/v1/serverless/projects/observability"
+              ).with(
+                { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
+              ).do_request().as(obs_resp,
                 get_request(
-                  state.cloud_api_base + "/api/v1/serverless/projects/observability"
+                  state.cloud_api_base + "/api/v1/serverless/projects/security"
                 ).with(
                   { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
-                ).do_request().as(obs_resp,
-                  ((obs_resp.StatusCode == 200) ? bytes(obs_resp.Body).decode_json() : { "items": [] }).as(obs_body,
+                ).do_request().as(sec_resp,
+                  get_request(
+                    state.cloud_api_base + "/api/v1/serverless/projects/search"
+                  ).with(
+                    { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
+                  ).do_request().as(srch_resp,
                     get_request(
-                      state.cloud_api_base + "/api/v1/serverless/projects/security"
+                      state.billing_api_base + "/api/v2/billing/organizations/" + state.organization_id + "/costs/instances?" + {
+                        "from": [day_start.format(time_layout.RFC3339)],
+                        "to": [day_end.format(time_layout.RFC3339)],
+                        "include_names": ["true"],
+                      }.format_query()
                     ).with(
                       { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
-                    ).do_request().as(sec_resp,
-                      ((sec_resp.StatusCode == 200) ? bytes(sec_resp.Body).decode_json() : { "items": [] }).as(sec_body,
-                        get_request(
-                          state.cloud_api_base + "/api/v1/serverless/projects/search"
-                        ).with(
-                          { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
-                        ).do_request().as(srch_resp,
-                          ((srch_resp.StatusCode == 200) ? bytes(srch_resp.Body).decode_json() : { "items": [] }).as(srch_body,
-                            get_request(
-                              state.billing_api_base + "/api/v2/billing/organizations/" + state.organization_id + "/costs/instances?" + {
-                                "from": [day_start.format(time_layout.RFC3339)],
-                                "to": [day_end.format(time_layout.RFC3339)],
-                                "include_names": ["true"],
-                              }.format_query()
-                            ).with(
-                              { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
-                            ).do_request().as(bill_resp,
-                              ((bill_resp.StatusCode == 200) ? bytes(bill_resp.Body).decode_json() : { "instances": [] }).as(bill_body,
-                            ((has(es_body.items) && es_body.items != null ? es_body.items.map(p, dyn(p.with({ "project_type": "elasticsearch" }))) : []) +
-                             (has(obs_body.items) && obs_body.items != null ? obs_body.items.map(p, dyn(p.with({ "project_type": "observability" }))) : []) +
-                             (has(sec_body.items) && sec_body.items != null ? sec_body.items.map(p, dyn(p.with({ "project_type": "security" }))) : []) +
-                             (has(srch_body.items) && srch_body.items != null ? srch_body.items.map(p, dyn(p.with({ "project_type": "search" }))) : [])
-                            ).as(projects,
-                          (
-                            projects.map(p,
-                              all_pkeys.filter(k,
-                                k.startsWith(p.id + ":") || (has(p.name) && p.name != null && p.name != "" && k.startsWith(p.name + ":"))
-                              ).as(pkeys,
-                                (all_pkeys.map(k,
-                                  k.startsWith(p.id + ":") ? k.substring(size(p.id) + 1, size(k)) : (
-                                    (has(p.name) && p.name != null && p.name != "" && k.startsWith(p.name + ":")) ? k.substring(size(p.name) + 1, size(k)) : k
-                                  )
-                                ) + (state.hub_es_api_key != "" ? [state.hub_es_api_key, state.api_key] : [state.api_key])).as( stripped_keys,
-                                  (size(pkeys) > 0 ? (
-                                    pkeys[0].startsWith(p.id + ":") ? pkeys[0].substring(size(p.id) + 1, size(pkeys[0])) : pkeys[0].substring(size(p.name) + 1, size(pkeys[0]))
-                                  ) : state.api_key).as(primary_key,
-                                    string(dyn(p.endpoints).elasticsearch).as(_raw_es_url,
-                                      (_raw_es_url.endsWith("/") ? _raw_es_url.substring(0, size(_raw_es_url) - 1) : _raw_es_url).as(es_base_url,
-                                        (es_base_url + "/_cat/indices?h=index,dataset.size,indexing.index_time,search.query_time&format=json&bytes=b&time=ms&expand_wildcards=open,hidden").as(cat_url,
-                                          get_request(cat_url).with({ "Header": { "Authorization": ["ApiKey " + primary_key] } }).do_request().as(resp0,
-                                            (resp0.StatusCode == 200) ?
-                                              { "resp": resp0, "key": primary_key, "ktype": size(pkeys) > 0 ? "remote_key" : "cloud_key" }
-                                            : (size(stripped_keys) > 0 ?
-                                              get_request(cat_url).with({ "Header": { "Authorization": ["ApiKey " + stripped_keys[0]] } }).do_request().as(resp1,
-                                                (resp1.StatusCode == 200) ?
-                                                  { "resp": resp1, "key": stripped_keys[0], "ktype": "remote_key" }
-                                                : (size(stripped_keys) > 1 ?
-                                                  get_request(cat_url).with({ "Header": { "Authorization": ["ApiKey " + stripped_keys[1]] } }).do_request().as(resp2,
-                                                    (resp2.StatusCode == 200) ?
-                                                      { "resp": resp2, "key": stripped_keys[1], "ktype": "remote_key" }
-                                                    : (size(stripped_keys) > 2 ?
-                                                      get_request(cat_url).with({ "Header": { "Authorization": ["ApiKey " + stripped_keys[2]] } }).do_request().as(resp3,
-                                                        (resp3.StatusCode == 200) ?
-                                                          { "resp": resp3, "key": stripped_keys[2], "ktype": "remote_key" }
-                                                        : (size(stripped_keys) > 3 ?
-                                                          get_request(cat_url).with({ "Header": { "Authorization": ["ApiKey " + stripped_keys[3]] } }).do_request().as(resp4,
-                                                            (resp4.StatusCode == 200) ?
-                                                              { "resp": resp4, "key": stripped_keys[3], "ktype": "remote_key" }
-                                                            : { "resp": resp0, "key": primary_key, "ktype": "missing_key" }
+                    ).do_request().as(bill_resp,
+                      (es_resp.StatusCode == 200 && obs_resp.StatusCode == 200 && sec_resp.StatusCode == 200 && (srch_resp.StatusCode == 200 || srch_resp.StatusCode == 404)).as(discovery_ok,
+                        (bill_resp.StatusCode == 200 && discovery_ok) ?
+                          bytes(es_resp.Body).decode_json().as(es_body,
+                            bytes(obs_resp.Body).decode_json().as(obs_body,
+                              bytes(sec_resp.Body).decode_json().as(sec_body,
+                                ((srch_resp.StatusCode == 200) ? bytes(srch_resp.Body).decode_json() : { "items": [] }).as(srch_body,
+                                  bytes(bill_resp.Body).decode_json().as(bill_body,
+                                    ((has(es_body.items) && es_body.items != null ? es_body.items.map(p, dyn(p.with({ "project_type": "elasticsearch" }))) : []) +
+                                     (has(obs_body.items) && obs_body.items != null ? obs_body.items.map(p, dyn(p.with({ "project_type": "observability" }))) : []) +
+                                     (has(sec_body.items) && sec_body.items != null ? sec_body.items.map(p, dyn(p.with({ "project_type": "security" }))) : []) +
+                                     (has(srch_body.items) && srch_body.items != null ? srch_body.items.map(p, dyn(p.with({ "project_type": "search" }))) : [])
+                                    ).as(projects,
+                                      (
+                                        projects.map(p,
+                                          all_pkeys.filter(k,
+                                            k.startsWith(p.id + ":") || (has(p.name) && p.name != null && p.name != "" && k.startsWith(p.name + ":"))
+                                          ).as(pkeys,
+                                            (
+                                              pkeys.map(k,
+                                                k.startsWith(p.id + ":") ?
+                                                  { "key": k.substring(size(p.id) + 1, size(k)), "ktype": "remote_key" } :
+                                                  { "key": k.substring(size(p.name) + 1, size(k)), "ktype": "remote_key" }
+                                              ) +
+                                              (state.hub_es_api_key != "" ?
+                                                [{ "key": state.hub_es_api_key, "ktype": "hub_key" }, { "key": state.api_key, "ktype": "cloud_key" }] :
+                                                [{ "key": state.api_key, "ktype": "cloud_key" }]
+                                              ) +
+                                              all_pkeys.filter(k, !k.contains(":")).map(k, { "key": k, "ktype": "remote_key" })
+                                            ).as(candidate_keys,
+                                              candidate_keys[0].as(primary_cand,
+                                                string(dyn(p.endpoints).elasticsearch).as(_raw_es_url,
+                                                  (_raw_es_url.endsWith("/") ? _raw_es_url.substring(0, size(_raw_es_url) - 1) : _raw_es_url).as(es_base_url,
+                                                    (es_base_url + "/_cat/indices?h=index,dataset.size,indexing.index_time,search.query_time&format=json&bytes=b&time=ms&expand_wildcards=open,hidden").as(cat_url,
+                                                      get_request(cat_url).with({ "Header": { "Authorization": ["ApiKey " + primary_cand.key] } }).do_request().as(resp0,
+                                                        (resp0.StatusCode == 200) ?
+                                                          { "resp": resp0, "key": primary_cand.key, "ktype": primary_cand.ktype }
+                                                        : (size(candidate_keys) > 1 ?
+                                                          get_request(cat_url).with({ "Header": { "Authorization": ["ApiKey " + candidate_keys[1].key] } }).do_request().as(resp1,
+                                                            (resp1.StatusCode == 200) ?
+                                                              { "resp": resp1, "key": candidate_keys[1].key, "ktype": candidate_keys[1].ktype }
+                                                            : (size(candidate_keys) > 2 ?
+                                                              get_request(cat_url).with({ "Header": { "Authorization": ["ApiKey " + candidate_keys[2].key] } }).do_request().as(resp2,
+                                                                (resp2.StatusCode == 200) ?
+                                                                  { "resp": resp2, "key": candidate_keys[2].key, "ktype": candidate_keys[2].ktype }
+                                                                : (size(candidate_keys) > 3 ?
+                                                                  get_request(cat_url).with({ "Header": { "Authorization": ["ApiKey " + candidate_keys[3].key] } }).do_request().as(resp3,
+                                                                    (resp3.StatusCode == 200) ?
+                                                                      { "resp": resp3, "key": candidate_keys[3].key, "ktype": candidate_keys[3].ktype }
+                                                                    : (size(candidate_keys) > 4 ?
+                                                                      get_request(cat_url).with({ "Header": { "Authorization": ["ApiKey " + candidate_keys[4].key] } }).do_request().as(resp4,
+                                                                        (resp4.StatusCode == 200) ?
+                                                                          { "resp": resp4, "key": candidate_keys[4].key, "ktype": candidate_keys[4].ktype }
+                                                                        : { "resp": resp0, "key": primary_cand.key, "ktype": (resp0.StatusCode == 429 || resp0.StatusCode >= 500) ? "transient_error" : "missing_key" }
+                                                                      )
+                                                                    : { "resp": resp0, "key": primary_cand.key, "ktype": (resp0.StatusCode == 429 || resp0.StatusCode >= 500) ? "transient_error" : "missing_key" })
+                                                                  )
+                                                                : { "resp": resp0, "key": primary_cand.key, "ktype": (resp0.StatusCode == 429 || resp0.StatusCode >= 500) ? "transient_error" : "missing_key" })
+                                                              )
+                                                            : { "resp": resp0, "key": primary_cand.key, "ktype": (resp0.StatusCode == 429 || resp0.StatusCode >= 500) ? "transient_error" : "missing_key" })
                                                           )
-                                                        : { "resp": resp0, "key": primary_key, "ktype": "missing_key" })
-                                                      )
-                                                    : { "resp": resp0, "key": primary_key, "ktype": "missing_key" })
-                                                  )
-                                                : { "resp": resp0, "key": primary_key, "ktype": "missing_key" })
-                                              )
-                                            : { "resp": resp0, "key": primary_key, "ktype": "missing_key" })
-                                          ).as(cat_attempt,
-                                            cat_attempt.resp.as(cat_resp,
-                                              cat_attempt.key.as(target_key,
-                                                cat_attempt.ktype.as(resolved_ktype,
-                                                  (cat_resp.StatusCode == 200) ?
-                                                    bytes(cat_resp.Body).decode_json().as(rows,
-                                                      get_request(
-                                                        es_base_url + "/_ml/trained_models/_stats"
-                                                      ).with(
-                                                        { "Header": { "Authorization": ["ApiKey " + target_key] } }
-                                                      ).do_request().as(ml_resp,
-                                                        (ml_resp.StatusCode == 200) ? bytes(ml_resp.Body).decode_json() : { "trained_model_stats": [] }
-                                                      ).as(ml_body,
-                                                        get_request(
-                                                          es_base_url + "/.ds-synthetics-*-*,synthetics-*/_search?" + {
-                                                            "ignore_unavailable": ["true"],
-                                                            "expand_wildcards": ["open,hidden"],
-                                                            "size": ["0"],
-                                                            "source_content_type": ["application/json"],
-                                                            "source": [
-                                                              {
-                                                                "size": 0,
-                                                                "query": {
-                                                                  "bool": {
-                                                                    "filter": [
-                                                                      { "exists": { "field": "monitor.id" } },
-                                                                      { "range": { "@timestamp": { "gte": day_start.format(time_layout.RFC3339), "lt": day_end.format(time_layout.RFC3339) } } }
-                                                                    ],
-                                                                    "must_not": [{ "terms": { "event.dataset": ["browser.network", "browser.screenshot"] } }]
-                                                                  }
-                                                                },
-                                                                "aggs": {
-                                                                  "monitors": {
-                                                                    "terms": { "field": "monitor.id", "size": 500 },
-                                                                    "aggs": {
-                                                                      "monitor_name": { "terms": { "field": "monitor.name", "size": 1 } },
-                                                                      "monitor_type": { "terms": { "field": "monitor.type", "size": 1 } },
-                                                                      "monitor_namespace": { "terms": { "field": "data_stream.namespace", "size": 1 } },
-                                                                      "up_checks": { "filter": { "term": { "monitor.status": "up" } } },
-                                                                      "down_checks": { "filter": { "term": { "monitor.status": "down" } } },
-                                                                      "locations": { "cardinality": { "field": "observer.geo.name" } },
-                                                                      "avg_duration_us": { "avg": { "field": "monitor.duration.us" } }
+                                                        : { "resp": resp0, "key": primary_cand.key, "ktype": (resp0.StatusCode == 429 || resp0.StatusCode >= 500) ? "transient_error" : "missing_key" })
+                                                      ).as(cat_attempt,
+                                                        cat_attempt.resp.as(cat_resp,
+                                                          cat_attempt.key.as(target_key,
+                                                            cat_attempt.ktype.as(resolved_ktype,
+                                                              (cat_resp.StatusCode == 200) ?
+                                                                bytes(cat_resp.Body).decode_json().as(rows,
+                                                                  get_request(
+                                                                    es_base_url + "/_ml/trained_models/_stats"
+                                                                  ).with(
+                                                                    { "Header": { "Authorization": ["ApiKey " + target_key] } }
+                                                                  ).do_request().as(ml_resp,
+                                                                    ((ml_resp.StatusCode == 200) ? bytes(ml_resp.Body).decode_json() : { "trained_model_stats": [] }).as(ml_body,
+                                                                      get_request(
+                                                                        es_base_url + "/_inference"
+                                                                      ).with(
+                                                                        { "Header": { "Authorization": ["ApiKey " + target_key] } }
+                                                                      ).do_request().as(inf_resp,
+                                                                        ((inf_resp.StatusCode == 200) ? bytes(inf_resp.Body).decode_json() : { "endpoints": [] }).as(inf_body,
+                                                                          get_request(
+                                                                            es_base_url + "/.ds-synthetics-*-*,synthetics-*/_search?" + {
+                                                                              "ignore_unavailable": ["true"],
+                                                                              "expand_wildcards": ["open,hidden"],
+                                                                              "size": ["0"],
+                                                                              "source_content_type": ["application/json"],
+                                                                              "source": [
+                                                                                {
+                                                                                  "size": 0,
+                                                                                  "query": {
+                                                                                    "bool": {
+                                                                                      "filter": [
+                                                                                        { "exists": { "field": "monitor.id" } },
+                                                                                        { "exists": { "field": "monitor.status" } },
+                                                                                        { "range": { "@timestamp": { "gte": day_start.format(time_layout.RFC3339), "lt": day_end.format(time_layout.RFC3339) } } }
+                                                                                      ],
+                                                                                      "must_not": [
+                                                                                        { "terms": { "event.dataset": ["browser.network", "browser.screenshot", "browser.step"] } },
+                                                                                        { "exists": { "field": "synthetics.step" } }
+                                                                                      ]
+                                                                                    }
+                                                                                  },
+                                                                                  "aggs": {
+                                                                                    "monitors": {
+                                                                                      "terms": { "field": "monitor.id", "size": 10000 },
+                                                                                      "aggs": {
+                                                                                        "monitor_name": { "terms": { "field": "monitor.name", "size": 1 } },
+                                                                                        "monitor_type": { "terms": { "field": "monitor.type", "size": 1 } },
+                                                                                        "monitor_namespace": { "terms": { "field": "data_stream.namespace", "size": 1 } },
+                                                                                        "up_checks": { "filter": { "term": { "monitor.status": "up" } } },
+                                                                                        "down_checks": { "filter": { "term": { "monitor.status": "down" } } },
+                                                                                        "locations": { "cardinality": { "field": "observer.geo.name" } },
+                                                                                        "avg_duration_us": { "avg": { "field": "monitor.duration.us" } }
+                                                                                      }
+                                                                                    }
+                                                                                  }
+                                                                                }.encode_json()
+                                                                              ]
+                                                                            }.format_query()
+                                                                          ).with(
+                                                                            { "Header": { "Authorization": ["ApiKey " + target_key] } }
+                                                                          ).do_request().as(syn_resp,
+                                                                            ((syn_resp.StatusCode == 200) ? bytes(syn_resp.Body).decode_json() : { "aggregations": { "monitors": { "buckets": [], "sum_other_doc_count": 0 } } }).as(syn_body,
+                                                                              ((has(syn_body.aggregations) && syn_body.aggregations != null && has(syn_body.aggregations.monitors) && has(syn_body.aggregations.monitors.buckets) && syn_body.aggregations.monitors.buckets != null ?
+                                                                                syn_body.aggregations.monitors.buckets.map(b,
+                                                                                  {
+                                                                                    "@timestamp": day_ts,
+                                                                                    "period_start": day_ts,
+                                                                                    "doc_type": "synthetics_monitor",
+                                                                                    "project_id": p.id,
+                                                                                    "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                                                                                    "project_type": p.project_type,
+                                                                                    "monitor_id": string(b.key),
+                                                                                    "monitor_name": (has(b.monitor_name) && has(b.monitor_name.buckets) && size(b.monitor_name.buckets) > 0 && has(b.monitor_name.buckets[0].key)) ? string(b.monitor_name.buckets[0].key) : string(b.key),
+                                                                                    "monitor_type": (has(b.monitor_type) && has(b.monitor_type.buckets) && size(b.monitor_type.buckets) > 0 && has(b.monitor_type.buckets[0].key)) ? string(b.monitor_type.buckets[0].key) : "http",
+                                                                                    "monitor_namespace": (has(b.monitor_namespace) && has(b.monitor_namespace.buckets) && size(b.monitor_namespace.buckets) > 0 && has(b.monitor_namespace.buckets[0].key)) ? string(b.monitor_namespace.buckets[0].key) : "default",
+                                                                                    "check_count": has(b.doc_count) ? int(b.doc_count) : 0,
+                                                                                    "up_count": (has(b.up_checks) && has(b.up_checks.doc_count)) ? int(b.up_checks.doc_count) : 0,
+                                                                                    "down_count": (has(b.down_checks) && has(b.down_checks.doc_count)) ? int(b.down_checks.doc_count) : 0,
+                                                                                    "locations_count": (has(b.locations) && has(b.locations.value) && b.locations.value != null) ? int(b.locations.value) : 1,
+                                                                                    "average_duration_ms": (has(b.avg_duration_us) && has(b.avg_duration_us.value) && b.avg_duration_us.value != null) ? (double(b.avg_duration_us.value) / 1000.0) : 0.0,
+                                                                                    "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                                                    "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                                                    "conf_currency_symbol": state.conf_currency_symbol,
+                                                                                  }
+                                                                                ) : []) +
+                                                                                ((has(syn_body.aggregations) && syn_body.aggregations != null && has(syn_body.aggregations.monitors) && has(syn_body.aggregations.monitors.sum_other_doc_count) && syn_body.aggregations.monitors.sum_other_doc_count != null && int(syn_body.aggregations.monitors.sum_other_doc_count) > 0) ?
+                                                                                  [
+                                                                                    {
+                                                                                      "@timestamp": day_ts,
+                                                                                      "period_start": day_ts,
+                                                                                      "doc_type": "synthetics_monitor",
+                                                                                      "project_id": p.id,
+                                                                                      "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                                                                                      "project_type": p.project_type,
+                                                                                      "monitor_id": "other-monitors-overflow",
+                                                                                      "monitor_name": "Other Monitors (Aggregation Overflow)",
+                                                                                      "monitor_type": "http",
+                                                                                      "monitor_namespace": "default",
+                                                                                      "check_count": int(syn_body.aggregations.monitors.sum_other_doc_count),
+                                                                                      "up_count": 0,
+                                                                                      "down_count": 0,
+                                                                                      "locations_count": 1,
+                                                                                      "average_duration_ms": 0.0,
+                                                                                      "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                                                      "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                                                      "conf_currency_symbol": state.conf_currency_symbol,
+                                                                                    }
+                                                                                  ] : [])
+                                                                              ).as(harvested_syn_evts,
+                                                                                ((has(bill_body.instances) && bill_body.instances != null) ?
+                                                                                  bill_body.instances.filter(inst, has(inst.id) && inst.id != null && string(inst.id) == string(p.id))
+                                                                                : []).as(proj_bill_insts,
+                                                                                  proj_bill_insts.map(inst,
+                                                                                    (has(inst.product_line_items) && inst.product_line_items != null) ?
+                                                                                      inst.product_line_items.filter(li,
+                                                                                        has(li.sku) && li.sku != null &&
+                                                                                        string(li.sku).lowerAscii().contains("synthetic") &&
+                                                                                        string(li.sku).lowerAscii().contains("ping") &&
+                                                                                        (!has(li.total_ecu) || li.total_ecu == null || double(li.total_ecu) > 0.0 || (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null && double(li.quantity.value) > 0.0))
+                                                                                      ).map(li, (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null) ? double(li.quantity.value) : 0.0)
+                                                                                    : []
+                                                                                  ).flatten().as(ping_qtys,
+                                                                                    proj_bill_insts.map(inst,
+                                                                                      (has(inst.product_line_items) && inst.product_line_items != null) ?
+                                                                                        inst.product_line_items.filter(li,
+                                                                                          has(li.sku) && li.sku != null &&
+                                                                                          string(li.sku).lowerAscii().contains("synthetic") &&
+                                                                                          !string(li.sku).lowerAscii().contains("ping") &&
+                                                                                          (!has(li.total_ecu) || li.total_ecu == null || double(li.total_ecu) > 0.0 || (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null && double(li.quantity.value) > 0.0))
+                                                                                        ).map(li, (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null) ? double(li.quantity.value) : 0.0)
+                                                                                      : []
+                                                                                    ).flatten().as(browser_qtys,
+                                                                                      (size(ping_qtys) > 0).as(has_ping_sku,
+                                                                                        (size(browser_qtys) > 0).as(has_browser_sku,
+                                                                                          (size(ping_qtys) == 0 ? 0.0 : ping_qtys.sum()).as(ping_billed_qty,
+                                                                                            (size(browser_qtys) == 0 ? 0.0 : browser_qtys.sum()).as(browser_billed_qty,
+                                                                                              (
+                                                                                                harvested_syn_evts +
+                                                                                                ((has_ping_sku && !harvested_syn_evts.exists(m, m.monitor_type != "browser")) ?
+                                                                                                  [
+                                                                                                    {
+                                                                                                      "@timestamp": day_ts,
+                                                                                                      "period_start": day_ts,
+                                                                                                      "doc_type": "synthetics_monitor",
+                                                                                                      "project_id": p.id,
+                                                                                                      "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                                                                                                      "project_type": p.project_type,
+                                                                                                      "monitor_id": "billing-derived-lightweight",
+                                                                                                      "monitor_name": "Lightweight Monitors (Billing SKU)",
+                                                                                                      "monitor_type": "http",
+                                                                                                      "monitor_namespace": "default",
+                                                                                                      "check_count": ping_billed_qty > 0.0 ? int(ping_billed_qty) : 1,
+                                                                                                      "up_count": 0,
+                                                                                                      "down_count": 0,
+                                                                                                      "locations_count": 1,
+                                                                                                      "average_duration_ms": 0.0,
+                                                                                                      "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                                                                      "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                                                                      "conf_currency_symbol": state.conf_currency_symbol,
+                                                                                                    }
+                                                                                                  ]
+                                                                                                : []) +
+                                                                                                ((has_browser_sku && !harvested_syn_evts.exists(m, m.monitor_type == "browser")) ?
+                                                                                                  [
+                                                                                                    {
+                                                                                                      "@timestamp": day_ts,
+                                                                                                      "period_start": day_ts,
+                                                                                                      "doc_type": "synthetics_monitor",
+                                                                                                      "project_id": p.id,
+                                                                                                      "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                                                                                                      "project_type": p.project_type,
+                                                                                                      "monitor_id": "billing-derived-browser",
+                                                                                                      "monitor_name": "Browser Monitors (Billing SKU)",
+                                                                                                      "monitor_type": "browser",
+                                                                                                      "monitor_namespace": "default",
+                                                                                                      "check_count": browser_billed_qty > 0.0 ? int(browser_billed_qty) : 1,
+                                                                                                      "up_count": 0,
+                                                                                                      "down_count": 0,
+                                                                                                      "locations_count": 1,
+                                                                                                      "average_duration_ms": 0.0,
+                                                                                                      "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                                                                      "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                                                                      "conf_currency_symbol": state.conf_currency_symbol,
+                                                                                                    }
+                                                                                                  ]
+                                                                                                : [])
+                                                                                              ).as(all_syn_evts,
+                                                                                                ((has(ml_body.trained_model_stats) && ml_body.trained_model_stats != null ?
+                                                                                                  ml_body.trained_model_stats.map(m,
+                                                                                                    {
+                                                                                                      "@timestamp": day_ts,
+                                                                                                      "period_start": day_ts,
+                                                                                                      "doc_type": "ai_model",
+                                                                                                      "project_id": p.id,
+                                                                                                      "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                                                                                                      "project_type": p.project_type,
+                                                                                                      "model_id": string(m.model_id),
+                                                                                                      "task_type": has(m.pipeline_count) && int(m.pipeline_count) > 0 ? "ingest_inference" : "query_inference",
+                                                                                                      "inference_count": has(m.inference_stats) && has(m.inference_stats.inference_count) ? int(m.inference_stats.inference_count) : 0,
+                                                                                                      "average_inference_time_ms": has(m.deployment_stats) && has(m.deployment_stats.nodes) && size(m.deployment_stats.nodes) > 0 && has(m.deployment_stats.nodes[0].average_inference_time_ms) ? double(m.deployment_stats.nodes[0].average_inference_time_ms) : 0.0,
+                                                                                                      "total_inference_time_ms": int((has(m.inference_stats) && has(m.inference_stats.inference_count) ? double(m.inference_stats.inference_count) : 0.0) * (has(m.deployment_stats) && has(m.deployment_stats.nodes) && size(m.deployment_stats.nodes) > 0 && has(m.deployment_stats.nodes[0].average_inference_time_ms) ? double(m.deployment_stats.nodes[0].average_inference_time_ms) : 0.0)),
+                                                                                                      "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                                                                      "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                                                                      "conf_currency_symbol": state.conf_currency_symbol,
+                                                                                                    }
+                                                                                                  ) : []) +
+                                                                                                  (has(inf_body.endpoints) && inf_body.endpoints != null ?
+                                                                                                    inf_body.endpoints.filter(ep,
+                                                                                                      has(ep.inference_id) && ep.inference_id != null &&
+                                                                                                      !string(ep.inference_id).startsWith(".") &&
+                                                                                                      !(has(ml_body.trained_model_stats) && ml_body.trained_model_stats != null &&
+                                                                                                        ml_body.trained_model_stats.exists(tm,
+                                                                                                          (has(tm.model_id) && string(tm.model_id) == string(ep.inference_id)) ||
+                                                                                                          (has(ep.service_settings) && ep.service_settings != null && has(ep.service_settings.model_id) && ep.service_settings.model_id != null && string(tm.model_id) == string(ep.service_settings.model_id))
+                                                                                                        )
+                                                                                                      )
+                                                                                                    ).map(ep,
+                                                                                                      {
+                                                                                                        "@timestamp": day_ts,
+                                                                                                        "period_start": day_ts,
+                                                                                                        "doc_type": "ai_model",
+                                                                                                        "project_id": p.id,
+                                                                                                        "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                                                                                                        "project_type": p.project_type,
+                                                                                                        "model_id": string(ep.inference_id),
+                                                                                                        "task_type": (has(ep.task_type) && ep.task_type != null && string(ep.task_type) != "") ? string(ep.task_type) : "inference",
+                                                                                                        "inference_count": 1,
+                                                                                                        "average_inference_time_ms": 0.0,
+                                                                                                        "total_inference_time_ms": 0,
+                                                                                                        "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                                                                        "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                                                                        "conf_currency_symbol": state.conf_currency_symbol,
+                                                                                                      }
+                                                                                                    ) : [])
+                                                                                                ).as(all_ai_evts,
+                                                                                                  ((ml_resp.StatusCode == 429 || ml_resp.StatusCode >= 500) || (inf_resp.StatusCode == 429 || inf_resp.StatusCode >= 500) || (syn_resp.StatusCode == 429 || syn_resp.StatusCode >= 500)).as(sub_transient_err,
+                                                                                                    rows.filter(row,
+                                                                                                      !row.index.startsWith(".") || row.index.startsWith(".ds-")
+                                                                                                    ).map(row,
+                                                                                                      {
+                                                                                                        "@timestamp": day_ts,
+                                                                                                        "period_start": day_ts,
+                                                                                                        "doc_type": "datastream",
+                                                                                                        "project_id": p.id,
+                                                                                                        "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                                                                                                        "project_type": p.project_type,
+                                                                                                        "datastream": row.index,
+                                                                                                        "datastream_sum_indexing_time": ("indexing.index_time" in row && row["indexing.index_time"] != null && row["indexing.index_time"] != "") ? int(row["indexing.index_time"]) : 0,
+                                                                                                        "datastream_sum_query_time": ("search.query_time" in row && row["search.query_time"] != null && row["search.query_time"] != "") ? int(row["search.query_time"]) : 0,
+                                                                                                        "datastream_sum_data_set_store_size": ("dataset.size" in row && row["dataset.size"] != null && row["dataset.size"] != "") ? int(row["dataset.size"]) : 0,
+                                                                                                        "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                                                                        "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                                                                        "conf_currency_symbol": state.conf_currency_symbol,
+                                                                                                      }
+                                                                                                    ) +
+                                                                                                    all_ai_evts +
+                                                                                                    all_syn_evts +
+                                                                                                    [
+                                                                                                      {
+                                                                                                        "@timestamp": day_ts,
+                                                                                                        "period_start": day_ts,
+                                                                                                        "doc_type": "project_status",
+                                                                                                        "project_id": p.id,
+                                                                                                        "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                                                                                                        "project_type": p.project_type,
+                                                                                                        "optimized_for": has(p.optimized_for) ? p.optimized_for : "general_purpose",
+                                                                                                        "es_url": es_base_url,
+                                                                                                        "last_status": sub_transient_err ? "empty_or_unauthorized" : "ok",
+                                                                                                        "api_key_type": sub_transient_err ? "transient_error" : resolved_ktype,
+                                                                                                        "synthetics_status": (syn_resp.StatusCode != 200 && syn_resp.StatusCode != 404) ? "unauthorized" : ((size(harvested_syn_evts) == 0 && size(all_syn_evts) > 0) ? "billing_derived" : "ok"),
+                                                                                                        "index_count": size(rows),
+                                                                                                        "datastream_count": size(rows.filter(r, !r.index.startsWith(".") || r.index.startsWith(".ds-"))),
+                                                                                                        "ai_model_count": size(all_ai_evts),
+                                                                                                        "synthetics_monitor_count": size(all_syn_evts),
+                                                                                                        "updated_at": now.format(time_layout.RFC3339),
+                                                                                                        "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                                                                        "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                                                                        "conf_currency_symbol": state.conf_currency_symbol,
+                                                                                                      }
+                                                                                                    ]
+                                                                                                  )
+                                                                                                )
+                                                                                              )
+                                                                                            )
+                                                                                          )
+                                                                                        )
+                                                                                      )
+                                                                                    )
+                                                                                  )
+                                                                                )
+                                                                              )
+                                                                            )
+                                                                          )
+                                                                        )
+                                                                      )
+                                                                    )
+                                                                  )
+                                                                :
+                                                                  [
+                                                                    {
+                                                                      "@timestamp": day_ts,
+                                                                      "period_start": day_ts,
+                                                                      "doc_type": "project_status",
+                                                                      "project_id": p.id,
+                                                                      "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                                                                      "project_type": p.project_type,
+                                                                      "optimized_for": has(p.optimized_for) ? p.optimized_for : "general_purpose",
+                                                                      "es_url": es_base_url,
+                                                                      "last_status": "empty_or_unauthorized",
+                                                                      "api_key_type": resolved_ktype,
+                                                                      "synthetics_status": "unauthorized",
+                                                                      "index_count": 0,
+                                                                      "datastream_count": 0,
+                                                                      "ai_model_count": 0,
+                                                                      "synthetics_monitor_count": 0,
+                                                                      "updated_at": now.format(time_layout.RFC3339),
+                                                                      "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                                      "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                                      "conf_currency_symbol": state.conf_currency_symbol,
                                                                     }
-                                                                  }
-                                                                }
-                                                              }.encode_json()
-                                                            ]
-                                                          }.format_query()
-                                                        ).with(
-                                                          { "Header": { "Authorization": ["ApiKey " + target_key] } }
-                                                        ).do_request().as(syn_resp,
-                                                          (syn_resp.StatusCode == 200) ? bytes(syn_resp.Body).decode_json() : { "aggregations": { "monitors": { "buckets": [] } } }
-                                                        ).as(syn_body,
-                                                          (has(syn_body.aggregations) && syn_body.aggregations != null && has(syn_body.aggregations.monitors) && has(syn_body.aggregations.monitors.buckets) && syn_body.aggregations.monitors.buckets != null ?
-                                                            syn_body.aggregations.monitors.buckets.map(b,
-                                                              {
-                                                                "@timestamp": day_ts,
-                                                                "period_start": day_ts,
-                                                                "doc_type": "synthetics_monitor",
-                                                                "project_id": p.id,
-                                                                "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
-                                                                "project_type": p.project_type,
-                                                                "monitor_id": string(b.key),
-                                                                "monitor_name": (has(b.monitor_name) && has(b.monitor_name.buckets) && size(b.monitor_name.buckets) > 0 && has(b.monitor_name.buckets[0].key)) ? string(b.monitor_name.buckets[0].key) : string(b.key),
-                                                                "monitor_type": (has(b.monitor_type) && has(b.monitor_type.buckets) && size(b.monitor_type.buckets) > 0 && has(b.monitor_type.buckets[0].key)) ? string(b.monitor_type.buckets[0].key) : "http",
-                                                                "monitor_namespace": (has(b.monitor_namespace) && has(b.monitor_namespace.buckets) && size(b.monitor_namespace.buckets) > 0 && has(b.monitor_namespace.buckets[0].key)) ? string(b.monitor_namespace.buckets[0].key) : "default",
-                                                                "check_count": has(b.doc_count) ? int(b.doc_count) : 0,
-                                                                "up_count": (has(b.up_checks) && has(b.up_checks.doc_count)) ? int(b.up_checks.doc_count) : 0,
-                                                                "down_count": (has(b.down_checks) && has(b.down_checks.doc_count)) ? int(b.down_checks.doc_count) : 0,
-                                                                "locations_count": (has(b.locations) && has(b.locations.value) && b.locations.value != null) ? int(b.locations.value) : 1,
-                                                                "average_duration_ms": (has(b.avg_duration_us) && has(b.avg_duration_us.value) && b.avg_duration_us.value != null) ? (double(b.avg_duration_us.value) / 1000.0) : 0.0,
-                                                                "conf_chargeable_unit_rate": double(state.conf_unit_rate),
-                                                                "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-                                                                "conf_currency_symbol": state.conf_currency_symbol,
-                                                              }
-                                                            ) : []
-                                                          ).as(harvested_syn_evts,
-                                                            ((has(bill_body.instances) && bill_body.instances != null) ?
-                                                              bill_body.instances.filter(inst, has(inst.id) && inst.id != null && string(inst.id) == string(p.id))
-                                                            : []).as(proj_bill_insts,
-                                                              proj_bill_insts.exists(inst,
-                                                                has(inst.product_line_items) && inst.product_line_items != null &&
-                                                                inst.product_line_items.exists(li,
-                                                                  has(li.sku) && li.sku != null &&
-                                                                  string(li.sku).lowerAscii().contains("synthetic") &&
-                                                                  string(li.sku).lowerAscii().contains("ping") &&
-                                                                  (!has(li.total_ecu) || li.total_ecu == null || double(li.total_ecu) > 0.0 || (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null && double(li.quantity.value) > 0.0))
-                                                                )
-                                                              ).as(has_ping_sku,
-                                                                proj_bill_insts.exists(inst,
-                                                                  has(inst.product_line_items) && inst.product_line_items != null &&
-                                                                  inst.product_line_items.exists(li,
-                                                                    has(li.sku) && li.sku != null &&
-                                                                    string(li.sku).lowerAscii().contains("synthetic") &&
-                                                                    !string(li.sku).lowerAscii().contains("ping") &&
-                                                                    (!has(li.total_ecu) || li.total_ecu == null || double(li.total_ecu) > 0.0 || (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null && double(li.quantity.value) > 0.0))
-                                                                  )
-                                                                ).as(has_browser_sku,
-                                                                  (
-                                                                    harvested_syn_evts +
-                                                                    ((has_ping_sku && !harvested_syn_evts.exists(m, m.monitor_type != "browser")) ?
-                                                                      [
-                                                                        {
-                                                                          "@timestamp": day_ts,
-                                                                          "period_start": day_ts,
-                                                                          "doc_type": "synthetics_monitor",
-                                                                          "project_id": p.id,
-                                                                          "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
-                                                                          "project_type": p.project_type,
-                                                                          "monitor_id": "billing-derived-lightweight",
-                                                                          "monitor_name": "Lightweight Monitors (Billing SKU)",
-                                                                          "monitor_type": "http",
-                                                                          "monitor_namespace": "default",
-                                                                          "check_count": 1,
-                                                                          "up_count": 1,
-                                                                          "down_count": 0,
-                                                                          "locations_count": 1,
-                                                                          "average_duration_ms": 0.0,
-                                                                          "conf_chargeable_unit_rate": double(state.conf_unit_rate),
-                                                                          "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-                                                                          "conf_currency_symbol": state.conf_currency_symbol,
-                                                                        }
-                                                                      ]
-                                                                    : []) +
-                                                                    ((has_browser_sku && !harvested_syn_evts.exists(m, m.monitor_type == "browser")) ?
-                                                                      [
-                                                                        {
-                                                                          "@timestamp": day_ts,
-                                                                          "period_start": day_ts,
-                                                                          "doc_type": "synthetics_monitor",
-                                                                          "project_id": p.id,
-                                                                          "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
-                                                                          "project_type": p.project_type,
-                                                                          "monitor_id": "billing-derived-browser",
-                                                                          "monitor_name": "Browser Monitors (Billing SKU)",
-                                                                          "monitor_type": "browser",
-                                                                          "monitor_namespace": "default",
-                                                                          "check_count": 1,
-                                                                          "up_count": 1,
-                                                                          "down_count": 0,
-                                                                          "locations_count": 1,
-                                                                          "average_duration_ms": 0.0,
-                                                                          "conf_chargeable_unit_rate": double(state.conf_unit_rate),
-                                                                          "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-                                                                          "conf_currency_symbol": state.conf_currency_symbol,
-                                                                        }
-                                                                      ]
-                                                                    : [])
-                                                                  ).as(all_syn_evts,
-                                                                    rows.filter(row,
-                                                                      !row.index.startsWith(".") || row.index.startsWith(".ds-")
-                                                                    ).map(row,
-                                                                      {
-                                                                        "@timestamp": day_ts,
-                                                                        "period_start": day_ts,
-                                                                        "doc_type": "datastream",
-                                                                        "project_id": p.id,
-                                                                        "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
-                                                                        "project_type": p.project_type,
-                                                                        "datastream": row.index,
-                                                                        "datastream_sum_indexing_time": ("indexing.index_time" in row && row["indexing.index_time"] != null && row["indexing.index_time"] != "") ? int(row["indexing.index_time"]) : 0,
-                                                                        "datastream_sum_query_time": ("search.query_time" in row && row["search.query_time"] != null && row["search.query_time"] != "") ? int(row["search.query_time"]) : 0,
-                                                                        "datastream_sum_data_set_store_size": ("dataset.size" in row && row["dataset.size"] != null && row["dataset.size"] != "") ? int(row["dataset.size"]) : 0,
-                                                                        "conf_chargeable_unit_rate": double(state.conf_unit_rate),
-                                                                        "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-                                                                        "conf_currency_symbol": state.conf_currency_symbol,
-                                                                      }
-                                                                    ) +
-                                                                    (has(ml_body.trained_model_stats) && ml_body.trained_model_stats != null ?
-                                                                      ml_body.trained_model_stats.map(m,
-                                                                        {
-                                                                          "@timestamp": day_ts,
-                                                                          "period_start": day_ts,
-                                                                          "doc_type": "ai_model",
-                                                                          "project_id": p.id,
-                                                                          "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
-                                                                          "project_type": p.project_type,
-                                                                          "model_id": m.model_id,
-                                                                          "task_type": has(m.pipeline_count) && int(m.pipeline_count) > 0 ? "ingest_inference" : "query_inference",
-                                                                          "inference_count": has(m.inference_stats) && has(m.inference_stats.inference_count) ? int(m.inference_stats.inference_count) : 0,
-                                                                          "average_inference_time_ms": has(m.deployment_stats) && has(m.deployment_stats.nodes) && size(m.deployment_stats.nodes) > 0 && has(m.deployment_stats.nodes[0].average_inference_time_ms) ? double(m.deployment_stats.nodes[0].average_inference_time_ms) : 0.0,
-                                                                          "total_inference_time_ms": int((has(m.inference_stats) && has(m.inference_stats.inference_count) ? double(m.inference_stats.inference_count) : 0.0) * (has(m.deployment_stats) && has(m.deployment_stats.nodes) && size(m.deployment_stats.nodes) > 0 && has(m.deployment_stats.nodes[0].average_inference_time_ms) ? double(m.deployment_stats.nodes[0].average_inference_time_ms) : 0.0)),
-                                                                          "conf_chargeable_unit_rate": double(state.conf_unit_rate),
-                                                                          "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-                                                                          "conf_currency_symbol": state.conf_currency_symbol,
-                                                                        }
-                                                                      ) : []
-                                                                    ) +
-                                                                    all_syn_evts +
-                                                                    [
-                                                                      {
-                                                                        "@timestamp": day_ts,
-                                                                        "period_start": day_ts,
-                                                                        "doc_type": "project_status",
-                                                                        "project_id": p.id,
-                                                                        "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
-                                                                        "project_type": p.project_type,
-                                                                        "optimized_for": has(p.optimized_for) ? p.optimized_for : "general_purpose",
-                                                                        "es_url": es_base_url,
-                                                                        "last_status": "ok",
-                                                                        "api_key_type": resolved_ktype,
-                                                                        "synthetics_status": (size(harvested_syn_evts) == 0 && size(all_syn_evts) > 0) ? "billing_derived" : "ok",
-                                                                        "index_count": size(rows),
-                                                                        "datastream_count": size(rows.filter(r, !r.index.startsWith(".") || r.index.startsWith(".ds-"))),
-                                                                        "ai_model_count": (has(ml_body.trained_model_stats) && ml_body.trained_model_stats != null) ? size(ml_body.trained_model_stats) : 0,
-                                                                        "synthetics_monitor_count": size(all_syn_evts),
-                                                                        "updated_at": now.format(time_layout.RFC3339),
-                                                                        "conf_chargeable_unit_rate": double(state.conf_unit_rate),
-                                                                        "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-                                                                        "conf_currency_symbol": state.conf_currency_symbol,
-                                                                      }
-                                                                    ]
-                                                                  )
-                                                                )
+                                                                  ]
                                                               )
                                                             )
                                                           )
                                                         )
                                                       )
                                                     )
-                                                  :
+                                                  )
+                                                )
+                                              )
+                                            )
+                                          )
+                                        ).flatten() +
+                                        ((has(bill_body.instances) && bill_body.instances != null) ?
+                                          bill_body.instances.filter(inst,
+                                            has(inst.id) && inst.id != null && string(inst.id) != "" &&
+                                            size(projects.filter(p, p.id == inst.id)) == 0 &&
+                                            has(inst.product_line_items) && inst.product_line_items != null &&
+                                            inst.product_line_items.exists(li,
+                                              has(li.sku) && li.sku != null && string(li.sku).lowerAscii().as(s,
+                                                (s.contains("serverless") || s.contains("-vcu") || s.contains(".ecu") || s.contains("retained") || s.contains("synthetic") || s.contains("agent-builder") || s.contains("inference") || s.contains("llm") || s.contains("workflow") || s.contains("cross-project")) &&
+                                                !(s.contains("cloud-enterprise") || s.contains("cloud-platinum") || s.contains("cloud-standard") || s.contains("cloud-gold") || s.contains(".es.data") || s.contains(".es.ml") || s.contains(".es.master") || s.contains(".es.coordinating") || s.contains(".kibana.") || s.contains(".apm.") || s.contains(".enterprise_search.") || s.contains(".integrations_server."))
+                                              )
+                                            )
+                                          ).map(inst,
+                                            ((has(inst.name) && inst.name != null && string(inst.name) != "") ? string(inst.name) : string(inst.id)).as(del_pname,
+                                              ((has(inst.type) && inst.type != null && string(inst.type) != "" && string(inst.type) != "serverless" && string(inst.type) != "deployment") ? string(inst.type) : "elasticsearch").as(del_ptype,
+                                                inst.product_line_items.filter(li,
+                                                  has(li.sku) && li.sku != null && string(li.sku).lowerAscii().as(s,
+                                                    (s.contains("retained") || s.contains("storage") || s.contains("retention")) && !s.contains("snapshot")
+                                                  )
+                                                ).map(li, (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null) ? double(li.quantity.value) : 0.0).as(del_store_qtys,
+                                                  (size(del_store_qtys) == 0 ? 0.0 : del_store_qtys.sum()).as(del_store_gb,
                                                     [
                                                       {
                                                         "@timestamp": day_ts,
                                                         "period_start": day_ts,
+                                                        "doc_type": "datastream",
+                                                        "project_id": string(inst.id),
+                                                        "project_name": del_pname,
+                                                        "project_type": del_ptype,
+                                                        "datastream": "billing-derived-retention",
+                                                        "datastream_sum_indexing_time": 1,
+                                                        "datastream_sum_query_time": 1,
+                                                        "datastream_sum_data_set_store_size": del_store_gb > 0.0 ? int(del_store_gb * 1073741824.0) : 1,
+                                                        "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                        "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                        "conf_currency_symbol": state.conf_currency_symbol,
+                                                      },
+                                                      {
+                                                        "@timestamp": day_ts,
+                                                        "period_start": day_ts,
                                                         "doc_type": "project_status",
-                                                        "project_id": p.id,
-                                                        "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
-                                                        "project_type": p.project_type,
-                                                        "optimized_for": has(p.optimized_for) ? p.optimized_for : "general_purpose",
-                                                        "es_url": es_base_url,
-                                                        "last_status": "empty_or_unauthorized",
-                                                        "api_key_type": "missing_key",
-                                                        "synthetics_status": "unauthorized",
-                                                        "index_count": 0,
-                                                        "datastream_count": 0,
+                                                        "project_id": string(inst.id),
+                                                        "project_name": del_pname,
+                                                        "project_type": del_ptype,
+                                                        "optimized_for": "decommissioned",
+                                                        "es_url": "",
+                                                        "last_status": "inactive",
+                                                        "api_key_type": "cloud_billing_only",
+                                                        "synthetics_status": "inactive",
+                                                        "index_count": 1,
+                                                        "datastream_count": 1,
                                                         "ai_model_count": 0,
                                                         "synthetics_monitor_count": 0,
                                                         "updated_at": now.format(time_layout.RFC3339),
@@ -367,73 +520,42 @@ program: |-
                                                         "conf_currency_symbol": state.conf_currency_symbol,
                                                       }
                                                     ]
+                                                  )
                                                 )
                                               )
                                             )
-                                          )
+                                          ).flatten()
+                                        : [])
+                                      ).as(usage_evts,
+                                        usage_evts.exists(e, has(e.doc_type) && e.doc_type == "project_status" && has(e.api_key_type) && e.api_key_type == "transient_error") ?
+                                          { "events": [], "want_more": false }
+                                        : (size(usage_evts) > 0 ?
+                                          {
+                                            "events": usage_evts,
+                                            "cursor": { "last_day": day_ts },
+                                            "want_more": false,
+                                          }
+                                        :
+                                          { "events": [], "want_more": false }
                                         )
                                       )
                                     )
                                   )
                                 )
                               )
-                            ).flatten() +
-                            ((has(bill_body.instances) && bill_body.instances != null) ?
-                              bill_body.instances.filter(inst,
-                                has(inst.id) && inst.id != null && string(inst.id) != "" &&
-                                size(projects.filter(p, p.id == inst.id)) == 0 &&
-                                has(inst.product_line_items) && inst.product_line_items != null &&
-                                inst.product_line_items.exists(li,
-                                  has(li.sku) && li.sku != null && string(li.sku).lowerAscii().as(s,
-                                    (s.contains("serverless") || s.contains("-vcu") || s.contains("retained") || s.contains("synthetic") || s.contains("agent-builder") || s.contains("inference") || s.contains("llm") || s.contains("workflow") || s.contains("cross-project")) &&
-                                    !(s.contains("cloud-enterprise") || s.contains("cloud-platinum") || s.contains("cloud-standard") || s.contains("cloud-gold") || s.contains(".es.data") || s.contains(".es.ml") || s.contains(".es.master") || s.contains(".es.coordinating") || s.contains(".kibana.") || s.contains(".apm.") || s.contains(".enterprise_search.") || s.contains(".integrations_server."))
-                                  )
-                                )
-                              ).map(inst,
-                                {
-                                  "@timestamp": day_ts,
-                                  "period_start": day_ts,
-                                  "doc_type": "project_status",
-                                  "project_id": string(inst.id),
-                                  "project_name": (has(inst.name) && inst.name != null && string(inst.name) != "") ? string(inst.name) : string(inst.id),
-                                  "project_type": (has(inst.type) && inst.type != null && string(inst.type) != "" && string(inst.type) != "serverless" && string(inst.type) != "deployment") ? string(inst.type) : "elasticsearch",
-                                  "optimized_for": "decommissioned",
-                                  "es_url": "",
-                                  "last_status": "inactive",
-                                  "api_key_type": "cloud_billing_only",
-                                  "synthetics_status": "inactive",
-                                  "index_count": 0,
-                                  "datastream_count": 0,
-                                  "ai_model_count": 0,
-                                  "synthetics_monitor_count": 0,
-                                  "updated_at": now.format(time_layout.RFC3339),
-                                  "conf_chargeable_unit_rate": double(state.conf_unit_rate),
-                                  "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-                                  "conf_currency_symbol": state.conf_currency_symbol,
-                                }
-                              )
-                            : [])
-                          ).as(usage_evts,
-                            size(usage_evts) > 0 ?
-                            {
-                              "events": usage_evts,
-                              "cursor": { "last_day": day_ts },
-                              "want_more": false,
-                            }
-                            :
-                            { "events": [], "want_more": false }
-                          )
-                        )
                             )
                           )
+                        :
+                          {
+                            "events": { "error": { "code": string(bill_resp.StatusCode != 200 ? bill_resp.StatusCode : es_resp.StatusCode), "id": "discovery_or_billing_failed", "message": "Required project discovery or billing lookup request failed; preserving day for retry" } },
+                            "want_more": false,
+                          }
                       )
                     )
                   )
                 )
               )
             )
-          )
-          )
           )
         )
       )

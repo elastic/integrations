@@ -122,7 +122,7 @@ processors:
         }
 
         // Ingest / indexing VCU (any project type, current or future)
-        if (sku.contains('-ingest-vcu_') || sku.contains('ingest-vcu') || sku.contains('-ingest-vcu')) {
+        if (sku.contains('-ingest-vcu_') || sku.contains('ingest-vcu') || sku.contains('-ingest-vcu') || sku.contains('ingest.ecu') || sku.contains('ingest_ecu') || sku.contains('ingest.vcu')) {
           ctx.cost_type = 'ingest-vcu';
           ctx.cost_category = 'data_tier';
           ctx.is_allocatable = true;
@@ -131,7 +131,7 @@ processors:
         }
 
         // Search / query VCU (any project type, current or future)
-        if (sku.contains('-search-vcu_') || sku.contains('search-vcu') || sku.contains('-search-vcu')) {
+        if (sku.contains('-search-vcu_') || sku.contains('search-vcu') || sku.contains('-search-vcu') || sku.contains('search.ecu') || sku.contains('search_ecu') || sku.contains('search.vcu') || sku.contains('.search.')) {
           ctx.cost_type = 'search-vcu';
           ctx.cost_category = 'data_tier';
           ctx.is_allocatable = true;
@@ -140,7 +140,7 @@ processors:
         }
 
         // ML / AI VCU (any project type, current or future)
-        if (sku.contains('-ml-vcu_') || sku.contains('ml-vcu') || sku.contains('-ml-vcu')) {
+        if (sku.contains('-ml-vcu_') || sku.contains('ml-vcu') || sku.contains('-ml-vcu') || sku.contains('ml.ecu') || sku.contains('ml_ecu') || sku.contains('ml.vcu') || sku.contains('ml_inference') || sku.contains('.eis.') || sku.endsWith('.eis')) {
           ctx.cost_type = 'ml-vcu';
           ctx.cost_category = 'platform';
           ctx.is_allocatable = true;
@@ -148,8 +148,8 @@ processors:
           return;
         }
 
-        // Retained storage (any project type, current or future)
-        if (sku.contains('retained') || sku.contains('storage') || sku.contains('retention')) {
+        // Retained storage (any project type, current or future; exclude snapshot-storage SKUs)
+        if ((sku.contains('retained') || sku.contains('storage') || sku.contains('retention')) && !sku.contains('snapshot') && ctx.cost_type != 'snapshots') {
           ctx.cost_type = 'retained';
           ctx.cost_category = 'data_tier';
           ctx.is_allocatable = true;

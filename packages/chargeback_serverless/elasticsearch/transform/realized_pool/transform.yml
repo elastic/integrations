@@ -77,8 +77,15 @@ pivot:
             field: total_ecu
     synthetics_executions_ecu:
       filter:
-        wildcard:
-          sku: "*synthetic*execution*"
+        bool:
+          should:
+            - wildcard:
+                sku: "*synthetic*execution*"
+            - wildcard:
+                sku: "*synthetic*browser*"
+            - wildcard:
+                sku: "*synthetic*test*"
+          minimum_should_match: 1
       aggs:
         val:
           sum:

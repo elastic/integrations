@@ -51,8 +51,8 @@ program: |-
             }.format_query()
           ).with(
             { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
-          ).do_request().as(items_resp,
-            ((items_resp.StatusCode == 200) ? bytes(items_resp.Body).decode_json() : { "products": [] }).as(items_body,
+          ).do_request().as(items_resp, (items_resp.StatusCode == 200) ?
+            bytes(items_resp.Body).decode_json().as(items_body,
             get_request(
               state.cloud_api_base + "/api/v1/serverless/projects/elasticsearch"
             ).with(
@@ -85,12 +85,22 @@ program: |-
                               ((has(body.instances) && body.instances != null) ?
                                 body.instances.filter(instance,
                                   size(projects.filter(p, has(instance.id) && instance.id != null && p.id == instance.id)) > 0 ||
-                                  (has(instance.product_line_items) && instance.product_line_items != null && size(instance.product_line_items.filter(li,
+                                  ((!has(instance.type) || instance.type == null || string(instance.type) != "deployment") &&
+                                  has(instance.product_line_items) && instance.product_line_items != null &&
+                                  !instance.product_line_items.exists(li,
                                     has(li.sku) && li.sku != null && (
-                                      li.sku.contains("-vcu") || li.sku.contains(".observability.") || li.sku.contains(".security.") ||
+                                      li.sku.contains("cloud-enterprise") || li.sku.contains("cloud-platinum") || li.sku.contains("cloud-standard") || li.sku.contains("cloud-gold") ||
+                                      li.sku.contains(".es.data") || li.sku.contains(".es.ml") || li.sku.contains(".es.master") || li.sku.contains(".es.coordinating") ||
+                                      li.sku.contains(".kibana.") || li.sku.contains(".apm.") || li.sku.contains(".enterprise_search.") || li.sku.contains(".integrations_server.")
+                                    )
+                                  ) &&
+                                  size(instance.product_line_items.filter(li,
+                                    has(li.sku) && li.sku != null && (
+                                      li.sku.contains("-vcu") || li.sku.contains(".ecu") || li.sku.contains(".observability.") || li.sku.contains(".security.") ||
                                       li.sku.contains(".search.") || li.sku.startsWith("serverless.") || li.sku.startsWith("observability.") ||
                                       li.sku.startsWith("security.") || li.sku.startsWith("search.") || li.sku.contains("synthetic") ||
-                                      li.sku.contains(".retained")
+                                      li.sku.contains(".retained") || li.sku == "global.inference-chat-input" || li.sku.contains("inference") ||
+                                      li.sku.contains("agent-builder") || li.sku.contains(".eis") || li.sku.contains("workflow") || li.sku.contains("cross-project")
                                     )
                                   )) > 0)
                                 )
@@ -113,10 +123,11 @@ program: |-
                                           (has(instance.product_line_items) && instance.product_line_items != null) ?
                                             instance.product_line_items.filter(line_item,
                                               has(line_item.sku) && line_item.sku != null && (
-                                                line_item.sku.contains("-vcu") || line_item.sku.contains(".observability.") || line_item.sku.contains(".security.") ||
+                                                line_item.sku.contains("-vcu") || line_item.sku.contains(".ecu") || line_item.sku.contains(".observability.") || line_item.sku.contains(".security.") ||
                                                 line_item.sku.contains(".search.") || line_item.sku.startsWith("serverless.") || line_item.sku.startsWith("observability.") ||
                                                 line_item.sku.startsWith("security.") || line_item.sku.startsWith("search.") || line_item.sku.contains("synthetic") ||
-                                                line_item.sku.contains(".retained")
+                                                line_item.sku.contains(".retained") || line_item.sku == "global.inference-chat-input" || line_item.sku.contains("inference") ||
+                                                line_item.sku.contains("agent-builder") || line_item.sku.contains(".eis") || line_item.sku.contains("workflow") || line_item.sku.contains("cross-project")
                                               )
                                             ).as(sls_line_items,
                                               size(sls_line_items) > 0 ?
@@ -176,15 +187,17 @@ program: |-
                                   (
                                     instance_evts +
                                     ((has(items_body.products) && items_body.products != null) ?
-                                      items_body.products.map(prod,
+                                      items_body.products.filter(prod,
+                                        !has(prod.type) || prod.type == null || string(prod.type) != "deployment"
+                                      ).map(prod,
                                         ((has(prod.type) && prod.type != null && string(prod.type) != "" && string(prod.type) != "serverless" && string(prod.type) != "deployment") ? string(prod.type) : "elasticsearch").as(prod_type,
                                           (has(prod.product_line_items) && prod.product_line_items != null) ?
                                             prod.product_line_items.filter(li,
                                               has(li.sku) && li.sku != null && (
-                                                li.sku.contains("-vcu") || li.sku.contains(".observability.") || li.sku.contains(".security.") ||
+                                                li.sku.contains("-vcu") || li.sku.contains(".ecu") || li.sku.contains(".observability.") || li.sku.contains(".security.") ||
                                                 li.sku.contains(".search.") || li.sku.startsWith("serverless.") || li.sku.startsWith("observability.") ||
                                                 li.sku.startsWith("security.") || li.sku.startsWith("search.") || li.sku.contains("synthetic") ||
-                                                li.sku.contains(".retained")
+                                                li.sku.contains(".retained") || ((li.sku == "global.inference-chat-input" || li.sku.contains("inference") || li.sku.contains("agent-builder") || li.sku.contains(".eis") || li.sku.contains("workflow") || li.sku.contains("cross-project")) && has(prod.type) && prod.type != null && string(prod.type) != "" && string(prod.type) != "deployment")
                                               )
                                             ).map(li,
                                               instance_evts.filter(e, e.sku == li.sku).map(e, e.total_ecu).as(matched_ecus,
@@ -261,6 +274,11 @@ program: |-
               )
             )
             )
+          :
+            {
+              "events": { "error": { "code": string(items_resp.StatusCode), "id": string(items_resp.Status), "message": "GET " + items_resp.Request.URL + ": " + ( (size(items_resp.Body) != 0) ? string(items_resp.Body) : string(items_resp.Status) + " (" + string(items_resp.StatusCode) + ")" ) } },
+              "want_more": false,
+            }
           )
         )
       :
