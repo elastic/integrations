@@ -1,4 +1,73 @@
 rules:
+  # Event Datastream with numeric and boolean filter values (account 44444)
+  # The test config writes the values as unquoted YAML (1 and true), which must reach the API as
+  # the strings "1" and "true".
+  - path: /api/v1/graphql2
+    methods: ["POST"]
+    request_body: /.*"accountIDs":\["44444"\],"filters":\[\{"fieldName":"event_sub_type","operator":"in","values":\["1","true"\]\}\].*"marker":"valuesmarker1".*/
+    request_headers:
+      X-Api-Key:
+        - "xxxx"
+    responses:
+      - status_code: 200
+        body: |
+          {{ minify_json `
+            {
+              "data": {
+                "eventsFeed": {
+                  "fetchedCount": 1,
+                  "marker": "valuesmarker1",
+                  "accounts": [
+                    {
+                      "errorString": "",
+                      "records": [
+                        {
+                          "fieldsMap": {
+                            "account_id": "44444",
+                            "account_name": "Demo-Mode",
+                            "action": "Allow",
+                            "event_count": "1",
+                            "event_id": "d4a1b2c3e5f60718",
+                            "event_sub_type": "1",
+                            "event_type": "Security",
+                            "internalId": "d4a1b2c3e5f60718",
+                            "internal_id": "d4a1b2c3e5f60718",
+                            "time": "1772693200000",
+                            "time_str": "2026-03-05T06:46:40Z"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          `}}
+  - path: /api/v1/graphql2
+    methods: ["POST"]
+    request_body: /.*"accountIDs":\["44444"\],"filters":\[\{"fieldName":"event_sub_type","operator":"in","values":\["1","true"\]\}\].*/
+    request_headers:
+      X-Api-Key:
+        - "xxxx"
+    responses:
+      - status_code: 200
+        body: |
+          {{ minify_json `
+            {
+              "data": {
+                "eventsFeed": {
+                  "fetchedCount": 0,
+                  "marker": "valuesmarker1",
+                  "accounts": [
+                    {
+                      "errorString": "",
+                      "records": []
+                    }
+                  ]
+                }
+              }
+            }
+          `}}
   # Event Datastream with filters (account 33333)
   # With filters, each page stays short (1 event, below the 3000 page size), so each request is
   # its own cycle and the next one starts at the next interval. The marker advances until the

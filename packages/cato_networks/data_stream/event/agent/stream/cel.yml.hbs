@@ -70,10 +70,21 @@ program: |
           "variables": {
             "accountIDs": state.account_ids,
             ?"marker": state.?cursor.marker,
+            // filters is a list, or a single mapping that is wrapped into a list. Fleet parses the
+            // YAML, so unquoted numbers and booleans in values are converted to the strings that
+            // the API expects. The variable has no default, so state.filters is absent unless it is
+            // set. A null, for example a value that only contains comments, sends no filters.
             ?"filters": (state.?filters.orValue(null) == null) ?
               optional.none()
             :
-              optional.of((type(state.filters) == list) ? state.filters : [state.filters]),
+              optional.of(
+                ((type(state.filters) == list) ? state.filters : [state.filters]).map(f,
+                  f.?values.hasValue() ?
+                    f.with({"values": ((type(f.values) == list) ? f.values : [f.values]).map(v, string(v))})
+                  :
+                    f
+                )
+              ),
           },
         }.encode_json(),
       }
