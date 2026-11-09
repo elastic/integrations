@@ -183,7 +183,7 @@ The Chargeback Serverless integration collects two metrics data streams:
 
 ## Alerting rule templates
 
-Create alerting rules from the 10 packaged ES|QL rule templates under **Stack Management → Rules**. Customize thresholds and entity filters directly on **line 2** of each rule template's ES|QL query (`EVAL threshold_spend = ...`):
+Create alerting rules from the 10 packaged ES|QL rule templates under **Stack Management → Rules**. Customize thresholds and entity filters directly on **line 2** of each rule template's ES|QL query (`EVAL threshold_spend = <value>`):
 
 - **`[Chargeback Serverless] Total daily spend threshold exceeded`**: Alerts when total organization daily spend exceeds `threshold_spend` (default `1000.0`).
 - **`[Chargeback Serverless] Rolling 30-day total spend budget exceeded`**: Alerts when rolling 30-day spend exceeds `threshold_budget` (default `25000.0`).
