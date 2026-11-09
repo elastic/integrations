@@ -18,6 +18,7 @@ processors:
       field:
         - period_start
         - _raw_inference_count
+        - _raw_time_ms
       ignore_missing: true
   - script:
       ignore_failure: true
@@ -50,15 +51,6 @@ processors:
                 nsParts.add(parts[i]);
               }
               ctx.ds_namespace = String.join('-', nsParts);
-            } else if (parts.length >= 2 && /^v?\d+\.\d+(?:\.\d+.*)?$/.matcher(parts[parts.length - 1]).matches()) {
-              def p0 = parts[0].toLowerCase();
-              ctx.ds_type = p0.contains('metric') ? 'metrics' : (p0.contains('apm') || p0.contains('trace') ? 'traces' : (p0.contains('heartbeat') || p0.contains('synth') ? 'synthetics' : (p0.contains('beat') || p0.contains('log') ? 'logs' : 'index')));
-              def mid = new ArrayList();
-              for (int i = 0; i < parts.length - 1; i++) {
-                mid.add(parts[i]);
-              }
-              ctx.ds_dataset = String.join('-', mid);
-              ctx.ds_namespace = 'default';
             } else {
               ctx.ds_type = 'index';
               ctx.ds_dataset = ctx.datastream;
