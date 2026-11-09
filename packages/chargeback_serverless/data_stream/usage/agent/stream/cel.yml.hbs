@@ -442,53 +442,87 @@ program: |-
                                                                                                         "conf_currency_symbol": state.conf_currency_symbol,
                                                                                                       }
                                                                                                     ) : [])
-                                                                                                ).as(all_ai_evts,
-                                                                                                  ((ml_resp.StatusCode == 429 || ml_resp.StatusCode >= 500) || (inf_resp.StatusCode == 429 || inf_resp.StatusCode >= 500) || (syn_resp.StatusCode == 429 || syn_resp.StatusCode >= 500)).as(sub_transient_err,
-                                                                                                    (!sub_transient_err && ((ml_resp.StatusCode != 200 && ml_resp.StatusCode != 404) || (inf_resp.StatusCode != 200 && inf_resp.StatusCode != 404))).as(ai_auth_err,
-                                                                                                      rows.filter(row,
-                                                                                                        !row.index.startsWith(".") || row.index.startsWith(".ds-")
-                                                                                                      ).map(row,
-                                                                                                        {
-                                                                                                          "@timestamp": day_ts,
-                                                                                                          "period_start": day_ts,
-                                                                                                          "doc_type": "datastream",
-                                                                                                          "project_id": p.id,
-                                                                                                          "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
-                                                                                                          "project_type": p.project_type,
-                                                                                                          "datastream": row.index,
-                                                                                                          "datastream_sum_indexing_time": ("indexing.index_time" in row && row["indexing.index_time"] != null && row["indexing.index_time"] != "") ? int(row["indexing.index_time"]) : 0,
-                                                                                                          "datastream_sum_query_time": ("search.query_time" in row && row["search.query_time"] != null && row["search.query_time"] != "") ? int(row["search.query_time"]) : 0,
-                                                                                                          "datastream_sum_data_set_store_size": ("dataset.size" in row && row["dataset.size"] != null && row["dataset.size"] != "") ? int(row["dataset.size"]) : 0,
-                                                                                                          "conf_chargeable_unit_rate": double(state.conf_unit_rate),
-                                                                                                          "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-                                                                                                          "conf_currency_symbol": state.conf_currency_symbol,
-                                                                                                        }
-                                                                                                      ) +
-                                                                                                      all_ai_evts +
-                                                                                                      all_syn_evts +
-                                                                                                      [
-                                                                                                        {
-                                                                                                          "@timestamp": day_ts,
-                                                                                                          "period_start": day_ts,
-                                                                                                          "doc_type": "project_status",
-                                                                                                          "project_id": p.id,
-                                                                                                          "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
-                                                                                                          "project_type": p.project_type,
-                                                                                                          "optimized_for": has(p.optimized_for) ? p.optimized_for : "general_purpose",
-                                                                                                          "es_url": es_base_url,
-                                                                                                          "last_status": (sub_transient_err || ai_auth_err) ? "empty_or_unauthorized" : "ok",
-                                                                                                          "api_key_type": sub_transient_err ? "transient_error" : resolved_ktype,
-                                                                                                          "synthetics_status": (syn_resp.StatusCode != 200 && syn_resp.StatusCode != 404) ? "unauthorized" : ((size(harvested_syn_evts) == 0 && size(all_syn_evts) > 0) ? "billing_derived" : "ok"),
-                                                                                                          "index_count": size(rows),
-                                                                                                          "datastream_count": size(rows.filter(r, !r.index.startsWith(".") || r.index.startsWith(".ds-"))),
-                                                                                                          "ai_model_count": size(all_ai_evts),
-                                                                                                          "synthetics_monitor_count": size(all_syn_evts),
-                                                                                                          "updated_at": now.format(time_layout.RFC3339),
-                                                                                                          "conf_chargeable_unit_rate": double(state.conf_unit_rate),
-                                                                                                          "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-                                                                                                          "conf_currency_symbol": state.conf_currency_symbol,
-                                                                                                        }
-                                                                                                      ]
+                                                                                                ).as(harvested_ai_evts,
+                                                                                                  proj_bill_insts.exists(inst,
+                                                                                                    has(inst.product_line_items) && inst.product_line_items != null &&
+                                                                                                    inst.product_line_items.exists(li,
+                                                                                                      has(li.sku) && li.sku != null && string(li.sku).lowerAscii().as(s,
+                                                                                                        (s.contains("-ml-vcu") || s.contains("ml-vcu") || s.contains("ml.ecu") || s.contains("ml_ecu") || s.contains("ml.vcu") || s.contains("ml_inference") || s.contains(".eis") || s.contains("inference") || s.contains("llm") || s.contains("agent-builder")) &&
+                                                                                                        (!has(li.total_ecu) || li.total_ecu == null || double(li.total_ecu) > 0.0 || (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null && double(li.quantity.value) > 0.0))
+                                                                                                      )
+                                                                                                    )
+                                                                                                  ).as(has_ai_sku,
+                                                                                                    (
+                                                                                                      harvested_ai_evts +
+                                                                                                      ((size(harvested_ai_evts) == 0 && has_ai_sku) ?
+                                                                                                        [
+                                                                                                          {
+                                                                                                            "@timestamp": day_ts,
+                                                                                                            "period_start": day_ts,
+                                                                                                            "doc_type": "ai_model",
+                                                                                                            "project_id": p.id,
+                                                                                                            "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                                                                                                            "project_type": p.project_type,
+                                                                                                            "model_id": "billing-derived-ai",
+                                                                                                            "task_type": "billing_derived",
+                                                                                                            "inference_count": 0,
+                                                                                                            "average_inference_time_ms": 0.0,
+                                                                                                            "total_inference_time_ms": 0,
+                                                                                                            "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                                                                            "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                                                                            "conf_currency_symbol": state.conf_currency_symbol,
+                                                                                                          }
+                                                                                                        ]
+                                                                                                      : [])
+                                                                                                    ).as(all_ai_evts,
+                                                                                                      ((ml_resp.StatusCode == 429 || ml_resp.StatusCode >= 500) || (inf_resp.StatusCode == 429 || inf_resp.StatusCode >= 500) || (syn_resp.StatusCode == 429 || syn_resp.StatusCode >= 500)).as(sub_transient_err,
+                                                                                                        (!sub_transient_err && ((ml_resp.StatusCode != 200 && ml_resp.StatusCode != 404) || (inf_resp.StatusCode != 200 && inf_resp.StatusCode != 404))).as(ai_auth_err,
+                                                                                                          rows.filter(row,
+                                                                                                            !row.index.startsWith(".") || row.index.startsWith(".ds-")
+                                                                                                          ).map(row,
+                                                                                                            {
+                                                                                                              "@timestamp": day_ts,
+                                                                                                              "period_start": day_ts,
+                                                                                                              "doc_type": "datastream",
+                                                                                                              "project_id": p.id,
+                                                                                                              "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                                                                                                              "project_type": p.project_type,
+                                                                                                              "datastream": row.index,
+                                                                                                              "datastream_sum_indexing_time": ("indexing.index_time" in row && row["indexing.index_time"] != null && row["indexing.index_time"] != "") ? int(row["indexing.index_time"]) : 0,
+                                                                                                              "datastream_sum_query_time": ("search.query_time" in row && row["search.query_time"] != null && row["search.query_time"] != "") ? int(row["search.query_time"]) : 0,
+                                                                                                              "datastream_sum_data_set_store_size": ("dataset.size" in row && row["dataset.size"] != null && row["dataset.size"] != "") ? int(row["dataset.size"]) : 0,
+                                                                                                              "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                                                                              "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                                                                              "conf_currency_symbol": state.conf_currency_symbol,
+                                                                                                            }
+                                                                                                          ) +
+                                                                                                          all_ai_evts +
+                                                                                                          all_syn_evts +
+                                                                                                          [
+                                                                                                            {
+                                                                                                              "@timestamp": day_ts,
+                                                                                                              "period_start": day_ts,
+                                                                                                              "doc_type": "project_status",
+                                                                                                              "project_id": p.id,
+                                                                                                              "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                                                                                                              "project_type": p.project_type,
+                                                                                                              "optimized_for": has(p.optimized_for) ? p.optimized_for : "general_purpose",
+                                                                                                              "es_url": es_base_url,
+                                                                                                              "last_status": (sub_transient_err || ai_auth_err) ? "empty_or_unauthorized" : "ok",
+                                                                                                              "api_key_type": sub_transient_err ? "transient_error" : resolved_ktype,
+                                                                                                              "synthetics_status": (syn_resp.StatusCode != 200 && syn_resp.StatusCode != 404) ? "unauthorized" : ((size(harvested_syn_evts) == 0 && size(all_syn_evts) > 0) ? "billing_derived" : "ok"),
+                                                                                                              "index_count": size(rows),
+                                                                                                              "datastream_count": size(rows.filter(r, !r.index.startsWith(".") || r.index.startsWith(".ds-"))),
+                                                                                                              "ai_model_count": size(all_ai_evts),
+                                                                                                              "synthetics_monitor_count": size(all_syn_evts),
+                                                                                                              "updated_at": now.format(time_layout.RFC3339),
+                                                                                                              "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                                                                              "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                                                                              "conf_currency_symbol": state.conf_currency_symbol,
+                                                                                                            }
+                                                                                                          ]
+                                                                                                        )
+                                                                                                      )
                                                                                                     )
                                                                                                   )
                                                                                                 )
@@ -506,6 +540,7 @@ program: |-
                                                                         )
                                                                       )
                                                                     )
+                                                                  )
                                                                 :
                                                                   [
                                                                     {
@@ -555,7 +590,7 @@ program: |-
                                             )
                                           ).map(inst,
                                             ((has(inst.name) && inst.name != null && string(inst.name) != "") ? string(inst.name) : string(inst.id)).as(del_pname,
-                                              ((has(inst.type) && inst.type != null && string(inst.type) != "" && string(inst.type) != "serverless" && string(inst.type) != "deployment") ? string(inst.type) : "elasticsearch").as(del_ptype,
+                                              (((has(inst.type) && inst.type != null && (string(inst.type).lowerAscii() == "observability" || string(inst.type).lowerAscii() == "oblt" || string(inst.type).lowerAscii().contains("observability") || string(inst.type).lowerAscii().contains("oblt"))) || (has(inst.product_line_items) && inst.product_line_items != null && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).lowerAscii().as(s, s.startsWith("observability.") || s.startsWith("oblt.") || s.contains(".observability.") || s.contains(".oblt.") || s.contains("synthetic"))))) ? "observability" : (((has(inst.type) && inst.type != null && (string(inst.type).lowerAscii() == "security" || string(inst.type).lowerAscii() == "sec" || string(inst.type).lowerAscii().contains("security"))) || (has(inst.product_line_items) && inst.product_line_items != null && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).lowerAscii().as(s, s.startsWith("security.") || s.startsWith("sec.") || s.contains(".security.") || s.contains(".sec."))))) ? "security" : (((has(inst.type) && inst.type != null && (string(inst.type).lowerAscii() == "search" || string(inst.type).lowerAscii().contains("search"))) || (has(inst.product_line_items) && inst.product_line_items != null && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).lowerAscii().as(s, s.startsWith("search.") || s.contains(".search."))))) ? "search" : ((has(inst.type) && inst.type != null && string(inst.type) != "" && string(inst.type).lowerAscii() != "serverless" && string(inst.type).lowerAscii() != "deployment" && string(inst.type).lowerAscii() != "es") ? string(inst.type).lowerAscii() : "elasticsearch")))).as(del_ptype,
                                                 inst.product_line_items.filter(li,
                                                   has(li.sku) && li.sku != null && string(li.sku).lowerAscii().as(s,
                                                     (s.contains("retained") || s.contains("storage") || s.contains("retention")) && !s.contains("snapshot")
@@ -563,7 +598,7 @@ program: |-
                                                 ).map(li,
                                                   ((has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null) ? double(li.quantity.value) : 0.0).as(qval,
                                                     (((has(li.quantity) && li.quantity != null && has(li.quantity.unit) && li.quantity.unit != null) ? string(li.quantity.unit) : (has(li.unit) && li.unit != null ? string(li.unit) : "")).lowerAscii()).as(qunit,
-                                                      (double((day_end - day_start) / duration("1h")) > 0.0 ? double((day_end - day_start) / duration("1h")) : 24.0).as(win_hours,
+                                                      ((double((day_end - day_start).getSeconds()) / 3600.0) > 0.0 ? (double((day_end - day_start).getSeconds()) / 3600.0) : 24.0).as(win_hours,
                                                         ((qunit == "" || qunit.contains("hour") || qunit.contains("hr") || qunit.endsWith("-h") || qunit.endsWith("_h") || qunit.endsWith("gbh")) ? (qval / win_hours) : qval).as(norm_qval,
                                                           (qunit.contains("tb") || qunit.contains("tib") || qunit.contains("terabyte") ? 1099511627776.0 : (qunit.contains("mb") || qunit.contains("mib") || qunit.contains("megabyte") ? 1048576.0 : (qunit.contains("kb") || qunit.contains("kib") || qunit.contains("kilobyte") ? 1024.0 : (qunit.contains("byte") ? 1.0 : 1073741824.0)))).as(unit_bytes,
                                                             norm_qval * unit_bytes

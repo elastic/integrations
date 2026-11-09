@@ -108,11 +108,19 @@ program: |-
                                 sls_instances.map(instance,
                                   projects.filter(p, has(instance.id) && instance.id != null && p.id == instance.id).as(matched_projs,
                                     ((size(matched_projs) > 0 && has(matched_projs[0].project_type) && matched_projs[0].project_type != null && matched_projs[0].project_type != "") ? matched_projs[0].project_type : (
-                                      (has(instance.type) && instance.type != null && instance.type != "" && instance.type != "serverless" && instance.type != "deployment") ? instance.type : (
-                                        (has(instance.product_line_items) && instance.product_line_items != null && size(instance.product_line_items.filter(li, has(li.sku) && li.sku.startsWith("observability."))) > 0) ? "observability" : (
-                                          (has(instance.product_line_items) && instance.product_line_items != null && size(instance.product_line_items.filter(li, has(li.sku) && li.sku.startsWith("security."))) > 0) ? "security" : (
-                                            (has(instance.product_line_items) && instance.product_line_items != null && size(instance.product_line_items.filter(li, has(li.sku) && li.sku.startsWith("search."))) > 0) ? "search" : (
-                                              (has(instance.type) && instance.type != null && instance.type != "") ? instance.type : "elasticsearch"
+                                      ((has(instance.type) && instance.type != null) ? string(instance.type).lowerAscii() : "").as(raw_inst_type,
+                                        (raw_inst_type == "observability" || raw_inst_type == "oblt" || raw_inst_type.contains("observability") || raw_inst_type.contains("oblt")) ? "observability" : (
+                                          (raw_inst_type == "security" || raw_inst_type == "sec" || raw_inst_type.contains("security")) ? "security" : (
+                                            (raw_inst_type == "search" || raw_inst_type.contains("search")) ? "search" : (
+                                              (raw_inst_type == "elasticsearch" || raw_inst_type == "es" || raw_inst_type.contains("elasticsearch")) ? "elasticsearch" : (
+                                                (has(instance.product_line_items) && instance.product_line_items != null && instance.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).lowerAscii().as(s, s.startsWith("observability.") || s.startsWith("oblt.") || s.contains(".observability.") || s.contains(".oblt.") || s.contains("synthetic")))) ? "observability" : (
+                                                  (has(instance.product_line_items) && instance.product_line_items != null && instance.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).lowerAscii().as(s, s.startsWith("security.") || s.startsWith("sec.") || s.contains(".security.") || s.contains(".sec.")))) ? "security" : (
+                                                    (has(instance.product_line_items) && instance.product_line_items != null && instance.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).lowerAscii().as(s, s.startsWith("search.") || s.contains(".search.")))) ? "search" : (
+                                                      (raw_inst_type != "" && raw_inst_type != "serverless" && raw_inst_type != "deployment") ? raw_inst_type : "elasticsearch"
+                                                    )
+                                                  )
+                                                )
+                                              )
                                             )
                                           )
                                         )
@@ -192,42 +200,48 @@ program: |-
                                       items_body.products.filter(prod,
                                         !has(prod.type) || prod.type == null || string(prod.type) != "deployment"
                                       ).map(prod,
-                                        ((has(prod.type) && prod.type != null && string(prod.type) != "" && string(prod.type) != "serverless" && string(prod.type) != "deployment") ? string(prod.type) : "elasticsearch").as(prod_type,
-                                          (has(prod.product_line_items) && prod.product_line_items != null) ?
-                                            prod.product_line_items.filter(li,
-                                              has(li.sku) && li.sku != null && (
-                                                li.sku.contains("-vcu") || li.sku.contains(".ecu") || li.sku.contains(".observability.") || li.sku.contains(".security.") ||
-                                                li.sku.contains(".search.") || li.sku.startsWith("serverless.") || li.sku.startsWith("observability.") ||
-                                                li.sku.startsWith("security.") || li.sku.startsWith("search.") || li.sku.contains("synthetic") ||
-                                                li.sku.contains(".retained") || ((li.sku == "global.inference-chat-input" || li.sku.contains("inference") || li.sku.contains("agent-builder") || li.sku.contains(".eis") || li.sku.contains("workflow") || li.sku.contains("cross-project")) && has(prod.type) && prod.type != null && string(prod.type) != "" && string(prod.type) != "deployment")
-                                              )
-                                            ).map(li,
-                                              ((!has(prod.type) || prod.type == null || string(prod.type) == "" || string(prod.type) == "serverless") ? instance_evts.filter(e, e.sku == li.sku) : instance_evts.filter(e, e.sku == li.sku && e.project_type == prod_type)).as(matched_evts,
-                                                matched_evts.map(e, e.total_ecu).as(matched_ecus,
-                                                  (size(matched_ecus) == 0 ? 0.0 : matched_ecus.sum()).as(day_sku_ecu,
-                                                    matched_evts.map(e, e.quantity_value).as(matched_qtys,
-                                                      (size(matched_qtys) == 0 ? 0.0 : matched_qtys.sum()).as(day_sku_qty,
-                                                        ((has(li.total_ecu) && li.total_ecu != null) ? double(li.total_ecu) : 0.0).as(item_ecu,
-                                                          ((has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null) ? double(li.quantity.value) : 0.0).as(item_qty,
-                                                            (item_ecu - day_sku_ecu).as(diff_ecu,
-                                                              (max(0.0, item_qty - day_sku_qty)).as(diff_qty,
-                                                                (diff_ecu > 0.0001 || (day_sku_ecu == 0.0 && item_qty > 0.0)) ?
-                                                                  [
-                                                                    {
-                                                                      "@timestamp": req.from.format(time_layout.RFC3339),
-                                                                      "period_start": req.from.format(time_layout.RFC3339),
-                                                                      "project_id": "deleted_or_unassociated_" + prod_type,
-                                                                      "project_name": "Deleted / Unassociated (" + prod_type + ")",
-                                                                      "project_type": prod_type,
-                                                                      "sku": li.sku,
-                                                                      "total_ecu": max(0.0, diff_ecu),
-                                                                      "quantity_value": diff_qty,
-                                                                      "conf_chargeable_unit_rate": double(state.conf_unit_rate),
-                                                                      "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-                                                                      "conf_currency_symbol": state.conf_currency_symbol,
-                                                                    }
-                                                                  ]
-                                                                : []
+                                        ((has(prod.type) && prod.type != null) ? string(prod.type).lowerAscii() : "").as(raw_prod_type,
+                                          ((raw_prod_type == "observability" || raw_prod_type == "oblt" || raw_prod_type.contains("observability") || raw_prod_type.contains("oblt")) ? "observability" : ((raw_prod_type == "security" || raw_prod_type == "sec" || raw_prod_type.contains("security")) ? "security" : ((raw_prod_type == "search" || raw_prod_type.contains("search")) ? "search" : ((raw_prod_type == "elasticsearch" || raw_prod_type == "es" || raw_prod_type.contains("elasticsearch")) ? "elasticsearch" : ((raw_prod_type != "" && raw_prod_type != "serverless" && raw_prod_type != "deployment") ? raw_prod_type : "elasticsearch"))))).as(prod_type,
+                                            (has(prod.product_line_items) && prod.product_line_items != null) ?
+                                              prod.product_line_items.filter(li,
+                                                has(li.sku) && li.sku != null && (
+                                                  li.sku.contains("-vcu") || li.sku.contains(".ecu") || li.sku.contains(".observability.") || li.sku.contains(".security.") ||
+                                                  li.sku.contains(".search.") || li.sku.startsWith("serverless.") || li.sku.startsWith("observability.") ||
+                                                  li.sku.startsWith("security.") || li.sku.startsWith("search.") || li.sku.contains("synthetic") ||
+                                                  li.sku.contains(".retained") || ((li.sku == "global.inference-chat-input" || li.sku.contains("inference") || li.sku.contains("agent-builder") || li.sku.contains(".eis") || li.sku.contains("workflow") || li.sku.contains("cross-project")) && has(prod.type) && prod.type != null && string(prod.type) != "" && string(prod.type) != "deployment")
+                                                )
+                                              ).map(li,
+                                                string(li.sku).lowerAscii().as(ls,
+                                                  ((raw_prod_type != "" && raw_prod_type != "serverless" && raw_prod_type != "deployment") ? prod_type : ((ls.startsWith("observability.") || ls.startsWith("oblt.") || ls.contains(".observability.") || ls.contains(".oblt.") || ls.contains("synthetic")) ? "observability" : ((ls.startsWith("security.") || ls.startsWith("sec.") || ls.contains(".security.") || ls.contains(".sec.")) ? "security" : ((ls.startsWith("search.") || ls.contains(".search.")) ? "search" : "elasticsearch")))).as(eff_prod_type,
+                                                    ((raw_prod_type == "" || raw_prod_type == "serverless") ? instance_evts.filter(e, e.sku == li.sku) : instance_evts.filter(e, e.sku == li.sku && e.project_type == eff_prod_type)).as(matched_evts,
+                                                      matched_evts.map(e, e.total_ecu).as(matched_ecus,
+                                                        (size(matched_ecus) == 0 ? 0.0 : matched_ecus.sum()).as(day_sku_ecu,
+                                                          matched_evts.map(e, e.quantity_value).as(matched_qtys,
+                                                            (size(matched_qtys) == 0 ? 0.0 : matched_qtys.sum()).as(day_sku_qty,
+                                                              ((has(li.total_ecu) && li.total_ecu != null) ? double(li.total_ecu) : 0.0).as(item_ecu,
+                                                                ((has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null) ? double(li.quantity.value) : 0.0).as(item_qty,
+                                                                  (item_ecu - day_sku_ecu).as(diff_ecu,
+                                                                    (max(0.0, item_qty - day_sku_qty)).as(diff_qty,
+                                                                      (diff_ecu > 0.0001 || (day_sku_ecu == 0.0 && item_qty > 0.0)) ?
+                                                                        [
+                                                                          {
+                                                                            "@timestamp": req.from.format(time_layout.RFC3339),
+                                                                            "period_start": req.from.format(time_layout.RFC3339),
+                                                                            "project_id": "deleted_or_unassociated_" + eff_prod_type,
+                                                                            "project_name": "Deleted / Unassociated (" + eff_prod_type + ")",
+                                                                            "project_type": eff_prod_type,
+                                                                            "sku": li.sku,
+                                                                            "total_ecu": max(0.0, diff_ecu),
+                                                                            "quantity_value": diff_qty,
+                                                                            "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                                            "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                                            "conf_currency_symbol": state.conf_currency_symbol,
+                                                                          }
+                                                                        ]
+                                                                      : []
+                                                                    )
+                                                                  )
+                                                                )
                                                               )
                                                             )
                                                           )
@@ -236,9 +250,9 @@ program: |-
                                                     )
                                                   )
                                                 )
-                                              )
-                                            ).flatten()
-                                          : []
+                                              ).flatten()
+                                            : []
+                                          )
                                         )
                                       ).flatten()
                                     : []) +
