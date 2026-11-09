@@ -35,19 +35,19 @@ This input can be deployed in two ways:
 
 ### Core settings
 
-| Setting | Description | Default |
-|---|---|---|
-| AWS Region | The AWS region to query CloudWatch metrics from (for example, `us-east-1`). | |
-| AWS Access Key ID | The access key used to authenticate to AWS. Mapped to `AWS_ACCESS_KEY_ID`. | |
-| AWS Secret Access Key | The secret key paired with the access key. Mapped to `AWS_SECRET_ACCESS_KEY`. | |
-| AWS Session Token | Required only when using temporary (STS) credentials. Mapped to `AWS_SESSION_TOKEN`. | |
+| Setting | Description |
+|---|---|
+| AWS Region | The AWS region to query CloudWatch metrics from (for example, `us-east-1`). |
+| AWS Access Key ID | The access key used to authenticate to AWS. Mapped to `AWS_ACCESS_KEY_ID`. |
+| AWS Secret Access Key | The secret key paired with the access key. Mapped to `AWS_SECRET_ACCESS_KEY`. |
+| AWS Session Token | Required only when using temporary (STS) credentials. Mapped to `AWS_SESSION_TOKEN`. |
 
 ### Advanced settings
 
-| Setting | Description | Default |
-|---|---|---|
-| AWS Role ARN | Role to assume. Mapped to `AWS_ROLE_ARN`. | |
-| AWS External ID | External ID for the assumed role. Mapped to `AWS_ROLE_EXTERNAL_ID`. | |
+| Setting | Description |
+|---|---|
+| AWS Role ARN | Role to assume. Mapped to `AWS_ROLE_ARN`. |
+| AWS External ID | External ID for the assumed role. Mapped to `AWS_ROLE_EXTERNAL_ID`. |
 
 ## Authentication
 
