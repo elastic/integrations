@@ -65,7 +65,7 @@ Each service collects a set of statistics chosen to suit that service's metrics 
 | AWS Access Key ID | The access key used to authenticate to AWS. |
 | AWS Secret Access Key | The secret key paired with the access key. |
 | AWS Session Token | Required only when using temporary (STS) credentials. |
-| AWS Role ARN | The IAM role to assume. With Identity Federation, Kibana fills it in from the CloudFormation stack output. |
+| AWS Role ARN | The IAM role to assume. With Identity Federation, paste the Role ARN from the CloudFormation stack outputs. |
 
 ### Collection settings
 
