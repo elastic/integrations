@@ -6,7 +6,7 @@ Use this integration when your central FinOps hub runs on **Elastic Cloud Server
 
 ## Overview
 
-- **Single unified Elastic Cloud API key (`cloud_api_key`)**: Authenticates to the Elastic Cloud Billing API (including deleted deployments and projects through `/api/v1/billing/organization/{organization_id}/history`), Control Plane project discovery (`/api/v1/serverless/projects`), and the Elasticsearch Data Plane across all Serverless projects in your organization.
+- **Single unified Elastic Cloud API key (`cloud_api_key`)**: Authenticates to the Elastic Cloud Billing API (including decommissioned projects that still have billing line items in the window through `GET /api/v2/billing/organizations/{org_id}/costs/instances`), Control Plane project discovery (`/api/v1/serverless/projects`), and the Elasticsearch Data Plane (`GET /_cat/indices` to harvest index and data stream storage, indexing time, and query time) across all Serverless projects in your organization.
 - **Billing classification pipeline (`chargeback-serverless-billing`)**: Classifies Elastic Cloud Serverless Stock Keeping Units (SKUs) into `allocation_driver` (`indexing`, `query`, `storage`, `ai`, `synthetics`, or `none`) and `cost_category` (`data_tier`, `platform`, `transfer`, `snapshot`, `support`, or `other`).
 - **Five linked Kibana dashboards**: Reconcile organization-wide invoices, allocate workload and data stream costs, and track AI, Machine Learning (ML), Synthetics, and project harvest health using Elasticsearch Query Language (ES|QL) `LOOKUP JOIN` queries.
 - **Local currency normalization**: Converts Elastic Consumption Units (ECU) into your configured currency (`conf_chargeable_unit_rate` and `conf_chargeable_unit_rate_unit`).
@@ -35,6 +35,8 @@ Configure your Organization ID, unified Elastic Cloud API key, lookbehind window
 | **Currency Symbol** | No | Currency symbol displayed in KPI panels (for example, `\$`, `€`, or `£`) |
 | **Chargeable Unit Rate** | No | Conversion multiplier from chargeable units (ECU) to your configured currency |
 
+The integration provisions seven continuous transforms and lookup indices on your FinOps hub project. Three right-hand lookup indices (`serverless_project_status_lookup`, `serverless_billing_realized_pool_lookup`, and `serverless_project_contribution_lookup`) configure `index.mode: lookup` so dashboard panels and alerting rules can join project status, realized SKU pools, and project usage totals with ES|QL `LOOKUP JOIN`.
+
 ## Dashboards
 
 In Kibana, open **Dashboards** and filter by the **Chargeback** tag. Use the shared top navigation bar on any dashboard to switch views while preserving your active time range and filters (`Project type`, `Project name`, `Cost category`, `Cost type`, and `Allocation driver`).
@@ -58,7 +60,7 @@ The **`[Chargeback Serverless] Usage & Cost Allocation`** dashboard attributes a
 - **Workload pool summary KPIs**: Dedicated KPI tiles for the Indexing pool (`ingest-vcu`), Search and Query pool (`search-vcu`), Storage pool (`retained`), AI and ML pool (`ml-vcu`), and Synthetics pool. Telemetry counters (`indexing.index_time`, `search.query_time`) harvested via `_cat/indices` are cumulative lifetime counters per backing index; allocation divides daily VCU pools by each stream's relative share, with automatic proportional fallback to storage size share (`dataset.size`) when indexing or query time across a project is zero.
 - **Daily allocatable cost by workload driver**: Stacked time series tracking daily spend across indexing, search, storage, AI, and Synthetics drivers.
 - **Per-project allocation breakdown**: Driver spend attributed to each Serverless project.
-- **Data stream cost attribution**: Storage, ingest, and search spend broken down by namespace (`ds_namespace`), data stream type (`ds_type`, such as `logs`, `metrics`, `traces`, `.kibana`, and `.alerts`), and dataset (`ds_dataset`).
+- **Data stream cost attribution**: Storage, ingest, and search spend broken down by namespace (`ds_namespace`), data stream type (`ds_type`), and dataset (`ds_dataset`). Standard Elastic data streams follow `<type>-<dataset>-<namespace>` (`logs`, `metrics`, `traces`, `synthetics`, and `profiling`), `.ds-.` system data streams (such as `.ds-.kibana*` and `.ds-.alerts*`) map to the `system` namespace (`ds_type: system`, `ds_namespace: system`), and standard non-data-stream Elasticsearch indices map to `ds_type: index` and `ds_namespace: default`.
 - **Harvested data stream metrics**: Inventory of data streams harvested through `_cat/indices`, displaying document counts, primary dataset storage size, and index lifecycle status.
 
 ![Chargeback Serverless Usage and Cost Allocation dashboard showing workload pool KPIs and data stream cost attribution](../img/chargeback-serverless-usage-allocation.png)
