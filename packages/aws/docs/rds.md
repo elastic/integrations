@@ -308,7 +308,7 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | aws.rds.oldest_replication_slot_lag.mb | The lagging size of the replica lagging the most in terms of WAL data received. Applies to PostgreSQL. | long | gauge |
 | aws.rds.queries | The average number of queries executed per second. | long | gauge |
 | aws.rds.rds_to_aurora_postgresql_replica_lag.sec | The amount of lag in seconds when replicating updates from the primary RDS PostgreSQL instance to other nodes in the cluster. | long | gauge |
-| aws.rds.read_io.ops_per_sec | The average number of disk read I/O operations per second. | float | gauge |
+| aws.rds.read.iops | The average number of disk read I/O operations per second. | float | gauge |
 | aws.rds.replica_lag.sec | The amount of time a Read Replica DB instance lags behind the source DB instance. Applies to MySQL, MariaDB, and PostgreSQL Read Replicas. | long | gauge |
 | aws.rds.storage_used.backup_retention_period.bytes | The total amount of backup storage in bytes used to support the point-in-time restore feature within the Aurora DB cluster's backup retention window. | long | gauge |
 | aws.rds.storage_used.snapshot.bytes | The total amount of backup storage in bytes consumed by all Aurora snapshots for an Aurora DB cluster outside its backup retention window. | long | gauge |
@@ -331,7 +331,7 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | aws.rds.volume.read.iops | The number of billed read I/O operations from a cluster volume, reported at 5-minute intervals. | long | gauge |
 | aws.rds.volume.write.iops | The number of write disk I/O operations to the cluster volume, reported at 5-minute intervals. | long | gauge |
 | aws.rds.volume_used.bytes | The amount of storage used by your Aurora DB instance, in bytes. | long | gauge |
-| aws.rds.write_io.ops_per_sec | The average number of disk write I/O operations per second. | float | gauge |
+| aws.rds.write.iops | The average number of disk write I/O operations per second. | float | gauge |
 | aws.tags | Tag key value pairs from aws resources. | flattened |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
