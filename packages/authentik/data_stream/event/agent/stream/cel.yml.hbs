@@ -74,9 +74,10 @@ program: |
                 ((newest == timestamp(state.newest_timestamp)) ? state.newest_ids : []).as(seen_ids,
                   {
                     "timestamp": newest.format(time_layout.RFC3339Nano),
-                    "ids": seen_ids + new_events.filter(e,
-                      timestamp(e.created) == newest && !(e.pk in seen_ids)
-                    ).map(e, e.pk),
+                    "ids": seen_ids + new_events.map(e,
+                      timestamp(e.created) == newest && !(e.pk in seen_ids),
+                      e.pk
+                    ),
                   }
                 )
               ).as(page_newest,
