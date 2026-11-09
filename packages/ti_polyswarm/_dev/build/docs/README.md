@@ -83,7 +83,7 @@ Useful refinements:
 Indicators are held in two tiers, following the same pattern as Elastic's other threat intelligence integrations:
 
 - **Source data stream** `logs-ti_polyswarm.scans-*`: every poll re-ingests the artifacts still inside the rolling query window, duplicates included. This re-assertion acts as a heartbeat proving an indicator is still current. Retention bounds its growth — see [Source data stream retention](#source-data-stream-retention) below.
-- **Latest transform** `logs-ti_polyswarm_latest.scans`: keeps exactly one document per `threat.indicator.file.hash.sha256`, the most recent by `event.ingested`. Its retention policy deletes indicators whose last re-assertion is older than 48 hours — so once an artifact ages out of the query window, its IOC expires automatically.
+- **Latest transform** `logs-ti_polyswarm_latest.scans`: keeps exactly one document per `threat.indicator.file.hash.sha256`, the most recent by `event.ingested`. Its retention policy deletes indicators whose last re-assertion is older than 48 hours, so an artifact that ages out of the query window drops out of the deduplicated view. That expiration is applied on completed transform checkpoints rather than on a timer, so it stalls whenever indicator ingestion stops — see [Expiration depends on continued ingestion](#expiration-depends-on-continued-ingestion).
 
 For indicator-match rules and dashboards, always query the deduplicated index `logs-ti_polyswarm_latest.scans` rather than the raw source stream.
 
@@ -109,11 +109,17 @@ Because expiration is driven by recency of re-assertion, a polling interval that
 
 ### Expiration depends on continued ingestion
 
-The transform's retention policy is applied as part of a completed checkpoint, not on an independent timer. A checkpoint only completes when new source documents arrive. If polling stops — agent down, network outage, revoked or expired API key — no further checkpoints complete and **the indicators already in `logs-ti_polyswarm_latest.scans` are not expired. They stay in the index, and in any indicator-match rule reading it, until ingestion resumes.**
+The transform's retention policy is applied as part of a completed checkpoint, not on an independent timer. A checkpoint only completes when new documents matching the transform's source query arrive — and that query admits only documents that carry `threat.indicator.file.hash.sha256` and no `error.message`. If indicator ingestion stops — agent down, network outage, revoked or expired API key — no further checkpoints complete and **the indicators already in `logs-ti_polyswarm_latest.scans` are not expired. They stay in the index, and in any indicator-match rule reading it, until ingestion resumes.**
 
 This is the opposite of a quiet drain: the active view looks healthy while the intelligence behind it goes stale. Plan for it:
 
-- **Alert on ingest freshness.** Watch for an absence of new `event.ingested` values on `logs-ti_polyswarm.scans-*` over a few hours, or monitor the agent and the `logs-ti_polyswarm.latest_scans-default-<version>` transform directly. This is your only reliable outage signal — the deduplicated index will not show one.
+- **Alert on ingest freshness, excluding error documents.** A rejected API key does not stop documents from arriving. Every poll still indexes an `event.kind: pipeline_error` document into `logs-ti_polyswarm.scans-*` with a fresh `event.ingested`, while no indicator document does. An alert that only watches that data stream for recent `event.ingested` values therefore stays green straight through an authentication outage — the very case most likely to cause one. Scope the alert to the documents that can actually advance a checkpoint, mirroring the transform's own source query. Set the rule's index to `logs-ti_polyswarm.scans-*` and its KQL query to:
+
+    ```
+    threat.indicator.file.hash.sha256: * and not error.message: *
+    ```
+
+    Alert when that count stays at zero for a few hours. Monitoring the agent and the `logs-ti_polyswarm.latest_scans-default-<version>` transform directly works too. One of these is your only reliable outage signal — the deduplicated index will not show one.
 - **Add a freshness bound at query time** where staleness matters. Rules and dashboards reading the latest index can constrain `event.ingested` (for example, `event.ingested >= now-48h`) so an outage removes indicators from their scope regardless of whether the transform has run.
 
 Once ingestion resumes, the next completed checkpoint applies the retention policy and the backlog of expired indicators is removed in one pass.
