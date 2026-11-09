@@ -184,6 +184,17 @@ processors:
       copy_from: openshell.ocsf.container.uid
       ignore_empty_value: true
       if: ctx.container?.id == null
+  - set:
+      field: container.image.name
+      tag: set_container_image_name_from_device
+      copy_from: openshell.ocsf.device.container.image.name
+      ignore_empty_value: true
+  - set:
+      field: container.image.name
+      tag: set_container_image_name_from_legacy_top_level
+      copy_from: openshell.ocsf.container.image.name
+      ignore_empty_value: true
+      if: ctx.container?.image?.name == null
 
   # ---- Network endpoints ----------------------------------------------------------
   - set:
@@ -477,7 +488,11 @@ processors:
           category.add('network');
           type.add(activity == 'Close' ? 'end' : 'connection');
           network.direction = 'egress';
-          network.transport = 'tcp';
+          if (o.connection_info instanceof Map
+              && o.connection_info.protocol_name instanceof String
+              && !o.connection_info.protocol_name.isEmpty()) {
+            network.transport = o.connection_info.protocol_name.toLowerCase();
+          }
         } else if (cls == 4002) {
           category.add('network');
           category.add('web');
@@ -605,6 +620,7 @@ processors:
   - remove:
       field:
         - openshell.ocsf.action
+        - openshell.ocsf.connection_info
         - openshell.ocsf.container
         - openshell.ocsf.device.container
         - openshell.ocsf.device.hostname

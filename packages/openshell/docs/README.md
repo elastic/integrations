@@ -260,6 +260,7 @@ An example event for `ocsf` looks as following:
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
 | container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
