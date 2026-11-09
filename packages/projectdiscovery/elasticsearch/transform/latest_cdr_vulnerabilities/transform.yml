@@ -15,6 +15,13 @@ source:
             field: error.message
         - term:
             event.kind: pipeline_error
+        # Resolved or dismissed findings are not kept in the latest index.
+        - terms:
+            projectdiscovery.vulnerability.vuln_status:
+              - fixed
+              - false_positive
+              - duplicate
+              - accepted_risk
         - terms:
             _tier:
               - data_frozen
@@ -34,7 +41,7 @@ latest:
     - data_stream.namespace
   sort: "@timestamp"
 description: >-
-  Latest ProjectDiscovery vulnerability findings. As findings are rescanned or triaged, this transform keeps only the latest state of each finding in a lookup index.
+  Latest ProjectDiscovery vulnerability findings. As findings are rescanned or triaged, this transform keeps only the latest state of each finding in a lookup index. Fixed, false positive, duplicate and accepted risk findings are excluded.
 frequency: 5m
 settings:
   # This is required to prevent the transform from clobbering the Fleet-managed mappings.

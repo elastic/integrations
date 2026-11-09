@@ -19,7 +19,7 @@ The integration uses the [CEL input](https://www.elastic.co/docs/reference/beats
 
 Each data stream saves its cursor only after a full pass has finished. If a pass is interrupted, it starts again from the previous cursor, so no data is lost, but some events can be duplicated.
 
-Two transforms keep the latest state of each finding and each asset in lookup mode indices. You can enrich findings with asset context by using an ES|QL `LOOKUP JOIN`.
+Two transforms keep the latest state of each finding and each asset in lookup mode indices. Fixed, false positive, duplicate and accepted risk findings are excluded from the latest vulnerability index. You can enrich findings with asset context by using an ES|QL `LOOKUP JOIN`.
 
 ## What data does this integration collect?
 
@@ -31,9 +31,9 @@ The ProjectDiscovery integration collects the following types of data:
 ### Supported use cases
 
 - Track exposed vulnerabilities in your external attack surface alongside your other security data.
-- Find vulnerabilities in the Elastic Security Findings page by using the `security_solution-projectdiscovery.vulnerability_latest` index.
+- Find vulnerabilities in the Elastic Security Findings page by using the `security_solution-projectdiscovery.vulnerability_latest` index. The **Data source** field of the findings flyout links to the Nuclei template that detected the finding (`vulnerability.data_source.*`).
 - Enrich findings with asset context (host, IP, technologies, TLS, cloud provider) by using ES|QL `LOOKUP JOIN`.
-- Monitor remediation progress through the ProjectDiscovery vulnerability status (`open`, `fixed`, `false_positive`, and others).
+- Monitor remediation progress through the ProjectDiscovery vulnerability status (`open`, `fixed`, `false_positive`, and others) in `logs-projectdiscovery.vulnerability-*`. The latest vulnerability index excludes resolved and dismissed findings.
 - Group findings and assets by root domain with `server.registered_domain`. For example, `codebox.example.co.uk` results in `example.co.uk`.
 - Group findings and assets by network owner with `server.as.number` and `server.as.organization.name`.
 
@@ -95,12 +95,15 @@ API keys have no scopes. A key acts with the team role of the user who owns it.
 1. In Kibana, go to **Discover** and select the `logs-*` data view.
 2. Filter on `data_stream.dataset : "projectdiscovery.vulnerability"` or `data_stream.dataset : "projectdiscovery.asset"`.
 3. Confirm that events appear. Events with `error.message` indicate API or decoding errors.
-4. Go to **Stack Management → Transforms** and check that the `logs-projectdiscovery.latest_vulnerability-*` and `logs-projectdiscovery.latest_asset-*` transforms are started and healthy.
+4. Go to **Stack Management → Transforms** and check that the `logs-projectdiscovery.latest_cdr_vulnerabilities-*` and `logs-projectdiscovery.latest_asset-*` transforms are started and healthy.
 
 ## Troubleshooting
 
 - No data is collected on the first run: The default `720h` initial interval only covers findings and assets updated in the last 30 days. Increase **Initial Interval** if your last scan is older.
-- No vulnerabilities in the latest index or the Findings page: The `latest_vulnerability` transform only keeps findings that have `package.name`. The integration sets `package.name` from the template metadata product or the CPE product, and most Nuclei findings (misconfiguration, TLS and header checks) have neither. All findings are still available in `logs-projectdiscovery.vulnerability-*`.
+- No vulnerabilities in the latest index or the Findings page: The `latest_cdr_vulnerabilities` transform only keeps findings that have `package.name`. The integration sets `package.name` from the template metadata product or the CPE product, and most Nuclei findings (misconfiguration, TLS and header checks) have neither. All findings are still available in `logs-projectdiscovery.vulnerability-*`.
+- A finding is missing from the latest index or the Findings page: The `latest_cdr_vulnerabilities` transform excludes findings whose `projectdiscovery.vulnerability.vuln_status` is `fixed`, `false_positive`, `duplicate` or `accepted_risk`. All statuses are still available in `logs-projectdiscovery.vulnerability-*`.
+- A fixed finding is still shown as open in the latest index: Because resolved findings are excluded from the transform source, the previous state of a finding that changes from `open` to `fixed` is not replaced. It is removed when it is older than the 90 day retention period (based on `@timestamp`).
+- The Findings flyout has an empty **Vulnerability Score** section: This section only displays CVSS vectors attributed to NVD, Red Hat or GHSA (`vulnerability.cvss.*`). Nuclei templates don't state the source of their CVSS data, so the integration doesn't populate these fields. The **CVSS** badge in the flyout header shows the template score from `vulnerability.score.base` and `vulnerability.score.version`.
 - Assets disappear from the latest index: The `latest_asset` transform removes assets that have not been seen for 3 days (based on `entity.last_seen_timestamp`). This matches the asset expiry rules of ProjectDiscovery.
 - HTTP 401 or 403 errors: Check the API key, and check that its user is a member of the team in **Team ID**.
 - HTTP 429 errors: ProjectDiscovery limits requests per minute. The integration throttles requests and retries with backoff. If errors persist, increase **Interval** or check whether other API clients share the same key.
@@ -164,7 +167,7 @@ The integration installs two transforms:
 
 | Transform | Destination alias | Unique key | Retention |
 |---|---|---|---|
-| `latest_vulnerability` | `security_solution-projectdiscovery.vulnerability_latest` | `event.id`, `data_stream.namespace` | 90 days on `@timestamp` |
+| `latest_cdr_vulnerabilities` | `security_solution-projectdiscovery.vulnerability_latest` | `event.id`, `data_stream.namespace` | 90 days on `@timestamp`. Fixed, false positive, duplicate and accepted risk findings are excluded. |
 | `latest_asset` | `logs-projectdiscovery_latest.asset` | `event.dataset`, `entity.id` | 3 days on `entity.last_seen_timestamp` |
 
 Both destination indices use lookup mode, so you can join them in ES|QL. Findings reference their asset through `projectdiscovery.vulnerability.asset_metadata.id`, which matches `entity.id` in the asset index.
@@ -337,6 +340,9 @@ The `vulnerability` data stream provides Nuclei vulnerability findings from Proj
 | url.username | Username of the request. | keyword |
 | vulnerability.category | The type of system or architecture that the vulnerability affects. These may be platform-specific (for example, Debian or SUSE) or general (for example, Database or Firewall). For example (https://qualysguard.qualys.com/qwebhelp/fo_portal/knowledgebase/vulnerability_categories.htm) This field must be an array. | keyword |
 | vulnerability.classification | The classification of the vulnerability scoring system. For example (https://www.first.org/cvss/) | keyword |
+| vulnerability.data_source.ID | Identifier of the Nuclei template. | keyword |
+| vulnerability.data_source.Name | Name of the vulnerability data source. | keyword |
+| vulnerability.data_source.URL | URL of the Nuclei template in the ProjectDiscovery Cloud Platform. | keyword |
 | vulnerability.description | The description of the vulnerability that provides additional context of the vulnerability. For example (https://cve.mitre.org/about/faqs.html#cve_entry_descriptions_created) | keyword |
 | vulnerability.description.text | Multi-field of `vulnerability.description`. | match_only_text |
 | vulnerability.enumeration | The type of identifier used for this vulnerability. For example (https://cve.mitre.org/about/) | keyword |
@@ -882,8 +888,8 @@ An example event for `asset` looks as following:
 | url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
 | url.username | Username of the request. | keyword |
 
-#### latest_vulnerability
-* Description: Latest ProjectDiscovery vulnerability findings. As findings are rescanned or triaged, this transform keeps only the latest state of each finding in a lookup index.
+#### latest_cdr_vulnerabilities
+* Description: Latest ProjectDiscovery vulnerability findings. As findings are rescanned or triaged, this transform keeps only the latest state of each finding in a lookup index. Fixed, false positive, duplicate and accepted risk findings are excluded.
 * Source Index: logs-projectdiscovery.vulnerability-\*
 * Destination Index: security_solution-projectdiscovery.vulnerability_latest-v1
 
@@ -1036,6 +1042,9 @@ An example event for `asset` looks as following:
 | url.username | Username of the request. | keyword |
 | vulnerability.category | The type of system or architecture that the vulnerability affects. These may be platform-specific (for example, Debian or SUSE) or general (for example, Database or Firewall). For example (https://qualysguard.qualys.com/qwebhelp/fo_portal/knowledgebase/vulnerability_categories.htm) This field must be an array. | keyword |
 | vulnerability.classification | The classification of the vulnerability scoring system. For example (https://www.first.org/cvss/) | keyword |
+| vulnerability.data_source.ID | Identifier of the Nuclei template. | keyword |
+| vulnerability.data_source.Name | Name of the vulnerability data source. | keyword |
+| vulnerability.data_source.URL | URL of the Nuclei template in the ProjectDiscovery Cloud Platform. | keyword |
 | vulnerability.description | The description of the vulnerability that provides additional context of the vulnerability. For example (https://cve.mitre.org/about/faqs.html#cve_entry_descriptions_created) | keyword |
 | vulnerability.description.text | Multi-field of `vulnerability.description`. | match_only_text |
 | vulnerability.enumeration | The type of identifier used for this vulnerability. For example (https://cve.mitre.org/about/) | keyword |
