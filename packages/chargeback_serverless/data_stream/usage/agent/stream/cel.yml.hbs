@@ -7,9 +7,9 @@ state:
   cloud_api_base: !!str {{cloud_api_base}}
   billing_api_base: !!str {{billing_api_base}}
   hub_es_api_key: !!str {{hub_es_api_key}}
-  conf_unit_rate: !!str {{unit_rate}}
-  conf_currency_unit: !!str {{currency_unit}}
-  conf_currency_symbol: !!str {{currency_symbol}}
+  conf_unit_rate: !!str {{escape_string unit_rate}}
+  conf_currency_unit: !!str {{escape_string currency_unit}}
+  conf_currency_symbol: !!str {{escape_string currency_symbol}}
   project_keys: !!str {{project_api_keys}}
 redact:
   fields:
@@ -318,14 +318,26 @@ program: |-
                                                                                                   ]
                                                                                                 : [])
                                                                                               ).as(all_syn_evts,
-                                                                                                ((has(ml_body.trained_model_stats) && ml_body.trained_model_stats != null ?
-                                                                                                  ml_body.trained_model_stats.map(m,
+                                                                                                ((has(ml_body.trained_model_stats) && ml_body.trained_model_stats != null) ?
+                                                                                                  ml_body.trained_model_stats.filter(m,
+                                                                                                    has(m.model_id) && m.model_id != null && string(m.model_id) != "" && (
+                                                                                                      (has(m.deployment_stats) && m.deployment_stats != null && (
+                                                                                                        (has(m.deployment_stats.deployment_id) && m.deployment_stats.deployment_id != null && string(m.deployment_stats.deployment_id) != "") ||
+                                                                                                        (has(m.deployment_stats.nodes) && m.deployment_stats.nodes != null && size(m.deployment_stats.nodes) > 0) ||
+                                                                                                        (has(m.deployment_stats.state) && m.deployment_stats.state != null && string(m.deployment_stats.state) != "")
+                                                                                                      )) ||
+                                                                                                      (has(m.pipeline_count) && m.pipeline_count != null && int(m.pipeline_count) > 0) ||
+                                                                                                      (has(m.inference_stats) && m.inference_stats != null && has(m.inference_stats.inference_count) && m.inference_stats.inference_count != null && int(m.inference_stats.inference_count) > 0)
+                                                                                                    )
+                                                                                                  ) : []).as(active_ml_stats,
+                                                                                                ((size(active_ml_stats) > 0 ?
+                                                                                                  active_ml_stats.map(m,
                                                                                                     ((has(m.deployment_stats) && m.deployment_stats != null && has(m.deployment_stats.deployment_id) && m.deployment_stats.deployment_id != null && string(m.deployment_stats.deployment_id) != "") ? string(m.deployment_stats.deployment_id) : "").as(dep_id,
                                                                                                       (string(p.id) + ":" + string(m.model_id)).as(legacy_mkey,
                                                                                                         (dep_id != "" ? (legacy_mkey + ":" + dep_id) : legacy_mkey).as(mkey,
                                                                                                           (has(m.inference_stats) && has(m.inference_stats.inference_count) ? int(m.inference_stats.inference_count) : 0).as(ingest_inf_count,
                                                                                                             prev_ml_baselines.filter(b, has(b.k) && b.k == mkey).as(exact_base,
-                                                                                                              (size(exact_base) > 0 ? exact_base : (size(ml_body.trained_model_stats.filter(tm, has(tm.model_id) && string(tm.model_id) == string(m.model_id))) == 1 ? prev_ml_baselines.filter(b, has(b.k) && b.k == legacy_mkey) : [])).as(matched_base,
+                                                                                                              (size(exact_base) > 0 ? exact_base : (size(active_ml_stats.filter(tm, has(tm.model_id) && string(tm.model_id) == string(m.model_id))) == 1 ? prev_ml_baselines.filter(b, has(b.k) && b.k == legacy_mkey) : [])).as(matched_base,
                                                                                                                 ((size(matched_base) > 0 && has(matched_base[0].nodes) && matched_base[0].nodes != null) ? matched_base[0].nodes : []).as(prev_nodes,
                                                                                                                   ((has(m.deployment_stats) && has(m.deployment_stats.nodes) && m.deployment_stats.nodes != null) ?
                                                                                                                     m.deployment_stats.nodes.map(n,
@@ -419,8 +431,8 @@ program: |-
                                                                                                     inf_body.endpoints.filter(ep,
                                                                                                       has(ep.inference_id) && ep.inference_id != null &&
                                                                                                       !string(ep.inference_id).startsWith(".") &&
-                                                                                                      !(has(ml_body.trained_model_stats) && ml_body.trained_model_stats != null &&
-                                                                                                        ml_body.trained_model_stats.exists(tm,
+                                                                                                      !(size(active_ml_stats) > 0 &&
+                                                                                                        active_ml_stats.exists(tm,
                                                                                                           (has(tm.model_id) && string(tm.model_id) == string(ep.inference_id)) ||
                                                                                                           (has(ep.service_settings) && ep.service_settings != null && has(ep.service_settings.model_id) && ep.service_settings.model_id != null && string(tm.model_id) == string(ep.service_settings.model_id))
                                                                                                         )
@@ -443,7 +455,7 @@ program: |-
                                                                                                         "conf_currency_symbol": state.conf_currency_symbol,
                                                                                                       }
                                                                                                     ) : [])
-                                                                                                ).as(harvested_ai_evts,
+                                                                                                )).as(harvested_ai_evts,
                                                                                                   proj_bill_insts.exists(inst,
                                                                                                     has(inst.product_line_items) && inst.product_line_items != null &&
                                                                                                     inst.product_line_items.exists(li,
@@ -712,7 +724,8 @@ program: |-
                                             )
                                           ).map(inst,
                                             ((has(inst.name) && inst.name != null && string(inst.name) != "") ? string(inst.name) : string(inst.id)).as(del_pname,
-                                              (((has(inst.type) && inst.type != null && (string(inst.type).lowerAscii() == "observability" || string(inst.type).lowerAscii() == "oblt" || string(inst.type).lowerAscii().contains("observability") || string(inst.type).lowerAscii().contains("oblt"))) || (has(inst.product_line_items) && inst.product_line_items != null && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).lowerAscii().as(s, s.startsWith("observability.") || s.startsWith("oblt.") || s.startsWith("serverless.observability.") || s.startsWith("serverless.oblt.") || s.contains(".observability.") || s.contains(".oblt.") || s.contains("synthetic"))))) ? "observability" : (((has(inst.type) && inst.type != null && (string(inst.type).lowerAscii() == "security" || string(inst.type).lowerAscii() == "sec" || string(inst.type).lowerAscii().contains("security"))) || (has(inst.product_line_items) && inst.product_line_items != null && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).lowerAscii().as(s, s.startsWith("security.") || s.startsWith("sec.") || s.startsWith("serverless.security.") || s.startsWith("serverless.sec.") || s.contains(".security.") || s.contains(".sec."))))) ? "security" : (((has(inst.type) && inst.type != null && (string(inst.type).lowerAscii() == "elasticsearch" || string(inst.type).lowerAscii() == "es" || string(inst.type).lowerAscii().contains("elasticsearch"))) || (has(inst.product_line_items) && inst.product_line_items != null && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).lowerAscii().as(s, s.startsWith("elasticsearch.") || s.startsWith("es.") || s.startsWith("serverless.elasticsearch.") || s.startsWith("serverless.es.") || s.contains(".elasticsearch.") || s.contains(".es."))))) ? "elasticsearch" : (((has(inst.type) && inst.type != null && (string(inst.type).lowerAscii() == "search" || string(inst.type).lowerAscii() == "enterprise_search")) || (has(inst.product_line_items) && inst.product_line_items != null && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).lowerAscii().as(s, s.startsWith("search.") || s.startsWith("serverless.search."))))) ? "search" : ((has(inst.type) && inst.type != null && string(inst.type) != "" && string(inst.type).lowerAscii() != "serverless" && string(inst.type).lowerAscii() != "deployment") ? string(inst.type).lowerAscii() : "elasticsearch"))))).as(del_ptype,
+                                              ((has(inst.type) && inst.type != null) ? string(inst.type).lowerAscii() : "").as(raw_del_type,
+                                              ((raw_del_type == "observability" || raw_del_type == "oblt" || raw_del_type.contains("observability") || raw_del_type.contains("oblt")) ? "observability" : ((raw_del_type == "security" || raw_del_type == "sec" || raw_del_type.contains("security")) ? "security" : ((raw_del_type == "elasticsearch" || raw_del_type == "es" || raw_del_type.contains("elasticsearch")) ? "elasticsearch" : ((raw_del_type == "search" || raw_del_type == "enterprise_search" || raw_del_type.contains("search")) ? "search" : ((has(inst.product_line_items) && inst.product_line_items != null && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).lowerAscii().as(s, s.startsWith("observability.") || s.startsWith("oblt.") || s.startsWith("serverless.observability.") || s.startsWith("serverless.oblt.") || s.contains("synthetic")))) ? "observability" : ((has(inst.product_line_items) && inst.product_line_items != null && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).lowerAscii().as(s, s.startsWith("security.") || s.startsWith("sec.") || s.startsWith("serverless.security.") || s.startsWith("serverless.sec.")))) ? "security" : ((has(inst.product_line_items) && inst.product_line_items != null && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).lowerAscii().as(s, s.startsWith("elasticsearch.") || s.startsWith("es.") || s.startsWith("serverless.elasticsearch.") || s.startsWith("serverless.es.")))) ? "elasticsearch" : ((has(inst.product_line_items) && inst.product_line_items != null && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).lowerAscii().as(s, s.startsWith("search.") || s.startsWith("serverless.search.")))) ? "search" : "elasticsearch")))))))).as(del_ptype,
                                                 inst.product_line_items.filter(li,
                                                   has(li.sku) && li.sku != null && string(li.sku).lowerAscii().as(s,
                                                     (s.contains("retained") || s.contains("storage") || s.contains("retention")) && !s.contains("snapshot")
@@ -870,6 +883,7 @@ program: |-
                                                     )
                                                   )
                                                 )
+                                              )
                                               )
                                             )
                                           ).flatten()

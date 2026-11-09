@@ -15,9 +15,37 @@ processors:
             ctx.composite_datastream_key = ctx.composite_key + '_' + ctx.datastream;
           }
         }
+        if (ctx.ds_type instanceof Map) {
+          def buckets = ctx.ds_type.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.ds_type = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.ds_type.keySet());
+            ctx.ds_type = keys.size() > 0 ? keys[0] : null;
+          }
+        }
+        if (ctx.ds_dataset instanceof Map) {
+          def buckets = ctx.ds_dataset.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.ds_dataset = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.ds_dataset.keySet());
+            ctx.ds_dataset = keys.size() > 0 ? keys[0] : null;
+          }
+        }
+        if (ctx.ds_namespace instanceof Map) {
+          def buckets = ctx.ds_namespace.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.ds_namespace = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.ds_namespace.keySet());
+            ctx.ds_namespace = keys.size() > 0 ? keys[0] : null;
+          }
+        }
         if (ctx.datastream != null && ctx.datastream != '') {
           def m = /^(?:partial-)?(?:restored-)?(?:shrink-.{4}-)?\.ds-(.+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d+)?$/.matcher(ctx.datastream);
-          if (m.matches()) {
+          def isBackingIndex = m.matches();
+          if (isBackingIndex) {
             ctx.datastream = m.group(1);
           }
           if (ctx.datastream.startsWith('.') || ctx.datastream == 'system' || (ctx.datastream.startsWith('serverless_') && ctx.datastream.endsWith('_lookup'))) {
@@ -25,9 +53,9 @@ processors:
             ctx.ds_type = 'system';
             ctx.ds_namespace = 'system';
             ctx.ds_dataset = 'system';
-          } else {
+          } else if (ctx.ds_type == null || ctx.ds_type == '' || ctx.ds_dataset == null || ctx.ds_dataset == '' || ctx.ds_namespace == null || ctx.ds_namespace == '') {
             def parts = ctx.datastream.splitOnToken('-');
-            if ((parts[0] == 'logs' || parts[0] == 'metrics' || parts[0] == 'traces' || parts[0] == 'synthetics' || parts[0] == 'profiling') && parts.length >= 3) {
+            if (isBackingIndex && (parts[0] == 'logs' || parts[0] == 'metrics' || parts[0] == 'traces' || parts[0] == 'synthetics' || parts[0] == 'profiling') && parts.length >= 3) {
               ctx.ds_type = parts[0];
               ctx.ds_dataset = parts[1];
               def nsParts = new ArrayList();

@@ -35,7 +35,8 @@ processors:
         }
         if (ctx.doc_type == 'datastream' && ctx.datastream != null && ctx.datastream != '') {
           def m = /^(?:partial-)?(?:restored-)?(?:shrink-.{4}-)?\.ds-(.+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d+)?$/.matcher(ctx.datastream);
-          if (m.matches()) {
+          def isBackingIndex = m.matches();
+          if (isBackingIndex) {
             ctx.datastream = m.group(1);
           }
           if (ctx.datastream.startsWith('.') || ctx.datastream == 'system' || (ctx.datastream.startsWith('serverless_') && ctx.datastream.endsWith('_lookup'))) {
@@ -45,7 +46,7 @@ processors:
             ctx.ds_dataset = 'system';
           } else {
             def parts = ctx.datastream.splitOnToken('-');
-            if ((parts[0] == 'logs' || parts[0] == 'metrics' || parts[0] == 'traces' || parts[0] == 'synthetics' || parts[0] == 'profiling') && parts.length >= 3) {
+            if (isBackingIndex && (parts[0] == 'logs' || parts[0] == 'metrics' || parts[0] == 'traces' || parts[0] == 'synthetics' || parts[0] == 'profiling') && parts.length >= 3) {
               ctx.ds_type = parts[0];
               ctx.ds_dataset = parts[1];
               def nsParts = new ArrayList();
