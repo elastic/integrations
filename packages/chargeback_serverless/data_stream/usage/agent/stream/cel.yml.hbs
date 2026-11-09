@@ -20,9 +20,19 @@ redact:
     - project_api_keys
 program: |-
   state.with(
-    (now - duration("2h")).format(time_layout.DateOnly).parse_time(time_layout.DateOnly).as(day_end,
-      (day_end - duration("24h")).as(day_start,
-        day_start.format(time_layout.RFC3339).as(day_ts,
+    (now - duration("2h")).format(time_layout.DateOnly).parse_time(time_layout.DateOnly).as(latest_day_end,
+      (latest_day_end - duration("24h")).as(latest_day_start,
+        ((state.?cursor.pending_day.orValue("") != "" && state.?cursor.pending_day.orValue("") != state.?cursor.last_day.orValue("") && timestamp(state.?cursor.pending_day.orValue("")) <= latest_day_start) ?
+          timestamp(state.?cursor.pending_day.orValue(""))
+        :
+          ((state.?cursor.last_day.orValue("") != "" && (timestamp(state.?cursor.last_day.orValue("")) + duration("24h")) <= latest_day_start) ?
+            (timestamp(state.?cursor.last_day.orValue("")) + duration("24h"))
+          :
+            latest_day_start
+          )
+        ).as(day_start,
+          (day_start + duration("24h")).as(day_end,
+            day_start.format(time_layout.RFC3339).as(day_ts,
           (
             !has(state.project_keys) || state.project_keys == null ? [] :
             (type(dyn(state.project_keys)) == type("") ?
@@ -905,7 +915,7 @@ program: |-
                                                       "completed_projects": all_completed_pids,
                                                       "ml_baselines": merged_ml_baselines,
                                                     },
-                                                    "want_more": false,
+                                                    "want_more": all_projs_done && day_start < latest_day_start,
                                                   }
                                                 )
                                               )
@@ -945,6 +955,8 @@ program: |-
             )
           )
           )
+          )
+            )
           )
         )
       )
