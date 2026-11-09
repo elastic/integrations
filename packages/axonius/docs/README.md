@@ -111,7 +111,7 @@ This integration brings Axonius asset and security data into Elastic so teams ca
 
 Bundled dashboards summarize these data streams for day-to-day monitoring, risk and backlog sizing, access hygiene checks, and incident investigation with correlated operational, identity, asset, and event context.
 
-**Entity Store** support: user assets from the `identity` data stream and Axonius console accounts from the `user` data stream populate ECS entity fields, so they appear as user entities in the Elastic Security Entity Store. A user is identified by `user.email` when any of its adapters reports an email address, and otherwise by `user.id`, which is the Axonius `internal_axon_id` for identity assets. Axonius notes that `internal_axon_id` may change in the future, for example when assets are re-correlated; if it changes, a user without an email address appears as a new entity. A console account whose email address matches an inventoried user is merged into the same entity.
+**Entity Store** support: user assets from the `identity` data stream and Axonius console accounts from the `user` data stream populate ECS entity fields, so they appear as user entities in the Elastic Security Entity Store. A user is identified by `user.email` when any of its adapters reports an email address, and otherwise by `user.id`. If adapters report different addresses, the first one in lexical order is used. In both data streams, `user.email` is lowercased. For identity assets, `user.id` is the Axonius `internal_axon_id`. Axonius notes that `internal_axon_id` may change in the future, for example when assets are re-correlated; if it changes, a user without an email address appears as a new entity. A console account whose email address matches an inventoried user is merged into the same entity.
 
 ## What do I need to use this integration?
 
@@ -2118,7 +2118,7 @@ The `identity` data stream provides identity asset logs from axonius.
 | axonius.identity.application_id | Unique identifier of the application. | keyword |
 | axonius.identity.application_name | Name of the application associated with this identity. | keyword |
 | axonius.identity.asset_entity_info | Information about the asset entity and its properties. | keyword |
-| axonius.identity.asset_mail | First email address, in lexical order, reported by any adapter for this user asset. Used to give every adapter record of the asset the same user.email. | keyword |
+| axonius.identity.asset_mail | First email address, in lexical order after lowercasing, reported by any adapter for this user asset. Used to give every adapter record of the asset the same user.email. | keyword |
 | axonius.identity.asset_type | The type of asset. | keyword |
 | axonius.identity.associated_devices.device_associated_saas_apps_names | Names of SaaS applications associated with the device. | keyword |
 | axonius.identity.associated_devices.device_caption | Caption or display name of the associated device. | keyword |

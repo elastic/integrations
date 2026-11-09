@@ -149,6 +149,12 @@ processors:
       if: ctx.user?.email == null && ctx.user?.name != null && ctx.user?.name.contains('@')
       field: user.email
       copy_from: user.name
+  # Lowercase to match the identity data stream, which lowercases asset_mail,
+  # so a console account and its inventoried user resolve to one entity.
+  - lowercase:
+      tag: lowercase_user_email_4b7e2a19
+      field: user.email
+      ignore_missing: true
   - dissect:
       tag: dissect_user_email_6a0555c7
       if: ctx.user?.email != null && ctx.user.email.contains('@')
