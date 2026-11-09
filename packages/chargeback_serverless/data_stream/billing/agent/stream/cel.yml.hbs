@@ -202,31 +202,33 @@ program: |-
                                                 li.sku.contains(".retained") || ((li.sku == "global.inference-chat-input" || li.sku.contains("inference") || li.sku.contains("agent-builder") || li.sku.contains(".eis") || li.sku.contains("workflow") || li.sku.contains("cross-project")) && has(prod.type) && prod.type != null && string(prod.type) != "" && string(prod.type) != "deployment")
                                               )
                                             ).map(li,
-                                              instance_evts.filter(e, e.sku == li.sku).map(e, e.total_ecu).as(matched_ecus,
-                                                (size(matched_ecus) == 0 ? 0.0 : matched_ecus.sum()).as(day_sku_ecu,
-                                                  instance_evts.filter(e, e.sku == li.sku).map(e, e.quantity_value).as(matched_qtys,
-                                                    (size(matched_qtys) == 0 ? 0.0 : matched_qtys.sum()).as(day_sku_qty,
-                                                      ((has(li.total_ecu) && li.total_ecu != null) ? double(li.total_ecu) : 0.0).as(item_ecu,
-                                                        ((has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null) ? double(li.quantity.value) : 0.0).as(item_qty,
-                                                          (item_ecu - day_sku_ecu).as(diff_ecu,
-                                                            (max(0.0, item_qty - day_sku_qty)).as(diff_qty,
-                                                              (diff_ecu > 0.0001 || (day_sku_ecu == 0.0 && item_qty > 0.0)) ?
-                                                                [
-                                                                  {
-                                                                    "@timestamp": req.from.format(time_layout.RFC3339),
-                                                                    "period_start": req.from.format(time_layout.RFC3339),
-                                                                    "project_id": "deleted_or_unassociated_" + prod_type,
-                                                                    "project_name": "Deleted / Unassociated (" + prod_type + ")",
-                                                                    "project_type": prod_type,
-                                                                    "sku": li.sku,
-                                                                    "total_ecu": max(0.0, diff_ecu),
-                                                                    "quantity_value": diff_qty,
-                                                                    "conf_chargeable_unit_rate": double(state.conf_unit_rate),
-                                                                    "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-                                                                    "conf_currency_symbol": state.conf_currency_symbol,
-                                                                  }
-                                                                ]
-                                                              : []
+                                              ((!has(prod.type) || prod.type == null || string(prod.type) == "" || string(prod.type) == "serverless") ? instance_evts.filter(e, e.sku == li.sku) : instance_evts.filter(e, e.sku == li.sku && e.project_type == prod_type)).as(matched_evts,
+                                                matched_evts.map(e, e.total_ecu).as(matched_ecus,
+                                                  (size(matched_ecus) == 0 ? 0.0 : matched_ecus.sum()).as(day_sku_ecu,
+                                                    matched_evts.map(e, e.quantity_value).as(matched_qtys,
+                                                      (size(matched_qtys) == 0 ? 0.0 : matched_qtys.sum()).as(day_sku_qty,
+                                                        ((has(li.total_ecu) && li.total_ecu != null) ? double(li.total_ecu) : 0.0).as(item_ecu,
+                                                          ((has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null) ? double(li.quantity.value) : 0.0).as(item_qty,
+                                                            (item_ecu - day_sku_ecu).as(diff_ecu,
+                                                              (max(0.0, item_qty - day_sku_qty)).as(diff_qty,
+                                                                (diff_ecu > 0.0001 || (day_sku_ecu == 0.0 && item_qty > 0.0)) ?
+                                                                  [
+                                                                    {
+                                                                      "@timestamp": req.from.format(time_layout.RFC3339),
+                                                                      "period_start": req.from.format(time_layout.RFC3339),
+                                                                      "project_id": "deleted_or_unassociated_" + prod_type,
+                                                                      "project_name": "Deleted / Unassociated (" + prod_type + ")",
+                                                                      "project_type": prod_type,
+                                                                      "sku": li.sku,
+                                                                      "total_ecu": max(0.0, diff_ecu),
+                                                                      "quantity_value": diff_qty,
+                                                                      "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                                      "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                                      "conf_currency_symbol": state.conf_currency_symbol,
+                                                                    }
+                                                                  ]
+                                                                : []
+                                                              )
                                                             )
                                                           )
                                                         )
