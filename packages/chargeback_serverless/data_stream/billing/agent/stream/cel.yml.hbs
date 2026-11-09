@@ -122,7 +122,9 @@ program: |-
                                         ((size(matched_projs) > 0 && has(matched_projs[0].name) && matched_projs[0].name != null && matched_projs[0].name != "" && matched_projs[0].name != inst_id) ? matched_projs[0].name : ((has(instance.name) && instance.name != null && instance.name != "") ? instance.name : ((has(instance.id) && instance.id != null && string(instance.id) != "") ? inst_id : ("Unassociated (" + resolved_type + ")")))).as(resolved_name,
                                           (has(instance.product_line_items) && instance.product_line_items != null) ?
                                             instance.product_line_items.filter(line_item,
-                                              has(line_item.sku) && line_item.sku != null && (
+                                              has(line_item.sku) && line_item.sku != null && string(line_item.sku) != "" && (
+                                                size(matched_projs) > 0 ||
+                                                (has(instance.id) && instance.id != null && string(instance.id) != "" && (!has(instance.type) || instance.type == null || string(instance.type) != "deployment")) ||
                                                 line_item.sku.contains("-vcu") || line_item.sku.contains(".ecu") || line_item.sku.contains(".observability.") || line_item.sku.contains(".security.") ||
                                                 line_item.sku.contains(".search.") || line_item.sku.startsWith("serverless.") || line_item.sku.startsWith("observability.") ||
                                                 line_item.sku.startsWith("security.") || line_item.sku.startsWith("search.") || line_item.sku.contains("synthetic") ||
