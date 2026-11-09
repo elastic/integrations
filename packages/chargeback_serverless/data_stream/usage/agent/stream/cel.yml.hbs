@@ -319,21 +319,52 @@ program: |-
                                                                                               ).as(all_syn_evts,
                                                                                                 ((has(ml_body.trained_model_stats) && ml_body.trained_model_stats != null ?
                                                                                                   ml_body.trained_model_stats.map(m,
-                                                                                                    (string(p.id) + ":" + string(m.model_id)).as(mkey,
-                                                                                                      (has(m.inference_stats) && has(m.inference_stats.inference_count) ? int(m.inference_stats.inference_count) : 0).as(ingest_inf_count,
-                                                                                                        prev_ml_baselines.filter(b, has(b.k) && b.k == mkey).as(matched_base,
-                                                                                                          ((size(matched_base) > 0 && has(matched_base[0].nodes) && matched_base[0].nodes != null) ? matched_base[0].nodes : []).as(prev_nodes,
-                                                                                                            ((has(m.deployment_stats) && has(m.deployment_stats.nodes) && m.deployment_stats.nodes != null) ?
-                                                                                                              m.deployment_stats.nodes.map(n,
-                                                                                                                ((has(n.node) && n.node != null && has(n.node.id) && n.node.id != null && string(n.node.id) != "") ? string(n.node.id) : ((has(n.node) && n.node != null && has(n.node.name) && n.node.name != null && string(n.node.name) != "") ? string(n.node.name) : "")).as(nid,
-                                                                                                                  ((has(n.node) && n.node != null && has(n.node.ephemeral_id) && n.node.ephemeral_id != null && string(n.node.ephemeral_id) != "") ? string(n.node.ephemeral_id) : (has(n.start_time) && n.start_time != null ? string(n.start_time) : "")).as(ninc,
-                                                                                                                    (nid != "" ? (ninc != "" ? (nid + ":" + ninc) : nid) : ninc).as(nk,
-                                                                                                                      ((has(n.inference_count) && n.inference_count != null) ? int(n.inference_count) : 0).as(n_inf,
-                                                                                                                        (int(double(n_inf) * ((has(n.average_inference_time_ms) && n.average_inference_time_ms != null) ? double(n.average_inference_time_ms) : 0.0))).as(n_time_ms,
-                                                                                                                          prev_nodes.filter(pn, has(pn.k) && pn.k != "" && pn.k == nk).as(matched_node,
-                                                                                                                            (size(matched_node) > 0 && has(matched_node[0].v) ? (n_inf >= int(matched_node[0].v) ? n_inf - int(matched_node[0].v) : n_inf) : n_inf).as(n_delta_inf,
-                                                                                                                              (size(matched_node) > 0 && has(matched_node[0].t) ? (n_inf >= int(matched_node[0].v) && n_time_ms >= int(matched_node[0].t) ? n_time_ms - int(matched_node[0].t) : n_time_ms) : n_time_ms).as(n_delta_time,
-                                                                                                                                { "k": nk, "v": n_inf, "t": n_time_ms, "dv": n_delta_inf, "dt": n_delta_time }
+                                                                                                    ((has(m.deployment_stats) && m.deployment_stats != null && has(m.deployment_stats.deployment_id) && m.deployment_stats.deployment_id != null && string(m.deployment_stats.deployment_id) != "") ? string(m.deployment_stats.deployment_id) : "").as(dep_id,
+                                                                                                      (string(p.id) + ":" + string(m.model_id)).as(legacy_mkey,
+                                                                                                        (dep_id != "" ? (legacy_mkey + ":" + dep_id) : legacy_mkey).as(mkey,
+                                                                                                          (has(m.inference_stats) && has(m.inference_stats.inference_count) ? int(m.inference_stats.inference_count) : 0).as(ingest_inf_count,
+                                                                                                            prev_ml_baselines.filter(b, has(b.k) && b.k == mkey).as(exact_base,
+                                                                                                              (size(exact_base) > 0 ? exact_base : (size(ml_body.trained_model_stats.filter(tm, has(tm.model_id) && string(tm.model_id) == string(m.model_id))) == 1 ? prev_ml_baselines.filter(b, has(b.k) && b.k == legacy_mkey) : [])).as(matched_base,
+                                                                                                                ((size(matched_base) > 0 && has(matched_base[0].nodes) && matched_base[0].nodes != null) ? matched_base[0].nodes : []).as(prev_nodes,
+                                                                                                                  ((has(m.deployment_stats) && has(m.deployment_stats.nodes) && m.deployment_stats.nodes != null) ?
+                                                                                                                    m.deployment_stats.nodes.map(n,
+                                                                                                                      ((has(n.node) && n.node != null && has(n.node.id) && n.node.id != null && string(n.node.id) != "") ? string(n.node.id) : ((has(n.node) && n.node != null && has(n.node.name) && n.node.name != null && string(n.node.name) != "") ? string(n.node.name) : "")).as(nid,
+                                                                                                                        ((has(n.node) && n.node != null && has(n.node.ephemeral_id) && n.node.ephemeral_id != null && string(n.node.ephemeral_id) != "") ? string(n.node.ephemeral_id) : (has(n.start_time) && n.start_time != null ? string(n.start_time) : "")).as(ninc,
+                                                                                                                          (nid != "" ? (ninc != "" ? (nid + ":" + ninc) : nid) : ninc).as(nk,
+                                                                                                                            ((has(n.inference_count) && n.inference_count != null) ? int(n.inference_count) : 0).as(n_inf,
+                                                                                                                              (int(double(n_inf) * ((has(n.average_inference_time_ms) && n.average_inference_time_ms != null) ? double(n.average_inference_time_ms) : 0.0))).as(n_time_ms,
+                                                                                                                                prev_nodes.filter(pn, has(pn.k) && pn.k != "" && pn.k == nk).as(matched_node,
+                                                                                                                                  (size(matched_node) > 0 && has(matched_node[0].v) ? (n_inf >= int(matched_node[0].v) ? n_inf - int(matched_node[0].v) : n_inf) : n_inf).as(n_delta_inf,
+                                                                                                                                    (size(matched_node) > 0 && has(matched_node[0].t) ? (n_inf >= int(matched_node[0].v) && n_time_ms >= int(matched_node[0].t) ? n_time_ms - int(matched_node[0].t) : n_time_ms) : n_time_ms).as(n_delta_time,
+                                                                                                                                      { "k": nk, "v": n_inf, "t": n_time_ms, "dv": n_delta_inf, "dt": n_delta_time }
+                                                                                                                                    )
+                                                                                                                                  )
+                                                                                                                                )
+                                                                                                                              )
+                                                                                                                            )
+                                                                                                                          )
+                                                                                                                        )
+                                                                                                                      )
+                                                                                                                    )
+                                                                                                                  : []).as(node_entries,
+                                                                                                                    node_entries.map(ne, { "k": ne.k, "v": ne.v, "t": ne.t }).as(cur_nodes,
+                                                                                                                      (size(node_entries) == 0 ? 0 : node_entries.map(ne, ne.v).sum()).as(deploy_inf_count,
+                                                                                                                        (size(node_entries) == 0 ? 0.0 : double(node_entries.map(ne, ne.t).sum())).as(deploy_time_ms,
+                                                                                                                          (deploy_inf_count > 0 ? deploy_inf_count : ingest_inf_count).as(raw_inf_count,
+                                                                                                                            (deploy_inf_count > 0 ? int(deploy_time_ms) : 0).as(raw_time_ms,
+                                                                                                                              ((deploy_inf_count > 0 && size(prev_nodes) > 0) ? node_entries.map(ne, ne.dv).sum() : (size(matched_base) > 0 && has(matched_base[0].v) ? (raw_inf_count >= int(matched_base[0].v) ? raw_inf_count - int(matched_base[0].v) : raw_inf_count) : raw_inf_count)).as(delta_inf_count,
+                                                                                                                                ((deploy_inf_count > 0 && size(prev_nodes) > 0) ? node_entries.map(ne, ne.dt).sum() : (size(matched_base) > 0 && has(matched_base[0].t) ? (raw_time_ms >= int(matched_base[0].t) ? raw_time_ms - int(matched_base[0].t) : raw_time_ms) : raw_time_ms)).as(delta_time_ms,
+                                                                                                                                  {
+                                                                                                                                    "bkey": mkey,
+                                                                                                                                    "model_id": string(m.model_id),
+                                                                                                                                    "task_type": has(m.pipeline_count) && int(m.pipeline_count) > 0 ? "ingest_inference" : "query_inference",
+                                                                                                                                    "delta_inf": delta_inf_count,
+                                                                                                                                    "delta_time": delta_time_ms,
+                                                                                                                                    "deploy_inf": deploy_inf_count,
+                                                                                                                                    "deploy_time": deploy_time_ms,
+                                                                                                                                    "baseline": { "k": mkey, "v": raw_inf_count, "t": raw_time_ms, "nodes": cur_nodes },
+                                                                                                                                  }
+                                                                                                                                )
                                                                                                                               )
                                                                                                                             )
                                                                                                                           )
@@ -343,40 +374,38 @@ program: |-
                                                                                                                   )
                                                                                                                 )
                                                                                                               )
-                                                                                                            : []).as(node_entries,
-                                                                                                              node_entries.map(ne, { "k": ne.k, "v": ne.v, "t": ne.t }).as(cur_nodes,
-                                                                                                                (size(node_entries) == 0 ? 0 : node_entries.map(ne, ne.v).sum()).as(deploy_inf_count,
-                                                                                                                  (size(node_entries) == 0 ? 0.0 : double(node_entries.map(ne, ne.t).sum())).as(deploy_time_ms,
-                                                                                                                    (deploy_inf_count > 0 ? deploy_inf_count : ingest_inf_count).as(raw_inf_count,
-                                                                                                                      (deploy_inf_count > 0 ? int(deploy_time_ms) : 0).as(raw_time_ms,
-                                                                                                                        ((deploy_inf_count > 0 && size(prev_nodes) > 0) ? node_entries.map(ne, ne.dv).sum() : (size(matched_base) > 0 && has(matched_base[0].v) ? (raw_inf_count >= int(matched_base[0].v) ? raw_inf_count - int(matched_base[0].v) : raw_inf_count) : raw_inf_count)).as(delta_inf_count,
-                                                                                                                          ((deploy_inf_count > 0 && size(prev_nodes) > 0) ? node_entries.map(ne, ne.dt).sum() : (size(matched_base) > 0 && has(matched_base[0].t) ? (raw_time_ms >= int(matched_base[0].t) ? raw_time_ms - int(matched_base[0].t) : raw_time_ms) : raw_time_ms)).as(delta_time_ms,
-                                                                                                                            (delta_inf_count > 0 ? double(delta_time_ms) / double(delta_inf_count) : (deploy_inf_count > 0 ? deploy_time_ms / double(deploy_inf_count) : 0.0)).as(avg_inf_ms,
-                                                                                                                              {
-                                                                                                                                "@timestamp": day_ts,
-                                                                                                                                "period_start": day_ts,
-                                                                                                                                "doc_type": "ai_model",
-                                                                                                                                "project_id": p.id,
-                                                                                                                                "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
-                                                                                                                                "project_type": p.project_type,
-                                                                                                                                "model_id": string(m.model_id),
-                                                                                                                                "task_type": has(m.pipeline_count) && int(m.pipeline_count) > 0 ? "ingest_inference" : "query_inference",
-                                                                                                                                "inference_count": delta_inf_count,
-                                                                                                                                "_raw_inference_count": raw_inf_count,
-                                                                                                                                "_raw_time_ms": raw_time_ms,
-                                                                                                                                "_raw_nodes": cur_nodes,
-                                                                                                                                "average_inference_time_ms": avg_inf_ms,
-                                                                                                                                "total_inference_time_ms": delta_time_ms,
-                                                                                                                                "conf_chargeable_unit_rate": double(state.conf_unit_rate),
-                                                                                                                                "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-                                                                                                                                "conf_currency_symbol": state.conf_currency_symbol,
-                                                                                                                              }
-                                                                                                                            )
-                                                                                                                          )
-                                                                                                                        )
-                                                                                                                      )
-                                                                                                                    )
-                                                                                                                  )
+                                                                                                            )
+                                                                                                          )
+                                                                                                        )
+                                                                                                      )
+                                                                                                    )
+                                                                                                  ).as(raw_ml_entries,
+                                                                                                    raw_ml_entries.filter(d,
+                                                                                                      raw_ml_entries.filter(y, y.model_id == d.model_id && y.task_type == d.task_type)[0].bkey == d.bkey
+                                                                                                    ).map(d,
+                                                                                                      raw_ml_entries.filter(y, y.model_id == d.model_id && y.task_type == d.task_type).as(grp,
+                                                                                                        grp.map(y, y.delta_inf).sum().as(comb_delta_inf,
+                                                                                                          grp.map(y, y.delta_time).sum().as(comb_delta_time,
+                                                                                                            grp.map(y, y.deploy_inf).sum().as(comb_deploy_inf,
+                                                                                                              grp.map(y, y.deploy_time).sum().as(comb_deploy_time,
+                                                                                                                (comb_delta_inf > 0 ? double(comb_delta_time) / double(comb_delta_inf) : (comb_deploy_inf > 0 ? comb_deploy_time / double(comb_deploy_inf) : 0.0)).as(avg_inf_ms,
+                                                                                                                  {
+                                                                                                                    "@timestamp": day_ts,
+                                                                                                                    "period_start": day_ts,
+                                                                                                                    "doc_type": "ai_model",
+                                                                                                                    "project_id": p.id,
+                                                                                                                    "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                                                                                                                    "project_type": p.project_type,
+                                                                                                                    "model_id": d.model_id,
+                                                                                                                    "task_type": d.task_type,
+                                                                                                                    "inference_count": comb_delta_inf,
+                                                                                                                    "_raw_baselines": grp.map(y, y.baseline),
+                                                                                                                    "average_inference_time_ms": avg_inf_ms,
+                                                                                                                    "total_inference_time_ms": comb_delta_time,
+                                                                                                                    "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                                                                                    "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                                                                                    "conf_currency_symbol": state.conf_currency_symbol,
+                                                                                                                  }
                                                                                                                 )
                                                                                                               )
                                                                                                             )
@@ -477,7 +506,6 @@ program: |-
                                                                         )
                                                                       )
                                                                     )
-                                                                  )
                                                                 :
                                                                   [
                                                                     {
@@ -532,7 +560,19 @@ program: |-
                                                   has(li.sku) && li.sku != null && string(li.sku).lowerAscii().as(s,
                                                     (s.contains("retained") || s.contains("storage") || s.contains("retention")) && !s.contains("snapshot")
                                                   )
-                                                ).map(li, (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null) ? double(li.quantity.value) : 0.0).as(del_store_qtys,
+                                                ).map(li,
+                                                  ((has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null) ? double(li.quantity.value) : 0.0).as(qval,
+                                                    (((has(li.quantity) && li.quantity != null && has(li.quantity.unit) && li.quantity.unit != null) ? string(li.quantity.unit) : (has(li.unit) && li.unit != null ? string(li.unit) : "")).lowerAscii()).as(qunit,
+                                                      (double((day_end - day_start) / duration("1h")) > 0.0 ? double((day_end - day_start) / duration("1h")) : 24.0).as(win_hours,
+                                                        ((qunit == "" || qunit.contains("hour") || qunit.contains("hr") || qunit.endsWith("-h") || qunit.endsWith("_h") || qunit.endsWith("gbh")) ? (qval / win_hours) : qval).as(norm_qval,
+                                                          (qunit.contains("tb") || qunit.contains("tib") || qunit.contains("terabyte") ? 1099511627776.0 : (qunit.contains("mb") || qunit.contains("mib") || qunit.contains("megabyte") ? 1048576.0 : (qunit.contains("kb") || qunit.contains("kib") || qunit.contains("kilobyte") ? 1024.0 : (qunit.contains("byte") ? 1.0 : 1073741824.0)))).as(unit_bytes,
+                                                            norm_qval * unit_bytes
+                                                          )
+                                                        )
+                                                      )
+                                                    )
+                                                  )
+                                                ).as(del_store_qtys,
                                                   inst.product_line_items.filter(li,
                                                     has(li.sku) && li.sku != null && string(li.sku).lowerAscii().as(s,
                                                       s.contains("synthetic") && s.contains("ping") && (!has(li.total_ecu) || li.total_ecu == null || double(li.total_ecu) > 0.0 || (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null && double(li.quantity.value) > 0.0))
@@ -543,7 +583,7 @@ program: |-
                                                         s.contains("synthetic") && !s.contains("ping") && (!has(li.total_ecu) || li.total_ecu == null || double(li.total_ecu) > 0.0 || (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null && double(li.quantity.value) > 0.0))
                                                       )
                                                     ).map(li, (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null) ? double(li.quantity.value) : 0.0).as(del_browser_qtys,
-                                                      (size(del_store_qtys) == 0 ? 0.0 : del_store_qtys.sum()).as(del_store_gb,
+                                                      (size(del_store_qtys) == 0 ? 0.0 : del_store_qtys.sum()).as(del_store_bytes,
                                                         (size(del_ping_qtys) == 0 ? 0.0 : del_ping_qtys.sum()).as(del_ping_qty,
                                                           (size(del_browser_qtys) == 0 ? 0.0 : del_browser_qtys.sum()).as(del_browser_qty,
                                                             (
@@ -633,7 +673,7 @@ program: |-
                                                                       "datastream": "billing-derived-retention",
                                                                       "datastream_sum_indexing_time": 1,
                                                                       "datastream_sum_query_time": 1,
-                                                                      "datastream_sum_data_set_store_size": del_store_gb > 0.0 ? int(del_store_gb * 1073741824.0) : 1,
+                                                                      "datastream_sum_data_set_store_size": del_store_bytes >= 1.0 ? int(del_store_bytes) : 1,
                                                                       "conf_chargeable_unit_rate": double(state.conf_unit_rate),
                                                                       "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
                                                                       "conf_currency_symbol": state.conf_currency_symbol,
@@ -681,12 +721,10 @@ program: |-
                                         usage_evts.exists(e, has(e.doc_type) && e.doc_type == "project_status" && has(e.api_key_type) && e.api_key_type == "transient_error") ?
                                           { "events": [], "want_more": false }
                                         : (size(usage_evts) > 0 ?
-                                          usage_evts.filter(e, has(e.doc_type) && e.doc_type == "ai_model" && has(e._raw_inference_count)).map(e,
-                                            { "k": string(e.project_id) + ":" + string(e.model_id), "v": int(e._raw_inference_count), "t": has(e._raw_time_ms) ? int(e._raw_time_ms) : 0, "nodes": (has(e._raw_nodes) && e._raw_nodes != null) ? e._raw_nodes : [] }
-                                          ).as(cur_ml_baselines,
+                                          usage_evts.filter(e, has(e.doc_type) && e.doc_type == "ai_model" && has(e._raw_baselines) && e._raw_baselines != null).map(e, e._raw_baselines).flatten().as(cur_ml_baselines,
                                             (
                                               cur_ml_baselines +
-                                              prev_ml_baselines.filter(b, !cur_ml_baselines.exists(c, c.k == b.k))
+                                              prev_ml_baselines.filter(b, !cur_ml_baselines.exists(c, c.k == b.k || c.k.startsWith(b.k + ":")))
                                             ).as(merged_ml_baselines,
                                               {
                                                "events": usage_evts,
@@ -707,7 +745,20 @@ program: |-
                           )
                         :
                           {
-                            "events": { "error": { "code": string(bill_resp.StatusCode != 200 ? bill_resp.StatusCode : es_resp.StatusCode), "id": "discovery_or_billing_failed", "message": "Required project discovery or billing lookup request failed; preserving day for retry" } },
+                            "events": {
+                              "error": {
+                                "code": string(
+                                  bill_resp.StatusCode != 200 ? bill_resp.StatusCode :
+                                  (es_resp.StatusCode != 200 ? es_resp.StatusCode :
+                                    (obs_resp.StatusCode != 200 ? obs_resp.StatusCode :
+                                      (sec_resp.StatusCode != 200 ? sec_resp.StatusCode : srch_resp.StatusCode)
+                                    )
+                                  )
+                                ),
+                                "id": "discovery_or_billing_failed",
+                                "message": "Required project discovery or billing lookup request failed (billing=" + string(bill_resp.StatusCode) + ", elasticsearch=" + string(es_resp.StatusCode) + ", observability=" + string(obs_resp.StatusCode) + ", security=" + string(sec_resp.StatusCode) + ", search=" + string(srch_resp.StatusCode) + "); preserving day for retry",
+                              }
+                            },
                             "want_more": false,
                           }
                       )
