@@ -170,6 +170,70 @@ rules:
                    }
                  }
                ],
+               "hasMoreRecords":"true",
+               "lastId":12499746,
+               "responseCode":"SUCCESS"
+             }
+           }
+           `}}
+  # Third page: the only qid (150112) is already in the knowledge base
+  # cache from the previous page, so no knowledge base request is made.
+  - path: /qps/rest/3.0/search/was/finding
+    methods: ['POST']
+    user: xxxx
+    password: xxxx
+    request_headers:
+      Accept: ["application/json"]
+      Content-Type: ["application/json"]
+    request_body: "/12499746/"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: ["application/json"]
+        body: |-
+          {{ minify_json `
+          {
+             "ServiceResponse":{
+               "count":1,
+               "data":[
+                 {
+                   "Finding":{
+                     "type":"VULNERABILITY",
+                     "id":12499747,
+                     "potential":"false",
+                     "updatedDate":"2025-04-22T09:26:31Z",
+                     "uniqueId":"12345678-abcd-efabcd-234-123456789013",
+                     "severity":"2",
+                     "lastTestedDate":"2025-04-22T06:18:42Z",
+                     "findingType":"QUALYS",
+                     "url":"https://testurl.com/login",
+                     "name":"Sensitive form field has not disabled autocomplete",
+                     "cvssV3":{
+                       "base":3.7,
+                       "attackVector":"Network",
+                       "temporal":3.6
+                     },
+                     "lastDetectedDate":"2025-04-22T06:18:42Z",
+                     "isIgnored":"false",
+                     "qid":150112,
+                     "firstDetectedDate":"2021-01-27T10:00:41Z",
+                     "cwe":{
+                       "count":1,
+                       "list":[
+                         200
+                       ]
+                     },
+                     "detectionScore":45,
+                     "timesDetected":12,
+                     "status":"ACTIVE",
+                     "webApp":{
+                       "id":1,
+                       "name":"PCI Serverless Scan",
+                       "url":"https://testurl.com"
+                     }
+                   }
+                 }
+               ],
                "hasMoreRecords":"false",
                "responseCode":"SUCCESS"
              }
