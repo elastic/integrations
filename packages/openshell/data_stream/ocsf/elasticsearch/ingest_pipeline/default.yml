@@ -27,6 +27,17 @@ processors:
       tag: json_event_original
       target_field: openshell.ocsf
   - script:
+      tag: script_validate_json_object
+      lang: painless
+      description: Reject JSON scalar and array records after removing the value that cannot be indexed as an object.
+      if: ctx.openshell?.ocsf != null && !(ctx.openshell.ocsf instanceof Map)
+      source: |-
+        ctx.openshell.remove('ocsf');
+        if (ctx.openshell.isEmpty()) {
+          ctx.remove('openshell');
+        }
+        throw new IllegalArgumentException('OCSF record is not a JSON object');
+  - script:
       tag: script_stringify_big_integers
       lang: painless
       description: >-
@@ -153,14 +164,26 @@ processors:
   # ---- Sandbox container ----------------------------------------------------------
   - set:
       field: container.name
-      tag: set_container_name
+      tag: set_container_name_from_device
+      copy_from: openshell.ocsf.device.container.name
+      ignore_empty_value: true
+  - set:
+      field: container.name
+      tag: set_container_name_from_legacy_top_level
       copy_from: openshell.ocsf.container.name
+      ignore_empty_value: true
+      if: ctx.container?.name == null
+  - set:
+      field: container.id
+      tag: set_container_id_from_device
+      copy_from: openshell.ocsf.device.container.uid
       ignore_empty_value: true
   - set:
       field: container.id
-      tag: set_container_id
+      tag: set_container_id_from_legacy_top_level
       copy_from: openshell.ocsf.container.uid
       ignore_empty_value: true
+      if: ctx.container?.id == null
 
   # ---- Network endpoints ----------------------------------------------------------
   - set:
@@ -222,6 +245,9 @@ processors:
       type: ip
       ignore_missing: true
       on_failure:
+        - remove:
+            field: openshell.ocsf.proxy_endpoint.ip
+            ignore_missing: true
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -580,6 +606,7 @@ processors:
       field:
         - openshell.ocsf.action
         - openshell.ocsf.container
+        - openshell.ocsf.device.container
         - openshell.ocsf.device.hostname
         - openshell.ocsf.device.os.name
         - openshell.ocsf.dst_endpoint

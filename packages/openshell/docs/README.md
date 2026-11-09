@@ -89,7 +89,7 @@ $env:OPENSHELL_OCSF_LOG_DIR = "D:\OpenShell\audit"   # optional
 openshell-gateway --drivers mxc --config gateway.toml
 ```
 
-If `OPENSHELL_OCSF_LOG_DIR` is not set, the gateway writes to `%PROGRAMDATA%\OpenShell\logs`. Set **Paths** to the selected directory, for example `C:\ProgramData\OpenShell\logs\openshell-ocsf.*.jsonl`.
+If `OPENSHELL_OCSF_LOG_DIR` is not set, the gateway writes to `%PROGRAMDATA%\OpenShell\logs`. Set **Paths** to the selected directory, for example `C:\ProgramData\OpenShell\logs\openshell-ocsf.*.log`.
 
 #### Options
 
