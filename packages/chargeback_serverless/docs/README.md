@@ -10,7 +10,7 @@ Use this integration when your central FinOps hub runs on **Elastic Cloud Server
 - **Billing classification pipeline (`chargeback-serverless-billing`)**: Classifies Elastic Cloud Serverless Stock Keeping Units (SKUs) into `allocation_driver` (`indexing`, `query`, `storage`, `ai`, `synthetics`, or `none`) and `cost_category` (`data_tier`, `platform`, `transfer`, `snapshot`, `support`, or `other`).
 - **Five linked Kibana dashboards**: Reconcile organization-wide invoices, allocate workload and data stream costs, and track AI, Machine Learning (ML), Synthetics, and project harvest health using Elasticsearch Query Language (ES|QL) `LOOKUP JOIN` queries.
 - **Local currency normalization**: Converts Elastic Consumption Units (ECU) into your configured currency (`conf_chargeable_unit_rate` and `conf_chargeable_unit_rate_unit`).
-- **Ten FinOps alerting rule templates**: Prebuilt ES|QL alerting rules for daily and rolling 30-day spend budgets, cost category, workload driver, project, 7-day project spike, namespace, AI model, Synthetics monitor, and data trust health checks.
+- **Four FinOps alerting rule templates**: Prebuilt ES|QL alerting rules for rolling 30-day organization spend budgets (with percentage watermark and projected burn-rate overrun detection), project daily spend (with workload driver filtering and breakdown), 7-day project spend spikes, and data trust health checks.
 - **Automated 365-day retention**: Enforces Data Stream Lifecycle (DLM) retention (`data_retention: "365d"`) on `metrics-chargeback_serverless.billing-*` and `metrics-chargeback_serverless.usage-*`, paired with transform `retention_policy` (`time.field: "@timestamp"`, `max_age: 365d`) across all seven `serverless_*_lookup` destination indices.
 
 ## Before you begin
@@ -183,17 +183,11 @@ The Chargeback Serverless integration collects two metrics data streams:
 
 ## Alerting rule templates
 
-Create alerting rules from the 10 packaged ES|QL rule templates under **Stack Management → Rules**. Customize thresholds and entity filters directly on **line 2** of each rule template's ES|QL query (`EVAL threshold_spend = <value>`):
+Create alerting rules from the four packaged ES|QL rule templates under **Stack Management → Rules**. Customize thresholds and entity filters directly on **line 2** of each rule template's ES|QL query (`EVAL threshold_spend = <value>`):
 
-- **`[Chargeback Serverless] Total daily spend threshold exceeded`**: Alerts when total organization daily spend exceeds `threshold_spend` (default `1000.0`).
-- **`[Chargeback Serverless] Rolling 30-day total spend budget exceeded`**: Alerts when rolling 30-day spend exceeds `threshold_budget` (default `25000.0`).
-- **`[Chargeback Serverless] Cost category daily spend threshold exceeded`**: Alerts when any `cost_category` matching `filter_category` exceeds `threshold_spend` (default `300.0`).
-- **`[Chargeback Serverless] Workload driver daily spend threshold exceeded`**: Alerts when indexing, search, storage, AI, or Synthetics spend matching `filter_driver` exceeds `threshold_spend` (default `250.0`).
-- **`[Chargeback Serverless] Project daily spend threshold exceeded`**: Alerts when any project matching `filter_project` exceeds `threshold_spend` (default `200.0`).
+- **`[Chargeback Serverless] Rolling 30-day total spend budget exceeded`**: Alerts when rolling 30-day organization spend reaches `threshold_pct` (default `80.0%` of `threshold_budget = 25000.0`) or when `alert_on_projected` (`true`) detects a projected 30-day budget overrun after at least three billed days.
+- **`[Chargeback Serverless] Project daily spend threshold exceeded`**: Alerts when any project matching `filter_project` and `filter_driver` (`indexing`, `search`, `storage`, `ai`, `synthetics`, or `*`) exceeds `threshold_spend` (default `200.0`), including a per-driver spend breakdown.
 - **`[Chargeback Serverless] Project daily spend spike vs. 7-day baseline`**: Alerts when a project's daily spend increases by at least `threshold_pct_increase` (default `50.0%`) over its 7-day trailing average and exceeds `min_daily_spend` (default `25.0`).
-- **`[Chargeback Serverless] Namespace attributed daily spend threshold exceeded`**: Alerts when any `ds_namespace` matching `filter_namespace` exceeds `threshold_spend` (default `100.0`).
-- **`[Chargeback Serverless] AI model attributed daily spend threshold exceeded`**: Alerts when any AI model matching `filter_model` exceeds `threshold_spend` (default `50.0`).
-- **`[Chargeback Serverless] Synthetics monitor attributed daily spend threshold exceeded`**: Alerts when any Synthetics monitor matching `filter_monitor` exceeds `threshold_spend` (default `25.0`).
 - **`[Chargeback Serverless] Data trust & project harvest health issue`**: Alerts when any discovered Serverless project fails usage harvesting or unallocated spend exceeds `threshold_unallocated_spend` (default `100.0`) and `threshold_unallocated_pct` (default `25.0%`).
 
 ## Supported project types
