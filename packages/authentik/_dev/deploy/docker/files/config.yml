@@ -2,6 +2,7 @@ rules:
   - path: /api/v3/events/events/
     methods: ['GET']
     query_params:
+      ordering: -created
       page_size: 2
       page: 1
     request_headers:
@@ -23,131 +24,6 @@ rules:
               "total_pages": 3,
               "start_index": 1,
               "end_index": 2
-            },
-            "results": [
-              {
-                "pk": "1e399dbf-bb30-4d0f-acf3-a5275e065cd0",
-                "user": {
-                  "pk": 4,
-                  "email": "root@example.com",
-                  "username": "akadmin"
-                },
-                "action": "policy_execution",
-                "app": "authentik.policies.process",
-                "context": {
-                  "result": {
-                    "passing": false,
-                    "messages": [],
-                    "raw_result": null,
-                    "log_messages": [],
-                    "source_binding": null,
-                    "source_results": []
-                  },
-                  "binding": {
-                    "pk": "db99e0c8076f40db82de1295a47d0fd7",
-                    "app": "authentik_policies",
-                    "name": "Binding from Notification Rule elastic-test #0 to Policy match-all-events",
-                    "model_name": "policybinding"
-                  },
-                  "message": "Policy Execution",
-                  "request": {
-                    "obj": {
-                      "pk": "20ce67d61faa4eafa7e785944a5ffdfd",
-                      "app": "authentik_events",
-                      "name": "elastic-test",
-                      "model_name": "notificationrule"
-                    },
-                    "user": {
-                      "pk": 4,
-                      "email": "root@example.com",
-                      "username": "akadmin"
-                    },
-                    "context": {
-                      "event": {
-                        "pk": "e076090e7ae54273928e24da2a292f9f",
-                        "app": "authentik_events",
-                        "name": "Event action=login_failed user={'pk': 4, 'email': 'root@example.com', 'username': 'akadmin'} context={'stage': {'pk': '78aa6805067c4d4cad52322cdfc2f52a', 'app': 'authentik_stages_identification', 'name': 'default-authentication-identification', 'model_name': 'identificationstage'}, 'password': '********************', 'username': 'akadmin', 'http_request': {'args': {'next': '/'}, 'path': '/api/v3/flows/executor/default-authentication-flow/', 'method': 'POST', 'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36'}}",
-                        "model_name": "event"
-                      }
-                    },
-                    "http_request": null
-                  },
-                  "policy_uuid": "e315fac82dab41ce9b7d3eb299510a17"
-                },
-                "client_ip": null,
-                "created": "2024-08-07T06:28:59.565191Z",
-                "expires": "2025-08-07T06:28:59.562523Z",
-                "brand": {
-                  "pk": "df46a0dde5cc4d9397e5cface96e5c9c",
-                  "app": "authentik_brands",
-                  "name": "Brand fallback",
-                  "model_name": "brand"
-                }
-              },
-              {
-                "pk": "e6818c31-e8ff-4bbf-95ac-3da9c53cb716",
-                "user": {
-                  "pk": 4,
-                  "email": "root@example.com",
-                  "username": "akadmin"
-                },
-                "action": "login_failed",
-                "app": "authentik.events.signals",
-                "context": {
-                  "stage": {
-                    "pk": "78aa6805067c4d4cad52322cdfc2f52a",
-                    "app": "authentik_stages_identification",
-                    "name": "default-authentication-identification",
-                    "model_name": "identificationstage"
-                  },
-                  "password": "********************",
-                  "username": "akadmin",
-                  "http_request": {
-                    "args": {
-                      "next": "/"
-                    },
-                    "path": "/api/v3/flows/executor/default-authentication-flow/",
-                    "method": "POST",
-                    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
-                  }
-                },
-                "client_ip": "81.2.69.144",
-                "created": "2024-08-07T06:29:02.402447Z",
-                "expires": "2025-08-07T06:29:02.397911Z",
-                "brand": {
-                  "pk": "0bb0bcf421994958b51ffc2627ea8fe6",
-                  "app": "authentik_brands",
-                  "name": "Default brand",
-                  "model_name": "brand"
-                }
-              }
-            ]
-          }
-          `}}
-  - path: /api/v3/events/events/
-    methods: ['GET']
-    query_params:
-      page_size: 2
-      page: 2
-    request_headers:
-      Authorization:
-        - "Bearer xxxx"
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type:
-            - 'application/json'
-        body: |-
-          {{ minify_json `
-          {
-            "pagination": {
-              "next": 3,
-              "previous": 1,
-              "count": 5,
-              "current": 2,
-              "total_pages": 3,
-              "start_index": 3,
-              "end_index": 4
             },
             "results": [
               {
@@ -211,6 +87,133 @@ rules:
   - path: /api/v3/events/events/
     methods: ['GET']
     query_params:
+      ordering: -created
+      page_size: 2
+      page: 2
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "pagination": {
+              "next": 3,
+              "previous": 1,
+              "count": 5,
+              "current": 2,
+              "total_pages": 3,
+              "start_index": 3,
+              "end_index": 4
+            },
+            "results": [
+              {
+                "pk": "e6818c31-e8ff-4bbf-95ac-3da9c53cb716",
+                "user": {
+                  "pk": 4,
+                  "email": "root@example.com",
+                  "username": "akadmin"
+                },
+                "action": "login_failed",
+                "app": "authentik.events.signals",
+                "context": {
+                  "stage": {
+                    "pk": "78aa6805067c4d4cad52322cdfc2f52a",
+                    "app": "authentik_stages_identification",
+                    "name": "default-authentication-identification",
+                    "model_name": "identificationstage"
+                  },
+                  "password": "********************",
+                  "username": "akadmin",
+                  "http_request": {
+                    "args": {
+                      "next": "/"
+                    },
+                    "path": "/api/v3/flows/executor/default-authentication-flow/",
+                    "method": "POST",
+                    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
+                  }
+                },
+                "client_ip": "81.2.69.144",
+                "created": "2024-08-07T06:29:02.402447Z",
+                "expires": "2025-08-07T06:29:02.397911Z",
+                "brand": {
+                  "pk": "0bb0bcf421994958b51ffc2627ea8fe6",
+                  "app": "authentik_brands",
+                  "name": "Default brand",
+                  "model_name": "brand"
+                }
+              },
+              {
+                "pk": "1e399dbf-bb30-4d0f-acf3-a5275e065cd0",
+                "user": {
+                  "pk": 4,
+                  "email": "root@example.com",
+                  "username": "akadmin"
+                },
+                "action": "policy_execution",
+                "app": "authentik.policies.process",
+                "context": {
+                  "result": {
+                    "passing": false,
+                    "messages": [],
+                    "raw_result": null,
+                    "log_messages": [],
+                    "source_binding": null,
+                    "source_results": []
+                  },
+                  "binding": {
+                    "pk": "db99e0c8076f40db82de1295a47d0fd7",
+                    "app": "authentik_policies",
+                    "name": "Binding from Notification Rule elastic-test #0 to Policy match-all-events",
+                    "model_name": "policybinding"
+                  },
+                  "message": "Policy Execution",
+                  "request": {
+                    "obj": {
+                      "pk": "20ce67d61faa4eafa7e785944a5ffdfd",
+                      "app": "authentik_events",
+                      "name": "elastic-test",
+                      "model_name": "notificationrule"
+                    },
+                    "user": {
+                      "pk": 4,
+                      "email": "root@example.com",
+                      "username": "akadmin"
+                    },
+                    "context": {
+                      "event": {
+                        "pk": "e076090e7ae54273928e24da2a292f9f",
+                        "app": "authentik_events",
+                        "name": "Event action=login_failed user={'pk': 4, 'email': 'root@example.com', 'username': 'akadmin'} context={'stage': {'pk': '78aa6805067c4d4cad52322cdfc2f52a', 'app': 'authentik_stages_identification', 'name': 'default-authentication-identification', 'model_name': 'identificationstage'}, 'password': '********************', 'username': 'akadmin', 'http_request': {'args': {'next': '/'}, 'path': '/api/v3/flows/executor/default-authentication-flow/', 'method': 'POST', 'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36'}}",
+                        "model_name": "event"
+                      }
+                    },
+                    "http_request": null
+                  },
+                  "policy_uuid": "e315fac82dab41ce9b7d3eb299510a17"
+                },
+                "client_ip": null,
+                "created": "2024-08-07T06:28:59.565191Z",
+                "expires": "2025-08-07T06:28:59.562523Z",
+                "brand": {
+                  "pk": "df46a0dde5cc4d9397e5cface96e5c9c",
+                  "app": "authentik_brands",
+                  "name": "Brand fallback",
+                  "model_name": "brand"
+                }
+              }
+            ]
+          }
+          `}}
+  - path: /api/v3/events/events/
+    methods: ['GET']
+    query_params:
+      ordering: -created
       page_size: 2
       page: 3
     request_headers:
