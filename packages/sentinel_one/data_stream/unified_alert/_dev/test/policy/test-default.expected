@@ -10,6 +10,11 @@ inputs:
           data_stream:
             dataset: sentinel_one.unified_alert
           interval: 1m
+          processors:
+            - drop_event:
+                when:
+                    equals:
+                        message: empty
           program: |-
             (
               state.?want_more.orValue(false) ?
@@ -34,7 +39,7 @@ inputs:
               // The window is empty if the clock has gone back, or on a first poll with no
               // initial interval. Keep the cursor, or start it at the end of the window.
               state.with({
-                "events": [],
+                "events": [{"message": "empty"}],
                 "want_more": false,
                 "cursor": state.?cursor.orValue({"last_timestamp": state.end_time, "queried_at": state.queried_at}),
               })
