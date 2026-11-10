@@ -87,7 +87,7 @@ program: |-
                           bytes(es_resp.Body).decode_json().as(es_body,
                             bytes(obs_resp.Body).decode_json().as(obs_body,
                               bytes(sec_resp.Body).decode_json().as(sec_body,
-                                ((srch_resp.StatusCode == 200) ? bytes(srch_resp.Body).decode_json() : { "items": [] }).as(srch_body,
+                                ((srch_resp.StatusCode == 200) ? bytes(srch_body).decode_json() : { "items": [] }).as(srch_body,
                                   bytes(bill_resp.Body).decode_json().as(bill_body,
                                     ((has(es_body.items) && es_body.items != null ? es_body.items.map(p, dyn(p.with({ "project_type": "elasticsearch" }))) : []) +
                                      (has(obs_body.items) && obs_body.items != null ? obs_body.items.map(p, dyn(p.with({ "project_type": "observability" }))) : []) +
@@ -535,7 +535,7 @@ program: |-
                                                                                                                           ((base_ds.startsWith(".") || base_ds == "system" || (base_ds.startsWith("serverless_") && base_ds.endsWith("_lookup"))) ? "system" : base_ds).as(norm_ds,
                                                                                                                             {
                                                                                                                               "ds": norm_ds,
-                                                                                                                              "rep_idx": (from_ds && norm_ds != "system") ? (".ds-" + norm_ds) : norm_ds,
+                                                                                                                              "rep_idx": norm_ds == "system" ? "system" : raw_idx,
                                                                                                                               "idx_time": ("indexing.index_time" in row && row["indexing.index_time"] != null && row["indexing.index_time"] != "") ? int(row["indexing.index_time"]) : 0,
                                                                                                                               "qry_time": ("search.query_time" in row && row["search.query_time"] != null && row["search.query_time"] != "") ? int(row["search.query_time"]) : 0,
                                                                                                                               "store_bytes": ("dataset.size" in row && row["dataset.size"] != null && row["dataset.size"] != "") ? int(row["dataset.size"]) : 0,
