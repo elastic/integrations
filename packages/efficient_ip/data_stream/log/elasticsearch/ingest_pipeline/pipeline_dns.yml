@@ -27,10 +27,26 @@ processors:
         def answers = new ArrayList();
         def text = ctx.dns_answers_data.trim();
         def validTypes = new HashSet(['A','AAAA','CNAME','SOA','SRV','PTR','MX','NS','TXT','CAA','DS','DNSKEY','RRSIG','NSEC','NSEC3','NAPTR','DNAME','TLSA','SSHFP','HTTPS','SVCB','SPF','HINFO','LOC','CERT','OPENPGPKEY','URI']);
-        // Split by spaces and walk tokens to find TTL TYPE boundaries
-        def tokens = text.splitOnToken(' ');
+        def tokens = new ArrayList();
+        boolean inQuotes = false;
+        boolean escaped = false;
+        int tokenStart = 0;
+        for (int position = 0; position < text.length(); position++) {
+          def character = text.substring(position, position + 1);
+          if (escaped) {
+            escaped = false;
+          } else if (character == '\\') {
+            escaped = true;
+          } else if (character == '"') {
+            inQuotes = !inQuotes;
+          } else if (character == ' ' && !inQuotes) {
+            if (tokenStart < position) tokens.add(text.substring(tokenStart, position));
+            tokenStart = position + 1;
+          }
+        }
+        if (tokenStart < text.length()) tokens.add(text.substring(tokenStart));
         int i = 0;
-        while (i < tokens.length - 1) {
+        while (i < tokens.size() - 1) {
           def tok = tokens[i];
           // Skip empty tokens from multiple spaces
           if (tok.length() == 0) { i++; continue; }
@@ -42,25 +58,25 @@ processors:
           if (!isNum) { i++; continue; }
           // Find next non-empty token
           int j = i + 1;
-          while (j < tokens.length && tokens[j].length() == 0) { j++; }
-          if (j >= tokens.length) break;
+          while (j < tokens.size() && tokens[j].length() == 0) { j++; }
+          if (j >= tokens.size()) break;
           def typeStr = tokens[j];
           boolean isType = validTypes.contains(typeStr) || (typeStr.length() > 4 && typeStr.substring(0, 4).equals('TYPE'));
           if (!isType) { i++; continue; }
           // Collect data tokens until next TTL+TYPE pair or end
           int dataStart = j + 1;
           int dataEnd = dataStart;
-          while (dataEnd < tokens.length) {
+          while (dataEnd < tokens.size()) {
             def dt = tokens[dataEnd];
             if (dt.length() == 0) { dataEnd++; continue; }
             boolean dtIsNum = true;
             for (int c = 0; c < dt.length(); c++) {
               if (!Character.isDigit(dt.charAt(c))) { dtIsNum = false; break; }
             }
-            if (dtIsNum && dataEnd + 1 < tokens.length) {
+            if (dtIsNum && dataEnd + 1 < tokens.size()) {
               int k = dataEnd + 1;
-              while (k < tokens.length && tokens[k].length() == 0) { k++; }
-              if (k < tokens.length) {
+              while (k < tokens.size() && tokens[k].length() == 0) { k++; }
+              if (k < tokens.size()) {
                 def nt = tokens[k];
                 if (validTypes.contains(nt) || (nt.length() > 4 && nt.substring(0, 4).equals('TYPE'))) {
                   break;
