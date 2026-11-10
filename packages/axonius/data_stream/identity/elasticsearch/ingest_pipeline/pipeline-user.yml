@@ -684,6 +684,12 @@ processors:
       copy_from: axonius.identity.mail
       ignore_empty_value: true
       override: false
+  # asset_mail is already lowercase. Lowercase again so the mail fallback, used for
+  # events without asset_mail, matches it and the user data stream.
+  - lowercase:
+      tag: lowercase_user_email_8e4b1d27
+      field: user.email
+      ignore_missing: true
   - dissect:
       tag: dissect_user_email_c7a077f3
       if: ctx.user?.email != null && ctx.user.email.contains('@')
