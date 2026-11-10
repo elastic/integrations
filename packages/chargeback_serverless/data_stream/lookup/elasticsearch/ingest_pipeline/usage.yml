@@ -232,6 +232,22 @@ processors:
         if (ctx.updated_at instanceof Number) {
           ctx.updated_at = Instant.ofEpochMilli(((Number)ctx.updated_at).longValue()).toString();
         }
+        ctx.remove('by_backing_index');
+        if (ctx.datastream_sum_indexing_time instanceof Map) {
+          ctx.datastream_sum_indexing_time = ctx.datastream_sum_indexing_time.value != null ? Math.round(((Number)ctx.datastream_sum_indexing_time.value).doubleValue()) : 0L;
+        } else if (ctx.datastream_sum_indexing_time instanceof Number) {
+          ctx.datastream_sum_indexing_time = Math.round(((Number)ctx.datastream_sum_indexing_time).doubleValue());
+        }
+        if (ctx.datastream_sum_query_time instanceof Map) {
+          ctx.datastream_sum_query_time = ctx.datastream_sum_query_time.value != null ? Math.round(((Number)ctx.datastream_sum_query_time.value).doubleValue()) : 0L;
+        } else if (ctx.datastream_sum_query_time instanceof Number) {
+          ctx.datastream_sum_query_time = Math.round(((Number)ctx.datastream_sum_query_time).doubleValue());
+        }
+        if (ctx.datastream_sum_data_set_store_size instanceof Map) {
+          ctx.datastream_sum_data_set_store_size = ctx.datastream_sum_data_set_store_size.value != null ? Math.round(((Number)ctx.datastream_sum_data_set_store_size.value).doubleValue()) : 0L;
+        } else if (ctx.datastream_sum_data_set_store_size instanceof Number) {
+          ctx.datastream_sum_data_set_store_size = Math.round(((Number)ctx.datastream_sum_data_set_store_size).doubleValue());
+        }
   - set:
       field: event.ingested
       value: "{{{_ingest.timestamp}}}"

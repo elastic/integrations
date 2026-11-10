@@ -140,6 +140,7 @@ The Chargeback Serverless integration collects two metrics data streams:
 | api_key_type | API key credential type used for project harvesting (hub_key, remote_key, missing_key, cloud_billing_only). | keyword |
 | average_duration_ms | Average synthetic check duration in milliseconds. | double |
 | average_inference_time_ms | Average latency per inference in milliseconds. | double |
+| backing_index | Raw backing index or source identifier before data stream normalization. | keyword |
 | check_count | Number of synthetic test check executions. | long |
 | composite_key | Date and project ID composite key (YYYY-MM-DD_project_id). | keyword |
 | conf_chargeable_unit_rate | Configured currency conversion multiplier. | double |

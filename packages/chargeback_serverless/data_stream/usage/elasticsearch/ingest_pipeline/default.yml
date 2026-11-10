@@ -34,6 +34,9 @@ processors:
           ctx.composite_key = ZonedDateTime.parse(ctx['@timestamp']).toLocalDate().toString() + '_' + ctx.project_id;
         }
         if (ctx.doc_type == 'datastream' && ctx.datastream != null && ctx.datastream != '') {
+          if (ctx.backing_index == null || ctx.backing_index == '') {
+            ctx.backing_index = ctx.datastream;
+          }
           def m = /^(?:partial-)?(?:restored-)?(?:shrink-.{4}-)?\.ds-(.+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d+)?$/.matcher(ctx.datastream);
           def isBackingIndex = m.matches();
           if (isBackingIndex) {

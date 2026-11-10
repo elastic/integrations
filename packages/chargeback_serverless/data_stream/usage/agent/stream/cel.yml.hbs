@@ -33,6 +33,7 @@ program: |-
         ).as(day_start,
           (day_start + duration("24h")).as(day_end,
             day_start.format(time_layout.RFC3339).as(day_ts,
+            (day_start == latest_day_start || (state.?cursor.pending_day.orValue("") == day_ts && state.?cursor.pending_day.orValue("") != state.?cursor.last_day.orValue("") && (latest_day_start - day_start) <= duration("24h"))).as(is_live_day,
           (
             !has(state.project_keys) || state.project_keys == null ? [] :
             (type(dyn(state.project_keys)) == type("") ?
@@ -183,16 +184,20 @@ program: |-
                                                                                     }
                                                                                   },
                                                                                   "aggs": {
-                                                                                    "monitors": {
-                                                                                      "terms": { "field": "monitor.id", "size": 10000 },
+                                                                                    "by_type": {
+                                                                                      "terms": { "field": "monitor.type", "size": 10, "missing": "http" },
                                                                                       "aggs": {
-                                                                                        "monitor_name": { "terms": { "field": "monitor.name", "size": 1 } },
-                                                                                        "monitor_type": { "terms": { "field": "monitor.type", "size": 1 } },
-                                                                                        "monitor_namespace": { "terms": { "field": "data_stream.namespace", "size": 1 } },
-                                                                                        "up_checks": { "filter": { "term": { "monitor.status": "up" } } },
-                                                                                        "down_checks": { "filter": { "term": { "monitor.status": "down" } } },
-                                                                                        "locations": { "cardinality": { "field": "observer.geo.name" } },
-                                                                                        "avg_duration_us": { "avg": { "field": "monitor.duration.us" } }
+                                                                                        "monitors": {
+                                                                                          "terms": { "field": "monitor.id", "size": 10000 },
+                                                                                          "aggs": {
+                                                                                            "monitor_name": { "terms": { "field": "monitor.name", "size": 1 } },
+                                                                                            "monitor_namespace": { "terms": { "field": "data_stream.namespace", "size": 1 } },
+                                                                                            "up_checks": { "filter": { "term": { "monitor.status": "up" } } },
+                                                                                            "down_checks": { "filter": { "term": { "monitor.status": "down" } } },
+                                                                                            "locations": { "cardinality": { "field": "observer.geo.name" } },
+                                                                                            "avg_duration_us": { "avg": { "field": "monitor.duration.us" } }
+                                                                                          }
+                                                                                        }
                                                                                       }
                                                                                     }
                                                                                   }
@@ -202,54 +207,61 @@ program: |-
                                                                           ).with(
                                                                             { "Header": { "Authorization": ["ApiKey " + target_key] } }
                                                                           ).do_request().as(syn_resp,
-                                                                            ((syn_resp.StatusCode == 200) ? bytes(syn_resp.Body).decode_json() : { "aggregations": { "monitors": { "buckets": [], "sum_other_doc_count": 0 } } }).as(syn_body,
-                                                                              ((has(syn_body.aggregations) && syn_body.aggregations != null && has(syn_body.aggregations.monitors) && has(syn_body.aggregations.monitors.buckets) && syn_body.aggregations.monitors.buckets != null ?
-                                                                                syn_body.aggregations.monitors.buckets.map(b,
-                                                                                  {
-                                                                                    "@timestamp": day_ts,
-                                                                                    "period_start": day_ts,
-                                                                                    "doc_type": "synthetics_monitor",
-                                                                                    "project_id": p.id,
-                                                                                    "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
-                                                                                    "project_type": p.project_type,
-                                                                                    "monitor_id": string(b.key),
-                                                                                    "monitor_name": (has(b.monitor_name) && has(b.monitor_name.buckets) && size(b.monitor_name.buckets) > 0 && has(b.monitor_name.buckets[0].key)) ? string(b.monitor_name.buckets[0].key) : string(b.key),
-                                                                                    "monitor_type": (has(b.monitor_type) && has(b.monitor_type.buckets) && size(b.monitor_type.buckets) > 0 && has(b.monitor_type.buckets[0].key)) ? string(b.monitor_type.buckets[0].key) : "http",
-                                                                                    "monitor_namespace": (has(b.monitor_namespace) && has(b.monitor_namespace.buckets) && size(b.monitor_namespace.buckets) > 0 && has(b.monitor_namespace.buckets[0].key)) ? string(b.monitor_namespace.buckets[0].key) : "default",
-                                                                                    "check_count": has(b.doc_count) ? int(b.doc_count) : 0,
-                                                                                    "up_count": (has(b.up_checks) && has(b.up_checks.doc_count)) ? int(b.up_checks.doc_count) : 0,
-                                                                                    "down_count": (has(b.down_checks) && has(b.down_checks.doc_count)) ? int(b.down_checks.doc_count) : 0,
-                                                                                    "locations_count": (has(b.locations) && has(b.locations.value) && b.locations.value != null) ? int(b.locations.value) : 1,
-                                                                                    "average_duration_ms": (has(b.avg_duration_us) && has(b.avg_duration_us.value) && b.avg_duration_us.value != null) ? (double(b.avg_duration_us.value) / 1000.0) : 0.0,
-                                                                                    "conf_chargeable_unit_rate": double(state.conf_unit_rate),
-                                                                                    "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-                                                                                    "conf_currency_symbol": state.conf_currency_symbol,
-                                                                                  }
-                                                                                ) : []) +
-                                                                                ((has(syn_body.aggregations) && syn_body.aggregations != null && has(syn_body.aggregations.monitors) && has(syn_body.aggregations.monitors.sum_other_doc_count) && syn_body.aggregations.monitors.sum_other_doc_count != null && int(syn_body.aggregations.monitors.sum_other_doc_count) > 0) ?
-                                                                                  [
-                                                                                    {
-                                                                                      "@timestamp": day_ts,
-                                                                                      "period_start": day_ts,
-                                                                                      "doc_type": "synthetics_monitor",
-                                                                                      "project_id": p.id,
-                                                                                      "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
-                                                                                      "project_type": p.project_type,
-                                                                                      "monitor_id": "other-monitors-overflow",
-                                                                                      "monitor_name": "Other Monitors (Aggregation Overflow)",
-                                                                                      "monitor_type": "http",
-                                                                                      "monitor_namespace": "default",
-                                                                                      "check_count": int(syn_body.aggregations.monitors.sum_other_doc_count),
-                                                                                      "up_count": 0,
-                                                                                      "down_count": 0,
-                                                                                      "locations_count": 1,
-                                                                                      "average_duration_ms": 0.0,
-                                                                                      "conf_chargeable_unit_rate": double(state.conf_unit_rate),
-                                                                                      "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-                                                                                      "conf_currency_symbol": state.conf_currency_symbol,
-                                                                                    }
-                                                                                  ] : [])
-                                                                              ).as(harvested_syn_evts,
+                                                                            ((syn_resp.StatusCode == 200) ? bytes(syn_resp.Body).decode_json() : { "aggregations": { "by_type": { "buckets": [] } } }).as(syn_body,
+                                                                              ((has(syn_body.aggregations) && syn_body.aggregations != null && has(syn_body.aggregations.by_type) && has(syn_body.aggregations.by_type.buckets) && syn_body.aggregations.by_type.buckets != null) ?
+                                                                                syn_body.aggregations.by_type.buckets.map(tb,
+                                                                                  ((has(tb.key) && tb.key != null && string(tb.key) != "") ? string(tb.key) : "http").as(mtype,
+                                                                                    ((has(tb.monitors) && has(tb.monitors.buckets) && tb.monitors.buckets != null) ?
+                                                                                      tb.monitors.buckets.map(b,
+                                                                                        {
+                                                                                          "@timestamp": day_ts,
+                                                                                          "period_start": day_ts,
+                                                                                          "doc_type": "synthetics_monitor",
+                                                                                          "project_id": p.id,
+                                                                                          "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                                                                                          "project_type": p.project_type,
+                                                                                          "monitor_id": string(b.key),
+                                                                                          "monitor_name": (has(b.monitor_name) && has(b.monitor_name.buckets) && size(b.monitor_name.buckets) > 0 && has(b.monitor_name.buckets[0].key)) ? string(b.monitor_name.buckets[0].key) : string(b.key),
+                                                                                          "monitor_type": mtype,
+                                                                                          "monitor_namespace": (has(b.monitor_namespace) && has(b.monitor_namespace.buckets) && size(b.monitor_namespace.buckets) > 0 && has(b.monitor_namespace.buckets[0].key)) ? string(b.monitor_namespace.buckets[0].key) : "default",
+                                                                                          "check_count": has(b.doc_count) ? int(b.doc_count) : 0,
+                                                                                          "up_count": (has(b.up_checks) && has(b.up_checks.doc_count)) ? int(b.up_checks.doc_count) : 0,
+                                                                                          "down_count": (has(b.down_checks) && has(b.down_checks.doc_count)) ? int(b.down_checks.doc_count) : 0,
+                                                                                          "locations_count": (has(b.locations) && has(b.locations.value) && b.locations.value != null) ? int(b.locations.value) : 1,
+                                                                                          "average_duration_ms": (has(b.avg_duration_us) && has(b.avg_duration_us.value) && b.avg_duration_us.value != null) ? (double(b.avg_duration_us.value) / 1000.0) : 0.0,
+                                                                                          "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                                                          "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                                                          "conf_currency_symbol": state.conf_currency_symbol,
+                                                                                        }
+                                                                                      )
+                                                                                    : []) +
+                                                                                    ((has(tb.monitors) && has(tb.monitors.sum_other_doc_count) && tb.monitors.sum_other_doc_count != null && int(tb.monitors.sum_other_doc_count) > 0) ?
+                                                                                      [
+                                                                                        {
+                                                                                          "@timestamp": day_ts,
+                                                                                          "period_start": day_ts,
+                                                                                          "doc_type": "synthetics_monitor",
+                                                                                          "project_id": p.id,
+                                                                                          "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                                                                                          "project_type": p.project_type,
+                                                                                          "monitor_id": "other-monitors-overflow-" + mtype,
+                                                                                          "monitor_name": "Other Monitors (Aggregation Overflow - " + mtype + ")",
+                                                                                          "monitor_type": mtype,
+                                                                                          "monitor_namespace": "default",
+                                                                                          "check_count": int(tb.monitors.sum_other_doc_count),
+                                                                                          "up_count": 0,
+                                                                                          "down_count": 0,
+                                                                                          "locations_count": 1,
+                                                                                          "average_duration_ms": 0.0,
+                                                                                          "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                                                          "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                                                          "conf_currency_symbol": state.conf_currency_symbol,
+                                                                                        }
+                                                                                      ]
+                                                                                    : [])
+                                                                                  )
+                                                                                ).flatten()
+                                                                              : []).as(harvested_syn_evts,
                                                                                 ((has(bill_body.instances) && bill_body.instances != null) ?
                                                                                   bill_body.instances.filter(inst, has(inst.id) && inst.id != null && string(inst.id) == string(p.id))
                                                                                 : []).as(proj_bill_insts,
@@ -328,7 +340,7 @@ program: |-
                                                                                                   ]
                                                                                                 : [])
                                                                                               ).as(all_syn_evts,
-                                                                                                ((has(ml_body.trained_model_stats) && ml_body.trained_model_stats != null) ?
+                                                                                                ((is_live_day && has(ml_body.trained_model_stats) && ml_body.trained_model_stats != null) ?
                                                                                                   ml_body.trained_model_stats.filter(m,
                                                                                                     has(m.model_id) && m.model_id != null && string(m.model_id) != "" && (
                                                                                                       (has(m.deployment_stats) && m.deployment_stats != null && (
@@ -348,18 +360,20 @@ program: |-
                                                                                                           (has(m.inference_stats) && has(m.inference_stats.inference_count) ? int(m.inference_stats.inference_count) : 0).as(ingest_inf_count,
                                                                                                             prev_ml_baselines.filter(b, has(b.k) && b.k == mkey).as(exact_base,
                                                                                                               (size(exact_base) > 0 ? exact_base : (size(active_ml_stats.filter(tm, has(tm.model_id) && string(tm.model_id) == string(m.model_id))) == 1 ? prev_ml_baselines.filter(b, has(b.k) && b.k == legacy_mkey) : [])).as(matched_base,
-                                                                                                                ((size(matched_base) > 0 && has(matched_base[0].nodes) && matched_base[0].nodes != null) ? matched_base[0].nodes : []).as(prev_nodes,
-                                                                                                                  ((has(m.deployment_stats) && has(m.deployment_stats.nodes) && m.deployment_stats.nodes != null) ?
-                                                                                                                    m.deployment_stats.nodes.map(n,
-                                                                                                                      ((has(n.node) && n.node != null && has(n.node.id) && n.node.id != null && string(n.node.id) != "") ? string(n.node.id) : ((has(n.node) && n.node != null && has(n.node.name) && n.node.name != null && string(n.node.name) != "") ? string(n.node.name) : "")).as(nid,
-                                                                                                                        ((has(n.node) && n.node != null && has(n.node.ephemeral_id) && n.node.ephemeral_id != null && string(n.node.ephemeral_id) != "") ? string(n.node.ephemeral_id) : (has(n.start_time) && n.start_time != null ? string(n.start_time) : "")).as(ninc,
-                                                                                                                          (nid != "" ? (ninc != "" ? (nid + ":" + ninc) : nid) : ninc).as(nk,
-                                                                                                                            ((has(n.inference_count) && n.inference_count != null) ? int(n.inference_count) : 0).as(n_inf,
-                                                                                                                              (int(double(n_inf) * ((has(n.average_inference_time_ms) && n.average_inference_time_ms != null) ? double(n.average_inference_time_ms) : 0.0))).as(n_time_ms,
-                                                                                                                                prev_nodes.filter(pn, has(pn.k) && pn.k != "" && pn.k == nk).as(matched_node,
-                                                                                                                                  (size(matched_node) > 0 && has(matched_node[0].v) ? (n_inf >= int(matched_node[0].v) ? n_inf - int(matched_node[0].v) : n_inf) : n_inf).as(n_delta_inf,
-                                                                                                                                    (size(matched_node) > 0 && has(matched_node[0].t) ? (n_inf >= int(matched_node[0].v) && n_time_ms >= int(matched_node[0].t) ? n_time_ms - int(matched_node[0].t) : n_time_ms) : n_time_ms).as(n_delta_time,
-                                                                                                                                      { "k": nk, "v": n_inf, "t": n_time_ms, "dv": n_delta_inf, "dt": n_delta_time }
+                                                                                                                (size(matched_base) > 0 && has(matched_base[0].ts) && matched_base[0].ts != null && string(matched_base[0].ts) != "" && (day_start - timestamp(string(matched_base[0].ts))) == duration("24h")).as(has_contiguous_baseline,
+                                                                                                                  ((size(matched_base) > 0 && has(matched_base[0].nodes) && matched_base[0].nodes != null) ? matched_base[0].nodes : []).as(prev_nodes,
+                                                                                                                    ((has(m.deployment_stats) && has(m.deployment_stats.nodes) && m.deployment_stats.nodes != null) ?
+                                                                                                                      m.deployment_stats.nodes.map(n,
+                                                                                                                        ((has(n.node) && n.node != null && has(n.node.id) && n.node.id != null && string(n.node.id) != "") ? string(n.node.id) : ((has(n.node) && n.node != null && has(n.node.name) && n.node.name != null && string(n.node.name) != "") ? string(n.node.name) : "")).as(nid,
+                                                                                                                          ((has(n.node) && n.node != null && has(n.node.ephemeral_id) && n.node.ephemeral_id != null && string(n.node.ephemeral_id) != "") ? string(n.node.ephemeral_id) : (has(n.start_time) && n.start_time != null ? string(n.start_time) : "")).as(ninc,
+                                                                                                                            (nid != "" ? (ninc != "" ? (nid + ":" + ninc) : nid) : ninc).as(nk,
+                                                                                                                              ((has(n.inference_count) && n.inference_count != null) ? int(n.inference_count) : 0).as(n_inf,
+                                                                                                                                (int(double(n_inf) * ((has(n.average_inference_time_ms) && n.average_inference_time_ms != null) ? double(n.average_inference_time_ms) : 0.0))).as(n_time_ms,
+                                                                                                                                  prev_nodes.filter(pn, has(pn.k) && pn.k != "" && pn.k == nk).as(matched_node,
+                                                                                                                                    (size(matched_node) > 0 && has(matched_node[0].v) ? (n_inf >= int(matched_node[0].v) ? n_inf - int(matched_node[0].v) : n_inf) : n_inf).as(n_delta_inf,
+                                                                                                                                      (size(matched_node) > 0 && has(matched_node[0].t) ? (n_inf >= int(matched_node[0].v) && n_time_ms >= int(matched_node[0].t) ? n_time_ms - int(matched_node[0].t) : n_time_ms) : n_time_ms).as(n_delta_time,
+                                                                                                                                        { "k": nk, "v": n_inf, "t": n_time_ms, "dv": n_delta_inf, "dt": n_delta_time }
+                                                                                                                                      )
                                                                                                                                     )
                                                                                                                                   )
                                                                                                                                 )
@@ -368,25 +382,25 @@ program: |-
                                                                                                                           )
                                                                                                                         )
                                                                                                                       )
-                                                                                                                    )
-                                                                                                                  : []).as(node_entries,
-                                                                                                                    node_entries.map(ne, { "k": ne.k, "v": ne.v, "t": ne.t }).as(cur_nodes,
-                                                                                                                      (size(node_entries) == 0 ? 0 : node_entries.map(ne, ne.v).sum()).as(deploy_inf_count,
-                                                                                                                        (size(node_entries) == 0 ? 0.0 : double(node_entries.map(ne, ne.t).sum())).as(deploy_time_ms,
-                                                                                                                          (deploy_inf_count > 0 ? deploy_inf_count : ingest_inf_count).as(raw_inf_count,
-                                                                                                                            (deploy_inf_count > 0 ? int(deploy_time_ms) : 0).as(raw_time_ms,
-                                                                                                                              (size(matched_base) == 0 ? 0 : ((deploy_inf_count > 0 && size(prev_nodes) > 0) ? node_entries.map(ne, ne.dv).sum() : (has(matched_base[0].v) ? (raw_inf_count >= int(matched_base[0].v) ? raw_inf_count - int(matched_base[0].v) : raw_inf_count) : 0))).as(delta_inf_count,
-                                                                                                                                (size(matched_base) == 0 ? 0 : ((deploy_inf_count > 0 && size(prev_nodes) > 0) ? node_entries.map(ne, ne.dt).sum() : (has(matched_base[0].t) ? (raw_inf_count >= int(matched_base[0].v) && raw_time_ms >= int(matched_base[0].t) ? raw_time_ms - int(matched_base[0].t) : raw_time_ms) : 0))).as(delta_time_ms,
-                                                                                                                                  {
-                                                                                                                                    "bkey": mkey,
-                                                                                                                                    "model_id": string(m.model_id),
-                                                                                                                                    "task_type": has(m.pipeline_count) && int(m.pipeline_count) > 0 ? "ingest_inference" : "query_inference",
-                                                                                                                                    "delta_inf": delta_inf_count,
-                                                                                                                                    "delta_time": delta_time_ms,
-                                                                                                                                    "deploy_inf": deploy_inf_count,
-                                                                                                                                    "deploy_time": deploy_time_ms,
-                                                                                                                                    "baseline": { "k": mkey, "v": raw_inf_count, "t": raw_time_ms, "nodes": cur_nodes },
-                                                                                                                                  }
+                                                                                                                    : []).as(node_entries,
+                                                                                                                      node_entries.map(ne, { "k": ne.k, "v": ne.v, "t": ne.t }).as(cur_nodes,
+                                                                                                                        (size(node_entries) == 0 ? 0 : node_entries.map(ne, ne.v).sum()).as(deploy_inf_count,
+                                                                                                                          (size(node_entries) == 0 ? 0.0 : double(node_entries.map(ne, ne.t).sum())).as(deploy_time_ms,
+                                                                                                                            (deploy_inf_count > 0 ? deploy_inf_count : ingest_inf_count).as(raw_inf_count,
+                                                                                                                              (deploy_inf_count > 0 ? int(deploy_time_ms) : 0).as(raw_time_ms,
+                                                                                                                                (!has_contiguous_baseline ? 0 : ((deploy_inf_count > 0 && size(prev_nodes) > 0) ? node_entries.map(ne, ne.dv).sum() : (has(matched_base[0].v) ? (raw_inf_count >= int(matched_base[0].v) ? raw_inf_count - int(matched_base[0].v) : raw_inf_count) : 0))).as(delta_inf_count,
+                                                                                                                                  (!has_contiguous_baseline ? 0 : ((deploy_inf_count > 0 && size(prev_nodes) > 0) ? node_entries.map(ne, ne.dt).sum() : (has(matched_base[0].t) ? (raw_inf_count >= int(matched_base[0].v) && raw_time_ms >= int(matched_base[0].t) ? raw_time_ms - int(matched_base[0].t) : raw_time_ms) : 0))).as(delta_time_ms,
+                                                                                                                                    {
+                                                                                                                                      "bkey": mkey,
+                                                                                                                                      "model_id": string(m.model_id),
+                                                                                                                                      "task_type": has(m.pipeline_count) && int(m.pipeline_count) > 0 ? "ingest_inference" : "query_inference",
+                                                                                                                                      "delta_inf": delta_inf_count,
+                                                                                                                                      "delta_time": delta_time_ms,
+                                                                                                                                      "deploy_inf": deploy_inf_count,
+                                                                                                                                      "deploy_time": deploy_time_ms,
+                                                                                                                                      "baseline": { "k": mkey, "v": raw_inf_count, "t": raw_time_ms, "ts": day_ts, "nodes": cur_nodes },
+                                                                                                                                    }
+                                                                                                                                  )
                                                                                                                                 )
                                                                                                                               )
                                                                                                                             )
@@ -437,7 +451,7 @@ program: |-
                                                                                                       )
                                                                                                     )
                                                                                                   ) : []) +
-                                                                                                  (has(inf_body.endpoints) && inf_body.endpoints != null ?
+                                                                                                  (is_live_day && has(inf_body.endpoints) && inf_body.endpoints != null ?
                                                                                                     inf_body.endpoints.filter(ep,
                                                                                                       has(ep.inference_id) && ep.inference_id != null &&
                                                                                                       !string(ep.inference_id).startsWith(".") &&
@@ -504,48 +518,71 @@ program: |-
                                                                                                         : ((!sub_transient_err && ((ml_resp.StatusCode != 200 && ml_resp.StatusCode != 404) || (inf_resp.StatusCode != 200 && inf_resp.StatusCode != 404))).as(ai_auth_err,
                                                                                                           rows.filter(row,
                                                                                                             !row.index.startsWith(".") || row.index.startsWith(".ds-")
-                                                                                                          ).map(row,
-                                                                                                            {
-                                                                                                              "@timestamp": day_ts,
-                                                                                                              "period_start": day_ts,
-                                                                                                              "doc_type": "datastream",
-                                                                                                              "project_id": p.id,
-                                                                                                              "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
-                                                                                                              "project_type": p.project_type,
-                                                                                                              "datastream": row.index,
-                                                                                                              "datastream_sum_indexing_time": ("indexing.index_time" in row && row["indexing.index_time"] != null && row["indexing.index_time"] != "") ? int(row["indexing.index_time"]) : 0,
-                                                                                                              "datastream_sum_query_time": ("search.query_time" in row && row["search.query_time"] != null && row["search.query_time"] != "") ? int(row["search.query_time"]) : 0,
-                                                                                                              "datastream_sum_data_set_store_size": ("dataset.size" in row && row["dataset.size"] != null && row["dataset.size"] != "") ? int(row["dataset.size"]) : 0,
-                                                                                                              "conf_chargeable_unit_rate": double(state.conf_unit_rate),
-                                                                                                              "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-                                                                                                              "conf_currency_symbol": state.conf_currency_symbol,
-                                                                                                            }
-                                                                                                          ) +
-                                                                                                          all_ai_evts +
-                                                                                                          all_syn_evts +
-                                                                                                          [
-                                                                                                            {
-                                                                                                              "@timestamp": day_ts,
-                                                                                                              "period_start": day_ts,
-                                                                                                              "doc_type": "project_status",
-                                                                                                              "project_id": p.id,
-                                                                                                              "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
-                                                                                                              "project_type": p.project_type,
-                                                                                                              "optimized_for": has(p.optimized_for) ? p.optimized_for : "general_purpose",
-                                                                                                              "es_url": es_base_url,
-                                                                                                              "last_status": ai_auth_err ? "empty_or_unauthorized" : "ok",
-                                                                                                              "api_key_type": resolved_ktype,
-                                                                                                              "synthetics_status": (syn_resp.StatusCode != 200 && syn_resp.StatusCode != 404) ? "unauthorized" : ((size(harvested_syn_evts) == 0 && size(all_syn_evts) > 0) ? "billing_derived" : "ok"),
-                                                                                                              "index_count": size(rows),
-                                                                                                              "datastream_count": size(rows.filter(r, !r.index.startsWith(".") || r.index.startsWith(".ds-"))),
-                                                                                                              "ai_model_count": size(all_ai_evts),
-                                                                                                              "synthetics_monitor_count": size(all_syn_evts),
-                                                                                                              "updated_at": now.format(time_layout.RFC3339),
-                                                                                                              "conf_chargeable_unit_rate": double(state.conf_unit_rate),
-                                                                                                              "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-                                                                                                              "conf_currency_symbol": state.conf_currency_symbol,
-                                                                                                            }
-                                                                                                          ]
+                                                                                                          ).as(filtered_rows,
+                                                                                                            filtered_rows.map(row,
+                                                                                                              string(row.index).as(raw_idx,
+                                                                                                                (raw_idx.startsWith("partial-") ? raw_idx.substring(8, size(raw_idx)) : raw_idx).as(s1,
+                                                                                                                  (s1.startsWith("restored-") ? s1.substring(9, size(s1)) : s1).as(s2,
+                                                                                                                    ((s2.startsWith("shrink-") && size(s2) > 12 && s2.substring(11, 12) == "-") ? s2.substring(12, size(s2)) : s2).as(s3,
+                                                                                                                      (s3.startsWith(".ds-") ?
+                                                                                                                        s3.substring(4, size(s3)).split("-").as(segs,
+                                                                                                                          ((size(segs) > 1 && segs[size(segs) - 1].matches("^[0-9]+$")) ? segs.slice(0, size(segs) - 1) : segs).as(segs1,
+                                                                                                                            ((size(segs1) > 1 && segs1[size(segs1) - 1].matches("^[0-9]{4}\\.[0-9]{2}(\\.[0-9]{2})?$")) ? segs1.slice(0, size(segs1) - 1) : segs1).join("-")
+                                                                                                                          )
+                                                                                                                        )
+                                                                                                                      : raw_idx).as(base_ds,
+                                                                                                                        (base_ds.startsWith(".") || base_ds == "system" || (base_ds.startsWith("serverless_") && base_ds.endsWith("_lookup"))) ? "system" : base_ds
+                                                                                                                      )
+                                                                                                                    )
+                                                                                                                  )
+                                                                                                                )
+                                                                                                              )
+                                                                                                            ).as(norm_ds_names,
+                                                                                                              filtered_rows.map(row,
+                                                                                                                {
+                                                                                                                  "@timestamp": day_ts,
+                                                                                                                  "period_start": day_ts,
+                                                                                                                  "doc_type": "datastream",
+                                                                                                                  "project_id": p.id,
+                                                                                                                  "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                                                                                                                  "project_type": p.project_type,
+                                                                                                                  "datastream": row.index,
+                                                                                                                  "backing_index": string(row.index),
+                                                                                                                  "datastream_sum_indexing_time": ("indexing.index_time" in row && row["indexing.index_time"] != null && row["indexing.index_time"] != "") ? int(row["indexing.index_time"]) : 0,
+                                                                                                                  "datastream_sum_query_time": ("search.query_time" in row && row["search.query_time"] != null && row["search.query_time"] != "") ? int(row["search.query_time"]) : 0,
+                                                                                                                  "datastream_sum_data_set_store_size": ("dataset.size" in row && row["dataset.size"] != null && row["dataset.size"] != "") ? int(row["dataset.size"]) : 0,
+                                                                                                                  "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                                                                                  "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                                                                                  "conf_currency_symbol": state.conf_currency_symbol,
+                                                                                                                }
+                                                                                                              ) +
+                                                                                                              all_ai_evts +
+                                                                                                              all_syn_evts +
+                                                                                                              [
+                                                                                                                {
+                                                                                                                  "@timestamp": day_ts,
+                                                                                                                  "period_start": day_ts,
+                                                                                                                  "doc_type": "project_status",
+                                                                                                                  "project_id": p.id,
+                                                                                                                  "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                                                                                                                  "project_type": p.project_type,
+                                                                                                                  "optimized_for": has(p.optimized_for) ? p.optimized_for : "general_purpose",
+                                                                                                                  "es_url": es_base_url,
+                                                                                                                  "last_status": ai_auth_err ? "empty_or_unauthorized" : "ok",
+                                                                                                                  "api_key_type": resolved_ktype,
+                                                                                                                  "synthetics_status": (syn_resp.StatusCode != 200 && syn_resp.StatusCode != 404) ? "unauthorized" : ((size(harvested_syn_evts) == 0 && size(all_syn_evts) > 0) ? "billing_derived" : "ok"),
+                                                                                                                  "index_count": size(rows),
+                                                                                                                  "datastream_count": size(norm_ds_names) == 0 ? 0 : size(zip(norm_ds_names, norm_ds_names).keys()),
+                                                                                                                  "ai_model_count": size(all_ai_evts),
+                                                                                                                  "synthetics_monitor_count": size(all_syn_evts),
+                                                                                                                  "updated_at": now.format(time_layout.RFC3339),
+                                                                                                                  "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                                                                                  "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                                                                                  "conf_currency_symbol": state.conf_currency_symbol,
+                                                                                                                }
+                                                                                                              ]
+                                                                                                            )
+                                                                                                          )
                                                                                                         ))
                                                                                                       )
                                                                                                     )
@@ -851,6 +888,7 @@ program: |-
                                                                       "project_name": del_pname,
                                                                       "project_type": del_ptype,
                                                                       "datastream": "billing-derived-retention",
+                                                                      "backing_index": "billing-derived-retention",
                                                                       "datastream_sum_indexing_time": 1,
                                                                       "datastream_sum_query_time": 1,
                                                                       "datastream_sum_data_set_store_size": del_store_bytes >= 1.0 ? int(del_store_bytes) : 1,
@@ -903,10 +941,12 @@ program: |-
                                           (prev_completed_pids + newly_completed_pids).as(all_completed_pids,
                                             (!projects.exists(p, !all_completed_pids.exists(cid, cid == string(p.id)))).as(all_projs_done,
                                               usage_evts.filter(e, has(e.doc_type) && e.doc_type == "ai_model" && has(e._raw_baselines) && e._raw_baselines != null).map(e, e._raw_baselines).flatten().as(cur_ml_baselines,
-                                                (
-                                                  cur_ml_baselines +
-                                                  prev_ml_baselines.filter(b, !cur_ml_baselines.exists(c, c.k == b.k || c.k.startsWith(b.k + ":")))
-                                                ).as(merged_ml_baselines,
+                                                (is_live_day ?
+                                                  (
+                                                    cur_ml_baselines +
+                                                    prev_ml_baselines.filter(b, !cur_ml_baselines.exists(c, c.k == b.k || c.k.startsWith(b.k + ":")))
+                                                  )
+                                                : prev_ml_baselines).as(merged_ml_baselines,
                                                   {
                                                     "events": usage_evts,
                                                     "cursor": {
@@ -956,6 +996,7 @@ program: |-
           )
           )
           )
+            )
             )
           )
         )
