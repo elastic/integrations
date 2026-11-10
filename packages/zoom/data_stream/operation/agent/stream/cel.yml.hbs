@@ -111,8 +111,8 @@ program: |-
             ).do_request().as(resp,
               // Zoom can answer HTTP 200 with a body that is not JSON; treat that
               // like any other API error instead of failing the evaluation.
-              try(resp.Body.decode_json()).as(body,
-                (resp.StatusCode == 200 && type(body) == map) ?
+              resp.Body.decode_json().as(body,
+                (resp.StatusCode == 200 && !is_error(body)) ?
                   body.?operation_logs.orValue([]).as(logs,
                     body.?next_page_token.orValue("").as(next_token,
                       {
