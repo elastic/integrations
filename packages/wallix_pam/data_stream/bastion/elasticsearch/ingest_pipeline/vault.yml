@@ -1,0 +1,68 @@
+---
+description: Parse Wallix PAM vault activity events
+processors:
+  - grok:
+      field: message
+      patterns:
+        - '^\[Vault Activity\] %{GREEDYDATA:_tmp.kv}$'
+      ignore_failure: true
+  - kv:
+      field: _tmp.kv
+      field_split: ' (?=(?:[^"]*"[^"]*")*[^"]*$)(?=[A-Za-z_][A-Za-z0-9_]*=)'
+      value_split: '='
+      target_field: wallix_pam
+      trim_value: '"'
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: wallix_pam.session
+      type: boolean
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: user.name
+      copy_from: wallix_pam.user
+      if: ctx.wallix_pam?.user != null && ctx.user?.name == null
+  - set:
+      field: user.target.name
+      copy_from: wallix_pam.account
+      if: ctx.wallix_pam?.account != null && ctx.user?.target?.name == null
+  - append:
+      field: event.category
+      value: iam
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value: change
+      allow_duplicates: false
+      if: ctx.wallix_pam?.action == 'checkin' || ctx.wallix_pam?.action == 'checkout'
+  - append:
+      field: event.type
+      value: info
+      allow_duplicates: false
+      if: ctx.event?.type == null
+  - set:
+      field: event.action
+      copy_from: wallix_pam.action
+      if: ctx.wallix_pam?.action != null && ctx.event?.action == null
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.wallix_pam?.result instanceof String && ctx.wallix_pam.result.toLowerCase().contains('successful')
+  - set:
+      field: event.outcome
+      value: failure
+      if: >-
+        ctx.wallix_pam?.result instanceof String &&
+        !ctx.wallix_pam.result.toLowerCase().contains('successful')
+  - set:
+      field: event.reason
+      copy_from: wallix_pam.result
+      if: ctx.wallix_pam?.result != null && ctx.event?.reason == null
+  - remove:
+      field:
+        - _tmp
+        - wallix_pam.account
+        - wallix_pam.action
+        - wallix_pam.user
+      ignore_missing: true
