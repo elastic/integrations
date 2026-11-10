@@ -168,6 +168,64 @@ processors:
       field: fortinet.firewall.user
       target_field: source.user.name
       ignore_missing: true
+  # Configuration changes (subtype=system with a cfgpath), for example logid 0100044546 and 0100044547.
+  - set:
+      tag: set_user_name_from_source_user_name_5c1e9a73
+      field: user.name
+      copy_from: source.user.name
+      if: ctx.fortinet?.firewall?.subtype == 'system' && ctx.fortinet?.firewall?.cfgpath != null && ctx.source?.user?.name != null && ctx.user?.name == null
+  - lowercase:
+      tag: lowercase_fortinet_firewall_action_to_event_action_2b7d4e18
+      field: fortinet.firewall.action
+      target_field: event.action
+      ignore_missing: true
+      if: ctx.fortinet?.firewall?.subtype == 'system' && ctx.fortinet?.firewall?.cfgpath != null && ctx.event?.action == null
+  - append:
+      tag: append_event_category_configuration_9e3a7c52
+      field: event.category
+      value: configuration
+      if: ctx.fortinet?.firewall?.subtype == 'system' && ctx.fortinet?.firewall?.cfgpath != null
+  - append:
+      tag: append_event_type_creation_4d8f1b26
+      field: event.type
+      value: creation
+      if: ctx.fortinet?.firewall?.subtype == 'system' && ctx.fortinet?.firewall?.cfgpath != null && ctx.fortinet?.firewall?.action == 'Add'
+  - append:
+      tag: append_event_type_deletion_7a2c6e91
+      field: event.type
+      value: deletion
+      if: ctx.fortinet?.firewall?.subtype == 'system' && ctx.fortinet?.firewall?.cfgpath != null && ctx.fortinet?.firewall?.action == 'Delete'
+  - append:
+      tag: append_event_type_change_1f5b8d34
+      field: event.type
+      value: change
+      if: ctx.fortinet?.firewall?.subtype == 'system' && ctx.fortinet?.firewall?.cfgpath != null && ctx.fortinet?.firewall?.action != 'Add' && ctx.fortinet?.firewall?.action != 'Delete'
+  # Administrator accounts, local users and user groups are identity objects.
+  - append:
+      tag: append_event_category_iam_6c0d3f85
+      field: event.category
+      value: iam
+      if: ctx.fortinet?.firewall?.subtype == 'system' && ['system.admin', 'user.local', 'user.group'].contains(ctx.fortinet?.firewall?.cfgpath)
+  - append:
+      tag: append_event_type_user_3e9a5b17
+      field: event.type
+      value: user
+      if: ctx.fortinet?.firewall?.subtype == 'system' && ['system.admin', 'user.local'].contains(ctx.fortinet?.firewall?.cfgpath)
+  - append:
+      tag: append_event_type_group_8b4d2c60
+      field: event.type
+      value: group
+      if: ctx.fortinet?.firewall?.subtype == 'system' && ctx.fortinet?.firewall?.cfgpath == 'user.group'
+  - set:
+      tag: set_user_target_name_a5e7c149
+      field: user.target.name
+      copy_from: fortinet.firewall.cfgobj
+      if: ctx.fortinet?.firewall?.subtype == 'system' && ['system.admin', 'user.local'].contains(ctx.fortinet?.firewall?.cfgpath) && ctx.fortinet?.firewall?.cfgobj != null
+  - set:
+      tag: set_group_name_d2f8b073
+      field: group.name
+      copy_from: fortinet.firewall.cfgobj
+      if: ctx.fortinet?.firewall?.subtype == 'system' && ctx.fortinet?.firewall?.cfgpath == 'user.group' && ctx.fortinet?.firewall?.cfgobj != null
   - rename:
       tag: rename_fortinet_firewall_saddr_to_source_address_036ff596
       field: fortinet.firewall.saddr
