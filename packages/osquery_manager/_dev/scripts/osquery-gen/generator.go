@@ -8,11 +8,14 @@ import (
 	"bytes"
 	"encoding/csv"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io/fs"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 
@@ -146,11 +149,16 @@ func generateArtifacts(outputRoot, osqueryVersion, ecsVersion, beatsRef, beatsPa
 	log.Printf("Merged %d extension tables from beats", len(extTables))
 
 	columns, duplicateTypeColumns := preprocessTables(tablesForYAML)
-	osqueryYAML, err := generateOsqueryFieldsYAML(columns, duplicateTypeColumns)
+	osqueryPath := filepath.Join(outFields, "osquery.yml")
+	previousFields, err := readOsqueryFieldsYAML(osqueryPath)
+	if err != nil {
+		return fmt.Errorf("read previous osquery.yml: %w", err)
+	}
+	fields := mergeOsqueryFields(generateOsqueryFields(columns, duplicateTypeColumns), previousFields, osqueryVersion)
+	osqueryYAML, err := generateOsqueryFieldsYAML(fields)
 	if err != nil {
 		return fmt.Errorf("generate osquery.yml: %w", err)
 	}
-	osqueryPath := filepath.Join(outFields, "osquery.yml")
 	if err := os.WriteFile(osqueryPath, osqueryYAML, 0644); err != nil {
 		return fmt.Errorf("write %s: %w", osqueryPath, err)
 	}
@@ -476,66 +484,123 @@ func preprocessTables(tables []osqueryTable) (map[string]columnInfo, map[string]
 	return columns, duplicateTypeColumns
 }
 
-func generateOsqueryFieldsYAML(columns map[string]columnInfo, duplicateTypeColumns map[string]struct{}) ([]byte, error) {
-	type node struct {
-		Name        string `yaml:"name,omitempty"`
-		Title       string `yaml:"title,omitempty"`
-		Description string `yaml:"description,omitempty"`
-		Type        string `yaml:"type,omitempty"`
-		Fields      []any  `yaml:"fields,omitempty"`
-	}
-	type field struct {
-		Name        string `yaml:"name,omitempty"`
-		Description string `yaml:"description,omitempty"`
-		Type        string `yaml:"type,omitempty"`
-		IgnoreAbove int    `yaml:"ignore_above,omitempty"`
-		Multifields []any  `yaml:"multi_fields,omitempty"`
-	}
-	type mulField struct {
-		Name         string `yaml:"name,omitempty"`
-		Type         string `yaml:"type,omitempty"`
-		Norms        bool   `yaml:"norms"`
-		DefaultField bool   `yaml:"default_field"`
-	}
-	type numMulField struct {
-		Name         string `yaml:"name,omitempty"`
-		Type         string `yaml:"type,omitempty"`
-		DefaultField bool   `yaml:"default_field"`
-	}
+type osqueryFieldsGroup struct {
+	Name        string         `yaml:"name,omitempty"`
+	Title       string         `yaml:"title,omitempty"`
+	Description string         `yaml:"description,omitempty"`
+	Type        string         `yaml:"type,omitempty"`
+	Fields      []osqueryField `yaml:"fields,omitempty"`
+}
 
-	conf := node{
-		Name:        "osquery",
-		Title:       "Osquery result",
-		Description: "Fields related to the Osquery result",
-		Type:        "group",
-	}
+type osqueryField struct {
+	Name        string              `yaml:"name,omitempty"`
+	Description string              `yaml:"description,omitempty"`
+	Type        string              `yaml:"type,omitempty"`
+	IgnoreAbove int                 `yaml:"ignore_above,omitempty"`
+	Multifields []osqueryMultiField `yaml:"multi_fields,omitempty"`
+}
+
+type osqueryMultiField struct {
+	Name         string `yaml:"name,omitempty"`
+	Type         string `yaml:"type,omitempty"`
+	Norms        *bool  `yaml:"norms,omitempty"`
+	DefaultField bool   `yaml:"default_field"`
+}
+
+// removedFieldNote prefixes the description of a field whose columns are no
+// longer in the osquery schema.
+const removedFieldNote = "Removed in osquery %s; mapping kept for results from older agents."
+
+func generateOsqueryFields(columns map[string]columnInfo, duplicateTypeColumns map[string]struct{}) []osqueryField {
 	var names []string
 	for k := range columns {
 		names = append(names, k)
 	}
 	sort.Strings(names)
 
+	fields := make([]osqueryField, 0, len(names))
 	for _, colName := range names {
 		info := columns[colName]
-		f := field{
+		f := osqueryField{
 			Name:        colName,
 			Description: info.Column.Description,
 			Type:        "keyword",
 			IgnoreAbove: 1024,
 		}
 		if info.Column.Type == "text" {
-			f.Multifields = []any{
-				mulField{Name: "text", Type: "text", Norms: false, DefaultField: false},
+			norms := false
+			f.Multifields = []osqueryMultiField{
+				{Name: "text", Type: "text", Norms: &norms, DefaultField: false},
 			}
 		} else if _, isDup := duplicateTypeColumns[colName]; !isDup {
-			f.Multifields = []any{
-				numMulField{Name: "number", Type: info.Column.Type, DefaultField: false},
+			f.Multifields = []osqueryMultiField{
+				{Name: "number", Type: info.Column.Type, DefaultField: false},
 			}
 		}
-		conf.Fields = append(conf.Fields, f)
+		fields = append(fields, f)
 	}
+	return fields
+}
 
-	out := []node{conf}
+// mergeOsqueryFields keeps every field and multi-field of the previously
+// generated mappings, so that an osquery upgrade never drops or retypes a
+// mapping. Removing a mapping would leave older backing indices and new ones
+// out of step for data still sent by agents running older osquery versions.
+func mergeOsqueryFields(generated, previous []osqueryField, osqueryVersion string) []osqueryField {
+	byName := make(map[string]int, len(generated))
+	merged := make([]osqueryField, len(generated))
+	copy(merged, generated)
+	for i, f := range merged {
+		byName[f.Name] = i
+	}
+	for _, prev := range previous {
+		i, ok := byName[prev.Name]
+		if !ok {
+			if !strings.HasPrefix(prev.Description, "Removed in osquery ") {
+				prev.Description = fmt.Sprintf(removedFieldNote, osqueryVersion) + "\n" + prev.Description
+			}
+			merged = append(merged, prev)
+			continue
+		}
+		// Previous multi-fields keep their position and type; new ones follow.
+		multi := append([]osqueryMultiField(nil), prev.Multifields...)
+		for _, mf := range merged[i].Multifields {
+			if !slices.ContainsFunc(multi, func(p osqueryMultiField) bool { return p.Name == mf.Name }) {
+				multi = append(multi, mf)
+			}
+		}
+		merged[i].Multifields = multi
+	}
+	sort.Slice(merged, func(i, j int) bool { return merged[i].Name < merged[j].Name })
+	return merged
+}
+
+func readOsqueryFieldsYAML(path string) ([]osqueryField, error) {
+	b, err := os.ReadFile(path)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	var groups []osqueryFieldsGroup
+	if err := yaml.Unmarshal(b, &groups); err != nil {
+		return nil, fmt.Errorf("parse %s: %w", path, err)
+	}
+	if len(groups) != 1 || groups[0].Name != "osquery" {
+		return nil, fmt.Errorf("unexpected layout in %s: want a single osquery group", path)
+	}
+	return groups[0].Fields, nil
+}
+
+func generateOsqueryFieldsYAML(fields []osqueryField) ([]byte, error) {
+	out := []osqueryFieldsGroup{{
+		Name:        "osquery",
+		Title:       "Osquery result",
+		Description: "Fields related to the Osquery result",
+		Type:        "group",
+		Fields:      fields,
+	}}
 	return marshalYAMLWithIndent(out, 2)
 }
 

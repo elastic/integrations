@@ -70,6 +70,13 @@ Notes:
 
 - Output is always written to `packages/osquery_manager` under the detected `integrations` repo root.
 - osquerybeat extension specs are always loaded and merged.
+- `data_stream/result/fields/osquery.yml` never loses a mapping. The generator
+  reads the committed file and keeps every field and multi-field it already
+  has, so agents on older osquery versions keep writing to the same mappings
+  after rollover. A column that disappears from the schema keeps its field,
+  marked `Removed in osquery <version>` in the description. A multi-field that
+  already exists keeps its type. Remove a mapping only by editing the file on
+  purpose.
 
 ## Run
 
