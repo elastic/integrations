@@ -2,7 +2,7 @@
   "id": "nginx_otel-error-log-spike",
   "type": "alerting_rule_template",
   "attributes": {
-    "description": "Alerts when error/crit/alert/emerg log count exceeds 50 in 15 minutes. Operational errors beyond normal noise.",
+    "description": "Alerts when error/crit/alert/emerg log count exceeds 50 in 15 minutes. Operational errors beyond normal noise, excluding the error-level \"No such file or directory\" lines NGINX writes for every 404.",
     "name": "[Nginx OTel] Error log spike",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -30,7 +30,7 @@
         }
       ],
       "investigation_guide": {
-        "blob": "## NGINX error log spike\n\n### What fired\nMore than 50 high-severity error log entries in 15 minutes.\n\n### Why it matters\nBursts of severe errors signal upstream timeouts, configuration problems, FD exhaustion, or permission issues. Access log 5xx rates often lag behind error log spikes.\n\n### Triage\n1. Sample the dominant error message.\n2. Correlate with upstream / backend health.\n\n### Remediation\n- Fix the upstream or config issue.\n\n### Tuning\n- 50 errors/15m; tune to baseline noise.\n"
+        "blob": "## NGINX error log spike\n\n### What fired\nMore than 50 high-severity error log entries in 15 minutes.\n\nError-level entries NGINX writes for every 404 (`open() \"...\" failed (2: No such file or directory)`) are excluded; the same message at crit or above (for example a missing `auth_basic_user_file`) still counts.\n\n### Why it matters\nBursts of severe errors signal upstream timeouts, configuration problems, FD exhaustion, or permission issues. Access log 5xx rates often lag behind error log spikes.\n\n### Triage\n1. Sample the dominant error message.\n2. Correlate with upstream / backend health.\n\n### Remediation\n- Fix the upstream or config issue.\n\n### Tuning\n- 50 errors/15m; tune to baseline noise.\n"
       }
     },
     "params": {
@@ -38,7 +38,7 @@
       "timeWindowSize": 15,
       "timeWindowUnit": "m",
       "esqlQuery": {
-        "esql": "FROM logs-nginx.error.otel-*\n// Filter to severe log entries only\n| WHERE log.level IN (\"error\", \"crit\", \"alert\", \"emerg\")\n// Count error entries per host\n| STATS error_count = COUNT(*) BY host.name\n// Alert when error count exceeds threshold in the time window\n// Adjust threshold based on expected baseline error volume\n| WHERE error_count > 50\n| SORT error_count DESC\n| LIMIT 10"
+        "esql": "FROM logs-nginx.error.otel-*\n// Severe log entries only; drop the error-level \"No such file or directory\" lines NGINX writes for every 404 (crit and above always count)\n| WHERE log.level IN (\"error\", \"crit\", \"alert\", \"emerg\") AND NOT (log.level == \"error\" AND message LIKE \"*open() \\\"*\\\" failed (2: No such file or directory)*\")\n// Count error entries per host\n| STATS error_count = COUNT(*) BY host.name\n// Alert when error count exceeds threshold in the time window\n// Adjust threshold based on expected baseline error volume\n| WHERE error_count > 50\n| SORT error_count DESC\n| LIMIT 10"
       },
       "size": 0,
       "threshold": [

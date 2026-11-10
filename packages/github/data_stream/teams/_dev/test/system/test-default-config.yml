@@ -1,0 +1,15 @@
+wait_for_data_timeout: 1m
+input: cel
+deployer: docker
+service: github-teams
+data_stream:
+  vars:
+    api_url: http://{{Hostname}}:{{Port}}
+    access_token: test-token
+    owner: example-org
+    interval: 2s
+# Two identical snapshots of 3 teams. Each collection is stored, so the
+# index holds 6 documents and entity.last_seen_timestamp advances.
+# Later cycles are an empty page. Retry placeholders are dropped.
+assert:
+  hit_count: 6

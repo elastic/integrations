@@ -1,0 +1,85 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "building_block_type": "default",
+        "description": "This rule identifies the execution of commands that can be used to query the Windows Registry. Adversaries may query the registry to gain situational awareness about the host, like installed security software, programs and settings.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Query Registry using Built-in Tools",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  (\n    (process.name : \"reg.exe\" and process.args : \"query\") or\n    (\n      process.name : (\"powershell.exe\", \"powershell_ise.exe\", \"pwsh.exe\") and\n      process.args : (\"get-childitem\", \"gci\", \"dir\", \"ls\", \"get-item\", \"gi\", \"get-itemproperty\", \"gp\") and\n      process.args : (\"hkcu\", \"hkey_current_user\", \"hkey_local_machine\", \"hklm\", \"registry::*\")\n    )\n  ) and\n  not process.command_line : (\n    \"C:\\\\Windows\\\\system32\\\\reg.exe  query hklm\\\\software\\\\microsoft\\\\windows\\\\softwareinventorylogging /v collectionstate /reg:64\",\n    \"reg  query \\\"HKLM\\\\Software\\\\WOW6432Node\\\\Npcap\\\" /ve  \"\n  )\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": ">=9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "ded09d02-0137-4ccc-8005-c45e617e8d4c",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Rule Type: BBR",
+            "Data Source: Elastic Defend",
+            "Rule Type: Event Correlation (EQL)",
+            "Platform: Windows"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1012",
+                        "name": "Query Registry",
+                        "reference": "https://attack.mitre.org/techniques/T1012/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 110
+    },
+    "id": "ded09d02-0137-4ccc-8005-c45e617e8d4c_110",
+    "type": "security-rule"
+}

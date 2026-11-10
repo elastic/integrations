@@ -474,6 +474,8 @@ The System `process` data stream provides process statistics. One document is
 provided for each process. 
 Refer to the [Configuration](beats://reference/metricbeat/metricbeat-metricset-system-process.md##_configuration_12) section for more details on how to change the process configuration.
 
+> Note: On macOS, `system.process.memory.rss.bytes` can differ a lot from the memory that `top` and Activity Monitor show. To match the MEM column of `top` and the Memory column of Activity Monitor, use `system.process.memory.footprint`. Elastic Agent 9.6.0 and later send this field.
+
 #### Supported operating systems
 
 - FreeBSD

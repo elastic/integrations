@@ -45,15 +45,16 @@ Request Health, Server Internals, and Traffic & Capacity share a tab bar and kee
 
 ## Alerting rule templates
 
-This package ships five alerting rule templates that you can enable and customize:
+This package ships six alerting rule templates that you can enable and customize:
 
 | Rule | Default threshold | Window | Description |
 |------|-------------------|--------|-------------|
 | **[Nginx OTel] High 4xx error rate** | > 15% | 15 min | Fires when the share of HTTP 4xx client errors exceeds the threshold per host (minimum 50 requests). |
 | **[Nginx OTel] High 5xx error rate** | > 5% | 15 min | Fires when the share of HTTP 5xx server errors exceeds the threshold per host (minimum 50 requests). |
 | **[Nginx OTel] High active connections** | > 256 avg | 5 min | Fires when average active connections exceed the threshold. Adjust to match your NGINX `worker_connections` setting. |
-| **[Nginx OTel] Error log spike** | > 50 entries | 15 min | Fires when severe error log entries (`error`, `crit`, `alert`, `emerg`) exceed the threshold per host. |
+| **[Nginx OTel] Error log spike** | > 50 entries | 15 min | Fires when severe error log entries (`error`, `crit`, `alert`, `emerg`) exceed the threshold per host, excluding the error-level "No such file or directory" lines NGINX writes for every 404 (the same message at `crit` or above still counts). |
 | **[Nginx OTel] Dropped connections** | Any drop detected | 5 min | Fires when NGINX accepted more connections than it handled, indicating resource exhaustion. |
+| **[Nginx OTel] High P95 upstream response time** | > 1 s | 15 min | Fires when the 95th percentile of upstream response time exceeds the threshold per host (minimum 20 proxied requests). Requires the extended log format with timing fields. |
 
 All rules use ES|QL queries, run every 1 minute, and group by `host.name`. Thresholds can be adjusted to match your environment's baseline.
 
@@ -61,14 +62,15 @@ All rules use ES|QL queries, run every 1 minute, and group by `host.name`. Thres
 
 > **Note**: SLO templates require Elastic Stack version 9.4.0 or later.
 
-This package includes two SLO templates:
+This package includes three SLO templates:
 
 | SLO | Target | Window | Description |
 |-----|--------|--------|-------------|
 | **[Nginx OTel] Request availability** | 99% | Rolling 30 days | Percentage of requests that return a non-server-error response (status code < 500). Uses occurrence-based budgeting over access logs. |
 | **[Nginx OTel] Connection handling rate** | 99.5% | Rolling 30 days | Percentage of 1-minute time slices where all accepted connections are handled (no drops). Uses timeslice budgeting over stub_status metrics. |
+| **[Nginx OTel] Request latency** | 99% | Rolling 30 days | Percentage of requests that complete within 1 second (`$request_time`), excluding the collector's `/nginx_status` checks. Uses occurrence-based budgeting over access logs. Requires the extended log format with timing fields. |
 
-Both SLOs are grouped by `host.name`, allowing per-instance tracking.
+All SLOs are grouped by `host.name`, allowing per-instance tracking.
 
 ## Metrics reference
 
