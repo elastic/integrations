@@ -399,17 +399,25 @@ An example event for `fortigate` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-26T02:57:25.000Z",
+    "@timestamp": "2026-11-10T07:45:56.000Z",
     "agent": {
-        "ephemeral_id": "abbba26a-d842-4566-9dd8-ee236c3be02c",
-        "id": "4bf6a3f3-9819-4afd-94e2-7ca605c0d0f1",
-        "name": "elastic-agent-39414",
+        "ephemeral_id": "f148625a-0398-40f8-8b7d-2b3020c0947d",
+        "id": "514f8896-e5a5-45e5-be88-9f41117457bb",
+        "name": "elastic-agent-16561",
         "type": "filebeat",
         "version": "9.5.3"
     },
+    "criminalip": {
+        "fortigate": {
+            "date": "2026-11-10T00:00:00.000Z",
+            "subtype": "forward",
+            "time": "07:45:56",
+            "type": "traffic"
+        }
+    },
     "data_stream": {
         "dataset": "ti_criminalip.fortigate",
-        "namespace": "37152",
+        "namespace": "61033",
         "type": "logs"
     },
     "destination": {
@@ -420,7 +428,7 @@ An example event for `fortigate` looks as following:
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "4bf6a3f3-9819-4afd-94e2-7ca605c0d0f1",
+        "id": "514f8896-e5a5-45e5-be88-9f41117457bb",
         "snapshot": false,
         "version": "9.5.3"
     },
@@ -431,9 +439,10 @@ An example event for `fortigate` looks as following:
             "network"
         ],
         "dataset": "ti_criminalip.fortigate",
-        "ingested": "2026-10-26T02:57:31Z",
+        "ingested": "2026-11-10T07:45:57Z",
         "kind": "event",
         "module": "ti_criminalip",
+        "original": "date=2026-11-10 time=07:45:56 tz=\"+0000\" type=traffic subtype=forward srcip=192.0.2.10 srcport=45001 dstip=198.51.100.20 dstport=443 proto=6 action=deny synthetic=true",
         "outcome": "failure",
         "timezone": "+0000",
         "type": [
@@ -446,7 +455,7 @@ An example event for `fortigate` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.21.0.1:49073"
+            "address": "172.26.0.1:38038"
         }
     },
     "network": {
@@ -470,16 +479,9 @@ An example event for `fortigate` looks as following:
     },
     "tags": [
         "forwarded",
+        "preserve_original_event",
         "synthetic"
-    ],
-    "criminalip": {
-        "fortigate": {
-            "date": "2026-10-26T00:00:00.000Z",
-            "subtype": "forward",
-            "time": "02:57:25",
-            "type": "traffic"
-        }
-    }
+    ]
 }
 ```
 

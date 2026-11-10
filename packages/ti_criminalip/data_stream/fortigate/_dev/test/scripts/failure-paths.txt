@@ -15,7 +15,7 @@ simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case
 ! stderr .
 stdout '"original":'
 stdout 'preserve_original_event'
-stdout 'Could not parse FortiGate event time'
+stdout 'parse_fortigate_event_time'
 ! stdout '&lt;|&gt;|&amp;'
 
 simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-2.json
@@ -27,45 +27,45 @@ stdout 'original'
 
 simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-3.json
 ! stderr .
-stdout 'FortiGate source port is not a valid integer.'
-stdout 'FortiGate destination port is not a valid integer.'
+stdout 'convert_source_port'
+stdout 'convert_destination_port'
 stdout 'preserve_original_event'
 ! stdout '"port":'
-! stdout 'pipeline_error'
+stdout 'pipeline_error'
 
 simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-4.json
 ! stderr .
-stdout 'Invalid FortiGate source IP:'
-stdout 'Invalid FortiGate destination IP:'
+stdout 'validate_source_ip_candidate'
+stdout 'validate_destination_ip_candidate'
 stdout 'preserve_original_event'
 ! stdout '"ip":'
-! stdout 'pipeline_error'
+stdout 'pipeline_error'
 
 simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-5.json
 ! stderr .
-stdout 'Invalid FortiGate source IP:'
-stdout 'Invalid FortiGate destination IP:'
+stdout 'validate_source_ip_candidate'
+stdout 'validate_destination_ip_candidate'
 stdout '"related":'
 stdout '"ip":\s*\[\s*"192\.0\.2\.10",\s*"192\.0\.2\.10"\s*\]'
 stdout '"ip":\s*\[\s*"2001:db8::20",\s*"198\.51\.100\.20"\s*\]'
 stdout '"ip":\s*\[\s*"192\.0\.2\.10",\s*"2001:db8::20",\s*"198\.51\.100\.20"\s*\]'
 stdout 'preserve_original_event'
-! stdout 'pipeline_error'
+stdout 'pipeline_error'
 
 simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-6.json
 ! stderr .
-stdout 'FortiGate date is not a valid calendar date.'
+stdout 'validate_fortigate_date'
 stdout 'preserve_original_event'
 stdout '"original":'
 ! stdout '"date":'
-! stdout 'pipeline_error'
+stdout 'pipeline_error'
 
 simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-7.json
 ! stderr .
-stdout 'FortiGate date is not a valid calendar date.'
+stdout 'validate_fortigate_date'
 stdout 'preserve_original_event'
 ! stdout '"date":'
-! stdout 'pipeline_error'
+stdout 'pipeline_error'
 
 simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-8.json
 ! stderr .
