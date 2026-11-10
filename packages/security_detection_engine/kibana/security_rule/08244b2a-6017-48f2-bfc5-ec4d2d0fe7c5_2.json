@@ -1,0 +1,93 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects Vertex AI GenerateContent requests that set safety_settings.threshold to BLOCK_NONE. That threshold disables category blocking for the listed harm categories when clients explicitly send safetySettings. Attackers and careless apps use BLOCK_NONE to weaken built-in Gemini filters.",
+        "false_positives": [
+            "Approved research projects that document BLOCK_NONE for evaluation. Prefer labeled service accounts and exclude those principals."
+        ],
+        "from": "now-60m",
+        "interval": "10m",
+        "investigation_fields": {
+            "field_names": [
+                "gcp.vertexai.prompt_response_logs.model",
+                "gcp.vertexai.prompt_response_logs.api_method",
+                "gcp.vertexai.prompt_response_logs.full_request.safety_settings.category",
+                "gcp.vertexai.prompt_response_logs.full_request.safety_settings.threshold",
+                "gcp.vertexai.prompt_response_logs.full_request.contents.parts.text",
+                "gcp.vertexai.prompt_response_logs.full_response.candidates.finish_reason",
+                "gcp.vertexai.prompt_response_logs.full_response.candidates.safety_ratings.category",
+                "gcp.vertexai.prompt_response_logs.full_response.candidates.safety_ratings.probability"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "GCP Vertex AI Safety Filters Set to BLOCK_NONE",
+        "note": "## Triage and analysis\n\n### Investigating GCP Vertex AI Safety Filters Set to BLOCK_NONE\n\nThe GenerateContent request set `safety_settings.threshold` to `BLOCK_NONE` for one or more harm\ncategories. Category blocking is disabled for those categories (the model may still refuse in text,\nbut built-in filters will not stop generation for that category). Attackers and misconfigured apps\nuse this to weaken Gemini safety controls.\n\n#### Possible investigation steps\n\n- Confirm which categories were set to BLOCK_NONE via\n  `full_request.safety_settings.category` and `threshold` on the alert.\n- Read the prompt text. Look for disallowed content that would normally be blocked.\n- Hunt the same `cloud.project.id` / model for subsequent HIGH/MEDIUM safety ratings or unusual\n  successful completions after filters were weakened.\n- Identify the caller via auditlogs GenerateContent (`source.ip`, `client.user.email`).\n- Check whether org policy or an approved wrapper SDK requires stricter defaults\n  (BLOCK_MEDIUM_AND_ABOVE or higher).\n\n### False positive analysis\n\n- Documented research or red-team projects that intentionally use BLOCK_NONE. Prefer labeled service\n  accounts and exclude those principals.\n\n### Response and remediation\n\n- Require stricter thresholds via org policy, admission control, or application defaults; revoke\n  non-compliant callers.\n- If abuse is confirmed, rotate credentials and review other config changes (including\n  SetPublisherModelConfig) by the same actor.\n",
+        "query": "from logs-gcp_vertexai.prompt_response_logs-* metadata _id, _version, _index\n| where\n    data_stream.dataset == \"gcp_vertexai.prompt_response_logs\" and\n    MV_CONTAINS(gcp.vertexai.prompt_response_logs.full_request.safety_settings.threshold, \"BLOCK_NONE\")\n| keep\n    _id,\n    _version,\n    _index,\n    @timestamp,\n    cloud.project.id,\n    gcp.vertexai.prompt_response_logs.model,\n    gcp.vertexai.prompt_response_logs.api_method,\n    gcp.vertexai.prompt_response_logs.full_request.contents.parts.text,\n    gcp.vertexai.prompt_response_logs.full_request.safety_settings.category,\n    gcp.vertexai.prompt_response_logs.full_request.safety_settings.threshold,\n    gcp.vertexai.prompt_response_logs.full_response.candidates.finish_reason,\n    gcp.vertexai.prompt_response_logs.full_response.candidates.safety_ratings.category,\n    gcp.vertexai.prompt_response_logs.full_response.candidates.safety_ratings.probability\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/gcp_vertexai",
+            "https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/configure-safety-filters"
+        ],
+        "related_integrations": [
+            {
+                "package": "gcp_vertexai",
+                "version": ">=1.4.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.vertexai.prompt_response_logs.full_request.safety_settings.threshold",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "08244b2a-6017-48f2-bfc5-ec4d2d0fe7c5",
+        "setup": "## Setup\n\nRequires prompt_response_logs with full_request.safety_settings.threshold. The field is only present when the client\nsends safetySettings on the GenerateContent request.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: GenAI",
+            "Domain: Cloud",
+            "Data Source: GCP Vertex AI",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Platform: GCP",
+            "Service: GCP Vertex AI",
+            "Use Case: Threat Detection",
+            "Threat: Unauthorized AI Usage",
+            "Mitre Atlas: AML.T0015",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Tactic: Defense Impairment"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0112",
+                    "name": "Defense Impairment",
+                    "reference": "https://attack.mitre.org/tactics/TA0112/"
+                },
+                "technique": [
+                    {
+                        "id": "T1685",
+                        "name": "Disable or Modify Tools",
+                        "reference": "https://attack.mitre.org/techniques/T1685/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 2
+    },
+    "id": "08244b2a-6017-48f2-bfc5-ec4d2d0fe7c5_2",
+    "type": "security-rule"
+}

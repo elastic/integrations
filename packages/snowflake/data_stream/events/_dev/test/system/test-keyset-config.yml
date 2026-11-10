@@ -1,0 +1,21 @@
+wait_for_data_timeout: 1m
+input: cel
+service: snowflake
+vars:
+  url: http://{{Hostname}}:{{Port}}
+  role: ELASTIC_SNOWFLAKE_ROLE
+  warehouse: SECURITY_WH
+  token: test-snowflake-pat
+data_stream:
+  vars:
+    interval: 2s
+    initial_interval: 24h
+    lag_time: 15m
+    batch_size: 2
+    event_table: SNOWFLAKE.TEST.TIEBREAK
+    http_client_timeout: 90s
+    preserve_original_event: true
+assert:
+  # Three tied LOG rows share TIMESTAMP, RECORD_TYPE, and VALUE and are split across
+  # a LIMIT 2 boundary. A fourth LOG row is 1 microsecond later (sub-millisecond cursor).
+  hit_count: 4

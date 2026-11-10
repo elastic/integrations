@@ -78,8 +78,8 @@ inputs:
                         "is_token_valid": true,
                         "offset":body.?data.next.orValue(null),
                         "cursor": {
-                            ?"last_timestamp": (has(body.?data.results) && body.data.results != null && size(body.data.results) > 0) ?
-                              optional.of(body.data.results.map(e, e.lastSeen).map(t, timestamp(t)).max().format("2006-01-02T15:04:05"))
+                            ?"last_timestamp": (has(body.?data.results) && body.data.results != null && size(body.data.results.filter(e, e.?lastSeen.orValue(null) != null)) > 0) ?
+                              optional.of(body.data.results.filter(e, e.?lastSeen.orValue(null) != null).map(e, timestamp(e.lastSeen)).max().format("2006-01-02T15:04:05"))
                             :
                               state.?cursor.last_timestamp,
                         },

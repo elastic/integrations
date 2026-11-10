@@ -1,4 +1,40 @@
 # later versions go on top
+- version: "3.5.0"
+  changes:
+    - description: Fix `system.auth` sudo parsing so that `HOST=` is no longer captured as `system.auth.sudo.error` and `GROUP=`, `TSID=`, and `ENV=` are no longer merged into `system.auth.sudo.user`.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/22290
+    - description: Add `system.auth.sudo.host`, `system.auth.sudo.chroot`, `system.auth.sudo.group`, `system.auth.sudo.tsid`, `system.auth.sudo.env`, `system.auth.sudo.signal`, and `system.auth.sudo.exit` fields.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/22290
+    - description: Set `event.type` to `end` and populate `process.exit_code` for the sudo exit line written when the `log_exit_status` option is enabled, instead of `start`.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/22290
+- version: "3.4.0"
+  changes:
+    - description: Categorize Windows System channel events 6005 and 7045, and map service installation details from event 7045.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/22139
+- version: "3.3.1"
+  changes:
+    - description: Fix `system.auth` user and group management events being given `event.outcome` `failure` when the user name, home directory, or shell contains `fail`. Only messages that start with `fail` are now treated as failures.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/22212
+- version: "3.3.0"
+  changes:
+    - description: Add a `start_position` advanced setting to the application, security, and system winlog data streams to skip events that already exist in the channel when no bookmark has been saved. Requires Elastic Agent 9.6.0 or later; earlier agents ignore it.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21970
+- version: "3.2.0"
+  changes:
+    - description: Add the `system.process.memory.footprint` field to the process data stream. On macOS, it reports the physical memory footprint that `top` and Activity Monitor show. Requires Elastic Agent 9.6.0 or later.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/22106
+- version: "3.1.0"
+  changes:
+    - description: Normalize Active Directory Certificate Services (AD CS) audit events with native field mappings, `winlog.adcs` request fields, ECS user mappings, and event categorization.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21136
 - version: "3.0.1"
   changes:
     - description: Fix RFC 5424 header parsing in the auth data stream on Kibana versions that installed the grok pattern with doubled spaces. The pattern is now written on a single line so every YAML parser produces the same value.
