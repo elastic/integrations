@@ -515,72 +515,135 @@ program: |-
                                                                                                       ((ml_resp.StatusCode == 429 || ml_resp.StatusCode >= 500) || (inf_resp.StatusCode == 429 || inf_resp.StatusCode >= 500) || (syn_resp.StatusCode == 429 || syn_resp.StatusCode >= 500)).as(sub_transient_err,
                                                                                                         sub_transient_err ?
                                                                                                           []
-                                                                                                        : ((!sub_transient_err && ((ml_resp.StatusCode != 200 && ml_resp.StatusCode != 404) || (inf_resp.StatusCode != 200 && inf_resp.StatusCode != 404))).as(ai_auth_err,
-                                                                                                          rows.filter(row,
-                                                                                                            !row.index.startsWith(".") || row.index.startsWith(".ds-")
-                                                                                                          ).as(filtered_rows,
-                                                                                                            filtered_rows.map(row,
+                                                                                                        : ((!sub_transient_err && is_live_day && ((ml_resp.StatusCode != 200 && ml_resp.StatusCode != 404) || (inf_resp.StatusCode != 200 && inf_resp.StatusCode != 404))).as(ai_auth_err,
+                                                                                                          (is_live_day ?
+                                                                                                            rows.filter(row,
+                                                                                                              !row.index.startsWith(".") || row.index.startsWith(".ds-")
+                                                                                                            ).map(row,
                                                                                                               string(row.index).as(raw_idx,
                                                                                                                 (raw_idx.startsWith("partial-") ? raw_idx.substring(8, size(raw_idx)) : raw_idx).as(s1,
                                                                                                                   (s1.startsWith("restored-") ? s1.substring(9, size(s1)) : s1).as(s2,
                                                                                                                     ((s2.startsWith("shrink-") && size(s2) > 12 && s2.substring(11, 12) == "-") ? s2.substring(12, size(s2)) : s2).as(s3,
-                                                                                                                      (s3.startsWith(".ds-") ?
-                                                                                                                        s3.substring(4, size(s3)).split("-").as(segs,
-                                                                                                                          ((size(segs) > 1 && segs[size(segs) - 1].matches("^[0-9]+$")) ? segs.slice(0, size(segs) - 1) : segs).as(segs1,
-                                                                                                                            ((size(segs1) > 1 && segs1[size(segs1) - 1].matches("^[0-9]{4}\\.[0-9]{2}(\\.[0-9]{2})?$")) ? segs1.slice(0, size(segs1) - 1) : segs1).join("-")
+                                                                                                                      s3.startsWith(".ds-").as(from_ds,
+                                                                                                                        (from_ds ?
+                                                                                                                          s3.substring(4, size(s3)).split("-").as(segs,
+                                                                                                                            ((size(segs) > 1 && segs[size(segs) - 1].matches("^[0-9]+$")) ? segs.slice(0, size(segs) - 1) : segs).as(segs1,
+                                                                                                                              ((size(segs1) > 1 && segs1[size(segs1) - 1].matches("^[0-9]{4}\\.[0-9]{2}(\\.[0-9]{2})?$")) ? segs1.slice(0, size(segs1) - 1) : segs1).join("-")
+                                                                                                                            )
+                                                                                                                          )
+                                                                                                                        : raw_idx).as(base_ds,
+                                                                                                                          ((base_ds.startsWith(".") || base_ds == "system" || (base_ds.startsWith("serverless_") && base_ds.endsWith("_lookup"))) ? "system" : base_ds).as(norm_ds,
+                                                                                                                            {
+                                                                                                                              "ds": norm_ds,
+                                                                                                                              "rep_idx": (from_ds && norm_ds != "system") ? (".ds-" + norm_ds) : norm_ds,
+                                                                                                                              "idx_time": ("indexing.index_time" in row && row["indexing.index_time"] != null && row["indexing.index_time"] != "") ? int(row["indexing.index_time"]) : 0,
+                                                                                                                              "qry_time": ("search.query_time" in row && row["search.query_time"] != null && row["search.query_time"] != "") ? int(row["search.query_time"]) : 0,
+                                                                                                                              "store_bytes": ("dataset.size" in row && row["dataset.size"] != null && row["dataset.size"] != "") ? int(row["dataset.size"]) : 0,
+                                                                                                                            }
                                                                                                                           )
                                                                                                                         )
-                                                                                                                      : raw_idx).as(base_ds,
-                                                                                                                        (base_ds.startsWith(".") || base_ds == "system" || (base_ds.startsWith("serverless_") && base_ds.endsWith("_lookup"))) ? "system" : base_ds
                                                                                                                       )
                                                                                                                     )
                                                                                                                   )
                                                                                                                 )
                                                                                                               )
-                                                                                                            ).as(norm_ds_names,
-                                                                                                              filtered_rows.map(row,
-                                                                                                                {
-                                                                                                                  "@timestamp": day_ts,
-                                                                                                                  "period_start": day_ts,
-                                                                                                                  "doc_type": "datastream",
-                                                                                                                  "project_id": p.id,
-                                                                                                                  "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
-                                                                                                                  "project_type": p.project_type,
-                                                                                                                  "datastream": row.index,
-                                                                                                                  "backing_index": string(row.index),
-                                                                                                                  "datastream_sum_indexing_time": ("indexing.index_time" in row && row["indexing.index_time"] != null && row["indexing.index_time"] != "") ? int(row["indexing.index_time"]) : 0,
-                                                                                                                  "datastream_sum_query_time": ("search.query_time" in row && row["search.query_time"] != null && row["search.query_time"] != "") ? int(row["search.query_time"]) : 0,
-                                                                                                                  "datastream_sum_data_set_store_size": ("dataset.size" in row && row["dataset.size"] != null && row["dataset.size"] != "") ? int(row["dataset.size"]) : 0,
-                                                                                                                  "conf_chargeable_unit_rate": double(state.conf_unit_rate),
-                                                                                                                  "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-                                                                                                                  "conf_currency_symbol": state.conf_currency_symbol,
-                                                                                                                }
-                                                                                                              ) +
-                                                                                                              all_ai_evts +
-                                                                                                              all_syn_evts +
-                                                                                                              [
-                                                                                                                {
-                                                                                                                  "@timestamp": day_ts,
-                                                                                                                  "period_start": day_ts,
-                                                                                                                  "doc_type": "project_status",
-                                                                                                                  "project_id": p.id,
-                                                                                                                  "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
-                                                                                                                  "project_type": p.project_type,
-                                                                                                                  "optimized_for": has(p.optimized_for) ? p.optimized_for : "general_purpose",
-                                                                                                                  "es_url": es_base_url,
-                                                                                                                  "last_status": ai_auth_err ? "empty_or_unauthorized" : "ok",
-                                                                                                                  "api_key_type": resolved_ktype,
-                                                                                                                  "synthetics_status": (syn_resp.StatusCode != 200 && syn_resp.StatusCode != 404) ? "unauthorized" : ((size(harvested_syn_evts) == 0 && size(all_syn_evts) > 0) ? "billing_derived" : "ok"),
-                                                                                                                  "index_count": size(rows),
-                                                                                                                  "datastream_count": size(norm_ds_names) == 0 ? 0 : size(zip(norm_ds_names, norm_ds_names).keys()),
-                                                                                                                  "ai_model_count": size(all_ai_evts),
-                                                                                                                  "synthetics_monitor_count": size(all_syn_evts),
-                                                                                                                  "updated_at": now.format(time_layout.RFC3339),
-                                                                                                                  "conf_chargeable_unit_rate": double(state.conf_unit_rate),
-                                                                                                                  "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-                                                                                                                  "conf_currency_symbol": state.conf_currency_symbol,
-                                                                                                                }
-                                                                                                              ]
+                                                                                                            )
+                                                                                                          : []).as(norm_rows,
+                                                                                                            (size(norm_rows) == 0 ? [] : zip(norm_rows.map(r, r.ds), norm_rows.map(r, r.ds)).keys()).as(distinct_ds_names,
+                                                                                                              proj_bill_insts.map(inst,
+                                                                                                                (has(inst.product_line_items) && inst.product_line_items != null) ?
+                                                                                                                  inst.product_line_items.filter(li,
+                                                                                                                    has(li.sku) && li.sku != null && string(li.sku).lowerAscii().as(s,
+                                                                                                                      (s.contains("retained") || s.contains("storage") || s.contains("retention")) && !s.contains("snapshot")
+                                                                                                                    )
+                                                                                                                  ).map(li,
+                                                                                                                    ((has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null) ? double(li.quantity.value) : 0.0).as(qval,
+                                                                                                                      (((has(li.quantity) && li.quantity != null && has(li.quantity.unit) && li.quantity.unit != null) ? string(li.quantity.unit) : (has(li.unit) && li.unit != null ? string(li.unit) : "")).lowerAscii()).as(qunit,
+                                                                                                                        ((double((day_end - day_start).getSeconds()) / 3600.0) > 0.0 ? (double((day_end - day_start).getSeconds()) / 3600.0) : 24.0).as(win_hours,
+                                                                                                                          ((qunit == "" || qunit.contains("hour") || qunit.contains("hr") || qunit.endsWith("-h") || qunit.endsWith("_h") || qunit.endsWith("gbh")) ? (qval / win_hours) : qval).as(norm_qval,
+                                                                                                                            (qunit.contains("tb") || qunit.contains("tib") || qunit.contains("terabyte") ? 1099511627776.0 : (qunit.contains("mb") || qunit.contains("mib") || qunit.contains("megabyte") ? 1048576.0 : (qunit.contains("kb") || qunit.contains("kib") || qunit.contains("kilobyte") ? 1024.0 : (qunit.contains("byte") ? 1.0 : 1073741824.0)))).as(unit_bytes,
+                                                                                                                              norm_qval * unit_bytes
+                                                                                                                            )
+                                                                                                                          )
+                                                                                                                        )
+                                                                                                                      )
+                                                                                                                    )
+                                                                                                                  )
+                                                                                                                : []
+                                                                                                              ).flatten().as(hist_store_qtys,
+                                                                                                                (size(hist_store_qtys) == 0 ? 0.0 : hist_store_qtys.sum()).as(hist_store_bytes,
+                                                                                                                  (is_live_day ?
+                                                                                                                    distinct_ds_names.map(ds_name,
+                                                                                                                      norm_rows.filter(r, r.ds == ds_name).as(ds_grp,
+                                                                                                                        {
+                                                                                                                          "@timestamp": day_ts,
+                                                                                                                          "period_start": day_ts,
+                                                                                                                          "doc_type": "datastream",
+                                                                                                                          "project_id": p.id,
+                                                                                                                          "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                                                                                                                          "project_type": p.project_type,
+                                                                                                                          "datastream": ds_grp[0].rep_idx,
+                                                                                                                          "backing_index": ds_name,
+                                                                                                                          "datastream_sum_indexing_time": ds_grp.map(r, r.idx_time).sum(),
+                                                                                                                          "datastream_sum_query_time": ds_grp.map(r, r.qry_time).sum(),
+                                                                                                                          "datastream_sum_data_set_store_size": ds_grp.map(r, r.store_bytes).sum(),
+                                                                                                                          "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                                                                                          "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                                                                                          "conf_currency_symbol": state.conf_currency_symbol,
+                                                                                                                        }
+                                                                                                                      )
+                                                                                                                    )
+                                                                                                                  :
+                                                                                                                    (size(proj_bill_insts) > 0 ?
+                                                                                                                      [
+                                                                                                                        {
+                                                                                                                          "@timestamp": day_ts,
+                                                                                                                          "period_start": day_ts,
+                                                                                                                          "doc_type": "datastream",
+                                                                                                                          "project_id": p.id,
+                                                                                                                          "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                                                                                                                          "project_type": p.project_type,
+                                                                                                                          "datastream": "billing-derived-retention",
+                                                                                                                          "backing_index": "billing-derived-retention",
+                                                                                                                          "datastream_sum_indexing_time": 1,
+                                                                                                                          "datastream_sum_query_time": 1,
+                                                                                                                          "datastream_sum_data_set_store_size": hist_store_bytes >= 1.0 ? int(hist_store_bytes) : 1,
+                                                                                                                          "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                                                                                          "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                                                                                          "conf_currency_symbol": state.conf_currency_symbol,
+                                                                                                                        }
+                                                                                                                      ]
+                                                                                                                    : [])
+                                                                                                                  ).as(ds_evts,
+                                                                                                                    ds_evts +
+                                                                                                                    all_ai_evts +
+                                                                                                                    all_syn_evts +
+                                                                                                                    [
+                                                                                                                      {
+                                                                                                                        "@timestamp": day_ts,
+                                                                                                                        "period_start": day_ts,
+                                                                                                                        "doc_type": "project_status",
+                                                                                                                        "project_id": p.id,
+                                                                                                                        "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                                                                                                                        "project_type": p.project_type,
+                                                                                                                        "optimized_for": has(p.optimized_for) ? p.optimized_for : "general_purpose",
+                                                                                                                        "es_url": es_base_url,
+                                                                                                                        "last_status": ai_auth_err ? "empty_or_unauthorized" : "ok",
+                                                                                                                        "api_key_type": resolved_ktype,
+                                                                                                                        "synthetics_status": (syn_resp.StatusCode != 200 && syn_resp.StatusCode != 404) ? "unauthorized" : ((size(harvested_syn_evts) == 0 && size(all_syn_evts) > 0) ? "billing_derived" : "ok"),
+                                                                                                                        "index_count": is_live_day ? size(rows) : size(ds_evts),
+                                                                                                                        "datastream_count": size(ds_evts),
+                                                                                                                        "ai_model_count": size(all_ai_evts),
+                                                                                                                        "synthetics_monitor_count": size(all_syn_evts),
+                                                                                                                        "updated_at": now.format(time_layout.RFC3339),
+                                                                                                                        "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                                                                                        "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                                                                                        "conf_currency_symbol": state.conf_currency_symbol,
+                                                                                                                      }
+                                                                                                                    ]
+                                                                                                                  )
+                                                                                                                )
+                                                                                                              )
                                                                                                             )
                                                                                                           )
                                                                                                         ))
