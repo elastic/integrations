@@ -8,6 +8,35 @@
 # older event. The second poll finds only seen events on the first page and
 # must continue to the second to collect c. The test asserts that all four
 # events are indexed and that no write was rejected as a version conflict.
+#
+# Mock API (page_size 2, ordered by -created, T is the shared timestamp):
+#
+#            page 1      page 2 (alternates between the two responses)
+#            --------    ----------------------------------------------
+#   call 1   [ a  b ]     [ d ]        <- c has not appeared yet
+#   call 2   [ a  b ]     [ c  d ]     <- c has now appeared
+#   call 3   [ a  b ]     [ d ]        <- and so on, alternating
+#
+#   a, b, c created at T; d created before T.
+#
+# Poll 1 (no cursor, cutoff far in the past)
+#
+#   page 1  [ a  b ]  both new                    -> collect a and b, keep paging
+#   page 2  [ d ]    new, last page               -> collect d, stop
+#
+#   cursor = {T, [a b]}                           collected: a b d
+#
+# Poll 2 (cutoff T, seen at T: a b)
+#
+#   page 1  [ a  b ]  both seen, nothing older    -> skip a and b (seen), keep paging
+#   page 2  [ c  d ]  c is new (T, not in [a b])  -> collect c (at T, not in [a b])
+#                     d is older than cutoff      -> skip d (before cutoff), stop
+#
+#   cursor = {T, [ a b c ]}                       collected: c
+#
+# Total: a b c d, each sent once, so there are no version conflicts.
+# Stopping after page 1 in poll 2 would lose c. Re-sending a or b would
+# raise the version conflict count.
 
 # The ingest pipeline builds _id from a fingerprint of event.original, so a
 # re-sent event is rejected as a version conflict inside one backing index.
