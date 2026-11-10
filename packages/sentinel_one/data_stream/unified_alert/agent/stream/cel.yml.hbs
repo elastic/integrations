@@ -273,8 +273,9 @@ program: |-
         // than the delay old when queried. Cursors from versions without the delay
         // have no queried_at, because their windows ended when they were queried.
         "start_time": state.?cursor.last_timestamp.optMap(t, int(t)).optMap(last,
-          (int(state.?cursor.queried_at.orValue(last)) - duration(state.delay).getMilliseconds()).as(start,
-            start < last ? start : last
+          min(
+            int(state.?cursor.queried_at.orValue(last)) - duration(state.delay).getMilliseconds(),
+            last
           )
         ).orValue(queried_at - duration(state.delay).getMilliseconds() - duration(state.initial_interval).getMilliseconds()),
         "end_time": queried_at - duration(state.delay).getMilliseconds(),
