@@ -66,7 +66,16 @@ The Reports API data streams use the following *oauth2 scope*:
 
 - `https://www.googleapis.com/auth/admin.reports.audit.readonly`
 
-The `users` data stream needs different scopes. See the Google Workspace Users section.
+The `users` and `group_inventory` data streams need different scopes. See the Google Workspace Users and Google Workspace Groups inventory sections.
+
+### Inventory data streams
+
+Most data streams of this integration contain audit **events** from the Reports API: what happened. Two data streams instead contain an **inventory** from the Admin SDK Directory API: what exists, collected again in full on every cycle, with `event.kind: asset`. Both are turned off by default.
+
+| Inventory data stream | Contains | Related audit data streams |
+|---|---|---|
+| `users` | One document per user account | `user_accounts`, `admin` |
+| `group_inventory` | One document per Google group | `groups`, `group_enterprise` |
 
 Once you have downloaded your service account credentials as a JSON file, you are ready to set up your integration.
 
@@ -275,7 +284,7 @@ The Directory API has no filter for changed users, so each cycle reads the whole
 
 Two optional settings add more information to each user document. Both are off by default:
 
-- **Collect group membership** adds the groups each user is a direct member of (`user.group.id`, `user.group.name` and `google_workspace.users.groups`). Membership inherited through nested groups is not included.
+- **Collect group membership** adds the groups each user is a direct member of (`user.group.id`, `user.group.name` and `google_workspace.users.groups`). Membership inherited through nested groups is not included. It also links each user to the groups they own (`user.entity.relationships.owns.entity.id`) and manage (added to `user.entity.relationships.administers.entity.id`). These IDs are the `entity.id` of the group documents in the `group_inventory` data stream. The Entity Store graph draws `owns` links from Kibana 9.4 and `administers` links from Kibana 9.5.
 - **Collect admin roles and privileges** adds the admin roles assigned to each user (`user.roles`), their privileges (`user.entity.attributes.permissions`) and the scope each role applies to (`user.entity.relationships.administers.entity.id`): an organizational unit ID, or the customer ID for roles that apply to the whole account, such as super administrator. The full assignments are in `google_workspace.users.role_assignments`. Only roles assigned **directly** to the user are included. Roles a user gets through a group are not, because the Directory API only returns those for a single user at a time.
 
 `user.roles` always includes `super_admin` or `delegated_admin` when Google flags the user as one, even when the roles option is off.
@@ -317,6 +326,68 @@ The data stream calls `https://admin.googleapis.com`. You can change this with t
 - **The data stream stops with `oauth2: cannot fetch token` and the input health is Degraded.** Google rejected the token request. The error usually contains `unauthorized_client`, `access_denied`, `invalid_grant`, `invalid_scope` or `admin_policy_enforced`. Check that every scope for the settings you enabled is delegated exactly as in the table above, and that enough time has passed for the change to take effect.
 - **An error document reports HTTP 403 on a roles, role assignments, groups or members request.** The delegated account lacks the privilege for that option. Users are still collected, without that information. For the roles option, the delegated account must be a super administrator.
 - **Fewer users than expected.** The delegated account's role is probably limited to some organizational units. Grant Users → Read on all organizational units.
+
+# Google Workspace Groups inventory
+
+The `group_inventory` data stream collects an **inventory** of the Google groups in your Google Workspace account from the [Admin SDK Directory API](https://developers.google.com/workspace/admin/directory/reference/rest/v1/groups/list). Each collection cycle produces one document per group, describing what exists: the group's email, name, aliases and member count, its owners and managers, the groups nested in it, its external members and, optionally, its access settings and admin roles. Documents have `event.kind: asset`.
+
+This is different from the `groups` and `group_enterprise` data streams, which contain Groups audit **events** (what happened), such as a member being added or a setting being changed.
+
+The data stream is turned off by default.
+
+## Collection
+
+The Directory API has no filter for changed groups, so each cycle lists every group and reads every group's direct members again. The default interval is `24h`. A cycle needs one request per 200 groups, plus at least one request per group for its members (one per 200 members). The `users` data stream reads the same group members when its Collect group membership option is on, and both data streams share the Directory API quota of the delegated account with the Reports API data streams.
+
+Each group document contains:
+
+- `group.id` and `group.name`, and the group as an entity: `entity.id` (the group ID), `entity.name` (the group email), `entity.display_name` and `entity.sub_type: google_workspace_group`. ECS has no entity type for groups, so `entity.type` is not set. From Kibana 9.4 the Entity Store keeps each group as a generic entity.
+- The owners and managers (`google_workspace.group_inventory.owners` and `managers`, also in `related.user`), the groups that are direct members of this group (`member_groups`), the external members (`external_members`), whether the whole account is a member (`has_customer_member`) and member counts by type and role (`member_counts`).
+- The plain user members are **not** listed on group documents. They are on the user documents of the `users` data stream (`user.group.id`) when its Collect group membership option is on. `group.id` on a group document is the same value as `user.group.id` on a user document.
+
+Two optional settings add more information to each group document. Both are off by default:
+
+- **Collect group settings** adds the group's access settings from the [Groups Settings API](https://developers.google.com/workspace/admin/groups-settings/v1/reference/groups) under `google_workspace.group_inventory.settings`: who can join, post, view members, view and find the group, whether external members are allowed, moderation and others. It costs one more request per group, against the Groups Settings API quota of 100,000 requests a day per Google Cloud project. At the default `24h` interval that covers about 90,000 groups, and at `1h` about 4,000. When the quota is used up, settings are not requested again in that cycle, one error document is published and the remaining group documents carry `google_workspace.group_inventory.settings_error`. These are the values set on the group. Organization-wide Groups for Business sharing settings can restrict them further and are not included.
+- **Collect admin roles and privileges** adds the admin roles assigned directly to each group (`google_workspace.group_inventory.role_assignments`), their privileges (`entity.attributes.permissions`) and, for roles limited to an organizational unit, that unit's ID (`entity.relationships.administers.entity.id`). The members of such a group hold the role through the group.
+
+## Requirements
+
+The `group_inventory` data stream uses the same service account and `Delegated Account` as the Reports API data streams. It needs these extra scopes and privileges:
+
+| Setting | OAuth scope to add | Privilege the delegated account needs |
+|---|---|---|
+| Always | `https://www.googleapis.com/auth/admin.directory.group.readonly` | Groups → Read. If you use a Groups Reader or Groups Editor role assignment instead, it must cover all groups. |
+| Collect group settings | `https://www.googleapis.com/auth/apps.groups.settings` | The Groups privilege (for example the Groups Admin or Groups Editor role), or super administrator. In accounts with several domains, use a delegated account on the primary domain. |
+| Collect admin roles and privileges | `https://www.googleapis.com/auth/admin.directory.rolemanagement.readonly` | The delegated account must be a **super administrator**. |
+
+The first and last scopes are the same as for the `users` data stream, so they may already be delegated.
+
+> NOTE: Google offers no read-only scope for group settings. `https://www.googleapis.com/auth/apps.groups.settings` allows **changing** the settings of any group the delegated account can manage. The integration only reads settings. Keep the delegated account's privileges as low as the table allows.
+
+For Collect group settings, also enable the **Groups Settings API** in the service account's Google Cloud project, next to the Admin SDK API.
+
+Add the scopes to the service account's domain-wide delegation as described in the Google Workspace Users section: **Edit** the existing client ID, keep the scopes already listed and use the exact scope strings. Scope changes can take up to 24 hours to take effect.
+
+> NOTE: The integration requests all the scopes the data stream needs in one token request. If any of them is not delegated yet, Google issues no token and the **whole** `group_inventory` data stream stops, including the basic group inventory. Turn on an optional setting only after its scope is delegated and in effect. The other data streams of the integration, including `users`, are not affected.
+
+The data stream calls `https://admin.googleapis.com` and, for group settings, `https://www.googleapis.com`. You can change them with the **Directory API Host** and **Groups Settings API Host** settings under the data stream's advanced options.
+
+## Notes on the data
+
+- Only **direct** members are read. A user who is a member through a nested group is not counted in this group's `member_counts`. Find the groups that contain a group by searching for its ID in `google_workspace.group_inventory.member_groups.id`.
+- External members are found by email domain: a member is external when its email domain is not the domain of any group listed in the same cycle. A domain of your account that has no groups therefore looks external, and so do the other domains of your account when the **Domain** setting limits the listing to one domain.
+- Admin roles that apply to the whole account add their privileges to `entity.attributes.permissions` but no ID to `entity.relationships.administers.entity.id`, because the group listing does not return the customer ID.
+- Group owners in this data stream are the members with the Owner role. Administrators can manage every group without being listed as owners.
+- Deleted groups are not included.
+
+## Troubleshooting
+
+- **The data stream stops with `oauth2: cannot fetch token` and the input health is Degraded.** Google rejected the token request. Check that every scope for the settings you enabled is delegated exactly as in the table above, and that enough time has passed for the change to take effect.
+- **An error document reports an HTTP error on the groups request, no group documents are written and the input health is Degraded.** The group listing itself failed, so the cycle stopped. For HTTP 403, grant the delegated account Groups → Read with an assignment that has no condition. The next cycle starts again from the beginning.
+- **A group document has `google_workspace.group_inventory.members_error`.** Its members could not be read, usually because the group was deleted during the cycle (HTTP 404). The other groups are not affected.
+- **An error document reports HTTP 403 on a Groups Settings request, and group documents have `google_workspace.group_inventory.settings_error`.** Either the Groups Settings API is not enabled in the Google Cloud project, or the delegated account lacks the Groups privilege. Groups are still collected, without settings.
+- **An error document reports HTTP 403 on a roles or role assignments request.** The delegated account is not a super administrator. Groups are still collected, without admin roles.
+- **Fewer groups than expected.** The delegated account's Groups role assignment is probably limited by a condition, for example to security groups only. Use an assignment without a condition.
 
 ## Elastic Managed enabled integration
 
@@ -812,6 +883,7 @@ An example event for `users` looks as following:
 | user.entity.name | The name of the entity. The keyword field enables exact matches for filtering and aggregations, while the text field enables full-text search. For entities with dedicated field sets (for example, `host`), this field should mirrors the corresponding \*.name value. | keyword |
 | user.entity.name.text | Multi-field of `user.entity.name`. | match_only_text |
 | user.entity.relationships.administers.entity.id | Identifiers of referenced entities, using the same meaning as root `entity.id` (stable id for correlation within scope). | keyword |
+| user.entity.relationships.owns.entity.id | Identifiers of referenced entities, using the same meaning as root `entity.id` (stable id for correlation within scope). | keyword |
 | user.entity.source | The module or integration that provided this entity data (similar to event.module). | keyword |
 | user.entity.sub_type | The specific type designation for the entity as defined by its provider or system. This field provides more granular classification than the type field. Examples: `aws_s3_bucket`, `gcp_cloud_storage_bucket`, `azure_blob_container` would all map to entity type `bucket`.  `hardware` , `virtual` , `container` , `node` , `cloud_instance` would all map to entity type `host`. | keyword |
 | user.entity.type | A standardized high-level classification of the entity. This provides a normalized way to group similar entities across different providers or systems. Example values: `bucket`, `database`, `container`, `function`, `queue`, `host`, `user`, `application`, `session`, `cloud`, `orchestrator`, etc. If an entity is nested under a top-level namespace like `host` or `cloud`, or similar, its type array should include the matching value — for example, `host` or `cloud`. | keyword |
@@ -823,6 +895,341 @@ An example event for `users` looks as following:
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
 | user.roles | Array of user roles at the time of the event. | keyword |
+
+
+### Group Inventory
+
+This is the `group_inventory` dataset. It contains an inventory of Google groups, not events. See the Google Workspace Groups inventory section.
+
+An example event for `group_inventory` looks as following:
+
+```json
+{
+    "@timestamp": "2026-11-09T20:05:20.370Z",
+    "agent": {
+        "ephemeral_id": "314f805f-8ff3-4b1b-9f6c-63341404a48b",
+        "id": "e8ffc502-e18f-4d9f-a2aa-f6648df8dae7",
+        "name": "elastic-agent-79582",
+        "type": "filebeat",
+        "version": "8.19.23"
+    },
+    "data_stream": {
+        "dataset": "google_workspace.group_inventory",
+        "namespace": "56852",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.5.0"
+    },
+    "elastic_agent": {
+        "id": "e8ffc502-e18f-4d9f-a2aa-f6648df8dae7",
+        "snapshot": false,
+        "version": "8.19.23"
+    },
+    "entity": {
+        "display_name": "Platform on-call",
+        "id": "00example0chd01",
+        "last_seen_timestamp": "2026-11-09T20:05:20.370Z",
+        "name": "platform-oncall@example.com",
+        "source": "google_workspace",
+        "sub_type": "google_workspace_group"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "iam"
+        ],
+        "dataset": "google_workspace.group_inventory",
+        "ingested": "2026-11-09T20:05:21Z",
+        "kind": "asset",
+        "type": [
+            "group",
+            "info"
+        ]
+    },
+    "google_workspace": {
+        "group_inventory": {
+            "admin_created": true,
+            "customer_member_ids": [],
+            "description": "Nested in platform-eng@example.com.",
+            "direct_members_count": 3,
+            "email": "platform-oncall@example.com",
+            "email_domain": "example.com",
+            "etag": "exampleEtag_group_chd01",
+            "external_members": [],
+            "has_customer_member": false,
+            "kind": "admin#directory#group",
+            "managers": [],
+            "member_counts": {
+                "by_role": {
+                    "manager": 0,
+                    "member": 2,
+                    "other": 0,
+                    "owner": 1
+                },
+                "by_type": {
+                    "customer": 0,
+                    "group": 0,
+                    "other": 0,
+                    "user": 3
+                },
+                "external": 0,
+                "total": 3
+            },
+            "member_groups": [],
+            "owners": [
+                {
+                    "email": "erin.davis@example.com",
+                    "id": "100000000000000000004",
+                    "role": "OWNER",
+                    "status": "ACTIVE",
+                    "type": "USER"
+                }
+            ],
+            "role_assignments": [],
+            "settings": {
+                "allow_external_members": true,
+                "allow_google_communication": false,
+                "allow_web_posting": true,
+                "archive_only": false,
+                "custom_footer_text": "This message is from the Platform on-call group at example.com",
+                "custom_reply_to": "platform-oncall-replies@example.com",
+                "custom_roles_enabled_for_settings_to_be_merged": false,
+                "default_message_deny_notification_text": "Your Message has been denied.",
+                "default_sender": "DEFAULT_SELF",
+                "description": "Nested in platform-eng@example.com.",
+                "email": "platform-oncall@example.com",
+                "enable_collaborative_inbox": false,
+                "favorite_replies_on_top": false,
+                "include_custom_footer": true,
+                "include_in_global_address_list": false,
+                "is_archived": true,
+                "kind": "groupsSettings#groups",
+                "max_message_bytes": 10240,
+                "members_can_post_as_the_group": false,
+                "message_display_font": "DEFAULT_FONT",
+                "message_moderation_level": "MODERATE_NONE",
+                "name": "Platform on-call",
+                "primary_language": "en",
+                "reply_to": "REPLY_TO_IGNORE",
+                "send_message_deny_notification": true,
+                "show_in_group_directory": false,
+                "spam_moderation_level": "ALLOW",
+                "who_can_add": "ALL_MANAGERS_CAN_ADD",
+                "who_can_add_external_members": "ONLY_ADMINS_CAN_ADD_EXTERNAL_MEMBERS",
+                "who_can_add_references": "ALL_MEMBERS",
+                "who_can_approve_members": "ALL_MANAGERS_CAN_APPROVE",
+                "who_can_approve_messages": "OWNERS_ONLY",
+                "who_can_assign_topics": "NONE",
+                "who_can_assist_content": "ALL_MEMBERS",
+                "who_can_ban_users": "OWNERS_AND_MANAGERS",
+                "who_can_contact_owner": "ALL_IN_DOMAIN_CAN_CONTACT",
+                "who_can_delete_any_post": "OWNERS_AND_MANAGERS",
+                "who_can_delete_topics": "OWNERS_AND_MANAGERS",
+                "who_can_discover_group": "ALL_IN_DOMAIN_CAN_DISCOVER",
+                "who_can_enter_free_form_tags": "NONE",
+                "who_can_hide_abuse": "OWNERS_AND_MANAGERS",
+                "who_can_invite": "ALL_MANAGERS_CAN_INVITE",
+                "who_can_join": "INVITED_CAN_JOIN",
+                "who_can_leave_group": "ALL_MEMBERS_CAN_LEAVE",
+                "who_can_lock_topics": "OWNERS_AND_MANAGERS",
+                "who_can_make_topics_sticky": "OWNERS_AND_MANAGERS",
+                "who_can_mark_duplicate": "NONE",
+                "who_can_mark_favorite_reply_on_any_topic": "NONE",
+                "who_can_mark_favorite_reply_on_own_topic": "NONE",
+                "who_can_mark_no_response_needed": "NONE",
+                "who_can_moderate_content": "OWNERS_ONLY",
+                "who_can_moderate_members": "OWNERS_AND_MANAGERS",
+                "who_can_modify_members": "OWNERS_AND_MANAGERS",
+                "who_can_modify_tags_and_categories": "NONE",
+                "who_can_move_topics_in": "NONE",
+                "who_can_move_topics_out": "NONE",
+                "who_can_post_announcements": "NONE",
+                "who_can_post_message": "ALL_IN_DOMAIN_CAN_POST",
+                "who_can_take_topics": "NONE",
+                "who_can_unassign_topic": "NONE",
+                "who_can_unmark_favorite_reply_on_any_topic": "NONE",
+                "who_can_view_group": "ALL_IN_DOMAIN_CAN_VIEW",
+                "who_can_view_membership": "ALL_IN_DOMAIN_CAN_VIEW"
+            }
+        }
+    },
+    "group": {
+        "id": "00example0chd01",
+        "name": "Platform on-call"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "related": {
+        "user": [
+            "100000000000000000004",
+            "erin.davis@example.com"
+        ]
+    },
+    "tags": [
+        "forwarded",
+        "google_workspace-group_inventory"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| entity.attributes.permissions | Action-level permissions associated with this entity (not roles or groups). Typically applicable to User, Host, and Service entities. | keyword |
+| entity.display_name | An optional field used when a pretty name is desired for entity-centric operations. This field should not be used for correlation with `\*.name` fields for entities with dedicated field sets (for example, `host`). | keyword |
+| entity.display_name.text | Multi-field of `entity.display_name`. | match_only_text |
+| entity.id | A unique identifier for the entity. When multiple identifiers exist, this should be the most stable and commonly used identifier that: 1) persists across the entity's lifecycle, 2) ensures uniqueness within its scope, 3) is commonly used for queries and correlation, and 4) is readily available in most observations (logs/events). For entities with dedicated field sets (for example, host, user), this value should match the corresponding \*.id field. Alternative identifiers (for example, ARNs values in AWS, URLs) can be preserved in the raw field. | keyword |
+| entity.last_seen_timestamp | Indicates the date/time when this entity was last "seen," usually based upon the last event/log that is initiated by this entity. | date |
+| entity.name | The name of the entity. The keyword field enables exact matches for filtering and aggregations, while the text field enables full-text search. For entities with dedicated field sets (for example, `host`), this field should mirrors the corresponding \*.name value. | keyword |
+| entity.name.text | Multi-field of `entity.name`. | match_only_text |
+| entity.relationships.administers.entity.id | Identifiers of referenced entities, using the same meaning as root `entity.id` (stable id for correlation within scope). | keyword |
+| entity.source | The module or integration that provided this entity data (similar to event.module). | keyword |
+| entity.sub_type | The specific type designation for the entity as defined by its provider or system. This field provides more granular classification than the type field. Examples: `aws_s3_bucket`, `gcp_cloud_storage_bucket`, `azure_blob_container` would all map to entity type `bucket`.  `hardware` , `virtual` , `container` , `node` , `cloud_instance` would all map to entity type `host`. | keyword |
+| error.code | Error code describing the error. | keyword |
+| error.id | Unique identifier for the error. | keyword |
+| error.message | Error message. | match_only_text |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| google_workspace.group_inventory.admin_created | Whether the group was created by an administrator (`false` for groups created by users). May be absent when false. | boolean |
+| google_workspace.group_inventory.aliases | The group's alias email addresses. The API documents them as strings and Google's examples show `\{"alias": ...\}` objects; both forms are stored as addresses. | keyword |
+| google_workspace.group_inventory.customer_member_ids | The customer IDs of the group's `CUSTOMER` members. | keyword |
+| google_workspace.group_inventory.description | The group's description. | keyword |
+| google_workspace.group_inventory.direct_members_count | The number of direct members of the group, as reported by the Directory API. Whether nested groups and the whole-domain member are counted is not documented; see `member_counts` for the counts from the members walk. | long |
+| google_workspace.group_inventory.email | The group's email address. Changes when the group is renamed. Also in `entity.name`. The group ID is in `group.id` and the display name in `group.name`. | keyword |
+| google_workspace.group_inventory.email_domain | The domain part of the group's email address, in lowercase. | keyword |
+| google_workspace.group_inventory.etag | ETag of the resource. | keyword |
+| google_workspace.group_inventory.external_ids.id | The external ID. | keyword |
+| google_workspace.group_inventory.external_ids.namespace | The namespace of the external ID. | keyword |
+| google_workspace.group_inventory.external_members.email | The member's email address. | keyword |
+| google_workspace.group_inventory.external_members.id | The member ID. | keyword |
+| google_workspace.group_inventory.external_members.role | The member's role in the group. | keyword |
+| google_workspace.group_inventory.external_members.status | The member's status. Often absent for external members. | keyword |
+| google_workspace.group_inventory.external_members.type | The member type. | keyword |
+| google_workspace.group_inventory.has_customer_member | Whether the group has a member of type `CUSTOMER`, which stands for every user of the account. | boolean |
+| google_workspace.group_inventory.kind | The type of the API resource. | keyword |
+| google_workspace.group_inventory.managers.email | The member's email address. | keyword |
+| google_workspace.group_inventory.managers.id | The member ID. For a user, the user ID. | keyword |
+| google_workspace.group_inventory.managers.role | The member's role in the group. | keyword |
+| google_workspace.group_inventory.managers.status | The member's status, for example `ACTIVE` or `SUSPENDED`. | keyword |
+| google_workspace.group_inventory.managers.type | The member type (`USER`, `GROUP`, `CUSTOMER` or `EXTERNAL`). | keyword |
+| google_workspace.group_inventory.member_counts.by_role.manager | The number of members with role `MANAGER`. | long |
+| google_workspace.group_inventory.member_counts.by_role.member | The number of members with role `MEMBER` or without a role. | long |
+| google_workspace.group_inventory.member_counts.by_role.other | The number of members with any other role. | long |
+| google_workspace.group_inventory.member_counts.by_role.owner | The number of members with role `OWNER`. | long |
+| google_workspace.group_inventory.member_counts.by_type.customer | The number of members of type `CUSTOMER`. | long |
+| google_workspace.group_inventory.member_counts.by_type.group | The number of members of type `GROUP`. | long |
+| google_workspace.group_inventory.member_counts.by_type.other | The number of members of any other type, including `EXTERNAL`, or without a type. | long |
+| google_workspace.group_inventory.member_counts.by_type.user | The number of members of type `USER`. | long |
+| google_workspace.group_inventory.member_counts.external | The number of external members (see `external_members`). | long |
+| google_workspace.group_inventory.member_counts.total | The number of direct members of every type. | long |
+| google_workspace.group_inventory.member_groups.email | The email address of the member group. | keyword |
+| google_workspace.group_inventory.member_groups.id | The ID of the member group. Equals that group's `group.id` when it belongs to the same account. | keyword |
+| google_workspace.group_inventory.member_groups.role | The member group's role in this group. | keyword |
+| google_workspace.group_inventory.member_groups.status | The member group's status. | keyword |
+| google_workspace.group_inventory.member_groups.type | The member type, `GROUP`. | keyword |
+| google_workspace.group_inventory.members_error.code | The HTTP status code. | keyword |
+| google_workspace.group_inventory.members_error.id | The HTTP status. | keyword |
+| google_workspace.group_inventory.members_error.message | The request and the response body. | match_only_text |
+| google_workspace.group_inventory.non_editable_aliases | The group's non-editable alias email addresses, typically outside the account's primary domain or sub-domain. Stored as addresses, like `aliases`. | keyword |
+| google_workspace.group_inventory.owners.email | The member's email address. | keyword |
+| google_workspace.group_inventory.owners.id | The member ID. For a user, the user ID. | keyword |
+| google_workspace.group_inventory.owners.role | The member's role in the group. | keyword |
+| google_workspace.group_inventory.owners.status | The member's status, for example `ACTIVE` or `SUSPENDED`. Often absent for external members. | keyword |
+| google_workspace.group_inventory.owners.type | The member type (`USER`, `GROUP`, `CUSTOMER` or `EXTERNAL`). | keyword |
+| google_workspace.group_inventory.role_assignments.condition | The condition associated with the role assignment. | keyword |
+| google_workspace.group_inventory.role_assignments.expire_time | The time the role assignment expires. | date |
+| google_workspace.group_inventory.role_assignments.is_super_admin_role | Whether the role is a super admin role. | boolean |
+| google_workspace.group_inventory.role_assignments.is_system_role | Whether the role is a pre-defined system role. | boolean |
+| google_workspace.group_inventory.role_assignments.org_unit_id | The ID of the organizational unit the role is restricted to, for `ORG_UNIT` assignments. | keyword |
+| google_workspace.group_inventory.role_assignments.privileges | The names of the privileges granted by the role. | keyword |
+| google_workspace.group_inventory.role_assignments.role_assignment_id | The ID of the role assignment. | keyword |
+| google_workspace.group_inventory.role_assignments.role_id | The ID of the assigned role. | keyword |
+| google_workspace.group_inventory.role_assignments.role_name | The name of the assigned role. | keyword |
+| google_workspace.group_inventory.role_assignments.scope_type | The scope in which the role is assigned (`CUSTOMER` or `ORG_UNIT`). | keyword |
+| google_workspace.group_inventory.settings.allow_external_members | Whether users outside the organization can be members. | boolean |
+| google_workspace.group_inventory.settings.allow_google_communication | Deprecated. Whether Google may contact the group managers. | boolean |
+| google_workspace.group_inventory.settings.allow_web_posting | Whether members can post through the web interface. | boolean |
+| google_workspace.group_inventory.settings.archive_only | Whether the group is archive-only (inactive; new messages are rejected). | boolean |
+| google_workspace.group_inventory.settings.custom_footer_text | The custom footer text. | keyword |
+| google_workspace.group_inventory.settings.custom_reply_to | The reply address used when `reply_to` is `REPLY_TO_CUSTOM`. | keyword |
+| google_workspace.group_inventory.settings.custom_roles_enabled_for_settings_to_be_merged | Whether a custom role of the group is included in one of the merged settings. | boolean |
+| google_workspace.group_inventory.settings.default_message_deny_notification_text | The notification text sent to authors of rejected messages. Absent when empty. | keyword |
+| google_workspace.group_inventory.settings.default_sender | The default sender of messages sent from the group (`DEFAULT_SELF` or `GROUP`). Google documents the key as `defaultSender` and the discovery document as `default_sender`; either is stored here, and `default_sender` is used when both are present. | keyword |
+| google_workspace.group_inventory.settings.description | The group's description, as stored by the Groups Settings API. May differ from the Directory API copy. | keyword |
+| google_workspace.group_inventory.settings.email | The group's email address, as returned by the Groups Settings API. | keyword |
+| google_workspace.group_inventory.settings.enable_collaborative_inbox | Whether the group works as a collaborative inbox. | boolean |
+| google_workspace.group_inventory.settings.favorite_replies_on_top | Whether favorite replies are shown above other replies. | boolean |
+| google_workspace.group_inventory.settings.include_custom_footer | Whether a custom footer is added to messages. | boolean |
+| google_workspace.group_inventory.settings.include_in_global_address_list | Whether the group is listed in the Global Address List. | boolean |
+| google_workspace.group_inventory.settings.is_archived | Whether the group's conversation history is kept. | boolean |
+| google_workspace.group_inventory.settings.kind | The type of the API resource. | keyword |
+| google_workspace.group_inventory.settings.max_message_bytes | Deprecated. The maximum message size in bytes. | long |
+| google_workspace.group_inventory.settings.members_can_post_as_the_group | Whether members can send messages using the group's address. | boolean |
+| google_workspace.group_inventory.settings.message_display_font | Deprecated. Always `DEFAULT_FONT`. | keyword |
+| google_workspace.group_inventory.settings.message_moderation_level | Which incoming messages need approval. | keyword |
+| google_workspace.group_inventory.settings.name | The group's name, as stored by the Groups Settings API. May differ from the Directory API copy. | keyword |
+| google_workspace.group_inventory.settings.primary_language | The language for notifications and footers. | keyword |
+| google_workspace.group_inventory.settings.reply_to | Where replies to group messages go. | keyword |
+| google_workspace.group_inventory.settings.send_message_deny_notification | Whether authors of rejected messages are notified. | boolean |
+| google_workspace.group_inventory.settings.show_in_group_directory | Deprecated, merged into `who_can_discover_group`. Whether the group is listed in the groups directory. | boolean |
+| google_workspace.group_inventory.settings.spam_moderation_level | How messages flagged as spam are handled. | keyword |
+| google_workspace.group_inventory.settings.who_can_add | Deprecated, merged into `who_can_moderate_members`. Who can add members. | keyword |
+| google_workspace.group_inventory.settings.who_can_add_external_members | Who can add external members. Added to the API in 2026; may be absent. | keyword |
+| google_workspace.group_inventory.settings.who_can_add_references | Deprecated, no longer supported. Who can add references to a topic. | keyword |
+| google_workspace.group_inventory.settings.who_can_approve_members | Deprecated, merged into `who_can_moderate_members`. Who can approve members asking to join. | keyword |
+| google_workspace.group_inventory.settings.who_can_approve_messages | Deprecated, merged into `who_can_moderate_content`. Who can approve messages in the moderation queue. | keyword |
+| google_workspace.group_inventory.settings.who_can_assign_topics | Deprecated, merged into `who_can_assist_content`. Who can assign topics. | keyword |
+| google_workspace.group_inventory.settings.who_can_assist_content | Who can moderate metadata, such as assigning and tagging conversations. | keyword |
+| google_workspace.group_inventory.settings.who_can_ban_users | Deprecated, merged into `who_can_moderate_members`. Who can ban users. | keyword |
+| google_workspace.group_inventory.settings.who_can_contact_owner | Who can contact the group owners through the web interface. | keyword |
+| google_workspace.group_inventory.settings.who_can_delete_any_post | Deprecated, merged into `who_can_moderate_content`. Who can delete replies to topics. | keyword |
+| google_workspace.group_inventory.settings.who_can_delete_topics | Deprecated, merged into `who_can_moderate_content`. Who can delete topics. | keyword |
+| google_workspace.group_inventory.settings.who_can_discover_group | Who can find the group by searching for its name, address or conversations. | keyword |
+| google_workspace.group_inventory.settings.who_can_enter_free_form_tags | Deprecated, merged into `who_can_assist_content`. Who can enter free-form tags. | keyword |
+| google_workspace.group_inventory.settings.who_can_hide_abuse | Deprecated, merged into `who_can_moderate_content`. Who can hide posts by reporting them as abuse. | keyword |
+| google_workspace.group_inventory.settings.who_can_invite | Deprecated, merged into `who_can_moderate_members`. Who can invite members. | keyword |
+| google_workspace.group_inventory.settings.who_can_join | Who can join the group, for example `ANYONE_CAN_JOIN`, `ALL_IN_DOMAIN_CAN_JOIN`, `INVITED_CAN_JOIN` or `CAN_REQUEST_TO_JOIN`. | keyword |
+| google_workspace.group_inventory.settings.who_can_leave_group | Who can leave the group. | keyword |
+| google_workspace.group_inventory.settings.who_can_lock_topics | Deprecated, merged into `who_can_moderate_content`. Who can stop replies to topics. | keyword |
+| google_workspace.group_inventory.settings.who_can_make_topics_sticky | Deprecated, merged into `who_can_moderate_content`. Who can pin topics. | keyword |
+| google_workspace.group_inventory.settings.who_can_mark_duplicate | Deprecated, merged into `who_can_assist_content`. Who can mark a topic as a duplicate. | keyword |
+| google_workspace.group_inventory.settings.who_can_mark_favorite_reply_on_any_topic | Deprecated, merged into `who_can_assist_content`. Who can mark another user's post as a favorite reply. | keyword |
+| google_workspace.group_inventory.settings.who_can_mark_favorite_reply_on_own_topic | Deprecated, merged into `who_can_assist_content`. Who can mark a favorite reply on their own topic. | keyword |
+| google_workspace.group_inventory.settings.who_can_mark_no_response_needed | Deprecated, merged into `who_can_assist_content`. Who can mark a topic as not needing a response. | keyword |
+| google_workspace.group_inventory.settings.who_can_moderate_content | Who can approve, block and delete messages. | keyword |
+| google_workspace.group_inventory.settings.who_can_moderate_members | Who can manage members (add, remove, approve and ban). | keyword |
+| google_workspace.group_inventory.settings.who_can_modify_members | Deprecated, merged into `who_can_moderate_members`. Who can change members' roles. | keyword |
+| google_workspace.group_inventory.settings.who_can_modify_tags_and_categories | Deprecated, merged into `who_can_assist_content`. Who can change tags and categories. | keyword |
+| google_workspace.group_inventory.settings.who_can_move_topics_in | Deprecated, merged into `who_can_moderate_content`. Who can move topics into the group. | keyword |
+| google_workspace.group_inventory.settings.who_can_move_topics_out | Deprecated, merged into `who_can_moderate_content`. Who can move topics out of the group. | keyword |
+| google_workspace.group_inventory.settings.who_can_post_announcements | Deprecated, merged into `who_can_moderate_content`. Who can post announcements. | keyword |
+| google_workspace.group_inventory.settings.who_can_post_message | Who can send messages to the group, for example `ANYONE_CAN_POST` for any internet sender. | keyword |
+| google_workspace.group_inventory.settings.who_can_take_topics | Deprecated, merged into `who_can_assist_content`. Who can take topics. | keyword |
+| google_workspace.group_inventory.settings.who_can_unassign_topic | Deprecated, merged into `who_can_assist_content`. Who can unassign topics. | keyword |
+| google_workspace.group_inventory.settings.who_can_unmark_favorite_reply_on_any_topic | Deprecated, merged into `who_can_assist_content`. Who can unmark a favorite reply. | keyword |
+| google_workspace.group_inventory.settings.who_can_view_group | Who can read the group's conversations. | keyword |
+| google_workspace.group_inventory.settings.who_can_view_membership | Who can see the member list. | keyword |
+| google_workspace.group_inventory.settings_error.code | The HTTP status code. | keyword |
+| google_workspace.group_inventory.settings_error.id | The HTTP status. | keyword |
+| google_workspace.group_inventory.settings_error.message | The request and the response body. | match_only_text |
+| group.id | Unique identifier for the group on the system/platform. | keyword |
+| group.name | Name of the group. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 
 
 ### User Accounts
