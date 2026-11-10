@@ -27,17 +27,6 @@ processors:
       tag: json_event_original
       target_field: openshell.ocsf
   - script:
-      tag: script_validate_json_object
-      lang: painless
-      description: Reject JSON scalar and array records after removing the value that cannot be indexed as an object.
-      if: ctx.openshell?.ocsf != null && !(ctx.openshell.ocsf instanceof Map)
-      source: |-
-        ctx.openshell.remove('ocsf');
-        if (ctx.openshell.isEmpty()) {
-          ctx.remove('openshell');
-        }
-        throw new IllegalArgumentException('OCSF record is not a JSON object');
-  - script:
       tag: script_stringify_big_integers
       lang: painless
       description: >-
@@ -87,12 +76,6 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: openshell.ocsf.time
-      tag: set_time_from_timestamp
-      copy_from: '@timestamp'
-      if: ctx.openshell.ocsf.time != null
-      description: Store the record time as a date so it is searchable when duplicate fields are preserved.
   - set:
       field: message
       tag: set_message
@@ -195,6 +178,18 @@ processors:
       copy_from: openshell.ocsf.container.image.name
       ignore_empty_value: true
       if: ctx.container?.image?.name == null
+  - append:
+      field: container.image.hash.all
+      tag: append_container_image_hash_from_device
+      value: '{{{openshell.ocsf.device.container.image.uid}}}'
+      allow_duplicates: false
+      if: ctx.openshell.ocsf.device?.container?.image?.uid instanceof String
+  - append:
+      field: container.image.hash.all
+      tag: append_container_image_hash_from_legacy_top_level
+      value: '{{{openshell.ocsf.container.image.uid}}}'
+      allow_duplicates: false
+      if: ctx.openshell.ocsf.container?.image?.uid instanceof String
 
   # ---- Network endpoints ----------------------------------------------------------
   - set:
@@ -620,9 +615,15 @@ processors:
   - remove:
       field:
         - openshell.ocsf.action
-        - openshell.ocsf.connection_info
-        - openshell.ocsf.container
-        - openshell.ocsf.device.container
+        - openshell.ocsf.connection_info.protocol_name
+        - openshell.ocsf.container.name
+        - openshell.ocsf.container.uid
+        - openshell.ocsf.container.image.name
+        - openshell.ocsf.container.image.uid
+        - openshell.ocsf.device.container.name
+        - openshell.ocsf.device.container.uid
+        - openshell.ocsf.device.container.image.name
+        - openshell.ocsf.device.container.image.uid
         - openshell.ocsf.device.hostname
         - openshell.ocsf.device.os.name
         - openshell.ocsf.dst_endpoint

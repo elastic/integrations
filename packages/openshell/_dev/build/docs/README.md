@@ -109,7 +109,7 @@ If `OPENSHELL_OCSF_LOG_DIR` is not set, the gateway writes to `%PROGRAMDATA%\Ope
 
 ## Performance and scaling
 
-Collection uses the local `logfile` input. Deploy an Elastic Agent wherever OpenShell JSONL files are locally available or mounted, and distribute collection across agents when supervisors run on multiple hosts. Size storage and retention for the number of sandbox events generated, and monitor Agent and ingest-node utilization before increasing event volume.
+Collection uses the local `filestream` input. Deploy an Elastic Agent wherever OpenShell JSONL files are locally available or mounted, and distribute collection across agents when supervisors run on multiple hosts. Size storage and retention for the number of sandbox events generated, and monitor Agent and ingest-node utilization before increasing event volume.
 
 ## Reference
 

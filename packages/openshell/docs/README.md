@@ -110,7 +110,7 @@ If `OPENSHELL_OCSF_LOG_DIR` is not set, the gateway writes to `%PROGRAMDATA%\Ope
 
 ## Performance and scaling
 
-Collection uses the local `logfile` input. Deploy an Elastic Agent wherever OpenShell JSONL files are locally available or mounted, and distribute collection across agents when supervisors run on multiple hosts. Size storage and retention for the number of sandbox events generated, and monitor Agent and ingest-node utilization before increasing event volume.
+Collection uses the local `filestream` input. Deploy an Elastic Agent wherever OpenShell JSONL files are locally available or mounted, and distribute collection across agents when supervisors run on multiple hosts. Size storage and retention for the number of sandbox events generated, and monitor Agent and ingest-node utilization before increasing event volume.
 
 ## Reference
 
@@ -260,6 +260,7 @@ An example event for `ocsf` looks as following:
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
+| container.image.hash.all | An array of digests of the image the container was built on. Each digest consists of the hash algorithm and value in this format: `algorithm:value`. Algorithm names should align with the field names in the ECS hash field set. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
@@ -322,6 +323,9 @@ An example event for `ocsf` looks as following:
 | openshell.ocsf.class_uid | OCSF event class identifier (0, 1007, 2004, 4001, 4002, 4007, 5019, 6002). | long |
 | openshell.ocsf.confidence | Confidence label of a Detection Finding (Low, Medium, High). | keyword |
 | openshell.ocsf.confidence_id | Normalized identifier of the finding confidence. | long |
+| openshell.ocsf.connection_info | Connection metadata without a direct ECS equivalent, such as the source-reported direction. | flattened |
+| openshell.ocsf.container | Legacy top-level sandbox container attributes not copied to ECS. | flattened |
+| openshell.ocsf.device.container | Sandbox container attributes not copied to ECS. | flattened |
 | openshell.ocsf.device.type | Device type reported by OpenShell (Sandbox). | keyword |
 | openshell.ocsf.device.type_id | Normalized identifier of the device type. | long |
 | openshell.ocsf.disposition | Disposition of the security control (Allowed, Blocked). | keyword |
