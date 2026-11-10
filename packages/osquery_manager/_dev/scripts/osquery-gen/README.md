@@ -75,7 +75,10 @@ Notes:
   has, so agents on older osquery versions keep writing to the same mappings
   after rollover. A column that disappears from the schema keeps its field,
   marked `Removed in osquery <version>` in the description. A multi-field that
-  already exists keeps its type. Remove a mapping only by editing the file on
+  already exists keeps its type. An existing field only gains `text`
+  multi-fields, never numeric ones, because a numeric multi-field can reject
+  values the field accepted before (for example unsigned 64-bit exit codes
+  sent as text by older agents). Remove a mapping only by editing the file on
   purpose.
 
 ## Run

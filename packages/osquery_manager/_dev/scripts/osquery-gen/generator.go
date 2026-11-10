@@ -563,8 +563,14 @@ func mergeOsqueryFields(generated, previous []osqueryField, osqueryVersion strin
 			continue
 		}
 		// Previous multi-fields keep their position and type; new ones follow.
+		// An existing field only gains text multi-fields: a numeric one could
+		// reject values the field already accepted, such as the unsigned
+		// 64-bit exit codes older agents report as text.
 		multi := append([]osqueryMultiField(nil), prev.Multifields...)
 		for _, mf := range merged[i].Multifields {
+			if mf.Type != "text" {
+				continue
+			}
 			if !slices.ContainsFunc(multi, func(p osqueryMultiField) bool { return p.Name == mf.Name }) {
 				multi = append(multi, mf)
 			}

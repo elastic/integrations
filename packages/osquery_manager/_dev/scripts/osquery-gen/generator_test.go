@@ -19,12 +19,16 @@ func TestMergeOsqueryFields(t *testing.T) {
 	double := osqueryMultiField{Name: "number", Type: "double"}
 
 	previous := []osqueryField{
+		{Name: "channel", Description: "old", Type: "keyword", IgnoreAbove: 1024},
 		{Name: "cid", Description: "bpf_process_events.cid - Cgroup ID", Type: "keyword", IgnoreAbove: 1024, Multifields: []osqueryMultiField{long}},
+		{Name: "count", Description: "old", Type: "keyword", IgnoreAbove: 1024},
 		{Name: "exit_code", Description: "old", Type: "keyword", IgnoreAbove: 1024, Multifields: []osqueryMultiField{text}},
 		{Name: "fd", Description: "old", Type: "keyword", IgnoreAbove: 1024, Multifields: []osqueryMultiField{text}},
 		{Name: "size", Description: "old", Type: "keyword", IgnoreAbove: 1024, Multifields: []osqueryMultiField{long}},
 	}
 	generated := []osqueryField{
+		{Name: "channel", Description: "new", Type: "keyword", IgnoreAbove: 1024, Multifields: []osqueryMultiField{text}},
+		{Name: "count", Description: "new", Type: "keyword", IgnoreAbove: 1024, Multifields: []osqueryMultiField{long}},
 		{Name: "exit_code", Description: "new", Type: "keyword", IgnoreAbove: 1024, Multifields: []osqueryMultiField{long}},
 		{Name: "fd", Description: "new", Type: "keyword", IgnoreAbove: 1024},
 		{Name: "gpu", Description: "new", Type: "keyword", IgnoreAbove: 1024, Multifields: []osqueryMultiField{text}},
@@ -33,9 +37,14 @@ func TestMergeOsqueryFields(t *testing.T) {
 
 	got := mergeOsqueryFields(generated, previous, "5.24.0")
 	want := []osqueryField{
+		// An existing field gains a text multi-field.
+		{Name: "channel", Description: "new", Type: "keyword", IgnoreAbove: 1024, Multifields: []osqueryMultiField{text}},
 		{Name: "cid", Description: "Removed in osquery 5.24.0; mapping kept for results from older agents.\nbpf_process_events.cid - Cgroup ID", Type: "keyword", IgnoreAbove: 1024, Multifields: []osqueryMultiField{long}},
-		{Name: "exit_code", Description: "new", Type: "keyword", IgnoreAbove: 1024, Multifields: []osqueryMultiField{text, long}},
+		// An existing field never gains a numeric multi-field.
+		{Name: "count", Description: "new", Type: "keyword", IgnoreAbove: 1024},
+		{Name: "exit_code", Description: "new", Type: "keyword", IgnoreAbove: 1024, Multifields: []osqueryMultiField{text}},
 		{Name: "fd", Description: "new", Type: "keyword", IgnoreAbove: 1024, Multifields: []osqueryMultiField{text}},
+		// A new field gets its generated multi-fields.
 		{Name: "gpu", Description: "new", Type: "keyword", IgnoreAbove: 1024, Multifields: []osqueryMultiField{text}},
 		{Name: "size", Description: "new", Type: "keyword", IgnoreAbove: 1024, Multifields: []osqueryMultiField{long}},
 	}
