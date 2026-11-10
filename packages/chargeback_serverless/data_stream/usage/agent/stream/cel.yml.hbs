@@ -87,7 +87,7 @@ program: |-
                           bytes(es_resp.Body).decode_json().as(es_body,
                             bytes(obs_resp.Body).decode_json().as(obs_body,
                               bytes(sec_resp.Body).decode_json().as(sec_body,
-                                ((srch_resp.StatusCode == 200) ? bytes(srch_body).decode_json() : { "items": [] }).as(srch_body,
+                                ((srch_resp.StatusCode == 200) ? bytes(srch_resp.Body).decode_json() : { "items": [] }).as(srch_body,
                                   bytes(bill_resp.Body).decode_json().as(bill_body,
                                     ((has(es_body.items) && es_body.items != null ? es_body.items.map(p, dyn(p.with({ "project_type": "elasticsearch" }))) : []) +
                                      (has(obs_body.items) && obs_body.items != null ? obs_body.items.map(p, dyn(p.with({ "project_type": "observability" }))) : []) +
