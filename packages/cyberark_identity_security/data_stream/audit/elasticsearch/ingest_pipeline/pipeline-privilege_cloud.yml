@@ -1,0 +1,168 @@
+---
+description: Pipeline for CyberArk Privilege Cloud (PAM) audit events.
+processors:
+  # The top-level target is the machine of the vault account or of the PSM session.
+  - rename:
+      field: json.target
+      tag: rename_target
+      target_field: destination.address
+      ignore_missing: true
+
+  # PSM session details: a `;`-separated list of `Key=Value` pairs.
+  - gsub:
+      field: json.customData.new_target
+      tag: gsub_new_target_trailing_separator
+      pattern: ';+$'
+      replacement: ''
+      target_field: _tmp.new_target_string
+      if: ctx.json.customData?.new_target instanceof String && ctx.json.customData.new_target.contains('=')
+  - kv:
+      field: _tmp.new_target_string
+      tag: kv_new_target
+      target_field: _tmp.new_target
+      field_split: ';'
+      value_split: '='
+      ignore_missing: true
+  - remove:
+      field: json.customData.new_target
+      tag: remove_new_target_string
+      ignore_missing: true
+      if: ctx._tmp?.new_target != null
+  - rename:
+      field: _tmp.new_target.DstHost
+      tag: rename_new_target_dst_host
+      target_field: destination.address
+      ignore_missing: true
+      if: ctx.destination?.address == null
+  - remove:
+      field: _tmp.new_target.DstHost
+      tag: remove_new_target_dst_host
+      ignore_missing: true
+      if: ctx._tmp?.new_target?.DstHost != null && ctx._tmp.new_target.DstHost == ctx.destination?.address
+  - rename:
+      field: _tmp.new_target.SrcHost
+      tag: rename_new_target_src_host
+      target_field: source.address
+      ignore_missing: true
+  - rename:
+      field: _tmp.new_target.User
+      tag: rename_new_target_user
+      target_field: user.target.name
+      ignore_missing: true
+      if: ctx.user?.target?.name == null
+  - remove:
+      field: _tmp.new_target.User
+      tag: remove_new_target_user
+      ignore_missing: true
+      if: ctx._tmp?.new_target?.User != null && ctx._tmp.new_target.User == ctx.user?.target?.name
+  - rename:
+      field: _tmp.new_target.Protocol
+      tag: rename_new_target_protocol
+      target_field: network.protocol
+      ignore_missing: true
+  - lowercase:
+      field: network.protocol
+      tag: lowercase_network_protocol
+      ignore_missing: true
+  - rename:
+      field: _tmp.new_target.ProcessName
+      tag: rename_new_target_process_name
+      target_field: process.name
+      ignore_missing: true
+  - convert:
+      field: _tmp.new_target.ProcessId
+      tag: convert_new_target_process_id
+      target_field: process.pid
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: _tmp.new_target.ProcessId
+      tag: remove_new_target_process_id
+      ignore_missing: true
+      if: ctx.process?.pid != null
+  - rename:
+      field: _tmp.new_target.Command
+      tag: rename_new_target_command
+      target_field: process.command_line
+      ignore_missing: true
+  - rename:
+      field: _tmp.new_target.SessionID
+      tag: rename_new_target_session_id
+      target_field: json.sessionId
+      ignore_missing: true
+      if: ctx.json.sessionId == null
+  - rename:
+      field: _tmp.new_target
+      tag: rename_new_target_remainder
+      target_field: json.customData.new_target
+      ignore_missing: true
+      if: ctx._tmp?.new_target != null && !ctx._tmp.new_target.isEmpty()
+
+  # Station IP of the vault user.
+  - convert:
+      field: json.customData.station_ip
+      tag: convert_station_ip
+      target_field: _tmp.station_ip
+      type: ip
+      ignore_missing: true
+      ignore_failure: true
+
+  # Addresses that are IP addresses.
+  - convert:
+      field: source.address
+      tag: convert_source_address_to_ip
+      target_field: _tmp.source_address_ip
+      type: ip
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_source_address
+      copy_from: _tmp.source_address_ip
+      if: ctx.source?.ip == null && ctx._tmp?.source_address_ip != null
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_station_ip
+      copy_from: _tmp.station_ip
+      if: ctx.source?.ip == null && ctx._tmp?.station_ip != null
+  - remove:
+      field: json.customData.station_ip
+      tag: remove_station_ip
+      ignore_missing: true
+      if: ctx._tmp?.station_ip != null && ctx._tmp.station_ip == ctx.source?.ip
+  - append:
+      field: related.ip
+      tag: append_station_ip_to_related_ip
+      value: '{{{_tmp.station_ip}}}'
+      allow_duplicates: false
+      if: ctx._tmp?.station_ip != null
+  - append:
+      field: related.ip
+      tag: append_source_address_ip_to_related_ip
+      value: '{{{_tmp.source_address_ip}}}'
+      allow_duplicates: false
+      if: ctx._tmp?.source_address_ip != null
+  - convert:
+      field: destination.address
+      tag: convert_destination_address_to_ip
+      target_field: destination.ip
+      type: ip
+      ignore_missing: true
+      ignore_failure: true
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -1,0 +1,713 @@
+---
+description: Pipeline for processing CyberArk Identity Security Platform audit events.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      if: ctx.event?.original != null
+  - fail:
+      tag: fail_json_not_object
+      if: '!(ctx.json instanceof Map)'
+      message: The audit event is not a JSON object.
+  - script:
+      lang: painless
+      tag: script_normalize_json
+      description: >-
+        Removes null, empty and literal "null" values. Moves the keys of the legacy
+        `customData.PAM` wrapper and of the `customData.nested_items` name/value list
+        to the top of `customData`.
+      params:
+        empty_values:
+          - ''
+          - 'null'
+      source: |-
+        void clean(Map m, List empty) {
+          Iterator it = m.entrySet().iterator();
+          while (it.hasNext()) {
+            def v = it.next().getValue();
+            if (v == null) {
+              it.remove();
+            } else if (v instanceof String) {
+              if (empty.contains(v.trim())) {
+                it.remove();
+              }
+            } else if (v instanceof Map) {
+              clean(v, empty);
+              if (v.isEmpty()) {
+                it.remove();
+              }
+            } else if (v instanceof List && v.isEmpty()) {
+              it.remove();
+            }
+          }
+        }
+        def cd = ctx.json.customData;
+        if (cd instanceof Map) {
+          def pam = cd.remove('PAM');
+          if (pam instanceof Map) {
+            for (def e : pam.entrySet()) {
+              cd.putIfAbsent(e.getKey(), e.getValue());
+            }
+          }
+          def items = cd.remove('nested_items');
+          if (items instanceof List) {
+            for (def item : items) {
+              if (item instanceof Map && item.get('name') instanceof String) {
+                cd.put(item.get('name'), item.get('value'));
+              }
+            }
+          }
+        }
+        clean(ctx.json, params.empty_values);
+
+  # Timestamp and event identity.
+  - date:
+      field: json.timestamp
+      tag: date_json_timestamp
+      target_field: '@timestamp'
+      formats:
+        - UNIX_MS
+      if: ctx.json.timestamp != null
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - rename:
+      field: json.uuid
+      tag: rename_json_uuid
+      target_field: event.id
+      ignore_missing: true
+  - fingerprint:
+      fields:
+        - event.id
+      tag: fingerprint_event_id
+      target_field: _id
+      ignore_missing: true
+      if: ctx.event?.id != null
+      description: Uses the unique audit event ID as the document ID to avoid duplicates.
+  - rename:
+      field: json.auditCode
+      tag: rename_json_audit_code
+      target_field: event.code
+      ignore_missing: true
+  - rename:
+      field: json.action
+      tag: rename_json_action
+      target_field: event.action
+      ignore_missing: true
+  - rename:
+      field: json.serviceName
+      tag: rename_json_service_name
+      target_field: event.provider
+      ignore_missing: true
+  - rename:
+      field: json.message
+      tag: rename_json_message
+      target_field: message
+      ignore_missing: true
+
+  # Actor and source.
+  - rename:
+      field: json.username
+      tag: rename_json_username
+      target_field: user.name
+      ignore_missing: true
+  - rename:
+      field: json.userId
+      tag: rename_json_user_id
+      target_field: user.id
+      ignore_missing: true
+  - rename:
+      field: json.targetAccount
+      tag: rename_json_target_account
+      target_field: user.target.name
+      ignore_missing: true
+  - convert:
+      field: json.source
+      tag: convert_json_source_to_ip
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+      ignore_failure: true
+      description: The `source` field holds an IP address or a component or host name. Only IP addresses go to `source.ip`.
+  - remove:
+      field: json.source
+      tag: remove_json_source
+      ignore_missing: true
+      if: ctx.source?.ip != null
+  - rename:
+      field: json.cloudProvider
+      tag: rename_json_cloud_provider
+      target_field: cloud.provider
+      ignore_missing: true
+  - rename:
+      field: json.originRegion
+      tag: rename_json_origin_region
+      target_field: cloud.region
+      ignore_missing: true
+
+  # Service-specific processing. These pipelines read and move fields from `json`.
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-identity" }}'
+      tag: pipeline_identity
+      if: ctx.json.applicationCode == 'IDP'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-privilege_cloud" }}'
+      tag: pipeline_privilege_cloud
+      if: ctx.json.applicationCode == 'PAM'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-secure_infrastructure_access" }}'
+      tag: pipeline_secure_infrastructure_access
+      if: ctx.json.applicationCode == 'DPA' || ctx.json.applicationCode == 'SIA'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-threat_detection" }}'
+      tag: pipeline_threat_detection
+      if: ctx.json.applicationCode == 'ITDR'
+
+  # ECS categorization.
+  - script:
+      lang: painless
+      tag: script_ecs_categorization
+      description: >-
+        Sets event.category and event.type from the audit code, with actionType as
+        the fallback for event.type. Sets event.outcome from the audit code, an issued
+        session, auditType, customData.success, customData.mfa_result or a failure
+        reason. IDP2005 and IDP2013 are steps of a multi-step sign-in. On these codes
+        `success: false` means that the step did not complete the flow, not that it
+        failed, so customData.success is not used for them. IDP2005 is a success when
+        it issued a session cookie. Alerts get no outcome.
+      params:
+        codes:
+          IDP2005:
+            category: [authentication]
+            type: [start]
+            custom_outcome: false
+            session_outcome: true
+          IDP2006:
+            category: [authentication]
+            type: [end]
+            outcome: success
+          IDP2007:
+            category: [authentication]
+            type: [start]
+            outcome: failure
+          IDP2009:
+            category: [authentication, iam]
+            type: [creation]
+            outcome: success
+          IDP2012:
+            category: [authentication]
+            type: [info]
+          IDP2013:
+            category: [authentication]
+            type: [info]
+            custom_outcome: false
+          IDP2014:
+            category: [authentication]
+            type: [info]
+          IDP2001:
+            category: [iam]
+            type: [user, creation]
+          IDP2002:
+            category: [iam]
+            type: [user, change]
+          IDP3101:
+            category: [iam]
+            type: [user, creation]
+          IDP1501:
+            category: [iam, configuration]
+            type: [admin, change]
+          IDP3002:
+            category: [iam, configuration]
+            type: [group, change]
+          IDP3003:
+            category: [iam, configuration]
+            type: [group, change]
+          IDP6001:
+            category: [configuration, iam]
+            type: [creation]
+          IDP6004:
+            category: [configuration, iam]
+            type: [change]
+          IDP6010:
+            category: [configuration, iam]
+            type: [deletion]
+          IDP6011:
+            category: [configuration, iam]
+            type: [change]
+          IDP1301:
+            category: [iam]
+            type: [info]
+          IDP1302:
+            category: [iam]
+            type: [info]
+          PAM00007:
+            category: [authentication, session]
+            type: [start]
+          PAM00008:
+            category: [authentication, session]
+            type: [end]
+          PAM00032:
+            category: [iam]
+            type: [admin, change]
+          PAM00088:
+            category: [iam]
+            type: [admin, change]
+          PAM00099:
+            category: [file]
+            type: [access]
+          PAM00105:
+            category: [configuration]
+            type: [creation]
+          PAM00185:
+            category: [iam, configuration]
+            type: [admin, creation]
+          PAM00273:
+            category: [iam]
+            type: [admin, change]
+          PAM00294:
+            category: [iam]
+            type: [admin, change]
+          PAM00295:
+            category: [iam, authentication]
+            type: [admin, start]
+          PAM00300:
+            category: [session]
+            type: [start]
+          PAM00301:
+            category: [session]
+            type: [start]
+          PAM00302:
+            category: [session]
+            type: [end]
+          PAM00303:
+            category: [session]
+            type: [end]
+          PAM00411:
+            category: [session, process]
+            type: [access, info]
+          DPAI401:
+            category: [session]
+            type: [start]
+          DPAI402:
+            category: [session]
+            type: [end]
+          DPAE403:
+            category: [session]
+            type: [start]
+          PSMSTRT:
+            category: [session]
+            type: [start]
+          PSMTRMN:
+            category: [session]
+            type: [end]
+          ITDR0001:
+            category: [intrusion_detection]
+            type: [info]
+        action_types:
+          Create: [creation]
+          Edit: [change]
+          Upgrade: [change]
+          Delete: [deletion]
+          Login: [start]
+          Start: [start]
+          Connect: [start]
+          Logout: [end]
+          End: [end]
+          View: [info]
+          Retrieve: [info]
+          Approve: [allowed]
+          Deny: [denied]
+        audit_type_outcomes:
+          Success: success
+          Failure: failure
+          Failure reason: failure
+          System Error: failure
+          Timeout or URL not found: failure
+        outcome_keys:
+          - success
+          - mfa_result
+        outcome_values:
+          'true': success
+          success: success
+          'false': failure
+          failed: failure
+          failure: failure
+      source: |-
+        Map ev = ctx.event;
+        def json = ctx.json;
+        def mapping = ev.code != null ? params.codes.get(ev.code) : null;
+        if (mapping != null) {
+          ev.category = new ArrayList(mapping.category);
+          ev.type = new ArrayList(mapping.type);
+        } else if (json.actionType != null && params.action_types.containsKey(json.actionType)) {
+          ev.type = new ArrayList(params.action_types.get(json.actionType));
+        }
+        if (ev.kind == 'alert') {
+          return;
+        }
+        def outcome = null;
+        if (mapping != null && mapping.containsKey('outcome')) {
+          outcome = mapping.outcome;
+        }
+        def cd = json.customData;
+        if (outcome == null && mapping != null && mapping.get('session_outcome') == true
+            && cd instanceof Map && cd.cookie_session instanceof Map
+            && cd.cookie_session.WhenIssued != null) {
+          outcome = 'success';
+        }
+        if (outcome == null && json.auditType instanceof String) {
+          outcome = params.audit_type_outcomes.get(json.auditType);
+        }
+        boolean useCustom = mapping == null || mapping.get('custom_outcome') != false;
+        if (outcome == null && useCustom && cd instanceof Map) {
+          for (def key : params.outcome_keys) {
+            def v = cd.get(key);
+            if (v != null) {
+              outcome = params.outcome_values.get(v.toString().toLowerCase());
+              if (outcome != null) {
+                break;
+              }
+            }
+          }
+        }
+        if (outcome == null && ev.reason != null) {
+          outcome = 'failure';
+        }
+        if (outcome != null) {
+          ev.outcome = outcome;
+        }
+  - append:
+      field: event.category
+      tag: append_event_category_authentication_sign_in_alert
+      value: authentication
+      allow_duplicates: false
+      if: ctx.event.kind == 'alert' && ctx.rule?.name instanceof String && ctx.rule.name.toLowerCase().contains('sign')
+      description: ITDR sign-in detectors are about authentication activity.
+
+  # Remaining vendor fields go to the custom namespace.
+  - rename:
+      field: json.tenantId
+      tag: rename_json_tenant_id
+      target_field: cyberark_identity_security.audit.tenant_id
+      ignore_missing: true
+  - rename:
+      field: json.applicationCode
+      tag: rename_json_application_code
+      target_field: cyberark_identity_security.audit.application_code
+      ignore_missing: true
+  - rename:
+      field: json.auditType
+      tag: rename_json_audit_type
+      target_field: cyberark_identity_security.audit.audit_type
+      ignore_missing: true
+  - rename:
+      field: json.actionType
+      tag: rename_json_action_type
+      target_field: cyberark_identity_security.audit.action_type
+      ignore_missing: true
+  - rename:
+      field: json.component
+      tag: rename_json_component
+      target_field: cyberark_identity_security.audit.component
+      ignore_missing: true
+  - rename:
+      field: json.source
+      tag: rename_json_source
+      target_field: cyberark_identity_security.audit.source
+      ignore_missing: true
+  - rename:
+      field: json.target
+      tag: rename_json_target
+      target_field: cyberark_identity_security.audit.target
+      ignore_missing: true
+  - rename:
+      field: json.command
+      tag: rename_json_command
+      target_field: cyberark_identity_security.audit.command
+      ignore_missing: true
+  - rename:
+      field: json.sessionId
+      tag: rename_json_session_id
+      target_field: cyberark_identity_security.audit.session_id
+      ignore_missing: true
+  - rename:
+      field: json.accessMethod
+      tag: rename_json_access_method
+      target_field: cyberark_identity_security.audit.access_method
+      ignore_missing: true
+  - rename:
+      field: json.accountId
+      tag: rename_json_account_id
+      target_field: cyberark_identity_security.audit.account_id
+      ignore_missing: true
+  - rename:
+      field: json.accountName
+      tag: rename_json_account_name
+      target_field: cyberark_identity_security.audit.account_name
+      ignore_missing: true
+  - rename:
+      field: json.safe
+      tag: rename_json_safe
+      target_field: cyberark_identity_security.audit.safe
+      ignore_missing: true
+  - rename:
+      field: json.targetPlatform
+      tag: rename_json_target_platform
+      target_field: cyberark_identity_security.audit.target_platform
+      ignore_missing: true
+  - rename:
+      field: json.identityType
+      tag: rename_json_identity_type
+      target_field: cyberark_identity_security.audit.identity_type
+      ignore_missing: true
+  - rename:
+      field: json.correlationId
+      tag: rename_json_correlation_id
+      target_field: cyberark_identity_security.audit.correlation_id
+      ignore_missing: true
+  - rename:
+      field: json.cloudWorkspacesAndRoles
+      tag: rename_json_cloud_workspaces_and_roles
+      target_field: cyberark_identity_security.audit.cloud_workspaces_and_roles
+      ignore_missing: true
+  - rename:
+      field: json.cloudIdentities
+      tag: rename_json_cloud_identities
+      target_field: cyberark_identity_security.audit.cloud_identities
+      ignore_missing: true
+  - rename:
+      field: json.cloudAssets
+      tag: rename_json_cloud_assets
+      target_field: cyberark_identity_security.audit.cloud_assets
+      ignore_missing: true
+  - rename:
+      field: json.vaultedAccounts
+      tag: rename_json_vaulted_accounts
+      target_field: cyberark_identity_security.audit.vaulted_accounts
+      ignore_missing: true
+  - convert:
+      field: json.isDr
+      tag: convert_json_is_dr
+      target_field: cyberark_identity_security.audit.is_dr
+      type: boolean
+      ignore_missing: true
+  - rename:
+      field: json.orgId
+      tag: rename_json_org_id
+      target_field: cyberark_identity_security.audit.org_id
+      ignore_missing: true
+  - rename:
+      field: json.customData
+      tag: rename_json_custom_data
+      target_field: cyberark_identity_security.audit.custom_data
+      ignore_missing: true
+
+  # Enrichment.
+  - user_agent:
+      field: user_agent.original
+      tag: user_agent_original
+      ignore_missing: true
+  - geoip:
+      field: source.ip
+      tag: geoip_source_ip
+      target_field: source.geo
+      ignore_missing: true
+      if: ctx.source?.ip != null && ctx.source.geo == null
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      tag: geoip_source_asn
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+      if: ctx.source?.ip != null
+  - rename:
+      field: source.as.asn
+      tag: rename_source_as_asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      tag: rename_source_as_organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - geoip:
+      field: client.ip
+      tag: geoip_client_ip
+      target_field: client.geo
+      ignore_missing: true
+      if: ctx.client?.ip != null
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: client.ip
+      tag: geoip_client_asn
+      target_field: client.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+      if: ctx.client?.ip != null
+  - rename:
+      field: client.as.asn
+      tag: rename_client_as_asn
+      target_field: client.as.number
+      ignore_missing: true
+  - rename:
+      field: client.as.organization_name
+      tag: rename_client_as_organization_name
+      target_field: client.as.organization.name
+      ignore_missing: true
+  - geoip:
+      field: destination.ip
+      tag: geoip_destination_ip
+      target_field: destination.geo
+      ignore_missing: true
+      if: ctx.destination?.ip != null
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      tag: geoip_destination_asn
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+      if: ctx.destination?.ip != null
+  - rename:
+      field: destination.as.asn
+      tag: rename_destination_as_asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      tag: rename_destination_as_organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+
+  # Related fields.
+  - append:
+      field: related.ip
+      tag: append_source_ip_to_related_ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - append:
+      field: related.ip
+      tag: append_client_ip_to_related_ip
+      value: '{{{client.ip}}}'
+      allow_duplicates: false
+      if: ctx.client?.ip != null
+  - append:
+      field: related.ip
+      tag: append_destination_ip_to_related_ip
+      value: '{{{destination.ip}}}'
+      allow_duplicates: false
+      if: ctx.destination?.ip != null
+  - append:
+      field: related.user
+      tag: append_user_name_to_related_user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.user
+      tag: append_user_id_to_related_user
+      value: '{{{user.id}}}'
+      allow_duplicates: false
+      if: ctx.user?.id != null
+  - append:
+      field: related.user
+      tag: append_user_email_to_related_user
+      value: '{{{user.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.email != null
+  - append:
+      field: related.user
+      tag: append_user_target_name_to_related_user
+      value: '{{{user.target.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.target?.name != null
+  - append:
+      field: related.user
+      tag: append_user_target_id_to_related_user
+      value: '{{{user.target.id}}}'
+      allow_duplicates: false
+      if: ctx.user?.target?.id != null
+  - append:
+      field: related.hosts
+      tag: append_source_address_to_related_hosts
+      value: '{{{source.address}}}'
+      allow_duplicates: false
+      if: ctx.source?.address != null && ctx.source.address != ctx.source.ip
+  - append:
+      field: related.hosts
+      tag: append_destination_address_to_related_hosts
+      value: '{{{destination.address}}}'
+      allow_duplicates: false
+      if: ctx.destination?.address != null && ctx.destination.address != ctx.destination.ip
+
+  # Cleanup.
+  - remove:
+      field:
+        - json
+        - _tmp
+      tag: remove_temporary_fields
+      ignore_missing: true
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
