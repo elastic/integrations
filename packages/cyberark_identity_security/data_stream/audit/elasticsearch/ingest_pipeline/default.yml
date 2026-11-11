@@ -48,7 +48,7 @@ processors:
       description: >-
         Removes null, empty and literal "null" values. Moves the keys of the legacy
         `customData.PAM` wrapper and of the `customData.nested_items` name/value list
-        to the top of `customData`.
+        to the top of `customData`. Keys already at the top are kept.
       params:
         empty_values:
           - ''
@@ -86,7 +86,7 @@ processors:
           if (items instanceof List) {
             for (def item : items) {
               if (item instanceof Map && item.get('name') instanceof String) {
-                cd.put(item.get('name'), item.get('value'));
+                cd.putIfAbsent(item.get('name'), item.get('value'));
               }
             }
           }
