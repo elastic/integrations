@@ -37,7 +37,7 @@ Configure your Organization ID, unified Elastic Cloud API key, lookbehind window
 | **Currency Symbol** | No | Currency symbol displayed in KPI panels (for example, `$`, `€`, or `£`) |
 | **Chargeable Unit Rate** | No | Conversion multiplier from chargeable units (ECU) to your configured currency |
 
-The integration provisions seven continuous transforms on your FinOps hub project (`serverless_billing_cost_lookup`, `serverless_billing_realized_pool_lookup`, `serverless_project_status_lookup`, `serverless_project_contribution_lookup`, `serverless_datastream_contribution_lookup`, `serverless_ai_contribution_lookup`, and `serverless_synthetics_contribution_lookup`). All seven destination indices configure `index.mode: lookup` so dashboard panels and alerting rules can query and join project status, realized SKU pools, and project usage totals with ES|QL `LOOKUP JOIN`.
+The integration provisions seven continuous transforms on your FinOps hub project (`serverless_billing_cost_lookup`, `serverless_billing_realized_pool_lookup`, `serverless_project_status_lookup`, `serverless_project_contribution_lookup`, `serverless_datastream_contribution_lookup`, `serverless_ai_model_contribution_lookup`, and `serverless_synthetics_monitor_contribution_lookup`). All seven destination indices configure `index.mode: lookup` so dashboard panels and alerting rules can query and join project status, realized SKU pools, and project usage totals with ES|QL `LOOKUP JOIN`.
 
 ## Dashboards
 
