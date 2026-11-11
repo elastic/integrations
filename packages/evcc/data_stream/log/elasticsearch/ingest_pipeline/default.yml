@@ -85,6 +85,9 @@ processors:
       tag: convert_trace_duration_to_nanos
       lang: painless
       if: ctx.evcc?.log?._trace_duration != null
+      description: >-
+        Converts the Go duration string from evcc's raw trace lines into event.duration in nanoseconds,
+        summing compound values such as 1m30s, and leaves event.duration unset on an unrecognised unit.
       source: >-
         String s = ctx.evcc.log._trace_duration;
         double total = 0;
@@ -197,34 +200,39 @@ processors:
   - script:
       tag: derive_event_action
       lang: painless
+      description: >-
+        Derives ECS event.action, event.category, event.type and event.outcome from whichever message
+        enrichment field the grok above extracted.
       source: >-
         ctx.event = ctx.event != null ? ctx.event : new HashMap();
-        if (ctx.evcc?.log?.vehicle_metric != null) {
+        Map evccLog = ctx.evcc instanceof Map && ctx.evcc.log instanceof Map ? ctx.evcc.log : new HashMap();
+        Map destination = ctx.destination instanceof Map ? ctx.destination : new HashMap();
+        if (evccLog.vehicle_metric != null) {
           ctx.event.action = 'vehicle-' + ctx.evcc.log.vehicle_metric.replace('_', '-');
           ctx.event.category = ['web'];
           ctx.event.type = ['error'];
           ctx.event.outcome = 'failure';
-        } else if (ctx.evcc?.log?.http_status_text != null) {
+        } else if (evccLog.http_status_text != null) {
           ctx.event.action = 'vehicle-wake-up';
           ctx.event.category = ['web'];
           ctx.event.type = ['error'];
           ctx.event.outcome = 'failure';
-        } else if (ctx.destination?.ip != null) {
+        } else if (destination.ip != null) {
           ctx.event.action = 'device-read-failed';
           ctx.event.category = ['network'];
           ctx.event.type = ['connection'];
           ctx.event.outcome = 'failure';
-        } else if (ctx.message != null && ctx.message.startsWith('add[') && ctx.evcc?.log?.error_reason != null) {
+        } else if (ctx.message != null && ctx.message.startsWith('add[') && evccLog.error_reason != null) {
           ctx.event.action = 'device-read-failed';
           ctx.event.category = ['network'];
           ctx.event.type = ['connection'];
           ctx.event.outcome = 'failure';
-        } else if (ctx.evcc?.log?.current_actual != null) {
+        } else if (evccLog.current_actual != null) {
           ctx.event.action = 'charger-current-mismatch';
           ctx.event.category = ['configuration'];
           ctx.event.type = ['info'];
           ctx.event.outcome = 'failure';
-        } else if (ctx.evcc?.log?.phases_actual != null) {
+        } else if (evccLog.phases_actual != null) {
           ctx.event.action = 'charger-phases-mismatch';
           ctx.event.category = ['configuration'];
           ctx.event.type = ['info'];
@@ -239,7 +247,7 @@ processors:
           ctx.event.category = ['network'];
           ctx.event.type = ['connection'];
           ctx.event.outcome = 'failure';
-        } else if (ctx.evcc?.log?.current_limit != null) {
+        } else if (evccLog.current_limit != null) {
           ctx.event.action = 'charge-current-limit-timeout';
           ctx.event.category = ['network'];
           ctx.event.type = ['connection'];
@@ -274,7 +282,7 @@ processors:
           ctx.event.category = ['session'];
           ctx.event.type = ['end'];
           ctx.event.outcome = 'success';
-        } else if (ctx.evcc?.log?.available_version != null) {
+        } else if (evccLog.available_version != null) {
           ctx.event.action = 'update-available';
           ctx.event.category = ['package'];
           ctx.event.type = ['info'];
