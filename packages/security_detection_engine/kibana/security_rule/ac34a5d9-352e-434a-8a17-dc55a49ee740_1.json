@@ -1,0 +1,126 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects creation or configuration change of a GitHub webhook. Attackers can add a hook to copy push, pull request, and workflow payloads (including secrets that land in those events) to an external URL.",
+        "false_positives": [
+            "Installing a documented CI, chat, or ticketing integration that uses GitHub webhooks. Confirm the payload URL and subscribed events with the repository owners."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "user.name",
+                "github.org",
+                "github.repo",
+                "github.actor_ip",
+                "github.hashed_token",
+                "github.programmatic_access_type",
+                "github.user_agent",
+                "github.hook_id",
+                "github.name",
+                "github.actor_is_bot"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "GitHub Webhook Created or Configuration Changed",
+        "note": "## Triage and analysis\n\n### Investigating GitHub Webhook Created or Configuration Changed\n\n`hook.create` adds a webhook. `hook.config_changed` updates the payload URL or other hook settings. Either action can send repository events to an attacker-controlled endpoint.\n\n### Possible investigation steps\n\n- Identify `user.name`, `github.repo`, `github.actor_ip`, and `github.programmatic_access_type`.\n- In repository Settings \u2192 Webhooks, inspect the payload URL, content type, and subscribed events. Treat unknown hosts as compromised.\n- Pivot to `git.push`, `repo.download_zip`, and Actions secret creates by the same actor.\n\n### False positive analysis\n\n- First-time install of Slack, Jira, or a deploy bot that registers a webhook.\n- Terraform or GitHub App automation that manages hooks.\n\n### Response and remediation\n\n- Delete unauthorized webhooks. Rotate secrets that may have been delivered in payloads.\n- Revoke the actor's tokens if the hook was not approved.\n",
+        "query": "from logs-github.audit-* metadata _id, _index, _version\n| where\n  data_stream.dataset == \"github.audit\"\n    and (github.actor_is_bot is not null and github.actor_is_bot == false)\n    and event.action in (\"hook.create\", \"hook.config_changed\")\n| keep\n    _id,\n    _index,\n    _version,\n    @timestamp,\n    event.action,\n    user.name,\n    github.org,\n    github.repo,\n    github.actor_ip,\n    github.hashed_token,\n    github.programmatic_access_type,\n    github.user_agent,\n    github.hook_id,\n    github.name,\n    github.actor_is_bot\n",
+        "references": [
+            "https://docs.github.com/en/webhooks/about-webhooks",
+            "https://docs.github.com/en/organizations/keeping-your-organization-secure/managing-security-settings-for-your-organization/audit-log-events-for-your-organization"
+        ],
+        "related_integrations": [
+            {
+                "package": "github",
+                "version": "^2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.actor_is_bot",
+                "type": "boolean"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "ac34a5d9-352e-434a-8a17-dc55a49ee740",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: SaaS",
+            "Platform: GitHub",
+            "Use Case: Threat Detection",
+            "Tactic: Collection",
+            "Tactic: Exfiltration",
+            "Data Source: Github",
+            "Data Source: GitHub Audit Logs",
+            "Rule Type: ES|QL",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0009",
+                    "name": "Collection",
+                    "reference": "https://attack.mitre.org/tactics/TA0009/"
+                },
+                "technique": [
+                    {
+                        "id": "T1213",
+                        "name": "Data from Information Repositories",
+                        "reference": "https://attack.mitre.org/techniques/T1213/",
+                        "subtechnique": [
+                            {
+                                "id": "T1213.003",
+                                "name": "Code Repositories",
+                                "reference": "https://attack.mitre.org/techniques/T1213/003/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0010",
+                    "name": "Exfiltration",
+                    "reference": "https://attack.mitre.org/tactics/TA0010/"
+                },
+                "technique": [
+                    {
+                        "id": "T1567",
+                        "name": "Exfiltration Over Web Service",
+                        "reference": "https://attack.mitre.org/techniques/T1567/",
+                        "subtechnique": [
+                            {
+                                "id": "T1567.004",
+                                "name": "Exfiltration Over Webhook",
+                                "reference": "https://attack.mitre.org/techniques/T1567/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "ac34a5d9-352e-434a-8a17-dc55a49ee740_1",
+    "type": "security-rule"
+}

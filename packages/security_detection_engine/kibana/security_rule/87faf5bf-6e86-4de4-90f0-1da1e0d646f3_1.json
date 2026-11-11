@@ -1,0 +1,100 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects GitHub Advanced Security being disabled for an enterprise, for all or new repositories in an organization, for existing or new user-namespace repositories, or for selected members via enterprise policy. Disabling GHAS removes secret scanning, code scanning, and related controls.",
+        "false_positives": [
+            "Cost-control or license changes that turn GHAS off for archival orgs. Confirm billing intent and that production orgs remain covered."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "user.name",
+                "github.org",
+                "github.repo",
+                "github.actor_ip",
+                "github.hashed_token",
+                "github.programmatic_access_type",
+                "github.user_agent",
+                "github.business"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "GitHub Advanced Security Disabled",
+        "note": "## Triage and analysis\n\n### Investigating GitHub Advanced Security Disabled\n\nEnterprise `business_advanced_security.*` disable actions (for the business, new repositories, and existing or new user-namespace repositories) and org-level `org.advanced_security_*` disable actions (all repos, new repos, and selected-member policy) strip scanning coverage. This is separate from a single-repo `repository_secret_scanning.disable`.\n\n### Possible investigation steps\n\n- Identify `user.name`, `event.action`, and `github.org`.\n- Check secret scanning, Dependabot, and code scanning on critical repositories.\n\n### False positive analysis\n\n- License downsizing with a finance ticket.\n\n### Response and remediation\n\n- Re-enable Advanced Security. Review commits made while scanning was off.\n",
+        "query": "from logs-github.audit-* metadata _id, _index, _version\n| where\n  event.module == \"github\" and data_stream.dataset == \"github.audit\"\n    and event.action in (\n      \"business_advanced_security.disabled\",\n      \"business_advanced_security.disabled_for_new_repos\",\n      \"business_advanced_security.disabled_for_new_user_namespace_repos\",\n      \"business_advanced_security.user_namespace_repos_disabled\",\n      \"org.advanced_security_disabled_on_all_repos\",\n      \"org.advanced_security_disabled_for_new_repos\",\n      \"org.advanced_security_policy_selected_member_disabled\"\n    )\n| keep\n    _id,\n    _index,\n    _version,\n    @timestamp,\n    event.action,\n    user.name,\n    github.org,\n    github.repo,\n    github.actor_ip,\n    github.hashed_token,\n    github.programmatic_access_type,\n    github.user_agent,\n    github.business\n",
+        "references": [
+            "https://docs.github.com/en/get-started/learning-about-github/about-github-advanced-security"
+        ],
+        "related_integrations": [
+            {
+                "package": "github",
+                "version": "^2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "87faf5bf-6e86-4de4-90f0-1da1e0d646f3",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: SaaS",
+            "Platform: GitHub",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: Github",
+            "Data Source: GitHub Audit Logs",
+            "Rule Type: ESQL",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.001",
+                                "name": "Disable or Modify Tools",
+                                "reference": "https://attack.mitre.org/techniques/T1562/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "87faf5bf-6e86-4de4-90f0-1da1e0d646f3_1",
+    "type": "security-rule"
+}

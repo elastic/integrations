@@ -1,0 +1,115 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects enabling of private repository forking on a GitHub organization. Allowing forks of private repositories lets code leave the organization into personal forks, which is a common collection path after an org-owner compromise.",
+        "false_positives": [
+            "Planned policy change to allow inner-source forks. Confirm change tickets and that the setting is reverted if it was a test."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "user.name",
+                "github.org",
+                "github.repo",
+                "github.actor_ip",
+                "github.hashed_token",
+                "github.programmatic_access_type",
+                "github.user_agent",
+                "github.visibility"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "GitHub Private Repository Forking Enabled",
+        "note": "## Triage and analysis\n\n### Investigating GitHub Private Repository Forking Enabled\n\n`private_repository_forking.enable` is an organization policy change. Follow with `repo.fork` if present.\n\n### Possible investigation steps\n\n- Identify `user.name`, `github.org`, and `github.actor_ip`.\n- Check whether private repos were forked afterward and to which accounts.\n\n### False positive analysis\n\n- Approved inner-source programs that temporarily enable forking.\n\n### Response and remediation\n\n- Disable private repository forking unless required. Review forks created in the same window and transfer or delete unauthorized copies.\n",
+        "query": "from logs-github.audit-* metadata _id, _index, _version\n| where\n  event.module == \"github\" and data_stream.dataset == \"github.audit\"\n    and event.action == \"private_repository_forking.enable\"\n| keep\n    _id,\n    _index,\n    _version,\n    @timestamp,\n    event.action,\n    user.name,\n    github.org,\n    github.repo,\n    github.actor_ip,\n    github.hashed_token,\n    github.programmatic_access_type,\n    github.user_agent,\n    github.visibility\n",
+        "references": [
+            "https://docs.github.com/en/organizations/managing-organization-settings/managing-the-forking-policy-for-your-organization"
+        ],
+        "related_integrations": [
+            {
+                "package": "github",
+                "version": "^2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "fa2a3164-4e7e-4760-8831-f717e85e1088",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: SaaS",
+            "Platform: GitHub",
+            "Use Case: Threat Detection",
+            "Tactic: Collection",
+            "Tactic: Defense Evasion",
+            "Data Source: GitHub Audit Logs",
+            "Rule Type: ESQL",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0009",
+                    "name": "Collection",
+                    "reference": "https://attack.mitre.org/tactics/TA0009/"
+                },
+                "technique": [
+                    {
+                        "id": "T1213",
+                        "name": "Data from Information Repositories",
+                        "reference": "https://attack.mitre.org/techniques/T1213/",
+                        "subtechnique": [
+                            {
+                                "id": "T1213.003",
+                                "name": "Code Repositories",
+                                "reference": "https://attack.mitre.org/techniques/T1213/003/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1484",
+                        "name": "Domain or Tenant Policy Modification",
+                        "reference": "https://attack.mitre.org/techniques/T1484/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "fa2a3164-4e7e-4760-8831-f717e85e1088_1",
+    "type": "security-rule"
+}
