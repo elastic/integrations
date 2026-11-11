@@ -13,20 +13,20 @@
         "query": "from logs-nginx.error-*, logs-apache_tomcat.error-*, logs-apache.error-*, logs-iis.error-*\n| keep\n    @timestamp,\n    event.type,\n    data_stream.dataset,\n    source.ip,\n    agent.id,\n    host.name,\n    data_stream.namespace\n\n| where source.ip is not null\n| stats\n    Esql.event_count = count(),\n    Esql.host_name_values = values(host.name),\n    Esql.agent_id_values = values(agent.id),\n    Esql.data_stream_dataset_values = values(data_stream.dataset),\n    Esql.data_stream_namespace_values = values(data_stream.namespace)\n    by source.ip, agent.id\n| where\n    Esql.event_count > 50\n",
         "related_integrations": [
             {
-                "package": "nginx",
-                "version": "^3.0.0"
+                "package": "apache_tomcat",
+                "version": "^1.0.0"
             },
             {
                 "package": "apache",
                 "version": "^3.0.0"
             },
             {
-                "package": "apache_tomcat",
+                "package": "iis",
                 "version": "^1.0.0"
             },
             {
-                "package": "iis",
-                "version": "^1.0.0"
+                "package": "nginx",
+                "version": "^3.0.0"
             }
         ],
         "required_fields": [

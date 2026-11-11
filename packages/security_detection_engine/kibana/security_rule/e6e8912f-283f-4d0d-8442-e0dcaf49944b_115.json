@@ -1,0 +1,114 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies when a screensaver plist file is modified by an unexpected process. An adversary can maintain persistence on a macOS endpoint by creating a malicious screensaver (.saver) file and configuring the screensaver plist file to execute code each time the screensaver is activated.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.file*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Screensaver Plist File Modified by Unexpected Process",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Screensaver Plist File Modified by Unexpected Process\n\nThe `com.apple.screensaver.*.plist` files define the active screensaver module and its settings. Adversaries can drop a malicious `.saver` bundle and update these plist files so that the bundle is loaded and executes code every time the screensaver activates. This rule alerts when a screensaver plist file is modified by an unsigned or untrusted process, or by a script interpreter or native utility commonly abused by attackers.\n\n### Possible investigation steps\n\n- Identify the process that modified the plist (`process.executable`, `process.code_signature.*`) and determine why an untrusted process or interpreter changed screensaver settings. Review the process's execution event for its command line and parent.\n- Review the plist file (`file.path`) and its current contents on the host to identify the configured screensaver module and its path.\n- Locate the referenced `.saver` bundle and check its code signature, creation time, origin, and contents.\n- Review recent file events for `.saver` bundles written to `~/Library/Screen Savers/`, `/Library/Screen Savers/`, or unusual locations around the time of the alert.\n- Analyze the process tree of the modifying process for signs of initial access or execution, such as downloads, script interpreters, or other persistence activity.\n- Check for child processes of `ScreenSaverEngine` or `legacyScreenSaver` on the host after the modification, which may indicate the payload has already executed.\n\n### False positive analysis\n\n- Device management solutions or administrative scripts may configure screensaver settings with script interpreters. Verify the script and its origin with the team responsible for endpoint management.\n- Unsigned or ad hoc signed third-party utilities may change screensaver preferences. Confirm the tool is approved in the environment.\n- When the activity is confirmed benign, create an exception for the specific process executable or script rather than for the plist file path.\n\n### Response and remediation\n\n- Isolate the affected host from the network if the modification is determined to be malicious.\n- Revert the screensaver plist to a known good configuration and remove any malicious `.saver` bundle after preserving a copy for analysis.\n- Terminate the modifying process and any processes started by the malicious screensaver.\n- Investigate how the attacker gained access to the host and remediate the initial access vector.\n- Escalate to the incident response team and search for the same plist modification or `.saver` bundle on other macOS hosts.\n",
+        "query": "file where host.os.type == \"macos\" and event.action == \"modification\" and\n  file.name like~ \"com.apple.screensaver.*.plist\" and\n   file.path like (\n      \"/Users/*/Library/Preferences/ByHost/*\",\n      \"/Library/Managed Preferences/*\",\n      \"/System/Library/Preferences/*\"\n      ) and\n  (\n    process.code_signature.trusted == false or\n    process.code_signature.exists == false or\n\n    /* common script interpreters and abused native macOS bins */\n    process.name like~ (\n      \"curl\",\n      \"mktemp\",\n      \"tail\",\n      \"funzip\",\n      \"python*\",\n      \"osascript\",\n      \"perl\"\n      )\n   ) and\n\n  /* Filter OS processes modifying screensaver plist files */\n  not process.executable like (\n    \"/usr/sbin/cfprefsd\",\n    \"/usr/libexec/xpcproxy\",\n    \"/System/Library/CoreServices/ManagedClient.app/Contents/Resources/MCXCompositor\",\n    \"/System/Library/CoreServices/ManagedClient.app/Contents/MacOS/ManagedClient\"\n    )\n",
+        "references": [
+            "https://posts.specterops.io/saving-your-access-d562bf5bf90b",
+            "https://github.com/D00MFist/PersistentJXA"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.exists",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.trusted",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "e6e8912f-283f-4d0d-8442-e0dcaf49944b",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a macOS System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, for MacOS it is recommended to select \"Traditional Endpoints\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/current/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide",
+            "Noise: Low",
+            "Performance: Normal",
+            "Rule Type: Event Correlation (EQL)",
+            "Platform: macOS"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1546",
+                        "name": "Event Triggered Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1546/",
+                        "subtechnique": [
+                            {
+                                "id": "T1546.002",
+                                "name": "Screensaver",
+                                "reference": "https://attack.mitre.org/techniques/T1546/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 115
+    },
+    "id": "e6e8912f-283f-4d0d-8442-e0dcaf49944b_115",
+    "type": "security-rule"
+}
