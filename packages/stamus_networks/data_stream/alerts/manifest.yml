@@ -20,8 +20,8 @@ streams:
         type: text
         title: "Initial lookback"
         description: |-
-          Lookback window used on the very first poll (no stored cursor yet). Go duration units
-          only (h, m, s) -- day units are not supported.
+          Initial interval to poll for events on the first run. Supported units for this parameter
+          are h/m/s.
         required: true
         show_user: true
         default: 24h
@@ -29,14 +29,8 @@ streams:
         type: text
         title: "Collection delay"
         description: |-
-          Safety margin subtracted from the upper bound (`to_date`) of every collection window,
-          to tolerate delay between an alert's own timestamp and the moment it becomes
-          searchable via the events_tail API. Without this margin, an alert that becomes
-          searchable even a moment after its window's upper bound has already been queried is
-          permanently skipped: the window boundary only ever advances forward, so a later poll
-          never re-queries an earlier window to catch it. Increase this if the target CNCS
-          instance has higher Suricata-to-searchable-index latency than the default assumes. Go
-          duration units only (h, m, s).
+          Delay collection to allow events to become searchable in Stamus Networks. Increase this
+          value if events are indexed late. Supported units for this parameter are h/m/s.
         required: true
         show_user: true
         default: 1m
@@ -45,7 +39,7 @@ streams:
         title: "Page size"
         description: |-
           Pagination page size for the events_tail endpoint. The vendor's documented default/cap
-          is 30 -- verify at deployment time whether a larger value is accepted by the target CNCS.
+          is 30. Verify at deployment time whether a larger value is accepted by the target CNCS.
         required: true
         show_user: false
         default: 30
@@ -81,6 +75,13 @@ streams:
         default:
           - forwarded
           - stamus_networks-alerts
+      - name: preserve_original_event
+        type: bool
+        title: "Preserve original event"
+        description: Preserves a raw copy of the original event in `event.original`.
+        required: true
+        show_user: true
+        default: false
       - name: processors
         type: yaml
         title: "Processors"

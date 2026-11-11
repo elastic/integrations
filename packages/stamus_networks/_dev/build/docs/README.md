@@ -14,8 +14,8 @@ from the Clear NDR Central Server (CNCS) REST API.
 
 This integration is tested against a full Stamus Clear NDR server and the CNCS 42.2.0 REST API.
 It relies on a static, per-user API token for authentication (no OAuth2 flow is available).
-Retrieving the embedded `stamus.*` Declaration of Compromise/Policy Violation object requires a
-Stamus Tier 3 license. The `alerts` data stream otherwise works with the lower Tier 2 license.
+Retrieving Declaration of Compromise/Policy Violation records requires a Stamus Tier 3 license.
+The `alerts` data stream otherwise works with the lower Tier 2 license.
 
 ### How it works
 
@@ -51,7 +51,7 @@ hunting, and dashboarding.
 * A dedicated, read-only ("Active" tier) CNCS user account is recommended for the integration
   rather than reusing an administrative account's token.
 * Stamus Tier 2 licensing (REST API access) at minimum. Tier 3 licensing is required for the
-  `stamus.*` Declaration of Compromise/Policy Violation object on the `alerts` data stream.
+  Declaration of Compromise/Policy Violation records on the `alerts` data stream.
 
 ## How do I deploy this integration?
 
@@ -96,8 +96,7 @@ network, then check **Discover** in Kibana for documents in the
 - 401 Unauthorized errors: The API token might have been regenerated or revoked in the CNCS UI. Regenerate the token in CNCS and update the integration configuration. The Stamus API has no automated token-rotation mechanism.
 - Alert and stamus documents are retrieved from `/rest/rules/es/events_tail/`. This integration is tested against a full Stamus Clear NDR server, where that endpoint returns full alert documents and `event_type: stamus` correlation records. Pagination is a DRF `{count, next, previous, results}` envelope. A full Clear NDR server honors `page`. Community Clear NDR honors `page_number`. The collector sends both parameters set to the same value, and continues while `next` is non-null.
 - Declaration of Compromise / Policy Violation records (`event_type: stamus`) require a Stamus Clear NDR **Tier 3** license and are returned on a full Clear NDR server. If stamus events are missing, confirm the license tier. A non-retryable error on the `stamus` phase advances to the next window; only a persistent error on the `alert` phase retries.
-- Beaconing detection fields (`beaconing_report.*`, `beaconing_statistics.*`) are mapped but have not been observed in any sample data used to build this integration. Treat them as unverified end-to-end even though the fields are vendor-documented.
-- `flow_id` precision: `flow_id` is delivered by the API as a large integer (commonly >= 2^53 in production) and is mapped as `keyword` because it is an opaque correlation key, not a metric. The CEL program parses the raw API response with `decode_json_string_numbers()`. This function preserves the exact text of every JSON number, including `flow_id`, before the program re-emits the response through `encode_json()`. As a result, `flow_id` round-trips through this integration with no precision loss, even above 2^53. An earlier version rewrote `flow_id` to a quoted JSON string before a plain `decode_json()` call by using a CEL `regexp:` stream-config block. That mechanism caused Elastic Agent to silently fail to schedule a component for this input on Elastic Agent 9.5.5, so it was removed. `decode_json_string_numbers()` requires no stream-config changes and does not reintroduce that failure mode.
+- Beaconing detection fields (`stamus_networks.alerts.beaconing_report.*`, `stamus_networks.alerts.beaconing_statistics.*`) are mapped but have not been observed in any sample data used to build this integration. Treat them as unverified end-to-end even though the fields are vendor-documented.
 
 ## Performance and scaling
 

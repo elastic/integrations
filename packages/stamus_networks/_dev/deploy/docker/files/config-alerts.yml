@@ -20,16 +20,11 @@ rules:
   # alert collection resumes for the NEXT window after a persistent stamus error,
   # rather than the cursor staying stuck retrying the failed stamus phase forever.
   # req_num 5 (round 5 / window 5): transient 503 -- models a momentary backend
-  # hiccup on the PRIMARY ("alert") phase. The fixed cel.yml.hbs returns this error
-  # as a list with an explicit, unmodified "cursor": cur (see that file's
-  # error-handling comment and the Copilot review this regression test was added
-  # for), so the next evaluation must re-request this exact same
+  # hiccup on the PRIMARY ("alert") phase. The next evaluation must re-request this exact same
   # phase/page/from_date/to_date instead of a fresh `now - initial_interval`
   # window. This mock cannot assert the from_date/to_date values are byte-identical
   # (both are captured with permissive `{..:.*}` regexes so any value matches the
-  # same rule) -- that guarantee is proven at the mito level (see builder report,
-  # which inspects the actual returned cursor against a forced 503). What this
-  # fixture guards is the observable, system-test-visible side effect: the error
+  # same rule). This fixture guards the observable, system-test-visible side effect: the error
   # produces no alert document, req_num 6 below (the retry) produces exactly the
   # one expected recovery document, and overall hit_count stays stable rather than
   # drifting (which it would if the window reset and started re-walking time).
@@ -273,8 +268,7 @@ rules:
       # and only request for this window. The fixed cel.yml.hbs returns this error
       # as a list with an explicit, unmodified "cursor": cur (same phase/page/
       # from_date/to_date), so the retry below must land on the SAME window rather
-      # than a fresh one -- see the Copilot review this regression test was added
-      # for, and the mito-level proof in the builder report.
+      # than a fresh one.
       - status_code: 503
         headers:
           Content-Type:

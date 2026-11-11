@@ -20,27 +20,7 @@ data_stream:
 #   window 6 (transient 503 on the STAMUS phase, same-window retry): alert=0,
 #     stamus recovery event=1                                               = 1
 #   total = 9, stable thereafter.
-#
-# Windows 5 and 6 are the regression test added for the Copilot review finding
-# that a single-object "events" error value discards the persisted cursor (see
-# cel.yml.hbs's error-handling comment). Confirmed empirically (3 independent
-# `elastic-package test system` runs, with direct Elasticsearch inspection) that
-# a forced transient 5xx on either phase does NOT produce an indexed error
-# document here, unlike the persistent 403 in window 3: the Elastic Agent CEL
-# input's own HTTP resource-level retry absorbs the 503 transparently and
-# retries the exact same request before the CEL program's script ever runs
-# again, so the program's 5xx error branch is never actually reached in
-# practice for a single transient failure that resolves on retry -- only the
-# eventual 200 (the recovery event) is evaluated and emitted. This does NOT
-# mean the CEL-level fix is unexercised or unnecessary: it is still the correct
-# defensive-in-depth behavior for a 5xx that persists beyond the agent's retry
-# budget (which this mock cannot easily force), and the fix's core property --
-# that no cursor reset/window-restart occurs across a transient failure -- was
-# independently confirmed by observing strictly-advancing, non-repeating
-# from_date/to_date values in the mock's request log across all 6 windows, with
-# zero duplicate or replayed documents. If a future change makes a 5xx error
-# document start appearing here, treat that as confirmation the agent's retry
-# budget was exhausted (or its retry behavior changed) rather than a hit_count
-# regression to silently "fix" by raising this number back up.
+# Elastic Agent retries the transient 503 responses before the CEL program
+# receives them, so only the recovery events are indexed.
 assert:
   hit_count: 9

@@ -1,13 +1,13 @@
 ---
 # Kibana rejects an ingest pipeline description longer than 1000 characters, so the
 # mapping notes stay in this comment.
-# event_type alert and event_type stamus share alert.*. stamus.*, discovery.*
+# event_type alert and event_type stamus share stamus_networks.alerts.alert.*. stamus_networks.alerts.stamus.*, stamus_networks.alerts.discovery.*
 # (Sightings), files[] (File Identification), and stamus_novel (Outlier Alert) are
 # mapped only when present. Flow byte/packet counters and flow start map to
 # source/destination bytes, packets, and event.start. flow.src_ip, src_port,
 # dest_ip, and dest_port are dropped. Counters follow flow.src_ip -> flow.dest_ip,
 # which can differ from the final source.ip/destination.ip when the record is the
-# other packet direction or alert.source/alert.target replaces the 5-tuple with
+# other packet direction or stamus_networks.alerts.alert.source/stamus_networks.alerts.alert.target replaces the 5-tuple with
 # attacker/victim attribution. The pipeline compares the source endpoint with the
 # flow endpoints and swaps counter targets so source.bytes and source.packets match
 # source.ip and source.port, including same-IP connections.
@@ -133,84 +133,81 @@ processors:
   ###
   - rename:
       field: json.alert
-      target_field: alert
+      target_field: stamus_networks.alerts.alert
       tag: rename_alert_object
       ignore_missing: true
   - rename:
       field: json.stamus
-      target_field: stamus
+      target_field: stamus_networks.alerts.stamus
       tag: rename_stamus_object
       ignore_missing: true
       description: "Only present on `event_type: stamus` Declaration of Compromise/Policy Violation records."
   - rename:
       field: json.discovery
-      target_field: discovery
+      target_field: stamus_networks.alerts.discovery
       tag: rename_discovery_object
       ignore_missing: true
       description: Only present on Stamus Sightings alerts.
   - rename:
       field: json.files
-      target_field: files
+      target_field: stamus_networks.alerts.files
       tag: rename_files_array
       ignore_missing: true
       description: Only present on Stamus File Identification alerts.
   - rename:
       field: json.stamus_novel
-      target_field: stamus_novel
+      target_field: stamus_networks.alerts.stamus_novel
       tag: rename_stamus_novel
       ignore_missing: true
       description: Outlier Alert flag; can co-occur with any alert.
   - rename:
       field: json.metadata.flowbits
-      target_field: metadata.flowbits
+      target_field: stamus_networks.alerts.metadata.flowbits
       tag: rename_metadata_flowbits
       ignore_missing: true
       description: >-
-        Cross-cutting flowbits enrichment at the event root — distinct from `alert.metadata.*`.
+        Cross-cutting flowbits enrichment, distinct from
+        `stamus_networks.alerts.alert.metadata.*`.
   - rename:
       field: json.hostname_info
-      target_field: hostname_info
+      target_field: stamus_networks.alerts.hostname_info
       tag: rename_hostname_info
       ignore_missing: true
   - rename:
       field: json.net_info
-      target_field: net_info
+      target_field: stamus_networks.alerts.net_info
       tag: rename_net_info
       ignore_missing: true
   - rename:
       field: json.flow_id
-      target_field: flow_id
+      target_field: stamus_networks.alerts.flow_id
       tag: rename_flow_id
       ignore_missing: true
   - convert:
-      field: flow_id
+      field: stamus_networks.alerts.flow_id
       type: string
       tag: convert_flow_id_to_string
       ignore_missing: true
       description: >-
-        flow_id is mapped as keyword (an opaque correlation key, not a metric), but
-        the CEL program's decode_json() call parses it as a JSON number (float64),
-        which can lose trailing-digit precision for values >= 2^53 (see fields.yml
-        for the documented limitation). This cast only fixes the field's type to
-        match the mapping; it cannot recover precision already lost upstream.
+        Store the opaque flow identifier as a keyword.
   - rename:
       field: json.direction
-      target_field: direction
+      target_field: stamus_networks.alerts.direction
       tag: rename_direction
       ignore_missing: true
   - rename:
       field: json.capture_file
-      target_field: capture_file
+      target_field: stamus_networks.alerts.capture_file
       tag: rename_capture_file
       ignore_missing: true
   - rename:
       field: json.beaconing_report
-      target_field: beaconing_report
+      target_field: stamus_networks.alerts.beaconing_report
       tag: rename_beaconing_report
       ignore_missing: true
   - rename:
       field: json.beaconing_statistics
-      target_field: beaconing_statistics
+      target_field: stamus_networks.alerts.beaconing_statistics
       tag: rename_beaconing_statistics
       ignore_missing: true
 
@@ -254,36 +251,36 @@ processors:
       if: ctx.network?.protocol == 'failed' || ctx.network?.protocol == 'template' || ctx.network?.protocol == 'template-rust'
       description: Suricata parser states are not valid ECS network protocol names.
 
-  # `alert.source`/`alert.target` (attacker/victim) take priority over the top-level 5-tuple —
+  # `stamus_networks.alerts.alert.source`/`stamus_networks.alerts.alert.target` (attacker/victim) take priority over the top-level 5-tuple —
   # only present when the rule uses the Suricata `target` keyword.
   - rename:
-      field: alert.source.ip
+      field: stamus_networks.alerts.alert.source.ip
       target_field: source.ip
       tag: rename_alert_source_ip
       ignore_missing: true
   - rename:
-      field: alert.source.port
+      field: stamus_networks.alerts.alert.source.port
       target_field: source.port
       tag: rename_alert_source_port
       ignore_missing: true
   - rename:
-      field: alert.target.ip
+      field: stamus_networks.alerts.alert.target.ip
       target_field: destination.ip
       tag: rename_alert_target_ip
       ignore_missing: true
   - rename:
-      field: alert.target.port
+      field: stamus_networks.alerts.alert.target.port
       target_field: destination.port
       tag: rename_alert_target_port
       ignore_missing: true
   - remove:
       field:
-        - alert.source
-        - alert.target
+        - stamus_networks.alerts.alert.source
+        - stamus_networks.alerts.alert.target
       tag: remove_empty_alert_source_target
       ignore_missing: true
       description: >-
-        `alert.source`/`alert.target` only ever contain `ip`/`port`, both relocated above; remove
+        `stamus_networks.alerts.alert.source`/`stamus_networks.alerts.alert.target` only ever contain `ip`/`port`, both relocated above; remove
         the now-empty shells so they are not indexed.
 
   - rename:
@@ -330,7 +327,7 @@ processors:
   # initiator) TO its OWN `dest_ip` -- this is the flow's fixed client/server orientation and is
   # independent of the alert-record-level `src_ip`/`dest_ip`/`direction` fields above (a single
   # EVE alert record can report either packet direction of a flow, and/or have its 5-tuple
-  # replaced by `alert.source`/`alert.target` attacker/victim attribution). `bytes_toclient`/
+  # replaced by `stamus_networks.alerts.alert.source`/`stamus_networks.alerts.alert.target` attacker/victim attribution). `bytes_toclient`/
   # `pkts_toclient` are the reverse direction (flow `dest_ip` -> flow `src_ip`).
   #
   # The final `source`/`destination` endpoints are NOT guaranteed to align with the flow's own
@@ -419,20 +416,20 @@ processors:
   ###
   - rename:
       field: json.see_id
-      target_field: stamus_sensor.id
+      target_field: stamus_networks.alerts.stamus_sensor.id
       tag: rename_see_id
       ignore_missing: true
   - rename:
       field: json.see_name
-      target_field: stamus_sensor.name
+      target_field: stamus_networks.alerts.stamus_sensor.name
       tag: rename_see_name
       ignore_missing: true
 
   ###
-  # `alert.*` rule fields -> ECS
+  # `stamus_networks.alerts.alert.*` rule fields -> ECS
   ###
   - rename:
-      field: alert.signature_id
+      field: stamus_networks.alerts.alert.signature_id
       target_field: rule.id
       tag: rename_alert_signature_id_to_rule_id
       ignore_missing: true
@@ -442,12 +439,12 @@ processors:
       tag: convert_rule_id_to_string
       ignore_missing: true
   - rename:
-      field: alert.rev
+      field: stamus_networks.alerts.alert.rev
       target_field: rule.version
       tag: rename_alert_rev_to_rule_version
       ignore_missing: true
   - rename:
-      field: alert.signature
+      field: stamus_networks.alerts.alert.signature
       target_field: rule.name
       tag: rename_alert_signature_to_rule_name
       ignore_missing: true
@@ -459,25 +456,26 @@ processors:
       description: >-
         Repopulates `message` (cleared earlier when it was copied to `event.original`) with the
         alert's signature text, so Discover's default summary line isn't blank. The official
-        `suricata` package instead uses `alert.category` here; `rule.name` is used here instead
+        `suricata` package instead uses `stamus_networks.alerts.alert.category` here; `rule.name` is used here instead
         since the signature text is far more specific (for example "ETPRO HUNTING Generic Pong
         Keep-Alive Inbound M3" vs. the generic "Potentially Bad Traffic" category bucket).
   - rename:
-      field: alert.category
+      field: stamus_networks.alerts.alert.category
       target_field: rule.category
       tag: rename_alert_category_to_rule_category
       ignore_missing: true
   - rename:
-      field: alert.severity
+      field: stamus_networks.alerts.alert.severity
       target_field: event.severity
       tag: rename_alert_severity_to_event_severity
       ignore_missing: true
       description: >-
         Numeric severity from the rule's classtype mapping (lower = more severe by community
-        convention). Can disagree with the free-text `alert.metadata.signature_severity` label —
+        convention). Can disagree with the free-text
+        `stamus_networks.alerts.alert.metadata.signature_severity` label —
         both are mapped; neither is treated as authoritative over the other.
   - rename:
-      field: alert.app_proto
+      field: stamus_networks.alerts.alert.app_proto
       target_field: network.protocol
       tag: rename_alert_app_proto_to_network_protocol
       ignore_missing: true
@@ -498,7 +496,7 @@ processors:
       if: ctx.network?.protocol == 'failed' || ctx.network?.protocol == 'template' || ctx.network?.protocol == 'template-rust'
       description: Suricata parser states are not valid ECS network protocol names.
   - rename:
-      field: alert.action
+      field: stamus_networks.alerts.alert.action
       target_field: event.action
       tag: rename_alert_action_to_event_action
       ignore_missing: true
@@ -506,32 +504,32 @@ processors:
 
   # Rule metadata with a clean ECS home.
   - rename:
-      field: alert.metadata.cve
+      field: stamus_networks.alerts.alert.metadata.cve
       target_field: vulnerability.id
       tag: rename_metadata_cve_to_vulnerability_id
       ignore_missing: true
   - rename:
-      field: alert.metadata.mitre_tactic_id
+      field: stamus_networks.alerts.alert.metadata.mitre_tactic_id
       target_field: threat.tactic.id
       tag: rename_metadata_mitre_tactic_id
       ignore_missing: true
   - rename:
-      field: alert.metadata.mitre_tactic_name
+      field: stamus_networks.alerts.alert.metadata.mitre_tactic_name
       target_field: threat.tactic.name
       tag: rename_metadata_mitre_tactic_name
       ignore_missing: true
   - rename:
-      field: alert.metadata.mitre_technique_id
+      field: stamus_networks.alerts.alert.metadata.mitre_technique_id
       target_field: threat.technique.id
       tag: rename_metadata_mitre_technique_id
       ignore_missing: true
   - rename:
-      field: alert.metadata.mitre_technique_name
+      field: stamus_networks.alerts.alert.metadata.mitre_technique_name
       target_field: threat.technique.name
       tag: rename_metadata_mitre_technique_name
       ignore_missing: true
   - rename:
-      field: alert.metadata.cvss_v3_base
+      field: stamus_networks.alerts.alert.metadata.cvss_v3_base
       target_field: vulnerability.score.base
       tag: rename_metadata_cvss_v3_base_to_vulnerability_score_base
       ignore_missing: true
@@ -544,7 +542,7 @@ processors:
         Suricata rule metadata only distinguishes CVSS v2 vs v3 by key name, not an exact
         point release -- "3.0" is the most specific version this source data supports.
   - rename:
-      field: alert.metadata.cvss_v2_base
+      field: stamus_networks.alerts.alert.metadata.cvss_v2_base
       target_field: vulnerability.score.base
       tag: rename_metadata_cvss_v2_base_to_vulnerability_score_base
       ignore_missing: true
@@ -556,12 +554,12 @@ processors:
       tag: set_vulnerability_score_version_2
       if: ctx.vulnerability?.score?.base != null && ctx.vulnerability?.score?.version == null
   - remove:
-      field: alert.metadata.cvss_v2_base
+      field: stamus_networks.alerts.alert.metadata.cvss_v2_base
       tag: remove_unused_metadata_cvss_v2_base
       ignore_missing: true
       description: >-
         Discards the v2 score when v3 was already present and took precedence above -- otherwise
-        this would be left as an undeclared leftover field under `alert.metadata`.
+        this would be left as an undeclared leftover field under `stamus_networks.alerts.alert.metadata`.
   - convert:
       field: vulnerability.score.base
       type: float
@@ -591,10 +589,10 @@ processors:
       tag: append_event_category_threat
       value: threat
       allow_duplicates: false
-      if: ctx.stamus != null
+      if: ctx.stamus_networks?.alerts?.stamus != null
       description: >-
         Added when the document carries a fully-populated Declaration of Compromise/Policy
-        Violation `stamus.*` correlation object.
+        Violation `stamus_networks.alerts.stamus.*` correlation object.
   - append:
       field: event.type
       tag: append_event_type_allowed
@@ -612,7 +610,7 @@ processors:
       tag: set_event_outcome_unknown
       value: unknown
       description: >-
-        `alert.action` (allowed/blocked) describes what Suricata did with the packet, not a
+        `stamus_networks.alerts.alert.action` (allowed/blocked) describes what Suricata did with the packet, not a
         success/failure judgement about the underlying security event — surfaced instead via
         `event.action`.
 
@@ -690,65 +688,65 @@ processors:
   - append:
       field: related.hosts
       tag: append_related_hosts_hostname_info
-      value: '{{{hostname_info.host}}}'
+      value: '{{{stamus_networks.alerts.hostname_info.host}}}'
       allow_duplicates: false
-      if: ctx.hostname_info?.host != null
+      if: ctx.stamus_networks?.alerts?.hostname_info?.host != null
 
   - append:
       field: related.ip
       tag: append_related_ip_stamus_asset
-      value: '{{{stamus.asset}}}'
+      value: '{{{stamus_networks.alerts.stamus.asset}}}'
       allow_duplicates: false
-      if: ctx.stamus?.asset_type == 'ip' && ctx.stamus?.asset != null
+      if: ctx.stamus_networks?.alerts?.stamus?.asset_type == 'ip' && ctx.stamus_networks.alerts.stamus.asset != null
   - append:
       field: related.hosts
       tag: append_related_hosts_stamus_asset
-      value: '{{{stamus.asset}}}'
+      value: '{{{stamus_networks.alerts.stamus.asset}}}'
       allow_duplicates: false
-      if: ctx.stamus?.asset_type == 'hostname' && ctx.stamus?.asset != null
+      if: ctx.stamus_networks?.alerts?.stamus?.asset_type == 'hostname' && ctx.stamus_networks.alerts.stamus.asset != null
   - append:
       field: related.user
       tag: append_related_user_stamus_asset
-      value: '{{{stamus.asset}}}'
+      value: '{{{stamus_networks.alerts.stamus.asset}}}'
       allow_duplicates: false
-      if: ctx.stamus?.asset_type == 'user' && ctx.stamus?.asset != null
+      if: ctx.stamus_networks?.alerts?.stamus?.asset_type == 'user' && ctx.stamus_networks.alerts.stamus.asset != null
   - append:
       field: related.ip
       tag: append_related_ip_stamus_offender
-      value: '{{{stamus.offender}}}'
+      value: '{{{stamus_networks.alerts.stamus.offender}}}'
       allow_duplicates: false
-      if: ctx.stamus?.offender_type == 'ip' && ctx.stamus?.offender != null
+      if: ctx.stamus_networks?.alerts?.stamus?.offender_type == 'ip' && ctx.stamus_networks.alerts.stamus.offender != null
   - append:
       field: related.hosts
       tag: append_related_hosts_stamus_offender
-      value: '{{{stamus.offender}}}'
+      value: '{{{stamus_networks.alerts.stamus.offender}}}'
       allow_duplicates: false
-      if: ctx.stamus?.offender_type == 'hostname' && ctx.stamus?.offender != null
+      if: ctx.stamus_networks?.alerts?.stamus?.offender_type == 'hostname' && ctx.stamus_networks.alerts.stamus.offender != null
   - append:
       field: related.user
       tag: append_related_user_stamus_offender
-      value: '{{{stamus.offender}}}'
+      value: '{{{stamus_networks.alerts.stamus.offender}}}'
       allow_duplicates: false
-      if: ctx.stamus?.offender_type == 'user' && ctx.stamus?.offender != null
+      if: ctx.stamus_networks?.alerts?.stamus?.offender_type == 'user' && ctx.stamus_networks.alerts.stamus.offender != null
 
   ###
   # Cleanup
   ###
   - remove:
-      field: discovery.asset_net
+      field: stamus_networks.alerts.discovery.asset_net
       tag: remove_null_discovery_asset_net
       ignore_missing: true
-      if: ctx.discovery?.asset_net == null
+      if: ctx.stamus_networks?.alerts?.discovery?.asset_net == null
       description: >-
         Stamus delivers `asset_net` as explicit JSON `null` (not absent) when not applicable;
         strip it rather than indexing a null keyword value.
   - remove:
-      field: stamus.extra_info
+      field: stamus_networks.alerts.stamus.extra_info
       tag: remove_null_stamus_extra_info
       ignore_missing: true
-      if: ctx.stamus?.extra_info == null
+      if: ctx.stamus_networks?.alerts?.stamus?.extra_info == null
       description: >-
-        `stamus.extra_info` is confirmed-live to always be explicit JSON `null`; strip it rather
+        `stamus_networks.alerts.stamus.extra_info` is confirmed-live to always be explicit JSON `null`; strip it rather
         than indexing a null keyword value.
   - set:
       field: user_agent.original
@@ -764,7 +762,7 @@ processors:
       ignore_failure: true
   - rename:
       field: json.http.request_headers
-      target_field: http.request_headers
+      target_field: stamus_networks.alerts.http.request_headers
       tag: rename_http_request_headers
       ignore_missing: true
       description: Request headers embedded on file-identification and sightings alerts.
@@ -792,13 +790,18 @@ processors:
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
+  - remove:
+      field: event.original
+      tag: remove_event_original
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_original_event')
 
 on_failure:
   - append:
       field: error.message
       tag: append_pipeline_error_message
       value: >-
-        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        Pipeline '{{{ _ingest.pipeline }}}' failed at processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
