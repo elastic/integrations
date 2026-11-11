@@ -1,0 +1,47 @@
+{{- $timestamp := generate "timestamp" -}}
+{{- $device_id := generate "device_id" -}}
+{{- $flow_protocol := generate "flow_protocol" -}}
+{{- $protocol := generate "protocol" -}}
+{{- $source_address := generate "source_address" -}}
+{{- $destination_address := generate "destination_address" -}}
+{{- $source_port := generate "source_port" -}}
+{{- $destination_port := generate "destination_port" -}}
+{{- $source_as := generate "source_as" -}}
+{{- $destination_as := generate "destination_as" -}}
+{{- $bits := generate "bits" -}}
+{{- $packets := generate "packets" -}}
+{{- $tcp_flags := generate "tcp_flags" -}}
+{{- $sample_rate := generate "sample_rate" -}}
+{{- $sampler_address := generate "sampler_address" -}}
+{
+    "@timestamp": "{{ $timestamp.Format "2006-01-02T15:04:05.999999Z07:00" }}",
+    "agent": {
+        "ephemeral_id": "cdaaaabb-be7e-432f-816b-bda019fd7c15",
+        "id": "da6cb4c8-c84c-4c5f-97c7-f8586a098af4",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.19.7"
+    },
+    "data_stream": {
+        "dataset": "cloudflare_logpush.mnm_flow_logs",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "elastic_agent": {
+        "id": "da6cb4c8-c84c-4c5f-97c7-f8586a098af4",
+        "snapshot": false,
+        "version": "8.19.7"
+    },
+    "message": "{\"Bits\":{{ $bits }},\"DestinationAS\":{{ $destination_as }},\"DestinationAddress\":\"{{ $destination_address }}\",\"DestinationPort\":{{ $destination_port }},\"DeviceID\":\"{{ $device_id }}\",\"EgressBits\":0,\"EgressPackets\":0,\"Ethertype\":2048,\"FlowProtocol\":\"{{ $flow_protocol }}\",\"FlowTimestamp\":\"{{ $timestamp.Format "2006-01-02T15:04:05Z07:00" }}\",\"NumFlows\":1,\"Packets\":{{ $packets }},\"Protocol\":{{ $protocol }},\"SampleRate\":{{ $sample_rate }},\"SampleRateType\":\"flow\",\"SamplerAddress\":\"{{ $sampler_address }}\",\"SourceAS\":{{ $source_as }},\"SourceAddress\":\"{{ $source_address }}\",\"SourcePort\":{{ $source_port }},\"TcpFlags\":{{ $tcp_flags }},\"Timestamp\":\"{{ $timestamp.Format "2006-01-02T15:04:05Z07:00" }}\"}",
+    "event": {
+        "dataset": "cloudflare_logpush.mnm_flow_logs"
+    },
+    "input": {
+        "type": "http_endpoint"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "cloudflare_logpush-mnm_flow_logs"
+    ]
+}

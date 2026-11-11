@@ -1,0 +1,25 @@
+---
+description: Benchmark 10000 mnm_flow_logs events ingested
+input: http_endpoint
+vars:
+  listen_address: 0.0.0.0
+data_stream:
+  name: mnm_flow_logs
+  vars:
+    listen_port: 9560
+    url: /cloudflare_logpush/mnm_flow_logs
+    preserve_original_event: true
+warmup_time_period: 10s
+corpora:
+  input_service:
+    name: cloudflare-logpush-mnm-flow-logs
+    signal: SIGHUP
+  generator:
+    total_events: 10000
+    template:
+      path: ./mnm_flow_logs-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./mnm_flow_logs-benchmark/config.yml
+    fields:
+      path: ./mnm_flow_logs-benchmark/fields.yml
