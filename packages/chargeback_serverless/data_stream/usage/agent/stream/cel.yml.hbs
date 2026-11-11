@@ -827,13 +827,27 @@ program: |-
       ((has(bill_body.instances) && bill_body.instances != null) ?
         bill_body.instances.filter(inst,
           has(inst.id) && inst.id != null && string(inst.id) != "" &&
+          (!has(inst.type) || inst.type == null || string(inst.type).to_lower() != "deployment") &&
           !prev_completed_pids.exists(cid, cid == string(inst.id)) &&
           size(projects.filter(p, p.id == inst.id)) == 0 &&
           has(inst.product_line_items) && inst.product_line_items != null &&
-          inst.product_line_items.exists(li,
+          !inst.product_line_items.exists(li,
             has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s,
-            (s.contains("serverless") || s.contains("-vcu") || s.contains(".ecu") || s.contains("retained") || s.contains("synthetic") || s.contains("agent-builder") || s.contains("inference") || s.contains("llm") || s.contains("workflow") || s.contains("cross-project")) &&
-            !(s.contains("cloud-enterprise") || s.contains("cloud-platinum") || s.contains("cloud-standard") || s.contains("cloud-gold") || s.contains(".es.data") || s.contains(".es.ml") || s.contains(".es.master") || s.contains(".es.coordinating") || s.contains(".kibana.") || s.contains(".apm.") || s.contains(".enterprise_search.") || s.contains(".integrations_server."))
+            s.contains("cloud-enterprise") || s.contains("cloud-platinum") || s.contains("cloud-standard") || s.contains("cloud-gold") || s.contains(".es.data") || s.contains(".es.ml") || s.contains(".es.master") || s.contains(".es.coordinating") || s.contains(".kibana.") || s.contains(".apm.") || s.contains(".enterprise_search.") || s.contains(".integrations_server.")
+            )
+          ) &&
+          (
+            (has(inst.type) && inst.type != null && string(inst.type).to_lower().as(it,
+              it == "serverless" || it.contains("serverless") ||
+              it == "observability" || it == "oblt" || it.contains("observability") || it.contains("oblt") ||
+              it == "security" || it == "sec" || it.contains("security") ||
+              it == "elasticsearch" || it == "es" || it.contains("elasticsearch") ||
+              it == "search" || it == "enterprise_search" || it.contains("search")
+            ) && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku) != "")) ||
+            inst.product_line_items.exists(li,
+              has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s,
+              s.contains("serverless") || s.contains("-vcu") || s.contains(".ecu") || s.contains("retained") || s.contains("synthetic") || s.contains("agent-builder") || s.contains("inference") || s.contains("llm") || s.contains("workflow") || s.contains("cross-project") || s.contains(".eis") || s.contains("observability.") || s.contains("security.") || s.contains("search.")
+              )
             )
           )
         ).map(inst,
