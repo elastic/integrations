@@ -4,9 +4,6 @@
 [!external_stack] skip 'Requires a running Elastic stack.'
 use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
 
-# Start with a clean package installation, as system tests also do. This removes
-# stale managed Transform resources left by previous local validation runs.
-remove_package -profile ${CONFIG_PROFILES}/${PROFILE}
 add_package -profile ${CONFIG_PROFILES}/${PROFILE}
 
 # A valid HTTP response with an invalid feed body must emit sanitized errors,
@@ -23,13 +20,13 @@ stdout 'Criminal IP TI Feed response did not contain a valid body.data list\.'
 stdout '"http.response.status_code":\s*\[\s*200'
 ! stdout 'pipeline_error|unit-test-key|SYNTHETIC-TI-TRANSPORT-KEY'
 exec docker logs --since ${LOG_START} ${AGENT_CONTAINER}
-stderr '->DEGRADED.*Recoverable: criminalip\.ti_feed: single event error object returned by evaluation:'
+stderr '->DEGRADED.*Recoverable: ti_criminalip\.ti_feed: single event error object returned by evaluation:'
 stderr 'Criminal IP TI Feed response did not contain a valid body.data list\.'
 ! stdout 'unit-test-key|SYNTHETIC-TI-TRANSPORT-KEY|->FAILED|max_attempts must be greater than zero|undeclared reference|no matching overload'
 ! stderr 'unit-test-key|SYNTHETIC-TI-TRANSPORT-KEY|->FAILED|max_attempts must be greater than zero|undeclared reference|no matching overload'
 exec docker stop ${AGENT_CONTAINER}-mock
-uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE}
 remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${RESPONSE_STREAM}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE}
 
 # A refused connection includes the synthetic license key in the request URL.
 # Check actual Agent logs as well as indexed events; document-only assertions
@@ -42,13 +39,12 @@ stdout '"event.outcome":\s*\[\s*"failure"'
 stdout 'Criminal IP TI Feed request or response decoding failed; check endpoint, connectivity, and response format\.'
 ! stdout 'pipeline_error|SYNTHETIC-TI-TRANSPORT-KEY|unit-test-key'
 exec docker logs --since ${LOG_START} ${AGENT_CONTAINER}
-stderr '->DEGRADED.*Recoverable: criminalip\.ti_feed: single event error object returned by evaluation:'
+stderr '->DEGRADED.*Recoverable: ti_criminalip\.ti_feed: single event error object returned by evaluation:'
 stderr 'Criminal IP TI Feed request or response decoding failed; check endpoint, connectivity, and response format\.'
 ! stdout 'SYNTHETIC-TI-TRANSPORT-KEY|unit-test-key|->FAILED|max_attempts must be greater than zero|undeclared reference|no matching overload'
 ! stderr 'SYNTHETIC-TI-TRANSPORT-KEY|unit-test-key|->FAILED|max_attempts must be greater than zero|undeclared reference|no matching overload'
-uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE}
 remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${TRANSPORT_STREAM}
-remove_package -profile ${CONFIG_PROFILES}/${PROFILE}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE}
 
 -- response-error.yaml --
 input: cel

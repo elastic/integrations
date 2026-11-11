@@ -19,8 +19,8 @@ exec docker logs --since ${LOG_START} ${AGENT_CONTAINER}
 ! stdout 'unit-test-key|->FAILED|undeclared reference|no matching overload'
 ! stderr 'unit-test-key|->FAILED|undeclared reference|no matching overload'
 exec docker stop ${AGENT_CONTAINER}-mock
-uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE}
 remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${HTTP_STREAM}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE}
 
 # JSON failures include the actual decoding error rather than a generic message.
 install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 3m -container_name AGENT_CONTAINER -network_name AGENT_NETWORK
@@ -36,8 +36,8 @@ exec docker logs --since ${LOG_START} ${AGENT_CONTAINER}
 ! stdout 'unit-test-key|->FAILED|undeclared reference|no matching overload'
 ! stderr 'unit-test-key|->FAILED|undeclared reference|no matching overload'
 exec docker stop ${AGENT_CONTAINER}-mock
-uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE}
 remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${JSON_STREAM}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE}
 
 # Connection failures must also retain their cause and keep polling successfully.
 install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 3m -container_name AGENT_CONTAINER
@@ -51,9 +51,8 @@ stdout 'connection refused'
 exec docker logs --since ${LOG_START} ${AGENT_CONTAINER}
 ! stdout 'unit-test-key|SYNTHETIC-IP-REPORT-KEY|->FAILED|undeclared reference|no matching overload'
 ! stderr 'unit-test-key|SYNTHETIC-IP-REPORT-KEY|->FAILED|undeclared reference|no matching overload'
-uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE}
 remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${TRANSPORT_STREAM}
-remove_package -profile ${CONFIG_PROFILES}/${PROFILE}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE}
 
 -- http-error.yaml --
 input: cel

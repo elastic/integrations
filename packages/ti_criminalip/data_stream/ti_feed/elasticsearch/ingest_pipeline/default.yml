@@ -12,16 +12,6 @@ processors:
       tag: set_event_kind
       field: event.kind
       value: enrichment
-  - append:
-      tag: append_event_category
-      field: event.category
-      value: threat
-      allow_duplicates: false
-  - append:
-      tag: append_event_type
-      field: event.type
-      value: indicator
-      allow_duplicates: false
   - rename:
       tag: preserve_feed_message
       field: message
@@ -66,16 +56,6 @@ processors:
       field: criminalip.ti_feed.score
       copy_from: _temp.feed.score
       ignore_empty_value: true
-  - set:
-      tag: copy_feed_first_seen
-      field: criminalip.ti_feed.first_seen
-      copy_from: _temp.feed.first_seen
-      ignore_empty_value: true
-  - set:
-      tag: copy_feed_last_seen
-      field: criminalip.ti_feed.last_seen
-      copy_from: _temp.feed.last_seen
-      ignore_empty_value: true
   - convert:
       tag: convert_feed_confidence
       field: criminalip.ti_feed.confidence
@@ -112,18 +92,14 @@ processors:
         ctx.threat.indicator.confidence = label;
   - date:
       tag: parse_feed_first_seen
-      field: criminalip.ti_feed.first_seen
-      target_field: criminalip.ti_feed.first_seen
+      field: _temp.feed.first_seen
+      target_field: threat.indicator.first_seen
       formats:
         - ISO8601
         - yyyy-MM-dd HH:mm:ss
       timezone: UTC
-      if: "ctx['criminalip.ti_feed.first_seen'] != null || ctx.criminalip?.ti_feed?.first_seen != null"
+      if: 'ctx._temp?.feed?.first_seen != null && ctx._temp.feed.first_seen != ""'
       on_failure:
-        - remove:
-            tag: remove_invalid_feed_first_seen
-            field: criminalip.ti_feed.first_seen
-            ignore_missing: true
         - append:
             tag: flag_invalid_feed_first_seen
             field: error.message
@@ -135,18 +111,14 @@ processors:
             allow_duplicates: false
   - date:
       tag: parse_feed_last_seen
-      field: criminalip.ti_feed.last_seen
-      target_field: criminalip.ti_feed.last_seen
+      field: _temp.feed.last_seen
+      target_field: threat.indicator.last_seen
       formats:
         - ISO8601
         - yyyy-MM-dd HH:mm:ss
       timezone: UTC
-      if: "ctx['criminalip.ti_feed.last_seen'] != null || ctx.criminalip?.ti_feed?.last_seen != null"
+      if: 'ctx._temp?.feed?.last_seen != null && ctx._temp.feed.last_seen != ""'
       on_failure:
-        - remove:
-            tag: remove_invalid_feed_last_seen
-            field: criminalip.ti_feed.last_seen
-            ignore_missing: true
         - append:
             tag: flag_invalid_feed_last_seen
             field: error.message
@@ -156,16 +128,6 @@ processors:
             field: tags
             value: preserve_original_event
             allow_duplicates: false
-  - set:
-      tag: copy_indicator_first_seen
-      field: threat.indicator.first_seen
-      copy_from: criminalip.ti_feed.first_seen
-      ignore_empty_value: true
-  - set:
-      tag: copy_indicator_last_seen
-      field: threat.indicator.last_seen
-      copy_from: criminalip.ti_feed.last_seen
-      ignore_empty_value: true
   - trim:
       tag: trim_indicator_ip
       field: threat.indicator.ip
@@ -199,16 +161,36 @@ processors:
             tag: mark_invalid_indicator_ip_kind
             field: event.kind
             value: pipeline_error
-  - script:
-      tag: classify_feed_indicator_ip
-      description: Set the ECS indicator type from the validated IPv4 or IPv6 address.
+  - append:
+      tag: append_event_category
+      field: event.category
+      value: threat
+      allow_duplicates: false
       if: 'ctx.threat?.indicator?.ip != null'
-      lang: painless
-      source: >-
-        ctx.threat.indicator.type = ctx.threat.indicator.ip.toString().indexOf(':') >= 0 ? 'ipv6-addr' : 'ipv4-addr';
+  - append:
+      tag: append_event_type
+      field: event.type
+      value: indicator
+      allow_duplicates: false
+      if: 'ctx.threat?.indicator?.ip != null'
+  - set:
+      tag: set_feed_indicator_type_ipv6
+      field: threat.indicator.type
+      value: ipv6-addr
+      if: "ctx.threat?.indicator?.ip instanceof String && ctx.threat.indicator.ip.contains(':')"
+  - set:
+      tag: set_feed_indicator_type_ipv4
+      field: threat.indicator.type
+      value: ipv4-addr
+      if: "ctx.threat?.indicator?.ip instanceof String && !ctx.threat.indicator.ip.contains(':')"
   - set:
       tag: set_feed_indicator_provider
       field: threat.indicator.provider
+      value: Criminal IP
+      if: 'ctx.threat?.indicator?.ip != null'
+  - set:
+      tag: set_feed_name
+      field: threat.feed.name
       value: Criminal IP
       if: 'ctx.threat?.indicator?.ip != null'
   - set:

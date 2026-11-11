@@ -6,6 +6,15 @@ resource:
   # Report a sanitized failure and retry on the next polling interval instead.
   retry:
     max_attempts: 1
+{{#if proxy_url}}
+  proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+  ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+  timeout: {{http_client_timeout}}
+{{/if}}
   tracer:
     enabled: {{enable_request_tracer}}
     filename: "../../logs/cel/http-request-trace-*.ndjson"
@@ -16,6 +25,7 @@ secret_state:
 
 redact:
   fields: ~
+
 
 program: |-
   state.with(
@@ -98,3 +108,8 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

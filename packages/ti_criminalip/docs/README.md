@@ -104,6 +104,10 @@ Configure the features you selected below. Installing package assets and applyin
 
 `0.0.0.0` listens on all local IPv4 interfaces. The firewall must send to an actual, reachable IP of the Agent server, using the same protocol and port. Binding to one local IP limits which interface receives traffic. Check routing and port exposure in Docker, VM, or WSL deployments. A healthy Agent does not establish that syslog messages are arriving.
 
+For events without a timezone, set **Default timezone** to the firewall timezone; the default is UTC. A timezone supplied by the event takes precedence.
+
+The pipeline maps selected FortiGate fields, including device identity, interfaces and byte counts. Other unrecognized key-value fields are not retained separately. Enable **Preserve original event** if you need the raw message for further investigation; it can contain sensitive information.
+
 #### Configure the FortiGate sender
 
 The TCP listener uses RFC 6587 framing for FortiGate reliable syslog. It accepts octet-counted messages (a byte length followed by the message) and legacy newline-delimited messages, including multiple messages on a persistent connection.
@@ -124,7 +128,7 @@ Replace `<AGENT_SERVER_IP>` with the collection server address. Use the default 
 
 Reference: [FortiGate syslog configuration](https://docs.fortinet.com/document/fortigate/7.0.0/cli-reference/456620/config-log-syslogd-setting).
 
-The FortiGate `date` and `time` fields populate `@timestamp`; when `tz` is present, its offset is applied. Repeated `tz` fields use the first valid offset, and forms such as `UTC-5:00` are normalized to `-0500`. If the log has no timezone, the timestamp is interpreted as UTC. Invalid event times are reported in `error.message`, the original event is preserved, and invalid raw dates are not indexed as dates. Valid original date, time, and `eventtime` values remain available under `criminalip.fortigate.*`. Fleet's final pipeline populates `event.ingested` and handles the `preserve_original_event` tag; failed events automatically retain their raw payload.
+The FortiGate `date` and `time` fields populate `@timestamp`; when `tz` is present, its offset is applied. Repeated `tz` fields use the first valid offset, and forms such as `UTC-5:00` are normalized to `-0500`. If the log has no timezone, the configured default timezone is used, or UTC when it is unset. Invalid event times are reported in `error.message`, the original event is preserved, and invalid raw dates are not indexed as dates. Valid original date, time, and `eventtime` values remain available under `criminalip.fortigate.*`. Fleet's final pipeline populates `event.ingested` and handles the `preserve_original_event` tag; failed events automatically retain their raw payload.
 
 #### Connect other vendors
 
@@ -148,7 +152,7 @@ Use `source.ip`, `destination.ip`, available ports and `network.transport` for c
 1. Enable **Criminal IP Threat Intelligence Feed** in the Agent policy.
 2. Enter a key with TI Feed access, the feed URL, and the interval. Defaults are `https://dl.criminalip.io/ti/v1/feed/outbound` and `1h`; confirm that they suit your subscription.
 3. Verify collected snapshots in `logs-ti_criminalip.ti_feed-*`. The package also runs a latest transform that keeps one current record per `threat.indicator.ip` in the `logs-ti_criminalip_latest.ti_feed` alias; it checkpoints on `event.ingested` so late-indexed snapshots are picked up, while `@timestamp` determines which indicator record is latest. The indicator match rule queries this deduplicated destination.
-   Observation times are normalized to ISO 8601 in `threat.indicator.first_seen` and `threat.indicator.last_seen`; parsed values are also available under `ti_criminalip.ti_feed`. Feed timestamps without an offset are interpreted as UTC; confirm the source timezone when using a custom feed. Invalid observation dates are omitted and reported in `error.message` while the IP indicator is retained. Invalid indicator IPs are removed from IP-mapped fields, marked as pipeline failures, and retained with their original payload for troubleshooting; they are excluded from the latest-indicator transform.
+   Observation times are normalized to ISO 8601 in `threat.indicator.first_seen` and `threat.indicator.last_seen`. Feed timestamps without an offset are interpreted as UTC; confirm the source timezone when using a custom feed. Invalid observation dates are omitted and reported in `error.message` while the IP indicator is retained. Invalid indicator IPs are removed from IP-mapped fields, marked as pipeline failures, and retained with their original payload for troubleshooting; they are excluded from the latest-indicator transform.
    Numeric confidence is available in `criminalip.ti_feed.confidence`. The ECS keyword `threat.indicator.confidence` uses the STIX 0–100 bands: 0 = None, greater than 0 and below 30 = Low, 30 to below 70 = Medium, and 70–100 = High. Out-of-range numeric values use the label Not Specified; missing confidence is omitted.
 4. In **Security → Rules → Add Elastic rules**, install `Criminal IP Firewall Indicator Match`.
 5. Check collection and rule permissions, then enable the rule.
@@ -278,7 +282,7 @@ After documents arrive, open the managed dashboard for firewall and TI results. 
 - Receipt of a virtual FortiGate system syslog message verifies that sender/receiver path, not real forwarded traffic or every FortiOS event type.
 - Real forwarded traffic must be verified separately using the intended firewall policy, logging configuration and license.
 - PAN-OS, SRX and ASA/FTD real-device support must be validated with their configured collectors and representative versions; dashboard dataset compatibility alone is not certification.
-- The production-oriented firewall/TI dashboard excludes `firewall_lab` and `synthetic` events. Inspect synthetic events in a dedicated test data view/dashboard; preserve their labels rather than removing them to make production panels populate. Review whether a test rule should be isolated from operational alerts.
+- The production-oriented firewall/TI dashboard excludes events tagged `synthetic`. Inspect synthetic events in a dedicated test data view/dashboard; preserve their labels rather than removing them to make production panels populate. Review whether a test rule should be isolated from operational alerts.
 - TheHive manual analyzer execution, automatic execution on observable creation, Elastic delivery and dashboard rendering are separate checks. Test each advertised path; manual success does not prove automation.
 
 #### Validate synthetic events with the packaged test dashboard
@@ -287,15 +291,15 @@ Starting with 0.1.0, open **[Logs Criminal IP] Firewall and TI Validation · Syn
 Only**. This is a separate managed asset with a stable ID; it does not overwrite
 the production dashboard or existing user-created copies. All firewall summary,
 action, source/vendor, recent-event, alert-summary/trend/investigation panels and
-the matched-IP evidence chart require `tags: synthetic`. The `firewall_lab`
-namespace alone is not sufficient. Cortex is intentionally omitted because it
+the matched-IP evidence chart require `tags: synthetic`. A namespace alone is
+not sufficient. Cortex is intentionally omitted because it
 is a separate investigation path, not synthetic firewall traffic.
 
 Use a dedicated lab input tagged `synthetic`, select the test time range (default
 last hour), and clear inherited global queries. Optionally filter a vendor using
 `event.dataset`, for example `event.dataset: "juniper_srx.log"`. Neither dashboard
 starts collection or enables detection rules. The production dashboard continues
-to exclude synthetic/firewall_lab events. Investigation timestamp columns have
+to exclude events tagged `synthetic`. Investigation timestamp columns have
 explicit display widths in both assets, without changing stored field types.
 
 No manual query changes are required for the packaged synthetic-only dashboard.
@@ -321,7 +325,7 @@ Review event totals, unique IPs, action/session categories, top sources, vendor/
 
 Allowed/denied classification uses ECS `event.type` and explicit custom FortiGate actions as a fallback. `event.outcome: failure` is not treated as denial. Start, end, and timeout events describe session state rather than proving an allowed or denied connection.
 
-Comparison charts exclude IPv6 multicast destinations in `ff00::/8`; summary and recent-event tables retain them, so totals can differ. Firewall/TI panels exclude the `firewall_lab` namespace and events tagged `synthetic`. Firewall dates/times follow Kibana's configured time zone.
+Comparison charts exclude IPv6 multicast destinations in `ff00::/8`; summary and recent-event tables retain them, so totals can differ. Firewall/TI panels exclude events tagged `synthetic`. Firewall dates/times follow Kibana's configured time zone.
 
 #### Indicator match alerts
 
@@ -399,25 +403,25 @@ An example event for `fortigate` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-11-10T07:45:56.000Z",
+    "@timestamp": "2026-11-11T08:37:29.000Z",
     "agent": {
-        "ephemeral_id": "f148625a-0398-40f8-8b7d-2b3020c0947d",
-        "id": "514f8896-e5a5-45e5-be88-9f41117457bb",
-        "name": "elastic-agent-16561",
+        "ephemeral_id": "30cfd2f0-9ea6-49ed-8bc5-6b4c6e18933f",
+        "id": "43a4161a-1a08-4d7f-ac81-84160b0f395a",
+        "name": "elastic-agent-30636",
         "type": "filebeat",
         "version": "9.5.3"
     },
     "criminalip": {
         "fortigate": {
-            "date": "2026-11-10T00:00:00.000Z",
+            "date": "2026-11-11T00:00:00.000Z",
             "subtype": "forward",
-            "time": "07:45:56",
+            "time": "08:37:29",
             "type": "traffic"
         }
     },
     "data_stream": {
         "dataset": "ti_criminalip.fortigate",
-        "namespace": "61033",
+        "namespace": "90916",
         "type": "logs"
     },
     "destination": {
@@ -428,7 +432,7 @@ An example event for `fortigate` looks as following:
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "514f8896-e5a5-45e5-be88-9f41117457bb",
+        "id": "43a4161a-1a08-4d7f-ac81-84160b0f395a",
         "snapshot": false,
         "version": "9.5.3"
     },
@@ -439,10 +443,10 @@ An example event for `fortigate` looks as following:
             "network"
         ],
         "dataset": "ti_criminalip.fortigate",
-        "ingested": "2026-11-10T07:45:57Z",
+        "ingested": "2026-11-11T08:37:30Z",
         "kind": "event",
         "module": "ti_criminalip",
-        "original": "date=2026-11-10 time=07:45:56 tz=\"+0000\" type=traffic subtype=forward srcip=192.0.2.10 srcport=45001 dstip=198.51.100.20 dstport=443 proto=6 action=deny synthetic=true",
+        "original": "date=2026-11-11 time=08:37:29 tz=\"+0000\" type=traffic subtype=forward srcip=192.0.2.10 srcport=45001 dstip=198.51.100.20 dstport=443 proto=6 action=deny",
         "outcome": "failure",
         "timezone": "+0000",
         "type": [
@@ -455,7 +459,7 @@ An example event for `fortigate` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.26.0.1:38038"
+            "address": "172.27.0.1:37426"
         }
     },
     "network": {
@@ -479,8 +483,8 @@ An example event for `fortigate` looks as following:
     },
     "tags": [
         "forwarded",
-        "preserve_original_event",
-        "synthetic"
+        "synthetic",
+        "preserve_original_event"
     ]
 }
 ```
@@ -501,9 +505,11 @@ An example event for `fortigate` looks as following:
 | criminalip.fortigate.subtype | FortiGate event subtype. | keyword |
 | criminalip.fortigate.time | Time of day recorded in the original FortiGate event. | keyword |
 | criminalip.fortigate.type | FortiGate event type preserved from the original key-value log. | keyword |
+| criminalip.fortigate.vd | FortiGate virtual domain. | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| destination.bytes | Bytes sent from the destination to the source. | long |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
@@ -525,10 +531,15 @@ An example event for `fortigate` looks as following:
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| observer.egress.interface.name | Interface name as reported by the system. | keyword |
+| observer.ingress.interface.name | Interface name as reported by the system. | keyword |
+| observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
 | observer.product | The product name of the observer. | keyword |
+| observer.serial_number | Observer serial number. | keyword |
 | observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
+| source.bytes | Bytes sent from the source to the destination. | long |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
@@ -540,32 +551,30 @@ An example event for `ti_feed` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-26T03:02:14.505Z",
+    "@timestamp": "2026-11-11T08:34:51.298Z",
     "agent": {
-        "ephemeral_id": "c6b1b948-23ca-4bf6-8f36-d98531050dc2",
-        "id": "99d2d5b6-19e3-4d64-b1e6-7b5a82825571",
-        "name": "elastic-agent-48334",
+        "ephemeral_id": "cb6e6820-4471-4e1c-9e85-1690a17244c1",
+        "id": "8be7815c-ce73-4aac-8d85-0cb847e724c4",
+        "name": "elastic-agent-12981",
         "type": "filebeat",
         "version": "9.5.3"
     },
     "criminalip": {
         "ti_feed": {
             "confidence": 80,
-            "first_seen": "2026-01-01T00:00:00.000Z",
-            "last_seen": "2026-01-01T01:00:00.000Z",
             "score": "95"
         }
     },
     "data_stream": {
         "dataset": "ti_criminalip.ti_feed",
-        "namespace": "35187",
+        "namespace": "43097",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "99d2d5b6-19e3-4d64-b1e6-7b5a82825571",
+        "id": "8be7815c-ce73-4aac-8d85-0cb847e724c4",
         "snapshot": false,
         "version": "9.5.3"
     },
@@ -575,10 +584,9 @@ An example event for `ti_feed` looks as following:
             "threat"
         ],
         "dataset": "ti_criminalip.ti_feed",
-        "ingested": "2026-10-26T03:02:18Z",
+        "ingested": "2026-11-11T08:34:55Z",
         "kind": "enrichment",
         "module": "ti_criminalip",
-        "original": "{\"confidence\":80,\"first_seen\":\"2026-01-01 00:00:00\",\"ip\":\"192.0.2.10\",\"last_seen\":\"2026-01-01 01:00:00\",\"reason\":\"Synthetic integration system-test indicator\",\"score\":95}",
         "outcome": "success",
         "type": [
             "indicator"
@@ -587,16 +595,16 @@ An example event for `ti_feed` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-48334",
+        "hostname": "elastic-agent-12981",
         "ip": [
-            "172.21.0.2",
-            "172.19.0.4"
+            "172.27.0.2",
+            "172.19.0.6"
         ],
         "mac": [
-            "06-F5-11-00-AE-8B",
-            "92-91-F8-19-50-D1"
+            "3A-FE-DC-90-67-DC",
+            "EA-15-A5-0F-01-08"
         ],
-        "name": "elastic-agent-48334",
+        "name": "elastic-agent-12981",
         "os": {
             "family": "",
             "kernel": "6.18.33.2-microsoft-standard-WSL2",
@@ -606,13 +614,11 @@ An example event for `ti_feed` looks as following:
             "version": "20230201"
         }
     },
-    "http": {
-        "response": {
-            "status_code": 200
-        }
-    },
     "input": {
         "type": "cel"
+    },
+    "labels": {
+        "is_ioc_transform_source": "true"
     },
     "related": {
         "ip": [
@@ -620,10 +626,12 @@ An example event for `ti_feed` looks as following:
         ]
     },
     "tags": [
-        "synthetic",
-        "preserve_original_event"
+        "synthetic"
     ],
     "threat": {
+        "feed": {
+            "name": "Criminal IP"
+        },
         "indicator": {
             "confidence": "High",
             "description": "Synthetic integration system-test indicator",
@@ -643,8 +651,6 @@ An example event for `ti_feed` looks as following:
 |---|---|---|
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | criminalip.ti_feed.confidence | Original numeric confidence provided by Criminal IP, retained separately from the normalized ECS label. | double |
-| criminalip.ti_feed.first_seen | First observed timestamp from Criminal IP. | date |
-| criminalip.ti_feed.last_seen | Last observed timestamp from Criminal IP. | date |
 | criminalip.ti_feed.score | Criminal IP threat score. | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
@@ -661,8 +667,10 @@ An example event for `ti_feed` looks as following:
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | http.response.status_code | HTTP response status code. | long |
 | input.type | Elastic Agent input type used to collect the threat feed. | keyword |
+| labels.is_ioc_transform_source | Indicates whether this is a raw source rather than a latest indicator. | constant_keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | tags | List of keywords used to tag each event. | keyword |
+| threat.feed.name | The name of the threat feed in UI friendly format. | keyword |
 | threat.indicator.confidence | Identifies the vendor-neutral confidence rating using the None/Low/Medium/High scale defined in Appendix A of the STIX 2.1 framework. Vendor-specific confidence scales may be added as custom fields. | keyword |
 | threat.indicator.description | Describes the type of action conducted by the threat. | keyword |
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
@@ -804,6 +812,7 @@ An example event for `ip_report` looks as following:
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | input.type | Elastic Agent input type used to collect the API response. | keyword |
+| labels.is_ioc_transform_source | Indicates whether this is a raw source rather than a latest indicator. | constant_keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | tags | List of keywords used to tag each event. | keyword |
 | threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |

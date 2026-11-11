@@ -2,6 +2,15 @@ interval: {{ interval }}
 
 resource:
   url: {{ url }}
+{{#if proxy_url}}
+  proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+  ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+  timeout: {{http_client_timeout}}
+{{/if}}
   tracer:
     enabled: {{enable_request_tracer}}
     filename: "../../logs/cel/http-request-trace-*.ndjson"
@@ -19,6 +28,7 @@ state:
 
 redact:
   fields: ~
+
 
 program: |-
   state.with(
@@ -91,3 +101,8 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

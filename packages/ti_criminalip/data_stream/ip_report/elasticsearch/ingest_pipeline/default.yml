@@ -28,16 +28,6 @@ processors:
       tag: set_event_kind
       field: event.kind
       value: enrichment
-  - append:
-      tag: append_event_category
-      field: event.category
-      value: threat
-      allow_duplicates: false
-  - append:
-      tag: append_event_type
-      field: event.type
-      value: indicator
-      allow_duplicates: false
   - set:
       tag: set_event_module
       field: event.module
@@ -46,10 +36,6 @@ processors:
       tag: set_event_dataset
       field: event.dataset
       value: ti_criminalip.ip_report
-  - set:
-      tag: set_threat_indicator_provider
-      field: threat.indicator.provider
-      value: Criminal IP
   - trim:
       tag: trim_report_indicator_ip
       field: _temp.report.ip
@@ -69,14 +55,33 @@ processors:
       field: _temp.report.ip
       target_field: threat.indicator.ip
       ignore_missing: true
-  - script:
-      tag: classify_report_indicator_ip
-      description: Set the ECS indicator type from the validated IP address family.
+  - append:
+      tag: append_event_category
+      field: event.category
+      value: threat
+      allow_duplicates: false
       if: 'ctx.threat?.indicator?.ip != null'
-      lang: painless
-      source: >-
-        def ip = ctx.threat.indicator.ip.toString();
-        ctx.threat.indicator.type = ip.indexOf(':') >= 0 ? 'ipv6-addr' : 'ipv4-addr';
+  - append:
+      tag: append_event_type
+      field: event.type
+      value: indicator
+      allow_duplicates: false
+      if: 'ctx.threat?.indicator?.ip != null'
+  - set:
+      tag: set_threat_indicator_provider
+      field: threat.indicator.provider
+      value: Criminal IP
+      if: 'ctx.threat?.indicator?.ip != null'
+  - set:
+      tag: set_report_indicator_type_ipv6
+      field: threat.indicator.type
+      value: ipv6-addr
+      if: "ctx.threat?.indicator?.ip instanceof String && ctx.threat.indicator.ip.contains(':')"
+  - set:
+      tag: set_report_indicator_type_ipv4
+      field: threat.indicator.type
+      value: ipv4-addr
+      if: "ctx.threat?.indicator?.ip instanceof String && !ctx.threat.indicator.ip.contains(':')"
   - rename:
       tag: rename_report_status
       field: _temp.report.status
