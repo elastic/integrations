@@ -418,8 +418,10 @@ processors:
       tag: append_event_category_authentication_sign_in_alert
       value: authentication
       allow_duplicates: false
-      if: ctx.event.kind == 'alert' && ctx.rule?.name instanceof String && ctx.rule.name.toLowerCase().contains('sign')
-      description: ITDR sign-in detectors are about authentication activity.
+      if: ctx.event.kind == 'alert' && ctx.rule?.name instanceof String && ctx.rule.name =~ /\bsign[ -]?in\b/i
+      description: >-
+        ITDR sign-in detectors are about authentication activity. Match "sign in",
+        "sign-in" or "signin" as words, so that names such as "assignment" do not match.
 
   # Remaining vendor fields go to the custom namespace.
   - rename:
