@@ -1,0 +1,3002 @@
+{
+    "attributes": {
+        "description": "Current state and trends of vulnerability findings collected from ProjectDiscovery Cloud Platform.",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "projectdiscovery.vulnerability"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "projectdiscovery.vulnerability"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "autoApplyFilters": true,
+            "hidePanelBorders": false,
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "layout": "horizontal",
+                        "links": [
+                            {
+                                "destinationRefName": "link_a7cbb9e7-f002-519a-830a-d57756f230c6_dashboard",
+                                "id": "a7cbb9e7-f002-519a-830a-d57756f230c6",
+                                "label": "Vulnerabilities",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": true
+                                },
+                                "order": 0,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_6d9ca6c2-a6ce-5956-8eb0-33ba6734ba17_dashboard",
+                                "id": "6d9ca6c2-a6ce-5956-8eb0-33ba6734ba17",
+                                "label": "Assets",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": true
+                                },
+                                "order": 1,
+                                "type": "dashboardLink"
+                            }
+                        ]
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 3,
+                    "i": "f86b5504-0250-5a62-8029-2b2af6cfa4bb",
+                    "w": 24,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "f86b5504-0250-5a62-8029-2b2af6cfa4bb",
+                "type": "links"
+            },
+            {
+                "embeddableConfig": {
+                    "content": "Triage findings in **[Security › Findings › Vulnerabilities](security/cloud_security_posture/findings/vulnerabilities)**.",
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 3,
+                    "i": "c15a4f5b-2ab9-5a19-af8d-01f852382415",
+                    "w": 24,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "c15a4f5b-2ab9-5a19-af8d-01f852382415",
+                "type": "DASHBOARD_MARKDOWN"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "Current findings, excluding fixed, false positive, duplicate and accepted risk.",
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "53788023-a5b9-591c-ab9c-1f2ca96d8e30": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                    "name": "security_solution-projectdiscovery.vulnerability_latest",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "security_solution-projectdiscovery.vulnerability_latest",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "c8d00cb9-0ac4-50c1-ab64-5772d6dccab3": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "findings",
+                                                    "customLabel": true,
+                                                    "fieldName": "findings",
+                                                    "inMetricDimension": true,
+                                                    "label": "Open findings",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "findings",
+                                                    "customLabel": true,
+                                                    "fieldName": "findings",
+                                                    "inMetricDimension": true,
+                                                    "label": "Open findings",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                            "query": {
+                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*)"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                    "name": "indexpattern-datasource-layer-c8d00cb9-0ac4-50c1-ab64-5772d6dccab3",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*)"
+                            },
+                            "visualization": {
+                                "layerId": "c8d00cb9-0ac4-50c1-ab64-5772d6dccab3",
+                                "layerType": "data",
+                                "metricAccessor": "findings"
+                            }
+                        },
+                        "title": "Open findings",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "590fa080-1da2-52cb-b745-409da4d29124",
+                    "sectionId": "d8515ec6-13bd-548f-bb5f-557c68324b66",
+                    "w": 12,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "590fa080-1da2-52cb-b745-409da4d29124",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "53788023-a5b9-591c-ab9c-1f2ca96d8e30": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                    "name": "security_solution-projectdiscovery.vulnerability_latest",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "security_solution-projectdiscovery.vulnerability_latest",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "17884f42-2eb3-5bd5-9f13-6d6d1fd1522a": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "findings",
+                                                    "customLabel": true,
+                                                    "fieldName": "findings",
+                                                    "inMetricDimension": true,
+                                                    "label": "Critical",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "findings",
+                                                    "customLabel": true,
+                                                    "fieldName": "findings",
+                                                    "inMetricDimension": true,
+                                                    "label": "Critical",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                            "query": {
+                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| WHERE vulnerability.severity == \"Critical\"\n| STATS findings = COUNT(*)"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                    "name": "indexpattern-datasource-layer-17884f42-2eb3-5bd5-9f13-6d6d1fd1522a",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| WHERE vulnerability.severity == \"Critical\"\n| STATS findings = COUNT(*)"
+                            },
+                            "visualization": {
+                                "color": "#E7664C",
+                                "layerId": "17884f42-2eb3-5bd5-9f13-6d6d1fd1522a",
+                                "layerType": "data",
+                                "metricAccessor": "findings"
+                            }
+                        },
+                        "title": "Critical",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "01d62bbd-ba04-50d5-ac89-8e5ff59bb6f1",
+                    "sectionId": "d8515ec6-13bd-548f-bb5f-557c68324b66",
+                    "w": 9,
+                    "x": 12,
+                    "y": 0
+                },
+                "panelIndex": "01d62bbd-ba04-50d5-ac89-8e5ff59bb6f1",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "53788023-a5b9-591c-ab9c-1f2ca96d8e30": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                    "name": "security_solution-projectdiscovery.vulnerability_latest",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "security_solution-projectdiscovery.vulnerability_latest",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "501ed354-ab71-5d5d-9968-71fa771a6e15": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "findings",
+                                                    "customLabel": true,
+                                                    "fieldName": "findings",
+                                                    "inMetricDimension": true,
+                                                    "label": "High",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "findings",
+                                                    "customLabel": true,
+                                                    "fieldName": "findings",
+                                                    "inMetricDimension": true,
+                                                    "label": "High",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                            "query": {
+                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| WHERE vulnerability.severity == \"High\"\n| STATS findings = COUNT(*)"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                    "name": "indexpattern-datasource-layer-501ed354-ab71-5d5d-9968-71fa771a6e15",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| WHERE vulnerability.severity == \"High\"\n| STATS findings = COUNT(*)"
+                            },
+                            "visualization": {
+                                "color": "#DA8B45",
+                                "layerId": "501ed354-ab71-5d5d-9968-71fa771a6e15",
+                                "layerType": "data",
+                                "metricAccessor": "findings"
+                            }
+                        },
+                        "title": "High",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "a76a5ec6-a48d-567d-9eff-bf4e1e034df0",
+                    "sectionId": "d8515ec6-13bd-548f-bb5f-557c68324b66",
+                    "w": 9,
+                    "x": 21,
+                    "y": 0
+                },
+                "panelIndex": "a76a5ec6-a48d-567d-9eff-bf4e1e034df0",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "53788023-a5b9-591c-ab9c-1f2ca96d8e30": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                    "name": "security_solution-projectdiscovery.vulnerability_latest",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "security_solution-projectdiscovery.vulnerability_latest",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "bb7afd53-bef3-5950-b984-92cbe6f332d8": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "hosts",
+                                                    "customLabel": true,
+                                                    "fieldName": "hosts",
+                                                    "inMetricDimension": true,
+                                                    "label": "Affected hosts",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "hosts",
+                                                    "customLabel": true,
+                                                    "fieldName": "hosts",
+                                                    "inMetricDimension": true,
+                                                    "label": "Affected hosts",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                            "query": {
+                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS hosts = COUNT_DISTINCT(host.name)"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                    "name": "indexpattern-datasource-layer-bb7afd53-bef3-5950-b984-92cbe6f332d8",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS hosts = COUNT_DISTINCT(host.name)"
+                            },
+                            "visualization": {
+                                "layerId": "bb7afd53-bef3-5950-b984-92cbe6f332d8",
+                                "layerType": "data",
+                                "metricAccessor": "hosts"
+                            }
+                        },
+                        "title": "Affected hosts",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "06b8482d-9525-5e30-9392-0ed79b27fd31",
+                    "sectionId": "d8515ec6-13bd-548f-bb5f-557c68324b66",
+                    "w": 9,
+                    "x": 30,
+                    "y": 0
+                },
+                "panelIndex": "06b8482d-9525-5e30-9392-0ed79b27fd31",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "53788023-a5b9-591c-ab9c-1f2ca96d8e30": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                    "name": "security_solution-projectdiscovery.vulnerability_latest",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "security_solution-projectdiscovery.vulnerability_latest",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "b6c83426-cba4-523a-86be-9d201bcd0dd9": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "templates",
+                                                    "customLabel": true,
+                                                    "fieldName": "templates",
+                                                    "inMetricDimension": true,
+                                                    "label": "Templates matched",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "templates",
+                                                    "customLabel": true,
+                                                    "fieldName": "templates",
+                                                    "inMetricDimension": true,
+                                                    "label": "Templates matched",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                            "query": {
+                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS templates = COUNT_DISTINCT(projectdiscovery.vulnerability.template_id)"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                    "name": "indexpattern-datasource-layer-b6c83426-cba4-523a-86be-9d201bcd0dd9",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS templates = COUNT_DISTINCT(projectdiscovery.vulnerability.template_id)"
+                            },
+                            "visualization": {
+                                "layerId": "b6c83426-cba4-523a-86be-9d201bcd0dd9",
+                                "layerType": "data",
+                                "metricAccessor": "templates"
+                            }
+                        },
+                        "title": "Templates matched",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "b0c61813-360a-5477-a0a7-26f2e60a1cb5",
+                    "sectionId": "d8515ec6-13bd-548f-bb5f-557c68324b66",
+                    "w": 9,
+                    "x": 39,
+                    "y": 0
+                },
+                "panelIndex": "b0c61813-360a-5477-a0a7-26f2e60a1cb5",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "53788023-a5b9-591c-ab9c-1f2ca96d8e30": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                    "name": "security_solution-projectdiscovery.vulnerability_latest",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "security_solution-projectdiscovery.vulnerability_latest",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "8fa2ca44-9175-5947-8efe-885c916edf5d": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "vulnerability.severity",
+                                                    "customLabel": true,
+                                                    "fieldName": "vulnerability.severity",
+                                                    "label": "Severity",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "vulnerability.severity_color",
+                                                    "customLabel": true,
+                                                    "fieldName": "vulnerability.severity_color",
+                                                    "label": "Severity",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "findings",
+                                                    "customLabel": true,
+                                                    "fieldName": "findings",
+                                                    "inMetricDimension": true,
+                                                    "label": "Findings",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "vulnerability.severity",
+                                                    "customLabel": true,
+                                                    "fieldName": "vulnerability.severity",
+                                                    "label": "Severity",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "vulnerability.severity_color",
+                                                    "customLabel": true,
+                                                    "fieldName": "vulnerability.severity_color",
+                                                    "label": "Severity",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "findings",
+                                                    "customLabel": true,
+                                                    "fieldName": "findings",
+                                                    "inMetricDimension": true,
+                                                    "label": "Findings",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                            "query": {
+                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*) BY vulnerability.severity\n| EVAL rank = CASE(vulnerability.severity == \"Critical\", 0, vulnerability.severity == \"High\", 1, vulnerability.severity == \"Medium\", 2, vulnerability.severity == \"Low\", 3, 4)\n| SORT rank ASC\n| DROP rank\n| EVAL vulnerability.severity_color = vulnerability.severity"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                    "name": "indexpattern-datasource-layer-8fa2ca44-9175-5947-8efe-885c916edf5d",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*) BY vulnerability.severity\n| EVAL rank = CASE(vulnerability.severity == \"Critical\", 0, vulnerability.severity == \"High\", 1, vulnerability.severity == \"Medium\", 2, vulnerability.severity == \"Low\", 3, 4)\n| SORT rank ASC\n| DROP rank\n| EVAL vulnerability.severity_color = vulnerability.severity"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": false
+                                },
+                                "hideEndzones": true,
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "findings"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [
+                                                {
+                                                    "color": {
+                                                        "colorCode": "#E7664C",
+                                                        "type": "colorCode"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": "Critical"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorCode": "#DA8B45",
+                                                        "type": "colorCode"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": "High"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorCode": "#D6BF57",
+                                                        "type": "colorCode"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": "Medium"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorCode": "#54B399",
+                                                        "type": "colorCode"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": "Low"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorCode": "#98A2B3",
+                                                        "type": "colorCode"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": "None"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                }
+                                            ],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "8fa2ca44-9175-5947-8efe-885c916edf5d",
+                                        "layerType": "data",
+                                        "seriesType": "bar_horizontal_stacked",
+                                        "splitAccessors": [
+                                            "vulnerability.severity_color"
+                                        ],
+                                        "xAccessor": "vulnerability.severity"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "maxLines": 1,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_horizontal_stacked",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Findings by severity",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    }
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "ff6f2e61-44ee-5a31-896c-239c34c1fdf7",
+                    "sectionId": "d8515ec6-13bd-548f-bb5f-557c68324b66",
+                    "w": 24,
+                    "x": 0,
+                    "y": 6
+                },
+                "panelIndex": "ff6f2e61-44ee-5a31-896c-239c34c1fdf7",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "53788023-a5b9-591c-ab9c-1f2ca96d8e30": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                    "name": "security_solution-projectdiscovery.vulnerability_latest",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "security_solution-projectdiscovery.vulnerability_latest",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "8f466b12-d3df-54e7-845b-7144ba2ed535": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "projectdiscovery.vulnerability.vuln_status",
+                                                    "customLabel": true,
+                                                    "fieldName": "projectdiscovery.vulnerability.vuln_status",
+                                                    "label": "Status",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "findings",
+                                                    "customLabel": true,
+                                                    "fieldName": "findings",
+                                                    "inMetricDimension": true,
+                                                    "label": "Findings",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "projectdiscovery.vulnerability.vuln_status",
+                                                    "customLabel": true,
+                                                    "fieldName": "projectdiscovery.vulnerability.vuln_status",
+                                                    "label": "Status",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "findings",
+                                                    "customLabel": true,
+                                                    "fieldName": "findings",
+                                                    "inMetricDimension": true,
+                                                    "label": "Findings",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                            "query": {
+                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*) BY projectdiscovery.vulnerability.vuln_status\n| SORT findings DESC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                    "name": "indexpattern-datasource-layer-8f466b12-d3df-54e7-845b-7144ba2ed535",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*) BY projectdiscovery.vulnerability.vuln_status\n| SORT findings DESC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": false
+                                },
+                                "hideEndzones": true,
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "findings"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "8f466b12-d3df-54e7-845b-7144ba2ed535",
+                                        "layerType": "data",
+                                        "seriesType": "bar_horizontal",
+                                        "xAccessor": "projectdiscovery.vulnerability.vuln_status"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "maxLines": 1,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_horizontal",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Findings by status",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    }
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "b5161e4b-7365-5604-8129-dae34a404bc7",
+                    "sectionId": "d8515ec6-13bd-548f-bb5f-557c68324b66",
+                    "w": 24,
+                    "x": 24,
+                    "y": 6
+                },
+                "panelIndex": "b5161e4b-7365-5604-8129-dae34a404bc7",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "f61ce2f1-e50f-52c3-b422-366401172a94": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "f61ce2f1-e50f-52c3-b422-366401172a94",
+                                    "name": "logs-projectdiscovery.vulnerability-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-projectdiscovery.vulnerability-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "41e887f6-6709-5404-ba53-394950d778e5": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "timestamp",
+                                                    "customLabel": true,
+                                                    "fieldName": "timestamp",
+                                                    "label": "@timestamp",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "vulnerability.severity",
+                                                    "customLabel": true,
+                                                    "fieldName": "vulnerability.severity",
+                                                    "label": "Severity",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "findings",
+                                                    "customLabel": true,
+                                                    "fieldName": "findings",
+                                                    "inMetricDimension": true,
+                                                    "label": "Findings",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "timestamp",
+                                                    "customLabel": true,
+                                                    "fieldName": "timestamp",
+                                                    "label": "@timestamp",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "vulnerability.severity",
+                                                    "customLabel": true,
+                                                    "fieldName": "vulnerability.severity",
+                                                    "label": "Severity",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "findings",
+                                                    "customLabel": true,
+                                                    "fieldName": "findings",
+                                                    "inMetricDimension": true,
+                                                    "label": "Findings",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "f61ce2f1-e50f-52c3-b422-366401172a94",
+                                            "query": {
+                                                "esql": "FROM logs-projectdiscovery.vulnerability-*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c= ?_tend\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| WHERE projectdiscovery.vulnerability.vuln_status IS NULL OR projectdiscovery.vulnerability.vuln_status NOT IN (\"fixed\", \"false_positive\", \"duplicate\", \"accepted_risk\")\n| STATS findings = COUNT_DISTINCT(event.id, 40000) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), vulnerability.severity"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "f61ce2f1-e50f-52c3-b422-366401172a94",
+                                    "name": "indexpattern-datasource-layer-41e887f6-6709-5404-ba53-394950d778e5",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM logs-projectdiscovery.vulnerability-*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c= ?_tend\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| WHERE projectdiscovery.vulnerability.vuln_status IS NULL OR projectdiscovery.vulnerability.vuln_status NOT IN (\"fixed\", \"false_positive\", \"duplicate\", \"accepted_risk\")\n| STATS findings = COUNT_DISTINCT(event.id, 40000) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), vulnerability.severity"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": false
+                                },
+                                "hideEndzones": true,
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "findings"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [
+                                                {
+                                                    "color": {
+                                                        "colorCode": "#E7664C",
+                                                        "type": "colorCode"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": "Critical"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorCode": "#DA8B45",
+                                                        "type": "colorCode"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": "High"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorCode": "#D6BF57",
+                                                        "type": "colorCode"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": "Medium"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorCode": "#54B399",
+                                                        "type": "colorCode"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": "Low"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorCode": "#98A2B3",
+                                                        "type": "colorCode"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": "None"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                }
+                                            ],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "41e887f6-6709-5404-ba53-394950d778e5",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "splitAccessors": [
+                                            "vulnerability.severity"
+                                        ],
+                                        "xAccessor": "timestamp"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Open findings seen by severity",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    }
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "609f5253-872b-5a2f-8e83-e9c38b72f056",
+                    "sectionId": "0d1a6b07-33ea-545c-aed6-fd6476286d3d",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "609f5253-872b-5a2f-8e83-e9c38b72f056",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "f61ce2f1-e50f-52c3-b422-366401172a94": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "f61ce2f1-e50f-52c3-b422-366401172a94",
+                                    "name": "logs-projectdiscovery.vulnerability-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-projectdiscovery.vulnerability-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "567dacd4-a861-57e4-8b78-63abd6fd2a8f": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "timestamp",
+                                                    "customLabel": true,
+                                                    "fieldName": "timestamp",
+                                                    "label": "Discovered at",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "vulnerability.severity",
+                                                    "customLabel": true,
+                                                    "fieldName": "vulnerability.severity",
+                                                    "label": "Severity",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "findings",
+                                                    "customLabel": true,
+                                                    "fieldName": "findings",
+                                                    "inMetricDimension": true,
+                                                    "label": "Findings",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "timestamp",
+                                                    "customLabel": true,
+                                                    "fieldName": "timestamp",
+                                                    "label": "Discovered at",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "vulnerability.severity",
+                                                    "customLabel": true,
+                                                    "fieldName": "vulnerability.severity",
+                                                    "label": "Severity",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "findings",
+                                                    "customLabel": true,
+                                                    "fieldName": "findings",
+                                                    "inMetricDimension": true,
+                                                    "label": "Findings",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "f61ce2f1-e50f-52c3-b422-366401172a94",
+                                            "query": {
+                                                "esql": "FROM logs-projectdiscovery.vulnerability-*\n| WHERE projectdiscovery.vulnerability.created_at \u003e= ?_tstart AND projectdiscovery.vulnerability.created_at \u003c= ?_tend\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT_DISTINCT(event.id, 40000) BY timestamp = BUCKET(projectdiscovery.vulnerability.created_at, 50, ?_tstart, ?_tend), vulnerability.severity"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "f61ce2f1-e50f-52c3-b422-366401172a94",
+                                    "name": "indexpattern-datasource-layer-567dacd4-a861-57e4-8b78-63abd6fd2a8f",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM logs-projectdiscovery.vulnerability-*\n| WHERE projectdiscovery.vulnerability.created_at \u003e= ?_tstart AND projectdiscovery.vulnerability.created_at \u003c= ?_tend\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT_DISTINCT(event.id, 40000) BY timestamp = BUCKET(projectdiscovery.vulnerability.created_at, 50, ?_tstart, ?_tend), vulnerability.severity"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": false
+                                },
+                                "hideEndzones": true,
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "findings"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [
+                                                {
+                                                    "color": {
+                                                        "colorCode": "#E7664C",
+                                                        "type": "colorCode"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": "Critical"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorCode": "#DA8B45",
+                                                        "type": "colorCode"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": "High"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorCode": "#D6BF57",
+                                                        "type": "colorCode"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": "Medium"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorCode": "#54B399",
+                                                        "type": "colorCode"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": "Low"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorCode": "#98A2B3",
+                                                        "type": "colorCode"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": "None"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                }
+                                            ],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "567dacd4-a861-57e4-8b78-63abd6fd2a8f",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "splitAccessors": [
+                                            "vulnerability.severity"
+                                        ],
+                                        "xAccessor": "timestamp"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Newly discovered findings by severity",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    }
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "9b78a8a1-92f5-5bff-947f-deb5244c3df4",
+                    "sectionId": "0d1a6b07-33ea-545c-aed6-fd6476286d3d",
+                    "w": 24,
+                    "x": 0,
+                    "y": 12
+                },
+                "panelIndex": "9b78a8a1-92f5-5bff-947f-deb5244c3df4",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "f61ce2f1-e50f-52c3-b422-366401172a94": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "f61ce2f1-e50f-52c3-b422-366401172a94",
+                                    "name": "logs-projectdiscovery.vulnerability-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-projectdiscovery.vulnerability-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "f1fc8046-af64-5c36-b32b-63bffd4d1b6b": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "timestamp",
+                                                    "customLabel": true,
+                                                    "fieldName": "timestamp",
+                                                    "label": "@timestamp",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "vulnerability.severity",
+                                                    "customLabel": true,
+                                                    "fieldName": "vulnerability.severity",
+                                                    "label": "Severity",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "findings",
+                                                    "customLabel": true,
+                                                    "fieldName": "findings",
+                                                    "inMetricDimension": true,
+                                                    "label": "Findings",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "timestamp",
+                                                    "customLabel": true,
+                                                    "fieldName": "timestamp",
+                                                    "label": "@timestamp",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "vulnerability.severity",
+                                                    "customLabel": true,
+                                                    "fieldName": "vulnerability.severity",
+                                                    "label": "Severity",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "findings",
+                                                    "customLabel": true,
+                                                    "fieldName": "findings",
+                                                    "inMetricDimension": true,
+                                                    "label": "Findings",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "f61ce2f1-e50f-52c3-b422-366401172a94",
+                                            "query": {
+                                                "esql": "FROM logs-projectdiscovery.vulnerability-*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c= ?_tend\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| WHERE projectdiscovery.vulnerability.vuln_status == \"fixed\"\n| STATS findings = COUNT_DISTINCT(event.id, 40000) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), vulnerability.severity"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "f61ce2f1-e50f-52c3-b422-366401172a94",
+                                    "name": "indexpattern-datasource-layer-f1fc8046-af64-5c36-b32b-63bffd4d1b6b",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM logs-projectdiscovery.vulnerability-*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c= ?_tend\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| WHERE projectdiscovery.vulnerability.vuln_status == \"fixed\"\n| STATS findings = COUNT_DISTINCT(event.id, 40000) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), vulnerability.severity"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": false
+                                },
+                                "hideEndzones": true,
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "findings"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [
+                                                {
+                                                    "color": {
+                                                        "colorCode": "#E7664C",
+                                                        "type": "colorCode"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": "Critical"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorCode": "#DA8B45",
+                                                        "type": "colorCode"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": "High"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorCode": "#D6BF57",
+                                                        "type": "colorCode"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": "Medium"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorCode": "#54B399",
+                                                        "type": "colorCode"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": "Low"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorCode": "#98A2B3",
+                                                        "type": "colorCode"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": "None"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                }
+                                            ],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "f1fc8046-af64-5c36-b32b-63bffd4d1b6b",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "splitAccessors": [
+                                            "vulnerability.severity"
+                                        ],
+                                        "xAccessor": "timestamp"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Fixed findings by severity",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    }
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "ed807701-d85d-52f8-9fc8-5b44429e3515",
+                    "sectionId": "0d1a6b07-33ea-545c-aed6-fd6476286d3d",
+                    "w": 24,
+                    "x": 24,
+                    "y": 12
+                },
+                "panelIndex": "ed807701-d85d-52f8-9fc8-5b44429e3515",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "53788023-a5b9-591c-ab9c-1f2ca96d8e30": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                    "name": "security_solution-projectdiscovery.vulnerability_latest",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "security_solution-projectdiscovery.vulnerability_latest",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "ae4e692f-2703-5c7d-932d-fa4b5a77e775": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "host.name",
+                                                    "customLabel": true,
+                                                    "fieldName": "host.name",
+                                                    "label": "Host",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "vulnerability.severity",
+                                                    "customLabel": true,
+                                                    "fieldName": "vulnerability.severity",
+                                                    "label": "Severity",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "findings",
+                                                    "customLabel": true,
+                                                    "fieldName": "findings",
+                                                    "inMetricDimension": true,
+                                                    "label": "Findings",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "host.name",
+                                                    "customLabel": true,
+                                                    "fieldName": "host.name",
+                                                    "label": "Host",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "vulnerability.severity",
+                                                    "customLabel": true,
+                                                    "fieldName": "vulnerability.severity",
+                                                    "label": "Severity",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "findings",
+                                                    "customLabel": true,
+                                                    "fieldName": "findings",
+                                                    "inMetricDimension": true,
+                                                    "label": "Findings",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                            "query": {
+                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*) BY host.name, vulnerability.severity\n| INLINE STATS group_total = SUM(findings) BY host.name\n| EVAL rank_key = CONCAT(TO_STRING(1000000000 + group_total), host.name)\n| INLINE STATS rank_keys = TOP(rank_key, 50, \"desc\")\n| WHERE MV_CONTAINS(MV_SLICE(MV_SORT(MV_DEDUPE(rank_keys), \"DESC\"), 0, 9), rank_key)\n| SORT group_total DESC, host.name ASC\n| KEEP host.name, vulnerability.severity, findings"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                    "name": "indexpattern-datasource-layer-ae4e692f-2703-5c7d-932d-fa4b5a77e775",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*) BY host.name, vulnerability.severity\n| INLINE STATS group_total = SUM(findings) BY host.name\n| EVAL rank_key = CONCAT(TO_STRING(1000000000 + group_total), host.name)\n| INLINE STATS rank_keys = TOP(rank_key, 50, \"desc\")\n| WHERE MV_CONTAINS(MV_SLICE(MV_SORT(MV_DEDUPE(rank_keys), \"DESC\"), 0, 9), rank_key)\n| SORT group_total DESC, host.name ASC\n| KEEP host.name, vulnerability.severity, findings"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": false
+                                },
+                                "hideEndzones": true,
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "findings"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [
+                                                {
+                                                    "color": {
+                                                        "colorCode": "#E7664C",
+                                                        "type": "colorCode"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": "Critical"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorCode": "#DA8B45",
+                                                        "type": "colorCode"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": "High"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorCode": "#D6BF57",
+                                                        "type": "colorCode"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": "Medium"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorCode": "#54B399",
+                                                        "type": "colorCode"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": "Low"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorCode": "#98A2B3",
+                                                        "type": "colorCode"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": "None"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                }
+                                            ],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "ae4e692f-2703-5c7d-932d-fa4b5a77e775",
+                                        "layerType": "data",
+                                        "seriesType": "bar_horizontal_stacked",
+                                        "splitAccessors": [
+                                            "vulnerability.severity"
+                                        ],
+                                        "xAccessor": "host.name"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_horizontal_stacked",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Top 10 hosts by severity",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    }
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "09341def-cf8b-5686-b5ab-add2fbe19947",
+                    "sectionId": "30ff5d42-2c17-5d77-9f3f-50d74535637b",
+                    "w": 24,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "09341def-cf8b-5686-b5ab-add2fbe19947",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "53788023-a5b9-591c-ab9c-1f2ca96d8e30": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                    "name": "security_solution-projectdiscovery.vulnerability_latest",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "security_solution-projectdiscovery.vulnerability_latest",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "fe10d621-38f9-5935-a706-40c2e4927540": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "vulnerability.title",
+                                                    "customLabel": true,
+                                                    "fieldName": "vulnerability.title",
+                                                    "label": "Title",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "projectdiscovery.vulnerability.template_id",
+                                                    "customLabel": true,
+                                                    "fieldName": "projectdiscovery.vulnerability.template_id",
+                                                    "label": "Template",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "vulnerability.severity",
+                                                    "customLabel": true,
+                                                    "fieldName": "vulnerability.severity",
+                                                    "label": "Severity",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "findings",
+                                                    "customLabel": true,
+                                                    "fieldName": "findings",
+                                                    "inMetricDimension": true,
+                                                    "label": "Findings",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "hosts",
+                                                    "customLabel": true,
+                                                    "fieldName": "hosts",
+                                                    "inMetricDimension": true,
+                                                    "label": "Hosts",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "vulnerability.title",
+                                                    "customLabel": true,
+                                                    "fieldName": "vulnerability.title",
+                                                    "label": "Title",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "projectdiscovery.vulnerability.template_id",
+                                                    "customLabel": true,
+                                                    "fieldName": "projectdiscovery.vulnerability.template_id",
+                                                    "label": "Template",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "vulnerability.severity",
+                                                    "customLabel": true,
+                                                    "fieldName": "vulnerability.severity",
+                                                    "label": "Severity",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "findings",
+                                                    "customLabel": true,
+                                                    "fieldName": "findings",
+                                                    "inMetricDimension": true,
+                                                    "label": "Findings",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "hosts",
+                                                    "customLabel": true,
+                                                    "fieldName": "hosts",
+                                                    "inMetricDimension": true,
+                                                    "label": "Hosts",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                            "query": {
+                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*), hosts = COUNT_DISTINCT(host.name) BY vulnerability.title, projectdiscovery.vulnerability.template_id, vulnerability.severity\n| SORT findings DESC, hosts DESC\n| LIMIT 100"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                    "name": "indexpattern-datasource-layer-fe10d621-38f9-5935-a706-40c2e4927540",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*), hosts = COUNT_DISTINCT(host.name) BY vulnerability.title, projectdiscovery.vulnerability.template_id, vulnerability.severity\n| SORT findings DESC, hosts DESC\n| LIMIT 100"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "vulnerability.title",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "projectdiscovery.vulnerability.template_id",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "vulnerability.severity",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "findings",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "hosts",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "fe10d621-38f9-5935-a706-40c2e4927540",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                },
+                                "rowHeight": "auto"
+                            }
+                        },
+                        "title": "Top vulnerabilities",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    }
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "f88379dc-073f-5b97-ba2d-668bcc465577",
+                    "sectionId": "30ff5d42-2c17-5d77-9f3f-50d74535637b",
+                    "w": 24,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "f88379dc-073f-5b97-ba2d-668bcc465577",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "53788023-a5b9-591c-ab9c-1f2ca96d8e30": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                    "name": "security_solution-projectdiscovery.vulnerability_latest",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "security_solution-projectdiscovery.vulnerability_latest",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "5b2fb674-00b5-58a0-9ab9-da8471539a84": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "vulnerability.category",
+                                                    "customLabel": true,
+                                                    "fieldName": "vulnerability.category",
+                                                    "label": "Category",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "findings",
+                                                    "customLabel": true,
+                                                    "fieldName": "findings",
+                                                    "inMetricDimension": true,
+                                                    "label": "Findings",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "vulnerability.category",
+                                                    "customLabel": true,
+                                                    "fieldName": "vulnerability.category",
+                                                    "label": "Category",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "findings",
+                                                    "customLabel": true,
+                                                    "fieldName": "findings",
+                                                    "inMetricDimension": true,
+                                                    "label": "Findings",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                            "query": {
+                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| WHERE vulnerability.category IS NOT NULL\n| STATS findings = COUNT(*) BY vulnerability.category\n| SORT findings DESC\n| LIMIT 10"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                    "name": "indexpattern-datasource-layer-5b2fb674-00b5-58a0-9ab9-da8471539a84",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| WHERE vulnerability.category IS NOT NULL\n| STATS findings = COUNT(*) BY vulnerability.category\n| SORT findings DESC\n| LIMIT 10"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": false
+                                },
+                                "hideEndzones": true,
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "findings"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "5b2fb674-00b5-58a0-9ab9-da8471539a84",
+                                        "layerType": "data",
+                                        "seriesType": "bar_horizontal",
+                                        "xAccessor": "vulnerability.category"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "maxLines": 1,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_horizontal",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Top 10 categories",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    }
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "8c0ef83d-b229-5409-b5de-4ac08611459f",
+                    "sectionId": "30ff5d42-2c17-5d77-9f3f-50d74535637b",
+                    "w": 24,
+                    "x": 0,
+                    "y": 15
+                },
+                "panelIndex": "8c0ef83d-b229-5409-b5de-4ac08611459f",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "53788023-a5b9-591c-ab9c-1f2ca96d8e30": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                    "name": "security_solution-projectdiscovery.vulnerability_latest",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "security_solution-projectdiscovery.vulnerability_latest",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "6aab8b92-d4be-5ef1-b8e2-56657c6af98d": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "projectdiscovery.vulnerability.event.type",
+                                                    "customLabel": true,
+                                                    "fieldName": "projectdiscovery.vulnerability.event.type",
+                                                    "label": "Protocol type",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "findings",
+                                                    "customLabel": true,
+                                                    "fieldName": "findings",
+                                                    "inMetricDimension": true,
+                                                    "label": "Findings",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "projectdiscovery.vulnerability.event.type",
+                                                    "customLabel": true,
+                                                    "fieldName": "projectdiscovery.vulnerability.event.type",
+                                                    "label": "Protocol type",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "findings",
+                                                    "customLabel": true,
+                                                    "fieldName": "findings",
+                                                    "inMetricDimension": true,
+                                                    "label": "Findings",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                            "query": {
+                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*) BY projectdiscovery.vulnerability.event.type\n| SORT findings DESC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                    "name": "indexpattern-datasource-layer-6aab8b92-d4be-5ef1-b8e2-56657c6af98d",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*) BY projectdiscovery.vulnerability.event.type\n| SORT findings DESC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": false
+                                },
+                                "hideEndzones": true,
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "findings"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "6aab8b92-d4be-5ef1-b8e2-56657c6af98d",
+                                        "layerType": "data",
+                                        "seriesType": "bar_horizontal",
+                                        "xAccessor": "projectdiscovery.vulnerability.event.type"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "maxLines": 1,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_horizontal",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Findings by protocol type",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    }
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "411c5fa0-4f38-5912-a09e-4bcfd93dd3ac",
+                    "sectionId": "30ff5d42-2c17-5d77-9f3f-50d74535637b",
+                    "w": 24,
+                    "x": 24,
+                    "y": 15
+                },
+                "panelIndex": "411c5fa0-4f38-5912-a09e-4bcfd93dd3ac",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "53788023-a5b9-591c-ab9c-1f2ca96d8e30": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                    "name": "security_solution-projectdiscovery.vulnerability_latest",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "security_solution-projectdiscovery.vulnerability_latest",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "ca4506aa-5988-5555-b9bc-bfacf6731fbb": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "vulnerability.id",
+                                                    "customLabel": true,
+                                                    "fieldName": "vulnerability.id",
+                                                    "label": "CVE",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "title",
+                                                    "customLabel": true,
+                                                    "fieldName": "title",
+                                                    "label": "Title",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "severity",
+                                                    "customLabel": true,
+                                                    "fieldName": "severity",
+                                                    "label": "Severity",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "cvss",
+                                                    "customLabel": true,
+                                                    "fieldName": "cvss",
+                                                    "inMetricDimension": true,
+                                                    "label": "CVSS",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "epss",
+                                                    "customLabel": true,
+                                                    "fieldName": "epss",
+                                                    "inMetricDimension": true,
+                                                    "label": "EPSS",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "hosts",
+                                                    "customLabel": true,
+                                                    "fieldName": "hosts",
+                                                    "inMetricDimension": true,
+                                                    "label": "Affected hosts",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "findings",
+                                                    "customLabel": true,
+                                                    "fieldName": "findings",
+                                                    "inMetricDimension": true,
+                                                    "label": "Findings",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "vulnerability.id",
+                                                    "customLabel": true,
+                                                    "fieldName": "vulnerability.id",
+                                                    "label": "CVE",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "title",
+                                                    "customLabel": true,
+                                                    "fieldName": "title",
+                                                    "label": "Title",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "severity",
+                                                    "customLabel": true,
+                                                    "fieldName": "severity",
+                                                    "label": "Severity",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "cvss",
+                                                    "customLabel": true,
+                                                    "fieldName": "cvss",
+                                                    "inMetricDimension": true,
+                                                    "label": "CVSS",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "epss",
+                                                    "customLabel": true,
+                                                    "fieldName": "epss",
+                                                    "inMetricDimension": true,
+                                                    "label": "EPSS",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "hosts",
+                                                    "customLabel": true,
+                                                    "fieldName": "hosts",
+                                                    "inMetricDimension": true,
+                                                    "label": "Affected hosts",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "findings",
+                                                    "customLabel": true,
+                                                    "fieldName": "findings",
+                                                    "inMetricDimension": true,
+                                                    "label": "Findings",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                            "query": {
+                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| WHERE vulnerability.id IS NOT NULL\n| STATS cvss = MAX(vulnerability.score.base), epss = MAX(projectdiscovery.vulnerability.event.info.classification.epss_score), title = VALUES(vulnerability.title), severity = VALUES(vulnerability.severity), hosts = COUNT_DISTINCT(host.name), findings = COUNT(*) BY vulnerability.id\n| SORT epss DESC NULLS LAST, cvss DESC NULLS LAST"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
+                                    "name": "indexpattern-datasource-layer-ca4506aa-5988-5555-b9bc-bfacf6731fbb",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| WHERE vulnerability.id IS NOT NULL\n| STATS cvss = MAX(vulnerability.score.base), epss = MAX(projectdiscovery.vulnerability.event.info.classification.epss_score), title = VALUES(vulnerability.title), severity = VALUES(vulnerability.severity), hosts = COUNT_DISTINCT(host.name), findings = COUNT(*) BY vulnerability.id\n| SORT epss DESC NULLS LAST, cvss DESC NULLS LAST"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "vulnerability.id",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "title",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "severity",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "cvss",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "epss",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "hosts",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "findings",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "ca4506aa-5988-5555-b9bc-bfacf6731fbb",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                },
+                                "rowHeight": "auto"
+                            }
+                        },
+                        "title": "CVEs",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    }
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "f2ece274-6ab3-5d0f-bdae-122f21f550e6",
+                    "sectionId": "37204d41-b731-5fe5-9191-8dba630b7ee1",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "f2ece274-6ab3-5d0f-bdae-122f21f550e6",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "columns": [
+                            "vulnerability.severity",
+                            "vulnerability.title",
+                            "projectdiscovery.vulnerability.vuln_status",
+                            "host.name",
+                            "projectdiscovery.vulnerability.event.matched_at",
+                            "vulnerability.id",
+                            "projectdiscovery.vulnerability.template_id"
+                        ],
+                        "description": "",
+                        "grid": {},
+                        "hideChart": true,
+                        "isTextBasedQuery": true,
+                        "kibanaSavedObjectMeta": {
+                            "searchSourceJSON": {
+                                "filter": [],
+                                "query": {
+                                    "esql": "FROM security_solution-projectdiscovery.vulnerability_latest METADATA _id, _index\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| SORT @timestamp DESC"
+                                }
+                            }
+                        },
+                        "sort": [
+                            [
+                                "@timestamp",
+                                "desc"
+                            ]
+                        ],
+                        "tabs": [
+                            {
+                                "attributes": {
+                                    "columns": [
+                                        "vulnerability.severity",
+                                        "vulnerability.title",
+                                        "projectdiscovery.vulnerability.vuln_status",
+                                        "host.name",
+                                        "projectdiscovery.vulnerability.event.matched_at",
+                                        "vulnerability.id",
+                                        "projectdiscovery.vulnerability.template_id"
+                                    ],
+                                    "grid": {},
+                                    "hideChart": true,
+                                    "isTextBasedQuery": true,
+                                    "kibanaSavedObjectMeta": {
+                                        "searchSourceJSON": "{\"query\": {\"esql\": \"FROM security_solution-projectdiscovery.vulnerability_latest METADATA _id, _index\\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\\n| SORT @timestamp DESC\"}, \"filter\": []}"
+                                    },
+                                    "sort": [
+                                        [
+                                            "@timestamp",
+                                            "desc"
+                                        ]
+                                    ],
+                                    "viewMode": "documents"
+                                },
+                                "id": "discover_session_embeddable_synthetic_tab_id",
+                                "label": "discover_session_embeddable_synthetic_tab_label"
+                            }
+                        ],
+                        "title": "Findings",
+                        "viewMode": "documents"
+                    },
+                    "columns": [
+                        "vulnerability.severity",
+                        "vulnerability.title",
+                        "projectdiscovery.vulnerability.vuln_status",
+                        "host.name",
+                        "projectdiscovery.vulnerability.event.matched_at",
+                        "vulnerability.id",
+                        "projectdiscovery.vulnerability.template_id"
+                    ],
+                    "description": "",
+                    "sort": [
+                        [
+                            "@timestamp",
+                            "desc"
+                        ]
+                    ],
+                    "title": "Findings"
+                },
+                "gridData": {
+                    "h": 20,
+                    "i": "233bc96c-9c9e-5831-9cf1-dc430767ff7a",
+                    "sectionId": "fa3d4c85-5986-585a-bed6-f2ebf934f049",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "233bc96c-9c9e-5831-9cf1-dc430767ff7a",
+                "type": "discover_session"
+            }
+        ],
+        "pinned_panels": {
+            "panels": {
+                "43ba170a-a59a-53d4-9002-b337438086d8": {
+                    "config": {
+                        "control_type": "VALUES_FROM_QUERY",
+                        "esql_query": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE @timestamp \u003c= ?_tend AND @timestamp \u003e ?_tstart\n| WHERE projectdiscovery.vulnerability.vuln_status IS NOT NULL\n| STATS BY `Status` = projectdiscovery.vulnerability.vuln_status\n| SORT `Status` ASC",
+                        "selected_options": null,
+                        "single_select": false,
+                        "title": "Status",
+                        "variable_name": "status",
+                        "variable_type": "multi_values"
+                    },
+                    "grow": true,
+                    "order": 1,
+                    "type": "esql_control",
+                    "width": "medium"
+                },
+                "532985df-fd34-586e-a329-be9be07ad88d": {
+                    "config": {
+                        "control_type": "VALUES_FROM_QUERY",
+                        "esql_query": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE @timestamp \u003c= ?_tend AND @timestamp \u003e ?_tstart\n| WHERE host.name IS NOT NULL\n| STATS BY `Host` = host.name\n| SORT `Host` ASC",
+                        "selected_options": null,
+                        "single_select": false,
+                        "title": "Host",
+                        "variable_name": "host",
+                        "variable_type": "multi_values"
+                    },
+                    "grow": true,
+                    "order": 3,
+                    "type": "esql_control",
+                    "width": "medium"
+                },
+                "d61d2ae5-cc5e-5d43-94c5-655bf425a8ef": {
+                    "config": {
+                        "control_type": "VALUES_FROM_QUERY",
+                        "esql_query": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE @timestamp \u003c= ?_tend AND @timestamp \u003e ?_tstart\n| WHERE vulnerability.severity IS NOT NULL\n| STATS BY `Severity` = vulnerability.severity\n| SORT `Severity` ASC",
+                        "selected_options": null,
+                        "single_select": false,
+                        "title": "Severity",
+                        "variable_name": "severity",
+                        "variable_type": "multi_values"
+                    },
+                    "grow": true,
+                    "order": 0,
+                    "type": "esql_control",
+                    "width": "medium"
+                },
+                "ef54c10b-2b69-57b6-9edf-9ec7d33f6900": {
+                    "config": {
+                        "control_type": "VALUES_FROM_QUERY",
+                        "esql_query": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE @timestamp \u003c= ?_tend AND @timestamp \u003e ?_tstart\n| WHERE projectdiscovery.vulnerability.event.type IS NOT NULL\n| STATS BY `Protocol type` = projectdiscovery.vulnerability.event.type\n| SORT `Protocol type` ASC",
+                        "selected_options": null,
+                        "single_select": false,
+                        "title": "Protocol type",
+                        "variable_name": "protocol",
+                        "variable_type": "multi_values"
+                    },
+                    "grow": true,
+                    "order": 2,
+                    "type": "esql_control",
+                    "width": "medium"
+                }
+            }
+        },
+        "sections": [
+            {
+                "collapsed": false,
+                "gridData": {
+                    "i": "d8515ec6-13bd-548f-bb5f-557c68324b66",
+                    "y": 3
+                },
+                "title": "Overview"
+            },
+            {
+                "collapsed": false,
+                "gridData": {
+                    "i": "0d1a6b07-33ea-545c-aed6-fd6476286d3d",
+                    "y": 4
+                },
+                "title": "Trends"
+            },
+            {
+                "collapsed": false,
+                "gridData": {
+                    "i": "30ff5d42-2c17-5d77-9f3f-50d74535637b",
+                    "y": 5
+                },
+                "title": "Top findings"
+            },
+            {
+                "collapsed": false,
+                "gridData": {
+                    "i": "37204d41-b731-5fe5-9191-8dba630b7ee1",
+                    "y": 6
+                },
+                "title": "CVE details"
+            },
+            {
+                "collapsed": true,
+                "gridData": {
+                    "i": "fa3d4c85-5986-585a-bed6-f2ebf934f049",
+                    "y": 7
+                },
+                "title": "Raw findings"
+            }
+        ],
+        "timeFrom": "now-90d",
+        "timeRestore": true,
+        "timeTo": "now",
+        "title": "[Logs ProjectDiscovery] Vulnerabilities"
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2026-11-11T00:23:07.579Z",
+    "id": "projectdiscovery-1160392d-f45d-5bfe-a22d-c218bc8c2af3",
+    "references": [
+        {
+            "id": "projectdiscovery-1160392d-f45d-5bfe-a22d-c218bc8c2af3",
+            "name": "f86b5504-0250-5a62-8029-2b2af6cfa4bb:link_a7cbb9e7-f002-519a-830a-d57756f230c6_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "projectdiscovery-f86bd7ed-bcc4-5e1f-9d1d-d360dd96fd92",
+            "name": "f86b5504-0250-5a62-8029-2b2af6cfa4bb:link_6d9ca6c2-a6ce-5956-8eb0-33ba6734ba17_dashboard",
+            "type": "dashboard"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.3.0"
+}

@@ -8,7 +8,7 @@ The ProjectDiscovery integration for Elastic collects vulnerability findings and
 
 ### Compatibility
 
-This integration supports the ProjectDiscovery Cloud Platform REST API (`https://api.projectdiscovery.io`, `v1` endpoints). It requires Kibana 9.4.0 or later.
+This integration supports the ProjectDiscovery Cloud Platform REST API (`https://api.projectdiscovery.io`, `v1` endpoints). It requires Kibana 9.5.0 or later.
 
 ### How it works
 
@@ -36,6 +36,19 @@ The ProjectDiscovery integration collects the following types of data:
 - Monitor remediation progress through the ProjectDiscovery vulnerability status (`open`, `fixed`, `false_positive`, and others) in `logs-projectdiscovery.vulnerability-*`. The latest vulnerability index excludes resolved and dismissed findings.
 - Group findings and assets by root domain with `server.registered_domain`. For example, `codebox.example.co.uk` results in `example.co.uk`.
 - Group findings and assets by network owner with `server.as.number` and `server.as.organization.name`.
+
+### Dashboards
+
+The integration includes two dashboards. Both are built with ES|QL and share dashboard controls that filter every panel, including the raw data panel:
+
+- **[Logs ProjectDiscovery] Vulnerabilities**: Current open findings by severity, status, host, category, and protocol type; trends of findings seen, newly discovered, and fixed; CVE details with CVSS and EPSS scores; and the raw findings. Controls filter on severity, status, protocol type, and host.
+- **[Logs ProjectDiscovery] Assets**: The asset inventory by source type, asset group, and registered domain; discovery trends; exposed services (ports, HTTP status codes, web servers, technologies, CDNs, and labels); TLS hygiene; the riskiest assets; and the raw assets. Controls filter on asset group, source type, registered domain, port, and technology.
+
+![ProjectDiscovery vulnerabilities dashboard](../img/projectdiscovery-vulnerabilities.png)
+
+![ProjectDiscovery assets dashboard](../img/projectdiscovery-assets.png)
+
+Trend panels count distinct findings or assets per time bucket on `@timestamp`, which ProjectDiscovery updates on every rescan. A finding or asset therefore appears in each bucket in which it was seen, not only when it was first discovered.
 
 ### Root domain fields
 
@@ -96,6 +109,7 @@ API keys have no scopes. A key acts with the team role of the user who owns it.
 2. Filter on `data_stream.dataset : "projectdiscovery.vulnerability"` or `data_stream.dataset : "projectdiscovery.asset"`.
 3. Confirm that events appear. Events with `error.message` indicate API or decoding errors.
 4. Go to **Stack Management → Transforms** and check that the `logs-projectdiscovery.latest_cdr_vulnerabilities-*` and `logs-projectdiscovery.latest_asset-*` transforms are started and healthy.
+5. Go to **Dashboards** and open **[Logs ProjectDiscovery] Vulnerabilities** and **[Logs ProjectDiscovery] Assets**. Trend panels need data in more than one time bucket. Right after setup, select a shorter time range, such as the last 24 hours, if they show no results.
 
 ## Troubleshooting
 
