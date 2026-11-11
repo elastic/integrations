@@ -25,8 +25,9 @@ OPNsense forwards its logs over syslog. The Elastic Agent listens on a UDP or TC
 port and receives the messages as OPNsense emits them; a third input reads
 messages already written to a file.
 
-Each filterlog message is an RFC 5424 syslog envelope wrapping a CSV body. The
-pipeline parses the envelope, then parses the body positionally — its column
+Each filterlog message is a syslog envelope wrapping a CSV body. OPNsense sends
+RFC 5424 by default and RFC 3164 (BSD) when the target is set to that format;
+the pipeline accepts both. It parses the envelope, then parses the body positionally — its column
 layout changes with the IP version and again with the transport protocol, so a
 single script handles the variants rather than a stack of alternative patterns.
 
@@ -91,7 +92,16 @@ which requires an Agent reachable from the firewall.
    - **TCP** — use when delivery guarantees matter or when messages can exceed
      the network MTU.
    - **File** — use to read messages already written to disk by another collector.
-3. Select or create an agent policy and save.
+3. Review the two settings that affect how events are interpreted:
+   - **Internal networks** — the networks that count as internal when setting
+     `network.direction`. The default, `private`, covers the RFC 1918 and
+     unique local ranges; add any public ranges you own. filterlog's own `in`
+     and `out` are relative to the interface and are kept in
+     `opnsense.log.direction`.
+   - **Timezone of BSD syslog timestamps** — RFC 3164 timestamps carry no
+     offset. The default, `local`, reads them in the Agent host's timezone; set
+     the firewall's timezone if it differs. RFC 5424 timestamps are not affected.
+4. Select or create an agent policy and save.
 
 Then configure OPNsense to forward to it:
 
@@ -145,6 +155,15 @@ ICMP and protocols without ports do not carry them. This is expected — check
 UDP syslog has no delivery guarantee and messages larger than the MTU are
 truncated. Switch the target and the integration to TCP.
 
+**Events from a BSD-format target are offset by a few hours.**
+RFC 3164 timestamps carry no timezone and are read in the Agent host's timezone
+by default. Set **Timezone of BSD syslog timestamps** to the firewall's
+timezone, or switch the OPNsense target to RFC 5424.
+
+**`network.direction` is `external` or `internal` where `inbound` or `outbound` was expected.**
+The direction is decided from the addresses against **Internal networks**. Add
+the public ranges you own to that setting.
+
 **`event.action` is present but `rule.id` is not.**
 The rule that matched has no tracker id, which happens for some automatically
 generated rules. The action and interface are still recorded.
@@ -178,7 +197,7 @@ For guidance on sizing the Elastic Stack itself, refer to
 |---|---|---|
 | `udp` | Receives syslog over UDP, OPNsense's default transport. | yes |
 | `tcp` | Receives syslog over TCP. | no |
-| `logfile` | Reads syslog messages from a file. | no |
+| `logfile` | Reads syslog messages from a file. Uses the Filebeat `log` input, which needs `allow_deprecated_use` on 9.x; the integration sets it. | no |
 
 ### The filterlog format
 
@@ -191,7 +210,13 @@ the transport protocol:
 - TCP lines end with ports, payload length, flags, sequence and acknowledgment
   numbers, window, urgent pointer and options.
 - UDP lines end after ports and payload length.
-- ICMP lines end with `key=value` pairs rather than positional columns.
+- ICMP lines from OPNsense end with `datalength=N`. The positional form written
+  by pfSense, a type such as `request` or `unreachport` followed by fields that
+  depend on it, is also parsed.
+- Other protocols, such as CARP, and IP option rejections keep their trailing
+  columns as logged in `opnsense.log.details`.
+- `rdr` is a port-forward redirect and is not counted as denied traffic; only
+  `block` sets `event.type: denied`.
 
 ### Log
 

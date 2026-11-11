@@ -19,8 +19,11 @@ processors:
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
 
-  # OPNsense emits RFC 5424. The structured-data element is present but carries
-  # only a sequence id, so it is matched and discarded rather than parsed.
+  # OPNsense emits RFC 5424 by default and RFC 3164 when the remote target is
+  # set to the BSD format. The RFC 5424 structured-data element carries only a
+  # sequence id, so it is matched and discarded rather than parsed; it can also
+  # be the NILVALUE `-`. Folding these lines joins them with a single space,
+  # which serves as the separator before each group.
   - grok:
       field: event.original
       patterns:
@@ -28,9 +31,9 @@ processors:
           ^<%{NONNEGINT:_tmp.priority:long}>%{NONNEGINT:_tmp.syslog_version}
           %{TIMESTAMP_ISO8601:_tmp.timestamp} %{HOSTNAME:host.name}
           %{PROG:process.name}(?: %{POSINT:process.pid:long}| -)(?: -| %{NOTSPACE:_tmp.msgid})
-          (?: -|\s*\[%{DATA:_tmp.structured_data}\])\s*%{GREEDYDATA:_tmp.body}$
+          (?:-|\[%{DATA:_tmp.structured_data}\])\s*%{GREEDYDATA:_tmp.body}$
         - >-
-          ^<%{NONNEGINT:_tmp.priority:long}>%{SYSLOGTIMESTAMP:_tmp.timestamp}
+          ^<%{NONNEGINT:_tmp.priority:long}>%{SYSLOGTIMESTAMP:_tmp.bsd_timestamp}
           %{HOSTNAME:host.name} %{PROG:process.name}(?:\[%{POSINT:process.pid:long}\])?:
           \s*%{GREEDYDATA:_tmp.body}$
         - '^%{GREEDYDATA:_tmp.body}$'
@@ -43,15 +46,54 @@ processors:
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
 
+  # The agent adds its own zone to event.timezone (add_locale). A tz_offset
+  # other than `local` replaces it, for firewalls in a different zone.
+  - set:
+      field: event.timezone
+      tag: set_event_timezone
+      value: '{{{_tmp.tz_offset}}}'
+      if: ctx._tmp?.tz_offset != null && ctx._tmp.tz_offset != '' && ctx._tmp.tz_offset != 'local'
   - date:
       field: _tmp.timestamp
       target_field: "@timestamp"
       formats:
         - ISO8601
-        - MMM  d HH:mm:ss
-        - MMM dd HH:mm:ss
       tag: date_timestamp
       if: ctx._tmp?.timestamp != null
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  # RFC 3164 timestamps carry no offset, so they are read in event.timezone.
+  - date:
+      field: _tmp.bsd_timestamp
+      target_field: "@timestamp"
+      formats:
+        - MMM  d HH:mm:ss
+        - MMM d HH:mm:ss
+        - MMM dd HH:mm:ss
+      timezone: '{{{event.timezone}}}'
+      tag: date_bsd_timestamp_with_timezone
+      if: ctx._tmp?.bsd_timestamp != null && ctx.event?.timezone != null
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - date:
+      field: _tmp.bsd_timestamp
+      target_field: "@timestamp"
+      formats:
+        - MMM  d HH:mm:ss
+        - MMM d HH:mm:ss
+        - MMM dd HH:mm:ss
+      tag: date_bsd_timestamp_utc
+      if: ctx._tmp?.bsd_timestamp != null && ctx.event?.timezone == null
       on_failure:
         - append:
             field: error.message
@@ -169,19 +211,50 @@ processors:
             if (f.length > i && f[i] != '') { tcp.put('options', f[i]); }
             if (!tcp.isEmpty()) { o.put('tcp', tcp); }
           }
-        } else if (f.length > i) {
-          // icmp and the option/reject reasons use key=value or a bare token
-          Map extra = new HashMap();
+        } else if ((proto == 'icmp' || proto == 'ipv6-icmp') && f.length > i) {
+          // OPNsense writes datalength=N here. The positional form that pfSense's
+          // filterlog writes is also accepted: a type token, then fields whose
+          // meaning depends on that type.
+          Map icmp = new HashMap();
+          List rest = new ArrayList();
           for (int j = i; j < f.length; j++) {
             if (f[j] == '') { continue; }
-            int eq = f[j].indexOf('=');
-            if (eq > 0) {
-              extra.put(f[j].substring(0, eq), f[j].substring(eq + 1));
+            if (f[j].startsWith('datalength=')) {
+              icmp.put('datalength', f[j].substring(11));
             } else {
-              extra.put('type', f[j]);
+              rest.add(f[j]);
             }
           }
-          if (!extra.isEmpty()) { o.put('icmp', extra); }
+          if (!rest.isEmpty()) {
+            String t = (String)rest.get(0);
+            icmp.put('type', t);
+            int n = rest.size();
+            if ((t == 'request' || t == 'reply' || t == 'tstamp' || t == 'tstampreply') && n >= 3) {
+              icmp.put('id', rest.get(1));
+              icmp.put('seq', rest.get(2));
+              if (n > 3) { icmp.put('details', String.join(',', rest.subList(3, n))); }
+            } else if (t == 'unreachport' && n >= 4) {
+              icmp.put('destination_ip', rest.get(1));
+              icmp.put('unreachable_protocol', rest.get(2));
+              icmp.put('unreachable_port', rest.get(3));
+            } else if (t == 'unreachproto' && n >= 3) {
+              icmp.put('destination_ip', rest.get(1));
+              icmp.put('unreachable_protocol', rest.get(2));
+            } else if (t == 'needfrag' && n >= 3) {
+              icmp.put('destination_ip', rest.get(1));
+              icmp.put('mtu', rest.get(2));
+            } else if (n > 1) {
+              icmp.put('details', String.join(',', rest.subList(1, n)));
+            }
+          }
+          if (!icmp.isEmpty()) { o.put('icmp', icmp); }
+        } else if (f.length > i) {
+          // Other protocols (CARP, IP options, ...) are kept as logged.
+          List rest = new ArrayList();
+          for (int j = i; j < f.length; j++) {
+            if (f[j] != '') { rest.add(f[j]); }
+          }
+          if (!rest.isEmpty()) { o.put('details', String.join(',', rest)); }
         }
 
         ctx.opnsense = ['log': o];
@@ -209,7 +282,7 @@ processors:
       value: denied
       tag: append_type_denied
       allow_duplicates: false
-      if: ctx.opnsense?.log?.action == 'block' || ctx.opnsense?.log?.action == 'rdr'
+      if: ctx.opnsense?.log?.action == 'block'
   - append:
       field: event.type
       value: allowed
@@ -248,16 +321,6 @@ processors:
       tag: set_rule_uuid
       ignore_empty_value: true
 
-  - set:
-      field: network.direction
-      value: inbound
-      tag: set_direction_inbound
-      if: ctx.opnsense?.log?.direction == 'in'
-  - set:
-      field: network.direction
-      value: outbound
-      tag: set_direction_outbound
-      if: ctx.opnsense?.log?.direction == 'out'
   - lowercase:
       field: opnsense.log.protocol
       target_field: network.transport
@@ -298,6 +361,21 @@ processors:
       type: ip
       tag: convert_destination_ip
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  # filterlog's in/out is relative to the interface, so a LAN host reaching
+  # the internet is `in` on the LAN interface. network.direction is worked out
+  # from the addresses and the configured internal networks instead; the raw
+  # value stays in opnsense.log.direction.
+  - network_direction:
+      internal_networks_field: _tmp.internal_networks
+      tag: network_direction
+      if: ctx.source?.ip != null && ctx.destination?.ip != null && ctx._tmp?.internal_networks instanceof List && !ctx._tmp.internal_networks.isEmpty()
       on_failure:
         - append:
             field: error.message

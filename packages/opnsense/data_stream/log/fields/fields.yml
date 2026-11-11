@@ -37,6 +37,9 @@
     - name: data_length
       type: long
       description: Payload length in bytes, for TCP and UDP.
+    - name: details
+      type: keyword
+      description: Trailing fields of protocols other than TCP, UDP and ICMP, for example CARP, or of an IP option rejection, kept as logged.
     - name: rule
       type: group
       fields:
@@ -111,13 +114,28 @@
       fields:
         - name: type
           type: keyword
-          description: ICMP type as logged, when OPNsense reports it as a bare token.
+          description: ICMP type name, for example `request` or `unreachport`, when the log line carries one.
         - name: datalength
           type: keyword
           description: ICMP payload length.
         - name: id
           type: keyword
-          description: ICMP echo identifier.
+          description: ICMP echo or timestamp identifier.
         - name: seq
           type: keyword
-          description: ICMP echo sequence number.
+          description: ICMP echo or timestamp sequence number.
+        - name: destination_ip
+          type: keyword
+          description: Destination address quoted inside an unreachable or need-fragmentation message.
+        - name: unreachable_protocol
+          type: keyword
+          description: Protocol quoted inside an unreachable message.
+        - name: unreachable_port
+          type: keyword
+          description: Port quoted inside a port-unreachable message.
+        - name: mtu
+          type: keyword
+          description: Next-hop MTU of a need-fragmentation message.
+        - name: details
+          type: keyword
+          description: Remaining ICMP fields for types without a fixed layout, kept as logged.

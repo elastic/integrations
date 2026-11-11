@@ -25,8 +25,9 @@ OPNsense forwards its logs over syslog. The Elastic Agent listens on a UDP or TC
 port and receives the messages as OPNsense emits them; a third input reads
 messages already written to a file.
 
-Each filterlog message is an RFC 5424 syslog envelope wrapping a CSV body. The
-pipeline parses the envelope, then parses the body positionally — its column
+Each filterlog message is a syslog envelope wrapping a CSV body. OPNsense sends
+RFC 5424 by default and RFC 3164 (BSD) when the target is set to that format;
+the pipeline accepts both. It parses the envelope, then parses the body positionally — its column
 layout changes with the IP version and again with the transport protocol, so a
 single script handles the variants rather than a stack of alternative patterns.
 
@@ -91,7 +92,16 @@ which requires an Agent reachable from the firewall.
    - **TCP** — use when delivery guarantees matter or when messages can exceed
      the network MTU.
    - **File** — use to read messages already written to disk by another collector.
-3. Select or create an agent policy and save.
+3. Review the two settings that affect how events are interpreted:
+   - **Internal networks** — the networks that count as internal when setting
+     `network.direction`. The default, `private`, covers the RFC 1918 and
+     unique local ranges; add any public ranges you own. filterlog's own `in`
+     and `out` are relative to the interface and are kept in
+     `opnsense.log.direction`.
+   - **Timezone of BSD syslog timestamps** — RFC 3164 timestamps carry no
+     offset. The default, `local`, reads them in the Agent host's timezone; set
+     the firewall's timezone if it differs. RFC 5424 timestamps are not affected.
+4. Select or create an agent policy and save.
 
 Then configure OPNsense to forward to it:
 
@@ -145,6 +155,15 @@ ICMP and protocols without ports do not carry them. This is expected — check
 UDP syslog has no delivery guarantee and messages larger than the MTU are
 truncated. Switch the target and the integration to TCP.
 
+**Events from a BSD-format target are offset by a few hours.**
+RFC 3164 timestamps carry no timezone and are read in the Agent host's timezone
+by default. Set **Timezone of BSD syslog timestamps** to the firewall's
+timezone, or switch the OPNsense target to RFC 5424.
+
+**`network.direction` is `external` or `internal` where `inbound` or `outbound` was expected.**
+The direction is decided from the addresses against **Internal networks**. Add
+the public ranges you own to that setting.
+
 **`event.action` is present but `rule.id` is not.**
 The rule that matched has no tracker id, which happens for some automatically
 generated rules. The action and interface are still recorded.
@@ -178,7 +197,7 @@ For guidance on sizing the Elastic Stack itself, refer to
 |---|---|---|
 | `udp` | Receives syslog over UDP, OPNsense's default transport. | yes |
 | `tcp` | Receives syslog over TCP. | no |
-| `logfile` | Reads syslog messages from a file. | no |
+| `logfile` | Reads syslog messages from a file. Uses the Filebeat `log` input, which needs `allow_deprecated_use` on 9.x; the integration sets it. | no |
 
 ### The filterlog format
 
@@ -191,7 +210,13 @@ the transport protocol:
 - TCP lines end with ports, payload length, flags, sequence and acknowledgment
   numbers, window, urgent pointer and options.
 - UDP lines end after ports and payload length.
-- ICMP lines end with `key=value` pairs rather than positional columns.
+- ICMP lines from OPNsense end with `datalength=N`. The positional form written
+  by pfSense, a type such as `request` or `unreachport` followed by fields that
+  depend on it, is also parsed.
+- Other protocols, such as CARP, and IP option rejections keep their trailing
+  columns as logged in `opnsense.log.details`.
+- `rdr` is a port-forward redirect and is not counted as denied traffic; only
+  `block` sets `event.type: denied`.
 
 ### Log
 
@@ -369,6 +394,7 @@ An example event for `log` looks as following:
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.reason | Reason why this event happened, according to the source. This describes the why of a particular action or outcome captured in the event. Where `event.action` captures the action from the event, `event.reason` describes why that action was taken. For example, a web proxy with an `event.action` which denied the request may also populate `event.reason` with the reason why (e.g. `blocked site`). | keyword |
+| event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | input.type | Type of the Elastic Agent input that collected the event. | keyword |
@@ -393,11 +419,17 @@ An example event for `log` looks as following:
 | opnsense.log.data_length | Payload length in bytes, for TCP and UDP. | long |
 | opnsense.log.destination_ip | Raw destination address as logged. Also parsed into `destination.ip`. | keyword |
 | opnsense.log.destination_port | Destination port, for TCP and UDP. | long |
+| opnsense.log.details | Trailing fields of protocols other than TCP, UDP and ICMP, for example CARP, or of an IP option rejection, kept as logged. | keyword |
 | opnsense.log.direction | Direction relative to the interface, `in` or `out`. | keyword |
 | opnsense.log.icmp.datalength | ICMP payload length. | keyword |
-| opnsense.log.icmp.id | ICMP echo identifier. | keyword |
-| opnsense.log.icmp.seq | ICMP echo sequence number. | keyword |
-| opnsense.log.icmp.type | ICMP type as logged, when OPNsense reports it as a bare token. | keyword |
+| opnsense.log.icmp.destination_ip | Destination address quoted inside an unreachable or need-fragmentation message. | keyword |
+| opnsense.log.icmp.details | Remaining ICMP fields for types without a fixed layout, kept as logged. | keyword |
+| opnsense.log.icmp.id | ICMP echo or timestamp identifier. | keyword |
+| opnsense.log.icmp.mtu | Next-hop MTU of a need-fragmentation message. | keyword |
+| opnsense.log.icmp.seq | ICMP echo or timestamp sequence number. | keyword |
+| opnsense.log.icmp.type | ICMP type name, for example `request` or `unreachport`, when the log line carries one. | keyword |
+| opnsense.log.icmp.unreachable_port | Port quoted inside a port-unreachable message. | keyword |
+| opnsense.log.icmp.unreachable_protocol | Protocol quoted inside an unreachable message. | keyword |
 | opnsense.log.interface | The interface the packet was seen on, for example `vtnet0` or `igb0`. | keyword |
 | opnsense.log.ip.class | IPv6 traffic class. | keyword |
 | opnsense.log.ip.ecn | IPv4 explicit congestion notification. | keyword |
