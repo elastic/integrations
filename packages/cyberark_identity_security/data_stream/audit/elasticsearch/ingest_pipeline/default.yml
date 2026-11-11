@@ -168,15 +168,18 @@ processors:
       tag: remove_json_source
       ignore_missing: true
       if: ctx.source?.ip != null
+  # cloudProvider and originRegion describe where the CyberArk service runs, not the
+  # source of the event. Keep them out of cloud.*, which Elastic Agent fills with its own
+  # host's cloud metadata.
   - rename:
       field: json.cloudProvider
       tag: rename_json_cloud_provider
-      target_field: cloud.provider
+      target_field: cyberark_identity_security.audit.cloud_provider
       ignore_missing: true
   - rename:
       field: json.originRegion
       tag: rename_json_origin_region
-      target_field: cloud.region
+      target_field: cyberark_identity_security.audit.origin_region
       ignore_missing: true
 
   # Service-specific processing. These pipelines read and move fields from `json`.

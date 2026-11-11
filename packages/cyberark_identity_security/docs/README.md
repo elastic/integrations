@@ -171,6 +171,7 @@ The `audit` data stream provides audit events from the CyberArk Identity Securit
 | cyberark_identity_security.audit.audit_type | Result or severity class of the audit event, for example Info, Success or Failure (`auditType`). | keyword |
 | cyberark_identity_security.audit.cloud_assets | Cloud assets related to the event (`cloudAssets`). | keyword |
 | cyberark_identity_security.audit.cloud_identities | Cloud identities related to the event (`cloudIdentities`). | keyword |
+| cyberark_identity_security.audit.cloud_provider | Cloud provider that runs the CyberArk service (`cloudProvider`). | keyword |
 | cyberark_identity_security.audit.cloud_workspaces_and_roles.name | Name of the cloud workspace. | keyword |
 | cyberark_identity_security.audit.cloud_workspaces_and_roles.roles | Roles in the cloud workspace. | keyword |
 | cyberark_identity_security.audit.command | Command that was run (`command`). | keyword |
@@ -180,6 +181,7 @@ The `audit` data stream provides audit events from the CyberArk Identity Securit
 | cyberark_identity_security.audit.identity_type | Type of the identity that did the action, HUMAN or NON_HUMAN (`identityType`). | keyword |
 | cyberark_identity_security.audit.is_dr | Whether the event came from a disaster recovery region (`isDr`). | boolean |
 | cyberark_identity_security.audit.org_id | ID of the organization (`orgId`). | keyword |
+| cyberark_identity_security.audit.origin_region | Cloud region of the CyberArk service that logged the event (`originRegion`). | keyword |
 | cyberark_identity_security.audit.safe | Name of the vault safe (`safe`). | keyword |
 | cyberark_identity_security.audit.session_id | ID of the session (`sessionId`). | keyword |
 | cyberark_identity_security.audit.source | Source of the action when it is not an IP address, for example a component name such as PVWA or PSMApp (`source`). IP addresses are in `source.ip`. | keyword |
