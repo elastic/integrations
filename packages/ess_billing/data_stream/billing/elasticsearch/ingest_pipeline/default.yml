@@ -25,6 +25,11 @@ processors:
   - remove:
       field: ess.billing.quantities
       ignore_missing: true
+  - remove:
+      field: ess.billing.kind
+      if: "ctx.ess?.billing?.kind == null"
+      ignore_missing: true
+      tag: remove_null_kind
   - set:
       field: event.created
       copy_from: '@timestamp'
@@ -59,6 +64,11 @@ processors:
       # project names being empty in the billing API. to be removed when Names in billing api fixed
       field: cloud.instance.name
       copy_from: ess.billing.deployment_id
+  - set:
+      field: ess.billing.deployment_name
+      copy_from: ess.billing.deployment_id
+      if: "ctx.ess?.billing?.deployment_name != null && ctx.ess.billing.deployment_name == ''"
+      tag: fallback_deployment_name
   - set:
       field: cloud.instance.name
       copy_from: ess.billing.deployment_name
