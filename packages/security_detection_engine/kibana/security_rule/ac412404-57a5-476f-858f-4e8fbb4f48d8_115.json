@@ -1,0 +1,119 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the creation or modification of the login window property list (plist). Adversaries may modify plist files to run a program during system boot or user login for persistence.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Potential Persistence via Login Hook",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Persistence via Login Hook\n\nThe `com.apple.loginwindow` preferences domain controls login window behavior. It supports the deprecated `LoginHook` and `LogoutHook` keys, which run a script as root each time a user logs in or out. Hooks are typically set with `sudo defaults write com.apple.loginwindow LoginHook <script>`, which stores them in root's preferences at `/var/root/Library/Preferences/com.apple.loginwindow.plist`. Adversaries can abuse these keys to execute a payload every time a user logs in. This rule alerts when a file named `com.apple.loginwindow.plist` is created or modified by a process other than common system, migration, backup, and management services.\n\n### Possible investigation steps\n\n- Identify the process that modified the plist (`process.executable`, `process.code_signature.*`) and determine whether it is a recognized, signed system or management tool. Review the process's execution event for its command line, for example a `defaults write` command.\n- Review the file path (`file.path`) to determine which copy was changed: root's preferences (`/var/root/Library/Preferences`), the system-wide preferences (`/Library/Preferences`), or a user's preferences (`~/Library/Preferences`).\n- Inspect the current contents of the modified plist on the host (for example with `sudo plutil -p <file.path>`) and look for `LoginHook` or `LogoutHook` entries referencing scripts or binaries in unusual locations.\n- If a hook is present, examine the referenced script or binary: its location, code signature, creation time, and content.\n- Review the process tree and recent activity of the modifying process for signs of initial access or execution, such as downloads, script interpreters, or `defaults write` commands.\n- Check whether the same process or user created other persistence mechanisms on the host, such as LaunchAgents, LaunchDaemons, or login items.\n\n### False positive analysis\n\n- Device management solutions, configuration profiles, migration and backup tools may legitimately update login window preferences. Verify the modifying process against the tools approved in the environment.\n- Administrators or users changing login window options through System Settings or `defaults` can modify the plist. Confirm the change with the user if the modifying process is a known Apple or vendor binary.\n- When the activity is confirmed benign, add an exception for the specific signed process executable instead of excluding the plist file.\n\n### Response and remediation\n\n- Isolate the affected host if a malicious login or logout hook is identified.\n- Remove the malicious hook (for example with `sudo defaults delete com.apple.loginwindow LoginHook`), and delete the referenced script or binary after preserving a copy for analysis.\n- Terminate any running processes started by the malicious hook.\n- If root's or the system-wide plist was modified, investigate how the attacker obtained root privileges, and remediate the initial access vector.\n- Reset the credentials of affected user accounts if compromise is confirmed.\n- Escalate to the incident response team and search for the same plist modification or payload on other macOS hosts.\n",
+        "query": "event.category:file and host.os.type:macos and not event.type:\"deletion\" and\n file.name:\"com.apple.loginwindow.plist\" and\n not process.name: (systemmigrationd or DesktopServicesHelper or diskmanagementd or rsync or launchd or cfprefsd or xpcproxy or ManagedClient or MCXCompositor or backupd or \"iMazing Profile Editor\" or storagekitd or CloneKitService)\n",
+        "references": [
+            "https://github.com/D00MFist/PersistentJXA/blob/master/LoginScript.js"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "ac412404-57a5-476f-858f-4e8fbb4f48d8",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a macOS System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, for MacOS it is recommended to select \"Traditional Endpoints\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/current/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide",
+            "Noise: High",
+            "Performance: Normal",
+            "Profile: Aggressive",
+            "Rule Type: Custom Query (KQL)",
+            "Platform: macOS"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1037",
+                        "name": "Boot or Logon Initialization Scripts",
+                        "reference": "https://attack.mitre.org/techniques/T1037/",
+                        "subtechnique": [
+                            {
+                                "id": "T1037.002",
+                                "name": "Login Hook",
+                                "reference": "https://attack.mitre.org/techniques/T1037/002/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1547",
+                        "name": "Boot or Logon Autostart Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1547/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1647",
+                        "name": "Plist File Modification",
+                        "reference": "https://attack.mitre.org/techniques/T1647/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 115
+    },
+    "id": "ac412404-57a5-476f-858f-4e8fbb4f48d8_115",
+    "type": "security-rule"
+}
