@@ -1,0 +1,148 @@
+# Test that an event that appears after a poll, with the same created as the
+# cursor, is collected even when it is on a later page than the events already
+# collected at that timestamp, and that those events are not re-sent.
+#
+# With a page size of 2, events a and b (created T) are on the first page. The
+# second page alternates between the older event only, and event c (also
+# created T) followed by the older event. The first poll collects a, b and the
+# older event. The second poll finds only seen events on the first page and
+# must continue to the second to collect c. The test asserts that all four
+# events are indexed and that no write was rejected as a version conflict.
+#
+# Mock API (page_size 2, ordered by -created, T is the shared timestamp):
+#
+#            page 1      page 2 (alternates between the two responses)
+#            --------    ----------------------------------------------
+#   call 1   [ a  b ]     [ d ]        <- c has not appeared yet
+#   call 2   [ a  b ]     [ c  d ]     <- c has now appeared
+#   call 3   [ a  b ]     [ d ]        <- and so on, alternating
+#
+#   a, b, c created at T; d created before T.
+#
+# Poll 1 (no cursor, cutoff far in the past)
+#
+#   page 1  [ a  b ]  both new                    -> collect a and b, keep paging
+#   page 2  [ d ]    new, last page               -> collect d, stop
+#
+#   cursor = {T, [a b]}                           collected: a b d
+#
+# Poll 2 (cutoff T, seen at T: a b)
+#
+#   page 1  [ a  b ]  both seen, nothing older    -> skip a and b (seen), keep paging
+#   page 2  [ c  d ]  c is new (T, not in [a b])  -> collect c (at T, not in [a b])
+#                     d is older than cutoff      -> skip d (before cutoff), stop
+#
+#   cursor = {T, [ a b c ]}                       collected: c
+#
+# Total: a b c d, each sent once, so there are no version conflicts.
+# Stopping after page 1 in poll 2 would lose c. Re-sending a or b would
+# raise the version conflict count.
+
+# The ingest pipeline builds _id from a fingerprint of event.original, so a
+# re-sent event is rejected as a version conflict inside one backing index.
+# The document count cannot show a re-send, so the test asserts on the data
+# stream's version conflict counter.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+[!exec:curl] skip 'Skipping test requiring absent curl command'
+
+# Connect to the running stack and install an agent.
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+# Start the mock authentik API server.
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} authentik-mock
+
+# Add the package resources and the data stream policy.
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 4 -confirm 30s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+exec jq '[.hits.hits[]._source.event.id] | sort | join(",")' got_docs.json
+stdout '"00000000-0000-4000-8000-00000000000a,00000000-0000-4000-8000-00000000000b,00000000-0000-4000-8000-00000000000c,00000000-0000-4000-8000-00000000000d"'
+
+exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem -X GET 'https://localhost:9200/'${DATA_STREAM_NAME}'/_stats/indexing'
+cp stdout got_stats.json
+
+# Version conflicts count writes rejected because the document already exists
+# in the backing index, so each re-sent event adds one.
+exec jq '._all.primaries.indexing.index_failed_due_to_version_conflict' got_stats.json
+stdout '^0$'
+
+# Clean up.
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down authentik-mock
+
+-- test_config.yaml --
+input: cel
+vars:
+  url: http://authentik-mock:8080
+  api_token: test-api-token
+data_stream:
+  vars:
+    initial_interval: 87600h
+    interval: 10s
+    page_size: 2
+    preserve_original_event: true
+
+-- authentik-mock/docker-compose.yml --
+version: '2.3'
+services:
+  authentik-mock:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    hostname: authentik-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+
+-- authentik-mock/config.yml --
+rules:
+  - path: /api/v3/events/events/
+    methods: [GET]
+    query_params:
+      ordering: -created
+      page_size: 2
+      page: 1
+    request_headers:
+      Authorization:
+        - "Bearer test-api-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"pagination":{"next":2,"previous":0,"count":4,"current":1,"total_pages":2,"start_index":1,"end_index":2},"results":[{"pk":"00000000-0000-4000-8000-00000000000a","user":{"pk":2105,"email":"testuser@example.com","username":"testuser"},"action":"login","app":"authentik.events.signals","context":{},"client_ip":"192.0.2.10","created":"2024-08-14T10:00:00.123456Z","expires":"2025-08-14T10:00:00.123456Z"},{"pk":"00000000-0000-4000-8000-00000000000b","user":{"pk":2105,"email":"testuser@example.com","username":"testuser"},"action":"login","app":"authentik.events.signals","context":{},"client_ip":"192.0.2.11","created":"2024-08-14T10:00:00.123456Z","expires":"2025-08-14T10:00:00.123456Z"}]}
+  - path: /api/v3/events/events/
+    methods: [GET]
+    query_params:
+      ordering: -created
+      page_size: 2
+      page: 2
+    request_headers:
+      Authorization:
+        - "Bearer test-api-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"pagination":{"next":0,"previous":1,"count":3,"current":2,"total_pages":2,"start_index":3,"end_index":3},"results":[{"pk":"00000000-0000-4000-8000-00000000000d","user":{"pk":2105,"email":"testuser@example.com","username":"testuser"},"action":"login","app":"authentik.events.signals","context":{},"client_ip":"192.0.2.13","created":"2024-08-13T05:40:00.670476Z","expires":"2025-08-13T05:40:00.670476Z"}]}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"pagination":{"next":0,"previous":1,"count":4,"current":2,"total_pages":2,"start_index":3,"end_index":4},"results":[{"pk":"00000000-0000-4000-8000-00000000000c","user":{"pk":2105,"email":"testuser@example.com","username":"testuser"},"action":"login","app":"authentik.events.signals","context":{},"client_ip":"192.0.2.12","created":"2024-08-14T10:00:00.123456Z","expires":"2025-08-14T10:00:00.123456Z"},{"pk":"00000000-0000-4000-8000-00000000000d","user":{"pk":2105,"email":"testuser@example.com","username":"testuser"},"action":"login","app":"authentik.events.signals","context":{},"client_ip":"192.0.2.13","created":"2024-08-13T05:40:00.670476Z","expires":"2025-08-13T05:40:00.670476Z"}]}

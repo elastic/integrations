@@ -1371,16 +1371,16 @@ processors:
                     tag: append_error_message_agent_interface_map_ipv6
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - script:
-      tag: script_wrap_agent_ip_addresses
-      lang: painless
-      if: ctx.json?.agent_ip_addresses != null && !(ctx.json.agent_ip_addresses instanceof List)
-      source: ctx.json.agent_ip_addresses = [ctx.json.agent_ip_addresses];
-  - script:
-      tag: script_wrap_agent_ip_addresses_v6
-      lang: painless
-      if: ctx.json?.agent_ip_addresses_v6 != null && !(ctx.json.agent_ip_addresses_v6 instanceof List)
-      source: ctx.json.agent_ip_addresses_v6 = [ctx.json.agent_ip_addresses_v6];
+  - split:
+      field: json.agent_ip_addresses
+      tag: split_agent_ip_addresses_3e9c41d7
+      separator: '\s*,\s*'
+      if: ctx.json?.agent_ip_addresses instanceof String
+  - split:
+      field: json.agent_ip_addresses_v6
+      tag: split_agent_ip_addresses_v6_8b2f60a4
+      separator: '\s*,\s*'
+      if: ctx.json?.agent_ip_addresses_v6 instanceof String
   - foreach:
       field: json.agent_ip_addresses
       if: ctx.json?.agent_ip_addresses instanceof List
