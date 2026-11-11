@@ -126,6 +126,8 @@ For more details about enabling logs for the AgentCore Gateway, see the [Amazon 
 
 Vended Code Interpreter `APPLICATION_LOGS` (`InvokeCodeInterpreter`). Enable log delivery on custom interpreters in the AgentCore console. See [Configure observability](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/observability-configure.html).
 
+Code Interpreter logs contain the submitted code, shell commands, stdout and file contents verbatim. These can include credentials or other secrets that the sandboxed code reads or prints, so restrict access to this data stream accordingly.
+
 {{event "code_interpreter_application_logs"}}
 {{fields "code_interpreter_application_logs"}}
 
