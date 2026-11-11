@@ -12,6 +12,8 @@ resource.ssl: {{ssl}}
 {{#if http_client_timeout}}
 resource.timeout: {{http_client_timeout}}
 {{/if}}
+resource.rate_limit.limit: 10
+resource.rate_limit.burst: 10
 resource.url: {{url}}
 state:
   admin_token: {{admin_token}}
@@ -58,13 +60,18 @@ program: |-
                     body.last_end_time
                   :
                     after,
-                  ?"worklist": body.?data,
+                  // Drop the previously downloaded boundary file: the list API
+                  // re-returns it when re-queried with the same `after`.
+                  ?"worklist": body.?data.optMap(d,
+                    d.filter(f, f.id != state.?cursor.last_file_id.orValue(""))
+                  ),
                   // Termination is driven by has_more, not by an empty page: this
                   // API re-returns the boundary record when re-queried with the same
                   // `after`, so an empty response is never observed on has_more=false.
                   "list_has_more": body.?has_more.orValue(false),
+                  ?"last_file_id": state.?cursor.last_file_id,
                 },
-                "want_more": size(body.?data.orValue([])) > 0,
+                "want_more": size(body.?data.orValue([]).filter(f, f.id != state.?cursor.last_file_id.orValue(""))) > 0,
               }
             )
           :
@@ -113,7 +120,10 @@ program: |-
             ),
             // Shallow-merge into the existing cursor so last_end_time and
             // list_has_more survive the worklist update.
-            "cursor": state.cursor.with({"worklist": tail(state.cursor.worklist)}),
+            "cursor": state.cursor.with({
+              "worklist": tail(state.cursor.worklist),
+              "last_file_id": state.cursor.worklist[0].id,
+            }),
             // Keep going while files remain in this page, or the list reported
             // more pages. Stops right after the last file of the last page.
             "want_more": size(state.cursor.worklist) > 1 || state.?cursor.list_has_more.orValue(false),

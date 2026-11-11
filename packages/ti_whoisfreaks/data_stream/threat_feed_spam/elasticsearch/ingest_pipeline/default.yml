@@ -1,0 +1,448 @@
+---
+description: Pipeline for processing WhoisFreaks spam threat feed indicators.
+processors:
+  - remove:
+      tag: remove_conf_on_cel_failure
+      field: _conf
+      ignore_missing: true
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: Drop the injected configuration from CEL error documents before terminating.
+  - terminate:
+      tag: terminate_cel_failure
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: Error message set and no data to process.
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: '9.5.0'
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: enrichment
+  - append:
+      tag: append_event_category_threat
+      field: event.category
+      value: threat
+      allow_duplicates: false
+  - append:
+      tag: append_event_type_indicator
+      field: event.type
+      value: indicator
+      allow_duplicates: false
+  - rename:
+      tag: rename_message_to_event_original
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      tag: remove_message
+      field: message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  # Columns are mapped by name from the feed's own header row (sent by the input in
+  # _csv_header), so a reordered or added column is never dropped: `domain`,
+  # `first_seen`, and `last_seen` feed the ECS indicator fields and every other
+  # column is kept under whoisfreaks.threat_feed.<column>. Without a header the
+  # documented column order is used. Values beyond the header are kept as
+  # whoisfreaks.threat_feed.column_<n>.
+  - script:
+      tag: script_parse_csv_columns
+      description: Parses the CSV row into named columns using the feed header.
+      lang: painless
+      params:
+        default_header: domain,threat_type,confidence,first_seen,last_seen,no_of_threat_matched_pivots
+      source: |-
+        List parseCsv(String line) {
+          List out = new ArrayList();
+          StringBuilder cur = new StringBuilder();
+          boolean quoted = false;
+          int i = 0;
+          while (i < line.length()) {
+            char ch = line.charAt(i);
+            if (quoted) {
+              if (ch == (char) '"') {
+                if (i + 1 < line.length() && line.charAt(i + 1) == (char) '"') {
+                  cur.append(ch);
+                  i++;
+                } else {
+                  quoted = false;
+                }
+              } else {
+                cur.append(ch);
+              }
+            } else if (ch == (char) '"') {
+              quoted = true;
+            } else if (ch == (char) ',') {
+              out.add(cur.toString());
+              cur = new StringBuilder();
+            } else {
+              cur.append(ch);
+            }
+            i++;
+          }
+          out.add(cur.toString());
+          return out;
+        }
+        String header = (ctx._csv_header instanceof String && ctx._csv_header.trim() != '') ? ctx._csv_header.trim() : params.default_header;
+        // Drop a UTF-8 byte-order mark in front of the first column name.
+        if (header.length() > 0 && header.charAt(0) == (char) 65279) {
+          header = header.substring(1);
+        }
+        List names = parseCsv(header);
+        List values = parseCsv(ctx.event.original.trim());
+        if (ctx._temp == null) {
+          ctx._temp = new HashMap();
+        }
+        if (ctx.whoisfreaks == null) {
+          ctx.whoisfreaks = new HashMap();
+        }
+        if (ctx.whoisfreaks.threat_feed == null) {
+          ctx.whoisfreaks.threat_feed = new HashMap();
+        }
+        Set used = new HashSet();
+        for (int i = 0; i < values.size(); i++) {
+          String value = values.get(i).trim();
+          if (value == '') {
+            continue;
+          }
+          String name = (i < names.size()) ? names.get(i).trim().toLowerCase().replace(' ', '_').replace('.', '_') : '';
+          if (name == '') {
+            name = 'column_' + (i + 1);
+          }
+          // Names reserved for fields this pipeline computes get a feed_ prefix, and a
+          // name already used by an earlier column (for example `x` and `X`) gets a
+          // _<position> suffix, so no column overwrites another.
+          if (name == 'deleted_at' || name == 'ioc_expiration_duration' || name == 'confidence_raw' || name == 'no_of_threat_matched_pivots_raw') {
+            name = 'feed_' + name;
+          }
+          if (used.contains(name)) {
+            name = name + '_' + (i + 1);
+          }
+          used.add(name);
+          if (name == 'domain') {
+            if (ctx.threat == null) {
+              ctx.threat = new HashMap();
+            }
+            if (ctx.threat.indicator == null) {
+              ctx.threat.indicator = new HashMap();
+            }
+            if (ctx.threat.indicator.url == null) {
+              ctx.threat.indicator.url = new HashMap();
+            }
+            ctx.threat.indicator.url.domain = value;
+          } else if (name == 'first_seen' || name == 'last_seen') {
+            ctx._temp[name] = value;
+          } else {
+            ctx.whoisfreaks.threat_feed[name] = value;
+          }
+        }
+  - set:
+      tag: set_threat_indicator_name
+      field: threat.indicator.name
+      copy_from: threat.indicator.url.domain
+      ignore_empty_value: true
+  - append:
+      tag: append_tags_missing_indicator_domain
+      field: tags
+      value: missing_indicator_domain
+      allow_duplicates: false
+      if: ctx.threat?.indicator?.url?.domain == null
+  - set:
+      tag: set_threat_indicator_type
+      field: threat.indicator.type
+      value: domain-name
+  - set:
+      tag: set_threat_indicator_provider
+      field: threat.indicator.provider
+      value: WhoisFreaks
+  - set:
+      tag: set_threat_indicator_reference
+      field: threat.indicator.reference
+      value: https://whoisfreaks.com/
+  - convert:
+      tag: convert_whoisfreaks_threat_feed_confidence
+      field: whoisfreaks.threat_feed.confidence
+      type: float
+      ignore_missing: true
+      # A non-numeric value is kept as whoisfreaks.threat_feed.confidence_raw and tagged
+      # instead of failing the row, so the indicator still reaches the latest index.
+      on_failure:
+        - rename:
+            tag: rename_invalid_whoisfreaks_threat_feed_confidence
+            field: whoisfreaks.threat_feed.confidence
+            target_field: whoisfreaks.threat_feed.confidence_raw
+            ignore_missing: true
+        - append:
+            tag: append_tags_invalid_confidence
+            field: tags
+            value: invalid_confidence
+            allow_duplicates: false
+        - append:
+            tag: append_tags_preserve_original_event_invalid_confidence
+            field: tags
+            value: preserve_original_event
+            allow_duplicates: false
+  - convert:
+      tag: convert_whoisfreaks_threat_feed_no_of_threat_matched_pivots
+      field: whoisfreaks.threat_feed.no_of_threat_matched_pivots
+      type: long
+      ignore_missing: true
+      # A non-numeric value is kept as whoisfreaks.threat_feed.no_of_threat_matched_pivots_raw and tagged
+      # instead of failing the row, so the indicator still reaches the latest index.
+      on_failure:
+        - rename:
+            tag: rename_invalid_whoisfreaks_threat_feed_no_of_threat_matched_pivots
+            field: whoisfreaks.threat_feed.no_of_threat_matched_pivots
+            target_field: whoisfreaks.threat_feed.no_of_threat_matched_pivots_raw
+            ignore_missing: true
+        - append:
+            tag: append_tags_invalid_no_of_threat_matched_pivots
+            field: tags
+            value: invalid_no_of_threat_matched_pivots
+            allow_duplicates: false
+        - append:
+            tag: append_tags_preserve_original_event_invalid_no_of_threat_matched_pivots
+            field: tags
+            value: preserve_original_event
+            allow_duplicates: false
+  - set:
+      tag: set_threat_indicator_confidence_high
+      field: threat.indicator.confidence
+      value: High
+      if: ctx.whoisfreaks?.threat_feed?.confidence instanceof Number && ctx.whoisfreaks.threat_feed.confidence >= 0.8
+  - set:
+      tag: set_threat_indicator_confidence_medium
+      field: threat.indicator.confidence
+      value: Medium
+      if: ctx.whoisfreaks?.threat_feed?.confidence instanceof Number && ctx.whoisfreaks.threat_feed.confidence >= 0.5 && ctx.whoisfreaks.threat_feed.confidence < 0.8
+  - set:
+      tag: set_threat_indicator_confidence_low
+      field: threat.indicator.confidence
+      value: Low
+      if: ctx.whoisfreaks?.threat_feed?.confidence instanceof Number && ctx.whoisfreaks.threat_feed.confidence > 0 && ctx.whoisfreaks.threat_feed.confidence < 0.5
+  - set:
+      tag: set_threat_indicator_confidence_none
+      field: threat.indicator.confidence
+      value: None
+      if: ctx.whoisfreaks?.threat_feed?.confidence instanceof Number && ctx.whoisfreaks.threat_feed.confidence <= 0
+  # The feed timestamps look like `2026-06-25 13:45:35.401434+00`; normalise them to ISO 8601.
+  - gsub:
+      tag: gsub_temp_first_seen_date_separator
+      field: _temp.first_seen
+      pattern: '^(\d{4}-\d{2}-\d{2}) '
+      replacement: '$1T'
+      ignore_missing: true
+  - gsub:
+      tag: gsub_temp_first_seen_offset
+      field: _temp.first_seen
+      # Only an offset that follows a time part (`+00` in `...T13:45:35.4+00`), so the
+      # day of a date-only value such as 2026-08-25 is never rewritten.
+      pattern: '(T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?[+-]\d{2})$'
+      replacement: '$1:00'
+      ignore_missing: true
+  - gsub:
+      tag: gsub_temp_last_seen_date_separator
+      field: _temp.last_seen
+      pattern: '^(\d{4}-\d{2}-\d{2}) '
+      replacement: '$1T'
+      ignore_missing: true
+  - gsub:
+      tag: gsub_temp_last_seen_offset
+      field: _temp.last_seen
+      # Only an offset that follows a time part (`+00` in `...T13:45:35.4+00`), so the
+      # day of a date-only value such as 2026-08-25 is never rewritten.
+      pattern: '(T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?[+-]\d{2})$'
+      replacement: '$1:00'
+      ignore_missing: true
+  - date:
+      tag: date_temp_first_seen
+      field: _temp.first_seen
+      target_field: threat.indicator.first_seen
+      formats:
+        - ISO8601
+      if: ctx._temp?.first_seen != null && ctx._temp.first_seen != ''
+      # first_seen is optional: flag an unparseable value with a tag rather than error.message,
+      # because the latest transform excludes documents with error.message.
+      on_failure:
+        - append:
+            tag: append_tags_invalid_first_seen
+            field: tags
+            value: invalid_first_seen
+            allow_duplicates: false
+        - append:
+            tag: append_tags_preserve_original_event_invalid_first_seen
+            field: tags
+            value: preserve_original_event
+            allow_duplicates: false
+  - date:
+      tag: date_temp_last_seen
+      field: _temp.last_seen
+      target_field: threat.indicator.last_seen
+      formats:
+        - ISO8601
+      if: ctx._temp?.last_seen != null && ctx._temp.last_seen != ''
+      # Flag an unparseable value with a tag rather than error.message, because the
+      # latest transform excludes documents with error.message; the fallback below
+      # keeps the indicator.
+      on_failure:
+        - append:
+            tag: append_tags_preserve_original_event_invalid_last_seen
+            field: tags
+            value: preserve_original_event
+            allow_duplicates: false
+  # last_seen drives @timestamp and IOC expiration. When it is missing or invalid,
+  # the indicator is kept: the document is tagged invalid_last_seen, and last_seen
+  # falls back to the file date (00:00 UTC), or to the ingest time when no file
+  # date is known.
+  - append:
+      tag: append_tags_invalid_last_seen
+      field: tags
+      value: invalid_last_seen
+      allow_duplicates: false
+      if: ctx.threat?.indicator?.last_seen == null
+  - append:
+      tag: append_tags_preserve_original_event_invalid_last_seen
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.threat?.indicator?.last_seen == null
+  - date:
+      tag: date_threat_indicator_last_seen_from_file_date
+      field: whoisfreaks.file_date
+      target_field: threat.indicator.last_seen
+      formats:
+        - yyyy-MM-dd
+        - ISO8601
+      if: ctx.threat?.indicator?.last_seen == null && ctx.whoisfreaks?.file_date instanceof String && ctx.whoisfreaks.file_date.length() >= 10
+  - set:
+      tag: set_threat_indicator_last_seen_from_ingest_time
+      field: threat.indicator.last_seen
+      copy_from: _ingest.timestamp
+      if: ctx.threat?.indicator?.last_seen == null
+  - date:
+      tag: date_threat_indicator_last_seen_fallback
+      field: threat.indicator.last_seen
+      target_field: threat.indicator.last_seen
+      formats:
+        - ISO8601
+      if: ctx.tags != null && ctx.tags.contains('invalid_last_seen')
+  - set:
+      tag: set_timestamp_from_last_seen
+      field: '@timestamp'
+      copy_from: threat.indicator.last_seen
+  # Deduplicate so a re-polled daily file does not create duplicate documents. The
+  # file date is part of the key, so an indicator repeated in the next day's file
+  # becomes a new document and the latest transform refreshes its expiration.
+  - fingerprint:
+      tag: fingerprint_for_dedup
+      fields:
+        - threat.indicator.url.domain
+        - threat.indicator.last_seen
+        - whoisfreaks.file_date
+        - whoisfreaks.pinned_file
+      target_field: _id
+      ignore_missing: true
+  ######################
+  #   IOC expiration   #
+  ######################
+  - script:
+      tag: script_set_deleted_at
+      lang: painless
+      description: >-
+        Indicator expiration is computed as last_seen + ioc_expiration_duration (default 90d), falling back to 90d when the setting is absent or invalid.
+        With replace_previous_file enabled, it is also capped at the end of the day after the file date, so an indicator
+        that is missing from the next daily file is removed from the latest index.
+      params:
+        replace_grace_days: 2
+      source: |-
+        def conf = ctx._conf;
+        def configured = (conf != null && conf.ioc_expiration_duration instanceof String) ? conf.ioc_expiration_duration.trim() : '';
+        def dur = (configured != '') ? configured : '90d';
+        ZonedDateTime lastSeen = ZonedDateTime.parse(ctx.threat.indicator.last_seen);
+        ZonedDateTime deletedAt = null;
+        String unit = dur.substring(dur.length() - 1).toLowerCase();
+        long value = -1L;
+        try {
+          value = Long.parseLong(dur.substring(0, dur.length() - 1));
+        } catch (NumberFormatException e) {}
+        if (value >= 0 && unit == 'd') {
+          deletedAt = lastSeen.plusDays(value);
+        } else if (value >= 0 && unit == 'h') {
+          deletedAt = lastSeen.plusHours(value);
+        } else if (value >= 0 && unit == 'm') {
+          deletedAt = lastSeen.plusMinutes(value);
+        } else {
+          // Flag the fallback with a tag rather than error.message: the latest transform
+          // excludes documents with error.message, so they would never become active IOCs.
+          deletedAt = lastSeen.plusDays(90L);
+          if (ctx.tags == null) {
+            ctx.tags = new ArrayList();
+          }
+          if (!ctx.tags.contains('invalid_ioc_expiration_duration')) {
+            ctx.tags.add('invalid_ioc_expiration_duration');
+          }
+        }
+        if (ctx.whoisfreaks == null) {
+          ctx.whoisfreaks = new HashMap();
+        }
+        if (ctx.whoisfreaks.threat_feed == null) {
+          ctx.whoisfreaks.threat_feed = new HashMap();
+        }
+        // Each daily file is a full snapshot of the feed. When replace_previous_file is
+        // enabled, an indicator stays active only until the next file is due (file date
+        // + 2 days at 00:00 UTC). Indicators repeated in the next file get a later
+        // expiration from that file; indicators missing from it expire.
+        def replace = (conf != null) ? conf.replace_previous_file : null;
+        if ((replace == true || replace == 'true') && ctx.whoisfreaks.file_date instanceof String && ctx.whoisfreaks.file_date.length() >= 10) {
+          ZonedDateTime replaceAt = LocalDate.parse(ctx.whoisfreaks.file_date.substring(0, 10)).atStartOfDay(ZoneOffset.UTC).plusDays(params.replace_grace_days);
+          if (replaceAt.isBefore(deletedAt)) {
+            deletedAt = replaceAt;
+          }
+        }
+        ctx.whoisfreaks.threat_feed.deleted_at = deletedAt.toString();
+  - date:
+      tag: date_whoisfreaks_threat_feed_deleted_at
+      field: whoisfreaks.threat_feed.deleted_at
+      target_field: whoisfreaks.threat_feed.deleted_at
+      formats:
+        - ISO8601
+  - rename:
+      tag: rename_conf_ioc_expiration_duration
+      field: _conf.ioc_expiration_duration
+      target_field: whoisfreaks.threat_feed.ioc_expiration_duration
+      if: ctx._conf?.ioc_expiration_duration instanceof String && ctx._conf.ioc_expiration_duration != ''
+  - remove:
+      tag: remove_temporary_fields
+      field:
+        - _temp
+        - _conf
+        - _csv_header
+      ignore_missing: true
+on_failure:
+  - remove:
+      tag: remove_temporary_fields_on_failure
+      field:
+        - _temp
+        - _conf
+        - _csv_header
+      ignore_missing: true
+  - append:
+      tag: append_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -1,0 +1,26 @@
+# GCP Cloud SQL MySQL OpenTelemetry Assets
+
+This package contains Kibana assets for monitoring [Cloud SQL for MySQL](https://cloud.google.com/sql/docs/mysql) instances with Google Cloud Monitoring metrics collected by the OpenTelemetry Collector.
+
+The package is **content only**. It does not configure data collection. Use the **[Google Cloud Monitoring (OpenTelemetry)](https://www.elastic.co/docs/reference/integrations/googlecloudmonitor_input_otel)** input package (`googlecloudmonitor_input_otel`) to collect Cloud SQL for MySQL metrics into Elasticsearch.
+
+## Requirements
+
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
+You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage
+the Elastic Stack on your own hardware.
+
+## Setup
+
+Install the **[Google Cloud Monitoring OpenTelemetry Input](https://www.elastic.co/docs/reference/integrations/googlecloudmonitor_input_otel)** package (`googlecloudmonitor_input_otel`) and configure it to collect Cloud SQL for MySQL Cloud Monitoring metrics (for example, `cloudsql.googleapis.com/database/mysql/queries`). This content package provides assets that visualize data collected by that input.
+
+When configuring the input package, set the dataset name to `gcp.cloudsql_mysql.otel` so that data is written to the `metrics-gcp.cloudsql_mysql.otel-default` data stream, which these dashboards query.
+
+Shared Cloud SQL metrics such as CPU, memory and disk are also emitted for PostgreSQL and SQL Server instances. These dashboards keep only MySQL instances, using `cloudsql.googleapis.com/database/mysql/queries` as the marker.
+
+## Dashboards
+
+| Dashboard | Description |
+|-----------|-------------|
+| **[GCP OTel] Cloud SQL MySQL Overview** | Fleet view of Cloud SQL for MySQL instances. Availability, partial downtime, CPU, memory and disk saturation, instance state and fleet queries per second over time, an instance list with region, free disk and failed logins, and top 10 instance trends for CPU, memory, disk, connections, queries per second and slow queries. |
+| **[GCP OTel] Cloud SQL MySQL Instance Detail** | One Cloud SQL for MySQL instance. Instance metadata with queries per second, slow query, buffer pool hit and connection usage KPIs, then availability, capacity against quotas, traffic and errors (slow queries, lock waits, deadlocks), connections and threads, I/O and cache, and replication. Open it from the overview. |

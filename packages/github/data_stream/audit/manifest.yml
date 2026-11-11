@@ -1,5 +1,11 @@
 type: logs
 title: GitHub Audit Logs
+dataset: github.audit
+elasticsearch:
+  # Required to permit rerouting API request events to the github.api_requests
+  # data stream. dynamic_namespace is intentionally omitted to preserve
+  # namespace isolation.
+  dynamic_dataset: true
 streams:
   - input: httpjson
     template_path: httpjson.yml.hbs
@@ -257,6 +263,15 @@ streams:
         type: bool
         multi: false
         default: false
+      - name: route_api_request_events
+        type: bool
+        title: Route API request events to a separate data stream
+        description: >-
+          When enabled, GitHub API request events (`event.action` is `api.request`) are routed to the `github.api_requests` data stream instead of `github.audit`, allowing retention and lifecycle settings to be tuned independently of audit records. API request events are only available via GitHub audit log streaming. Existing data is not migrated.
+        multi: false
+        required: true
+        show_user: true
+        default: false
       - name: processors
         type: yaml
         title: Processors
@@ -447,6 +462,15 @@ streams:
         description: Preserve github.audit fields that were copied to Elastic Common Schema (ECS) fields.
         type: bool
         multi: false
+        default: false
+      - name: route_api_request_events
+        type: bool
+        title: Route API request events to a separate data stream
+        description: >-
+          When enabled, GitHub API request events (`event.action` is `api.request`) are routed to the `github.api_requests` data stream instead of `github.audit`, allowing retention and lifecycle settings to be tuned independently of audit records. API request events are only available via GitHub audit log streaming. Existing data is not migrated.
+        multi: false
+        required: true
+        show_user: true
         default: false
       - name: processors
         type: yaml
@@ -643,6 +667,15 @@ streams:
         type: bool
         multi: false
         default: false
+      - name: route_api_request_events
+        type: bool
+        title: Route API request events to a separate data stream
+        description: >-
+          When enabled, GitHub API request events (`event.action` is `api.request`) are routed to the `github.api_requests` data stream instead of `github.audit`, allowing retention and lifecycle settings to be tuned independently of audit records. API request events are only available via GitHub audit log streaming. Existing data is not migrated.
+        multi: false
+        required: true
+        show_user: true
+        default: false
       - name: processors
         type: yaml
         title: Processors
@@ -786,6 +819,15 @@ streams:
         description: Preserve github.audit fields that were copied to Elastic Common Schema (ECS) fields.
         type: bool
         multi: false
+        default: false
+      - name: route_api_request_events
+        type: bool
+        title: Route API request events to a separate data stream
+        description: >-
+          When enabled, GitHub API request events (`event.action` is `api.request`) are routed to the `github.api_requests` data stream instead of `github.audit`, allowing retention and lifecycle settings to be tuned independently of audit records. API request events are only available via GitHub audit log streaming. Existing data is not migrated.
+        multi: false
+        required: true
+        show_user: true
         default: false
       - name: processors
         type: yaml

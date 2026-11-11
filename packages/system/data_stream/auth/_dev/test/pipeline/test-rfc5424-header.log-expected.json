@@ -1,0 +1,252 @@
+{
+    "expected": [
+        {
+            "@timestamp": "2026-01-15T08:22:41.123Z",
+            "ecs": {
+                "version": "8.11.0"
+            },
+            "event": {
+                "action": "ssh_login",
+                "category": [
+                    "authentication",
+                    "session"
+                ],
+                "kind": "event",
+                "original": "<38>1 2026-01-15T08:22:41.123456+00:00 app-01.example.com sshd 20451 - - Accepted publickey for deploy from 192.0.2.5 port 51022 ssh2: RSA SHA256:abcd1234",
+                "outcome": "success",
+                "type": [
+                    "info"
+                ]
+            },
+            "host": {
+                "hostname": "app-01.example.com"
+            },
+            "input": {
+                "type": "log"
+            },
+            "log": {
+                "syslog": {
+                    "priority": 38
+                }
+            },
+            "message": "Accepted publickey for deploy from 192.0.2.5 port 51022 ssh2: RSA SHA256:abcd1234",
+            "process": {
+                "name": "sshd",
+                "pid": 20451
+            },
+            "related": {
+                "hosts": [
+                    "app-01.example.com"
+                ],
+                "ip": [
+                    "192.0.2.5"
+                ],
+                "user": [
+                    "deploy"
+                ]
+            },
+            "source": {
+                "address": "192.0.2.5",
+                "as": {
+                    "number": 64500,
+                    "organization": {
+                        "name": "Documentation ASN"
+                    }
+                },
+                "geo": {
+                    "city_name": "Las Vegas",
+                    "continent_name": "North America",
+                    "country_iso_code": "US",
+                    "country_name": "United States",
+                    "location": {
+                        "lat": 36.17497,
+                        "lon": -115.13722
+                    },
+                    "region_iso_code": "US-NV",
+                    "region_name": "Nevada"
+                },
+                "ip": "192.0.2.5",
+                "port": 51022
+            },
+            "system": {
+                "auth": {
+                    "ssh": {
+                        "event": "Accepted",
+                        "method": "publickey",
+                        "signature": "RSA SHA256:abcd1234"
+                    },
+                    "syslog": {
+                        "version": "1"
+                    }
+                }
+            },
+            "user": {
+                "name": "deploy"
+            }
+        },
+        {
+            "@timestamp": "2026-01-15T08:22:42.654Z",
+            "ecs": {
+                "version": "8.11.0"
+            },
+            "event": {
+                "action": "service-restart",
+                "category": [
+                    "process"
+                ],
+                "kind": "event",
+                "original": "<85>1 2026-01-15T08:22:42.654321+00:00 app-01.example.com sudo 20480 - - deploy : TTY=pts/1 ; PWD=/home/deploy ; USER=root ; COMMAND=/usr/bin/systemctl restart app",
+                "type": [
+                    "change"
+                ]
+            },
+            "host": {
+                "hostname": "app-01.example.com"
+            },
+            "input": {
+                "type": "log"
+            },
+            "log": {
+                "syslog": {
+                    "priority": 85
+                }
+            },
+            "message": "deploy : TTY=pts/1 ; PWD=/home/deploy ; USER=root ; COMMAND=/usr/bin/systemctl restart app",
+            "process": {
+                "name": "sudo",
+                "pid": 20480
+            },
+            "related": {
+                "hosts": [
+                    "app-01.example.com"
+                ],
+                "user": [
+                    "deploy",
+                    "root"
+                ]
+            },
+            "service": {
+                "name": "app"
+            },
+            "system": {
+                "auth": {
+                    "sudo": {
+                        "command": "/usr/bin/systemctl restart app",
+                        "pwd": "/home/deploy",
+                        "tty": "pts/1",
+                        "user": "root"
+                    },
+                    "syslog": {
+                        "version": "1"
+                    }
+                }
+            },
+            "user": {
+                "effective": {
+                    "name": "root"
+                },
+                "name": "deploy"
+            }
+        },
+        {
+            "@timestamp": "2026-01-15T08:22:43.112Z",
+            "ecs": {
+                "version": "8.11.0"
+            },
+            "event": {
+                "action": "logged-on",
+                "category": [
+                    "session"
+                ],
+                "kind": "event",
+                "original": "<86>1 2026-01-15T08:22:43.112233+00:00 app-01.example.com sshd 20451 - - pam_unix(sshd:session): session opened for user deploy(uid=1000) by (uid=0)"
+            },
+            "host": {
+                "hostname": "app-01.example.com"
+            },
+            "input": {
+                "type": "log"
+            },
+            "log": {
+                "syslog": {
+                    "priority": 86
+                }
+            },
+            "message": "pam_unix(sshd:session): session opened for user deploy(uid=1000) by (uid=0)",
+            "process": {
+                "name": "sshd",
+                "pid": 20451
+            },
+            "related": {
+                "hosts": [
+                    "app-01.example.com"
+                ],
+                "user": [
+                    "deploy(uid=1000)"
+                ]
+            },
+            "system": {
+                "auth": {
+                    "syslog": {
+                        "version": "1"
+                    }
+                }
+            },
+            "user": {
+                "effective": {
+                    "name": "deploy(uid=1000)"
+                },
+                "id": "0",
+                "name": ""
+            }
+        },
+        {
+            "@timestamp": "2026-01-15T08:22:44.998Z",
+            "ecs": {
+                "version": "8.11.0"
+            },
+            "event": {
+                "action": "logged-off",
+                "category": [
+                    "session"
+                ],
+                "kind": "event",
+                "original": "<86>1 2026-01-15T08:22:44.998877+00:00 app-01.example.com sshd 20451 - - pam_unix(sshd:session): session closed for user deploy"
+            },
+            "host": {
+                "hostname": "app-01.example.com"
+            },
+            "input": {
+                "type": "log"
+            },
+            "log": {
+                "syslog": {
+                    "priority": 86
+                }
+            },
+            "message": "pam_unix(sshd:session): session closed for user deploy",
+            "process": {
+                "name": "sshd",
+                "pid": 20451
+            },
+            "related": {
+                "hosts": [
+                    "app-01.example.com"
+                ],
+                "user": [
+                    "deploy"
+                ]
+            },
+            "system": {
+                "auth": {
+                    "syslog": {
+                        "version": "1"
+                    }
+                }
+            },
+            "user": {
+                "name": "deploy"
+            }
+        }
+    ]
+}

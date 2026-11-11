@@ -1,0 +1,110 @@
+{
+    "attributes": {
+        "alert_suppression": {
+            "duration": {
+                "unit": "m",
+                "value": 30
+            },
+            "group_by": [
+                "Esql.username",
+                "Esql.user_agent",
+                "azure.resource.id"
+            ],
+            "missing_fields_strategy": "suppress"
+        },
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects an AKS (Azure Kubernetes Service) identity that lists or gets multiple distinct Kubernetes API resource types associated with cluster orientation (namespaces, nodes, pods, roles, clusterroles, configmaps, serviceaccounts, rolebindings, clusterrolebindings) within a short window. Cardinality of distinct resources touched, not raw event count, is the signal that separates recon/orientation behavior from steady-state controllers that repeatedly touch a narrow set of resources. Known platform and control-plane identities are excluded.",
+        "false_positives": [
+            "GitOps, backup, and platform operators may span these resource types during sync. Exclude validated service accounts or raise the cardinality threshold after baselining."
+        ],
+        "from": "now-9m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Azure AKS Multi-Resource Setup Discovery",
+        "note": "## Triage and analysis\n\n### Investigating Azure AKS Multi-Resource Setup Discovery\n\nAKS kube-audit events are carried under the flattened `azure.platformlogs.properties.log.*` subtree, so this rule uses\n`field_extract` to pull `stage`, `verb`, `objectRef.resource`, `objectRef.namespace`, `user.username`, `userAgent`,\nand `sourceIPs` into named `Esql.*`/`Esql.*` fields. It groups `ResponseComplete`-stage `list`/`get` calls on\norientation-related resources by `Esql.username`, `Esql.user_agent`, and `azure.resource.id` (the AKS cluster),\nand alerts when the distinct `Esql.resource` cardinality for that identity/client fingerprint is 3 or greater,\nmirroring the Kubernetes ES|QL multi-resource discovery rule. Scoping by cluster keeps same-named identities (for\nexample the default `masterclient` admin or a GitOps service account deployed to several clusters) from pooling\nacross clusters and reaching the threshold on unrelated activity. Source IPs are not part of the group key because\nAKS `sourceIPs` carries the client IP alongside a control-plane proxy address (`172.31.x.x`) that varies across proxy\nreplicas within a single session; they are instead collected into `Esql.source_ip_values` for triage. Known\nplatform/control-plane identities (`aksService`, `hcpService`, `acsService`, `readinessChecker`, node and\n`kube-system`/`elastic-system` service accounts) and automation-tool user agents (Azure Arc, Helm, Terraform,\n`OpenAPI-Generator`) are excluded; `kubectl` is never excluded by user agent alone, since both admins and attackers\nwith a stolen token typically drive activity through it.\n\n### Possible investigation steps\n\n- Review `Esql.username`, `Esql.user_agent`, and `Esql.source_ip_values` for the acting identity and client\n  fingerprint, confirm which cluster was targeted via `azure.resource.id`, bound the window with\n  `Esql.earliest_timestamp`/`Esql.latest_timestamp`, and pivot into raw `kube-audit` logs for call ordering.\n  Unexpected `kubectl` or custom user agents (for example `kubectl-recon`) from human-style identities, or the same\n  identity spanning multiple user agents/source IPs, warrant closer review.\n- Check `Esql.enumerated_resources`/`Esql.enumerated_namespaces` against a known job, GitOps sync, or CI/CD pipeline.\n  Both cluster-scoped kinds (nodes, clusterroles, clusterrolebindings) and an all-namespaces list of a\n  namespace-scoped kind (for example `kubectl get pods -A`) surface as `(cluster-scoped)`; the latter is a broader\n  enumeration than a single-namespace query.\n- Correlate with follow-on activity from the same identity/source IP: secret reads, `SelfSubjectAccessReview`\n  checks, pod exec, RBAC changes, and cross-reference the public address in `Esql.source_ip_values` (ignoring\n  the `172.31.x.x` AKS control-plane proxy entries) against expected CI/CD or administrator egress ranges.\n\n### False positive analysis\n\n- Controllers/operators (GitOps, backup, service-mesh, autoscalers) and CI/CD or bootstrap tooling can legitimately\n  span several resource types, or provision namespaces/roles/service accounts together, in one window; validate the\n  service account and correlate with change/deploy windows before treating as suspicious.\n- Helm, Terraform, and Azure Arc user agents are pre-filtered as the dominant automation noise source, and\n  `elastic-system` namespace activity is excluded from the cardinality count; add newly validated automation\n  identities/user agents to the exclusion list to reduce further noise.\n- User agents are client-supplied and spoofable, so the exclusions narrow noise but aren't strong identity\n  verification; corroborate with the acting identity and RBAC before dismissing an alert.\n\n### Response and remediation\n\n- If unauthorized, revoke or rotate the implicated credentials/tokens, tighten RBAC bindings for the identity, and\n  inspect for follow-on data access or privilege escalation.\n- Collect the relevant `kube-audit` events and AKS diagnostic logs for the identity, source IP, and time window for\n  incident response.\n- If the identity is a compromised service account, rotate its token/certificate and review any workloads that mount it.\n",
+        "query": "from logs-azure.platformlogs-* metadata _id, _index, _version\n| where data_stream.dataset == \"azure.platformlogs\"\n    and event.action == \"Microsoft.ContainerService/managedClusters/diagnosticLogs/Read\"\n    and azure.platformlogs.category == \"kube-audit\"\n| eval Esql.stage = field_extract(azure.platformlogs.properties, \"log.stage\"),\n    Esql.verb = field_extract(azure.platformlogs.properties, \"log.verb\"),\n    Esql.resource = field_extract(azure.platformlogs.properties, \"log.objectRef.resource\"),\n    Esql.namespace = field_extract(azure.platformlogs.properties, \"log.objectRef.namespace\"),\n    Esql.username = field_extract(azure.platformlogs.properties, \"log.user.username\"),\n    Esql.user_agent = field_extract(azure.platformlogs.properties, \"log.userAgent\"),\n    Esql.source_ips = field_extract(azure.platformlogs.properties, \"log.sourceIPs\")\n| where Esql.stage == \"ResponseComplete\"\n    and Esql.verb in (\"list\", \"get\")\n    and Esql.resource in (\"namespaces\", \"nodes\", \"pods\", \"roles\", \"clusterroles\", \"configmaps\", \"serviceaccounts\", \"rolebindings\", \"clusterrolebindings\")\n    and Esql.username is not null\n    and (Esql.namespace is null or Esql.namespace != \"elastic-system\")\n    and not Esql.username rlike \"system:node:.*|system:serviceaccount:kube-system:.*|system:serviceaccount:elastic-system:.*\"\n    and not Esql.username in (\"aksService\", \"hcpService\", \"readinessChecker\", \"acsService\", \"system:apiserver\", \"system:kube-controller-manager\", \"system:kube-scheduler\")\n    and not Esql.user_agent rlike \"\"\"(resourcesyncoperator|identityOperator|telegraf|clustermetadatasync|ConfigurationAgent|manager|extensionmanager)/.*\\(linux/amd64\\) kubernetes/\\$Format|Helm/.*|.*Terraform.*|OpenAPI-Generator/.*\"\"\"\n| eval Esql.namespace = coalesce(Esql.namespace, \"(cluster-scoped)\")\n| stats\n    Esql.unique_resources = count_distinct(Esql.resource),\n    Esql.enumerated_resources = values(Esql.resource),\n    Esql.enumerated_namespaces = values(Esql.namespace),\n    Esql.source_ip_values = values(Esql.source_ips),\n    Esql.username_values = values(Esql.username),\n    Esql.event_count = count(*),\n    Esql.earliest_timestamp = min(@timestamp),\n    Esql.latest_timestamp = max(@timestamp)\n  by Esql.username, Esql.user_agent, azure.resource.id\n| where Esql.unique_resources >= 3\n| keep Esql.*, azure.resource.id\n",
+        "references": [
+            "https://microsoft.github.io/Threat-Matrix-for-Kubernetes/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "platformlogs",
+                "package": "azure",
+                "version": ">=1.22.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties",
+                "type": "flattened"
+            },
+            {
+                "ecs": false,
+                "name": "azure.resource.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "86bdaa43-9268-436f-b944-d9c64a68def3",
+        "setup": "The Azure Fleet integration collecting AKS diagnostic logs with the `kube-audit` category forwarded through Event Hub\ninto the `azure.platformlogs` data stream is required for this rule.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: Azure",
+            "Data Source: Azure Platform Logs",
+            "Data Source: Kubernetes",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Resources: Investigation Guide",
+            "Rule Type: ESQL",
+            "Platform: Azure",
+            "Platform: Kubernetes"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1613",
+                        "name": "Container and Resource Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1613/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "86bdaa43-9268-436f-b944-d9c64a68def3_1",
+    "type": "security-rule"
+}
