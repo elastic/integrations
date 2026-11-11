@@ -1,0 +1,122 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects creation or change of an AI coding-agent instruction file (agents.md or claude.md) in a user Downloads folder by a browser or an archive tool. A web page can save AGENTS.md or CLAUDE.md into Downloads without a click, and opening an archive can extract the same files there. Codex and Claude Code treat those files as trusted project instructions, which can lead them to rewrite their own configuration, install a package, or leak a login token.",
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "host.name",
+                "user.name",
+                "file.name",
+                "file.path",
+                "process.name",
+                "process.executable"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "GenAI Agent Instruction File Written to Downloads",
+        "note": "## Triage and analysis\n\n### Investigating GenAI Agent Instruction File Written to Downloads\n\n`AGENTS.md` and `CLAUDE.md` are instruction files that coding agents such as OpenAI Codex and Claude Code read when\na session starts in that folder and then follow. Downloads is a folder a browser can write to on its own, and it is\nalso where archive tools extract files the user opened. A planted instruction file can tell the agent to register a\nmalicious MCP server, install a package, or point its API traffic at an attacker-controlled gateway.\n\n### Possible investigation steps\n\n- Open `file.path` and read the file. Look for instructions that edit agent config (`~/.codex/config.toml`,\n  `.claude/settings.json`, `mcp.json`), register an MCP server, run `npx` or `npm install`, or set\n  `ANTHROPIC_BASE_URL` or a similar API base URL.\n- Review `process.name` and `process.executable`. A browser or browser helper means the file was saved from the web.\n  An archive tool (`7z`, `WinRAR`, `tar`, `unzip`, Archive Utility) means it was extracted from a download.\n- On the same host and user, look for a preceding download of a zip, rar, or 7z into the same Downloads folder, and\n  for follow-on writes to `.codex`, `.claude`, or other GenAI config paths.\n- Check whether Codex, Claude, or another agent was later started with that Downloads folder as its workspace, and\n  whether it spawned `npm`, `npx`, `node`, or a shell afterward.\n- If the file is malicious, hunt the same filename and content hash on other hosts.\n\n### False positive analysis\n\n- Cloning or downloading a legitimate repository into Downloads extracts a real `AGENTS.md` or `CLAUDE.md`. Confirm\n  the archive or URL and the file contents before excluding.\n- Saving those files from a browser while working on an agent project in Downloads is expected. Scope exceptions to\n  a known path, user, or parent archive, not to the filename alone.\n\n### Response and remediation\n\n- Quarantine the instruction file and any archive it came from. Collect the hash and the download URL if present.\n- If an agent already consumed the file, review `~/.codex/config.toml`, `.claude/settings.json`, and other MCP\n  config for new servers or API base URLs, and remove unauthorized entries.\n- Rotate agent login tokens and any credentials the session could have read. Remove packages the agent installed\n  as part of the instructions, such as an unexpected npm package.\n",
+        "query": "FROM logs-endpoint.events.file-* METADATA _id, _version, _index\n| WHERE event.type IN (\"creation\", \"change\")\n  AND TO_LOWER(file.name) IN (\"agents.md\", \"claude.md\")\n  AND (\n    file.path LIKE \"/Users/*/Downloads/*\"\n    OR file.path LIKE \"/home/*/Downloads/*\"\n    OR file.path LIKE \"\"\"C:\\\\Users\\\\*\\\\Downloads\\\\*\"\"\"\n  )\n  AND (\n    TO_LOWER(process.name) IN (\n      \"google chrome\", \"chrome.exe\", \"chrome\", \"chromium\", \"chromium-browser\", \"google-chrome\",\n      \"microsoft edge\", \"msedge.exe\", \"microsoft-edge\",\n      \"firefox\", \"firefox.exe\",\n      \"safari\",\n      \"brave browser\", \"brave.exe\", \"brave\", \"brave-browser\",\n      \"opera\", \"opera.exe\",\n      \"vivaldi\", \"vivaldi.exe\",\n      \"explorer.exe\",\n      \"com.apple.webkit.networking\",\n      \"7z.exe\", \"7zg.exe\", \"7zfm.exe\", \"7z\", \"7zz\",\n      \"winrar.exe\", \"rar.exe\", \"unrar.exe\", \"rar\", \"unrar\",\n      \"winzip.exe\", \"winzip64.exe\",\n      \"bandizip.exe\", \"peazip.exe\",\n      \"tar.exe\", \"tar\", \"bsdtar\",\n      \"unzip.exe\", \"unzip\", \"unar\", \"ditto\",\n      \"archive utility\", \"bomarchivehelper\",\n      \"the unarchiver\", \"keka\",\n      \"file-roller\", \"ark\"\n    )\n    OR TO_LOWER(process.name) LIKE (\n      \"google chrome helper*\",\n      \"microsoft edge helper*\",\n      \"brave browser helper*\",\n      \"opera helper*\",\n      \"vivaldi helper*\"\n    )\n  )\n| KEEP\n    _id,\n    _version,\n    _index,\n    data_stream.namespace,\n    @timestamp,\n    host.name,\n    host.id,\n    agent.id,\n    user.name,\n    user.domain,\n    event.type,\n    event.action,\n    file.name,\n    file.path,\n    process.name,\n    process.executable,\n    process.entity_id\n",
+        "references": [
+            "https://forever.security/blog/hijacking-ai-agents-via-downloads-folder"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "c6c790fe-2bfa-45fa-b3c5-6b702e66bbea",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "Domain: GenAI",
+            "Mitre Atlas: AML.T0051",
+            "Mitre Atlas: AML.T0093",
+            "OS: Linux",
+            "OS: Windows",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Initial Access",
+            "Tactic: Execution",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide",
+            "Threat: Unauthorized AI Usage",
+            "Rule Type: ES|QL",
+            "Platform: Windows",
+            "Platform: Linux",
+            "Platform: macOS"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1189",
+                        "name": "Drive-by Compromise",
+                        "reference": "https://attack.mitre.org/techniques/T1189/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1204",
+                        "name": "User Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1204/",
+                        "subtechnique": [
+                            {
+                                "id": "T1204.002",
+                                "name": "Malicious File",
+                                "reference": "https://attack.mitre.org/techniques/T1204/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "c6c790fe-2bfa-45fa-b3c5-6b702e66bbea_1",
+    "type": "security-rule"
+}

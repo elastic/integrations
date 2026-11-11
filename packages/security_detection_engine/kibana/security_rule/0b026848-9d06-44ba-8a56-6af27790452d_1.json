@@ -1,0 +1,96 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects bypass of GitHub secret scanning push protection, approval of a bypass request, or disabling push protection at enterprise, organization, or repository scope. This is separate from turning secret scanning off. Bypass means a detected secret was allowed into the repository \u2014 the pattern used after tj-actions and similar CI secret-dump attacks.",
+        "false_positives": [
+            "Documented test of push protection using a dummy token, or a temporary disable while fixing a noisy pattern. Re-enable afterward and confirm no live secret was pushed."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "user.name",
+                "github.org",
+                "github.repo",
+                "github.actor_ip",
+                "github.hashed_token",
+                "github.programmatic_access_type",
+                "github.user_agent",
+                "github.secret_type"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "GitHub Secret Scanning Push Protection Bypassed or Disabled",
+        "note": "## Triage and analysis\n\n### Investigating GitHub Secret Scanning Push Protection Bypassed or Disabled\n\n`secret_scanning_push_protection.bypass` fires when a user pushes a detected secret anyway. `secret_scanning_push_protection_request.approve` is a reviewer allowing that push. `business_secret_scanning_push_protection.disable`, `org.secret_scanning_push_protection_disable`, and `repository_secret_scanning_push_protection.disable` turn the control off at enterprise, organization, and repository scope respectively (the `*_new_repos_disable` actions turn it off for newly created repositories). This is separate from disabling secret scanning itself, which is covered by the `GitHub Secret Scanning Disabled` rule.\n\n### Possible investigation steps\n\n- Identify `user.name`, `github.repo`, `event.action`, and `github.secret_type`, and confirm whether the actor is expected to bypass or administer this control.\n- Review `github.actor_ip` and `github.user_agent` to validate the source of the change, and pivot on `github.hashed_token` / `github.programmatic_access_type` to determine whether it was performed via the UI or a token.\n- For a bypass or approved bypass: inspect the commit that landed, rotate the secret type reported in `github.secret_type`, and check workflow logs for printed credentials.\n- For a disable: re-enable push protection and review commits pushed during the window it was off.\n- Correlate with other control changes in the same window (secret scanning disabled, bypass-list additions, new owners, PAT grants) that may indicate broader tampering.\n\n### False positive analysis\n\n- Security team testing push protection with a known dummy value during an approved exercise.\n- A noisy custom pattern that maintainers temporarily disable. Confirm no live secret was pushed and that the control is re-enabled afterward.\n\n### Response and remediation\n\n- Re-enable push protection at the affected scope. Rotate any secret that was bypassed.\n- Restrict who can bypass or disable the control, and review the push-protection bypass list.\n- Review Actions secrets and PATs created in the same window, and confirm the acting account is not compromised.\n",
+        "query": "from logs-github.audit-* metadata _id, _index, _version\n| where\n  data_stream.dataset == \"github.audit\"\n    and event.action in (\n      \"secret_scanning_push_protection.bypass\",\n      \"secret_scanning_push_protection_request.approve\",\n      \"business_secret_scanning_push_protection.disable\",\n      \"business_secret_scanning_push_protection.disabled_for_new_repos\",\n      \"org.secret_scanning_push_protection_disable\",\n      \"org.secret_scanning_push_protection_new_repos_disable\",\n      \"repository_secret_scanning_push_protection.disable\"\n    )\n| keep\n    _id,\n    _index,\n    _version,\n    @timestamp,\n    event.action,\n    user.name,\n    github.org,\n    github.repo,\n    github.actor_ip,\n    github.hashed_token,\n    github.programmatic_access_type,\n    github.user_agent,\n    github.secret_type\n",
+        "references": [
+            "https://github.com/SigmaHQ/sigma/blob/master/rules/application/github/audit/github_push_protection_bypass_detected.yml",
+            "https://docs.github.com/en/code-security/secret-scanning/working-with-secret-scanning-and-push-protection/working-with-push-protection-from-the-command-line"
+        ],
+        "related_integrations": [
+            {
+                "package": "github",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "0b026848-9d06-44ba-8a56-6af27790452d",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: SaaS",
+            "Platform: GitHub",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: Github",
+            "Data Source: GitHub Audit Logs",
+            "Rule Type: ESQL",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.001",
+                                "name": "Disable or Modify Tools",
+                                "reference": "https://attack.mitre.org/techniques/T1562/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "0b026848-9d06-44ba-8a56-6af27790452d_1",
+    "type": "security-rule"
+}
