@@ -101,9 +101,11 @@ network, then check **Discover** in Kibana for documents in the
 
 ## Performance and scaling
 
-The `alerts` data stream polls `events_tail` once per interval. The default interval is 5m and the
-default initial lookback is 24h. `collection_delay` (default 1m) keeps the cursor behind now so
-alerts that become searchable slightly after their own timestamp are not skipped.
+The `alerts` data stream polls `events_tail` for both alert and Stamus declaration phases. Each
+completed collection window requires at least two requests, plus one request for every additional
+page returned by either phase. The default interval is 5m and the default initial lookback is 24h.
+`collection_delay` (default 1m) keeps the cursor behind now so alerts that become searchable
+slightly after their own timestamp are not skipped.
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
