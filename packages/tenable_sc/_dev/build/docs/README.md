@@ -25,6 +25,28 @@ See Tenable's documentation for more information on:
 
 >  Note: The default value is the recommended value for a batch size by Tenable. It can be found under _Advanced Options_ and can be configured as per requirements. A very large value might not work as intended depending on the API and instance limitations.
 
+## Breaking Changes
+
+### Support for Elastic Vulnerability Findings page
+
+Version `3.0.0` of the Tenable Security Center integration adds support for the [Elastic Cloud Security workflow](https://www.elastic.co/docs/solutions/security/cloud/ingest-third-party-cloud-security-data#_ingest_third_party_security_posture_and_vulnerability_data). Vulnerabilities collected from Tenable Security Center are shown on the Elastic [Vulnerability Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page-3) and in the vulnerability insights of the Alert and Entity details flyouts for the affected host.
+
+This update adds an [Elastic Latest Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview) which copies the latest vulnerability findings from source indices matching the pattern `logs-tenable_sc.vulnerability-*` into new destination indices matching the pattern `security_solution-tenable_sc.vulnerability_latest-*`. The Elastic Vulnerability Findings page displays vulnerabilities based on the destination indices. The transform keeps the latest copy of each vulnerability finding per asset, and removes findings that were last seen more than 90 days ago.
+
+For existing users of the Tenable Security Center integration, before upgrading to `3.0.0` please ensure the following requirements are met:
+
+1. Users need [Elastic Security solution](https://www.elastic.co/docs/solutions/security) which has requirements documented [here](https://www.elastic.co/docs/solutions/security/get-started/elastic-security-requirements).
+2. To use transforms, users must have:
+   - at least one [transform node](https://www.elastic.co/docs/deploy-manage/distributed-architecture/clusters-nodes-shards/node-roles#transform-node-role),
+   - management features visible in the Kibana space, and
+   - security privileges that:
+     - grant use of transforms, and
+     - grant access to source and destination indices
+   For more details on Transform Setup, refer to the link [here](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup)
+3. Because the latest copy of vulnerabilities is now indexed in two places, i.e., in both source and destination indices, users must anticipate storage requirements accordingly.
+
+The vulnerability data stream collects vulnerabilities incrementally, requesting only vulnerabilities that were last seen after the previous poll. To populate the Vulnerability Findings page with vulnerabilities that were last seen before the integration was installed, set **Initial Interval** to `2160h` (90 days). Vulnerabilities that Tenable Security Center moves out of its cumulative database, for example after they are mitigated, are no longer collected, so their last collected copy stays in the latest index until it is older than 90 days.
+
 ## Logs
 
 ### Asset

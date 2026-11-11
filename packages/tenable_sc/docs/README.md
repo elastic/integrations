@@ -25,6 +25,28 @@ See Tenable's documentation for more information on:
 
 >  Note: The default value is the recommended value for a batch size by Tenable. It can be found under _Advanced Options_ and can be configured as per requirements. A very large value might not work as intended depending on the API and instance limitations.
 
+## Breaking Changes
+
+### Support for Elastic Vulnerability Findings page
+
+Version `3.0.0` of the Tenable Security Center integration adds support for the [Elastic Cloud Security workflow](https://www.elastic.co/docs/solutions/security/cloud/ingest-third-party-cloud-security-data#_ingest_third_party_security_posture_and_vulnerability_data). Vulnerabilities collected from Tenable Security Center are shown on the Elastic [Vulnerability Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page-3) and in the vulnerability insights of the Alert and Entity details flyouts for the affected host.
+
+This update adds an [Elastic Latest Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview) which copies the latest vulnerability findings from source indices matching the pattern `logs-tenable_sc.vulnerability-*` into new destination indices matching the pattern `security_solution-tenable_sc.vulnerability_latest-*`. The Elastic Vulnerability Findings page displays vulnerabilities based on the destination indices. The transform keeps the latest copy of each vulnerability finding per asset, and removes findings that were last seen more than 90 days ago.
+
+For existing users of the Tenable Security Center integration, before upgrading to `3.0.0` please ensure the following requirements are met:
+
+1. Users need [Elastic Security solution](https://www.elastic.co/docs/solutions/security) which has requirements documented [here](https://www.elastic.co/docs/solutions/security/get-started/elastic-security-requirements).
+2. To use transforms, users must have:
+   - at least one [transform node](https://www.elastic.co/docs/deploy-manage/distributed-architecture/clusters-nodes-shards/node-roles#transform-node-role),
+   - management features visible in the Kibana space, and
+   - security privileges that:
+     - grant use of transforms, and
+     - grant access to source and destination indices
+   For more details on Transform Setup, refer to the link [here](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup)
+3. Because the latest copy of vulnerabilities is now indexed in two places, i.e., in both source and destination indices, users must anticipate storage requirements accordingly.
+
+The vulnerability data stream collects vulnerabilities incrementally, requesting only vulnerabilities that were last seen after the previous poll. To populate the Vulnerability Findings page with vulnerabilities that were last seen before the integration was installed, set **Initial Interval** to `2160h` (90 days). Vulnerabilities that Tenable Security Center moves out of its cumulative database, for example after they are mitigated, are no longer collected, so their last collected copy stays in the latest index until it is older than 90 days.
+
 ## Logs
 
 ### Asset
@@ -39,24 +61,24 @@ An example event for `asset` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-10-06T13:37:55.913Z",
+    "@timestamp": "2026-11-11T11:05:35.375Z",
     "agent": {
-        "ephemeral_id": "77699819-d18a-4aaa-94ec-f623ee5a4a35",
-        "id": "37eb1402-bcaa-45c2-8cc6-4c13a4444037",
-        "name": "elastic-agent-77998",
+        "ephemeral_id": "94e26193-92a2-4e70-ba84-868e2a9fc8ce",
+        "id": "04b4ba10-8b31-415a-8c7f-6df78e190510",
+        "name": "elastic-agent-28376",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "tenable_sc.asset",
-        "namespace": "26660",
+        "namespace": "30871",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "37eb1402-bcaa-45c2-8cc6-4c13a4444037",
+        "id": "04b4ba10-8b31-415a-8c7f-6df78e190510",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -65,9 +87,9 @@ An example event for `asset` looks as following:
         "category": [
             "host"
         ],
-        "created": "2025-10-06T13:37:55.913Z",
+        "created": "2026-11-11T11:05:35.375Z",
         "dataset": "tenable_sc.asset",
-        "ingested": "2025-10-06T13:37:58Z",
+        "ingested": "2026-11-11T11:05:38Z",
         "kind": "state",
         "original": "{\"biosGUID\":\"9e8c4d43-982b-4405-a76c-d56c1d6cf117\",\"dnsName\":\"rnkmigauv2l8zeyf.example\",\"hostUniqueness\":\"repositoryID,ip,dnsName\",\"ip\":\"0.0.228.153\",\"lastAuthRun\":\"\",\"lastUnauthRun\":\"\",\"macAddress\":\"00:00:00:47:05:0d\",\"mcafeeGUID\":\"\",\"netbiosName\":\"UNKNOWN\\\\RNKMIGAUV2L8ZEYF.EXAMPLE\",\"osCPE\":\"cpe:/o:microsoft:windows_10:::x64-home\",\"pluginSet\":\"201901281542\",\"policyName\":\"Basic Agent Scan\",\"repository\":{\"dataFormat\":\"IPv4\",\"description\":\"\",\"id\":\"2\",\"name\":\"Staged-Large\",\"sciID\":\"1\"},\"score\":\"307\",\"severityCritical\":\"6\",\"severityHigh\":\"4\",\"severityInfo\":\"131\",\"severityLow\":\"0\",\"severityMedium\":\"9\",\"total\":\"150\",\"tpmID\":\"\",\"uniqueness\":\"repositoryID,ip,dnsName\",\"uuid\":\"4add65d0-27fc-491c-91ba-3f498a61f49e\"}",
         "type": [
@@ -203,30 +225,30 @@ An example event for `plugin` looks as following:
 {
     "@timestamp": "2021-09-27T01:33:53.000Z",
     "agent": {
-        "ephemeral_id": "ad9b8348-5b15-45a3-967e-c24f69eed284",
-        "id": "65054cc3-10c1-4c92-a72b-ca4b1cd3f337",
-        "name": "elastic-agent-15688",
+        "ephemeral_id": "83555413-d45c-440a-bd21-4b40af021d0d",
+        "id": "87da7a35-2edc-4fb7-8c34-e8cac4f54698",
+        "name": "elastic-agent-85011",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "tenable_sc.plugin",
-        "namespace": "57997",
+        "namespace": "84561",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "65054cc3-10c1-4c92-a72b-ca4b1cd3f337",
+        "id": "87da7a35-2edc-4fb7-8c34-e8cac4f54698",
         "snapshot": false,
         "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2025-10-07T10:42:09.255Z",
+        "created": "2026-11-11T11:06:23.491Z",
         "dataset": "tenable_sc.plugin",
-        "ingested": "2025-10-07T10:42:12Z",
+        "ingested": "2026-11-11T11:06:26Z",
         "kind": "event",
         "original": "{\"baseScore\":\"7.8\",\"checkType\":\"remote\",\"copyright\":\"This script is Copyright (C) 2003-2020 John Lampe\",\"cpe\":\"\",\"cvssV3BaseScore\":null,\"cvssV3TemporalScore\":null,\"cvssV3Vector\":\"\",\"cvssV3VectorBF\":\"0\",\"cvssVector\":\"AV:N/AC:L/Au:N/C:N/I:N/A:C/E:U/RL:OF/RC:C\",\"cvssVectorBF\":\"2164920932\",\"dependencies\":\"find_service1.nasl,http_version.nasl,www_fingerprinting_hmap.nasl\",\"description\":\"Microsoft IIS, running Frontpage extensions, is vulnerable to a remote denial of service attack usually called the 'malformed web submission' vulnerability.  An attacker, exploiting this vulnerability, will be able to render the service unusable.\\n\\nIf this machine serves a business-critical function, there could be an impact to the business.\",\"dstPort\":null,\"exploitAvailable\":\"false\",\"exploitEase\":\"No known exploits are available\",\"exploitFrameworks\":\"\",\"family\":{\"id\":\"11\",\"name\":\"Web Servers\",\"type\":\"active\"},\"id\":\"10585\",\"md5\":\"38b2147401eb5c3a15af52182682f345\",\"modifiedTime\":\"1632706433\",\"name\":\"Microsoft IIS Frontpage Server Extensions (FPSE) Malformed Form DoS\",\"patchModDate\":\"-1\",\"patchPubDate\":\"-1\",\"pluginModDate\":\"1591963200\",\"pluginPubDate\":\"1058875200\",\"protocol\":\"\",\"requiredPorts\":\"\",\"requiredUDPPorts\":\"\",\"riskFactor\":\"High\",\"seeAlso\":\"https://docs.microsoft.com/en-us/security-updates/SecurityBulletins/2000/ms00-100\",\"solution\":\"Microsoft has released a set of patches for IIS 4.0 and 5.0.\",\"sourceFile\":\"IIS_frontpage_DOS_2.nasl\",\"srcPort\":null,\"stigSeverity\":null,\"synopsis\":\"The remote web server is vulnerable to a denial of service\",\"temporalScore\":\"5.8\",\"type\":\"active\",\"version\":\"1.28\",\"vprContext\":\"[{\\\"id\\\":\\\"age_of_vuln\\\",\\\"name\\\":\\\"Vulnerability Age\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"730 days +\\\"},{\\\"id\\\":\\\"cvssV3_impactScore\\\",\\\"name\\\":\\\"CVSS v3 Impact Score\\\",\\\"type\\\":\\\"number\\\",\\\"value\\\":3.6000000000000001},{\\\"id\\\":\\\"exploit_code_maturity\\\",\\\"name\\\":\\\"Exploit Code Maturity\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Unproven\\\"},{\\\"id\\\":\\\"product_coverage\\\",\\\"name\\\":\\\"Product Coverage\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Low\\\"},{\\\"id\\\":\\\"threat_intensity_last_28\\\",\\\"name\\\":\\\"Threat Intensity\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Very Low\\\"},{\\\"id\\\":\\\"threat_recency\\\",\\\"name\\\":\\\"Threat Recency\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"\\u003e 365 days\\\"},{\\\"id\\\":\\\"threat_sources_last_28\\\",\\\"name\\\":\\\"Threat Sources\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"No recorded events\\\"}]\",\"vprScore\":\"4.4\",\"vulnPubDate\":\"977486400\",\"xrefs\":\"CVE:CVE-2001-0096, BID:2144, MSFT:MS00-100, MSKB:280322\"}",
         "type": [
@@ -433,54 +455,58 @@ An example event for `vulnerability` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-01-25T01:57:15.000Z",
+    "@timestamp": "2026-10-12T11:13:34.000Z",
     "agent": {
-        "ephemeral_id": "2979cdbb-8413-43ce-a22a-59ea2f219485",
-        "id": "fad3bc55-e747-4871-b235-66cb7e420f26",
-        "name": "elastic-agent-96925",
+        "ephemeral_id": "2a9dfa17-dc54-496c-b6a2-7e572fca076b",
+        "id": "09c9586a-b539-4ef4-bc23-0a965cf7a516",
+        "name": "elastic-agent-57666",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "tenable_sc.vulnerability",
-        "namespace": "48530",
+        "namespace": "83630",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "fad3bc55-e747-4871-b235-66cb7e420f26",
+        "id": "09c9586a-b539-4ef4-bc23-0a965cf7a516",
         "snapshot": false,
         "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
-            "threat",
             "vulnerability"
         ],
-        "created": "2026-04-08T09:39:30.457Z",
+        "created": "2026-11-11T11:13:34.459Z",
         "dataset": "tenable_sc.vulnerability",
-        "ingested": "2026-04-08T09:39:31Z",
-        "kind": "event",
-        "original": "{\"acceptRisk\":\"0\",\"baseScore\":\"0.0\",\"bid\":\"\",\"checkType\":\"remote\",\"cpe\":\"\",\"cve\":\"CVE-1999-0524\",\"cvssV3BaseScore\":\"0.0\",\"cvssV3TemporalScore\":\"\",\"cvssV3Vector\":\"AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N\",\"cvssVector\":\"AV:L/AC:L/Au:N/C:N/I:N/A:N\",\"description\":\"The remote host answers to an ICMP timestamp request.  This allows an attacker to know the date that is set on the targeted machine, which may assist an unauthenticated, remote attacker in defeating time-based authentication protocols.\\n\\nTimestamps returned from machines running Windows Vista / 7 / 2008 / 2008 R2 are deliberately incorrect, but usually within 1000 seconds of the actual system time.\",\"dnsName\":\"_gateway.lxd\",\"exploitAvailable\":\"No\",\"exploitEase\":\"\",\"exploitFrameworks\":\"\",\"family\":{\"id\":\"30\",\"name\":\"General\",\"type\":\"active\"},\"firstSeen\":\"1551284872\",\"hasBeenMitigated\":\"0\",\"hostUniqueness\":\"repositoryID,ip,dnsName\",\"ip\":\"10.238.64.3\",\"ips\":\"10.238.64.3\",\"lastSeen\":\"1769306235\",\"macAddress\":\"00:16:3e:a1:12:f7\",\"netbiosName\":\"\",\"operatingSystem\":\"Linux Kernel 2.6\",\"patchPubDate\":\"-1\",\"pluginID\":\"10114\",\"pluginInfo\":\"10114 (0/1) ICMP Timestamp Request Remote Date Disclosure\",\"pluginModDate\":\"1570190400\",\"pluginName\":\"ICMP Timestamp Request Remote Date Disclosure\",\"pluginPubDate\":\"933508800\",\"pluginText\":\"\\u003cplugin_output\\u003eThe remote clock is synchronized with the local clock.\\n\\u003c/plugin_output\\u003e\",\"port\":\"0\",\"protocol\":\"ICMP\",\"recastRisk\":\"0\",\"repository\":{\"dataFormat\":\"IPv4\",\"description\":\"\",\"id\":\"1\",\"name\":\"Live\",\"sciID\":\"1\"},\"riskFactor\":\"None\",\"seeAlso\":\"\",\"severity\":{\"description\":\"Informative\",\"id\":\"0\",\"name\":\"Info\"},\"solution\":\"Filter out the ICMP timestamp requests (13), and the outgoing ICMP timestamp replies (14).\",\"stigSeverity\":\"\",\"synopsis\":\"It is possible to determine the exact time set on the remote host.\",\"temporalScore\":\"\",\"uniqueness\":\"repositoryID,ip,dnsName\",\"uuid\":\"\",\"version\":\"1.48\",\"vprContext\":\"[{\\\"id\\\":\\\"age_of_vuln\\\",\\\"name\\\":\\\"Vulnerability Age\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"730 days +\\\"},{\\\"id\\\":\\\"cvssV3_impactScore\\\",\\\"name\\\":\\\"CVSS v3 Impact Score\\\",\\\"type\\\":\\\"number\\\",\\\"value\\\":0},{\\\"id\\\":\\\"exploit_code_maturity\\\",\\\"name\\\":\\\"Exploit Code Maturity\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Unproven\\\"},{\\\"id\\\":\\\"product_coverage\\\",\\\"name\\\":\\\"Product Coverage\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Very High\\\"},{\\\"id\\\":\\\"threat_intensity_last_28\\\",\\\"name\\\":\\\"Threat Intensity\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Very Low\\\"},{\\\"id\\\":\\\"threat_recency\\\",\\\"name\\\":\\\"Threat Recency\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"No recorded events\\\"},{\\\"id\\\":\\\"threat_sources_last_28\\\",\\\"name\\\":\\\"Threat Sources\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"No recorded events\\\"}]\",\"vprScore\":\"0.8\",\"vulnPubDate\":\"788961600\",\"xref\":\"CWE #200\"}",
+        "end": "2026-10-12T11:13:34.000Z",
+        "id": "8A24i5EIo9d6qK4QLpckaWmpN49r/fZuRvz7PLIPEnM=",
+        "ingested": "2026-11-11T11:13:37Z",
+        "kind": "state",
+        "original": "{\"acceptRisk\":\"0\",\"baseScore\":\"0.0\",\"bid\":\"\",\"checkType\":\"remote\",\"cpe\":\"\",\"cve\":\"CVE-1999-0524\",\"cvssV3BaseScore\":\"0.0\",\"cvssV3TemporalScore\":\"\",\"cvssV3Vector\":\"AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N\",\"cvssVector\":\"AV:L/AC:L/Au:N/C:N/I:N/A:N\",\"description\":\"The remote host answers to an ICMP timestamp request.  This allows an attacker to know the date that is set on the targeted machine, which may assist an unauthenticated, remote attacker in defeating time-based authentication protocols.\\n\\nTimestamps returned from machines running Windows Vista / 7 / 2008 / 2008 R2 are deliberately incorrect, but usually within 1000 seconds of the actual system time.\",\"dnsName\":\"_gateway.lxd\",\"exploitAvailable\":\"No\",\"exploitEase\":\"\",\"exploitFrameworks\":\"\",\"family\":{\"id\":\"30\",\"name\":\"General\",\"type\":\"active\"},\"firstSeen\":\"1551284872\",\"hasBeenMitigated\":\"0\",\"hostUniqueness\":\"repositoryID,ip,dnsName\",\"ip\":\"10.238.64.2\",\"ips\":\"10.238.64.2\",\"lastSeen\":\"1791803614\",\"macAddress\":\"00:16:3e:a1:12:f7\",\"netbiosName\":\"\",\"operatingSystem\":\"Linux Kernel 2.6\",\"patchPubDate\":\"-1\",\"pluginID\":\"10114\",\"pluginInfo\":\"10114 (0/1) ICMP Timestamp Request Remote Date Disclosure\",\"pluginModDate\":\"1570190400\",\"pluginName\":\"ICMP Timestamp Request Remote Date Disclosure\",\"pluginPubDate\":\"933508800\",\"pluginText\":\"\\u003cplugin_output\\u003eThe remote clock is synchronized with the local clock.\\n\\u003c/plugin_output\\u003e\",\"port\":\"0\",\"protocol\":\"ICMP\",\"recastRisk\":\"0\",\"repository\":{\"dataFormat\":\"IPv4\",\"description\":\"\",\"id\":\"1\",\"name\":\"Live\",\"sciID\":\"1\"},\"riskFactor\":\"None\",\"seeAlso\":\"\",\"severity\":{\"description\":\"Informative\",\"id\":\"0\",\"name\":\"Info\"},\"solution\":\"Filter out the ICMP timestamp requests (13), and the outgoing ICMP timestamp replies (14).\",\"stigSeverity\":\"\",\"synopsis\":\"It is possible to determine the exact time set on the remote host.\",\"temporalScore\":\"\",\"uniqueness\":\"repositoryID,ip,dnsName\",\"uuid\":\"\",\"version\":\"1.48\",\"vprContext\":\"[{\\\"id\\\":\\\"age_of_vuln\\\",\\\"name\\\":\\\"Vulnerability Age\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"730 days +\\\"},{\\\"id\\\":\\\"cvssV3_impactScore\\\",\\\"name\\\":\\\"CVSS v3 Impact Score\\\",\\\"type\\\":\\\"number\\\",\\\"value\\\":0},{\\\"id\\\":\\\"exploit_code_maturity\\\",\\\"name\\\":\\\"Exploit Code Maturity\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Unproven\\\"},{\\\"id\\\":\\\"product_coverage\\\",\\\"name\\\":\\\"Product Coverage\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Very High\\\"},{\\\"id\\\":\\\"threat_intensity_last_28\\\",\\\"name\\\":\\\"Threat Intensity\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Very Low\\\"},{\\\"id\\\":\\\"threat_recency\\\",\\\"name\\\":\\\"Threat Recency\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"No recorded events\\\"},{\\\"id\\\":\\\"threat_sources_last_28\\\",\\\"name\\\":\\\"Threat Sources\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"No recorded events\\\"}]\",\"vprScore\":\"0.8\",\"vulnPubDate\":\"788961600\",\"xref\":\"CWE #200\"}",
+        "risk_score": 0.8,
+        "start": "2019-02-27T16:27:52.000Z",
         "type": [
             "info"
         ]
     },
     "host": {
         "domain": "lxd",
-        "hostname": "_gateway.lxd",
+        "hostname": "_gateway",
         "ip": [
-            "10.238.64.3"
+            "10.238.64.2"
         ],
         "mac": [
             "00-16-3E-A1-12-F7"
         ],
-        "name": "_gateway",
+        "name": "_gateway.lxd",
         "os": {
-            "full": "Linux Kernel 2.6"
+            "full": "Linux Kernel 2.6",
+            "type": "linux"
         }
     },
     "input": {
@@ -489,14 +515,21 @@ An example event for `vulnerability` looks as following:
     "network": {
         "transport": "icmp"
     },
+    "observer": {
+        "vendor": "Tenable"
+    },
     "related": {
         "hosts": [
             "_gateway.lxd",
             "_gateway"
         ],
         "ip": [
-            "10.238.64.3"
+            "10.238.64.2"
         ]
+    },
+    "resource": {
+        "id": "1_10.238.64.2__gateway.lxd",
+        "name": "_gateway.lxd"
     },
     "tags": [
         "preserve_original_event",
@@ -506,10 +539,10 @@ An example event for `vulnerability` looks as following:
     "tenable_sc": {
         "vulnerability": {
             "accept_risk": "0",
-            "age": 2523,
-            "base_score": "0.0",
+            "age": 2783,
+            "base_score": 0,
             "check_type": "remote",
-            "custom_hash": "C+l0P7ZLuUAwlJ+6GEEFY/Es/7J78bpwTeG04ycaOG4=",
+            "custom_hash": "8A24i5EIo9d6qK4QLpckaWmpN49r/fZuRvz7PLIPEnM=",
             "cvss_v3_base_score": 0,
             "cvss_v3_vector": "AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
             "cvss_vector": "AV:L/AC:L/Au:N/C:N/I:N/A:N",
@@ -527,11 +560,11 @@ An example event for `vulnerability` looks as following:
             "first_seen": "2019-02-27T16:27:52.000Z",
             "has_been_mitigated": false,
             "host_uniqueness": "repositoryID,ip,dnsName",
-            "id": "1_10.238.64.3__gateway.lxd",
-            "ip": "10.238.64.3",
-            "ips": "10.238.64.3",
+            "id": "1_10.238.64.2__gateway.lxd",
+            "ip": "10.238.64.2",
+            "ips": "10.238.64.2",
             "is_vulnerability_published": true,
-            "last_seen": "2026-01-25T01:57:15.000Z",
+            "last_seen": "2026-10-12T11:13:34.000Z",
             "mac": "00-16-3E-A1-12-F7",
             "operating_system": "Linux Kernel 2.6",
             "patch": {
@@ -559,7 +592,8 @@ An example event for `vulnerability` looks as following:
             "risk_factor": "None",
             "severity": {
                 "description": "Informative",
-                "id": "0"
+                "id": "0",
+                "name": "Info"
             },
             "solution": "Filter out the ICMP timestamp requests (13), and the outgoing ICMP timestamp replies (14).",
             "synopsis": "It is possible to determine the exact time set on the remote host.",
@@ -637,6 +671,7 @@ An example event for `vulnerability` looks as following:
         "id": [
             "CVE-1999-0524"
         ],
+        "published_date": "1995-01-01T12:00:00.000Z",
         "reference": [
             "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-1999-0524"
         ],
@@ -647,7 +682,9 @@ An example event for `vulnerability` looks as following:
             "base": 0,
             "version": "3.0"
         },
-        "severity": "Info"
+        "severity": "None",
+        "status": "open",
+        "title": "It is possible to determine the exact time set on the remote host."
     }
 }
 ```
@@ -668,12 +705,19 @@ An example event for `vulnerability` looks as following:
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| package.fixed_version | The package version that fixes the vulnerability. | keyword |
+| package.name | Package name | keyword |
+| package.path | Path where the package is installed. | keyword |
+| package.version | Package version | keyword |
+| resource.id | The ID of the vulnerable resource. | keyword |
+| resource.name | The name of the vulnerable resource. | keyword |
 | tenable_sc.vulnerability.accept_risk | N/A. | keyword |
 | tenable_sc.vulnerability.accept_risk_rule_comment |  | keyword |
 | tenable_sc.vulnerability.acr_score |  | double |
 | tenable_sc.vulnerability.age | The time in days between the first and last time the vulnerability was seen. | long |
 | tenable_sc.vulnerability.asset_exposure_score |  | long |
-| tenable_sc.vulnerability.base_score | Intrinsic and fundamental characteristics of a vulnerability that are constant over time and user environments. | keyword |
+| tenable_sc.vulnerability.base_score | The CVSS v2 base score, which reflects the intrinsic and fundamental characteristics of a vulnerability that are constant over time and user environments. | double |
 | tenable_sc.vulnerability.bid | The Bugtraq ID. | keyword |
 | tenable_sc.vulnerability.cgi_scan_enabled |  | keyword |
 | tenable_sc.vulnerability.check_type | The type of the compliance check that detected the vulnerability. | keyword |
@@ -697,7 +741,7 @@ An example event for `vulnerability` looks as following:
 | tenable_sc.vulnerability.family.name | Family name of the vulnarebility. | keyword |
 | tenable_sc.vulnerability.family.type | Family type of the vulnarebility. | keyword |
 | tenable_sc.vulnerability.first_seen | The time and date when a scan first identified the vulnerability. | date |
-| tenable_sc.vulnerability.has_been_mitigated | Indicates whether the vulnerability has been mitigated. | boolean |
+| tenable_sc.vulnerability.has_been_mitigated | Indicates whether the vulnerability was fixed in the past and then reopened. | boolean |
 | tenable_sc.vulnerability.host_uniqueness | Name of the fields used to determine the uniqueness of the host. | keyword |
 | tenable_sc.vulnerability.host_uuid |  | keyword |
 | tenable_sc.vulnerability.id | String containing the values of the field names mentioned in uniqueness concatenated with '_'. | keyword |
@@ -709,6 +753,11 @@ An example event for `vulnerability` looks as following:
 | tenable_sc.vulnerability.mac | The MAC address of the asset where a scan found the vulnerability. | keyword |
 | tenable_sc.vulnerability.netbios.name | NetBIOS name of the asset where a scan found the vulnerability. | keyword |
 | tenable_sc.vulnerability.operating_system | The operating system of the asset where a scan found the vulnerability. | keyword |
+| tenable_sc.vulnerability.package_nested | Packages parsed from the plugin output, keeping the name, version, fixed version and path of each package together. | nested |
+| tenable_sc.vulnerability.package_nested.fixed_version | The package version that fixes the vulnerability. | keyword |
+| tenable_sc.vulnerability.package_nested.name | The name of the vulnerable package. | keyword |
+| tenable_sc.vulnerability.package_nested.path | The path where the vulnerable package is installed. | keyword |
+| tenable_sc.vulnerability.package_nested.version | The installed version of the vulnerable package. | keyword |
 | tenable_sc.vulnerability.paranoid_scan_enabled |  | keyword |
 | tenable_sc.vulnerability.patch.is_published | Flag for if vulnerablity is patched. | boolean |
 | tenable_sc.vulnerability.patch.pub_date | The date on which the patch for the vulnerability was published. | date |
@@ -733,10 +782,11 @@ An example event for `vulnerability` looks as following:
 | tenable_sc.vulnerability.seol_date |  | date |
 | tenable_sc.vulnerability.severity.description | The description of the severity. | keyword |
 | tenable_sc.vulnerability.severity.id | The code for the severity assigned when a user recasts the risk associated with the vulnerability. | keyword |
+| tenable_sc.vulnerability.severity.name | The name of the severity as reported by Tenable Security Center. Possible values include Info, Low, Medium, High and Critical. | keyword |
 | tenable_sc.vulnerability.solution | Remediation information for the vulnerability. | keyword |
 | tenable_sc.vulnerability.stig_severity | Security Technical Implementation Guide (STIG) severity code for the vulnerability. | keyword |
 | tenable_sc.vulnerability.synopsis | Brief description of the vulnerability. | keyword |
-| tenable_sc.vulnerability.temporal_score | Characteristics of a vulnerability that change over time but not among user environments. | keyword |
+| tenable_sc.vulnerability.temporal_score | The CVSS v2 temporal score, which reflects the characteristics of a vulnerability that change over time but not among user environments. | double |
 | tenable_sc.vulnerability.thorough_scan_enabled |  | keyword |
 | tenable_sc.vulnerability.uniqueness | Name of the fields used to determine the uniqueness of the vulnerability. | keyword |
 | tenable_sc.vulnerability.uuid | N/A. | keyword |
@@ -747,3 +797,6 @@ An example event for `vulnerability` looks as following:
 | tenable_sc.vulnerability.vuln_uniqueness |  | keyword |
 | tenable_sc.vulnerability.vuln_uuid |  | keyword |
 | tenable_sc.vulnerability.xref | References to third-party information about the vulnerability, exploit, or update associated with the plugin. | keyword |
+| vulnerability.published_date | The date on which the vulnerability was published. | date |
+| vulnerability.scanner.vendor | The name of the vulnerability scanner vendor. | constant_keyword |
+| vulnerability.title | The human-readable title of the vulnerability. | keyword |
