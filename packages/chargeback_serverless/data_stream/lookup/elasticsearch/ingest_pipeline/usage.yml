@@ -148,66 +148,56 @@ processors:
           }
         }
         if (ctx.last_status instanceof Map) {
-          def vals = new ArrayList();
-          def buckets = ctx.last_status.buckets;
-          if (buckets instanceof List && buckets.size() > 0) {
-            for (def b : buckets) {
-              if (b.key != null) vals.add(b.key);
+          if (ctx.last_status.last_status instanceof String) {
+            ctx.last_status = ctx.last_status.last_status;
+          } else if (ctx.last_status.top instanceof List && ctx.last_status.top.size() > 0 && ctx.last_status.top[0] instanceof Map && ctx.last_status.top[0].metrics instanceof Map && ctx.last_status.top[0].metrics.last_status != null) {
+            ctx.last_status = ctx.last_status.top[0].metrics.last_status;
+          } else {
+            def vals = new ArrayList();
+            def buckets = ctx.last_status.buckets;
+            if (buckets instanceof List && buckets.size() > 0) {
+              for (def b : buckets) {
+                if (b.key != null) vals.add(b.key);
+              }
+            } else {
+              vals.addAll(ctx.last_status.keySet());
             }
-          } else {
-            vals.addAll(ctx.last_status.keySet());
-          }
-          if (vals.contains('ok')) {
-            ctx.last_status = 'ok';
-          } else if (vals.contains('empty_or_unauthorized')) {
-            ctx.last_status = 'empty_or_unauthorized';
-          } else if (vals.contains('inactive')) {
-            ctx.last_status = 'inactive';
-          } else {
             ctx.last_status = vals.size() > 0 ? vals[0] : 'ok';
           }
         }
         if (ctx.api_key_type instanceof Map) {
-          def vals = new ArrayList();
-          def buckets = ctx.api_key_type.buckets;
-          if (buckets instanceof List && buckets.size() > 0) {
-            for (def b : buckets) {
-              if (b.key != null) vals.add(b.key);
+          if (ctx.api_key_type.api_key_type instanceof String) {
+            ctx.api_key_type = ctx.api_key_type.api_key_type;
+          } else if (ctx.api_key_type.top instanceof List && ctx.api_key_type.top.size() > 0 && ctx.api_key_type.top[0] instanceof Map && ctx.api_key_type.top[0].metrics instanceof Map && ctx.api_key_type.top[0].metrics.api_key_type != null) {
+            ctx.api_key_type = ctx.api_key_type.top[0].metrics.api_key_type;
+          } else {
+            def vals = new ArrayList();
+            def buckets = ctx.api_key_type.buckets;
+            if (buckets instanceof List && buckets.size() > 0) {
+              for (def b : buckets) {
+                if (b.key != null) vals.add(b.key);
+              }
+            } else {
+              vals.addAll(ctx.api_key_type.keySet());
             }
-          } else {
-            vals.addAll(ctx.api_key_type.keySet());
-          }
-          if (vals.contains('project_key')) {
-            ctx.api_key_type = 'project_key';
-          } else if (vals.contains('remote_key')) {
-            ctx.api_key_type = 'remote_key';
-          } else if (vals.contains('cloud_key')) {
-            ctx.api_key_type = 'cloud_key';
-          } else if (vals.contains('hub_key')) {
-            ctx.api_key_type = 'hub_key';
-          } else if (vals.contains('cloud_billing_only')) {
-            ctx.api_key_type = 'cloud_billing_only';
-          } else {
             ctx.api_key_type = vals.size() > 0 ? vals[0] : 'missing_key';
           }
         }
         if (ctx.synthetics_status instanceof Map) {
-          def vals = new ArrayList();
-          def buckets = ctx.synthetics_status.buckets;
-          if (buckets instanceof List && buckets.size() > 0) {
-            for (def b : buckets) {
-              if (b.key != null) vals.add(b.key);
+          if (ctx.synthetics_status.synthetics_status instanceof String) {
+            ctx.synthetics_status = ctx.synthetics_status.synthetics_status;
+          } else if (ctx.synthetics_status.top instanceof List && ctx.synthetics_status.top.size() > 0 && ctx.synthetics_status.top[0] instanceof Map && ctx.synthetics_status.top[0].metrics instanceof Map && ctx.synthetics_status.top[0].metrics.synthetics_status != null) {
+            ctx.synthetics_status = ctx.synthetics_status.top[0].metrics.synthetics_status;
+          } else {
+            def vals = new ArrayList();
+            def buckets = ctx.synthetics_status.buckets;
+            if (buckets instanceof List && buckets.size() > 0) {
+              for (def b : buckets) {
+                if (b.key != null) vals.add(b.key);
+              }
+            } else {
+              vals.addAll(ctx.synthetics_status.keySet());
             }
-          } else {
-            vals.addAll(ctx.synthetics_status.keySet());
-          }
-          if (vals.contains('ok')) {
-            ctx.synthetics_status = 'ok';
-          } else if (vals.contains('billing_derived')) {
-            ctx.synthetics_status = 'billing_derived';
-          } else if (vals.contains('unauthorized')) {
-            ctx.synthetics_status = 'unauthorized';
-          } else {
             ctx.synthetics_status = vals.size() > 0 ? vals[0] : 'ok';
           }
         }
@@ -252,19 +242,3 @@ processors:
       field: event.ingested
       value: "{{{_ingest.timestamp}}}"
       tag: set_event_ingested
-  - pipeline:
-      description: '[Fleet] Global pipeline for all data streams'
-      ignore_missing_pipeline: true
-      name: global@custom
-  - pipeline:
-      description: '[Fleet] Pipeline for all data streams of type `metrics`'
-      ignore_missing_pipeline: true
-      name: metrics@custom
-  - pipeline:
-      description: '[Fleet] Pipeline for all data streams of type `metrics` defined by the `chargeback_serverless` integration'
-      ignore_missing_pipeline: true
-      name: metrics-chargeback_serverless.integration@custom
-  - pipeline:
-      description: '[Fleet] Pipeline for the `chargeback_serverless.usage` dataset'
-      ignore_missing_pipeline: true
-      name: metrics-chargeback_serverless.usage@custom

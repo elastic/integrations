@@ -61,7 +61,7 @@ The **`[Chargeback Serverless] Usage & Cost Allocation`** dashboard attributes a
 - **Daily allocatable cost by workload driver**: Stacked time series tracking daily spend across indexing, search, storage, AI, and Synthetics drivers.
 - **Per-project allocation breakdown**: Driver spend attributed to each Serverless project.
 - **Data stream cost attribution**: Storage, ingest, and search spend broken down by namespace (`ds_namespace`), data stream type (`ds_type`), and dataset (`ds_dataset`). Standard Elastic data streams follow `<type>-<dataset>-<namespace>` (`logs`, `metrics`, `traces`, `synthetics`, and `profiling`), `.ds-.` system data streams (such as `.ds-.kibana*` and `.ds-.alerts*`) map to the `system` namespace (`ds_type: system`, `ds_namespace: system`), and standard non-data-stream Elasticsearch indices map to `ds_type: index` and `ds_namespace: default`.
-- **Harvested data stream metrics**: Inventory of data streams harvested through `_cat/indices`, displaying document counts, primary dataset storage size, and index lifecycle status.
+- **Harvested data stream metrics**: Inventory of data streams and indices harvested through `_cat/indices`, displaying primary dataset storage size, cumulative indexing time, and cumulative query time.
 
 ![Chargeback Serverless Usage and Cost Allocation dashboard showing workload pool KPIs and data stream cost attribution](../img/chargeback-serverless-usage-allocation.png)
 
@@ -115,7 +115,7 @@ The Chargeback Serverless integration collects two metrics data streams:
 Create alerting rules from the 4 packaged ES|QL rule templates under **Stack Management → Rules**. Customize thresholds and entity filters directly on **line 2** of each rule template's ES|QL query (`EVAL threshold_spend = <value>`):
 
 - **`[Chargeback Serverless] Rolling 30-day total spend budget exceeded`**: Alerts when rolling 30-day spend reaches `threshold_pct` (default `80.0%`) of `threshold_budget` (default `25000.0`) or when `alert_on_projected` (`true`) detects that projected 30-day spend (`daily_run_rate * 30`) will exceed `threshold_budget`.
-- **`[Chargeback Serverless] Project daily spend threshold exceeded`**: Alerts when any project matching `filter_project` (and optional `filter_driver` in `indexing`, `query`, `storage`, `ai`, or `synthetics`) exceeds `threshold_spend` (default `200.0`), outputting a full driver spend breakdown.
+- **`[Chargeback Serverless] Project daily spend threshold exceeded`**: Alerts when any project matching `filter_project` (and optional `filter_driver` in `indexing`, `search`, `storage`, `ai`, or `synthetics`) exceeds `threshold_spend` (default `200.0`), outputting a full driver spend breakdown.
 - **`[Chargeback Serverless] Project daily spend spike vs. 7-day baseline`**: Alerts when a project's daily spend increases by at least `threshold_pct_increase` (default `50.0%`) over its 7-day trailing average and exceeds `min_daily_spend` (default `25.0`).
 - **`[Chargeback Serverless] Data trust & project harvest health issue`**: Alerts when any discovered Serverless project fails usage harvesting or unallocated spend exceeds `threshold_unallocated_spend` (default `100.0`) and `threshold_unallocated_pct` (default `25.0%`).
 

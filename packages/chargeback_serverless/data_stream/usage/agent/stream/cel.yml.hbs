@@ -1,5 +1,18 @@
 config_version: 2
 interval: "1h"
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
 resource.url: "{{cloud_api_base}}/api/v1/serverless/projects/elasticsearch"
 state:
   api_key: !!str {{cloud_api_key}}
@@ -49,7 +62,7 @@ program: |-
     (state.?cursor.last_day.orValue("") == day_ts) ?
     {
       "events": [],
-      "cursor": { "last_day": day_ts, "pending_day": day_ts, "completed_projects": prev_completed_pids, "ml_baselines": prev_ml_baselines },
+      "cursor": { "last_day": day_ts, "pending_day": day_ts, "pending_retries": 0, "completed_projects": prev_completed_pids, "ml_baselines": prev_ml_baselines },
       "want_more": false,
     }
     :
@@ -69,10 +82,10 @@ program: |-
       { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
     ).do_request().as(sec_resp,
     get_request(
-      state.cloud_api_base + "/api/v1/serverless/projects/search"
+      state.cloud_api_base + "/api/v1/serverless/projects/vectordb"
     ).with(
       { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
-    ).do_request().as(srch_resp,
+    ).do_request().as(vdb_resp,
     get_request(
       state.billing_api_base + "/api/v2/billing/organizations/" + state.organization_id + "/costs/instances?" + {
         "from": [day_start.format(time_layout.RFC3339)],
@@ -82,17 +95,17 @@ program: |-
     ).with(
       { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
     ).do_request().as(bill_resp,
-    (es_resp.StatusCode == 200 && obs_resp.StatusCode == 200 && sec_resp.StatusCode == 200 && (srch_resp.StatusCode == 200 || srch_resp.StatusCode == 404)).as(discovery_ok,
+    (es_resp.StatusCode == 200 && obs_resp.StatusCode == 200 && sec_resp.StatusCode == 200 && (vdb_resp.StatusCode == 200 || vdb_resp.StatusCode == 404)).as(discovery_ok,
     (bill_resp.StatusCode == 200 && discovery_ok) ?
     bytes(es_resp.Body).decode_json().as(es_body,
     bytes(obs_resp.Body).decode_json().as(obs_body,
     bytes(sec_resp.Body).decode_json().as(sec_body,
-    ((srch_resp.StatusCode == 200) ? bytes(srch_resp.Body).decode_json() : { "items": [] }).as(srch_body,
+    ((vdb_resp.StatusCode == 200) ? bytes(vdb_resp.Body).decode_json() : { "items": [] }).as(vdb_body,
     bytes(bill_resp.Body).decode_json().as(bill_body,
     ((has(es_body.items) && es_body.items != null ? es_body.items.map(p, dyn(p.with({ "project_type": "elasticsearch" }))) : []) +
       (has(obs_body.items) && obs_body.items != null ? obs_body.items.map(p, dyn(p.with({ "project_type": "observability" }))) : []) +
       (has(sec_body.items) && sec_body.items != null ? sec_body.items.map(p, dyn(p.with({ "project_type": "security" }))) : []) +
-      (has(srch_body.items) && srch_body.items != null ? srch_body.items.map(p, dyn(p.with({ "project_type": "search" }))) : [])
+      (has(vdb_body.items) && vdb_body.items != null ? vdb_body.items.map(p, dyn(p.with({ "project_type": "vectordb" }))) : [])
     ).as(projects,
     (
       projects.filter(p, !prev_completed_pids.exists(cid, cid == string(p.id))).map(p,
@@ -208,7 +221,7 @@ program: |-
           { "Header": { "Authorization": ["ApiKey " + target_key] } }
         ).do_request().as(syn_resp,
         ((syn_resp.StatusCode == 200) ? bytes(syn_resp.Body).decode_json() : { "aggregations": { "by_type": { "buckets": [] } } }).as(syn_body,
-        ((has(syn_body.aggregations) && syn_body.aggregations != null && has(syn_body.aggregations.by_type) && has(syn_body.aggregations.by_type.buckets) && syn_body.aggregations.by_type.buckets != null) ?
+        ((!(has(syn_body.timed_out) && syn_body.timed_out == true) && !(has(syn_body._shards) && syn_body._shards != null && has(syn_body._shards.failed) && syn_body._shards.failed != null && int(syn_body._shards.failed) > 0) && has(syn_body.aggregations) && syn_body.aggregations != null && has(syn_body.aggregations.by_type) && has(syn_body.aggregations.by_type.buckets) && syn_body.aggregations.by_type.buckets != null) ?
           syn_body.aggregations.by_type.buckets.map(tb,
             ((has(tb.key) && tb.key != null && string(tb.key) != "") ? string(tb.key) : "http").as(mtype,
             ((has(tb.monitors) && has(tb.monitors.buckets) && tb.monitors.buckets != null) ?
@@ -386,10 +399,10 @@ program: |-
               node_entries.map(ne, { "k": ne.k, "v": ne.v, "t": ne.t }).as(cur_nodes,
               (size(node_entries) == 0 ? 0 : node_entries.map(ne, ne.v).sum()).as(deploy_inf_count,
               (size(node_entries) == 0 ? 0.0 : double(node_entries.map(ne, ne.t).sum())).as(deploy_time_ms,
-              (deploy_inf_count > 0 ? deploy_inf_count : ingest_inf_count).as(raw_inf_count,
-              (deploy_inf_count > 0 ? int(deploy_time_ms) : 0).as(raw_time_ms,
-              (!has_contiguous_baseline ? 0 : ((deploy_inf_count > 0 && size(prev_nodes) > 0) ? node_entries.map(ne, ne.dv).sum() : (has(matched_base[0].v) ? (raw_inf_count >= int(matched_base[0].v) ? raw_inf_count - int(matched_base[0].v) : raw_inf_count) : 0))).as(delta_inf_count,
-              (!has_contiguous_baseline ? 0 : ((deploy_inf_count > 0 && size(prev_nodes) > 0) ? node_entries.map(ne, ne.dt).sum() : (has(matched_base[0].t) ? (raw_inf_count >= int(matched_base[0].v) && raw_time_ms >= int(matched_base[0].t) ? raw_time_ms - int(matched_base[0].t) : raw_time_ms) : 0))).as(delta_time_ms,
+              (size(node_entries) > 0 ? deploy_inf_count : ingest_inf_count).as(raw_inf_count,
+              (size(node_entries) > 0 ? int(deploy_time_ms) : 0).as(raw_time_ms,
+              (!has_contiguous_baseline ? 0 : ((size(node_entries) > 0 && size(prev_nodes) > 0) ? node_entries.map(ne, ne.dv).sum() : (has(matched_base[0].v) ? (raw_inf_count >= int(matched_base[0].v) ? raw_inf_count - int(matched_base[0].v) : raw_inf_count) : 0))).as(delta_inf_count,
+              (!has_contiguous_baseline ? 0 : ((size(node_entries) > 0 && size(prev_nodes) > 0) ? node_entries.map(ne, ne.dt).sum() : (has(matched_base[0].t) ? (raw_inf_count >= int(matched_base[0].v) && raw_time_ms >= int(matched_base[0].t) ? raw_time_ms - int(matched_base[0].t) : raw_time_ms) : 0))).as(delta_time_ms,
               {
                 "bkey": mkey,
                 "model_id": string(m.model_id),
@@ -512,10 +525,10 @@ program: |-
             ]
             : [])
         ).as(all_ai_evts,
-        ((ml_resp.StatusCode == 429 || ml_resp.StatusCode >= 500) || (inf_resp.StatusCode == 429 || inf_resp.StatusCode >= 500) || (syn_resp.StatusCode == 429 || syn_resp.StatusCode >= 500)).as(sub_transient_err,
-        sub_transient_err ?
+        ((ml_resp.StatusCode == 429 || ml_resp.StatusCode >= 500) || (inf_resp.StatusCode == 429 || inf_resp.StatusCode >= 500) || (syn_resp.StatusCode == 429 || syn_resp.StatusCode >= 500) || (syn_resp.StatusCode == 200 && ((has(syn_body.timed_out) && syn_body.timed_out == true) || (has(syn_body._shards) && syn_body._shards != null && has(syn_body._shards.failed) && syn_body._shards.failed != null && int(syn_body._shards.failed) > 0)))).as(sub_transient_err,
+        (sub_transient_err && !(state.?cursor.pending_day.orValue("") == day_ts && (int(state.?cursor.pending_retries.orValue(0)) >= 2 || (int(state.?cursor.pending_retries.orValue(0)) >= 1 && day_start < latest_day_start)))) ?
         []
-        : ((!sub_transient_err && is_live_day && ((ml_resp.StatusCode != 200 && ml_resp.StatusCode != 404) || (inf_resp.StatusCode != 200 && inf_resp.StatusCode != 404))).as(ai_auth_err,
+        : ((is_live_day && ((ml_resp.StatusCode != 200 && ml_resp.StatusCode != 404) || (inf_resp.StatusCode != 200 && inf_resp.StatusCode != 404))).as(ai_auth_err,
           (is_live_day ?
             rows.filter(row,
               !row.index.startsWith(".") || row.index.startsWith(".ds-")
@@ -632,9 +645,9 @@ program: |-
               "project_type": p.project_type,
               "optimized_for": has(p.optimized_for) ? p.optimized_for : "general_purpose",
               "es_url": es_base_url,
-              "last_status": ai_auth_err ? "empty_or_unauthorized" : "ok",
+              "last_status": sub_transient_err ? "transient_error" : (ai_auth_err ? "empty_or_unauthorized" : "ok"),
               "api_key_type": resolved_ktype,
-              "synthetics_status": (syn_resp.StatusCode != 200 && syn_resp.StatusCode != 404) ? "unauthorized" : ((size(harvested_syn_evts) == 0 && size(all_syn_evts) > 0) ? "billing_derived" : "ok"),
+              "synthetics_status": (syn_resp.StatusCode == 429 || syn_resp.StatusCode >= 500 || (syn_resp.StatusCode == 200 && ((has(syn_body.timed_out) && syn_body.timed_out == true) || (has(syn_body._shards) && syn_body._shards != null && has(syn_body._shards.failed) && syn_body._shards.failed != null && int(syn_body._shards.failed) > 0)))) ? "transient_error" : ((syn_resp.StatusCode != 200 && syn_resp.StatusCode != 404) ? "unauthorized" : ((size(harvested_syn_evts) == 0 && size(all_syn_evts) > 0) ? "billing_derived" : "ok")),
               "index_count": is_live_day ? size(rows) : size(ds_evts),
               "datastream_count": size(ds_evts),
               "ai_model_count": size(all_ai_evts),
@@ -672,7 +685,7 @@ program: |-
         )
         )
         :
-        (resolved_ktype == "transient_error" ?
+        ((resolved_ktype == "transient_error" && !(state.?cursor.pending_day.orValue("") == day_ts && (int(state.?cursor.pending_retries.orValue(0)) >= 2 || (int(state.?cursor.pending_retries.orValue(0)) >= 1 && day_start < latest_day_start)))) ?
           []
           :
           ((has(bill_body.instances) && bill_body.instances != null) ?
@@ -791,9 +804,9 @@ program: |-
               "project_type": p.project_type,
               "optimized_for": has(p.optimized_for) ? p.optimized_for : "general_purpose",
               "es_url": es_base_url,
-              "last_status": "empty_or_unauthorized",
+              "last_status": resolved_ktype == "transient_error" ? "transient_error" : "empty_or_unauthorized",
               "api_key_type": resolved_ktype,
-              "synthetics_status": "unauthorized",
+              "synthetics_status": resolved_ktype == "transient_error" ? "transient_error" : "unauthorized",
               "index_count": 0,
               "datastream_count": 0,
               "ai_model_count": size(u_ai_evts),
@@ -833,7 +846,7 @@ program: |-
           has(inst.product_line_items) && inst.product_line_items != null &&
           !inst.product_line_items.exists(li,
             has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s,
-            s.contains("cloud-enterprise") || s.contains("cloud-platinum") || s.contains("cloud-standard") || s.contains("cloud-gold") || s.contains(".es.data") || s.contains(".es.ml") || s.contains(".es.master") || s.contains(".es.coordinating") || s.contains(".kibana.") || s.contains(".apm.") || s.contains(".enterprise_search.") || s.contains(".integrations_server.")
+            !s.contains("serverless") && (s.contains("cloud-enterprise") || s.contains("cloud-platinum") || s.contains("cloud-standard") || s.contains("cloud-gold") || s.contains(".es.data") || s.contains(".es.ml") || s.contains(".es.master") || s.contains(".es.coordinating") || s.contains(".kibana.") || s.contains(".apm.") || s.contains(".enterprise_search.") || s.contains(".integrations_server."))
             )
           ) &&
           (
@@ -842,18 +855,19 @@ program: |-
               it == "observability" || it == "oblt" || it.contains("observability") || it.contains("oblt") ||
               it == "security" || it == "sec" || it.contains("security") ||
               it == "elasticsearch" || it == "es" || it.contains("elasticsearch") ||
+              it == "vectordb" || it == "vector" || it.contains("vectordb") || it.contains("vector") ||
               it == "search" || it == "enterprise_search" || it.contains("search")
             ) && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku) != "")) ||
             inst.product_line_items.exists(li,
               has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s,
-              s.contains("serverless") || s.contains("-vcu") || s.contains(".ecu") || s.contains("retained") || s.contains("synthetic") || s.contains("agent-builder") || s.contains("inference") || s.contains("llm") || s.contains("workflow") || s.contains("cross-project") || s.contains(".eis") || s.contains("observability.") || s.contains("security.") || s.contains("search.")
+              s.contains("serverless") || s.contains("-vcu") || s.contains(".ecu") || s.contains("retained") || s.contains("synthetic") || s.contains("agent-builder") || s.contains("inference") || s.contains("llm") || s.contains("workflow") || s.contains("cross-project") || s.contains(".eis") || s.contains("observability.") || s.contains("security.") || s.contains("vectordb.") || s.contains("search.")
               )
             )
           )
         ).map(inst,
           ((has(inst.name) && inst.name != null && string(inst.name) != "") ? string(inst.name) : string(inst.id)).as(del_pname,
           ((has(inst.type) && inst.type != null) ? string(inst.type).to_lower() : "").as(raw_del_type,
-          ((raw_del_type == "observability" || raw_del_type == "oblt" || raw_del_type.contains("observability") || raw_del_type.contains("oblt")) ? "observability" : ((raw_del_type == "security" || raw_del_type == "sec" || raw_del_type.contains("security")) ? "security" : ((raw_del_type == "elasticsearch" || raw_del_type == "es" || raw_del_type.contains("elasticsearch")) ? "elasticsearch" : ((raw_del_type == "search" || raw_del_type == "enterprise_search" || raw_del_type.contains("search")) ? "search" : ((has(inst.product_line_items) && inst.product_line_items != null && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s, s.startsWith("observability.") || s.startsWith("oblt.") || s.startsWith("serverless.observability.") || s.startsWith("serverless.oblt.") || s.contains("synthetic")))) ? "observability" : ((has(inst.product_line_items) && inst.product_line_items != null && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s, s.startsWith("security.") || s.startsWith("sec.") || s.startsWith("serverless.security.") || s.startsWith("serverless.sec.")))) ? "security" : ((has(inst.product_line_items) && inst.product_line_items != null && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s, s.startsWith("elasticsearch.") || s.startsWith("es.") || s.startsWith("serverless.elasticsearch.") || s.startsWith("serverless.es.")))) ? "elasticsearch" : ((has(inst.product_line_items) && inst.product_line_items != null && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s, s.startsWith("search.") || s.startsWith("serverless.search.")))) ? "search" : "elasticsearch")))))))).as(del_ptype,
+          ((raw_del_type == "observability" || raw_del_type == "oblt" || raw_del_type.contains("observability") || raw_del_type.contains("oblt")) ? "observability" : ((raw_del_type == "security" || raw_del_type == "sec" || raw_del_type.contains("security")) ? "security" : ((raw_del_type == "vectordb" || raw_del_type == "vector" || raw_del_type.contains("vectordb") || raw_del_type.contains("vector")) ? "vectordb" : ((raw_del_type == "elasticsearch" || raw_del_type == "es" || raw_del_type.contains("elasticsearch")) ? "elasticsearch" : ((raw_del_type == "search" || raw_del_type == "enterprise_search" || raw_del_type.contains("search")) ? "search" : ((has(inst.product_line_items) && inst.product_line_items != null && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s, s.startsWith("observability.") || s.startsWith("oblt.") || s.startsWith("serverless.observability.") || s.startsWith("serverless.oblt.") || s.contains("synthetic")))) ? "observability" : ((has(inst.product_line_items) && inst.product_line_items != null && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s, s.startsWith("security.") || s.startsWith("sec.") || s.startsWith("serverless.security.") || s.startsWith("serverless.sec.")))) ? "security" : ((has(inst.product_line_items) && inst.product_line_items != null && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s, s.startsWith("vectordb.") || s.startsWith("serverless.vectordb.") || s.contains(".vectordb.")))) ? "vectordb" : ((has(inst.product_line_items) && inst.product_line_items != null && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s, s.startsWith("elasticsearch.") || s.startsWith("es.") || s.startsWith("serverless.elasticsearch.") || s.startsWith("serverless.es.")))) ? "elasticsearch" : ((has(inst.product_line_items) && inst.product_line_items != null && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s, s.startsWith("search.") || s.startsWith("serverless.search.")))) ? "search" : "elasticsearch")))))))))).as(del_ptype,
           inst.product_line_items.filter(li,
             has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s,
             (s.contains("retained") || s.contains("storage") || s.contains("retention")) && !s.contains("snapshot")
@@ -1025,14 +1039,28 @@ program: |-
     (is_live_day ?
       (
         cur_ml_baselines +
-        prev_ml_baselines.filter(b, !cur_ml_baselines.exists(c, c.k == b.k || c.k.startsWith(b.k + ":")))
+        prev_ml_baselines.filter(b,
+          has(b.k) && has(b.ts) && b.ts != null && string(b.ts) != "" &&
+          !cur_ml_baselines.exists(c, c.k == b.k || c.k.startsWith(b.k + ":")) &&
+          (
+            string(b.ts) == day_ts ||
+            (
+              (day_start - timestamp(string(b.ts))) == duration("24h") &&
+              !newly_completed_pids.exists(pid, string(b.k) == pid || string(b.k).startsWith(pid + ":"))
+            )
+          )
+        )
       )
-      : prev_ml_baselines).as(merged_ml_baselines,
+      : prev_ml_baselines.filter(b,
+        has(b.k) && has(b.ts) && b.ts != null && string(b.ts) != "" &&
+        (day_start - timestamp(string(b.ts))) <= duration("24h")
+      )).as(merged_ml_baselines,
     {
       "events": usage_evts,
       "cursor": {
         "last_day": all_projs_done ? day_ts : state.?cursor.last_day.orValue(""),
         "pending_day": day_ts,
+        "pending_retries": all_projs_done ? 0 : (state.?cursor.pending_day.orValue("") == day_ts ? int(state.?cursor.pending_retries.orValue(0)) + 1 : 1),
         "completed_projects": all_completed_pids,
         "ml_baselines": merged_ml_baselines,
       },
@@ -1058,13 +1086,20 @@ program: |-
             bill_resp.StatusCode != 200 ? bill_resp.StatusCode :
             (es_resp.StatusCode != 200 ? es_resp.StatusCode :
               (obs_resp.StatusCode != 200 ? obs_resp.StatusCode :
-                (sec_resp.StatusCode != 200 ? sec_resp.StatusCode : srch_resp.StatusCode)
+                (sec_resp.StatusCode != 200 ? sec_resp.StatusCode : vdb_resp.StatusCode)
               )
             )
           ),
           "id": "discovery_or_billing_failed",
-          "message": "Required project discovery or billing lookup request failed (billing=" + string(bill_resp.StatusCode) + ", elasticsearch=" + string(es_resp.StatusCode) + ", observability=" + string(obs_resp.StatusCode) + ", security=" + string(sec_resp.StatusCode) + ", search=" + string(srch_resp.StatusCode) + "); preserving day for retry",
+          "message": "Required project discovery or billing lookup request failed (billing=" + string(bill_resp.StatusCode) + ", elasticsearch=" + string(es_resp.StatusCode) + ", observability=" + string(obs_resp.StatusCode) + ", security=" + string(sec_resp.StatusCode) + ", vectordb=" + string(vdb_resp.StatusCode) + "); preserving day for retry",
         }
+      },
+      "cursor": {
+        "last_day": state.?cursor.last_day.orValue(""),
+        "pending_day": day_ts,
+        "pending_retries": state.?cursor.pending_day.orValue("") == day_ts ? int(state.?cursor.pending_retries.orValue(0)) : 0,
+        "completed_projects": prev_completed_pids,
+        "ml_baselines": prev_ml_baselines,
       },
       "want_more": false,
     }

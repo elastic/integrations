@@ -1,8 +1,12 @@
 ---
 description: "Ingest pipeline for Chargeback Serverless lookup data stream."
 processors:
-  - set:
-      field: event.ingested
-      value: "{{{_ingest.timestamp}}}"
-      if: ctx.event?.ingested == null
-      tag: set_event_ingested
+  - pipeline:
+      name: '{{ IngestPipeline "billing" }}'
+      if: ctx.sku != null
+  - pipeline:
+      name: '{{ IngestPipeline "realized_pool" }}'
+      if: ctx.sku == null && (ctx.indexing_ecu != null || ctx.all_sku_ecu != null)
+  - pipeline:
+      name: '{{ IngestPipeline "usage" }}'
+      if: ctx.sku == null && ctx.indexing_ecu == null && ctx.all_sku_ecu == null

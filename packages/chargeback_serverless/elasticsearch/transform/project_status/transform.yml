@@ -12,7 +12,7 @@ frequency: 5m
 sync:
   time:
     field: event.ingested
-    delay: 60s
+    delay: 120s
 retention_policy:
   time:
     field: "@timestamp"
@@ -51,17 +51,23 @@ pivot:
       max:
         field: updated_at
     last_status:
-      terms:
-        field: last_status
-        size: 5
+      top_metrics:
+        metrics:
+          - field: last_status
+        sort:
+          updated_at: desc
     api_key_type:
-      terms:
-        field: api_key_type
-        size: 5
+      top_metrics:
+        metrics:
+          - field: api_key_type
+        sort:
+          updated_at: desc
     synthetics_status:
-      terms:
-        field: synthetics_status
-        size: 5
+      top_metrics:
+        metrics:
+          - field: synthetics_status
+        sort:
+          updated_at: desc
     optimized_for:
       terms:
         field: optimized_for
