@@ -1,0 +1,142 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects Visual Studio Code (\"Code.exe\" on Windows or \"Code Helper\" on macOS) spawning a shell or downloader whose command line contains an encoded command, a download cradle, or a reverse-shell pattern. Malicious IDE extensions use the editor process to run these commands after install.",
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "host.os.type",
+                "process.parent.name",
+                "process.parent.executable",
+                "process.parent.command_line",
+                "process.parent.args",
+                "process.command_line",
+                "process.executable"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Suspicious Command Execution from Visual Studio Code",
+        "note": "## Triage and analysis\n\n### Investigating Suspicious Command Execution from Visual Studio Code\n\n`Code.exe` or `Code Helper` started `cmd`, PowerShell, a Unix shell, `curl`, or `wget`, and the command line matches\nan encoded-command, download, or remote-shell pattern. That is common when a malicious VS Code extension, task, or\nworkspace script runs through the editor.\n\n### Possible investigation steps\n\n- Review `process.command_line` for the URL, encoded payload, or shell pipe (`curl | sh`, `wget | sh`, `Invoke-Expression`).\n- Review `process.parent.command_line` and `process.parent.args` for `extensionHost` or a path under `.vscode/extensions` or `.vscode/tasks.json`.\n- Identify the extension id from that parent path and compare it with the installed extension.\n- On the same host and user, look for the downloaded file, follow-on processes, and outbound connections.\n\n### False positive analysis\n\n- Developer tasks and integrated terminals often run `curl`, `wget`, `echo`, or `https` URLs. `echo` and `https` in the\n  pattern match many legitimate commands. Confirm the parent is an extension host or an unexpected workspace task before excluding.\n- The rule already excludes command lines containing `docker.internal`, `localhost`, `127.0.0.1`, or `aka.ms/vscode-powershell`.\n- Scope exceptions to a known command line, extension path, host, or user. Do not broadly exclude `Code.exe` or `Code Helper`.\n\n### Response and remediation\n\n- If the command is unapproved, stop the child process, uninstall the extension, and remove any dropped file.\n- Quarantine the payload, collect its hash, and hunt the command line on other hosts.\n- Rotate tokens or credentials the command could have read from the user profile or workspace.\n",
+        "query": "FROM logs-endpoint.events.process-* METADATA _id, _version, _index\n| WHERE KQL(\"\"\"event.category:process and event.type:start\"\"\")\n  AND process.parent.name IN (\"Code Helper (Plugin)\", \"Code Helper\", \"Code.exe\", \"code\")\n  AND process.name IN (\n    \"cmd.exe\", \"powershell.exe\", \"sh\", \"bash\", \"zsh\",\n    \"dash\", \"nohup\", \"curl.exe\", \"curl\", \"wget\",\n    \"wget.exe\", \"pwsh.exe\"\n  )\n  AND TO_LOWER(process.command_line) RLIKE \"\"\".*(-ec |-enc|-encodedcommand|-nop |-w hidden|https|/dev/tcp|echo|irm |iwr |base64|nohup|http:|iex |invoke-expression|downloadstring|downloadfile|frombase64string|chmod \\+|nc -e|ncat|certutil|bitsadmin|invoke-restmethod|curl.*\\|.*sh|wget.*\\|.*sh).*\"\"\"\n  AND NOT TO_LOWER(process.command_line) RLIKE \"\"\".*(docker.internal|localhost|127.0.0.1|aka.ms/vscode-powershell).*\"\"\"\n| KEEP\n    _id,\n    _version,\n    _index,\n    data_stream.namespace,\n    @timestamp,\n    host.name,\n    host.id,\n    agent.id,\n    host.os.type,\n    user.name,\n    user.domain,\n    process.name,\n    process.parent.name,\n    process.parent.executable,\n    process.command_line,\n    process.executable,\n    process.parent.command_line,\n    process.parent.args\n",
+        "references": [
+            "https://www.mdsec.co.uk/2021/01/macos-post-exploitation-shenanigans-with-vscode-extensions/",
+            "https://www.aikido.dev/blog/fake-clawdbot-vscode-extension-malware"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": ">=9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "cb602a92-6613-4425-b983-61fcb02b647c",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "OS: macOS",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Tactic: Execution",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Platform: Windows",
+            "Platform: macOS",
+            "Platform: Linux"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1176",
+                        "name": "Software Extensions",
+                        "reference": "https://attack.mitre.org/techniques/T1176/",
+                        "subtechnique": [
+                            {
+                                "id": "T1176.002",
+                                "name": "IDE Extensions",
+                                "reference": "https://attack.mitre.org/techniques/T1176/002/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            },
+                            {
+                                "id": "T1059.003",
+                                "name": "Windows Command Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/003/"
+                            },
+                            {
+                                "id": "T1059.004",
+                                "name": "Unix Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "cb602a92-6613-4425-b983-61fcb02b647c_1",
+    "type": "security-rule"
+}
