@@ -746,7 +746,7 @@ An example event for `code_interpreter_application` looks as following:
 | aws.bedrock_agentcore.code_interpreter.request_id | ID of the processed request. | keyword |
 | aws.bedrock_agentcore.code_interpreter.request_payload.clear_context | Whether the execution context was cleared before running. | boolean |
 | aws.bedrock_agentcore.code_interpreter.request_payload.code | Source code submitted for execution in the sandbox. | text |
-| aws.bedrock_agentcore.code_interpreter.request_payload.content.blob | Base64-encoded binary file contents for a write block. | match_only_text |
+| aws.bedrock_agentcore.code_interpreter.request_payload.content.blob | Base64-encoded binary file contents for a write block. | keyword |
 | aws.bedrock_agentcore.code_interpreter.request_payload.content.path | Target file path for a write block. | keyword |
 | aws.bedrock_agentcore.code_interpreter.request_payload.content.text | File contents for a write block. | wildcard |
 | aws.bedrock_agentcore.code_interpreter.request_payload.directory_path | Directory path targeted by a file listing operation. | keyword |
@@ -755,12 +755,12 @@ An example event for `code_interpreter_application` looks as following:
 | aws.bedrock_agentcore.code_interpreter.request_payload.runtime | Runtime requested for code execution. | keyword |
 | aws.bedrock_agentcore.code_interpreter.resource_arn | Amazon Resource Name (ARN) of the Code Interpreter resource. | keyword |
 | aws.bedrock_agentcore.code_interpreter.resource_type | AWS resource type of the Code Interpreter, from the OTel attributes. | keyword |
-| aws.bedrock_agentcore.code_interpreter.response_payload.content.data | Base64-encoded bytes for an image or binary content block. | match_only_text |
+| aws.bedrock_agentcore.code_interpreter.response_payload.content.data | Base64-encoded bytes for an image or binary content block. | keyword |
 | aws.bedrock_agentcore.code_interpreter.response_payload.content.description | Resource description for resource_link blocks. | keyword |
 | aws.bedrock_agentcore.code_interpreter.response_payload.content.mimeType | MIME type for resource_link or embedded resource blocks. | keyword |
 | aws.bedrock_agentcore.code_interpreter.response_payload.content.name | Resource name for resource_link blocks. | keyword |
 | aws.bedrock_agentcore.code_interpreter.response_payload.content.path | File path when returned as part of a content block. | keyword |
-| aws.bedrock_agentcore.code_interpreter.response_payload.content.resource.blob | Base64-encoded binary contents of the embedded resource. | match_only_text |
+| aws.bedrock_agentcore.code_interpreter.response_payload.content.resource.blob | Base64-encoded binary contents of the embedded resource. | keyword |
 | aws.bedrock_agentcore.code_interpreter.response_payload.content.resource.mimeType | MIME type of the embedded resource. | keyword |
 | aws.bedrock_agentcore.code_interpreter.response_payload.content.resource.text | Text or file contents of the embedded resource. | wildcard |
 | aws.bedrock_agentcore.code_interpreter.response_payload.content.resource.type | Embedded resource type (for example text). | keyword |
