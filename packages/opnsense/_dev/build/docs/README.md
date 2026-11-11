@@ -207,6 +207,9 @@ the transport protocol:
 - IPv4 carries `tos, ecn, ttl, id, offset, flags` and reports the protocol as
   `number, name`; IPv6 carries `class, flow, hoplimit` and reverses those two
   columns to `name, number`.
+- The length column is the total packet length for IPv4 but the payload length
+  for IPv6. `network.bytes` adds the 40-byte IPv6 base header so both report
+  the full packet.
 - TCP lines end with ports, payload length, flags, sequence and acknowledgment
   numbers, window, urgent pointer and options.
 - UDP lines end after ports and payload length.

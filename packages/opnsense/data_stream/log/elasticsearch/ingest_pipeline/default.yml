@@ -336,11 +336,22 @@ processors:
       value: ipv6
       tag: set_network_ipv6
       if: ctx.opnsense?.log?.ip_version == '6'
+  # filterlog logs the total length for IPv4 but the payload length for IPv6,
+  # which leaves out the 40-byte base header.
   - set:
       field: network.bytes
       copy_from: opnsense.log.length
       tag: set_network_bytes
       ignore_empty_value: true
+      if: ctx.opnsense?.log?.ip_version != '6'
+  - script:
+      lang: painless
+      tag: script_network_bytes_ipv6
+      description: Add the IPv6 base header to the logged payload length.
+      if: ctx.opnsense?.log?.ip_version == '6' && ctx.opnsense?.log?.length != null
+      source: |
+        if (ctx.network == null) { ctx.network = new HashMap(); }
+        ctx.network.bytes = ((Number) ctx.opnsense.log.length).longValue() + 40L;
 
   - convert:
       field: opnsense.log.source_ip

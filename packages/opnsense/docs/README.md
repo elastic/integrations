@@ -207,6 +207,9 @@ the transport protocol:
 - IPv4 carries `tos, ecn, ttl, id, offset, flags` and reports the protocol as
   `number, name`; IPv6 carries `class, flow, hoplimit` and reverses those two
   columns to `name, number`.
+- The length column is the total packet length for IPv4 but the payload length
+  for IPv6. `network.bytes` adds the 40-byte IPv6 base header so both report
+  the full packet.
 - TCP lines end with ports, payload length, flags, sequence and acknowledgment
   numbers, window, urgent pointer and options.
 - UDP lines end after ports and payload length.
@@ -442,7 +445,7 @@ An example event for `log` looks as following:
 | opnsense.log.ip.tos | IPv4 type of service. | keyword |
 | opnsense.log.ip.ttl | IPv4 time to live. | long |
 | opnsense.log.ip_version | IP version of the packet, `4` or `6`. The remaining fields of the log line differ between the two. | keyword |
-| opnsense.log.length | Total packet length in bytes. | long |
+| opnsense.log.length | Length in bytes as logged. For IPv4 this is the total packet length; for IPv6 it is the payload length, which excludes the 40-byte base header. `network.bytes` holds the total for both. | long |
 | opnsense.log.protocol | Transport protocol name as OPNsense reports it, for example `tcp`, `udp`, `icmp` or `ipv6-icmp`. | keyword |
 | opnsense.log.reason | Why the packet was logged, for example `match` for a rule match or `ip-option` for a rejected IP option. | keyword |
 | opnsense.log.rule.anchor | Name of the pf anchor the rule belongs to. | keyword |
