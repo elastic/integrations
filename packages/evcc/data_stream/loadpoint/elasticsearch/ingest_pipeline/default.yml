@@ -45,6 +45,15 @@ processors:
       description: Removes null-valued and empty-string fields so per-loadpoint metrics that evcc did not report do not appear in the document. evcc publishes an empty vehicleName and vehicleTitle when no vehicle is assigned.
       source: >-
         ctx.json.entrySet().removeIf(e -> e.getValue() == null || e.getValue() == '');
+  - remove:
+      field: json.connected_duration
+      tag: remove_connected_duration_when_disconnected
+      ignore_missing: true
+      if: ctx.json?.connected == false
+      description: >-
+        Drops the connection duration while no vehicle is connected. evcc then keeps publishing the duration of
+        the last session, or 9223372036 (the maximum Go duration, in seconds) after a restart with no vehicle
+        connected.
   - rename:
       field: json.service_address
       target_field: service.address

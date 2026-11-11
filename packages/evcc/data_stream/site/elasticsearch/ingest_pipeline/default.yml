@@ -47,7 +47,9 @@ processors:
         return a list of per-battery objects, newer ones (e.g. 0.312.x) return one object that already
         aggregates all batteries. A list is aggregated the way evcc aggregates the object shape: power is
         summed, capacity is summed when every battery reports a positive capacity, and soc is weighted by
-        capacity in that case and averaged otherwise.
+        capacity in that case and averaged otherwise. In the object shape, evcc reports the number of batteries
+        as `capacity` when any battery has no configured capacity, so the value is only kept when every entry
+        in `devices` reports a positive capacity.
       source: |-
         def batt = ctx.json.battery;
         if (batt instanceof List) {
@@ -99,7 +101,15 @@ processors:
           if (batt.containsKey('soc')) {
             ctx.json.battery_soc = batt.soc;
           }
-          if (batt.containsKey('capacity')) {
+          boolean capacityKnown = batt.containsKey('capacity');
+          if (batt.devices instanceof List) {
+            for (def d : batt.devices) {
+              if (!(d instanceof Map) || !(d.capacity instanceof Number) || d.capacity <= 0) {
+                capacityKnown = false;
+              }
+            }
+          }
+          if (capacityKnown) {
             ctx.json.battery_capacity = batt.capacity;
           }
         }
