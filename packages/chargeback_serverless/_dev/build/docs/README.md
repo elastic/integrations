@@ -30,12 +30,14 @@ Configure your Organization ID, unified Elastic Cloud API key, lookbehind window
 | --- | --- | --- |
 | **Organization ID** | No | Numeric Elastic Cloud organization ID |
 | **Elastic Cloud API Key** | Yes | Unified Elastic Cloud API key with Organization role **`Billing Admin`** and **Cloud resource access** across `Elasticsearch`, `Observability`, and `Security` project types |
+| **Hub Project Elasticsearch API Key** | Yes | Optional advanced Elasticsearch API key (`hub_es_api_key`) for harvesting local `_cat/indices` metrics on the FinOps hub project |
+| **Remote Project Elasticsearch API Keys** | Yes | Optional advanced comma-separated least-privileged Elasticsearch API keys (`project_api_keys`) for remote projects in `<project_id>:<encoded_api_key>` format |
 | **Billing Lookbehind Days** | No | Historical UTC days of billing data to backfill on initial installation (default `60`) |
 | **Currency Unit** | No | Three-letter currency code (for example, `USD`, `EUR`, or `GBP`) |
-| **Currency Symbol** | No | Currency symbol displayed in KPI panels (for example, `\$`, `€`, or `£`) |
+| **Currency Symbol** | No | Currency symbol displayed in KPI panels (for example, `$`, `€`, or `£`) |
 | **Chargeable Unit Rate** | No | Conversion multiplier from chargeable units (ECU) to your configured currency |
 
-The integration provisions seven continuous transforms and lookup indices on your FinOps hub project. Three right-hand lookup indices (`serverless_project_status_lookup`, `serverless_billing_realized_pool_lookup`, and `serverless_project_contribution_lookup`) configure `index.mode: lookup` so dashboard panels and alerting rules can join project status, realized SKU pools, and project usage totals with ES|QL `LOOKUP JOIN`.
+The integration provisions seven continuous transforms on your FinOps hub project (`serverless_billing_cost_lookup`, `serverless_billing_realized_pool_lookup`, `serverless_project_status_lookup`, `serverless_project_contribution_lookup`, `serverless_datastream_contribution_lookup`, `serverless_ai_contribution_lookup`, and `serverless_synthetics_contribution_lookup`). All seven destination indices configure `index.mode: lookup` so dashboard panels and alerting rules can query and join project status, realized SKU pools, and project usage totals with ES|QL `LOOKUP JOIN`.
 
 ## Dashboards
 

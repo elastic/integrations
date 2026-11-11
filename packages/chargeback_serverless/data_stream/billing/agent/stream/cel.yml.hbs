@@ -8,7 +8,8 @@ resource.tracer.maxbackups: 5
 resource.proxy_url: {{proxy_url}}
 {{/if}}
 {{#if ssl}}
-resource.ssl: {{ssl}}
+resource.ssl:
+  {{ssl}}
 {{/if}}
 {{#if http_client_timeout}}
 resource.timeout: {{http_client_timeout}}
@@ -253,7 +254,8 @@ program: |-
                                                     li.sku.startsWith("serverless.vectordb.") || li.sku.startsWith("vectordb.") ||
                                                     li.sku.startsWith("serverless.search.") || li.sku.startsWith("serverless.") || li.sku.startsWith("observability.") ||
                                                     li.sku.startsWith("security.") || li.sku.startsWith("search.") || li.sku.contains("synthetic") ||
-                                                    li.sku.contains(".retained")
+                                                    li.sku.contains(".retained") || li.sku == "global.inference-chat-input" || li.sku.contains("inference") ||
+                                                    li.sku.contains("agent-builder") || li.sku.contains(".eis") || li.sku.contains("workflow") || li.sku.contains("cross-project")
                                                   )
                                                 ).map(li,
                                                   string(li.sku).to_lower().as(ls,
@@ -289,7 +291,7 @@ program: |-
                                                             igrp.map(ie, ie.item_qty).sum().as(item_qty,
                                                               (item_ecu - day_sku_ecu).as(diff_ecu,
                                                                 (max(0.0, item_qty - day_sku_qty)).as(diff_qty,
-                                                                  (diff_ecu > 0.0001 || (day_sku_ecu == 0.0 && item_qty > 0.0)) ?
+                                                                  (diff_ecu > 0.0001 || diff_qty > 0.0) ?
                                                                     [
                                                                       {
                                                                         "@timestamp": req.from.format(time_layout.RFC3339),

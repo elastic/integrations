@@ -20,7 +20,6 @@ processors:
       field: period_start
       ignore_missing: true
   - script:
-      ignore_failure: true
       lang: painless
       tag: set_composite_key
       source: |
@@ -51,8 +50,8 @@ processors:
       value: 'inference'
       if: ctx.sku == 'global.inference-chat-input'
   - script:
-      ignore_failure: true
       lang: painless
+      tag: classify_serverless_sku
       description: >-
         Serverless-only classification. Sets cost_type, cost_category, is_allocatable,
         and allocation_driver. Drivers: indexing (ingest VCU / Observability-Security
@@ -190,3 +189,13 @@ processors:
         - "%{WORD}.%{DATA:cost_type}_%{GREEDYDATA}"
       description: Derive a readable fallback cost_type from unknown SKUs
       if: ctx.cost_type == null && ctx.sku != null
+on_failure:
+  - set:
+      field: event.kind
+      value: "pipeline_error"
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
