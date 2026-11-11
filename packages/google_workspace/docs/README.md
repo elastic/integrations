@@ -94,6 +94,14 @@ Recommended Chunk Duration values:
 
 A chunk should be small enough to be fully collected between the interruptions you expect, and must not exceed `720h` (30 days). Once the data stream has caught up, the window end is limited by `now - Lag Time`, so Chunk Duration has no effect on steady-state collection. Leaving the setting empty, or setting it to `0`, disables chunking. Existing saved positions are reused unchanged when the setting is turned on or off.
 
+### Duplicate events and index rollover
+
+Each Reports API data stream sets the document `_id` to a fingerprint of the event's `id` and `events` fields, so an event that is collected twice is indexed once. This protection only covers the current write index of the data stream. Elasticsearch data streams reject a duplicate `_id` only within the backing index being written to, so an event that is collected again after the data stream has rolled over is indexed a second time, in the new backing index.
+
+A re-collection that spans a rollover, for example a long backlog replayed after a saved position is lost or an interrupted window that is restarted again and again, therefore leaves permanent duplicates. The backing index rolls over by size or by age according to the data stream's lifecycle policy, and a large replay can trigger a size-based rollover on its own within hours.
+
+For example, with Chunk Duration unset and a saved position several weeks old, the next interval requests those weeks in one window. If the agent restarts partway through, the whole window is requested again, and any events that were already indexed before a rollover are indexed a second time. With Chunk Duration set to `1h`, the same saved position produces one hour of activity per interval, and a restart re-collects at most that hour, within the same backing index. Set Chunk Duration on busy data streams, and keep Initial Interval no longer than the history you need when a data stream starts with no saved position. If you do need a long initial history, set Chunk Duration as well so it is collected one chunk at a time.
+
 # Google Workspace Gmail Logs
 
 :::{note}
@@ -317,6 +325,7 @@ The data stream calls `https://admin.googleapis.com`. You can change this with t
 - **The data stream stops with `oauth2: cannot fetch token` and the input health is Degraded.** Google rejected the token request. The error usually contains `unauthorized_client`, `access_denied`, `invalid_grant`, `invalid_scope` or `admin_policy_enforced`. Check that every scope for the settings you enabled is delegated exactly as in the table above, and that enough time has passed for the change to take effect.
 - **An error document reports HTTP 403 on a roles, role assignments, groups or members request.** The delegated account lacks the privilege for that option. Users are still collected, without that information. For the roles option, the delegated account must be a super administrator.
 - **Fewer users than expected.** The delegated account's role is probably limited to some organizational units. Grant Users → Read on all organizational units.
+- **The same Reports API event appears twice, with the same `_id` in two backing indices.** The event was collected again after the data stream rolled over, usually because a long window was replayed after an agent restart or a lost saved position. See "Duplicate events and index rollover" under the collection window settings. Set Chunk Duration on the affected data stream to limit how much an interruption re-collects.
 
 ## Elastic Managed enabled integration
 
