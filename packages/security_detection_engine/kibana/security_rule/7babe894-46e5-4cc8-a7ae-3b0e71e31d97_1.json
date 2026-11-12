@@ -1,0 +1,109 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects installation of an IDE extension from a local VSIX (\"--install-extension\" with a \".vsix\" path) when that path is in a staging directory, or the parent is a script host or installer. VS Code and compatible editors (Cursor, VSCodium, Windsurf) use this CLI to sideload extensions outside the marketplace.",
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "host.name",
+                "host.os.type",
+                "user.name",
+                "process.name",
+                "process.parent.name",
+                "process.command_line",
+                "process.parent.command_line"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Suspicious IDE Extension Installation from VSIX",
+        "note": "## Triage and analysis\n\n### Investigating Suspicious IDE Extension Installation from VSIX\n\nAn IDE CLI (`code`, `cursor`, `codium`, or a compatible editor) was invoked with `--install-extension` against a\n`.vsix` file. The VSIX path is under a staging directory (`Users\\Public`, `AppData\\Local\\Temp`, `/tmp`,\n`/var/tmp`, `/private/tmp`, `/dev/shm`), or the parent is a script host or installer rather than the editor itself.\nSideloading a VSIX is a known way to persist or gain execution through a malicious IDE extension.\n\n### Possible investigation steps\n\n- From `process.command_line`, extract the `.vsix` path and the editor binary (`code`, `code.exe`, `cursor`, `codium`).\n- Review `process.parent.name` and `process.parent.command_line` to see whether a script host (`powershell`,\n  `pwsh`, `mshta`, `wscript`, `cscript`, `msiexec`, `python*`, `py.exe`, `node`, `bun`, `osascript`) launched the install.\n- Hash the VSIX and compare it with the extension the editor actually installed under `.vscode/extensions` or the\n  equivalent Cursor or VSCodium extensions directory.\n- On the same host and user, look for follow-on child processes from the extension host, new outbound connections,\n  and files written by the extension.\n\n### False positive analysis\n\n- Extension development often installs a locally built VSIX from PowerShell, pwsh, Node, Bun, or Python, including\n  from a temp directory. Confirm the VSIX path, publisher, and parent script with the developer before excluding.\n- Scope exceptions to a known VSIX path, parent command line, host, or user. Do not broadly exclude\n  `--install-extension` or the editor binary.\n\n### Response and remediation\n\n- If the VSIX is unapproved, uninstall the extension, remove the VSIX, and restart the editor.\n- Quarantine the VSIX, collect its hash, and hunt that hash and command line on other hosts.\n- If a script host launched the install, investigate that parent for a downloader or installer and remove it.\n- Rotate tokens or credentials the extension could have read from the user profile or workspace.\n",
+        "query": "FROM logs-endpoint.events.process-* METADATA _id, _version, _index\n| WHERE MV_CONTAINS(event.category, \"process\")\n  AND MV_CONTAINS(event.type, \"start\")\n  AND TO_LOWER(process.command_line) LIKE \"*--install-extension*\"\n  AND TO_LOWER(process.command_line) LIKE \"*.vsix*\"\n  AND (\n    (\n      host.os.type == \"windows\"\n      AND (\n        TO_LOWER(process.command_line) RLIKE\n          \"\"\".*\\\\users\\\\public\\\\.*|.*\\\\appdata\\\\local\\\\temp\\\\.*|.*/users/public/.*|.*/appdata/local/temp/.*\"\"\"\n        OR TO_LOWER(process.parent.name) IN (\n          \"mshta.exe\",\n          \"wscript.exe\",\n          \"cscript.exe\",\n          \"powershell.exe\",\n          \"msiexec.exe\",\n          \"pwsh.exe\",\n          \"node.exe\",\n          \"bun.exe\",\n          \"py.exe\"\n        )\n        OR TO_LOWER(process.parent.name) LIKE \"python*\"\n      )\n    )\n    OR\n    (\n      host.os.type IN (\"macos\", \"linux\")\n      AND (\n        TO_LOWER(process.command_line) LIKE (\n          \"*/tmp/*\",\n          \"*/var/tmp/*\",\n          \"*/private/tmp/*\",\n          \"*/dev/shm/*\",\n          \"*/users/shared/*\"\n        )\n        OR TO_LOWER(process.parent.name) IN (\n          \"osascript\", \"node\", \"bun\"\n        )\n        OR TO_LOWER(process.parent.name) LIKE \"python*\"\n      )\n    )\n  )\n| KEEP\n    _id,\n    _version,\n    _index,\n\tdata_stream.namespace,\n    @timestamp,\n    host.name,\n\thost.id,\n\tagent.id,\n    host.os.type,\n    user.name,\n\tuser.domain,\n    process.name,\n    process.parent.name,\n    process.command_line,\n    process.parent.command_line\n",
+        "references": [
+            "https://www.mdsec.co.uk/2021/01/macos-post-exploitation-shenanigans-with-vscode-extensions/",
+            "https://code.visualstudio.com/docs/editor/extension-marketplace#_install-from-a-vsix"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": ">=9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "7babe894-46e5-4cc8-a7ae-3b0e71e31d97",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "OS: Windows",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Platform: Windows",
+            "Platform: Linux",
+            "Platform: macOS"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1176",
+                        "name": "Software Extensions",
+                        "reference": "https://attack.mitre.org/techniques/T1176/",
+                        "subtechnique": [
+                            {
+                                "id": "T1176.002",
+                                "name": "IDE Extensions",
+                                "reference": "https://attack.mitre.org/techniques/T1176/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "7babe894-46e5-4cc8-a7ae-3b0e71e31d97_1",
+    "type": "security-rule"
+}

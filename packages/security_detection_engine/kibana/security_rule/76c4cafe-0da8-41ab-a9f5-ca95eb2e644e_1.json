@@ -1,0 +1,115 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects viewing, downloading, printing, generating, or using GitHub enterprise or organization SSO recovery codes. These codes bypass the IdP and are break-glass credentials.",
+        "false_positives": [
+            "Documented disaster-recovery tests. Dual-control these events and store codes offline."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "user.name",
+                "github.org",
+                "github.repo",
+                "github.actor_ip",
+                "github.hashed_token",
+                "github.programmatic_access_type",
+                "github.user_agent",
+                "github.business"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "GitHub SSO Recovery Codes Activity",
+        "note": "## Triage and analysis\n\n### Investigating GitHub SSO Recovery Codes Activity\n\nRecovery-code events are rare. Download/view/print/generate often precede an SSO bypass. Use/fail events indicate an actual sign-in attempt with a recovery code.\n\n### Possible investigation steps\n\n- Identify `user.name`, `event.action`, and `github.actor_ip`.\n- Correlate with `business.disable_saml` / MFA disable and new owner invites.\n\n### False positive analysis\n\n- Scheduled recovery-code rotation with two-person integrity.\n\n### Response and remediation\n\n- Rotate recovery codes, review SSO configuration, and force re-authentication of enterprise owners.\n",
+        "query": "from logs-github.audit-* metadata _id, _index, _version\n| where\n  event.module == \"github\" and data_stream.dataset == \"github.audit\"\n    and event.action in (\n      \"business.recovery_codes_downloaded\",\n      \"business.recovery_codes_generated\",\n      \"business.recovery_codes_printed\",\n      \"business.recovery_codes_viewed\",\n      \"business.recovery_code_used\",\n      \"business.recovery_code_failed\",\n      \"org.recovery_codes_downloaded\",\n      \"org.recovery_codes_generated\",\n      \"org.recovery_codes_printed\",\n      \"org.recovery_codes_viewed\",\n      \"org.recovery_code_used\",\n      \"org.recovery_code_failed\"\n    )\n| keep\n    _id,\n    _index,\n    _version,\n    @timestamp,\n    event.action,\n    user.name,\n    github.org,\n    github.actor_is_bot,\n    github.repo,\n    github.actor_ip,\n    github.hashed_token,\n    github.programmatic_access_type,\n    github.user_agent,\n    github.business\n",
+        "references": [
+            "https://docs.github.com/en/enterprise-cloud@latest/admin/identity-and-access-management/managing-recovery-codes-for-your-enterprise/downloading-your-enterprise-accounts-single-sign-on-recovery-codes"
+        ],
+        "related_integrations": [
+            {
+                "package": "github",
+                "version": ">=3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "76c4cafe-0da8-41ab-a9f5-ca95eb2e644e",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: SaaS",
+            "Platform: GitHub",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Tactic: Persistence",
+            "Data Source: GitHub Audit Logs",
+            "Rule Type: ESQL",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/",
+                        "subtechnique": [
+                            {
+                                "id": "T1078.004",
+                                "name": "Cloud Accounts",
+                                "reference": "https://attack.mitre.org/techniques/T1078/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "76c4cafe-0da8-41ab-a9f5-ca95eb2e644e_1",
+    "type": "security-rule"
+}
