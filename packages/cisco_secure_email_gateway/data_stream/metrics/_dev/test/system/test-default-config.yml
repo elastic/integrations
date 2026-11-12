@@ -1,0 +1,18 @@
+wait_for_data_timeout: 1m
+input: cel
+service: cisco_secure_email_gateway-metrics-mock
+vars: ~
+data_stream:
+  vars:
+    hosts:
+      - http://{{Hostname}}:{{Port}}
+    username: esa_user
+    password: esa_pass
+    interval: 10s
+    preserve_original_event: true
+assert:
+  hit_count: 1
+  field_exists:
+    - cisco_secure_email_gateway.metrics.cpu_load_pct
+  field_absent:
+    - error.message

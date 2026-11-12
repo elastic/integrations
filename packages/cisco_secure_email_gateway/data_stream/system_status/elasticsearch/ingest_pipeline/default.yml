@@ -5,31 +5,50 @@ processors:
       tag: set_ecs_version
       field: ecs.version
       value: "8.17.0"
+  - remove:
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can lead to mapping conflicts.
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
   - set:
       tag: set_event_kind
       field: event.kind
       value: metric
+      if: ctx.error?.message == null
   - append:
       tag: set_event_category
       field: event.category
       value: host
       allow_duplicates: false
+      if: ctx.error?.message == null
   - append:
       tag: set_event_type
       field: event.type
       value: info
       allow_duplicates: false
-  - set:
-      tag: set_event_original
-      field: event.original
-      copy_from: message
-      ignore_failure: true
-      if: "ctx.tags != null && ctx.tags.contains('preserve_original_event')"
-  - json:
-      tag: parse_message_json
+      if: ctx.error?.message == null
+  - rename:
+      tag: rename_message_to_event_original
       field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      tag: remove_message
+      field: message
+      ignore_missing: true
+      if: ctx.event?.original != null
+  - json:
+      tag: parse_event_original_json
+      field: event.original
       target_field: _tmp
-      if: ctx.message != null && ctx.message != ""
+      if: ctx.event?.original != null && ctx.event.original != ""
       on_failure:
         - set:
             tag: set_parse_error_message
@@ -128,6 +147,7 @@ processors:
   - gsub:
       tag: gsub_cpu_load_pct
       field: _tmp.data.resultSet.gauges.0.overall_cpu_load
+      if: ctx._tmp?.data?.resultSet?.gauges != null && ctx._tmp.data.resultSet.gauges.size() > 0 && ctx._tmp.data.resultSet.gauges[0]?.overall_cpu_load instanceof String
       pattern: '%'
       replacement: ''
       ignore_missing: true
@@ -140,6 +160,7 @@ processors:
   - gsub:
       tag: gsub_ram_utilization_pct
       field: _tmp.data.resultSet.gauges.0.ram_utilization
+      if: ctx._tmp?.data?.resultSet?.gauges != null && ctx._tmp.data.resultSet.gauges.size() > 0 && ctx._tmp.data.resultSet.gauges[0]?.ram_utilization instanceof String
       pattern: '%'
       replacement: ''
       ignore_missing: true
@@ -152,6 +173,7 @@ processors:
   - gsub:
       tag: gsub_disk_io_pct
       field: _tmp.data.resultSet.gauges.0.disk_io_utilization
+      if: ctx._tmp?.data?.resultSet?.gauges != null && ctx._tmp.data.resultSet.gauges.size() > 0 && ctx._tmp.data.resultSet.gauges[0]?.disk_io_utilization instanceof String
       pattern: '%'
       replacement: ''
       ignore_missing: true
@@ -164,6 +186,7 @@ processors:
   - gsub:
       tag: gsub_queue_utilized_pct
       field: _tmp.data.resultSet.gauges.0.total_queue_utilized
+      if: ctx._tmp?.data?.resultSet?.gauges != null && ctx._tmp.data.resultSet.gauges.size() > 0 && ctx._tmp.data.resultSet.gauges[0]?.total_queue_utilized instanceof String
       pattern: '%'
       replacement: ''
       ignore_missing: true
@@ -239,10 +262,8 @@ processors:
       target_field: cisco_secure_email_gateway.system_status.counters.total_hard_bounces_uptime
       ignore_missing: true
   - remove:
-      tag: remove_tmp_message
-      field:
-        - _tmp
-        - message
+      tag: remove_tmp
+      field: _tmp
       ignore_missing: true
   - set:
       tag: set_timestamp

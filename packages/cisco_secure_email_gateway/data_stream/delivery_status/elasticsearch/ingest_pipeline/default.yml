@@ -5,30 +5,55 @@ processors:
       tag: set_ecs_version
       field: ecs.version
       value: "8.17.0"
+  - remove:
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can lead to mapping conflicts.
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
   - set:
       tag: set_event_kind
       field: event.kind
       value: metric
+      if: ctx.error?.message == null
   - append:
       tag: set_event_category
       field: event.category
       value: email
       allow_duplicates: false
+      if: ctx.error?.message == null
   - append:
       tag: set_event_type
       field: event.type
       value: info
       allow_duplicates: false
-  - set:
-      tag: set_event_original
-      field: event.original
-      copy_from: message
-      ignore_failure: true
-      if: "ctx.tags != null && ctx.tags.contains('preserve_original_event')"
+      if: ctx.error?.message == null
+  - rename:
+      tag: rename_message_to_event_original
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
   - remove:
       tag: remove_message
       field: message
       ignore_missing: true
+      if: ctx.event?.original != null
+  - json:
+      tag: parse_event_original_json
+      field: event.original
+      target_field: cisco_secure_email_gateway.delivery_status
+      if: ctx.event?.original != null && ctx.event.original != ""
+      on_failure:
+        - append:
+            tag: append_parse_error_message
+            field: error.message
+            value: "Failed to parse JSON response: {{{_ingest.on_failure_message}}}"
   - set:
       tag: set_timestamp
       field: "@timestamp"

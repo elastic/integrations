@@ -16,16 +16,22 @@ This integration is compatible with:
 
 ### How it works
 
-This integration collects data from Cisco Secure Email Gateway using three primary methods:
+This integration collects data from Cisco Secure Email Gateway using four primary methods:
 - TCP: Streams logs in real-time for reliable delivery from the appliance to the Elastic Agent.
 - UDP: Provides high-throughput, low-overhead collection, which is ideal for high-volume mail environments.
 - Logfile: Reads logs that you've pushed using FTP to a directory monitored by the Elastic Agent.
+- REST API: The Elastic Agent polls the AsyncOS REST API on each gateway node and collects health metrics, per-domain delivery status, and system status.
 
 Once the logs are received, the Elastic Agent parses the data into the Elastic Common Schema (ECS). This allows you to correlate email security events with other data sources in your environment for comprehensive analysis. The integration covers various log types including security engine results, mail flow envelopes, administrative activity, and operational performance metrics.
 
 ## What data does this integration collect?
 
 The Cisco Secure Email Gateway integration collects various log messages from your appliance and maps them to the Elastic Common Schema (ECS). You can collect this data using the `log` data stream using log file monitoring, TCP, or UDP.
+
+The integration also collects health and mail flow metrics from the AsyncOS REST API using three data streams that use the CEL input:
+*   `metrics`: Resource health from `/esa/api/v2.0/health`, such as CPU load, RAM, swap, disk I/O, queue utilization, work queue depth, and quarantine message counts.
+*   `delivery_status`: Per-destination-domain delivery status from `/esa/api/v2.0/health/delivery_status`, such as active and delivered recipients, bounces, and outbound connections.
+*   `system_status`: Appliance status from `/esa/api/v2.0/health/system_status`, such as message rates, gauges, counters, uptime, and version details.
 
 The integration collects the following functional log types:
 *   Security logs: Events from security engines including Advanced Malware Protection (AMP) file reputation and analysis, anti-spam, and antivirus results.
@@ -50,11 +56,13 @@ Before you can use this integration, you'll need the following Cisco Secure Emai
 - Licenses for features like AMP, Anti-Spam, and Antivirus to generate the corresponding logs.
 - An FTP server configured on the Elastic Agent host or a shared storage location if you're using the FTP Push method.
 - The IP address of the Elastic Agent and a decision on which transport protocol (TCP, UDP, or Logfile) you'll use.
+- For the REST API data streams: the AsyncOS API enabled on each gateway, and a read-only user account that can call the `/esa/api/v2.0/health` endpoints.
 
 You also need to meet these Elastic prerequisites:
-- Elastic Stack version `8.11.0` or later.
+- Elastic Stack version `9.3.0` or later.
 - An Elastic Agent installed on a host machine and enrolled in a Fleet policy.
 - Network connectivity allowing the gateway to reach the Elastic Agent host, typically over port `514`.
+- For the REST API data streams: network connectivity from the Elastic Agent host to each gateway on the AsyncOS API port (`6443` for HTTPS, `6080` for HTTP by default).
 - The Cisco Secure Email Gateway integration added to your Elastic Agent's policy.
 
 ## How do I deploy this integration?
@@ -116,6 +124,18 @@ The following table lists the required log names for each log type:
 | Status Logs                      | `status`                   |
 | System Logs                      | `system`                   |
 
+#### For REST API metrics
+
+The `metrics`, `delivery_status`, and `system_status` data streams poll the AsyncOS REST API, so nothing is pushed from the gateway. To prepare each gateway:
+
+1. Log in to the Cisco Secure Email Gateway Administrator Portal.
+2. Navigate to **Network** > **IP Interfaces**, edit the management interface, and enable **AsyncOS API** on HTTPS (default port `6443`) or HTTP (default port `6080`). Use HTTPS unless you're testing.
+3. Navigate to **System Administration** > **Users** and create a dedicated user with the **Read-Only Operator** role (or a custom role that can read the health endpoints). The integration only sends `GET` requests.
+4. Commit the changes.
+5. Confirm that the Elastic Agent host can reach the API, for example `curl -u <user>:<password> https://<esa-hostname>:6443/esa/api/v2.0/health`. A JSON response with a `data` object confirms that the account and port are correct.
+
+The integration authenticates with HTTP Basic authentication. Don't put credentials in the node URL. Enter them in the **Username** and **Password** fields instead.
+
 #### Vendor resources
 
 You can find more details in the following vendor documentation:
@@ -128,7 +148,7 @@ To set up the integration in Kibana, follow these steps:
 1. In Kibana, navigate to **Management > Integrations**.
 2. Search for **Cisco Secure Email Gateway** and select it.
 3. Click **Add Cisco Secure Email Gateway**.
-4. Choose the appropriate input method (`tcp`, `udp`, or `logfile`) based on how you configured your Cisco gateway.
+4. Choose the appropriate input method (`tcp`, `udp`, or `logfile` for logs, or the REST API option for metrics) based on how you configured your Cisco gateway.
 5. Enter the configuration values as detailed in the subsections below.
 6. Click **Save and continue** to add the integration to your Agent policy.
 
@@ -166,6 +186,18 @@ Use this section if you're collecting logs from local files or files received us
 - **Processors**: Add custom processors to reduce fields or enhance metadata before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 - **Timezone**: Set the IANA time zone or time offset (for example, `+0200`) to interpret syslog timestamps that don't have a time zone.
 
+#### REST API input configuration
+
+The REST API option enables the `metrics`, `delivery_status`, and `system_status` data streams. Configure these settings:
+
+- **ESA Nodes**: The base URL of each gateway node, including the scheme and AsyncOS API port, for example `https://esa1.example.com:6443`. Add one entry per node. Don't include credentials or a path.
+- **Username** and **Password**: The read-only account that you created on the gateway.
+- **Interval**: How often to poll each node. The default is `5m`.
+- **SSL Configuration**: Optional SSL settings, such as a custom CA for gateways that use an internal certificate.
+- **Preserve original event**: Keep the raw API response in `event.original`.
+
+If one node is unreachable or returns an error, the integration indexes an error event for that node (with `error.message` and `host.name`) and keeps polling the other nodes.
+
 ### Validation
 
 To verify the integration is working correctly, you'll need to trigger some log activity and then check Kibana.
@@ -189,11 +221,16 @@ Once you've generated some activity, verify the data in Kibana:
 4. Check that logs appear and verify that fields like `event.dataset`, `source.ip`, and `message` are populated.
 5. Navigate to **Analytics > Dashboards** and search for **Cisco Secure Email Gateway** to see if the pre-built dashboards show your data.
 
+For the REST API data streams, use the `metrics-*` data view and filter on `data_stream.dataset : "cisco_secure_email_gateway.system_status"` (or `cisco_secure_email_gateway.metrics` or `cisco_secure_email_gateway.delivery_status`). Events with an `error.message` field mean that a node could not be polled. Open the **[Metrics Cisco Secure Email Gateway] Overview** dashboard to see the metrics.
+
 ## Troubleshooting
 
 For help with Elastic ingest tools, check the [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems) documentation.
 
 ### Common configuration issues
+
+- **REST API returns `401 Unauthorized`:** Check the username and password, and confirm that the user has a role that can read the health endpoints.
+- **REST API connection errors (`transport_error`):** Confirm that the AsyncOS API is enabled, that the node URL includes the correct port (`6443` or `6080` by default), and that the Elastic Agent host can reach it.
 
 Use the following tips to resolve common issues you might encounter while using this integration:
 
@@ -708,7 +745,71 @@ An example event for `log` looks as following:
 
 The `metrics` data stream collects health and performance metrics from each configured ESA node via the `/esa/api/v2.0/health` REST API endpoint. Metrics include CPU load, RAM utilization, swap utilization, disk I/O, mail queue utilization, work queue depth, PVO quarantine message count, and resource conservation level.
 
-**REST API setup:** Enable the Cisco ESA AsyncOS API and ensure the configured user account has read access to the health endpoint. The API is available at `https://<esa-hostname>/esa/api/v2.0/`.
+For setup steps, refer to [For REST API metrics](#for-rest-api-metrics).
+
+##### metrics sample event
+
+An example event for `metrics` looks as following:
+
+```json
+{
+    "@timestamp": "2026-11-12T12:51:40.153Z",
+    "agent": {
+        "ephemeral_id": "942720a8-362e-4a05-a810-e4208ebfcf5e",
+        "id": "f269cc96-68b2-4a0a-8909-d0aa84fc5a78",
+        "name": "elastic-agent-81077",
+        "type": "filebeat",
+        "version": "9.5.3"
+    },
+    "cisco_secure_email_gateway": {
+        "metrics": {
+            "cpu_load_pct": 12,
+            "disk_io_pct": 5,
+            "pvo_quarantine_messages": 0,
+            "queue_utilization_pct": 8,
+            "ram_utilization_pct": 45,
+            "resource_conservation": 0,
+            "swap_utilization_pct": 2,
+            "workqueue_messages": 3
+        }
+    },
+    "data_stream": {
+        "dataset": "cisco_secure_email_gateway.metrics",
+        "namespace": "23680",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "f269cc96-68b2-4a0a-8909-d0aa84fc5a78",
+        "snapshot": false,
+        "version": "9.5.3"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "host"
+        ],
+        "dataset": "cisco_secure_email_gateway.metrics",
+        "ingested": "2026-11-12T12:51:44Z",
+        "kind": "metric",
+        "original": "{\"data\":{\"percentage_cpu_load\":12,\"percentage_ram_utilization\":45,\"percentage_swap_utilization\":2,\"percentage_queue_utilization\":8,\"percentage_diskio\":5,\"messages_in_workqueue\":3,\"messages_in_pvo_quarantines\":0,\"resource_conservation\":0}}\n",
+        "type": [
+            "info"
+        ]
+    },
+    "host.name": "svc-cisco_secure_email_gateway-metrics-mock",
+    "input": {
+        "type": "cel"
+    },
+    "tags": [
+        "preserve_original_event",
+        "cisco_secure_email_gateway-metrics",
+        "forwarded"
+    ]
+}
+```
 
 ##### metrics fields
 
@@ -739,6 +840,7 @@ The `metrics` data stream collects health and performance metrics from each conf
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |  |  |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |  |
 | host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
+| input.type | Type of filebeat input. | keyword |  |  |
 | tags | List of keywords used to tag each event. | keyword |  |  |
 
 
@@ -746,7 +848,70 @@ The `metrics` data stream collects health and performance metrics from each conf
 
 The `delivery_status` data stream collects per-domain mail delivery status metrics from each configured ESA node via the `/esa/api/v2.0/health/delivery_status` REST API endpoint. Each event represents one destination domain and includes active recipients, delivered recipients, soft and hard bounce counts, and current outbound connections.
 
-**REST API setup:** Enable the Cisco ESA AsyncOS API and ensure the configured user account has read access to the health endpoints. The API is available at `https://<esa-hostname>/esa/api/v2.0/`.
+For setup steps, refer to [For REST API metrics](#for-rest-api-metrics).
+
+##### delivery_status sample event
+
+An example event for `delivery_status` looks as following:
+
+```json
+{
+    "@timestamp": "2026-11-12T12:50:43.483Z",
+    "agent": {
+        "ephemeral_id": "4d8c9402-67eb-456b-9399-7346c91fc236",
+        "id": "3471aa1e-482c-4651-a9a5-6678863649c8",
+        "name": "elastic-agent-70687",
+        "type": "filebeat",
+        "version": "9.5.3"
+    },
+    "cisco_secure_email_gateway": {
+        "delivery_status": {
+            "active_recipients": 5,
+            "connections_out": 3,
+            "delivered_recipients": 100,
+            "destination_domain": "example.com",
+            "hard_bounces": 1,
+            "latest_host_status": "Active",
+            "soft_bounces": 2
+        }
+    },
+    "data_stream": {
+        "dataset": "cisco_secure_email_gateway.delivery_status",
+        "namespace": "81002",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "3471aa1e-482c-4651-a9a5-6678863649c8",
+        "snapshot": false,
+        "version": "9.5.3"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "email"
+        ],
+        "dataset": "cisco_secure_email_gateway.delivery_status",
+        "ingested": "2026-11-12T12:50:47Z",
+        "kind": "metric",
+        "original": "{\"active_recipients\":5,\"connections_out\":3,\"delivered_recipients\":100,\"destination_domain\":\"example.com\",\"hard_bounces\":1,\"latest_host_status\":\"Active\",\"soft_bounces\":2}",
+        "type": [
+            "info"
+        ]
+    },
+    "host.name": "svc-cisco_secure_email_gateway-delivery-status-mock",
+    "input": {
+        "type": "cel"
+    },
+    "tags": [
+        "preserve_original_event",
+        "cisco_secure_email_gateway-delivery_status",
+        "forwarded"
+    ]
+}
+```
 
 ##### delivery_status fields
 
@@ -776,6 +941,7 @@ The `delivery_status` data stream collects per-domain mail delivery status metri
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |  |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |
 | host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
+| input.type | Type of filebeat input. | keyword |  |
 | tags | List of keywords used to tag each event. | keyword |  |
 
 
@@ -783,7 +949,116 @@ The `delivery_status` data stream collects per-domain mail delivery status metri
 
 The `system_status` data stream collects overall system status from each configured ESA node via the `/esa/api/v2.0/health/system_status` REST API endpoint. Data includes message rate statistics (1, 5, and 15-minute averages), system gauges (CPU, RAM, disk I/O, queue utilization, active recipients, connection counts), uptime counters, mail system status, and appliance version details.
 
-**REST API setup:** Enable the Cisco ESA AsyncOS API and ensure the configured user account has read access to the health endpoints. The API is available at `https://<esa-hostname>/esa/api/v2.0/`.
+For setup steps, refer to [For REST API metrics](#for-rest-api-metrics).
+
+##### system_status sample event
+
+An example event for `system_status` looks as following:
+
+```json
+{
+    "@timestamp": "2026-11-12T12:52:30.307Z",
+    "agent": {
+        "ephemeral_id": "ddf4c30c-6824-4a30-a9d4-fb0e469b8ed4",
+        "id": "c5aeb430-8245-441f-8c99-ebd60736eb2d",
+        "name": "elastic-agent-20539",
+        "type": "filebeat",
+        "version": "9.5.3"
+    },
+    "cisco_secure_email_gateway": {
+        "system_status": {
+            "counters": {
+                "delivered_recipients_uptime": 9500,
+                "dropped_messages_uptime": 10,
+                "messages_received_uptime": 10000,
+                "rejected_recipients_uptime": 50,
+                "soft_bounced_events_uptime": 100,
+                "total_hard_bounces_uptime": 200
+            },
+            "gauges": {
+                "current_incoming_connections": 10,
+                "current_outgoing_connections": 8,
+                "dest_objects_in_memory": 20,
+                "disk_io_utilization_pct": 5,
+                "msgs_in_quarantine": 0,
+                "msgs_in_work_queue": 3,
+                "overall_cpu_load_pct": 12,
+                "ram_utilization_pct": 45,
+                "total_active_recipients": 150,
+                "total_queue_utilized_pct": 8
+            },
+            "mail_system_status": {
+                "oldest_message": "00:05:30",
+                "system_status": "Online",
+                "up_since": "2026-01-01 00:00:00"
+            },
+            "rates": {
+                "delivered_recipients": {
+                    "fifteen_min": 7.5,
+                    "five_min": 7.9,
+                    "one_min": 8.1
+                },
+                "hard_bounced_recipients": {
+                    "fifteen_min": 0.1,
+                    "five_min": 0.1,
+                    "one_min": 0.1
+                },
+                "messages_received": {
+                    "fifteen_min": 9.2,
+                    "five_min": 9.8,
+                    "one_min": 10.5
+                },
+                "soft_bounced_events": {
+                    "fifteen_min": 0.2,
+                    "five_min": 0.2,
+                    "one_min": 0.2
+                }
+            },
+            "version": {
+                "model": "C300V",
+                "operating_system": "AsyncOS 15.0.0",
+                "raid_status": "N/A",
+                "serial_number": "1234567890AB"
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "cisco_secure_email_gateway.system_status",
+        "namespace": "13084",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "c5aeb430-8245-441f-8c99-ebd60736eb2d",
+        "snapshot": false,
+        "version": "9.5.3"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "host"
+        ],
+        "dataset": "cisco_secure_email_gateway.system_status",
+        "ingested": "2026-11-12T12:52:34Z",
+        "kind": "metric",
+        "original": "{\"data\":{\"resultSet\":{\"rates\":[{\"messages_received_rate_one\":10.5,\"messages_received_rate_five\":9.8,\"messages_received_rate_fifteen\":9.2,\"delivered_recipients_rate_one\":8.1,\"delivered_recipients_rate_five\":7.9,\"delivered_recipients_rate_fifteen\":7.5,\"hard_bounced_recipients_rate_one\":0.1,\"hard_bounced_recipients_rate_five\":0.1,\"hard_bounced_recipients_rate_fifteen\":0.1,\"soft_bounced_events_rate_one\":0.2,\"soft_bounced_events_rate_five\":0.2,\"soft_bounced_events_rate_fifteen\":0.2}],\"gauges\":[{\"overall_cpu_load\":\"12%\",\"ram_utilization\":\"45%\",\"disk_io_utilization\":\"5%\",\"total_queue_utilized\":\"8%\",\"msgs_in_work_queue\":3,\"msgs_in_quarantine\":0,\"total_active_recipients\":150,\"current_incoming_connections\":10,\"current_outgoing_connections\":8,\"dest_objects_in_memory\":20}],\"counters\":[{\"messages_received_uptime\":10000,\"delivered_recipients_uptime\":9500,\"soft_bounced_events_uptime\":100,\"rejected_recipients_uptime\":50,\"dropped_messages_uptime\":10,\"total_hard_bounces_uptime\":200}],\"mail_system_status\":[{\"system_status\":\"Online\",\"up_since\":\"2026-01-01 00:00:00\",\"oldest_message\":\"00:05:30\"}],\"version_details\":[{\"model\":\"C300V\",\"operating_system\":\"AsyncOS 15.0.0\",\"serial_number\":\"1234567890AB\",\"raid_status\":\"N/A\"}]}}}\n",
+        "type": [
+            "info"
+        ]
+    },
+    "host.name": "svc-cisco_secure_email_gateway-system-status-mock",
+    "input": {
+        "type": "cel"
+    },
+    "tags": [
+        "preserve_original_event",
+        "cisco_secure_email_gateway-system_status",
+        "forwarded"
+    ]
+}
+```
 
 ##### system_status fields
 
@@ -810,7 +1085,7 @@ The `system_status` data stream collects overall system status from each configu
 | cisco_secure_email_gateway.system_status.gauges.total_queue_utilized_pct | Total mail queue utilization percentage. | float | percent | gauge |
 | cisco_secure_email_gateway.system_status.mail_system_status.oldest_message | Age of the oldest message in the queue. | keyword |  |  |
 | cisco_secure_email_gateway.system_status.mail_system_status.system_status | Overall mail system status (e.g. Online, Offline). | keyword |  |  |
-| cisco_secure_email_gateway.system_status.mail_system_status.up_since | Human-readable system uptime string. | keyword |  |  |
+| cisco_secure_email_gateway.system_status.mail_system_status.up_since | Timestamp since which the appliance has been running (system up since), as reported by AsyncOS. | keyword |  |  |
 | cisco_secure_email_gateway.system_status.rates.delivered_recipients.fifteen_min | Delivered recipients per minute (15-minute average). | float |  | gauge |
 | cisco_secure_email_gateway.system_status.rates.delivered_recipients.five_min | Delivered recipients per minute (5-minute average). | float |  | gauge |
 | cisco_secure_email_gateway.system_status.rates.delivered_recipients.one_min | Delivered recipients per minute (1-minute average). | float |  | gauge |
@@ -841,6 +1116,7 @@ The `system_status` data stream collects overall system status from each configu
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |  |  |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |  |
 | host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
+| input.type | Type of filebeat input. | keyword |  |  |
 | tags | List of keywords used to tag each event. | keyword |  |  |
 
 

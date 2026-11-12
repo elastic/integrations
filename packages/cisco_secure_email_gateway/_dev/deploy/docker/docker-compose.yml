@@ -16,3 +16,24 @@ services:
     volumes:
       - ./sample_logs:/sample_logs:ro
     command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9520 -p=udp /sample_logs/log.log
+  cisco_secure_email_gateway-metrics-mock:
+    image: docker.elastic.co/observability/stream:v0.22.0
+    volumes:
+      - ./files:/files:ro
+    command: http-server --addr=:8090 --config=/files/config-metrics.yml
+    ports:
+      - 8090
+  cisco_secure_email_gateway-delivery-status-mock:
+    image: docker.elastic.co/observability/stream:v0.22.0
+    volumes:
+      - ./files:/files:ro
+    command: http-server --addr=:8090 --config=/files/config-delivery_status.yml
+    ports:
+      - 8090
+  cisco_secure_email_gateway-system-status-mock:
+    image: docker.elastic.co/observability/stream:v0.22.0
+    volumes:
+      - ./files:/files:ro
+    command: http-server --addr=:8090 --config=/files/config-system_status.yml
+    ports:
+      - 8090

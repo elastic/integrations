@@ -1,0 +1,22 @@
+rules:
+  - path: /esa/api/v2.0/health/delivery_status
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - 'Basic ZXNhX3VzZXI6ZXNhX3Bhc3M='
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {"data":{"resultSet":[{"destination_domain":"example.com","latest_host_status":"Active","active_recipients":5,"delivered_recipients":100,"soft_bounces":2,"hard_bounces":1,"connections_out":3},{"destination_domain":"example.org","latest_host_status":"Active","active_recipients":2,"delivered_recipients":40,"soft_bounces":0,"hard_bounces":0,"connections_out":1},{"destination_domain":"example.net","latest_host_status":"Down","active_recipients":9,"delivered_recipients":7,"soft_bounces":5,"hard_bounces":3,"connections_out":0}]}}
+  - path: /.*
+    methods: ['GET']
+    responses:
+      - status_code: 401
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {"error":"unauthorized"}

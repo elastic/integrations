@@ -24,6 +24,10 @@ The integration covers the following functional log types:
 - **Operational Logs:** Status logs containing performance metrics such as CPU load, disk I/O, RAM utilization, and queue statistics.
 - **Error and Bounce Logs:** IronPort Text Mail logs (`error_logs`) and Bounce logs tracking system errors and undeliverable messages.
 
+- **Cisco Secure Email Gateway metrics (REST API):** Polls `/esa/api/v2.0/health` on each configured node with the CEL input and collects CPU, RAM, swap, disk I/O, queue utilization, work queue depth, and quarantine message counts.
+- **Cisco Secure Email Gateway delivery status (REST API):** Polls `/esa/api/v2.0/health/delivery_status` and collects one event per destination domain with active and delivered recipients, bounces, and outbound connections.
+- **Cisco Secure Email Gateway system status (REST API):** Polls `/esa/api/v2.0/health/system_status` and collects message rates, gauges, counters, uptime, mail system status, and appliance version details.
+
 ## Compatibility
 The **Cisco Secure Email Gateway** (formerly known as Cisco Email Security Appliance or ESA) integration has been specifically tested and validated against the following:
 - **Cisco Secure Email Gateway Server version 14.0.0**
@@ -45,10 +49,11 @@ To ensure optimal performance in high-volume email environments, consider the fo
 2.  **Network Connectivity:** The gateway must be able to reach the Elastic Agent over the configured protocol. Ensure firewall rules allow traffic on the chosen port (typically **TCP/UDP 514** or a custom high port).
 3.  **Log Feature Licenses:** Ensure relevant features (AMP, Anti-Spam, Antivirus) are licensed and enabled to generate the corresponding logs.
 4.  **FTP Server:** If using the **FTP Push** method, the Elastic Agent host (or a shared storage location accessible by the Agent) must be configured to receive files using FTP.
-5.  **Information Requirements:** You must know the IP address of the Elastic Agent and decide on the transport protocol (TCP/UDP/Logfile) before beginning the configuration.
+5.  **REST API access (metrics, delivery_status, system_status):** The AsyncOS API must be enabled on each gateway (HTTPS port `6443` or HTTP port `6080` by default), and a read-only user (for example with the Read-Only Operator role) must exist. The Elastic Agent host must be able to reach each node on that port.
+6.  **Information Requirements:** You must know the IP address of the Elastic Agent and decide on the transport protocol (TCP/UDP/Logfile) before beginning the configuration.
 
 ## Elastic prerequisites
-- **Elastic Stack version:** 8.11.0 or later is recommended for full feature support.
+- **Elastic Stack version:** 9.3.0 or later.
 - **Elastic Agent:** Must be installed on a host machine and enrolled in a Fleet policy.
 - **Network Connectivity:** The Elastic Agent must be reachable from the Cisco Secure Email Gateway appliance over the network for TCP/UDP ingestion (typically port `514`).
 - **Integration Policy:** The Cisco Secure Email Gateway integration must be added to the Elastic Agent's policy using the Kibana UI.
@@ -96,11 +101,20 @@ The Cisco Secure Email Gateway supports multiple log retrieval methods. Follow t
 | Status Logs                      | `status`                   |
 | System Logs                      | `system`                   |
 
+### For REST API metrics:
+
+1. In the Administrator Portal, go to **Network** > **IP Interfaces**, edit the management interface, and enable **AsyncOS API** on HTTPS (port `6443`) or HTTP (port `6080`).
+2. Go to **System Administration** > **Users** and create a dedicated read-only user (Read-Only Operator role).
+3. Commit the changes.
+4. Verify access from the Elastic Agent host: `curl -u <user>:<password> https://<esa-hostname>:6443/esa/api/v2.0/health`.
+
 ### Vendor Set up Resources
 
 - [User Guide for AsyncOS 14.0.2 for Cisco Secure Email Gateway - Logging](https://www.cisco.com/c/en/us/td/docs/security/esa/esa14-0-2/user_guide/b_ESA_Admin_Guide_14-0-2/b_ESA_Admin_Guide_12_1_chapter_0100111.html) - Official documentation on configuring log subscriptions and retrieval methods.
 
 ## Kibana set up steps
+
+For the REST API data streams (`metrics`, `delivery_status`, `system_status`), set **ESA Nodes** to the base URL of each node including the port (for example `https://esa1.example.com:6443`, without credentials or a path), and enter the read-only **Username** and **Password**. Unreachable or failing nodes produce an error event (`error.message`, `host.name`) while the other nodes keep being polled.
 
 1. In Kibana, navigate to **Management > Integrations**.
 2. Search for **Cisco Secure Email Gateway** and select it.

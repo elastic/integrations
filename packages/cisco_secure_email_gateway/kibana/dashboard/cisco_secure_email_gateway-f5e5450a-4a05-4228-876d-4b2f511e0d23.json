@@ -97,7 +97,7 @@
                                             ],
                                             "index": "metrics-cisco_secure_email_gateway*-@timestamp",
                                             "query": {
-                                                "esql": "FROM metrics-cisco_secure_email_gateway* | WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend AND cisco_secure_email_gateway.system_status.gauges.overall_cpu_load_pct IS NOT NULL | SORT @timestamp DESC | LIMIT 1 | EVAL `CPU load %` = cisco_secure_email_gateway.system_status.gauges.overall_cpu_load_pct | KEEP `CPU load %`, @timestamp | STATS AVG(`CPU load %`) BY BUCKET(@timestamp, 75, ?_tstart, ?_tend)"
+                                                "esql": "FROM metrics-cisco_secure_email_gateway* | WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend AND cisco_secure_email_gateway.system_status.gauges.overall_cpu_load_pct IS NOT NULL | EVAL `CPU load %` = cisco_secure_email_gateway.system_status.gauges.overall_cpu_load_pct | KEEP `CPU load %`, @timestamp | STATS AVG(`CPU load %`) BY BUCKET(@timestamp, 75, ?_tstart, ?_tend)"
                                             },
                                             "timeField": "@timestamp"
                                         },
@@ -275,7 +275,7 @@
                                             ],
                                             "index": "metrics-cisco_secure_email_gateway*-@timestamp",
                                             "query": {
-                                                "esql": "FROM metrics-cisco_secure_email_gateway* | WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend | SORT @timestamp DESC | EVAL `RAM utilization %` = cisco_secure_email_gateway.system_status.gauges.ram_utilization_pct | KEEP `RAM utilization %`, @timestamp | LIMIT 1 | STATS AVG(`RAM utilization %`) BY BUCKET(@timestamp, 75, ?_tstart, ?_tend)"
+                                                "esql": "FROM metrics-cisco_secure_email_gateway* | WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend AND cisco_secure_email_gateway.system_status.gauges.ram_utilization_pct IS NOT NULL | EVAL `RAM utilization %` = cisco_secure_email_gateway.system_status.gauges.ram_utilization_pct | KEEP `RAM utilization %`, @timestamp | STATS AVG(`RAM utilization %`) BY BUCKET(@timestamp, 75, ?_tstart, ?_tend)"
                                             },
                                             "timeField": "@timestamp"
                                         },
@@ -303,7 +303,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-cisco_secure_email_gateway*-@timestamp",
                                             "query": {
-                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| SORT @timestamp DESC\n| EVAL `RAM utilization %` = cisco_secure_email_gateway.system_status.gauges.ram_utilization_pct\n| KEEP `RAM utilization %`\n| LIMIT 1"
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n  AND cisco_secure_email_gateway.system_status.gauges.ram_utilization_pct IS NOT NULL\n| SORT @timestamp DESC\n| EVAL `RAM utilization %` = cisco_secure_email_gateway.system_status.gauges.ram_utilization_pct\n| KEEP `RAM utilization %`\n| LIMIT 1"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -319,7 +319,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| SORT @timestamp DESC\n| EVAL `RAM utilization %` = cisco_secure_email_gateway.system_status.gauges.ram_utilization_pct\n| KEEP `RAM utilization %`\n| LIMIT 1"
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n  AND cisco_secure_email_gateway.system_status.gauges.ram_utilization_pct IS NOT NULL\n| SORT @timestamp DESC\n| EVAL `RAM utilization %` = cisco_secure_email_gateway.system_status.gauges.ram_utilization_pct\n| KEEP `RAM utilization %`\n| LIMIT 1"
                             },
                             "visualization": {
                                 "applyColorTo": "background",
@@ -442,10 +442,10 @@
                                                     },
                                                     "params": {
                                                         "format": {
-                                                            "id": "percent",
+                                                            "id": "number",
                                                             "params": {
-                                                                "compact": true,
-                                                                "decimals": 1
+                                                                "decimals": 1,
+                                                                "suffix": "%"
                                                             }
                                                         }
                                                     }
@@ -453,7 +453,7 @@
                                             ],
                                             "index": "metrics-cisco_secure_email_gateway*-@timestamp",
                                             "query": {
-                                                "esql": "FROM metrics-cisco_secure_email_gateway* | WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend AND cisco_secure_email_gateway.system_status.gauges.disk_io_utilization_pct IS NOT NULL | SORT @timestamp DESC | KEEP cisco_secure_email_gateway.system_status.gauges.disk_io_utilization_pct, @timestamp | RENAME cisco_secure_email_gateway.system_status.gauges.disk_io_utilization_pct AS `Disk I/O %` | LIMIT 1 | STATS AVG(`Disk I/O %`) BY BUCKET(@timestamp, 75, ?_tstart, ?_tend)"
+                                                "esql": "FROM metrics-cisco_secure_email_gateway* | WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend AND cisco_secure_email_gateway.system_status.gauges.disk_io_utilization_pct IS NOT NULL | KEEP cisco_secure_email_gateway.system_status.gauges.disk_io_utilization_pct, @timestamp | RENAME cisco_secure_email_gateway.system_status.gauges.disk_io_utilization_pct AS `Disk I/O %` | STATS AVG(`Disk I/O %`) BY BUCKET(@timestamp, 75, ?_tstart, ?_tend)"
                                             },
                                             "timeField": "@timestamp"
                                         },
@@ -659,11 +659,11 @@
                                             },
                                             {
                                                 "color": "#fcd883",
-                                                "stop": 0.7
+                                                "stop": 70
                                             },
                                             {
                                                 "color": "#f6726a",
-                                                "stop": 0.9
+                                                "stop": 90
                                             }
                                         ],
                                         "continuity": "all",
@@ -678,11 +678,11 @@
                                         "stops": [
                                             {
                                                 "color": "#24c292",
-                                                "stop": 0.7
+                                                "stop": 70
                                             },
                                             {
                                                 "color": "#fcd883",
-                                                "stop": 0.9
+                                                "stop": 90
                                             },
                                             {
                                                 "color": "#f6726a",
@@ -749,7 +749,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-cisco_secure_email_gateway*-@timestamp",
                                             "query": {
-                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| SORT @timestamp DESC\n| KEEP cisco_secure_email_gateway.system_status.gauges.msgs_in_work_queue\n| RENAME cisco_secure_email_gateway.system_status.gauges.msgs_in_work_queue AS `Messages in Work Queue`\n| LIMIT 1"
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n  AND cisco_secure_email_gateway.system_status.gauges.msgs_in_work_queue IS NOT NULL\n| SORT @timestamp DESC\n| KEEP cisco_secure_email_gateway.system_status.gauges.msgs_in_work_queue\n| RENAME cisco_secure_email_gateway.system_status.gauges.msgs_in_work_queue AS `Messages in Work Queue`\n| LIMIT 1"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -765,7 +765,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| SORT @timestamp DESC\n| KEEP cisco_secure_email_gateway.system_status.gauges.msgs_in_work_queue\n| RENAME cisco_secure_email_gateway.system_status.gauges.msgs_in_work_queue AS `Messages in Work Queue`\n| LIMIT 1"
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n  AND cisco_secure_email_gateway.system_status.gauges.msgs_in_work_queue IS NOT NULL\n| SORT @timestamp DESC\n| KEEP cisco_secure_email_gateway.system_status.gauges.msgs_in_work_queue\n| RENAME cisco_secure_email_gateway.system_status.gauges.msgs_in_work_queue AS `Messages in Work Queue`\n| LIMIT 1"
                             },
                             "visualization": {
                                 "density": "default",
@@ -910,7 +910,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-cisco_secure_email_gateway*-@timestamp",
                                             "query": {
-                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| SORT @timestamp DESC\n| LIMIT 1\n| KEEP cisco_secure_email_gateway.system_status.gauges.current_incoming_connections\n| RENAME cisco_secure_email_gateway.system_status.gauges.current_incoming_connections AS `Current incoming SMTP connections`"
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n  AND cisco_secure_email_gateway.system_status.gauges.current_incoming_connections IS NOT NULL\n| SORT @timestamp DESC\n| LIMIT 1\n| KEEP cisco_secure_email_gateway.system_status.gauges.current_incoming_connections\n| RENAME cisco_secure_email_gateway.system_status.gauges.current_incoming_connections AS `Current incoming SMTP connections`"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -926,7 +926,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| SORT @timestamp DESC\n| LIMIT 1\n| KEEP cisco_secure_email_gateway.system_status.gauges.current_incoming_connections\n| RENAME cisco_secure_email_gateway.system_status.gauges.current_incoming_connections AS `Current incoming SMTP connections`"
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n  AND cisco_secure_email_gateway.system_status.gauges.current_incoming_connections IS NOT NULL\n| SORT @timestamp DESC\n| LIMIT 1\n| KEEP cisco_secure_email_gateway.system_status.gauges.current_incoming_connections\n| RENAME cisco_secure_email_gateway.system_status.gauges.current_incoming_connections AS `Current incoming SMTP connections`"
                             },
                             "visualization": {
                                 "applyColorTo": "value",
@@ -1314,7 +1314,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-cisco_secure_email_gateway*-@timestamp",
                                             "query": {
-                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| SORT @timestamp DESC\n| KEEP `cisco_secure_email_gateway.system_status.rates.soft_bounced_events.one_min`\n| RENAME `cisco_secure_email_gateway.system_status.rates.soft_bounced_events.one_min` AS `Soft Bounce Events Per Minute`\n| LIMIT 1"
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n  AND `cisco_secure_email_gateway.system_status.rates.soft_bounced_events.one_min` IS NOT NULL\n| SORT @timestamp DESC\n| KEEP `cisco_secure_email_gateway.system_status.rates.soft_bounced_events.one_min`\n| RENAME `cisco_secure_email_gateway.system_status.rates.soft_bounced_events.one_min` AS `Soft Bounce Events Per Minute`\n| LIMIT 1"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1330,7 +1330,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| SORT @timestamp DESC\n| KEEP `cisco_secure_email_gateway.system_status.rates.soft_bounced_events.one_min`\n| RENAME `cisco_secure_email_gateway.system_status.rates.soft_bounced_events.one_min` AS `Soft Bounce Events Per Minute`\n| LIMIT 1"
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n  AND `cisco_secure_email_gateway.system_status.rates.soft_bounced_events.one_min` IS NOT NULL\n| SORT @timestamp DESC\n| KEEP `cisco_secure_email_gateway.system_status.rates.soft_bounced_events.one_min`\n| RENAME `cisco_secure_email_gateway.system_status.rates.soft_bounced_events.one_min` AS `Soft Bounce Events Per Minute`\n| LIMIT 1"
                             },
                             "visualization": {
                                 "applyColorTo": "value",
@@ -2159,10 +2159,10 @@
                                                     },
                                                     "params": {
                                                         "format": {
-                                                            "id": "percent",
+                                                            "id": "number",
                                                             "params": {
-                                                                "compact": true,
-                                                                "decimals": 1
+                                                                "decimals": 1,
+                                                                "suffix": "%"
                                                             }
                                                         }
                                                     }
@@ -2333,10 +2333,10 @@
                                                     },
                                                     "params": {
                                                         "format": {
-                                                            "id": "percent",
+                                                            "id": "number",
                                                             "params": {
-                                                                "compact": true,
-                                                                "decimals": 1
+                                                                "decimals": 1,
+                                                                "suffix": "%"
                                                             }
                                                         }
                                                     }
@@ -2351,10 +2351,10 @@
                                                     },
                                                     "params": {
                                                         "format": {
-                                                            "id": "percent",
+                                                            "id": "number",
                                                             "params": {
-                                                                "compact": true,
-                                                                "decimals": 1
+                                                                "decimals": 1,
+                                                                "suffix": "%"
                                                             }
                                                         }
                                                     }
@@ -2590,11 +2590,11 @@
                                 "yLeftScale": "linear"
                             }
                         },
-                        "title": "Cisco Secure Email Gateway message queues over time",
+                        "title": "Message queues over time",
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "title": "Cisco Secure Email Gateway message queues over time"
+                    "title": "Message queues over time"
                 },
                 "gridData": {
                     "h": 10,
@@ -2638,10 +2638,10 @@
                                                     },
                                                     "params": {
                                                         "format": {
-                                                            "id": "percent",
+                                                            "id": "number",
                                                             "params": {
-                                                                "compact": true,
-                                                                "decimals": 1
+                                                                "decimals": 1,
+                                                                "suffix": "%"
                                                             }
                                                         }
                                                     }
@@ -2779,7 +2779,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-cisco_secure_email_gateway*-@timestamp",
                                             "query": {
-                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| SORT @timestamp DESC\n| EVAL `Total Active Recipients` = cisco_secure_email_gateway.system_status.gauges.total_active_recipients\n| KEEP `Total Active Recipients`\n| LIMIT 1"
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n  AND cisco_secure_email_gateway.system_status.gauges.total_active_recipients IS NOT NULL\n| SORT @timestamp DESC\n| EVAL `Total Active Recipients` = cisco_secure_email_gateway.system_status.gauges.total_active_recipients\n| KEEP `Total Active Recipients`\n| LIMIT 1"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2795,7 +2795,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| SORT @timestamp DESC\n| EVAL `Total Active Recipients` = cisco_secure_email_gateway.system_status.gauges.total_active_recipients\n| KEEP `Total Active Recipients`\n| LIMIT 1"
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n  AND cisco_secure_email_gateway.system_status.gauges.total_active_recipients IS NOT NULL\n| SORT @timestamp DESC\n| EVAL `Total Active Recipients` = cisco_secure_email_gateway.system_status.gauges.total_active_recipients\n| KEEP `Total Active Recipients`\n| LIMIT 1"
                             },
                             "visualization": {
                                 "density": "default",
@@ -2897,7 +2897,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-cisco_secure_email_gateway*-@timestamp",
                                             "query": {
-                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| SORT @timestamp DESC\n| STATS `System Status` = MV_FIRST(VALUES(cisco_secure_email_gateway.system_status.mail_system_status.system_status)), `Up Since` = MV_FIRST(VALUES(cisco_secure_email_gateway.system_status.mail_system_status.up_since)), `Model` = MV_FIRST(VALUES(cisco_secure_email_gateway.system_status.version.model)), `Operating System` = MV_FIRST(VALUES(cisco_secure_email_gateway.system_status.version.operating_system)), `RAID Status` = MV_FIRST(VALUES(cisco_secure_email_gateway.system_status.version.raid_status)) BY `Host Name` = host.name\n| LIMIT 100"
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n  AND cisco_secure_email_gateway.system_status.mail_system_status.system_status IS NOT NULL\n| STATS `System Status` = MV_FIRST(TOP(@timestamp, 1, \"desc\", cisco_secure_email_gateway.system_status.mail_system_status.system_status)), `Up Since` = MV_FIRST(TOP(@timestamp, 1, \"desc\", cisco_secure_email_gateway.system_status.mail_system_status.up_since)), `Model` = MV_FIRST(TOP(@timestamp, 1, \"desc\", cisco_secure_email_gateway.system_status.version.model)), `Operating System` = MV_FIRST(TOP(@timestamp, 1, \"desc\", cisco_secure_email_gateway.system_status.version.operating_system)), `RAID Status` = MV_FIRST(TOP(@timestamp, 1, \"desc\", cisco_secure_email_gateway.system_status.version.raid_status)) BY `Host Name` = host.name\n| LIMIT 100"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2913,7 +2913,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| SORT @timestamp DESC\n| STATS `System Status` = MV_FIRST(VALUES(cisco_secure_email_gateway.system_status.mail_system_status.system_status)), `Up Since` = MV_FIRST(VALUES(cisco_secure_email_gateway.system_status.mail_system_status.up_since)), `Model` = MV_FIRST(VALUES(cisco_secure_email_gateway.system_status.version.model)), `Operating System` = MV_FIRST(VALUES(cisco_secure_email_gateway.system_status.version.operating_system)), `RAID Status` = MV_FIRST(VALUES(cisco_secure_email_gateway.system_status.version.raid_status)) BY `Host Name` = host.name\n| LIMIT 100"
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n  AND cisco_secure_email_gateway.system_status.mail_system_status.system_status IS NOT NULL\n| STATS `System Status` = MV_FIRST(TOP(@timestamp, 1, \"desc\", cisco_secure_email_gateway.system_status.mail_system_status.system_status)), `Up Since` = MV_FIRST(TOP(@timestamp, 1, \"desc\", cisco_secure_email_gateway.system_status.mail_system_status.up_since)), `Model` = MV_FIRST(TOP(@timestamp, 1, \"desc\", cisco_secure_email_gateway.system_status.version.model)), `Operating System` = MV_FIRST(TOP(@timestamp, 1, \"desc\", cisco_secure_email_gateway.system_status.version.operating_system)), `RAID Status` = MV_FIRST(TOP(@timestamp, 1, \"desc\", cisco_secure_email_gateway.system_status.version.raid_status)) BY `Host Name` = host.name\n| LIMIT 100"
                             },
                             "visualization": {
                                 "columns": [
@@ -3056,11 +3056,10 @@
             }
         ],
         "timeRestore": false,
-        "title": "Cisco Secure Email Gateway — Overview"
+        "title": "[Metrics Cisco Secure Email Gateway] Overview"
     },
     "coreMigrationVersion": "8.8.0",
     "created_at": "2026-09-18T10:49:04.725Z",
-    "created_by": "u_3727848238_cloud",
     "id": "cisco_secure_email_gateway-f5e5450a-4a05-4228-876d-4b2f511e0d23",
     "references": [
         {
@@ -3075,6 +3074,5 @@
         }
     ],
     "type": "dashboard",
-    "typeMigrationVersion": "10.3.0",
-    "updated_by": "u_3727848238_cloud"
+    "typeMigrationVersion": "10.3.0"
 }

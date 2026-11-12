@@ -16,16 +16,22 @@ This integration is compatible with:
 
 ### How it works
 
-This integration collects data from Cisco Secure Email Gateway using three primary methods:
+This integration collects data from Cisco Secure Email Gateway using four primary methods:
 - TCP: Streams logs in real-time for reliable delivery from the appliance to the Elastic Agent.
 - UDP: Provides high-throughput, low-overhead collection, which is ideal for high-volume mail environments.
 - Logfile: Reads logs that you've pushed using FTP to a directory monitored by the Elastic Agent.
+- REST API: The Elastic Agent polls the AsyncOS REST API on each gateway node and collects health metrics, per-domain delivery status, and system status.
 
 Once the logs are received, the Elastic Agent parses the data into the Elastic Common Schema (ECS). This allows you to correlate email security events with other data sources in your environment for comprehensive analysis. The integration covers various log types including security engine results, mail flow envelopes, administrative activity, and operational performance metrics.
 
 ## What data does this integration collect?
 
 The Cisco Secure Email Gateway integration collects various log messages from your appliance and maps them to the Elastic Common Schema (ECS). You can collect this data using the `log` data stream using log file monitoring, TCP, or UDP.
+
+The integration also collects health and mail flow metrics from the AsyncOS REST API using three data streams that use the CEL input:
+*   `metrics`: Resource health from `/esa/api/v2.0/health`, such as CPU load, RAM, swap, disk I/O, queue utilization, work queue depth, and quarantine message counts.
+*   `delivery_status`: Per-destination-domain delivery status from `/esa/api/v2.0/health/delivery_status`, such as active and delivered recipients, bounces, and outbound connections.
+*   `system_status`: Appliance status from `/esa/api/v2.0/health/system_status`, such as message rates, gauges, counters, uptime, and version details.
 
 The integration collects the following functional log types:
 *   Security logs: Events from security engines including Advanced Malware Protection (AMP) file reputation and analysis, anti-spam, and antivirus results.
@@ -50,11 +56,13 @@ Before you can use this integration, you'll need the following Cisco Secure Emai
 - Licenses for features like AMP, Anti-Spam, and Antivirus to generate the corresponding logs.
 - An FTP server configured on the Elastic Agent host or a shared storage location if you're using the FTP Push method.
 - The IP address of the Elastic Agent and a decision on which transport protocol (TCP, UDP, or Logfile) you'll use.
+- For the REST API data streams: the AsyncOS API enabled on each gateway, and a read-only user account that can call the `/esa/api/v2.0/health` endpoints.
 
 You also need to meet these Elastic prerequisites:
-- Elastic Stack version `8.11.0` or later.
+- Elastic Stack version `9.3.0` or later.
 - An Elastic Agent installed on a host machine and enrolled in a Fleet policy.
 - Network connectivity allowing the gateway to reach the Elastic Agent host, typically over port `514`.
+- For the REST API data streams: network connectivity from the Elastic Agent host to each gateway on the AsyncOS API port (`6443` for HTTPS, `6080` for HTTP by default).
 - The Cisco Secure Email Gateway integration added to your Elastic Agent's policy.
 
 ## How do I deploy this integration?
@@ -116,6 +124,18 @@ The following table lists the required log names for each log type:
 | Status Logs                      | `status`                   |
 | System Logs                      | `system`                   |
 
+#### For REST API metrics
+
+The `metrics`, `delivery_status`, and `system_status` data streams poll the AsyncOS REST API, so nothing is pushed from the gateway. To prepare each gateway:
+
+1. Log in to the Cisco Secure Email Gateway Administrator Portal.
+2. Navigate to **Network** > **IP Interfaces**, edit the management interface, and enable **AsyncOS API** on HTTPS (default port `6443`) or HTTP (default port `6080`). Use HTTPS unless you're testing.
+3. Navigate to **System Administration** > **Users** and create a dedicated user with the **Read-Only Operator** role (or a custom role that can read the health endpoints). The integration only sends `GET` requests.
+4. Commit the changes.
+5. Confirm that the Elastic Agent host can reach the API, for example `curl -u <user>:<password> https://<esa-hostname>:6443/esa/api/v2.0/health`. A JSON response with a `data` object confirms that the account and port are correct.
+
+The integration authenticates with HTTP Basic authentication. Don't put credentials in the node URL. Enter them in the **Username** and **Password** fields instead.
+
 #### Vendor resources
 
 You can find more details in the following vendor documentation:
@@ -128,7 +148,7 @@ To set up the integration in Kibana, follow these steps:
 1. In Kibana, navigate to **Management > Integrations**.
 2. Search for **Cisco Secure Email Gateway** and select it.
 3. Click **Add Cisco Secure Email Gateway**.
-4. Choose the appropriate input method (`tcp`, `udp`, or `logfile`) based on how you configured your Cisco gateway.
+4. Choose the appropriate input method (`tcp`, `udp`, or `logfile` for logs, or the REST API option for metrics) based on how you configured your Cisco gateway.
 5. Enter the configuration values as detailed in the subsections below.
 6. Click **Save and continue** to add the integration to your Agent policy.
 
@@ -166,6 +186,18 @@ Use this section if you're collecting logs from local files or files received us
 - **Processors**: Add custom processors to reduce fields or enhance metadata before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 - **Timezone**: Set the IANA time zone or time offset (for example, `+0200`) to interpret syslog timestamps that don't have a time zone.
 
+#### REST API input configuration
+
+The REST API option enables the `metrics`, `delivery_status`, and `system_status` data streams. Configure these settings:
+
+- **ESA Nodes**: The base URL of each gateway node, including the scheme and AsyncOS API port, for example `https://esa1.example.com:6443`. Add one entry per node. Don't include credentials or a path.
+- **Username** and **Password**: The read-only account that you created on the gateway.
+- **Interval**: How often to poll each node. The default is `5m`.
+- **SSL Configuration**: Optional SSL settings, such as a custom CA for gateways that use an internal certificate.
+- **Preserve original event**: Keep the raw API response in `event.original`.
+
+If one node is unreachable or returns an error, the integration indexes an error event for that node (with `error.message` and `host.name`) and keeps polling the other nodes.
+
 ### Validation
 
 To verify the integration is working correctly, you'll need to trigger some log activity and then check Kibana.
@@ -189,11 +221,16 @@ Once you've generated some activity, verify the data in Kibana:
 4. Check that logs appear and verify that fields like `event.dataset`, `source.ip`, and `message` are populated.
 5. Navigate to **Analytics > Dashboards** and search for **Cisco Secure Email Gateway** to see if the pre-built dashboards show your data.
 
+For the REST API data streams, use the `metrics-*` data view and filter on `data_stream.dataset : "cisco_secure_email_gateway.system_status"` (or `cisco_secure_email_gateway.metrics` or `cisco_secure_email_gateway.delivery_status`). Events with an `error.message` field mean that a node could not be polled. Open the **[Metrics Cisco Secure Email Gateway] Overview** dashboard to see the metrics.
+
 ## Troubleshooting
 
 For help with Elastic ingest tools, check the [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems) documentation.
 
 ### Common configuration issues
+
+- **REST API returns `401 Unauthorized`:** Check the username and password, and confirm that the user has a role that can read the health endpoints.
+- **REST API connection errors (`transport_error`):** Confirm that the AsyncOS API is enabled, that the node URL includes the correct port (`6443` or `6080` by default), and that the Elastic Agent host can reach it.
 
 Use the following tips to resolve common issues you might encounter while using this integration:
 
@@ -239,7 +276,11 @@ The `log` data stream provides events from Cisco Secure Email Gateway of the fol
 
 The `metrics` data stream collects health and performance metrics from each configured ESA node via the `/esa/api/v2.0/health` REST API endpoint. Metrics include CPU load, RAM utilization, swap utilization, disk I/O, mail queue utilization, work queue depth, PVO quarantine message count, and resource conservation level.
 
-**REST API setup:** Enable the Cisco ESA AsyncOS API and ensure the configured user account has read access to the health endpoint. The API is available at `https://<esa-hostname>/esa/api/v2.0/`.
+For setup steps, refer to [For REST API metrics](#for-rest-api-metrics).
+
+##### metrics sample event
+
+{{ event "metrics" }}
 
 ##### metrics fields
 
@@ -249,7 +290,11 @@ The `metrics` data stream collects health and performance metrics from each conf
 
 The `delivery_status` data stream collects per-domain mail delivery status metrics from each configured ESA node via the `/esa/api/v2.0/health/delivery_status` REST API endpoint. Each event represents one destination domain and includes active recipients, delivered recipients, soft and hard bounce counts, and current outbound connections.
 
-**REST API setup:** Enable the Cisco ESA AsyncOS API and ensure the configured user account has read access to the health endpoints. The API is available at `https://<esa-hostname>/esa/api/v2.0/`.
+For setup steps, refer to [For REST API metrics](#for-rest-api-metrics).
+
+##### delivery_status sample event
+
+{{ event "delivery_status" }}
 
 ##### delivery_status fields
 
@@ -259,7 +304,11 @@ The `delivery_status` data stream collects per-domain mail delivery status metri
 
 The `system_status` data stream collects overall system status from each configured ESA node via the `/esa/api/v2.0/health/system_status` REST API endpoint. Data includes message rate statistics (1, 5, and 15-minute averages), system gauges (CPU, RAM, disk I/O, queue utilization, active recipients, connection counts), uptime counters, mail system status, and appliance version details.
 
-**REST API setup:** Enable the Cisco ESA AsyncOS API and ensure the configured user account has read access to the health endpoints. The API is available at `https://<esa-hostname>/esa/api/v2.0/`.
+For setup steps, refer to [For REST API metrics](#for-rest-api-metrics).
+
+##### system_status sample event
+
+{{ event "system_status" }}
 
 ##### system_status fields
 

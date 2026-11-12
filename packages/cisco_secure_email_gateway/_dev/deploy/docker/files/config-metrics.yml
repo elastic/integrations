@@ -1,0 +1,22 @@
+rules:
+  - path: /esa/api/v2.0/health
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - 'Basic ZXNhX3VzZXI6ZXNhX3Bhc3M='
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {"data":{"percentage_cpu_load":12,"percentage_ram_utilization":45,"percentage_swap_utilization":2,"percentage_queue_utilization":8,"percentage_diskio":5,"messages_in_workqueue":3,"messages_in_pvo_quarantines":0,"resource_conservation":0}}
+  - path: /.*
+    methods: ['GET']
+    responses:
+      - status_code: 401
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {"error":"unauthorized"}
