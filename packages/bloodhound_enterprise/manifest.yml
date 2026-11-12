@@ -4,7 +4,7 @@ title: "SpecterOps BloodHound Enterprise"
 version: 1.0.0
 source:
   license: "Elastic-2.0"
-description: "Collect SpecterOps BloodHound Enterprise attack-path findings into Elastic with delta sync (finding and finding_sync data streams). The detection rule creates one alert per newly opened finding. Workflows group alerts into cases and refresh alerts when findings are removed or updated. Authentication and request failures are stored separately and do not become alerts."
+description: "Collect SpecterOps BloodHound Enterprise attack-path findings into Elastic with delta sync (finding and finding_sync data streams). The detection rule creates one alert per newly opened finding. Workflows group alerts into cases and refresh alerts when findings are removed or updated. Collector failures are written to the finding data stream with event.type error and do not become alerts."
 type: integration
 categories:
   - security
@@ -42,7 +42,7 @@ policy_templates:
       - type: cel
         title: Collect BloodHound Enterprise findings
         description: >-
-          Polls the BloodHound Enterprise API with delta sync: indexes new or changed finding instances to the finding data stream and writes checkpoints and finding_removed events to finding_sync. Failures go to the error data stream. The packaged detection rule alerts only on change_type opened.
+          Polls BloodHound Enterprise with client-side delta (opened/updated) and optional details API updated_at=gte filters after the first checkpoint per type; first poll uses full pagination only. Checkpoints go to finding_sync. Failures use event.type error on the finding data stream.
         vars:
           - name: base_url
             type: text
@@ -54,7 +54,7 @@ policy_templates:
           - name: selected_environment
             type: text
             title: Selected environment
-            description: Comma-separated environment/domain names to collect (for example PHANTOM.CORP,GHOST.CORP). Leave empty or use All/* to fetch all. Matching is case-insensitive. Unrecognized names are logged to the error data stream and skipped; collection continues for recognized names.
+            description: Comma-separated environment/domain names to collect (for example PHANTOM.CORP,GHOST.CORP). Leave empty or use All/* to fetch all. Matching is case-insensitive. Unrecognized names are logged to the finding data stream with event.type error and skipped; collection continues for recognized names.
             default: ""
             multi: false
             required: false
@@ -62,7 +62,7 @@ policy_templates:
           - name: bhe_zones
             type: text
             title: BloodHound Enterprise zones
-            description: Comma-separated BloodHound Enterprise zone names to collect (for example Tier Zero,Tier One). Leave empty or use All/* to fetch all. Matching is case-insensitive. Unrecognized zone names are logged to the error data stream and skipped; collection continues for recognized zones.
+            description: Comma-separated BloodHound Enterprise zone names to collect (for example Tier Zero, Tier One). Leave empty or use All/* to fetch all. Matching is case-insensitive. Unrecognized zone names are logged to the finding data stream with event.type error and skipped; collection continues for recognized zones.
             default: ""
             multi: false
             required: false

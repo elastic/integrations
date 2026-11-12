@@ -51,6 +51,11 @@ processors:
       tag: set_source_domain
       ignore_empty_value: true
   - rename:
+      field: json.reconcile_mode
+      target_field: bloodhound_enterprise.reconcile_mode
+      tag: rename_reconcile_mode
+      ignore_missing: true
+  - rename:
       field: json.max_updated_at
       target_field: bloodhound_enterprise.max_updated_at
       tag: rename_max_updated_at
@@ -74,6 +79,13 @@ processors:
       field: json.poll_completed_at
       target_field: bloodhound_enterprise.poll_completed_at
       tag: parse_poll_completed_at
+      formats:
+        - ISO8601
+      ignore_failure: true
+  - date:
+      field: json.full_reconcile_at
+      target_field: bloodhound_enterprise.full_reconcile_at
+      tag: parse_full_reconcile_at
       formats:
         - ISO8601
       ignore_failure: true

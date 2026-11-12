@@ -1,4 +1,4 @@
-config_version: 1
+config_version: 8
 interval: {{interval}}
 resource:
   url: {{base_url}}
@@ -21,6 +21,7 @@ state:
   skip: 0
   collected_pairs: []
   sync_by_type: []
+  global_last_full_reconcile_at: ""
   type_poll_open_ids: []
   type_poll_id_to_uat: {}
   want_more: true
@@ -31,8 +32,10 @@ redact:
 # HMAC signing is required by the BloodHound API and cannot be done in an ingest pipeline.
 # Parent type/domain/zone are attached when splitting detail rows because those values
 # come from earlier API steps and are not present on the details document.
+# Hardcoded full open-id reconcile interval (not a Fleet setting): full_removal_period below.
 program: |-
-  int(state.?step.orValue(1)).as(step,
+  duration("24h").as(full_removal_period,
+    int(state.?step.orValue(1)).as(step,
     (
       (has(state.types) && size(state.types) > 0) ?
         (state.types[int(state.?type_index.orValue(0))])
@@ -57,13 +60,43 @@ program: |-
         : (cur.type != "" && cur.?meta_loaded.orValue(false) != true) ?
           ("/api/v2/findings/" + cur.type)
         :
-          "/api/v2/domains/" + cur.domain_id + "/details?" + {
-            "finding": [cur.type],
-            "skip": [string(int(state.?skip.orValue(0)))],
-            "limit": [string(int(state.details_limit))],
-            "Accepted": ["eq:false"],
-            "asset_group_tag_id": [cur.tag_id],
-          }.format_query()
+          (string(cur.domain_name) + "|" + string(cur.tag_name) + "|" + string(cur.type)).as(details_type_key,
+            (state.?sync_by_type.orValue([]).filter(e, e.type_key == details_type_key).size() > 0 ?
+              state.?sync_by_type.orValue([]).filter(e, e.type_key == details_type_key)[0]
+            :
+              {"max_updated_at": "", "open_ids": []}
+            ).as(details_sync,
+              (
+                state.?full_removal_reconcile.orValue(true) != true &&
+                string(details_sync.?max_updated_at.orValue("")) != "" &&
+                size(details_sync.?open_ids.orValue([])) > 0
+              ) ?
+                string(details_sync.max_updated_at)
+              :
+                ""
+            ).as(details_watermark,
+              "/api/v2/domains/" + cur.domain_id + "/details?" + (
+                details_watermark != "" ?
+                  {
+                    "finding": [cur.type],
+                    "skip": [string(int(state.?skip.orValue(0)))],
+                    "limit": [string(int(state.details_limit))],
+                    "Accepted": ["eq:false"],
+                    "asset_group_tag_id": [cur.tag_id],
+                    "sort_by": ["updated_at", "id"],
+                    "updated_at": ["gte:" + details_watermark],
+                  }
+                :
+                  {
+                    "finding": [cur.type],
+                    "skip": [string(int(state.?skip.orValue(0)))],
+                    "limit": [string(int(state.details_limit))],
+                    "Accepted": ["eq:false"],
+                    "asset_group_tag_id": [cur.tag_id],
+                  }
+              ).format_query()
+            )
+          )
       ).as(uri,
         now.format("2006-01-02T15:04:05Z07:00").as(ts,
           state.with(
@@ -141,11 +174,7 @@ program: |-
                                                     [{"error": {"message": "GET " + uri + ": no domains after selected_environment/bhe_zones filters"}}]
                                                   )
                                                 :
-                                                  {
-                                                    "error": {
-                                                      "message": "GET " + uri + ": no domains after selected_environment/bhe_zones filters",
-                                                    },
-                                                  },
+                                                  [{"error": {"message": "GET " + uri + ": no domains after selected_environment/bhe_zones filters"}}],
                                                 "want_more": false,
                                               }
                                           )
@@ -160,7 +189,7 @@ program: |-
                         )
                       :
                         {
-                          "events": {"error": {"message": "GET " + uri + ": no domains found"}},
+                          "events": [{"error": {"message": "GET " + uri + ": no domains found"}}],
                           "want_more": false,
                         }
                     )
@@ -201,14 +230,22 @@ program: |-
                             "events": [{"retry": true}],
                           }
                         : (size(types) > 0) ?
-                          {
-                            "step": 3,
-                            "types": types,
-                            "type_index": 0,
-                            "skip": 0,
-                            "want_more": true,
-                            "events": [{"retry": true}],
-                          }
+                          (
+                            (
+                              string(state.?global_last_full_reconcile_at.orValue("")) == "" ||
+                              timestamp(state.global_last_full_reconcile_at) <= now - full_removal_period
+                            ).as(full_removal_reconcile,
+                              {
+                                "step": 3,
+                                "types": types,
+                                "type_index": 0,
+                                "skip": 0,
+                                "full_removal_reconcile": full_removal_reconcile,
+                                "want_more": true,
+                                "events": [{"retry": true}],
+                              }
+                            )
+                          )
                         :
                           state.domains.map(d,
                             d.tags.map(t,
@@ -305,19 +342,28 @@ program: |-
                   :
                     ((has(body.data) && type(body.data) == list) ? body.data : []).as(page,
                       (string(cur.domain_name) + "|" + string(cur.tag_name) + "|" + string(cur.type)).as(type_key,
-                        (int(state.?skip.orValue(0)) == 0 ?
-                          state.with({"type_poll_open_ids": [], "type_poll_id_to_uat": {}})
+                        (state.?sync_by_type.orValue([]).filter(e, e.type_key == type_key).size() > 0 ?
+                          state.?sync_by_type.orValue([]).filter(e, e.type_key == type_key)[0]
                         :
-                          state
-                        ).as(st0,
-                          (st0.?sync_by_type.orValue([]).filter(e, e.type_key == type_key).size() > 0 ?
-                            st0.?sync_by_type.orValue([]).filter(e, e.type_key == type_key)[0]
-                          :
-                            {"type_key": type_key, "open_ids": [], "updated_at_by_id": {}, "max_updated_at": ""}
-                          ).as(cursor,
+                          {"type_key": type_key, "open_ids": [], "updated_at_by_id": {}, "max_updated_at": "", "last_full_reconcile_at": ""}
+                        ).as(pre_cursor,
+                          (
+                            string(pre_cursor.?max_updated_at.orValue("")) != "" &&
+                            size(pre_cursor.?open_ids.orValue([])) > 0
+                          ).as(has_type_watermark,
+                            (int(state.?skip.orValue(0)) == 0 ?
+                              state.with({
+                                "type_poll_open_ids": [],
+                                "type_poll_id_to_uat": {},
+                                "details_incremental": has_type_watermark && state.?full_removal_reconcile.orValue(true) != true,
+                              })
+                            :
+                              state
+                            ).as(st0,
+                              pre_cursor.as(cursor,
                             page.filter(inst,
                               string(inst.id).as(id,
-                                string(inst.?updated_at.orValue("")).as(uat,
+                                string(inst.?updated_at.orValue(inst.?UpdatedAt.orValue(inst.?created_at.orValue(inst.?CreatedAt.orValue(""))))).as(uat,
                                   (!cursor.?open_ids.orValue([]).exists(oid, oid == id)) ||
                                   (uat != "" && uat != string(cursor.?updated_at_by_id.orValue({})[id]))
                                 )
@@ -360,21 +406,32 @@ program: |-
                               )
                             ).as(finding_events,
                               page.map(i, string(i.id)).as(page_ids,
-                                zip(page_ids, page.map(i, string(i.?updated_at.orValue("")))).as(page_uat_map,
+                                zip(page_ids, page.map(i, string(i.?updated_at.orValue(i.?UpdatedAt.orValue(i.?created_at.orValue(i.?CreatedAt.orValue(""))))))).as(page_uat_map,
                                   (st0.?type_poll_open_ids.orValue([]) + page_ids).as(all_ids,
                                     st0.?type_poll_id_to_uat.orValue({}).with_update(page_uat_map).as(id_to_uat,
                                       (!(size(page) > 0 && int(st0.?skip.orValue(0)) + size(page) < int(body.?count.orValue(int(st0.?skip.orValue(0)) + size(page))))).as(type_complete,
-                                        id_to_uat.keys().as(current_ids,
-                                          (size(id_to_uat.values().filter(u, u != "")) > 0 ?
-                                            string(max(id_to_uat.values().filter(u, u != "")))
+                                        id_to_uat.keys().as(current_ids_raw,
+                                          (st0.?details_incremental.orValue(false) ?
+                                            cursor.?open_ids.orValue([])
+                                          :
+                                            current_ids_raw
+                                          ).as(current_ids,
+                                          cursor.?updated_at_by_id.orValue({}).with_update(id_to_uat).as(merged_updated_at_by_id,
+                                          (size(merged_updated_at_by_id.values().filter(u, u != "")) > 0 ?
+                                            string(max(merged_updated_at_by_id.values().filter(u, u != "")))
                                           :
                                             string(cursor.?max_updated_at.orValue(""))
                                           ).as(max_uat,
                                             (type_complete ?
-                                              cursor.?open_ids.orValue([]).filter(id, !current_ids.exists(c, c == id))
+                                              (st0.?details_incremental.orValue(false) ?
+                                                []
+                                              :
+                                                cursor.?open_ids.orValue([]).filter(id, !current_ids.exists(c, c == id))
+                                              )
                                             :
                                               []
                                             ).as(removed_ids,
+                                              now.format("2006-01-02T15:04:05Z07:00").as(checkpoint_ts,
                                               (type_complete ?
                                                 removed_ids.map(id,
                                                   {
@@ -388,19 +445,38 @@ program: |-
                                                     },
                                                   }
                                                 ) + [
-                                                  {
-                                                    "sync_event": {
-                                                      "sync_kind": "checkpoint",
-                                                      "type_key": type_key,
-                                                      "finding_type": cur.type,
-                                                      "domain_name": cur.domain_name,
-                                                      "category": cur.tag_name,
-                                                      "max_updated_at": max_uat,
-                                                      "open_finding_ids": current_ids,
-                                                      "open_finding_count": size(current_ids),
-                                                      "poll_completed_at": now.format("2006-01-02T15:04:05Z07:00"),
-                                                    },
-                                                  }
+                                                  (st0.?details_incremental.orValue(false) ?
+                                                    {
+                                                      "sync_event": {
+                                                        "sync_kind": "checkpoint",
+                                                        "reconcile_mode": "incremental",
+                                                        "type_key": type_key,
+                                                        "finding_type": cur.type,
+                                                        "domain_name": cur.domain_name,
+                                                        "category": cur.tag_name,
+                                                        "max_updated_at": max_uat,
+                                                        "open_finding_ids": current_ids,
+                                                        "open_finding_count": size(current_ids),
+                                                        "poll_completed_at": checkpoint_ts,
+                                                      },
+                                                    }
+                                                  :
+                                                    {
+                                                      "sync_event": {
+                                                        "sync_kind": "checkpoint",
+                                                        "reconcile_mode": "full",
+                                                        "type_key": type_key,
+                                                        "finding_type": cur.type,
+                                                        "domain_name": cur.domain_name,
+                                                        "category": cur.tag_name,
+                                                        "max_updated_at": max_uat,
+                                                        "open_finding_ids": current_ids,
+                                                        "open_finding_count": size(current_ids),
+                                                        "poll_completed_at": checkpoint_ts,
+                                                        "full_reconcile_at": checkpoint_ts,
+                                                      },
+                                                    }
+                                                  )
                                                 ]
                                               :
                                                 []
@@ -413,8 +489,14 @@ program: |-
                                                     "domain_name": cur.domain_name,
                                                     "category": cur.tag_name,
                                                     "open_ids": current_ids,
-                                                    "updated_at_by_id": id_to_uat,
+                                                    "updated_at_by_id": merged_updated_at_by_id,
                                                     "max_updated_at": max_uat,
+                                                    "last_full_reconcile_at": (
+                                                      st0.?details_incremental.orValue(false) ?
+                                                        string(cursor.?last_full_reconcile_at.orValue(""))
+                                                      :
+                                                        checkpoint_ts
+                                                    ),
                                                   }
                                                 ]
                                                 :
@@ -527,6 +609,12 @@ program: |-
                                                                       "tag_index": 0,
                                                                       "collected_pairs": [],
                                                                       "sync_by_type": pruned_sync_by_type,
+                                                                      "global_last_full_reconcile_at": (
+                                                                        st0.?full_removal_reconcile.orValue(false) ?
+                                                                          now.format("2006-01-02T15:04:05Z07:00")
+                                                                        :
+                                                                          string(st0.?global_last_full_reconcile_at.orValue(""))
+                                                                      ),
                                                                       "type_poll_open_ids": [],
                                                                       "type_poll_id_to_uat": {},
                                                                       "events": (size(finding_events) + size(sync_events) + size(empty_pair_events) + size(stale_type_removed) + size(stale_type_checkpoints) > 0) ?
@@ -557,7 +645,12 @@ program: |-
                         )
                       )
                     )
+                  )
                 )
+              )
+                )
+              )
+              )
               : (int(resp.StatusCode) == 404 && step == 3 && cur.type != "" && cur.?meta_loaded.orValue(false) != true) ?
                 {
                   "types": state.types.map(t,
@@ -581,40 +674,38 @@ program: |-
                 }
               : (int(resp.StatusCode) >= 500 || int(resp.StatusCode) == 429) ?
                 {
-                  "events": {
-                    "error": {
-                      "code": string(resp.StatusCode),
-                      "message": "BloodHound Enterprise request failed. GET " + uri + ": " + resp.Status,
-                    },
-                  },
+                  "events": [{"error": {
+                    "code": string(resp.StatusCode),
+                    "message": "BloodHound Enterprise request failed. GET " + uri + ": " + resp.Status,
+                  }}],
                   "want_more": false,
                 }
               : (int(resp.StatusCode) == 401 || int(resp.StatusCode) == 403) ?
                 {
-                  "events": {
-                    "error": {
-                      "code": string(resp.StatusCode),
-                      "message": "BloodHound Enterprise authentication failed. Check the token ID and token key. GET " + uri + ": " + resp.Status,
-                    },
-                  },
+                  "events": [{"error": {
+                    "code": string(resp.StatusCode),
+                    "message": "BloodHound Enterprise authentication failed. Check the token ID and token key. GET " + uri + ": " + resp.Status,
+                  }}],
                   "step": 1,
                   "types": [],
                   "type_index": 0,
                   "skip": 0,
+                  "sync_by_type": [],
+                  "collected_pairs": [],
                   "want_more": false,
                 }
               :
                 {
-                  "events": {
-                    "error": {
-                      "code": string(resp.StatusCode),
-                      "message": "BloodHound Enterprise request failed. GET " + uri + ": " + ((size(resp.Body) != 0) ? string(resp.Body) : resp.Status),
-                    },
-                  },
+                  "events": [{"error": {
+                    "code": string(resp.StatusCode),
+                    "message": "BloodHound Enterprise request failed. GET " + uri + ": " + ((size(resp.Body) != 0) ? string(resp.Body) : resp.Status),
+                  }}],
                   "step": 1,
                   "types": [],
                   "type_index": 0,
                   "skip": 0,
+                  "sync_by_type": [],
+                  "collected_pairs": [],
                   "want_more": false,
                 }
             )
@@ -622,6 +713,7 @@ program: |-
         )
       )
     )
+  )
   )
 tags:
 {{#each tags as |tag|}}

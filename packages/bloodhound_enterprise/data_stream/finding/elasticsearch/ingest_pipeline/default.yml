@@ -13,6 +13,29 @@ processors:
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
       tag: remove_agentless_tags
+  - set:
+      field: event.kind
+      tag: set_collector_error_kind
+      value: event
+      if: ctx.error?.message != null
+  - set:
+      field: event.type
+      tag: set_collector_error_type
+      value:
+        - error
+      if: ctx.error?.message != null
+  - set:
+      field: message
+      tag: copy_error_message
+      copy_from: error.message
+      ignore_empty_value: true
+      if: ctx.message == null && ctx.error?.message != null
+  - append:
+      field: tags
+      tag: append_collector_error_tag
+      value: bloodhound_enterprise-collector-error
+      allow_duplicates: false
+      if: ctx.error?.message != null
   - rename:
       field: message
       tag: rename_message_to_event_original
@@ -46,6 +69,18 @@ processors:
       target_field: bloodhound_enterprise.change_type
       tag: rename_change_type
       ignore_missing: true
+  - set:
+      field: event.type
+      tag: set_event_type_error
+      value:
+        - error
+      if: ctx.error?.message != null
+  - set:
+      field: event.type
+      tag: set_event_type_info
+      value:
+        - info
+      if: ctx.error?.message == null && ctx.sync_event == null
   - set:
       field: event.kind
       tag: set_event_kind
