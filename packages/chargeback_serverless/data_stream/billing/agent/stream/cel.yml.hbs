@@ -30,72 +30,120 @@ redact:
     - cloud_api_key
 program: |-
   state.with(
-    state.?cursor.last_to.optMap(ts, (type(ts) == string) ? timestamp(ts) : ts).orValue(
-      now - duration(string(int(state.lookbehind) * 24) + "h")
-    ).format(
-      time_layout.DateOnly
-    ).parse_time(time_layout.DateOnly).as(from,
-      max(from, timestamp("2023-01-01T00:00:00Z"))
-    ).as(from,
-      {
-        "from": from,
-        "to": from + duration("24h"),
-      }
-    ).as(req, (req.to + duration("2h") > now) ?
-      {
-        "events": [],
-        "cursor": { "last_to": req.from.format(time_layout.RFC3339) },
-        "want_more": false,
-      }
-    :
-      get_request(
-        state.billing_api_base + "/api/v2/billing/organizations/" + state.organization_id + "/costs/instances?" + {
-          "from": [req.from.format(time_layout.RFC3339)],
-          "to": [req.to.format(time_layout.RFC3339)],
-          "include_names": ["true"],
-        }.format_query()
-      ).with(
-        { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
-      ).do_request().as(resp, (resp.StatusCode == 200) ?
-        bytes(resp.Body).decode_json().as(body,
-          get_request(
-            state.billing_api_base + "/api/v2/billing/organizations/" + state.organization_id + "/costs/items?" + {
-              "from": [req.from.format(time_layout.RFC3339)],
-              "to": [req.to.format(time_layout.RFC3339)],
-            }.format_query()
-          ).with(
-            { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
-          ).do_request().as(items_resp, (items_resp.StatusCode == 200) ?
-            bytes(items_resp.Body).decode_json().as(items_body,
+    state.?want_more.orValue(false).as(is_continuation,
+      max(
+        (now - duration(string(int(state.lookbehind) * 24) + "h")).format(
+          time_layout.DateOnly
+        ).parse_time(time_layout.DateOnly),
+        timestamp("2023-01-01T00:00:00Z")
+      ).as(initial_from,
+        max(
+          state.?cursor.last_to.optMap(ts, (type(ts) == string) ? timestamp(ts) : ts).orValue(
+            initial_from
+          ).format(
+            time_layout.DateOnly
+          ).parse_time(time_layout.DateOnly),
+          timestamp("2023-01-01T00:00:00Z")
+        ).as(high_water,
+          (now - duration("2h")).format(
+            time_layout.DateOnly
+          ).parse_time(time_layout.DateOnly).as(latest_ready_to,
+            max(
+              initial_from,
+              latest_ready_to - duration("72h")
+            ).as(replay_start,
+              ((is_continuation && state.?next_from.orValue("") != "") ?
+                max(
+                  timestamp(state.next_from).format(
+                    time_layout.DateOnly
+                  ).parse_time(time_layout.DateOnly),
+                  timestamp("2023-01-01T00:00:00Z")
+                )
+              :
+                min(high_water, replay_start)
+              ).as(from,
+                {
+                  "from": from,
+                  "to": from + duration("24h"),
+                }
+              )
+            )
+          ).as(req, (req.to + duration("2h") > now) ?
+            {
+              "events": [],
+              "cursor": { "last_to": max(high_water, req.from).format(time_layout.RFC3339) },
+              "next_from": req.from.format(time_layout.RFC3339),
+              "want_more": false,
+            }
+          :
             get_request(
-              state.cloud_api_base + "/api/v1/serverless/projects/elasticsearch"
+              state.billing_api_base + "/api/v2/billing/organizations/" + state.organization_id + "/costs/instances?" + {
+                "from": [req.from.format(time_layout.RFC3339)],
+                "to": [req.to.format(time_layout.RFC3339)],
+                "include_names": ["true"],
+              }.format_query()
             ).with(
               { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
-            ).do_request().as(es_resp,
-              ((es_resp.StatusCode == 200) ? bytes(es_resp.Body).decode_json() : { "items": [] }).as(es_body,
+            ).do_request().as(resp, (resp.StatusCode == 200) ?
+              bytes(resp.Body).decode_json().as(body,
                 get_request(
-                  state.cloud_api_base + "/api/v1/serverless/projects/observability"
+                  state.billing_api_base + "/api/v2/billing/organizations/" + state.organization_id + "/costs/items?" + {
+                    "from": [req.from.format(time_layout.RFC3339)],
+                    "to": [req.to.format(time_layout.RFC3339)],
+                  }.format_query()
                 ).with(
                   { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
-                ).do_request().as(obs_resp,
-                  ((obs_resp.StatusCode == 200) ? bytes(obs_resp.Body).decode_json() : { "items": [] }).as(obs_body,
+                ).do_request().as(items_resp, (items_resp.StatusCode == 200) ?
+                  bytes(items_resp.Body).decode_json().as(items_body,
+                  ((is_continuation && has(state.cached_projects) && state.cached_projects != null) ?
+                    {
+                      "projects": state.cached_projects,
+                      "cache_ok": true,
+                    }
+                  :
                     get_request(
-                      state.cloud_api_base + "/api/v1/serverless/projects/security"
+                      state.cloud_api_base + "/api/v1/serverless/projects/elasticsearch"
                     ).with(
                       { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
-                    ).do_request().as(sec_resp,
-                      ((sec_resp.StatusCode == 200) ? bytes(sec_resp.Body).decode_json() : { "items": [] }).as(sec_body,
+                    ).do_request().as(es_resp,
+                      ((es_resp.StatusCode == 200) ? bytes(es_resp.Body).decode_json() : { "items": [] }).as(es_body,
                         get_request(
-                          state.cloud_api_base + "/api/v1/serverless/projects/vectordb"
+                          state.cloud_api_base + "/api/v1/serverless/projects/observability"
                         ).with(
                           { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
-                        ).do_request().as(vdb_resp,
-                          ((vdb_resp.StatusCode == 200) ? bytes(vdb_resp.Body).decode_json() : { "items": [] }).as(vdb_body,
-                            ((has(es_body.items) && es_body.items != null ? es_body.items.map(p, dyn(p.with({ "project_type": "elasticsearch" }))) : []) +
-                             (has(obs_body.items) && obs_body.items != null ? obs_body.items.map(p, dyn(p.with({ "project_type": "observability" }))) : []) +
-                             (has(sec_body.items) && sec_body.items != null ? sec_body.items.map(p, dyn(p.with({ "project_type": "security" }))) : []) +
-                             (has(vdb_body.items) && vdb_body.items != null ? vdb_body.items.map(p, dyn(p.with({ "project_type": "vectordb" }))) : [])
-                            ).as(projects,
+                        ).do_request().as(obs_resp,
+                          ((obs_resp.StatusCode == 200) ? bytes(obs_resp.Body).decode_json() : { "items": [] }).as(obs_body,
+                            get_request(
+                              state.cloud_api_base + "/api/v1/serverless/projects/security"
+                            ).with(
+                              { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
+                            ).do_request().as(sec_resp,
+                              ((sec_resp.StatusCode == 200) ? bytes(sec_resp.Body).decode_json() : { "items": [] }).as(sec_body,
+                                get_request(
+                                  state.cloud_api_base + "/api/v1/serverless/projects/vectordb"
+                                ).with(
+                                  { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
+                                ).do_request().as(vdb_resp,
+                                  ((vdb_resp.StatusCode == 200) ? bytes(vdb_resp.Body).decode_json() : { "items": [] }).as(vdb_body,
+                                    {
+                                      "projects": (
+                                        (has(es_body.items) && es_body.items != null ? es_body.items.map(p, dyn(p.with({ "project_type": "elasticsearch" }))) : []) +
+                                        (has(obs_body.items) && obs_body.items != null ? obs_body.items.map(p, dyn(p.with({ "project_type": "observability" }))) : []) +
+                                        (has(sec_body.items) && sec_body.items != null ? sec_body.items.map(p, dyn(p.with({ "project_type": "security" }))) : []) +
+                                        (has(vdb_body.items) && vdb_body.items != null ? vdb_body.items.map(p, dyn(p.with({ "project_type": "vectordb" }))) : [])
+                                      ),
+                                      "cache_ok": es_resp.StatusCode == 200 && obs_resp.StatusCode == 200 && sec_resp.StatusCode == 200 && (vdb_resp.StatusCode == 200 || vdb_resp.StatusCode == 404),
+                                    }
+                                  )
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  ).as(discovery,
+                    discovery.projects.as(projects,
                               ((has(body.instances) && body.instances != null) ?
                                 body.instances.filter(instance,
                                   size(projects.filter(p, has(instance.id) && instance.id != null && p.id == instance.id)) > 0 ||
@@ -356,7 +404,9 @@ program: |-
                                     ).as(evts,
                                       {
                                         "events": size(evts) > 0 ? evts : [ { "fake": true } ],
-                                        "cursor": { "last_to": req.to.format(time_layout.RFC3339) },
+                                        "cursor": { "last_to": max(high_water, req.to).format(time_layout.RFC3339) },
+                                        "next_from": req.to.format(time_layout.RFC3339),
+                                        "cached_projects": discovery.cache_ok ? projects : null,
                                         "want_more": req.to + duration("26h") <= now,
                                       }
                                     )
@@ -366,30 +416,28 @@ program: |-
                             )
                           )
                         )
+                      :
+                        {
+                          "events": { "error": { "code": string(items_resp.StatusCode), "id": string(items_resp.Status), "message": "GET " + items_resp.Request.URL + ": " + ( (size(items_resp.Body) != 0) ? string(items_resp.Body) : string(items_resp.Status) + " (" + string(items_resp.StatusCode) + ")" ) } },
+                          "cursor": { "last_to": max(high_water, req.from).format(time_layout.RFC3339) },
+                          "next_from": req.from.format(time_layout.RFC3339),
+                          "want_more": false,
+                        }
                       )
                     )
+                  :
+                    {
+                      "events": { "error": { "code": string(resp.StatusCode), "id": string(resp.Status), "message": "GET " + resp.Request.URL + ": " + ( (size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status) + " (" + string(resp.StatusCode) + ")" ) } },
+                      "cursor": { "last_to": max(high_water, req.from).format(time_layout.RFC3339) },
+                      "next_from": req.from.format(time_layout.RFC3339),
+                      "want_more": false,
+                    }
                   )
                 )
               )
             )
-            )
-          :
-            {
-              "events": { "error": { "code": string(items_resp.StatusCode), "id": string(items_resp.Status), "message": "GET " + items_resp.Request.URL + ": " + ( (size(items_resp.Body) != 0) ? string(items_resp.Body) : string(items_resp.Status) + " (" + string(items_resp.StatusCode) + ")" ) } },
-              "cursor": { "last_to": req.from.format(time_layout.RFC3339) },
-              "want_more": false,
-            }
           )
         )
-      :
-        {
-          "events": { "error": { "code": string(resp.StatusCode), "id": string(resp.Status), "message": "GET " + resp.Request.URL + ": " + ( (size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status) + " (" + string(resp.StatusCode) + ")" ) } },
-          "cursor": { "last_to": req.from.format(time_layout.RFC3339) },
-          "want_more": false,
-        }
-      )
-    )
-  )
 
 processors:
 - drop_event.when.equals.fake: true
