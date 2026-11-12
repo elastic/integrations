@@ -1,0 +1,17 @@
+wait_for_data_timeout: 1m
+input: cel
+service: ti_whoisfreaks
+vars:
+  api_key: test_api_key
+data_stream:
+  vars:
+    url: "http://{{Hostname}}:{{Port}}/v3.4/stream/threat-feed/phishing"
+    status_url: "http://{{Hostname}}:{{Port}}/v3.4/status"
+    # Before the status available_from (2026-05-27): one error event, no request
+    # for that date, then the input follows the latest file (3 rows).
+    file_date: "2026-01-01"
+    page_limit: 2
+    interval: 1h
+    enable_request_tracer: true
+assert:
+  hit_count: 4

@@ -1,0 +1,147 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects a Unix shell launched by Perl from a generated Zimbra \".swatchdog_script\" when the shell command line contains an \"snmptrap\" invocation and Zimbra SNMP service fields, followed by an unexpected child process other than \"snmptrap\". This sequence provides high-confidence evidence of external command execution through CVE-2026-73570, an unauthenticated command-injection vulnerability in Zimbra's SNMP monitoring path.",
+        "false_positives": [
+            "Authorized security testing or a purpose-built synthetic process fixture may reproduce this lineage. Patched Zimbra 10.1.20 and later invokes `snmptrap` without passing the attacker-controlled value through a shell. On vulnerable installations, legitimate monitoring should launch `snmptrap` from the shell but should not launch another child."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Zimbra Swatchdog SNMP Command Injection Execution",
+        "note": "## Triage and analysis\n\n### Investigating Zimbra Swatchdog SNMP Command Injection Execution\n\nCVE-2026-73570 affects Zimbra Collaboration installations before 10.1.20 when the optional `zimbra-snmp` package is\ninstalled, SNMP notifications are enabled, `zmswatch` is running, and SMTP is attacker-reachable. A crafted SMTP\nrequest can poison `/var/log/zimbra.log` with a forged service-status record. Vulnerable Swatchdog processing captures\nthe attacker-controlled service value and interpolates it into a Perl backtick expression, causing a Unix shell to\ninterpret shell grammar embedded in an `snmptrap` command.\n\nThis rule targets execution immediately after the vulnerable boundary rather than one payload, callback domain, or\nutility. It requires a shell child of Perl, a generated `.swatchdog_script` parent command line, `snmptrap`, the Zimbra\nSNMP service fields, and an additional child process spawned by that shell. A match is very high-confidence evidence\nof command injection, even if a downloaded payload was encoded, changed, or never written to disk. Shell-only payloads\nthat use built-ins or redirection without starting another process are outside this rule and require the companion\nnetwork or poisoned-log detection.\n\n### Possible investigation steps\n\n- Preserve the complete process tree, command lines, process entity identifiers, executable hashes, environment, open\n  files, network connections, and memory for the matching shell, Perl parent, and descendant processes.\n- Identify the unexpected child process from the second event in the sequence and determine what command, script, or\n  interpreter it executed.\n- Extract the injected command without executing it. Identify callback destinations, downloaded files, output\n  redirection, background execution, decoders, and commands chained after `snmptrap`.\n- Search `/var/log/zimbra.log`, Postfix logs, remote syslog, and rotated records for the preceding forged\n  `Service status change` text and determine the originating SMTP source.\n- Pivot on the shell's `process.entity_id` and descendants for `curl`, `wget`, `ping`, `nslookup`, `id`, interpreters,\n  JSP writes, Java or `jspawnhelper` shells, named pipes, `openssl s_client`, systemd units, PAM or sudo changes,\n  `memfd` execution, Zimbra credential access, SSH or rsync, archive creation, and AzCopy.\n- Review all Zimbra mailbox and MTA peers for matching process ancestry, files, hashes, service units, webshells, and\n  cluster movement. Do not scope the incident to only the first server.\n- Verify the Zimbra release, `zimbra-mta-patch` level, `zimbra-snmp` package state, notification configuration, and\n  whether `zmswatch` was running when the event occurred.\n\n### False positive analysis\n\n- Confirm whether an approved security test or detection exercise intentionally generated the process event.\n- Review the full ancestry and command line before considering an exception. Legitimate vulnerable-path monitoring\n  should launch `snmptrap`, but not the additional child process required by this rule.\n- If a benign fixture is confirmed, constrain any exception to the dedicated test host and time window rather than\n  excluding Perl, shells, `snmptrap`, or Zimbra paths globally.\n\n### Response and remediation\n\n- Isolate the affected Zimbra node while preserving volatile evidence and mail-flow continuity through a known-clean\n  peer where possible.\n- Upgrade all affected nodes to Zimbra Collaboration 10.1.20 or later. Patching does not remove persistence or prove\n  the server was not previously compromised.\n- Scope every cluster node and remove redundant webshells, unauthorized services, PAM or sudo modifications, SSH keys,\n  local accounts, cron jobs, memory-backed payloads, and remote-access tooling.\n- Rebuild confirmed compromised hosts from trusted media.\n- Rotate Zimbra service credentials, LDAP/MySQL/Postfix/Amavis secrets, domain pre-authentication keys, token-signing\n  keys, exposed two-factor secrets, certificates and private keys, active sessions, and cloud transfer tokens.\n",
+        "query": "sequence by host.id with maxspan=30s\n  [process where\n    host.os.type == \"linux\" and\n    event.type == \"start\" and\n    event.action in (\"exec\", \"exec_event\", \"start\") and\n    process.name in (\"sh\", \"bash\", \"dash\", \"ash\", \"zsh\", \"ksh\") and\n    process.parent.name like~ \"perl*\" and\n    process.parent.command_line like~ \"*.swatchdog_script*\" and\n    process.command_line like~ \"*snmptrap*\" and\n    process.command_line like~ \"*zmservicename*\" and\n    process.command_line like~ \"*zmservicestatus*\"\n  ] by process.entity_id\n  [process where\n    host.os.type == \"linux\" and\n    event.type == \"start\" and\n    event.action in (\"exec\", \"exec_event\", \"start\") and\n    process.name != \"snmptrap\"\n  ] by process.parent.entity_id\n",
+        "references": [
+            "https://www.microsoft.com/en-us/security/blog/2026/09/30/unauthenticated-command-injection-on-internet-facing-mail-servers-tracking-cve-2026-73570/",
+            "https://wiki.zimbra.com/wiki/Zimbra_Releases/10.1.20",
+            "https://wiki.zimbra.com/wiki/Zimbra_Security_Advisories",
+            "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?search=CVE-2026-73570",
+            "https://www.pruva.dev/reproductions/REPRO-2026-00327"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": ">=9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 99,
+        "rule_id": "1fa1a434-75a7-4c58-9bef-331d62bf3f82",
+        "setup": "## Setup\n\nThis rule requires process events from Elastic Defend on every Zimbra MTA and mailbox node. Use a policy that records\nLinux process starts with complete child and parent command lines. Confirm that `process.parent.command_line` retains\nthe generated `.swatchdog_script` path and that `process.command_line` retains the shell's `snmptrap` command.\n\nForward Zimbra and Postfix logs off-host as a companion data source. The matching process sequence proves external\nexecution behavior, while the preceding poisoned log record can identify the remote SMTP source and submitted text.\n",
+        "severity": "critical",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Use Case: Vulnerability",
+            "Tactic: Initial Access",
+            "Tactic: Execution",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide",
+            "Threat: Vulnerability Exploit",
+            "Rule Type: Event Correlation (EQL)",
+            "Platform: Linux",
+            "Vuln: CVE-2026-73570"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.004",
+                                "name": "Unix Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/004/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1190",
+                        "name": "Exploit Public-Facing Application",
+                        "reference": "https://attack.mitre.org/techniques/T1190/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "1fa1a434-75a7-4c58-9bef-331d62bf3f82_1",
+    "type": "security-rule"
+}

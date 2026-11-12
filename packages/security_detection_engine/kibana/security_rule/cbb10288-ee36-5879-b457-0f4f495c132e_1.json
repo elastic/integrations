@@ -1,0 +1,93 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Flags exec into a pod when the URL-decoded command payload resembles reverse-shell or bind-shell one-liners invocation patterns. Legitimate debug sessions sometimes use similar building blocks, but together these patterns align with post-exploitation interactive access and command-and-control.",
+        "from": "now-6m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "AWS EKS Pod Exec Potential Reverse Shell",
+        "note": "## Triage and analysis\n\n### Investigating AWS EKS Pod Exec Potential Reverse Shell\nThe rule inspects Kubernetes audit exec requestURI values, URL-decodes them, parses the command query fragment, and\nmatches high-signal shell and socket idioms often used to obtain a allback shell from inside a container.\n\n### Possible investigation steps\n\n- Identify the actor (aws.eks.audit.user.username, groups, impersonation), source IP, and user agent\n  (human kubectl vs automation).\n- Resolve the target namespace, pod, and container from aws.eks.audit.objectRef.* and correlate with\n  workload ownership and change tickets.\n- Pull the raw and decoded URI from the alert document and replay the inferred command in a sandbox only if policy\n  allows\u2014otherwise rely on audit and platform logs.\n- Hunt nearby events from the same identity: secret reads, pods/exec to other workloads, RoleBinding\n  changes, or anonymous API use.\n\n### False positive analysis\n\n- Security training, CTF-style images, or vendor diagnostics may include bash redirection or /dev/tcp examples;\n  baseline approved images and break-glass accounts.\n- Some observability or mesh sidecars use socat or sockets in ways that could overlap; validate container image and\n  command lineage.\n\n### Response and remediation\n\n- If malicious, terminate the exec session, isolate the workload or node, rotate credentials reachable from the\n  pod, and revoke pods/exec for the abused principal unless strictly required.",
+        "query": "FROM logs-aws.eks_audit-* metadata _id, _index, _version\n| WHERE aws.eks.audit.objectRef.subresource == \"exec\"\n  AND aws.eks.audit.requestURI LIKE \"*command=*\"\n| EVAL decoded_uri = URL_DECODE(aws.eks.audit.requestURI)\n| GROK decoded_uri \"%{DATA}/exec\\\\?%{DATA:raw_commands}&(?:container|stdin|stdout|stderr)=%{GREEDYDATA}\"\n| EVAL command = REPLACE(raw_commands, \"command=\", \"\")\n| EVAL command = REPLACE(command, \"&\", \" \")\n| EVAL Esql.executed_command = REPLACE(command, \"\\\\+\", \" \")\n| WHERE Esql.executed_command IS NOT NULL\n| WHERE Esql.executed_command IS NOT NULL AND command RLIKE \"\"\".*(/dev/tcp/|/dev/udp/|zsh/net/tcp|zsh/net/udp|nc\\s+-e|ncat\\s+-e|netcat\\s+-e|nc\\s.*\\s-c\\s|mkfifo|socat\\s.*exec|socat\\s.*pty|bash\\s+-i\\s+>&|0>&1|>&\\s*/dev/tcp|import\\s+socket.*connect|import\\s+pty.*spawn|socket\\.socket.*connect|IO::Socket::INET|fsockopen|TCPSocket\\.new|/inet/tcp/).*\"\"\" AND\n // local service health check patterns\n  NOT command RLIKE \"\"\".*/dev/tcp/(localhost|127\\.0\\.0\\.1)/(8080|8443|9090|3000|5000|8888|80|443).*\"\"\"\n| KEEP Esql.*, @timestamp, user.name, source.ip, user_agent.original, event.action, aws.eks.audit.objectRef.namespace, aws.eks.audit.objectRef.name, aws.eks.audit.requestURI, aws.eks.audit.user.username, data_stream.namespace, _id, _index, _version\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1609/",
+            "https://attack.mitre.org/techniques/T1059/"
+        ],
+        "related_integrations": [
+            {
+                "package": "aws",
+                "version": ">=8.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.eks.audit.objectRef.subresource",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.eks.audit.requestURI",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "command",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "raw_commands",
+                "type": "unknown"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "cbb10288-ee36-5879-b457-0f4f495c132e",
+        "setup": "This rule reads EKS control-plane audit logs collected by the AWS integration\ninto `logs-aws.eks_audit-*`, where the AWS EKS audit ingest\npipelines normalize each audit record under `aws.eks.audit.*`.\n\nEnable the `audit` control-plane log type on the EKS cluster, send its\nCloudWatch log group through the AWS integration, and confirm events carry\n`data_stream.dataset: aws.eks_audit` and\n`cloud.provider: aws` before enabling this rule.\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Containers",
+            "Platform: AWS",
+            "Platform: Kubernetes",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: Kubernetes API Server Audit Logs",
+            "Service: AWS EKS",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Rule Type: ES|QL",
+            "Threat: Reverse Shell",
+            "Resources: Investigation Guide",
+            "Profile: Beta"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/"
+                    },
+                    {
+                        "id": "T1609",
+                        "name": "Container Administration Command",
+                        "reference": "https://attack.mitre.org/techniques/T1609/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "cbb10288-ee36-5879-b457-0f4f495c132e_1",
+    "type": "security-rule"
+}

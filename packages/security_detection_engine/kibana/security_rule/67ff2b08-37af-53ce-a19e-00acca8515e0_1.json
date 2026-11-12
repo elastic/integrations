@@ -1,0 +1,116 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Adversaries who land credentials in a cluster or abuse an over-privileged token, often map the environment before exfiltration or privilege escalation. Rapid get/list traffic across distinct API resource kinds that answer those questions (namespaces, workloads, roles, cluster-wide roles) is a common setup and orientation pattern for both interactive attackers and automated recon scripts. This rule detects cross-resource bursts from a single client fingerprint within a one-minute bucket which may represent reconnaissance.",
+        "from": "now-11m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "AWS EKS Multi-Resource Discovery",
+        "note": "## Triage and analysis\n\n### Investigating AWS EKS Multi-Resource Discovery\nThe rule groups Kubernetes audit `get`/`list` events on namespaces, pods, roles, and clusterroles into one-minute windows\nper `user.name`, `source.ip`, `user_agent.original`, and flags windows where three or more distinct resource types appear.\nThat combination is consistent with someone sketching cluster layout and privilege structure rather than touching a single\nresource type. **Allowed and denied** authorizations are both included: failures still signal probing and validate which\nobject types the caller attempted to reach.\n\n### Possible investigation steps\n\n- Pivot on `Esql.time_interval` and the same identity or IP in raw audit logs to see ordering (e.g. namespaces first,\n  then roles, then pods) and whether calls succeeded.\n- Review `Esql.decisions` and namespaces touched; correlate with RBAC for that identity to see if scope matches a\n  known job or breaks least-privilege expectations.\n- Hunt for follow-on activity: secret/configmap reads, rolebinding changes, pod exec, anonymous or unusual user agents.\n- Baseline automation: CI, GitOps, and some monitoring agents can read several resource types during sync; exclude\n  known service accounts or source networks if noisy.\n\n### False positive analysis\n\n- Platform operators or runbooks that reconcile RBAC and workload state may legitimately span these resource types in\n  a short window; tune by user, IP allowlist, or user agent when documented.\n- Some installers briefly query namespaces, pods, and roles during upgrades\u2014correlate with change windows.\n\n### Response and remediation\n\n- If malicious, revoke or rotate the implicated credentials, review and tighten RBAC, and inspect for data access or\n  persistence established after the burst.",
+        "query": "from logs-aws.eks_audit-* metadata _id, _index, _version\n| eval Esql.time_interval = date_trunc(1 minute, @timestamp)\n| where data_stream.dataset == \"aws.eks_audit\"\n    and event.action in (\"get\", \"list\")\n    and aws.eks.audit.objectRef.resource in (\"namespaces\", \"nodes\", \"pods\", \"roles\", \"configmaps\", \"serviceaccounts\", \"clusterroles\", \"clusterrolebindings\", \"rolebindings\")\n    and source.ip is not null and user.name IS NOT NULL\n    and not to_string(source.ip) in (\"127.0.0.1\", \"::1\")\n    and not user.name rlike \"\"\"(system:serviceaccount:kube-system:|eks:|system:kube-|arn:aws:sts::.*:assumed-role/AWSServiceRoleForAmazonEKS/).*\"\"\"\n    and not aws.eks.audit.user.username in (\"system:serviceaccount:flux-system:kustomize-controller\", \"system:serviceaccount:flux-system:helm-controller\", \"system:serviceaccount:flux-system:source-controller\", \"system:serviceaccount:security:trivy-operator\")\n| stats\n    Esql.unique_resources = count_distinct(aws.eks.audit.objectRef.resource),\n    Esql.enumerated_resources = values(aws.eks.audit.objectRef.resource),\n    Esql.enumerated_namespaces = values(aws.eks.audit.objectRef.namespace),\n    Esql.decisions = values(`aws.eks.audit.annotations.authorization_k8s_io/decision`)\n  by user.name, aws.eks.audit.user.username, source.ip, user_agent.original, Esql.time_interval\n| where Esql.unique_resources >= 3\n| keep Esql.*, aws.eks.audit.user.username, user.name, source.ip, user_agent.original\n",
+        "references": [
+            "https://microsoft.github.io/Threat-Matrix-for-Kubernetes/"
+        ],
+        "related_integrations": [
+            {
+                "package": "aws",
+                "version": ">=8.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "aws.eks.audit.annotations.authorization_k8s_io/decision",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.eks.audit.objectRef.namespace",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.eks.audit.objectRef.resource",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.eks.audit.user.username",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "67ff2b08-37af-53ce-a19e-00acca8515e0",
+        "setup": "This rule reads EKS control-plane audit logs collected by the AWS integration\ninto `logs-aws.eks_audit-*`, where the AWS EKS audit ingest\npipelines normalize each audit record under `aws.eks.audit.*`.\n\nEnable the `audit` control-plane log type on the EKS cluster, send its\nCloudWatch log group through the AWS integration, and confirm events carry\n`data_stream.dataset: aws.eks_audit` and\n`cloud.provider: aws` before enabling this rule.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Containers",
+            "Platform: AWS",
+            "Platform: Kubernetes",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: Kubernetes API Server Audit Logs",
+            "Service: AWS EKS",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Rule Type: ES|QL",
+            "Resources: Investigation Guide",
+            "Profile: Beta"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1613",
+                        "name": "Container and Resource Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1613/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "67ff2b08-37af-53ce-a19e-00acca8515e0_1",
+    "type": "security-rule"
+}

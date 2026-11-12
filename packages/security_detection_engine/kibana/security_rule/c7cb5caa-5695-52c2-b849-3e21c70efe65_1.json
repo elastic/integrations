@@ -1,0 +1,115 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Kubernetes audit identities for kubelet (system:node:*) and workloads (system:serviceaccount:*) are meant to operate with tight, predictable API usage. Direct get or list on the Secrets API from those principals is often a sign of credential access. Attackers who stole a pod service-account token or node credentials sweep Secret objects for tokens, registry credentials, TLS keys, or application configuration. Even denied attempts still reveal intent to reach sensitive material. Legitimate controllers do read secrets they mount or manage, so this signal is most valuable when paired with triage (namespace scope, user agent, RBAC, and whether the identity should touch those secret names at all).",
+        "false_positives": [
+            "In-cluster operators, CSI drivers, GitOps agents, and some platform controllers legitimately list or get Secrets in namespaces they manage; exclude known service accounts, namespaces, or user agents after baselining.",
+            "Rare kubelet or node maintenance tooling may touch Secret APIs; validate against change windows and approved node management paths."
+        ],
+        "from": "now-6m",
+        "index": [
+            "logs-aws.eks_audit-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS EKS Secret get or list from Node or Pod Service Account",
+        "note": "## Triage and analysis\n\n### Investigating AWS EKS Secret get or list from Node or Pod Service Account\nThis rule fires on Kubernetes audit events where the authenticated user is a node (`system:node:<nodename>`) or a\npod service account (`system:serviceaccount:<namespace>:<name>`) and the verb maps to read-style access\n(`get`, `list`) on the **secrets** resource. Treat node-originated secret reads as high priority: kubelet should\nnot broadly enumerate cluster secrets. For service accounts, prioritize cross-namespace access, access to\nhigh-value secret names, and clients that do not match the workload\u2019s normal user agent or deployment.\n\n### Possible investigation steps\n\n- Resolve `user.name` (or `aws.eks.audit.user.username` if present) to the node or workload and review RBAC\n  RoleBindings and ClusterRoleBindings for secret `get`/`list` scope.\n- Inspect `aws.eks.audit.objectRef.namespace`, `aws.eks.audit.objectRef.name`, source IP, and\n  `user_agent.original` for automation you recognize versus anomalous scripts or generic HTTP clients.\n- Review `aws.eks.audit.annotations.authorization_k8s_io/decision` for successful reads versus probing denials.\n- Correlate with pod exec, token creation, RoleBinding changes, or secret modification in the same time window.\n\n### False positive analysis\n\n- Controllers that reconcile Secrets (e.g. cert-manager, external-secrets, sealed-secrets) may match; allowlist their\n  service accounts if behavior is expected and scoped.\n- Helm and package managers can list release secrets during deploys; correlate with pipelines and chart releases.\n\n### Response and remediation\n\n- If malicious, revoke the token or node credentials, cordon or isolate the host or workload, rotate exposed secrets, and\n  tighten RBAC to least privilege for the affected identity.",
+        "query": "data_stream.dataset:\"aws.eks_audit\" and\nevent.action:(get or list) and\naws.eks.audit.objectRef.resource:\"secrets\" and\nuser.name:(system\\:serviceaccount\\:* or system\\:node\\:*) and\nsource.ip:(* and not (\"127.0.0.1\" or \"::1\")) and\nnot aws.eks.audit.user.groups:(\n  \"system:serviceaccounts:flux-system\" or\n  \"system:serviceaccounts:kyverno\" or\n  \"system:serviceaccounts:ibm-csi\" or\n  \"system:serviceaccounts:harvester-system\" or\n  \"system:serviceaccounts:cattle-system\" or\n  \"system:serviceaccounts:cattle-monitoring-system\" or\n  system\\:serviceaccounts\\:cluster-fleet-local-local-* or\n  \"system:serviceaccounts:rabbitmq-system\" or\n  \"system:serviceaccounts:cattle-fleet-system\"\n) and\nnot aws.eks.audit.user.username:(\n  \"system:serviceaccount:security:trivy-operator\" or\n  \"system:serviceaccount:cert-manager:cert-manager-cainjector\" or\n  \"system:serviceaccount:cert-manager:cert-manager\"\n)\n",
+        "references": [
+            "https://kubernetes.io/docs/reference/access-authn-authz/authentication/#service-account-tokens"
+        ],
+        "related_integrations": [
+            {
+                "package": "aws",
+                "version": ">=8.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.eks.audit.objectRef.resource",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.eks.audit.user.groups",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.eks.audit.user.username",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "c7cb5caa-5695-52c2-b849-3e21c70efe65",
+        "setup": "This rule reads EKS control-plane audit logs collected by the AWS integration\ninto `logs-aws.eks_audit-*`, where the AWS EKS audit ingest\npipelines normalize each audit record under `aws.eks.audit.*`.\n\nEnable the `audit` control-plane log type on the EKS cluster, send its\nCloudWatch log group through the AWS integration, and confirm events carry\n`data_stream.dataset: aws.eks_audit` and\n`cloud.provider: aws` before enabling this rule.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Containers",
+            "Platform: AWS",
+            "Platform: Kubernetes",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: Kubernetes API Server Audit Logs",
+            "Service: AWS EKS",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Rule Type: Custom Query (KQL)",
+            "Resources: Investigation Guide",
+            "Profile: Beta"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.007",
+                                "name": "Container API",
+                                "reference": "https://attack.mitre.org/techniques/T1552/007/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "c7cb5caa-5695-52c2-b849-3e21c70efe65_1",
+    "type": "security-rule"
+}
