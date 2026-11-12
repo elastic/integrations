@@ -1,0 +1,137 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a burst of successful Azure Key Vault secret retrievals by the same principal and application across multiple vaults. Adversaries with compromised application credentials may collect stored secrets at scale to access additional services or move laterally.",
+        "false_positives": [
+            "Authorized inventory jobs, secret migration tools, and multi-vault deployment pipelines may retrieve many secrets across several vaults within 15 minutes."
+        ],
+        "from": "now-30m",
+        "interval": "5m",
+        "investigation_fields": {
+            "field_names": [
+                "azure.platformlogs.identity.claim.iss",
+                "azure.platformlogs.identity.claim.oid",
+                "azure.platformlogs.identity.claim.appid",
+                "Esql.secret_read_count",
+                "Esql.vault_count",
+                "Esql.vaults",
+                "Esql.time_window"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Azure Key Vault Multi-Vault Secret Retrieval Burst by Application",
+        "note": "## Triage and analysis\n\n### Investigating Azure Key Vault Multi-Vault Secret Retrieval Burst by Application\n\nAzure Key Vault stores credentials that applications use to access other services. A compromised identity can use its existing vault permissions to collect these credentials and extend access to additional resources. This rule matches the Storm-0940 hunting pattern: at least 20 successful SecretGet requests by one principal and application across at least three vaults in a 15-minute window. Single-vault application startup and refresh traffic is outside this threshold. Repeated reads of the same secret still count toward the volume.\n\n### Possible investigation steps\n\n- Identify the principal and application using `azure.platformlogs.identity.claim.oid` and `azure.platformlogs.identity.claim.appid`. Use `azure.platformlogs.identity.claim.iss` to establish the issuing tenant, and resolve the object against the tenant's identity inventory.\n- Review `Esql.time_window`, `Esql.secret_read_count`, `Esql.vault_count`, `Esql.vaults`, and `Esql.source_ips` to establish the access volume, affected vaults, and request sources.\n- Review the original events and the `azure.platformlogs.properties.requestUri` and `azure.platformlogs.properties.id` values to identify the secrets accessed. Confirm successful retrieval using `azure.platformlogs.properties.httpStatusCode`; the normalized event outcome alone may not distinguish reads from denials.\n- Determine whether the principal is an application, managed identity, or user acting through an application. Application and object claims can also appear in delegated tokens, and an absent user principal name does not establish app-only authentication.\n- Correlate the activity with service-principal or managed-identity sign-ins, recent credential additions, permission changes, and access to services that use the retrieved secrets.\n- Check whether the application owner expected a multi-vault inventory, migration, or deployment during the alert window.\n\n### False positive analysis\n\n- Authorized inventory, migration, and multi-vault deployment pipelines can produce this pattern. Compare the vault set and sources with the application's normal activity and change records.\n- Scope any justified exception to the issuer, principal, application, and expected vault set, and reassess it when ownership or permissions change.\n\n### Response and remediation\n\n- If compromise is confirmed, restrict the principal's access to the affected vaults and remove compromised application credentials according to the incident response process.\n- Determine which secrets were exposed and rotate them, including credentials for downstream services where necessary.\n- Review and remove unauthorized permissions or credentials associated with the principal. Verify that access is denied after containment; removing an application credential alone does not immediately invalidate every issued access token.\n- Preserve the relevant Key Vault, sign-in, and audit events for investigation.\n",
+        "query": "from logs-azure.platformlogs-* metadata _id, _index\n| where data_stream.dataset == \"azure.platformlogs\"\n  and event.action == \"SecretGet\"\n  and azure.platformlogs.identity.claim.iss is not null and azure.platformlogs.identity.claim.iss != \"\"\n  and azure.platformlogs.identity.claim.oid is not null and azure.platformlogs.identity.claim.oid != \"\"\n  and azure.platformlogs.identity.claim.appid is not null and azure.platformlogs.identity.claim.appid != \"\"\n  and azure.resource.id is not null and azure.resource.id != \"\"\n  and KQL(\"azure.platformlogs.properties.httpStatusCode:200\")\n| eval Esql.time_window = date_trunc(15 minutes, @timestamp)\n| stats\n    Esql.secret_read_count = count(*),\n    Esql.vault_count = count_distinct(azure.resource.id),\n    Esql.vaults = values(azure.resource.id),\n    Esql.source_ips = values(source.ip),\n    Esql.first_seen = min(@timestamp),\n    Esql.last_seen = max(@timestamp)\n  by Esql.time_window, azure.platformlogs.identity.claim.iss, azure.platformlogs.identity.claim.oid,\n    azure.platformlogs.identity.claim.appid\n| where Esql.secret_read_count >= 20 and Esql.vault_count >= 3\n| keep azure.platformlogs.identity.claim.iss, azure.platformlogs.identity.claim.oid,\n    azure.platformlogs.identity.claim.appid, Esql.*\n",
+        "references": [
+            "https://www.microsoft.com/en-us/security/blog/2026/10/21/storm-0940-uses-artex-agentic-ai-connectwise-supply-chain-compromise/",
+            "https://learn.microsoft.com/en-us/azure/key-vault/general/logging"
+        ],
+        "related_integrations": [
+            {
+                "integration": "platformlogs",
+                "package": "azure",
+                "version": ">=1.22.0"
+            },
+            {
+                "integration": "events",
+                "package": "azure",
+                "version": ">=1.22.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.identity.claim.appid",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.identity.claim.iss",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.identity.claim.oid",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.httpStatusCode",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.resource.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "e12f9b6a-1624-4670-a4cc-15cf4bc0b276",
+        "setup": "#### Azure Key Vault AuditEvent Logs\n\nEnable AuditEvent diagnostic logging for the relevant Key Vaults and ingest it through the Azure integration's\nplatform logs data stream into `logs-azure.platformlogs-*`. Retain the token issuer, object ID, application ID,\nvault resource ID, and HTTP status in the original events. The HTTP status is a subfield of the flattened\n`azure.platformlogs.properties` field and is selected with KQL. Events missing the required identity or vault\nfields are excluded. A user principal name is not required.\n\nThe rule evaluates a 30-minute ingestion lookback every five minutes and groups requests into fixed 15-minute\nevent-time windows. Requests split across window boundaries or ingested more than 30 minutes apart may not be\ncombined. Review delivery latency and repeated aggregate alerts when tuning the schedule.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Identity",
+            "Data Source: Azure",
+            "Data Source: Azure Platform Logs",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Platform: Azure",
+            "Service: Azure Key Vault"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1555",
+                        "name": "Credentials from Password Stores",
+                        "reference": "https://attack.mitre.org/techniques/T1555/",
+                        "subtechnique": [
+                            {
+                                "id": "T1555.006",
+                                "name": "Cloud Secrets Management Stores",
+                                "reference": "https://attack.mitre.org/techniques/T1555/006/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "e12f9b6a-1624-4670-a4cc-15cf4bc0b276_1",
+    "type": "security-rule"
+}
