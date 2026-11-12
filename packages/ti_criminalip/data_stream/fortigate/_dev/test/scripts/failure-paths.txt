@@ -90,6 +90,18 @@ stdout '"original":'
 stdout 'preserve_original_event'
 ! stdout '"_temp":'
 
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-11.json
+! stderr .
+stdout '"timezone": "\\+09:00"'
+stdout '"@timestamp": "2026-01-08T03:00:00.000Z"'
+! stdout '"_conf":'
+
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-12.json
+! stderr .
+stdout 'No FortiGate key-value fields found'
+! stdout '"_conf":'
+! stdout '"_temp":'
+
 uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
 ! stderr .
 
@@ -165,4 +177,18 @@ uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
 {
   "@timestamp": "2026-01-08T12:34:56.000Z",
   "message": "<134>   "
+}
+
+-- case-11.json --
+{
+  "@timestamp": "2026-01-08T00:00:00.000Z",
+  "message": "date=2026-01-08 time=12:00:00 tz=\"\" type=traffic action=accept",
+  "_conf": {"tz_offset": "+09:00"}
+}
+
+-- case-12.json --
+{
+  "@timestamp": "2026-01-08T00:00:00.000Z",
+  "message": "<134>Oct 29 12:34:56 fortigate",
+  "_conf": {"tz_offset": "+09:00"}
 }

@@ -401,6 +401,7 @@ processors:
       tag: rename_fortigate_timezone
       field: _temp.fortigate_fields.tz
       target_field: event.timezone
+      if: 'ctx._temp?.fortigate_fields?.tz != null && ctx._temp.fortigate_fields.tz != ""'
       ignore_missing: true
       ignore_failure: true
 
@@ -531,8 +532,8 @@ processors:
       allow_duplicates: false
       if: >-
         (ctx.criminalip?.fortigate?.type == "traffic" || ctx.criminalip?.fortigate?.type == "utm") &&
-        (ctx.event?.action == "accept" || ctx.event?.action == "allow") &&
-        !(ctx.event?.type instanceof List && ctx.event.type.contains("denied"))
+        ['accept', 'allow', 'close', 'timeout', 'client-rst', 'server-rst'].contains(ctx.event?.action) &&
+        ctx.event?.outcome != 'failure' && !(ctx.event?.type instanceof List && ctx.event.type.contains("denied"))
 
   - set:
       tag: set_event_outcome_failure
@@ -544,7 +545,7 @@ processors:
       tag: set_event_outcome_success
       field: event.outcome
       value: success
-      if: '(ctx.event?.action == "accept" || ctx.event?.action == "allow") && !(ctx.event?.type instanceof List && ctx.event.type.contains("denied"))'
+      if: '(ctx.criminalip?.fortigate?.type == "traffic" || ctx.criminalip?.fortigate?.type == "utm") && ["accept", "allow", "close", "timeout", "client-rst", "server-rst"].contains(ctx.event?.action) && ctx.event?.outcome != "failure" && !(ctx.event?.type instanceof List && ctx.event.type.contains("denied"))'
 
   - convert:
       tag: convert_source_port
@@ -640,5 +641,7 @@ on_failure:
       allow_duplicates: false
   - remove:
       tag: remove_failed_fortigate_temporary_fields
-      field: _temp
+      field:
+        - _temp
+        - _conf
       ignore_missing: true

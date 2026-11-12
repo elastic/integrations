@@ -69,12 +69,11 @@ processors:
         - append:
             tag: flag_invalid_feed_confidence
             field: error.message
-            value: Could not parse TI Feed confidence as a numeric value.
-        - append:
-            tag: preserve_invalid_feed_confidence
-            field: tags
-            value: preserve_original_event
-            allow_duplicates: false
+            value: "Processor '{{{ _ingest.on_failure_processor_type }}}' with tag '{{{ _ingest.on_failure_processor_tag }}}' in pipeline '{{{ _ingest.pipeline }}}' failed: {{{ _ingest.on_failure_message }}}"
+        - set:
+            tag: mark_confidence_parse_error
+            field: _temp.pipeline_error
+            value: true
   - script:
       tag: normalize_feed_confidence
       description: Convert numeric confidence to the ECS STIX confidence bands while retaining the source value.
@@ -103,12 +102,11 @@ processors:
         - append:
             tag: flag_invalid_feed_first_seen
             field: error.message
-            value: Could not parse TI Feed first_seen timestamp.
-        - append:
-            tag: preserve_invalid_feed_first_seen
-            field: tags
-            value: preserve_original_event
-            allow_duplicates: false
+            value: "Processor '{{{ _ingest.on_failure_processor_type }}}' with tag '{{{ _ingest.on_failure_processor_tag }}}' in pipeline '{{{ _ingest.pipeline }}}' failed: {{{ _ingest.on_failure_message }}}"
+        - set:
+            tag: mark_first_seen_parse_error
+            field: _temp.pipeline_error
+            value: true
   - date:
       tag: parse_feed_last_seen
       field: _temp.feed.last_seen
@@ -122,12 +120,11 @@ processors:
         - append:
             tag: flag_invalid_feed_last_seen
             field: error.message
-            value: Could not parse TI Feed last_seen timestamp.
-        - append:
-            tag: preserve_invalid_feed_last_seen
-            field: tags
-            value: preserve_original_event
-            allow_duplicates: false
+            value: "Processor '{{{ _ingest.on_failure_processor_type }}}' with tag '{{{ _ingest.on_failure_processor_tag }}}' in pipeline '{{{ _ingest.pipeline }}}' failed: {{{ _ingest.on_failure_message }}}"
+        - set:
+            tag: mark_last_seen_parse_error
+            field: _temp.pipeline_error
+            value: true
   - trim:
       tag: trim_indicator_ip
       field: threat.indicator.ip
@@ -204,6 +201,17 @@ processors:
       value: '{{{threat.indicator.ip}}}'
       allow_duplicates: false
       if: 'ctx.threat?.indicator?.ip != null'
+  - append:
+      tag: preserve_parsing_error_original
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: 'ctx._temp?.pipeline_error == true'
+  - set:
+      tag: set_parsing_error_kind
+      field: event.kind
+      value: pipeline_error
+      if: 'ctx._temp?.pipeline_error == true'
   - remove:
       tag: remove_feed_temporary_fields
       field: _temp

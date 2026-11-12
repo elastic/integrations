@@ -147,7 +147,7 @@ Use `source.ip`, `destination.ip`, available ports and `network.transport` for c
 
 The rule compares firewall `source.ip` or `destination.ip` with TI Feed `threat.indicator.ip`. It runs every minute, searches the previous ten minutes of firewall events using `event.ingested` (falling back to `@timestamp` when `event.ingested` is missing), and searches indicators within the previous 30 days. The wider window allows for the five-minute TI Feed transform cadence, its one-minute delay, the next rule run, and processing overhead. This allows delayed firewall logs to match based on their ingestion time without changing their original event timestamp. Events without `event.ingested` still depend on their original timestamp being within the search window.
 
-The feed is polled as a snapshot and unchanged indicators are republished each interval. At the default one-hour interval this can produce 24 source documents per active IP per day. The latest transform keeps one destination document per IP, refreshes it from each snapshot, and expires destination indicators after 30 days without a newer copy. Source snapshots remain in the source data stream; configure source retention for your volume.
+The feed is polled as a snapshot and unchanged indicators are republished each interval. At the default one-hour interval this can produce 24 source documents per active IP per day. The latest transform keeps one destination document per IP, refreshes it from each snapshot, and expires destination indicators after 30 days without a newer copy. The source data stream uses an ILM policy that rolls over after one day or 50 GB and deletes backing indices two days after rollover. Documents can therefore remain for longer than two days. Configure retention for your volume and allow enough time for transform processing.
 
 Original API payload preservation is disabled by default for TI Feed and IP Report to reduce duplicate storage. Enable **Preserve original event** when raw response content is needed for investigation.
 
@@ -245,7 +245,7 @@ An IP report does not prove that your network communicated with the IP and does 
 
 The documented deployment uses Fleet-managed Elastic Agent. Install and enroll
 the Agent on a collector with access to Elasticsearch, Fleet Server, and the
-selected Criminal IP endpoints. This package does not declare an agentless
+selected Criminal IP endpoints. This package does not declare an Elastic Managed
 deployment. Standalone deployment has not been validated for this package.
 
 ### Validation
@@ -353,7 +353,7 @@ Local validation checks package structure and generated assets. Installation, pe
 Run one TI Feed collector per intended feed scope to avoid collecting duplicate
 snapshots. The default interval is one hour; each poll republishes active indicators,
 while the latest transform keeps one destination document per IP. Raw feed history
-still consumes storage, so set retention to match investigation needs.
+uses the source ILM policy described above; adjust retention to match investigation needs.
 
 IP Report requests each configured distinct IP every interval (five minutes by
 default). Choose the number of IPs and polling interval within the provider quota.
