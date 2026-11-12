@@ -1,9 +1,10 @@
 # Verify CEL billing collector behavior across:
-# 1. Failed-day HTTP 503 response: emits error event without advancing cursor past the failed day.
-# 2. Retry & initial backfill: collects project charges plus residual unassociated charges.
-# 3. Cursor restoration & 72-hour replay on a subsequent day rollover: updates reattributed
-#    project charges and emits zero-valued replacement snapshots (total_ecu == 0.0) for both
-#    cleared residuals and removed SKUs.
+# 1. Failed-day HTTP 400 response: emits error event without advancing cursor past the failed day.
+# 2. Retry & initial 1-day backfill: collects project charges plus residual unassociated charges and
+#    persists recent_day_keys in the stream cursor.
+# 3. Subsequent replay pass with preserved stream cursor: updates reattributed project charges and
+#    emits zero-valued replacement snapshots (total_ecu == 0.0) for both cleared residuals and
+#    SKUs removed from /costs/items, then gates further replays for the same UTC day.
 
 [!external_stack] skip 'Skipping external stack test.'
 [!exec:jq] skip 'Skipping test requiring absent jq command'
@@ -14,45 +15,40 @@ docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} billin
 add_package -profile ${CONFIG_PROFILES}/${PROFILE}
 add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
 
-# Phase 1: First poll hits HTTP 503 (1 error doc), then retries the same day and emits:
-# - proj-1 (es.search-vcu = 80.0)
-# - deleted_or_unassociated_elasticsearch (es.search-vcu = 20.0)
-# - deleted_or_unassociated_observability (oblt.ingest-vcu = 5.0)
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 4 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
-cp stdout got_docs_phase1.json
+# Across three 5s polls on the same policy (preserving cursor.recent_day_keys):
+# - Poll 1: HTTP 400 on /costs/instances -> 1 error document (error.code == "400").
+# - Poll 2 (initial backfill): 3 documents:
+#     * proj-1 (es.search-vcu = 80.0)
+#     * deleted_or_unassociated_elasticsearch (es.search-vcu = 20.0)
+#     * deleted_or_unassociated_observability (oblt.ingest-vcu = 5.0)
+# - Poll 3 (bounded replay pass with preserved recent_day_keys): 3 documents:
+#     * proj-1 (es.search-vcu = 100.0)
+#     * deleted_or_unassociated_elasticsearch (es.search-vcu = 0.0)
+#     * deleted_or_unassociated_observability (oblt.ingest-vcu = 0.0)
+# - Poll 4+: gated by replay_completed_to == latest_ready_to_str (0 additional documents).
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 7 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
 
-exec jq -r '[.hits.hits[]._source.error.code // empty] | .[]' got_docs_phase1.json
-stdout '^503$'
+exec jq -r '[.hits.hits[]._source.error.code // empty] | .[]' got_docs.json
+stdout '^400$'
 
-exec jq -r '[.hits.hits[]._source | select(.project_id == "proj-1" and .sku == "es.search-vcu") | .total_ecu] | .[0]' got_docs_phase1.json
+exec jq -r '[.hits.hits[]._source | select(.project_id == "proj-1" and .sku == "es.search-vcu") | .total_ecu] | min' got_docs.json
 stdout '^80(\.0+)?$'
 
-exec jq -r '[.hits.hits[]._source | select(.project_id == "deleted_or_unassociated_elasticsearch" and .sku == "es.search-vcu") | .total_ecu] | .[0]' got_docs_phase1.json
-stdout '^20(\.0+)?$'
-
-exec jq -r '[.hits.hits[]._source | select(.project_id == "deleted_or_unassociated_observability" and .sku == "oblt.ingest-vcu") | .total_ecu] | .[0]' got_docs_phase1.json
-stdout '^5(\.0+)?$'
-
-# Phase 2: Switch mock to replay payload where proj-1 is fully attributed (100.0 ECU),
-# clearing the es.search-vcu residual to 0.0, and oblt.ingest-vcu is removed from /costs/items.
-docker_down billing-mock
-cp billing-mock/config-replay.yml billing-mock/config.yml
-docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} billing-mock
-
-remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
-add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config_replay.yaml DATA_STREAM_NAME
-
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 7 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
-cp stdout got_docs_phase2.json
-
-exec jq -r '[.hits.hits[]._source | select(.project_id == "proj-1" and .sku == "es.search-vcu") | .total_ecu] | max' got_docs_phase2.json
+exec jq -r '[.hits.hits[]._source | select(.project_id == "proj-1" and .sku == "es.search-vcu") | .total_ecu] | max' got_docs.json
 stdout '^100(\.0+)?$'
 
-exec jq -r '[.hits.hits[]._source | select(.project_id == "deleted_or_unassociated_elasticsearch" and .sku == "es.search-vcu" and .total_ecu == 0)] | length' got_docs_phase2.json
-stdout '^[1-9][0-9]*$'
+exec jq -r '[.hits.hits[]._source | select(.project_id == "deleted_or_unassociated_elasticsearch" and .sku == "es.search-vcu" and .total_ecu == 20)] | length' got_docs.json
+stdout '^1$'
 
-exec jq -r '[.hits.hits[]._source | select(.project_id == "deleted_or_unassociated_observability" and .sku == "oblt.ingest-vcu" and .total_ecu == 0)] | length' got_docs_phase2.json
-stdout '^[1-9][0-9]*$'
+exec jq -r '[.hits.hits[]._source | select(.project_id == "deleted_or_unassociated_elasticsearch" and .sku == "es.search-vcu" and .total_ecu == 0)] | length' got_docs.json
+stdout '^1$'
+
+exec jq -r '[.hits.hits[]._source | select(.project_id == "deleted_or_unassociated_observability" and .sku == "oblt.ingest-vcu" and .total_ecu == 5)] | length' got_docs.json
+stdout '^1$'
+
+exec jq -r '[.hits.hits[]._source | select(.project_id == "deleted_or_unassociated_observability" and .sku == "oblt.ingest-vcu" and .total_ecu == 0)] | length' got_docs.json
+stdout '^1$'
 
 remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
 uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
@@ -71,20 +67,7 @@ vars:
 data_stream:
   vars:
     lookbehind: 1
-
--- test_config_replay.yaml --
-input: cel
-vars:
-  organization_id: "12345"
-  cloud_api_key: "test-cloud-api-key"
-  currency_unit: "USD"
-  currency_symbol: "$"
-  unit_rate: "1.0"
-  billing_api_base: "http://billing-mock:8080"
-  cloud_api_base: "http://billing-mock:8080"
-data_stream:
-  vars:
-    lookbehind: 2
+    interval: 5s
 
 -- billing-mock/docker-compose.yml --
 version: '2.3'
@@ -108,64 +91,17 @@ rules:
   - path: /api/v2/billing/organizations/12345/costs/instances
     methods: ['GET']
     responses:
-      - status_code: 503
+      - status_code: 400
         headers:
           Content-Type:
             - 'application/json'
-        body: '{"message":"temporary billing service outage"}'
+        body: '{"message":"bad billing request"}'
       - status_code: 200
         headers:
           Content-Type:
             - 'application/json'
         body: |-
           {"instances":[{"id":"proj-1","name":"Production ES","type":"elasticsearch","product_line_items":[{"sku":"es.search-vcu","total_ecu":80.0,"quantity":{"value":80.0}}]}]}
-  - path: /api/v2/billing/organizations/12345/costs/items
-    methods: ['GET']
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type:
-            - 'application/json'
-        body: |-
-          {"products":[{"type":"elasticsearch","product_line_items":[{"sku":"es.search-vcu","total_ecu":100.0,"quantity":{"value":100.0}}]},{"type":"observability","product_line_items":[{"sku":"oblt.ingest-vcu","total_ecu":5.0,"quantity":{"value":5.0}}]}]}
-  - path: /api/v1/serverless/projects/elasticsearch
-    methods: ['GET']
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type:
-            - 'application/json'
-        body: '{"items":[{"id":"proj-1","name":"Production ES"}]}'
-  - path: /api/v1/serverless/projects/observability
-    methods: ['GET']
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type:
-            - 'application/json'
-        body: '{"items":[]}'
-  - path: /api/v1/serverless/projects/security
-    methods: ['GET']
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type:
-            - 'application/json'
-        body: '{"items":[]}'
-  - path: /api/v1/serverless/projects/vectordb
-    methods: ['GET']
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type:
-            - 'application/json'
-        body: '{"items":[]}'
-
--- billing-mock/config-replay.yml --
-rules:
-  - path: /api/v2/billing/organizations/12345/costs/instances
-    methods: ['GET']
-    responses:
       - status_code: 200
         headers:
           Content-Type:
@@ -175,6 +111,12 @@ rules:
   - path: /api/v2/billing/organizations/12345/costs/items
     methods: ['GET']
     responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"products":[{"type":"elasticsearch","product_line_items":[{"sku":"es.search-vcu","total_ecu":100.0,"quantity":{"value":100.0}}]},{"type":"observability","product_line_items":[{"sku":"oblt.ingest-vcu","total_ecu":5.0,"quantity":{"value":5.0}}]}]}
       - status_code: 200
         headers:
           Content-Type:

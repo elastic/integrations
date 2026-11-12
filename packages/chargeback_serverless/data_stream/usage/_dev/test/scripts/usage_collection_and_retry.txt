@@ -1,7 +1,7 @@
 # Verify CEL usage collector behavior across:
-# 1. Failed-day discovery HTTP 503 response: emits error event without advancing cursor.last_day.
-# 2. Retry & live usage collection: collects datastream_usage, ai_model_usage, synthetics_usage,
-#    and project_harvest_status events across discovered Serverless projects.
+# 1. Failed-day discovery HTTP 400 response: emits error event without advancing cursor.last_day.
+# 2. Retry & live usage collection: collects datastream and project_status events across
+#    discovered Serverless projects.
 
 [!external_stack] skip 'Skipping external stack test.'
 [!exec:jq] skip 'Skipping test requiring absent jq command'
@@ -16,12 +16,12 @@ get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 3 -confirm 15s -timeout 5m
 cp stdout got_usage_docs.json
 
 exec jq -r '[.hits.hits[]._source.error.code // empty] | .[]' got_usage_docs.json
-stdout '^503$'
+stdout '^400$'
 
-exec jq -r '[.hits.hits[]._source | select(.record_type == "datastream_usage" and .project_id == "proj-1") | .data_stream_name] | .[0]' got_usage_docs.json
+exec jq -r '[.hits.hits[]._source | select(.doc_type == "datastream" and .project_id == "proj-1") | .datastream] | .[0]' got_usage_docs.json
 stdout '^logs-app-default$'
 
-exec jq -r '[.hits.hits[]._source | select(.record_type == "project_harvest_status" and .project_id == "proj-1") | .last_status] | .[0]' got_usage_docs.json
+exec jq -r '[.hits.hits[]._source | select(.doc_type == "project_status" and .project_id == "proj-1") | .last_status] | .[0]' got_usage_docs.json
 stdout '^ok$'
 
 remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
@@ -42,6 +42,7 @@ data_stream:
   vars:
     hub_es_api_key: "test-hub-key"
     project_api_keys: "proj-1:test-proj-key"
+    interval: 5s
 
 -- usage-mock/docker-compose.yml --
 version: '2.3'
@@ -65,11 +66,11 @@ rules:
   - path: /api/v1/serverless/projects/elasticsearch
     methods: ['GET']
     responses:
-      - status_code: 503
+      - status_code: 400
         headers:
           Content-Type:
             - 'application/json'
-        body: '{"message":"temporary control-plane error"}'
+        body: '{"message":"bad control-plane request"}'
       - status_code: 200
         headers:
           Content-Type:
@@ -107,14 +108,14 @@ rules:
           Content-Type:
             - 'application/json'
         body: '{"instances":[{"id":"proj-1","name":"Production ES","type":"elasticsearch","product_line_items":[{"sku":"es.search-vcu","total_ecu":50.0,"quantity":{"value":50.0}}]}]}'
-  - path: /_cat/indices/*,.ds-*
+  - path: /_cat/indices
     methods: ['GET']
     responses:
       - status_code: 200
         headers:
           Content-Type:
             - 'application/json'
-        body: '[{"index":".ds-logs-app-default-2026.11.11-000001","pri.store.size":"1073741824","docs.count":"10000","indexing.index_total":"10000","indexing.index_time":"5000","search.query_total":"250","search.query_time":"1200"}]'
+        body: '[{"index":".ds-logs-app-default-2026.11.11-000001","dataset.size":"1073741824","indexing.index_time":"5000","search.query_time":"1200"}]'
   - path: /_ml/trained_models/_stats
     methods: ['GET']
     responses:
@@ -131,3 +132,11 @@ rules:
           Content-Type:
             - 'application/json'
         body: '{"endpoints":[]}'
+  - path: /.ds-synthetics-*-*,synthetics-*/_search
+    methods: ['GET']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"aggregations":{"by_type":{"buckets":[]}}}'

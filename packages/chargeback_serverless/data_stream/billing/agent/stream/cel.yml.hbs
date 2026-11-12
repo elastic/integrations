@@ -1,5 +1,5 @@
 config_version: 2
-interval: "1h"
+interval: {{#if interval}}{{interval}}{{else}}1h{{/if}}
 {{#if enable_request_tracer}}
 resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
 resource.tracer.maxbackups: 5
@@ -462,12 +462,12 @@ program: |-
                                             "events": size(evts) > 0 ? evts : [ { "fake": true } ],
                                             "cursor": {
                                               "last_to": max(high_water, req.to).format(time_layout.RFC3339),
-                                              "replay_target_to": latest_ready_to_str,
-                                              "replay_completed_to": (req.to + duration("26h") <= now) ? replay_completed_to : latest_ready_to_str,
-                                              "next_from": req.to.format(time_layout.RFC3339),
+                                              "replay_target_to": (req.to + duration("26h") <= now || high_water >= latest_ready_to || replay_target_to == latest_ready_to_str) ? latest_ready_to_str : "",
+                                              "replay_completed_to": (req.to + duration("26h") <= now) ? replay_completed_to : ((high_water >= latest_ready_to || replay_target_to == latest_ready_to_str) ? latest_ready_to_str : replay_completed_to),
+                                              "next_from": (req.to + duration("26h") <= now || high_water >= latest_ready_to || replay_target_to == latest_ready_to_str) ? req.to.format(time_layout.RFC3339) : replay_start_str,
                                               "recent_day_keys": updated_recent_keys,
                                             },
-                                            "next_from": req.to.format(time_layout.RFC3339),
+                                            "next_from": (req.to + duration("26h") <= now || high_water >= latest_ready_to || replay_target_to == latest_ready_to_str) ? req.to.format(time_layout.RFC3339) : replay_start_str,
                                             "cached_projects": discovery.cache_ok ? projects : null,
                                             "want_more": req.to + duration("26h") <= now,
                                           }
