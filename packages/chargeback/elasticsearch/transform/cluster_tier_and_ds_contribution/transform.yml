@@ -1,19 +1,7 @@
-description: Aggregates daily total ECU usage per tier and datastream from billing metrics, using ingested timestamps with a 1-hour sync delay and running every 60 minutes.
+description: Aggregates daily total indexing, query, and storage usage per tier and data stream from self-collected index metrics, and exposes monitoring-indices symlink aliases for the stock Elasticsearch Consumption dashboard.
 source:
   index:
-    - "monitoring-indices*"
-    - "*:monitoring-indices*"
-    # Canonical usage source: Elasticsearch integration index_pivot output and
-    # Serverless staging (monitoring-indices*). Cloud Console Logs and metrics
-    # (.monitoring-es-*) feed Chargeback through index_pivot into this pattern.
-    # Do not also source .monitoring-es-* here — that double-counts when the pivot
-    # is running (raw Metricbeat rows plus their pivoted copies).
-  # These read whichever of <field> / <field>.keyword the mapping actually makes
-  # aggregatable. Where the .monitoring-es-mb index template is not governing the
-  # .monitoring-es-8-mb data stream, dynamic mapping produces `text` plus a `.keyword`
-  # subfield, and a terms aggregation on the text field fails with "Fielddata is
-  # disabled ... Will automatically retry [1/-1]" - retrying forever without ever
-  # producing a row. Both branches below use doc values, so there is no _source penalty.
+    - metrics-chargeback.usage-*
   runtime_mappings:
     cb_cluster_name:
       type: keyword
@@ -77,12 +65,17 @@ source:
           }
 dest:
   index: cluster_tier_and_datastream_contribution_lookup
-  pipeline: logs-chargeback.lookup-0.5.0-usage
-frequency: 60m
+  aliases:
+    - alias: monitoring-indices-chargeback
+      move_on_creation: true
+    - alias: monitoring-indices
+      move_on_creation: true
+  pipeline: logs-chargeback.lookup-0.6.0-usage
+frequency: 5m
 sync:
   time:
-    field: "@timestamp"
-    delay: 1h
+    field: event.ingested
+    delay: 60s
 pivot:
   group_by:
     "@timestamp":
@@ -131,6 +124,10 @@ pivot:
             }
             return 'unknown';
   aggregations:
+    cluster_display_name:
+      terms:
+        field: deployment_name
+        size: 1
     tier_and_datastream_sum_indexing_time:
       sum:
         field: elasticsearch.index.total.indexing.index_time_in_millis
@@ -143,13 +140,16 @@ pivot:
     tier_and_datastream_sum_data_set_store_size:
       sum:
         field: elasticsearch.index.primaries.store.total_data_set_size_in_bytes
+    tier_and_datastream_sum_docs_count:
+      sum:
+        field: elasticsearch.index.primaries.docs.count
+    tier_and_datastream_sum_query_total:
+      sum:
+        field: elasticsearch.index.total.search.query_total
 settings:
-  # This is required to prevent the transform from clobbering the Fleet-managed mappings.
   deduce_mappings: false
   unattended: true
 _meta:
   managed: true
   run_as_kibana_system: false
-  # Bump this version to delete, reinstall, and restart the transform during package.
-  # Version bump is needed if there is any code change in transform.
-  fleet_transform_version: 0.5.0
+  fleet_transform_version: 0.6.0

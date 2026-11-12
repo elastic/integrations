@@ -1,0 +1,84 @@
+---
+description: "Ingest pipeline for Chargeback self-collected index and tier usage data."
+processors:
+  - drop:
+      if: "ctx.elasticsearch?.index?.name == null && ctx.error?.message == null"
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.elasticsearch?.index?.name == null
+      description: Terminate early on collection error documents.
+  - set:
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+      if: ctx.event?.ingested == null
+      tag: set_event_ingested
+  - date:
+      field: period_start
+      target_field: "@timestamp"
+      formats:
+        - ISO8601
+      if: ctx.period_start != null
+      ignore_failure: true
+      tag: restore_period_start_timestamp
+  - remove:
+      field: period_start
+      ignore_missing: true
+  - script:
+      lang: painless
+      ignore_failure: true
+      tag: normalize_index_tier_and_datastream
+      source: |
+        if (ctx.elasticsearch == null || ctx.elasticsearch.index == null) {
+          return;
+        }
+        def idx = ctx.elasticsearch.index;
+        String name = idx.name != null ? idx.name.toString() : '';
+        // Drop internal non-.ds system indices and Chargeback lookup indices to avoid feedback
+        if ((name.startsWith('.') && !name.startsWith('.ds-')) || name.endsWith('_lookup') || name.contains('_lookup-') || name.contains('metrics-chargeback.')) {
+          ctx._drop_internal = true;
+          return;
+        }
+        if (idx.datastream == null || idx.datastream == '') {
+          def m = /^(?:partial-)?(?:restored-)?(?:shrink-.{4}-)?(?:\.ds-)?([a-zA-Z_0-9\-.]+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d+)?$/.matcher(name);
+          if (m.matches() && !m.group(1).startsWith('.')) {
+            idx.datastream = m.group(1);
+          } else {
+            idx.datastream = name.startsWith('.') ? 'system' : name;
+          }
+        }
+        if (idx.tier == null || idx.tier == '') {
+          String pref = idx.tier_preference != null ? idx.tier_preference.toString() : '';
+          if (pref == '') {
+            idx.tier = 'hot/content';
+          } else if (pref.contains('data_frozen')) {
+            idx.tier = 'frozen';
+          } else if (pref.contains('data_cold')) {
+            idx.tier = 'cold';
+          } else if (pref.contains('data_warm')) {
+            idx.tier = 'warm';
+          } else if (pref.contains('data_hot') || pref.contains('data_content')) {
+            idx.tier = 'hot/content';
+          } else {
+            idx.tier = 'unknown';
+          }
+        }
+  - drop:
+      if: "ctx._drop_internal == true"
+  - fingerprint:
+      fields:
+        - elasticsearch.cluster.name
+        - "@timestamp"
+        - elasticsearch.index.name
+      target_field: _id
+      ignore_missing: true
+      tag: fingerprint_usage_event
+on_failure:
+  - set:
+      field: event.kind
+      value: "pipeline_error"
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'

@@ -1,0 +1,230 @@
+config_version: 2
+interval: "1h"
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl:
+  {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: "{{billing_api_base}}/api/v2/billing/organizations/{{organization_id}}/costs/instances"
+state:
+  api_key: !!str {{cloud_api_key}}
+  organization_id: !!str {{organization_id}}
+  billing_api_base: !!str {{billing_api_base}}
+  cloud_api_base: !!str {{cloud_api_base}}
+  lookbehind: !!int {{lookbehind}}
+  conf_unit_rate: !!str {{escape_string unit_rate}}
+  conf_currency_unit: !!str {{escape_string currency_unit}}
+  collect_ess_credits: !!bool {{collect_ess_credits}}
+redact:
+  fields:
+    - api_key
+    - cloud_api_key
+program: |-
+  state.with(
+    (state.conf_unit_rate + "|" + state.conf_currency_unit + "|" + string(state.collect_ess_credits)).as(conf_sig,
+    state.?cursor.last_to.optMap(ts, (type(ts) == string) ? timestamp(ts) : ts).orValue(
+      now - duration(string(int(state.lookbehind) * 24) + "h")
+    ).format(
+      time_layout.DateOnly
+    ).parse_time(time_layout.DateOnly).as(raw_from,
+      ((raw_from + duration("26h") > now && state.?cursor.last_to.orValue("") != "" && state.?cursor.conf_sig.orValue("") != conf_sig) ?
+        raw_from - duration("24h")
+      : raw_from).as(from,
+      max(from, timestamp("2021-01-01T00:00:00Z"))
+    )).as(from,
+      {
+        "from": from,
+        "to": from + duration("24h"),
+      }
+    ).as(req, (req.to + duration("2h") > now) ?
+      {
+        "events": [],
+        "cursor": { "last_to": req.from.format(time_layout.RFC3339), "conf_sig": conf_sig },
+        "want_more": false,
+      }
+    :
+      request(
+        "POST",
+        state.cloud_api_base + "/api/v1/deployments/_search"
+      ).with(
+        {
+          "Header": {
+            "Authorization": ["ApiKey " + state.api_key],
+            "Content-Type": ["application/json"],
+          },
+          "Body": { "size": 100 }.encode_json(),
+        }
+      ).do_request().as(dep_resp,
+        ((dep_resp.StatusCode == 200) ? bytes(dep_resp.Body).decode_json() : { "deployments": [] }).as(dep_body,
+          ((has(dep_body.deployments) && dep_body.deployments != null) ?
+            dep_body.deployments.filter(d,
+              has(d.resources) && d.resources != null && has(d.resources.elasticsearch) && d.resources.elasticsearch != null && size(d.resources.elasticsearch) > 0
+            ).map(d,
+              d.resources.elasticsearch[0].as(es_r,
+                {
+                  "id": string(es_r.id),
+                  "dep_id": has(d.id) && d.id != null ? string(d.id) : string(es_r.id),
+                  "name": (has(d.name) && d.name != null && string(d.name) != "") ? string(d.name) : string(es_r.id),
+                  "region": (has(es_r.region) && es_r.region != null) ? string(es_r.region) : "",
+                  "tags": (has(d.metadata) && d.metadata != null && has(d.metadata.tags) && d.metadata.tags != null) ?
+                    d.metadata.tags.filter(t, has(t.key) && t.key != null && has(t.value) && t.value != null).map(t, string(t.key) + ":" + string(t.value)) : [],
+                }
+              )
+            )
+          : []).as(ech_deps,
+            get_request(
+              state.cloud_api_base + "/api/v1/serverless/projects/elasticsearch"
+            ).with(
+              { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
+            ).do_request().as(es_resp,
+              ((es_resp.StatusCode == 200) ? bytes(es_resp.Body).decode_json() : { "items": [] }).as(es_body,
+                get_request(
+                  state.cloud_api_base + "/api/v1/serverless/projects/observability"
+                ).with(
+                  { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
+                ).do_request().as(obs_resp,
+                  ((obs_resp.StatusCode == 200) ? bytes(obs_resp.Body).decode_json() : { "items": [] }).as(obs_body,
+                    get_request(
+                      state.cloud_api_base + "/api/v1/serverless/projects/security"
+                    ).with(
+                      { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
+                    ).do_request().as(sec_resp,
+                      ((sec_resp.StatusCode == 200) ? bytes(sec_resp.Body).decode_json() : { "items": [] }).as(sec_body,
+                        ((has(es_body.items) && es_body.items != null ? es_body.items.map(p, dyn(p.with({ "project_type": "elasticsearch" }))) : []) +
+                         (has(obs_body.items) && obs_body.items != null ? obs_body.items.map(p, dyn(p.with({ "project_type": "observability" }))) : []) +
+                         (has(sec_body.items) && sec_body.items != null ? sec_body.items.map(p, dyn(p.with({ "project_type": "security" }))) : [])
+                        ).as(sls_projs,
+                          get_request(
+                            state.billing_api_base + "/api/v2/billing/organizations/" + state.organization_id + "/costs/instances?" + {
+                              "from": [req.from.format(time_layout.RFC3339)],
+                              "to": [req.to.format(time_layout.RFC3339)],
+                              "include_names": ["true"],
+                            }.format_query()
+                          ).with(
+                            { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
+                          ).do_request().as(resp, (resp.StatusCode == 200) ?
+                            bytes(resp.Body).decode_json().as(body,
+                              ((has(body.instances) && body.instances != null) ?
+                                body.instances.map(instance,
+                                  ((has(instance.id) && instance.id != null && string(instance.id) != "") ? string(instance.id) : "unassociated").as(inst_id,
+                                    ech_deps.filter(d, d.id == inst_id || d.dep_id == inst_id).as(matched_ech,
+                                      sls_projs.filter(p, has(p.id) && string(p.id) == inst_id).as(matched_sls,
+                                        ((size(matched_ech) > 0) ? matched_ech[0].name : (
+                                          (size(matched_sls) > 0 && has(matched_sls[0].name) && matched_sls[0].name != null && string(matched_sls[0].name) != "") ? string(matched_sls[0].name) : (
+                                            (has(instance.name) && instance.name != null && string(instance.name) != "") ? string(instance.name) : inst_id
+                                          )
+                                        )).as(resolved_name,
+                                          ((size(matched_ech) > 0) ? "deployment" : (
+                                            (size(matched_sls) > 0 && has(matched_sls[0].project_type)) ? string(matched_sls[0].project_type) : (
+                                              (has(instance.type) && instance.type != null && string(instance.type) != "") ? string(instance.type) : "deployment"
+                                            )
+                                          )).as(resolved_type,
+                                            ((size(matched_ech) > 0) ? matched_ech[0].tags : []).as(resolved_tags,
+                                              ((size(matched_ech) > 0 && matched_ech[0].region != "") ? matched_ech[0].region : (
+                                                (size(matched_sls) > 0 && has(matched_sls[0].region_id) && matched_sls[0].region_id != null) ? string(matched_sls[0].region_id) : ""
+                                              )).as(resolved_region,
+                                                (has(instance.product_line_items) && instance.product_line_items != null) ?
+                                                  instance.product_line_items.filter(li, has(li.sku) && li.sku != null && string(li.sku) != "").map(li,
+                                                    {
+                                                      "@timestamp": req.from.format(time_layout.RFC3339),
+                                                      "cloud": resolved_region != "" ? { "region": resolved_region } : {},
+                                                      "ess": {
+                                                        "billing": {
+                                                          "organization_id": state.organization_id,
+                                                          "deployment_id": inst_id,
+                                                          "deployment_name": resolved_name,
+                                                          "deployment_type": resolved_type,
+                                                          "deployment_tags": resolved_tags,
+                                                          "sku": string(li.sku),
+                                                          "type": (has(li.type) && li.type != null) ? string(li.type) : "",
+                                                          "kind": (has(li.kind) && li.kind != null) ? string(li.kind) : "",
+                                                          "total_ecu": (has(li.total_ecu) && li.total_ecu != null) ? double(li.total_ecu) : 0.0,
+                                                          "quantity": {
+                                                            "value": (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null) ? double(li.quantity.value) : 0.0,
+                                                          },
+                                                          "from": req.from.format(time_layout.RFC3339),
+                                                          "to": req.to.format(time_layout.RFC3339),
+                                                        },
+                                                      },
+                                                      "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                      "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                    }
+                                                  )
+                                                : []
+                                              )
+                                            )
+                                          )
+                                        )
+                                      )
+                                    )
+                                  )
+                                ).flatten()
+                              : []).as(raw_evts,
+                                raw_evts.filter(e, double(e.ess.billing.total_ecu) > 0.0).as(pos_evts,
+                                  ((state.collect_ess_credits && req.to + duration("26h") > now && size(pos_evts) > 0) ?
+                                    get_request(
+                                      state.cloud_api_base + "/api/v1/billing/organization/" + state.organization_id + "/line_items"
+                                    ).with(
+                                      { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
+                                    ).do_request().as(cred_resp,
+                                      (cred_resp.StatusCode == 200) ?
+                                        bytes(cred_resp.Body).decode_json().as(cred_items,
+                                          cred_items.filter(ci, has(ci.active) && ci.active == true).as(active_creds,
+                                            size(active_creds) > 0 ?
+                                              pos_evts.map(pe,
+                                                (pe.ess.billing.deployment_id == pos_evts[0].ess.billing.deployment_id && pe.ess.billing.sku == pos_evts[0].ess.billing.sku) ?
+                                                  pe.with({
+                                                    "credit_active": true,
+                                                    "credit_ecu_balance": int(active_creds.map(ci, double(ci.ecu_balance)).sum()),
+                                                    "credit_ecu_quantity": int(active_creds.map(ci, double(ci.ecu_quantity)).sum()),
+                                                    "credit_start": active_creds[0].start,
+                                                    "credit_end": active_creds[size(active_creds) - 1].end,
+                                                  })
+                                                : pe
+                                              )
+                                            : pos_evts
+                                          )
+                                        )
+                                      : pos_evts
+                                    )
+                                  : pos_evts).as(final_evts,
+                                    {
+                                      "events": size(final_evts) > 0 ? final_evts : [ { "fake": true } ],
+                                      "cursor": { "last_to": req.to.format(time_layout.RFC3339), "conf_sig": conf_sig },
+                                      "want_more": req.to + duration("26h") <= now,
+                                    }
+                                  )
+                                )
+                              )
+                            )
+                          :
+                            {
+                              "events": { "error": { "code": string(resp.StatusCode), "id": string(resp.Status), "message": "GET " + resp.Request.URL + ": " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)) } },
+                              "cursor": { "last_to": req.from.format(time_layout.RFC3339) },
+                              "want_more": false,
+                            }
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    ))
+  )
+
+processors:
+- drop_event.when.equals.fake: true

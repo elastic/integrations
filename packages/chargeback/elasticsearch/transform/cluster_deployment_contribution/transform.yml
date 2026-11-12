@@ -1,20 +1,7 @@
-description: Aggregates daily total ECU usage per deployment from billing metrics, using ingested timestamps with a 1-hour sync delay and running every 60 minutes.
+description: Aggregates daily total indexing, query, and storage usage per deployment from self-collected index metrics.
 source:
   index:
-    # Wildcard matches default monitoring-indices and custom pivot destinations named monitoring-indices* (Elasticsearch integration).
-    - "monitoring-indices*"
-    - "*:monitoring-indices*" # Same pattern on all remote clusters (CCS).
-    # Canonical usage source: Elasticsearch integration index_pivot output and
-    # Serverless staging (monitoring-indices*). Cloud Console Logs and metrics
-    # (.monitoring-es-*) feed Chargeback through index_pivot into this pattern.
-    # Do not also source .monitoring-es-* here — that double-counts when the pivot
-    # is running (raw Metricbeat rows plus their pivoted copies).
-  # These read whichever of <field> / <field>.keyword the mapping actually makes
-  # aggregatable. Where the .monitoring-es-mb index template is not governing the
-  # .monitoring-es-8-mb data stream, dynamic mapping produces `text` plus a `.keyword`
-  # subfield, and a terms aggregation on the text field fails with "Fielddata is
-  # disabled ... Will automatically retry [1/-1]" - retrying forever without ever
-  # producing a row. Both branches below use doc values, so there is no _source penalty.
+    - metrics-chargeback.usage-*
   runtime_mappings:
     cb_cluster_name:
       type: keyword
@@ -30,12 +17,12 @@ source:
           }
 dest:
   index: cluster_deployment_contribution_lookup
-  pipeline: logs-chargeback.lookup-0.5.0-usage
-frequency: 60m
+  pipeline: logs-chargeback.lookup-0.6.0-usage
+frequency: 5m
 sync:
   time:
-    field: "@timestamp"
-    delay: 1h
+    field: event.ingested
+    delay: 60s
 pivot:
   group_by:
     "@timestamp":
@@ -59,12 +46,9 @@ pivot:
       sum:
         field: elasticsearch.index.primaries.store.total_data_set_size_in_bytes
 settings:
-  # This is required to prevent the transform from clobbering the Fleet-managed mappings.
   deduce_mappings: false
   unattended: true
 _meta:
   managed: true
   run_as_kibana_system: false
-  # Bump this version to delete, reinstall, and restart the transform during package.
-  # Version bump is needed if there is any code change in transform.
-  fleet_transform_version: 0.5.0
+  fleet_transform_version: 0.6.0

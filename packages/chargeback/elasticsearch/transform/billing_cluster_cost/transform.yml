@@ -1,7 +1,8 @@
-description: Aggregates daily total chargeable units (ECU/ERU) per deployment from billing metrics, using ingested timestamps with a 1-hour sync delay and running every 60 minutes.
+description: Aggregates daily total chargeable units (ECU/ERU) per deployment from self-collected billing metrics and exposes symlink aliases for stock ESS Billing dashboards.
 source:
   index:
-    - metrics-ess_billing.billing-*
+    - metrics-chargeback.billing-*
+    - metrics-ess_billing.billing-onprem*
   query:
     range:
       ess.billing.total_ecu:
@@ -30,14 +31,17 @@ source:
           emit('');
 dest:
   index: billing_cluster_cost_lookup
-  pipeline: logs-chargeback.lookup-0.5.0-billing
-frequency: 60m
+  aliases:
+    - alias: metrics-ess_billing.billing-chargeback
+      move_on_creation: true
+    - alias: metrics-ess_billing.credits-chargeback
+      move_on_creation: true
+  pipeline: logs-chargeback.lookup-0.6.0-billing
+frequency: 5m
 sync:
   time:
-    # Align with billing_realized_pool: @timestamp is always mapped on billing sources.
-    # event.ingested is often unset/unmapped on On-Prem Billing indices.
-    field: "@timestamp"
-    delay: 1h
+    field: event.ingested
+    delay: 60s
 pivot:
   group_by:
     "@timestamp":
@@ -60,6 +64,47 @@ pivot:
     total_chargeable_units:
       sum:
         field: ess.billing.total_ecu
+    quantity_value:
+      sum:
+        field: ess.billing.quantity.value
+    organization_id:
+      terms:
+        field: ess.billing.organization_id
+        size: 1
+    deployment_type:
+      terms:
+        field: ess.billing.deployment_type
+        size: 1
+    billing_type:
+      terms:
+        field: ess.billing.type
+        size: 1
+    billing_kind:
+      terms:
+        field: ess.billing.kind
+        size: 1
+    cloud_region:
+      terms:
+        field: cloud.region
+        size: 1
+    credit_active:
+      terms:
+        field: credit_active
+        size: 1
+    credit_ecu_balance:
+      max:
+        field: credit_ecu_balance
+    credit_ecu_quantity:
+      max:
+        field: credit_ecu_quantity
+    credit_start:
+      terms:
+        field: credit_start
+        size: 1
+    credit_end:
+      terms:
+        field: credit_end
+        size: 1
 settings:
   # This is required to prevent the transform from clobbering the Fleet-managed mappings.
   deduce_mappings: false
@@ -67,6 +112,4 @@ settings:
 _meta:
   managed: true
   run_as_kibana_system: false
-  # Bump this version to delete, reinstall, and restart the transform during package.
-  # Version bump is needed if there is any code change in transform.
-  fleet_transform_version: 0.5.0
+  fleet_transform_version: 0.6.0

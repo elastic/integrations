@@ -1,0 +1,147 @@
+---
+description: "Ingest pipeline for Chargeback self-collected Elastic Cloud billing data."
+processors:
+  - drop:
+      if: "ctx.ess?.billing == null && ctx.error?.message == null"
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.ess?.billing == null
+      description: Terminate early on collection error documents.
+  - set:
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+      if: ctx.event?.ingested == null
+      tag: set_event_ingested
+  - date:
+      field: ess.billing.from
+      target_field: "@timestamp"
+      formats:
+        - ISO8601
+      if: ctx.ess?.billing?.from != null
+      ignore_failure: true
+      tag: restore_billing_window_timestamp
+  - fingerprint:
+      fields:
+        - ess.billing.deployment_id
+        - ess.billing.from
+        - ess.billing.to
+        - ess.billing.sku
+      target_field: _id
+      ignore_missing: true
+      tag: fingerprint_billing_event
+  - set:
+      field: cloud.account.id
+      copy_from: ess.billing.organization_id
+      ignore_empty_value: true
+      tag: cloud_account_id
+  - set:
+      field: cloud.instance.id
+      copy_from: ess.billing.deployment_id
+      ignore_empty_value: true
+      tag: cloud_instance_id
+  - set:
+      field: cloud.instance.name
+      copy_from: ess.billing.deployment_id
+      ignore_empty_value: true
+  - set:
+      field: cloud.instance.name
+      copy_from: ess.billing.deployment_name
+      ignore_empty_value: true
+      tag: cloud_instance_name
+  - grok:
+      field: "ess.billing.sku"
+      patterns:
+        - "(?:Cloud-[A-Za-z]+_)?%{CLOUD_PROVIDER:cloud.provider}\\.%{NOTSPACE:cloud.machine.type}_%{NOTSPACE:cloud.region}_%{NUMBER:ess.billing.ram_per_zone:long}_%{NUMBER:ess.billing.zone_count:long}"
+      pattern_definitions:
+        CLOUD_PROVIDER: "aws|gcp|azure|global"
+      if: "ctx.ess?.billing?.sku != null && ctx.ess?.billing?.deployment_type == 'deployment'"
+      ignore_failure: true
+      tag: grok_ech_sku
+  - dissect:
+      field: "ess.billing.sku"
+      pattern: "%{cloud.provider}.%{}"
+      if: "ctx.cloud?.provider == null && ctx.ess?.billing?.sku != null && ctx.ess?.billing?.deployment_type == 'deployment'"
+      ignore_failure: true
+      tag: dissect_ech_provider
+  - grok:
+      field: "ess.billing.sku"
+      patterns:
+        - "%{DATA}\\.(?<ess.billing.cloud.service.type>[^_]+)(?:_(?<_sls_sku_region>(?:aws|gcp|azure)-[a-z0-9-]+))?"
+      if: "ctx.ess?.billing?.sku != null && ctx.ess?.billing?.deployment_type != 'deployment'"
+      ignore_failure: true
+      tag: grok_serverless_sku
+  - set:
+      field: "cloud.region"
+      copy_from: "_sls_sku_region"
+      if: "(ctx.cloud?.region == null || ctx.cloud?.region == '') && ctx._sls_sku_region != null"
+      ignore_empty_value: true
+  - remove:
+      field: "_sls_sku_region"
+      ignore_missing: true
+  - set:
+      field: "cloud.provider"
+      if: "ctx.ess?.billing?.deployment_type != 'deployment' && ctx.cloud?.provider == null"
+      value: "serverless"
+  - script:
+      lang: painless
+      ignore_failure: true
+      tag: normalize_billing_types_and_geo
+      source: |
+        if (ctx.ess != null && ctx.ess.billing != null) {
+          def s = ctx.ess.billing.sku != null ? ctx.ess.billing.sku : '';
+          if ((ctx.ess.billing.kind == null || ctx.ess.billing.kind == '') && s.contains('.es.')) {
+            ctx.ess.billing.kind = 'elasticsearch';
+          }
+          def t = ctx.ess.billing.type != null ? ctx.ess.billing.type.toString().toLowerCase() : '';
+          if (t == '' || t == 'vcu' || t == 'search ai lake' || t == 'ingest' || t == 'synthetics' || t == 'data transfer') {
+            if (s.contains('data-out') || s.contains('data-transfer-out') || s.contains('egress')) {
+              ctx.ess.billing.type = 'data_out';
+            } else if (s.contains('data-in') || s.contains('data-transfer-in') || s.contains('ingress')) {
+              ctx.ess.billing.type = 'data_in';
+            } else if (s.contains('snapshot') || s.contains('retained') || s.contains('storage')) {
+              ctx.ess.billing.type = 'storage';
+            } else if (s.contains('support')) {
+              ctx.ess.billing.type = 'support';
+            } else if (s.contains('.es.') || s.contains('.kibana.') || s.contains('.apm.') || s.contains('.integrationsserver.') || s.contains('.enterprisesearch.') || s.contains('vcu') || s.contains('complete')) {
+              ctx.ess.billing.type = 'capacity';
+            } else {
+              ctx.ess.billing.type = 'usage';
+            }
+          }
+        }
+        Map regionGeo = [
+          'gcp-us-central1': ['location': ['lon': -93.2650, 'lat': 44.9778], 'name': 'gcp-us-central1'],
+          'gcp-us-east4': ['location': ['lon': -80.1918, 'lat': 25.7617], 'name': 'gcp-us-east4'],
+          'gcp-us-west1': ['location': ['lon': -122.4194, 'lat': 37.7749], 'name': 'gcp-us-west1'],
+          'gcp-us-east1': ['location': ['lon': -77.0369, 'lat': 38.9072], 'name': 'gcp-us-east1'],
+          'gcp-europe-west1': ['location': ['lon': -6.2603, 'lat': 53.3498], 'name': 'gcp-europe-west1'],
+          'gcp-europe-west3': ['location': ['lon': 11.5820, 'lat': 48.1351], 'name': 'gcp-europe-west3'],
+          'aws-us-east-1': ['location': ['lon': -77.0369, 'lat': 38.9072], 'name': 'aws-us-east-1'],
+          'us-east-1': ['location': ['lon': -77.0369, 'lat': 38.9072], 'name': 'us-east-1'],
+          'aws-eu-west-1': ['location': ['lon': -6.2603, 'lat': 53.3498], 'name': 'aws-eu-west-1'],
+          'eu-west-1': ['location': ['lon': -6.2603, 'lat': 53.3498], 'name': 'eu-west-1'],
+          'aws-us-west-2': ['location': ['lon': -122.6765, 'lat': 45.5235], 'name': 'aws-us-west-2'],
+          'us-west-2': ['location': ['lon': -122.6765, 'lat': 45.5235], 'name': 'us-west-2'],
+          'aws-af-south-1': ['location': ['lon': 18.4241, 'lat': -33.9249], 'name': 'aws-af-south-1'],
+          'azure-eastus': ['location': ['lon': -77.0369, 'lat': 38.9072], 'name': 'azure-eastus'],
+          'azure-eastus2': ['location': ['lon': -80.1918, 'lat': 25.7617], 'name': 'azure-eastus2'],
+          'azure-westeurope': ['location': ['lon': 4.9041, 'lat': 52.3676], 'name': 'azure-westeurope'],
+          'azure-southafricanorth': ['location': ['lon': 28.0473, 'lat': -26.2041], 'name': 'azure-southafricanorth']
+        ];
+        if (ctx.cloud == null) { ctx.cloud = [:]; }
+        String reg = ctx.cloud.region;
+        if (reg != null && regionGeo.containsKey(reg)) {
+          ctx.cloud.geo = regionGeo[reg];
+        } else {
+          ctx.cloud.geo = ['name': reg != null ? reg : 'unknown', 'location': ['lon': 135.0, 'lat': 90.0]];
+        }
+on_failure:
+  - set:
+      field: event.kind
+      value: "pipeline_error"
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
