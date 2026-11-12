@@ -6,6 +6,15 @@ processors:
       tag: set_ecs_version_dbf680ba
       value: 8.17.0
 
+  # Minimal-state sync reports a deleted entity as a document holding only
+  # its ID. With event.action removed below, it would be indexed as a marker,
+  # so drop it.
+  - drop:
+      tag: drop_id_only_deletion_d2e7ca9d
+      if: >-
+        ctx.activedirectory == null && ctx.entityanalytics_ad == null &&
+        ctx.event?.action != "started" && ctx.event?.action != "completed"
+
   - remove:
       tag: remove_event_action_e899ad7c
       field: event.action

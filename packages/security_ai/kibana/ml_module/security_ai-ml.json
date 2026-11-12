@@ -1,0 +1,488 @@
+{
+    "attributes": {
+        "id": "security_ai-ml",
+        "title": "Security for AI",
+        "description": "Detects anomalous AI agent tool use (OWASP ASI02) in AWS Bedrock model invocation logs.",
+        "type": "security_ai",
+        "logo": {
+            "icon": "machineLearningApp"
+        },
+        "query": {
+            "bool": {
+                "filter": [
+                    {
+                        "term": {
+                            "data_stream.dataset": "aws_bedrock.invocation"
+                        }
+                    }
+                ],
+                "must_not": {
+                    "terms": {
+                        "_tier": [
+                            "data_frozen",
+                            "data_cold"
+                        ]
+                    }
+                }
+            }
+        },
+        "jobs": [
+            {
+                "id": "security_ai_bedrock_asi02_large_tool_batch",
+                "config": {
+                    "description": "OWASP ASI02 - Unusually large Bedrock output tool-request batch per caller. Requested operations, not confirmed executions.",
+                    "groups": [
+                        "security",
+                        "security_ai",
+                        "aws_bedrock",
+                        "asi02"
+                    ],
+                    "analysis_config": {
+                        "bucket_span": "15m",
+                        "detectors": [
+                            {
+                                "function": "max",
+                                "partition_field_name": "user.id",
+                                "detector_description": "Unusually large Bedrock output tool-request batch per caller",
+                                "field_name": "tool_requests_per_response"
+                            }
+                        ],
+                        "influencers": [
+                            "user.id",
+                            "cloud.account.id"
+                        ]
+                    },
+                    "analysis_limits": {
+                        "model_memory_limit": "64mb"
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "model_plot_config": {
+                        "enabled": false
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-security_ai"
+                    }
+                }
+            },
+            {
+                "id": "security_ai_bedrock_asi02_rare_tool",
+                "config": {
+                    "description": "OWASP ASI02 - Unusual individual Bedrock output tool name per caller. Requested operations, not confirmed executions.",
+                    "groups": [
+                        "security",
+                        "security_ai",
+                        "aws_bedrock",
+                        "asi02"
+                    ],
+                    "analysis_config": {
+                        "bucket_span": "1h",
+                        "detectors": [
+                            {
+                                "function": "rare",
+                                "partition_field_name": "user.id",
+                                "detector_description": "Unusual individual Bedrock output tool name per caller",
+                                "by_field_name": "tool_name"
+                            }
+                        ],
+                        "influencers": [
+                            "user.id",
+                            "cloud.account.id",
+                            "tool_name"
+                        ],
+                        "summary_count_field_name": "doc_count"
+                    },
+                    "analysis_limits": {
+                        "model_memory_limit": "64mb"
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "model_plot_config": {
+                        "enabled": false
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-security_ai"
+                    }
+                }
+            },
+            {
+                "id": "security_ai_bedrock_asi02_high_tool_volume",
+                "config": {
+                    "description": "OWASP ASI02 - Unusually many tool-requesting Bedrock responses per caller in 15 minutes. Requested operations, not confirmed executions.",
+                    "groups": [
+                        "security",
+                        "security_ai",
+                        "aws_bedrock",
+                        "asi02"
+                    ],
+                    "analysis_config": {
+                        "bucket_span": "15m",
+                        "detectors": [
+                            {
+                                "function": "high_non_zero_count",
+                                "partition_field_name": "user.id",
+                                "detector_description": "High number of tool-requesting responses per 15m per caller"
+                            }
+                        ],
+                        "influencers": [
+                            "user.id",
+                            "cloud.account.id"
+                        ]
+                    },
+                    "analysis_limits": {
+                        "model_memory_limit": "64mb"
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "model_plot_config": {
+                        "enabled": false
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-security_ai"
+                    }
+                }
+            }
+        ],
+        "datafeeds": [
+            {
+                "id": "datafeed-security_ai_bedrock_asi02_large_tool_batch",
+                "job_id": "security_ai_bedrock_asi02_large_tool_batch",
+                "config": {
+                    "job_id": "security_ai_bedrock_asi02_large_tool_batch",
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "frequency": "5m",
+                    "query_delay": "5m",
+                    "query": {
+                        "bool": {
+                            "filter": [
+                                {
+                                    "term": {
+                                        "data_stream.dataset": "aws_bedrock.invocation"
+                                    }
+                                },
+                                {
+                                    "terms": {
+                                        "event.action": [
+                                            "Converse",
+                                            "ConverseStream"
+                                        ]
+                                    }
+                                },
+                                {
+                                    "term": {
+                                        "event.outcome": "success"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "@timestamp"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "cloud.account.id"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "aws_bedrock.invocation.request_id"
+                                    }
+                                },
+                                {
+                                    "term": {
+                                        "gen_ai.output.messages.role": "assistant"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "gen_ai.response.finish_reasons"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "user.id"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "tool_requests_per_response"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "runtime_mappings": {
+                        "tool_requests_per_response": {
+                            "type": "long",
+                            "script": {
+                                "lang": "painless",
+                                "source": "if (!doc.containsKey('gen_ai.output.messages.role') ||\n    doc['gen_ai.output.messages.role'].size() != 1 ||\n    !doc['gen_ai.output.messages.role'].value.equals('assistant')) { return; }\nif (!doc.containsKey('gen_ai.response.finish_reasons') ||\n    doc['gen_ai.response.finish_reasons'].size() != 1) { return; }\nString ids = 'gen_ai.output.messages.content.toolUse.toolUseId';\nlong n = 0;\nif (doc.containsKey(ids)) { n = doc[ids].size(); }\nif (n == 0 && doc['gen_ai.response.finish_reasons'].value.equals('tool_use')) { return; }\nemit(n);"
+                            }
+                        }
+                    },
+                    "delayed_data_check_config": {
+                        "enabled": true
+                    },
+                    "scroll_size": 1000
+                }
+            },
+            {
+                "id": "datafeed-security_ai_bedrock_asi02_rare_tool",
+                "job_id": "security_ai_bedrock_asi02_rare_tool",
+                "config": {
+                    "job_id": "security_ai_bedrock_asi02_rare_tool",
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "frequency": "1h",
+                    "query_delay": "5m",
+                    "query": {
+                        "bool": {
+                            "filter": [
+                                {
+                                    "term": {
+                                        "data_stream.dataset": "aws_bedrock.invocation"
+                                    }
+                                },
+                                {
+                                    "terms": {
+                                        "event.action": [
+                                            "Converse",
+                                            "ConverseStream"
+                                        ]
+                                    }
+                                },
+                                {
+                                    "term": {
+                                        "event.outcome": "success"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "@timestamp"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "cloud.account.id"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "aws_bedrock.invocation.request_id"
+                                    }
+                                },
+                                {
+                                    "term": {
+                                        "gen_ai.output.messages.role": "assistant"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "gen_ai.response.finish_reasons"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "user.id"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "tool_requests_per_response"
+                                    }
+                                },
+                                {
+                                    "range": {
+                                        "tool_requests_per_response": {
+                                            "gt": 0
+                                        }
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "tool_name"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "runtime_mappings": {
+                        "tool_requests_per_response": {
+                            "type": "long",
+                            "script": {
+                                "lang": "painless",
+                                "source": "if (!doc.containsKey('gen_ai.output.messages.role') ||\n    doc['gen_ai.output.messages.role'].size() != 1 ||\n    !doc['gen_ai.output.messages.role'].value.equals('assistant')) { return; }\nif (!doc.containsKey('gen_ai.response.finish_reasons') ||\n    doc['gen_ai.response.finish_reasons'].size() != 1) { return; }\nString ids = 'gen_ai.output.messages.content.toolUse.toolUseId';\nlong n = 0;\nif (doc.containsKey(ids)) { n = doc[ids].size(); }\nif (n == 0 && doc['gen_ai.response.finish_reasons'].value.equals('tool_use')) { return; }\nemit(n);"
+                            }
+                        },
+                        "tool_name": {
+                            "type": "keyword",
+                            "script": {
+                                "lang": "painless",
+                                "source": "String ids = 'gen_ai.output.messages.content.toolUse.toolUseId';\nString names = 'gen_ai.output.messages.content.toolUse.name';\nif (!doc.containsKey(ids) || doc[ids].size() == 0 || !doc.containsKey(names)) { return; }\nfor (def name : doc[names]) {\n  String value = name.toString();\n  if (value.length() > 0) { emit(value); }\n}"
+                            }
+                        }
+                    },
+                    "delayed_data_check_config": {
+                        "enabled": true
+                    },
+                    "chunking_config": {
+                        "mode": "off"
+                    },
+                    "aggregations": {
+                        "buckets": {
+                            "composite": {
+                                "size": 1000,
+                                "sources": [
+                                    {
+                                        "time_bucket": {
+                                            "date_histogram": {
+                                                "field": "@timestamp",
+                                                "fixed_interval": "1h",
+                                                "time_zone": "UTC",
+                                                "order": "asc"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "user.id": {
+                                            "terms": {
+                                                "field": "user.id"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "cloud.account.id": {
+                                            "terms": {
+                                                "field": "cloud.account.id"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "tool_name": {
+                                            "terms": {
+                                                "field": "tool_name"
+                                            }
+                                        }
+                                    }
+                                ]
+                            },
+                            "aggregations": {
+                                "@timestamp": {
+                                    "max": {
+                                        "field": "@timestamp"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "id": "datafeed-security_ai_bedrock_asi02_high_tool_volume",
+                "job_id": "security_ai_bedrock_asi02_high_tool_volume",
+                "config": {
+                    "job_id": "security_ai_bedrock_asi02_high_tool_volume",
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "frequency": "5m",
+                    "query_delay": "5m",
+                    "query": {
+                        "bool": {
+                            "filter": [
+                                {
+                                    "term": {
+                                        "data_stream.dataset": "aws_bedrock.invocation"
+                                    }
+                                },
+                                {
+                                    "terms": {
+                                        "event.action": [
+                                            "Converse",
+                                            "ConverseStream"
+                                        ]
+                                    }
+                                },
+                                {
+                                    "term": {
+                                        "event.outcome": "success"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "@timestamp"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "cloud.account.id"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "aws_bedrock.invocation.request_id"
+                                    }
+                                },
+                                {
+                                    "term": {
+                                        "gen_ai.output.messages.role": "assistant"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "gen_ai.response.finish_reasons"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "user.id"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "tool_requests_per_response"
+                                    }
+                                },
+                                {
+                                    "range": {
+                                        "tool_requests_per_response": {
+                                            "gt": 0
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "runtime_mappings": {
+                        "tool_requests_per_response": {
+                            "type": "long",
+                            "script": {
+                                "lang": "painless",
+                                "source": "if (!doc.containsKey('gen_ai.output.messages.role') ||\n    doc['gen_ai.output.messages.role'].size() != 1 ||\n    !doc['gen_ai.output.messages.role'].value.equals('assistant')) { return; }\nif (!doc.containsKey('gen_ai.response.finish_reasons') ||\n    doc['gen_ai.response.finish_reasons'].size() != 1) { return; }\nString ids = 'gen_ai.output.messages.content.toolUse.toolUseId';\nlong n = 0;\nif (doc.containsKey(ids)) { n = doc[ids].size(); }\nif (n == 0 && doc['gen_ai.response.finish_reasons'].value.equals('tool_use')) { return; }\nemit(n);"
+                            }
+                        }
+                    },
+                    "delayed_data_check_config": {
+                        "enabled": true
+                    },
+                    "scroll_size": 1000
+                }
+            }
+        ]
+    },
+    "id": "security_ai-ml",
+    "migrationVersion": {
+        "search": "7.16.0"
+    },
+    "references": [],
+    "type": "ml-module"
+}
