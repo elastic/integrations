@@ -131,6 +131,7 @@ The `metrics-chargeback_serverless.billing` data stream collects daily closed-da
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | event.ingested | Ingest pipeline execution timestamp. | date |
+| input.type | Type of Filebeat input. | keyword |
 | is_allocatable | True if charge is allocatable to project data streams. | boolean |
 | project_id | Serverless project identifier. | keyword |
 | project_name | Serverless project name. | keyword |
@@ -177,6 +178,7 @@ The `metrics-chargeback_serverless.usage` data stream collects daily Serverless 
 | event.ingested | Ingest pipeline execution timestamp. | date |
 | index_count | Total number of indices discovered in the project. | long |
 | inference_count | Number of inferences performed. | long |
+| input.type | Type of Filebeat input. | keyword |
 | last_status | Project harvest health status (ok, empty_or_unauthorized, inactive). | keyword |
 | locations_count | Number of distinct observer locations executing the monitor. | long |
 | model_id | Trained ML model identifier. | keyword |

@@ -1,0 +1,36 @@
+input: cel
+service: billing_mock
+vars:
+  organization_id: "1111"
+  cloud_api_key: "test-cloud-api-key"
+  currency_unit: "USD"
+  currency_symbol: "$"
+  unit_rate: "1.0"
+  billing_api_base: "http://{{{Hostname}}}:{{{Port}}}"
+  cloud_api_base: "http://{{{Hostname}}}:{{{Port}}}"
+  enable_request_tracer: true
+data_stream:
+  vars:
+    lookbehind: 2
+    interval: "1h"
+assert:
+  # 8 Serverless instance line items across 3 discovered projects (excluding 1 Hosted deployment)
+  # plus 1 residual deleted/unassociated SKU from /costs/items = 9 documents.
+  hit_count: 9
+  fields_present:
+    - composite_key
+    - project_id
+    - project_name
+    - project_type
+    - sku
+    - cost_category
+    - cost_type
+    - allocation_driver
+    - is_allocatable
+    - total_ecu
+    - total_chargeable_units
+    - quantity_value
+    - conf_chargeable_unit_rate
+    - conf_chargeable_unit_rate_unit
+    - conf_currency_symbol
+    - event.ingested

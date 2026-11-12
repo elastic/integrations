@@ -1,0 +1,63 @@
+input: cel
+service: usage_mock
+vars:
+  organization_id: "1111"
+  cloud_api_key: "test-cloud-api-key"
+  currency_unit: "USD"
+  currency_symbol: "$"
+  unit_rate: "1.0"
+  billing_api_base: "http://{{{Hostname}}}:{{{Port}}}"
+  cloud_api_base: "http://{{{Hostname}}}:{{{Port}}}"
+  enable_request_tracer: true
+data_stream:
+  vars:
+    hub_es_api_key: "test-hub-es-api-key"
+    project_api_keys: "proj-obs-1:test-obs-es-key"
+    interval: "1h"
+assert:
+  # proj-es-1: 3 datastream + 2 ai_model + 1 project_status = 6
+  # proj-obs-1: 1 datastream + 2 synthetics_monitor (1 harvested http + 1 billing-derived browser) + 1 project_status = 4
+  # proj-sec-old (decommissioned): 1 datastream (billing-derived-retention) + 1 project_status = 2
+  hit_count: 12
+  fields_present:
+    - doc_type
+    - composite_key
+    - project_id
+    - project_name
+    - project_type
+    - optimized_for
+    - es_url
+    - datastream
+    - backing_index
+    - ds_type
+    - ds_dataset
+    - ds_namespace
+    - datastream_sum_indexing_time
+    - datastream_sum_query_time
+    - datastream_sum_data_set_store_size
+    - model_id
+    - task_type
+    - inference_count
+    - average_inference_time_ms
+    - total_inference_time_ms
+    - monitor_id
+    - monitor_name
+    - monitor_type
+    - monitor_namespace
+    - check_count
+    - up_count
+    - down_count
+    - locations_count
+    - average_duration_ms
+    - last_status
+    - api_key_type
+    - synthetics_status
+    - index_count
+    - datastream_count
+    - ai_model_count
+    - synthetics_monitor_count
+    - updated_at
+    - conf_chargeable_unit_rate
+    - conf_chargeable_unit_rate_unit
+    - conf_currency_symbol
+    - event.ingested
