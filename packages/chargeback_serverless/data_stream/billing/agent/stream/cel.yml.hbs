@@ -48,34 +48,56 @@ program: |-
           (now - duration("2h")).format(
             time_layout.DateOnly
           ).parse_time(time_layout.DateOnly).as(latest_ready_to,
-            max(
-              initial_from,
-              latest_ready_to - duration("72h")
-            ).as(replay_start,
-              ((is_continuation && state.?next_from.orValue("") != "") ?
-                max(
-                  timestamp(state.next_from).format(
-                    time_layout.DateOnly
-                  ).parse_time(time_layout.DateOnly),
-                  timestamp("2023-01-01T00:00:00Z")
-                )
-              :
-                min(high_water, replay_start)
-              ).as(from,
-                {
-                  "from": from,
-                  "to": from + duration("24h"),
-                }
-              )
-            )
-          ).as(req, (req.to + duration("2h") > now) ?
-            {
-              "events": [],
-              "cursor": { "last_to": max(high_water, req.from).format(time_layout.RFC3339) },
-              "next_from": req.from.format(time_layout.RFC3339),
-              "want_more": false,
-            }
-          :
+            latest_ready_to.format(time_layout.RFC3339).as(latest_ready_to_str,
+              max(
+                initial_from,
+                latest_ready_to - duration("72h")
+              ).as(replay_start,
+                replay_start.format(time_layout.RFC3339).as(replay_start_str,
+                  state.?cursor.replay_completed_to.orValue("").as(replay_completed_to,
+                    state.?cursor.replay_target_to.orValue("").as(replay_target_to,
+                      state.?cursor.recent_day_keys.orValue([]).filter(pk,
+                        has(pk.day) && pk.day != null && string(pk.day) >= replay_start_str
+                      ).as(pruned_recent_keys,
+                        ((is_continuation && state.?next_from.orValue("") != "") ?
+                          max(
+                            timestamp(state.next_from).format(
+                              time_layout.DateOnly
+                            ).parse_time(time_layout.DateOnly),
+                            timestamp("2023-01-01T00:00:00Z")
+                          )
+                        :
+                          ((replay_target_to == latest_ready_to_str && replay_completed_to != latest_ready_to_str && state.?cursor.next_from.orValue("") != "") ?
+                            max(
+                              timestamp(state.cursor.next_from).format(
+                                time_layout.DateOnly
+                              ).parse_time(time_layout.DateOnly),
+                              min(high_water, replay_start)
+                            )
+                          :
+                            min(high_water, replay_start)
+                          )
+                        ).as(from,
+                          {
+                            "from": from,
+                            "to": from + duration("24h"),
+                          }
+                        ).as(req,
+                          pruned_recent_keys.filter(pk, string(pk.day) == req.from.format(time_layout.RFC3339)).as(prev_day_keys,
+                            ((!is_continuation && high_water >= latest_ready_to && replay_completed_to == latest_ready_to_str) || (req.to + duration("2h") > now)) ?
+                              {
+                                "events": [],
+                                "cursor": {
+                                  "last_to": max(high_water, req.from).format(time_layout.RFC3339),
+                                  "replay_target_to": latest_ready_to_str,
+                                  "replay_completed_to": replay_completed_to,
+                                  "next_from": state.?cursor.next_from.orValue(req.from.format(time_layout.RFC3339)),
+                                  "recent_day_keys": pruned_recent_keys,
+                                },
+                                "next_from": req.from.format(time_layout.RFC3339),
+                                "want_more": false,
+                              }
+                            :
             get_request(
               state.billing_api_base + "/api/v2/billing/organizations/" + state.organization_id + "/costs/instances?" + {
                 "from": [req.from.format(time_layout.RFC3339)],
@@ -339,7 +361,7 @@ program: |-
                                                             igrp.map(ie, ie.item_qty).sum().as(item_qty,
                                                               (item_ecu - day_sku_ecu).as(diff_ecu,
                                                                 (max(0.0, item_qty - day_sku_qty)).as(diff_qty,
-                                                                  (diff_ecu > 0.0001 || diff_qty > 0.0) ?
+                                                                  (diff_ecu > 0.0001 || diff_qty > 0.0 || (req.from < high_water && size(prev_day_keys) == 0)) ?
                                                                     [
                                                                       {
                                                                         "@timestamp": req.from.format(time_layout.RFC3339),
@@ -401,14 +423,56 @@ program: |-
                                           })
                                         )
                                       )
-                                    ).as(evts,
-                                      {
-                                        "events": size(evts) > 0 ? evts : [ { "fake": true } ],
-                                        "cursor": { "last_to": max(high_water, req.to).format(time_layout.RFC3339) },
-                                        "next_from": req.to.format(time_layout.RFC3339),
-                                        "cached_projects": discovery.cache_ok ? projects : null,
-                                        "want_more": req.to + duration("26h") <= now,
-                                      }
+                                    ).as(curr_evts,
+                                      (
+                                        curr_evts +
+                                        prev_day_keys.filter(pk,
+                                          !curr_evts.exists(e, string(e.project_id) == string(pk.project_id) && string(e.sku) == string(pk.sku))
+                                        ).map(pk,
+                                          {
+                                            "@timestamp": req.from.format(time_layout.RFC3339),
+                                            "period_start": req.from.format(time_layout.RFC3339),
+                                            "project_id": string(pk.project_id),
+                                            "project_name": string(pk.project_name),
+                                            "project_type": string(pk.project_type),
+                                            "sku": string(pk.sku),
+                                            "total_ecu": 0.0,
+                                            "quantity_value": 0.0,
+                                            "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                            "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                            "conf_currency_symbol": state.conf_currency_symbol,
+                                          }
+                                        )
+                                      ).as(evts,
+                                        (
+                                          pruned_recent_keys.filter(pk, string(pk.day) != req.from.format(time_layout.RFC3339)) +
+                                          ((req.from >= replay_start) ?
+                                            curr_evts.filter(e, e.total_ecu > 0.0 || e.quantity_value > 0.0).map(e,
+                                              {
+                                                "day": req.from.format(time_layout.RFC3339),
+                                                "project_id": string(e.project_id),
+                                                "project_name": string(e.project_name),
+                                                "project_type": string(e.project_type),
+                                                "sku": string(e.sku),
+                                              }
+                                            )
+                                          : [])
+                                        ).as(updated_recent_keys,
+                                          {
+                                            "events": size(evts) > 0 ? evts : [ { "fake": true } ],
+                                            "cursor": {
+                                              "last_to": max(high_water, req.to).format(time_layout.RFC3339),
+                                              "replay_target_to": latest_ready_to_str,
+                                              "replay_completed_to": (req.to + duration("26h") <= now) ? replay_completed_to : latest_ready_to_str,
+                                              "next_from": req.to.format(time_layout.RFC3339),
+                                              "recent_day_keys": updated_recent_keys,
+                                            },
+                                            "next_from": req.to.format(time_layout.RFC3339),
+                                            "cached_projects": discovery.cache_ok ? projects : null,
+                                            "want_more": req.to + duration("26h") <= now,
+                                          }
+                                        )
+                                      )
                                     )
                                   )
                                 )
@@ -419,7 +483,13 @@ program: |-
                       :
                         {
                           "events": { "error": { "code": string(items_resp.StatusCode), "id": string(items_resp.Status), "message": "GET " + items_resp.Request.URL + ": " + ( (size(items_resp.Body) != 0) ? string(items_resp.Body) : string(items_resp.Status) + " (" + string(items_resp.StatusCode) + ")" ) } },
-                          "cursor": { "last_to": max(high_water, req.from).format(time_layout.RFC3339) },
+                          "cursor": {
+                            "last_to": max(high_water, req.from).format(time_layout.RFC3339),
+                            "replay_target_to": latest_ready_to_str,
+                            "replay_completed_to": replay_completed_to,
+                            "next_from": req.from.format(time_layout.RFC3339),
+                            "recent_day_keys": pruned_recent_keys,
+                          },
                           "next_from": req.from.format(time_layout.RFC3339),
                           "want_more": false,
                         }
@@ -428,7 +498,13 @@ program: |-
                   :
                     {
                       "events": { "error": { "code": string(resp.StatusCode), "id": string(resp.Status), "message": "GET " + resp.Request.URL + ": " + ( (size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status) + " (" + string(resp.StatusCode) + ")" ) } },
-                      "cursor": { "last_to": max(high_water, req.from).format(time_layout.RFC3339) },
+                      "cursor": {
+                        "last_to": max(high_water, req.from).format(time_layout.RFC3339),
+                        "replay_target_to": latest_ready_to_str,
+                        "replay_completed_to": replay_completed_to,
+                        "next_from": req.from.format(time_layout.RFC3339),
+                        "recent_day_keys": pruned_recent_keys,
+                      },
                       "next_from": req.from.format(time_layout.RFC3339),
                       "want_more": false,
                     }
@@ -438,6 +514,9 @@ program: |-
             )
           )
         )
+      )
+    )
+  ))))))
 
 processors:
 - drop_event.when.equals.fake: true
