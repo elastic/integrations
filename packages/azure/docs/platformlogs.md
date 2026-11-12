@@ -148,6 +148,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.platformlogs.EventStampType | The stamp type for the event | keyword |
 | azure.platformlogs.EventTimeString | EventTimeString | keyword |
 | azure.platformlogs.ScaleUnit | ScaleUnit | keyword |
+| azure.platformlogs.TenantId | Tenant ID from the log envelope (capitalised variant), as sent by Azure. Also copied to `azure.tenant_id`. | keyword |
 | azure.platformlogs.category | Category | keyword |
 | azure.platformlogs.ccpNamespace | ccpNamespace | keyword |
 | azure.platformlogs.event_category | Event Category | keyword |
@@ -158,6 +159,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.platformlogs.result_signature | Result signature | keyword |
 | azure.platformlogs.result_type | Result type | keyword |
 | azure.platformlogs.status | Status | keyword |
+| azure.platformlogs.tenantId | Tenant ID from the log envelope, as sent by Azure. Also copied to `azure.tenant_id`. | keyword |
 | azure.resource.authorization_rule | Authorization rule | keyword |
 | azure.resource.group | Resource group | keyword |
 | azure.resource.id | Resource ID | keyword |

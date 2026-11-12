@@ -152,6 +152,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.resource.name | Name | keyword |
 | azure.resource.namespace | Resource type/namespace | keyword |
 | azure.resource.provider | Resource type/namespace | keyword |
+| azure.springcloudlogs.TenantId | Tenant ID from the log envelope (capitalised variant), as sent by Azure. Also copied to `azure.tenant_id`. | keyword |
 | azure.springcloudlogs.category | Category | keyword |
 | azure.springcloudlogs.event_category | Event Category | keyword |
 | azure.springcloudlogs.log_format | ccpNamespace | keyword |
@@ -167,6 +168,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.springcloudlogs.properties.thread | Thread | keyword |
 | azure.springcloudlogs.properties.type | Type | keyword |
 | azure.springcloudlogs.status | Status | keyword |
+| azure.springcloudlogs.tenantId | Tenant ID from the log envelope, as sent by Azure. Also copied to `azure.tenant_id`. | keyword |
 | azure.subscription_id | Azure subscription ID | keyword |
 | azure.tenant_id | tenant ID | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
