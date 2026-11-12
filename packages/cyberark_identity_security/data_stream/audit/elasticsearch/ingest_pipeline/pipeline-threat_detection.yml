@@ -1,16 +1,20 @@
 ---
-description: Pipeline for CyberArk Identity Threat Detection and Response (ITDR) alert events.
+description: Pipeline for CyberArk Identity Threat Detection and Response (ITDR) events.
 processors:
+  # Only ITDR0001 reports a new security alert. The other ITDR codes are user actions on
+  # alerts and settings (resolve, disable, enable, edit settings), so they stay events.
   - set:
       field: event.kind
       tag: set_event_kind_alert
       value: alert
+      if: ctx.event?.code == 'ITDR0001'
   - rename:
       field: json.component
       tag: rename_component
       target_field: rule.name
       ignore_missing: true
-      description: For ITDR events the component is the name of the detector that made the alert.
+      if: ctx.event?.kind == 'alert'
+      description: For ITDR alerts the component is the name of the detector that made the alert.
 
   # Severity. customData.Severity keeps the vendor label.
   - set:
