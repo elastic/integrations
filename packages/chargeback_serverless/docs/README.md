@@ -7,7 +7,7 @@ Use this integration when your central FinOps hub runs on **Elastic Cloud Server
 ## Overview
 
 - **Single unified Elastic Cloud API key (`cloud_api_key`)**: Authenticates to the Elastic Cloud Billing API (including decommissioned projects that still have billing line items in the window through `GET /api/v2/billing/organizations/{org_id}/costs/instances`), Control Plane project discovery (`/api/v1/serverless/projects`), and the Elasticsearch Data Plane (`GET /_cat/indices` to harvest index and data stream storage, indexing time, and query time) across all Serverless projects in your organization.
-- **Billing classification pipeline (`chargeback-serverless-billing`)**: Classifies Elastic Cloud Serverless Stock Keeping Units (SKUs) into `allocation_driver` (`indexing`, `query`, `storage`, `ai`, `synthetics`, or `none`) and `cost_category` (`data_tier`, `platform`, `transfer`, `snapshot`, `support`, or `other`).
+- **Billing classification pipelines (`metrics-chargeback_serverless.billing-<version>` and `<version>-chargeback_serverless_billing`)**: Classify Elastic Cloud Serverless Stock Keeping Units (SKUs) into `allocation_driver` (`indexing`, `query`, `storage`, `ai`, `synthetics`, or `none`) and `cost_category` (`data_tier`, `platform`, `transfer`, `snapshot`, `support`, or `other`).
 - **Five linked Kibana dashboards**: Reconcile organization-wide invoices, allocate workload and data stream costs, and track AI, Machine Learning (ML), Synthetics, and project harvest health using Elasticsearch Query Language (ES|QL) `LOOKUP JOIN` queries.
 - **Local currency normalization**: Converts Elastic Consumption Units (ECU) into your configured currency (`conf_chargeable_unit_rate` and `conf_chargeable_unit_rate_unit`).
 - **Four FinOps alerting rule templates**: Prebuilt ES|QL alerting rules aligned with Elastic Cloud `costs_alerting` patterns for rolling 30-day organization spend budget (with watermark percentage and projected 30-day overrun detection), per-project daily spend (with optional workload driver filter and driver breakdown), 7-day project daily spend spike detection, and data trust health checks.
@@ -18,9 +18,11 @@ Use this integration when your central FinOps hub runs on **Elastic Cloud Server
 Prepare the following in your Elastic Cloud account before configuring the integration:
 
 1. **Elastic Cloud Organization ID**: Locate your numeric organization ID in the [Elastic Cloud Console](https://cloud.elastic.co) URL or under **Organization → Settings**.
-2. **Unified Elastic Cloud API key**: Open the [Elastic Cloud Console API keys page](https://cloud.elastic.co/deployment-features/keys) (**Organization → API keys**), click **Create API key**, and configure both settings:
+2. **Elastic Cloud API key and project harvesting credentials**: Open the [Elastic Cloud Console API keys page](https://cloud.elastic.co/deployment-features/keys) (**Organization → API keys**), click **Create API key**, and configure:
    - **Organization role**: Select **`Billing Admin`** so the Elastic Cloud Billing API returns complete organization billing history, including deleted Serverless projects.
-   - **Enable access to Cloud resources**: Toggle **ON**, select **All projects** (or selected projects), and in the separate per-project-type **Roles / API Access** dropdowns configure **`Elasticsearch`**, **`Observability`**, and **`Security`** (`Admin`).
+   - **Project telemetry harvesting (choose least-privilege scoped keys or unified Cloud resource access)**:
+     - **Least-privilege scoped Elasticsearch API keys (recommended for strict data-plane isolation)**: Supply read-only Elasticsearch API keys in **Hub Project Elasticsearch API Key** (`hub_es_api_key`) and **Remote Project Elasticsearch API Keys** (`project_api_keys` in `<project_id>:<encoded_api_key>` format) scoped to cluster privilege `monitor` (`_cat/indices`, `_ml/trained_models/_stats`) and index privilege `read` / `view_index_metadata` on `synthetics-*`.
+     - **Unified Cloud API key**: Toggle **Enable access to Cloud resources** **ON**, select **All projects** (or selected projects), and configure access in the per-project-type **Roles / API Access** dropdowns for **`Elasticsearch`**, **`Observability`**, and **`Security`** (`Viewer` / `Analyst` where supported, or `Admin` if required by your organization's Cloud RBAC) to harvest all projects with a single key.
 
 ## Configure the integration
 
@@ -108,6 +110,10 @@ The Chargeback Serverless integration collects two metrics data streams:
 - `metrics-chargeback_serverless.billing`: Daily closed-day billing and SKU usage events from the Elastic Cloud Billing API, classified into cost categories and workload allocation drivers.
 - `metrics-chargeback_serverless.usage`: Daily Serverless project status, index usage (`_cat/indices`), trained AI model metrics (`_ml/trained_models/_stats`), and Synthetics monitor runs harvested from Serverless project endpoints.
 
+### `metrics-chargeback_serverless.billing` data stream
+
+The `metrics-chargeback_serverless.billing` data stream collects daily closed-day billing and SKU usage line items from the Elastic Cloud Billing API and classifies each SKU into a cost category and workload allocation driver.
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -133,6 +139,10 @@ The Chargeback Serverless integration collects two metrics data streams:
 | total_chargeable_units | Dual-written copy of total_ecu for ES|QL compatibility. | double |
 | total_ecu | Billed Elasticsearch Compute Units. | double |
 
+
+### `metrics-chargeback_serverless.usage` data stream
+
+The `metrics-chargeback_serverless.usage` data stream collects daily Serverless project harvest status, index and data stream usage (`_cat/indices`), trained AI model statistics (`_ml/trained_models/_stats`), and Synthetics monitor executions from Serverless project endpoints.
 
 **Exported fields**
 

@@ -129,6 +129,22 @@ processors:
             ctx.project_type = keys.size() > 0 ? keys[0] : 'elasticsearch';
           }
         }
+        if (ctx.latest_currency instanceof Map) {
+          def curr = ctx.latest_currency;
+          if (curr.top instanceof List && curr.top.size() > 0 && curr.top[0] instanceof Map && curr.top[0].metrics instanceof Map) {
+            curr = curr.top[0].metrics;
+          }
+          if (curr.conf_chargeable_unit_rate instanceof Number) {
+            ctx.conf_chargeable_unit_rate = ((Number)curr.conf_chargeable_unit_rate).doubleValue();
+          }
+          if (curr.conf_chargeable_unit_rate_unit != null) {
+            ctx.conf_chargeable_unit_rate_unit = curr.conf_chargeable_unit_rate_unit.toString();
+          }
+          if (curr.conf_currency_symbol != null) {
+            ctx.conf_currency_symbol = curr.conf_currency_symbol.toString();
+          }
+          ctx.remove('latest_currency');
+        }
         if (ctx.conf_chargeable_unit_rate_unit instanceof Map) {
           def buckets = ctx.conf_chargeable_unit_rate_unit.buckets;
           if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {

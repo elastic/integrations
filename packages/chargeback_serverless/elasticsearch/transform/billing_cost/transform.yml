@@ -7,7 +7,7 @@ dest:
   aliases:
     - alias: serverless_billing_cost_lookup
       move_on_creation: true
-  pipeline: '{{ ingestPipelineName "billing" }}'
+  pipeline: '{{ ingestPipelineName "chargeback_serverless_billing" }}'
 frequency: 5m
 sync:
   time:
@@ -39,24 +39,17 @@ pivot:
         field: project_type
         size: 1
     # Daily (project_id, sku) components are pre-summed into a single snapshot
-    # during CEL collection; max deduplicates replay snapshots on Serverless.
-    total_ecu:
-      max:
-        field: total_ecu
-    quantity_value:
-      max:
-        field: quantity_value
-    conf_chargeable_unit_rate:
-      max:
-        field: conf_chargeable_unit_rate
-    conf_chargeable_unit_rate_unit:
-      terms:
-        field: conf_chargeable_unit_rate_unit
-        size: 1
-    conf_currency_symbol:
-      terms:
-        field: conf_currency_symbol
-        size: 1
+    # during CEL collection; top_metrics selects the newest snapshot on replay.
+    latest_snapshot:
+      top_metrics:
+        metrics:
+          - field: total_ecu
+          - field: quantity_value
+          - field: conf_chargeable_unit_rate
+          - field: conf_chargeable_unit_rate_unit
+          - field: conf_currency_symbol
+        sort:
+          event.ingested: desc
 settings:
   deduce_mappings: false
   unattended: true

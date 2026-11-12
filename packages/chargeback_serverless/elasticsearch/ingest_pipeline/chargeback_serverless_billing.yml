@@ -46,6 +46,28 @@ processors:
             ctx.project_type = keys.size() > 0 ? keys[0] : 'elasticsearch';
           }
         }
+        if (ctx.latest_snapshot instanceof Map) {
+          def snap = ctx.latest_snapshot;
+          if (snap.top instanceof List && snap.top.size() > 0 && snap.top[0] instanceof Map && snap.top[0].metrics instanceof Map) {
+            snap = snap.top[0].metrics;
+          }
+          if (snap.total_ecu instanceof Number) {
+            ctx.total_ecu = ((Number)snap.total_ecu).doubleValue();
+          }
+          if (snap.quantity_value instanceof Number) {
+            ctx.quantity_value = ((Number)snap.quantity_value).doubleValue();
+          }
+          if (snap.conf_chargeable_unit_rate instanceof Number) {
+            ctx.conf_chargeable_unit_rate = ((Number)snap.conf_chargeable_unit_rate).doubleValue();
+          }
+          if (snap.conf_chargeable_unit_rate_unit != null) {
+            ctx.conf_chargeable_unit_rate_unit = snap.conf_chargeable_unit_rate_unit.toString();
+          }
+          if (snap.conf_currency_symbol != null) {
+            ctx.conf_currency_symbol = snap.conf_currency_symbol.toString();
+          }
+          ctx.remove('latest_snapshot');
+        }
         if (ctx.conf_chargeable_unit_rate_unit instanceof Map) {
           def buckets = ctx.conf_chargeable_unit_rate_unit.buckets;
           if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {

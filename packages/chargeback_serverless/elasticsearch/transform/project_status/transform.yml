@@ -10,7 +10,7 @@ dest:
   aliases:
     - alias: serverless_project_status_lookup
       move_on_creation: true
-  pipeline: '{{ ingestPipelineName "usage" }}'
+  pipeline: '{{ ingestPipelineName "chargeback_serverless_usage" }}'
 frequency: 5m
 sync:
   time:
@@ -79,17 +79,14 @@ pivot:
       terms:
         field: es_url
         size: 1
-    conf_chargeable_unit_rate:
-      max:
-        field: conf_chargeable_unit_rate
-    conf_chargeable_unit_rate_unit:
-      terms:
-        field: conf_chargeable_unit_rate_unit
-        size: 1
-    conf_currency_symbol:
-      terms:
-        field: conf_currency_symbol
-        size: 1
+    latest_currency:
+      top_metrics:
+        metrics:
+          - field: conf_chargeable_unit_rate
+          - field: conf_chargeable_unit_rate_unit
+          - field: conf_currency_symbol
+        sort:
+          event.ingested: desc
 settings:
   deduce_mappings: false
   unattended: true
