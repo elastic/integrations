@@ -2014,6 +2014,15 @@
                                                     }
                                                 },
                                                 {
+                                                    "columnId": "datatable_accessor_row_1",
+                                                    "customLabel": true,
+                                                    "fieldName": "Host Name",
+                                                    "label": "Host Name",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
                                                     "columnId": "datatable_accessor_metric_0",
                                                     "customLabel": true,
                                                     "fieldName": "Delivered Recipients",
@@ -2057,7 +2066,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-cisco_secure_email_gateway*-@timestamp",
                                             "query": {
-                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart\n  AND @timestamp \u003c ?_tend\n  AND cisco_secure_email_gateway.delivery_status.destination_domain IS NOT NULL\n| EVAL ts = TO_STRING(@timestamp)\n| STATS dr = MAX(CONCAT(ts, \"|\", TO_STRING(cisco_secure_email_gateway.delivery_status.delivered_recipients))), hb = MAX(CONCAT(ts, \"|\", TO_STRING(cisco_secure_email_gateway.delivery_status.hard_bounces))), sb = MAX(CONCAT(ts, \"|\", TO_STRING(cisco_secure_email_gateway.delivery_status.soft_bounces))), hs = MAX(CONCAT(ts, \"|\", cisco_secure_email_gateway.delivery_status.latest_host_status)) BY `Destination Domain` = cisco_secure_email_gateway.delivery_status.destination_domain\n| EVAL `Delivered Recipients` = TO_LONG(SUBSTRING(dr, 26)), `Hard Bounces` = TO_LONG(SUBSTRING(hb, 26)), `Soft Bounces` = TO_LONG(SUBSTRING(sb, 26)), `Latest Host Status` = SUBSTRING(hs, 26)\n| KEEP `Destination Domain`, `Delivered Recipients`, `Hard Bounces`, `Soft Bounces`, `Latest Host Status`\n| SORT `Delivered Recipients` DESC NULLS LAST\n| LIMIT 20"
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart\n  AND @timestamp \u003c ?_tend\n  AND cisco_secure_email_gateway.delivery_status.destination_domain IS NOT NULL\n  AND host.name IS NOT NULL\n| EVAL ts = TO_STRING(@timestamp)\n| STATS dr = MAX(CONCAT(ts, \"|\", TO_STRING(cisco_secure_email_gateway.delivery_status.delivered_recipients))), hb = MAX(CONCAT(ts, \"|\", TO_STRING(cisco_secure_email_gateway.delivery_status.hard_bounces))), sb = MAX(CONCAT(ts, \"|\", TO_STRING(cisco_secure_email_gateway.delivery_status.soft_bounces))), hs = MAX(CONCAT(ts, \"|\", cisco_secure_email_gateway.delivery_status.latest_host_status)) BY `Host Name` = host.name, `Destination Domain` = cisco_secure_email_gateway.delivery_status.destination_domain\n| EVAL `Delivered Recipients` = TO_LONG(SUBSTRING(dr, 26)), `Hard Bounces` = TO_LONG(SUBSTRING(hb, 26)), `Soft Bounces` = TO_LONG(SUBSTRING(sb, 26)), `Latest Host Status` = SUBSTRING(hs, 26)\n| KEEP `Host Name`, `Destination Domain`, `Delivered Recipients`, `Hard Bounces`, `Soft Bounces`, `Latest Host Status`\n| SORT `Delivered Recipients` DESC NULLS LAST\n| LIMIT 20"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2073,12 +2082,17 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart\n  AND @timestamp \u003c ?_tend\n  AND cisco_secure_email_gateway.delivery_status.destination_domain IS NOT NULL\n| EVAL ts = TO_STRING(@timestamp)\n| STATS dr = MAX(CONCAT(ts, \"|\", TO_STRING(cisco_secure_email_gateway.delivery_status.delivered_recipients))), hb = MAX(CONCAT(ts, \"|\", TO_STRING(cisco_secure_email_gateway.delivery_status.hard_bounces))), sb = MAX(CONCAT(ts, \"|\", TO_STRING(cisco_secure_email_gateway.delivery_status.soft_bounces))), hs = MAX(CONCAT(ts, \"|\", cisco_secure_email_gateway.delivery_status.latest_host_status)) BY `Destination Domain` = cisco_secure_email_gateway.delivery_status.destination_domain\n| EVAL `Delivered Recipients` = TO_LONG(SUBSTRING(dr, 26)), `Hard Bounces` = TO_LONG(SUBSTRING(hb, 26)), `Soft Bounces` = TO_LONG(SUBSTRING(sb, 26)), `Latest Host Status` = SUBSTRING(hs, 26)\n| KEEP `Destination Domain`, `Delivered Recipients`, `Hard Bounces`, `Soft Bounces`, `Latest Host Status`\n| SORT `Delivered Recipients` DESC NULLS LAST\n| LIMIT 20"
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart\n  AND @timestamp \u003c ?_tend\n  AND cisco_secure_email_gateway.delivery_status.destination_domain IS NOT NULL\n  AND host.name IS NOT NULL\n| EVAL ts = TO_STRING(@timestamp)\n| STATS dr = MAX(CONCAT(ts, \"|\", TO_STRING(cisco_secure_email_gateway.delivery_status.delivered_recipients))), hb = MAX(CONCAT(ts, \"|\", TO_STRING(cisco_secure_email_gateway.delivery_status.hard_bounces))), sb = MAX(CONCAT(ts, \"|\", TO_STRING(cisco_secure_email_gateway.delivery_status.soft_bounces))), hs = MAX(CONCAT(ts, \"|\", cisco_secure_email_gateway.delivery_status.latest_host_status)) BY `Host Name` = host.name, `Destination Domain` = cisco_secure_email_gateway.delivery_status.destination_domain\n| EVAL `Delivered Recipients` = TO_LONG(SUBSTRING(dr, 26)), `Hard Bounces` = TO_LONG(SUBSTRING(hb, 26)), `Soft Bounces` = TO_LONG(SUBSTRING(sb, 26)), `Latest Host Status` = SUBSTRING(hs, 26)\n| KEEP `Host Name`, `Destination Domain`, `Delivered Recipients`, `Hard Bounces`, `Soft Bounces`, `Latest Host Status`\n| SORT `Delivered Recipients` DESC NULLS LAST\n| LIMIT 20"
                             },
                             "visualization": {
                                 "columns": [
                                     {
                                         "columnId": "datatable_accessor_row_0",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "datatable_accessor_row_1",
                                         "isMetric": false,
                                         "isTransposed": false
                                     },
