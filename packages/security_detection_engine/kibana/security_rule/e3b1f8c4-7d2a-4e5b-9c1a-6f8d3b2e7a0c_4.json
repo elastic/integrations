@@ -1,0 +1,125 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects known credential formats \u2014 AWS access key IDs, LLM vendor API keys, GitHub personal access tokens, SSH/PEM private key headers, JWTs, and similar \u2014 appearing in GenAI prompt or completion text, or in strings flagged by the security_ai ML model as encoded payloads.  Credentials in the model input mean an application or user is sending secrets to the model, exposing them to invocation logging, the model provider, and prompt history. Credentials in the model output or in ML-extracted encoded blobs indicate either training-data leakage, a poisoned context window, or a prompt-injection-driven exfiltration attempt. Either case warrants immediate credential rotation.",
+        "false_positives": [
+            "Prompts or completions that reference example or documentation keys (for example the AWS sample access key ending in EXAMPLE) match the access-key pattern. Review the matched value in gen_ai.input.messages, gen_ai.output.messages, or security_ai.*.strings and confirm whether it is a live credential before responding.",
+            "JWTs used as legitimate authentication tokens passed to the model for parsing, validation, or debugging. Inspect the prompt context to confirm whether the token was intentionally shared for a benign purpose."
+        ],
+        "from": "now-60m",
+        "interval": "10m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "GenAI Prompt Contains Leaked Credential",
+        "note": "## Triage and Analysis\n\n### Investigating GenAI Prompt Contains Leaked Credential\n\nThis rule fires when a recognized credential format appears in a GenAI invocation's\nprompt, completion, or in strings extracted by the security_ai ML model.\nCredential exposure via LLM invocation logs is a high-impact event: logs may be\nretained by the cloud provider, ingested into SIEM, or replayed in future training runs.\n\n### Possible investigation steps\n\n- Identify the matched credential format from `security_ai.encoding.input_messages.strings`,\n  `security_ai.encoding.output_messages.strings`, `security_ai.hash_string.input_messages.strings`,\n  `security_ai.hash_string.output_messages.strings`, `gen_ai.input.messages`, or `gen_ai.output.messages`.\n  Common format signals:\n  - `AKIA`/`ASIA` prefix (20 chars) \u2192 AWS long-term or STS access key ID\n  - `sk-ant-api03-` \u2192 Anthropic API key\n  - `sk-proj-` / `sk-` (48+ chars) \u2192 OpenAI API key\n  - `AIza` \u2192 Google API key\n  - `ghp_`/`gho_`/`ghu_`/`ghs_` \u2192 GitHub personal/OAuth/user/server access token\n  - `github_pat_` \u2192 GitHub fine-grained personal access token\n  - `glpat-` \u2192 GitLab personal access token\n  - `sk_live_` \u2192 Stripe live secret key\n  - `hf_` \u2192 HuggingFace access token\n  - `xox[baprs]-` \u2192 Slack bot/app/personal/incoming-webhook/refresh token\n  - Three dot-separated base64url segments starting with `eyJ` \u2192 JWT\n  - `-----BEGIN ... PRIVATE KEY-----` \u2192 SSH, RSA, EC, or PKCS8 private key\n\n- Check `gen_ai.input.messages` and `gen_ai.output.messages` for the full conversation context.\n  Determine whether the credential appeared in user input (exfiltration attempt or\n  accidental exposure) or in the model's response (leakage or injection-driven retrieval).\n\n- Identify the caller: `user.id`, `source.ip`, `user_agent.original`,\n  `aws_bedrock.invocation.model_id`.\n\n- If the credential appears in the ML-extracted strings (`security_ai.*.{input_messages,output_messages}.strings`),\n  also check whether a co-occurring base64 rule alert fired. The base64 alert is\n  suppressed when credentials are present, so if it did not fire, the credential was\n  the only encoded content.\n\n- Query CloudTrail or the relevant provider's audit logs for any use of the exposed\n  credential within the alert window.\n\n### False positive analysis\n\n- AWS sample/documentation keys (ending in `EXAMPLE`) match the AKIA pattern.\n  Confirm the value is real before escalating.\n- JWTs passed deliberately for debugging are common. Check whether the model was\n  being asked to validate, decode, or inspect the token.\n\n### Response and remediation\n\n- Rotate or revoke the exposed credential immediately, regardless of whether it\n  appears to have been used.\n- Identify the application or workflow that placed the credential in the prompt and\n  remediate the root cause (secrets scanning, environment variable hygiene, guardrails).\n- If the credential appears in the model's completion, assess whether this is a\n  training-data leakage, a context-window injection, or a configuration error.\n- Review the full invocation history for the affected user or application to identify\n  any pattern of credential exposure.\n",
+        "query": "FROM logs-aws_bedrock.invocation-*, logs-openai_chatgpt_enterprise.codex_log-*, logs-openai_chatgpt_enterprise.conversation_message-*, logs-openai_chatgpt_enterprise.custom_agents_log-* METADATA _id, _version, _index\n// gen_ai.*.messages are mapped as flattened, which RLIKE cannot read; TO_STRING returns their JSON text.\n| EVAL Esql_priv.all_text = CONCAT(\n    COALESCE(MV_CONCAT(TO_STRING(gen_ai.input.messages), \"\\n\"), \"\"), \"\\n\",\n    COALESCE(MV_CONCAT(TO_STRING(gen_ai.output.messages), \"\\n\"), \"\"), \"\\n\",\n    COALESCE(MV_CONCAT(security_ai.encoding.input_messages.strings, \"\\n\"), \"\"), \"\\n\",\n    COALESCE(MV_CONCAT(security_ai.encoding.output_messages.strings, \"\\n\"), \"\"), \"\\n\",\n    COALESCE(MV_CONCAT(security_ai.hash_string.input_messages.strings, \"\\n\"), \"\"), \"\\n\",\n    COALESCE(MV_CONCAT(security_ai.hash_string.output_messages.strings, \"\\n\"), \"\"))\n// Credential formats are split across two RLIKEs because a single pattern with every format exceeds\n// ES|QL's regex determinization limit. A key must not be glued to a preceding key character (or be\n// preceded by a JSON-escaped \\n, \\r or \\t); that also keeps the automaton small.\n// Not lowercased: credential prefixes (AKIA, sk-, ghp_, etc.) are case-significant.\n| WHERE Esql_priv.all_text RLIKE \"\"\"(.*([^A-Za-z0-9_\\-]|\\\\[nrt]))?((AKIA|ASIA|ABIA|ACCA)[A-Z0-9]{16}|ABSK[A-Za-z0-9+/=]{20}|AIza[0-9A-Za-z_\\-]{35}|gh[pousr]_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{22,}|glpat-[A-Za-z0-9_\\-]{20,}|sk-ant-api03-[A-Za-z0-9_\\-]{80,}|sk-proj-[A-Za-z0-9_\\-]{20,}).*\"\"\"\n    OR Esql_priv.all_text RLIKE \"\"\"(.*([^A-Za-z0-9_\\-]|\\\\[nrt]))?(sk-[A-Za-z0-9]{48}|sk_live_[A-Za-z0-9]{24}|hf_[A-Za-z0-9]{34}|xox[baprs]-[A-Za-z0-9\\-]{10,}|eyJ[A-Za-z0-9_\\-]{10,}\\.eyJ[A-Za-z0-9_\\-]{10,}\\..*|-----BEGIN [A-Z ]*PRIVATE KEY-----).*\"\"\"\n| KEEP _id, _version, _index, @timestamp, gen_ai.*, security_ai.*, aws_bedrock.*, user.*, cloud.*, event.*, openai_chatgpt_enterprise.*\n",
+        "references": [
+            "https://owasp.org/www-project-top-10-for-large-language-model-applications/",
+            "https://www.beyondtrust.com/blog/entry/aws-bedrock-security-guide-api-keys-detection-response"
+        ],
+        "related_integrations": [
+            {
+                "package": "security_ai",
+                "version": ">=0.0.1"
+            },
+            {
+                "package": "aws_bedrock",
+                "version": ">=1.1.0"
+            },
+            {
+                "package": "openai_chatgpt_enterprise",
+                "version": ">=0.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "gen_ai.input.messages",
+                "type": "flattened"
+            },
+            {
+                "ecs": true,
+                "name": "gen_ai.output.messages",
+                "type": "flattened"
+            },
+            {
+                "ecs": false,
+                "name": "security_ai.encoding.input_messages.strings",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "security_ai.encoding.output_messages.strings",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "security_ai.hash_string.input_messages.strings",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "security_ai.hash_string.output_messages.strings",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "e3b1f8c4-7d2a-4e5b-9c1a-6f8d3b2e7a0c",
+        "setup": "This rule requires the security_ai Fleet integration. Install the\nintegration and ensure that the ML model pipeline is enriching invocation events before\nenabling this rule. The rule also scans gen_ai.input.messages and gen_ai.output.messages directly,\nso it will partially function (message scanning only) even without the\nML pipeline enrichment. For setup instructions, refer to the [Security for AI integration documentation](https://www.elastic.co/docs/reference/integrations/security_ai).",
+        "severity": "high",
+        "tags": [
+            "Domain: GenAI",
+            "Use Case: Security for AI",
+            "Tactic: Credential Access",
+            "Mitre Atlas: AML.T0055",
+            "Data Source: AWS Bedrock",
+            "Data Source: OpenAI ChatGPT Enterprise",
+            "Platform: AWS",
+            "Platform: OpenAI",
+            "Service: AWS Bedrock",
+            "Service: OpenAI ChatGPT Enterprise",
+            "Rule Type: ES|QL",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATLAS",
+                "tactic": {
+                    "id": "AML.TA0013",
+                    "name": "Credential Access",
+                    "reference": "https://atlas.mitre.org/tactics/AML.TA0013/"
+                },
+                "technique": [
+                    {
+                        "id": "AML.T0055",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://atlas.mitre.org/techniques/AML.T0055/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "to": "now",
+        "type": "esql",
+        "version": 4
+    },
+    "id": "e3b1f8c4-7d2a-4e5b-9c1a-6f8d3b2e7a0c_4",
+    "type": "security-rule"
+}

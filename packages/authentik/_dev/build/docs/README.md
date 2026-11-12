@@ -43,7 +43,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 1. In Kibana navigate to **Management** > **Integrations**.
 2. In the search bar, type **Authentik**.
 3. Select the **Authentik** integration and add it.
-4. Add all the required integration configuration parameters, including API Token, Interval and Page Size to enable data collection.
+4. Add all the required integration configuration parameters, including API Token, Interval, and Initial Lookback Interval to enable data collection.
 5. Save the integration.
 
 ## Logs reference
