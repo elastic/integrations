@@ -36,35 +36,31 @@ inputs:
                       type(body) == map && has(body.body) && type(body.body) == map && has(body.body.data) &&
                       type(body.body.data) == list
                     ) ?
-                      {
+                      dyn({
                         "events": body.body.data.map(e,
                           type(e) == map && has(e.ip) && type(e.ip) == string && e.ip.trim_space() != "",
                           {"message": e.encode_json()}
                         ),
-                        "status_code": resp.StatusCode,
-                      }
+                      })
                     :
-                      {
+                      dyn({
                         "events": {
                           "event": {"outcome": "failure"},
                           "error": {"message": "Criminal IP TI Feed response did not contain a valid body.data list."},
-                          "http": {"response": {"status_code": resp.StatusCode}},
                         },
-                        "status_code": resp.StatusCode,
-                      }
+                      })
                   )
                 :
-                  {
+                  dyn({
                     "events": {
                       "event": {"outcome": "failure"},
                       "error": {
                         "code": string(resp.StatusCode),
-                        "message": "GET " + state.url.parse_url().Path + ": " + resp.Status + " (" + string(resp.StatusCode) + ")",
+                        "id": string(resp.Status),
+                        "message": "GET " + state.url.parse_url().Path + ": " + (size(resp.Body) != 0 ? string(resp.Body) : string(resp.Status) + " (" + string(resp.StatusCode) + ")"),
                       },
-                      "http": {"response": {"status_code": resp.StatusCode}},
                     },
-                    "status_code": resp.StatusCode,
-                  }
+                  })
               ).as(result, is_error(result) ?
                 {
                   "events": {

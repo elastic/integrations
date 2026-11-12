@@ -1,17 +1,5 @@
 {{- generatedHeader }}
 
-Copyright (c) 2026 AI Spera Inc. Licensed under the [Apache License, Version 2.0](../LICENSE.txt). See [NOTICE.txt](../NOTICE.txt) for attribution.
-
-The code license does not grant Criminal IP or AI Spera trademark rights beyond section 6 of that license. The separately distributed Cortex analyzer and third-party dependencies retain their own applicable licenses.
-
-Maintained by [Jang Sihoo (@0xhoo)](https://github.com/0xhoo), AI Spera Inc. This is a community-supported integration; it does not imply Elastic support or official publication approval.
-
-## AI assistance notice
-
-OpenAI Codex was used to assist with code generation, refactoring, and debugging. Maintainers remain responsible for reviewing changes, validating behavior, and deciding what is released.
-
-![Criminal IP](../img/criminalip-wordmark.png)
-
 ## Overview
 
 Use Criminal IP TI Feed indicators to detect matching IPs in ECS-normalized firewall events and investigate the observed communications in Elastic Security. TheHive/Cortex reports and configured IP Report lookups are separate optional investigation paths.

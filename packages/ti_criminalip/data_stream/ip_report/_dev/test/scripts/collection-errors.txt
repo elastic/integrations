@@ -13,7 +13,9 @@ add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} http-error.yaml HTTP_S
 get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -timeout 2m ${HTTP_STREAM}
 stdout '"event.outcome":\s*\[\s*"failure"'
 stdout '"error.code":\s*\[\s*"403"'
-stdout 'GET /v1/asset/ip/report/http-error: 403 Forbidden \(403\)'
+stdout '"error.id":\s*\[\s*"403 Forbidden"'
+stdout 'GET /v1/asset/ip/report/http-error:'
+stdout 'status.*403'
 ! stdout 'http.response.status_code|pipeline_error|unit-test-key'
 exec docker logs --since ${LOG_START} ${AGENT_CONTAINER}
 ! stdout 'unit-test-key|->FAILED|undeclared reference|no matching overload'
