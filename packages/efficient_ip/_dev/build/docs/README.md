@@ -9,9 +9,7 @@ The EfficientIP integration for Elastic collects and parses logs from [Efficient
 
 This integration is tested with EfficientIP version 8.4.7e.
 
-This integration requires:
-- Elastic Stack version `9.4.0` or later.
-- An active Elastic Agent enrolled in a Fleet policy.
+This integration requires an active Elastic Agent enrolled in a Fleet policy.
 
 ### How it works
 
@@ -39,7 +37,6 @@ To use this integration, you'll need the following vendor prerequisites:
 - The IP address or hostname of the machine running the Elastic Agent to configure the remote syslog target.
 
 You'll also need the following Elastic prerequisites:
-- Elastic Stack (Elasticsearch and Kibana) version `9.4.0` or later.
 - An active Elastic Agent installed and enrolled in Fleet.
 - The EfficientIP integration added to an Elastic Agent policy.
 - Port `9028` (or your custom-configured port) open on the Elastic Agent host to accept incoming UDP syslog traffic.

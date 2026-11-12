@@ -10,9 +10,7 @@ The EfficientIP integration for Elastic collects and parses logs from [Efficient
 
 This integration is tested with EfficientIP version 8.4.7e.
 
-This integration requires:
-- Elastic Stack version `9.4.0` or later.
-- An active Elastic Agent enrolled in a Fleet policy.
+This integration requires an active Elastic Agent enrolled in a Fleet policy.
 
 ### How it works
 
@@ -40,7 +38,6 @@ To use this integration, you'll need the following vendor prerequisites:
 - The IP address or hostname of the machine running the Elastic Agent to configure the remote syslog target.
 
 You'll also need the following Elastic prerequisites:
-- Elastic Stack (Elasticsearch and Kibana) version `9.4.0` or later.
 - An active Elastic Agent installed and enrolled in Fleet.
 - The EfficientIP integration added to an Elastic Agent policy.
 - Port `9028` (or your custom-configured port) open on the Elastic Agent host to accept incoming UDP syslog traffic.
@@ -131,9 +128,9 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2026-04-17T12:39:52.000Z",
     "agent": {
-        "ephemeral_id": "c33476a5-d907-4676-b791-3a073f2eee11",
-        "id": "dc897f51-6c16-4577-8c88-100730e0261f",
-        "name": "elastic-agent-50791",
+        "ephemeral_id": "8f32207b-3b05-451f-b4ff-521484dfe82c",
+        "id": "94853842-3f7f-487f-a32c-5fa1786d9315",
+        "name": "elastic-agent-27269",
         "type": "filebeat",
         "version": "9.3.3"
     },
@@ -143,7 +140,7 @@ An example event for `log` looks as following:
     },
     "data_stream": {
         "dataset": "efficient_ip.log",
-        "namespace": "71473",
+        "namespace": "79080",
         "type": "logs"
     },
     "dns": {
@@ -170,7 +167,7 @@ An example event for `log` looks as following:
         }
     },
     "elastic_agent": {
-        "id": "dc897f51-6c16-4577-8c88-100730e0261f",
+        "id": "94853842-3f7f-487f-a32c-5fa1786d9315",
         "snapshot": false,
         "version": "9.3.3"
     },
@@ -179,9 +176,8 @@ An example event for `log` looks as following:
         "category": [
             "network"
         ],
-        "created": "2026-04-17T12:39:52.000Z",
         "dataset": "efficient_ip.log",
-        "ingested": "2026-11-05T16:09:51Z",
+        "ingested": "2026-11-12T08:44:51Z",
         "kind": "event",
         "module": "efficient_ip",
         "timezone": "+00:00",
@@ -197,7 +193,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.19.0.3:44771"
+            "address": "172.19.0.3:49548"
         },
         "syslog": {
             "priority": 13

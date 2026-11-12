@@ -15,9 +15,9 @@ processors:
       tag: grok_syslog_message
       field: event.original
       patterns:
-        - "^<%{NUMBER:log.syslog.priority:long}>(?:%{SYSLOGTIMESTAMP:event.created}|%{TIMESTAMP_ISO8601:event.created})\\s+%{WORD:efficient_ip.log.service_name}\\[%{NUMBER:process.pid:long}\\]:\\s+%{GREEDYDATA:message}$"
-        - "^<%{NUMBER:log.syslog.priority:long}>(?:%{SYSLOGTIMESTAMP:event.created}|%{TIMESTAMP_ISO8601:event.created})\\s+%{DATA:host.name}\\s+%{DATA:efficient_ip.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:message}$"
-        - "^<%{NUMBER:log.syslog.priority:long}>(?:%{SYSLOGTIMESTAMP:event.created}|%{TIMESTAMP_ISO8601:event.created})\\s+%{DATA:host.name}\\s+%{GREEDYDATA:message}$"
+        - "^<%{NUMBER:log.syslog.priority:long}>(?:%{SYSLOGTIMESTAMP:_tmp.syslog_timestamp}|%{TIMESTAMP_ISO8601:_tmp.syslog_timestamp})\\s+%{WORD:efficient_ip.log.service_name}\\[%{NUMBER:process.pid:long}\\]:\\s+%{GREEDYDATA:message}$"
+        - "^<%{NUMBER:log.syslog.priority:long}>(?:%{SYSLOGTIMESTAMP:_tmp.syslog_timestamp}|%{TIMESTAMP_ISO8601:_tmp.syslog_timestamp})\\s+%{DATA:host.name}\\s+%{DATA:efficient_ip.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:message}$"
+        - "^<%{NUMBER:log.syslog.priority:long}>(?:%{SYSLOGTIMESTAMP:_tmp.syslog_timestamp}|%{TIMESTAMP_ISO8601:_tmp.syslog_timestamp})\\s+%{DATA:host.name}\\s+%{GREEDYDATA:message}$"
         - "^%{GREEDYDATA:message}$"
   - rename:
       tag: rename_conf_tz_offset_to_event_timezone
@@ -27,11 +27,11 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - date:
-      field: event.created
-      tag: date_event_created_tz
+      field: _tmp.syslog_timestamp
+      tag: date_syslog_timestamp_tz
       timezone: '{{{event.timezone}}}'
-      if: ctx.event?.timezone != null && ctx.event.created != null
-      target_field: event.created
+      if: ctx.event?.timezone != null && ctx._tmp?.syslog_timestamp != null
+      target_field: _tmp.timestamp
       formats:
         - MMM  d HH:mm:ss
         - MMM dd HH:mm:ss
@@ -40,8 +40,8 @@ processors:
         - ISO8601
       on_failure:
         - remove:
-            tag: remove_event_created_on_date_tz_failure
-            field: event.created
+            tag: remove_syslog_timestamp_on_date_tz_failure
+            field: _tmp.syslog_timestamp
             ignore_missing: true
         - append:
             tag: append_error_on_date_tz_failure
@@ -52,10 +52,10 @@ processors:
               {{{/_ingest.on_failure_processor_tag}}}in pipeline {{{_ingest.pipeline}}}
               failed with message '{{{ _ingest.on_failure_message }}}'
   - date:
-      field: event.created
-      tag: date_event_created_notz
-      if: ctx.event?.timezone == null && ctx.event?.created != null
-      target_field: event.created
+      field: _tmp.syslog_timestamp
+      tag: date_syslog_timestamp_notz
+      if: ctx.event?.timezone == null && ctx._tmp?.syslog_timestamp != null
+      target_field: _tmp.timestamp
       formats:
         - MMM  d HH:mm:ss
         - MMM dd HH:mm:ss
@@ -64,8 +64,8 @@ processors:
         - ISO8601
       on_failure:
         - remove:
-            tag: remove_event_created_on_date_notz_failure
-            field: event.created
+            tag: remove_syslog_timestamp_on_date_notz_failure
+            field: _tmp.syslog_timestamp
             ignore_missing: true
         - append:
             tag: append_error_on_date_notz_failure
@@ -117,14 +117,6 @@ processors:
       tag: route_to_pipeline_dns
       name: '{{ IngestPipeline "pipeline_dns" }}'
       if: ctx.efficient_ip?.log?.type == 'DNS'
-  # Since logstash sets the @timestamp if not present, `override: true` is required to overwrite the value with event timestamp.
-  - set:
-      tag: set_timestamp_from_event_created
-      field: '@timestamp'
-      copy_from: event.created
-      if: ctx.event?.created != null
-      override: true
-  # If individual pipelines has timestamp, they should take priority. This makes @timestamp < event.created conforming to ECS.
   - set:
       tag: set_timestamp_from_tmp_timestamp
       field: '@timestamp'
@@ -193,11 +185,21 @@ processors:
           return false;
         }
         drop(ctx);
+  - set:
+      tag: save_message_when_original_not_preserved
+      field: _tmp.message
+      copy_from: message
+      if: ctx.message != null && ctx.tags?.contains('preserve_original_event') != true
   - remove:
       tag: remove_message_after_parsing
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
+  - set:
+      tag: restore_message_when_original_not_preserved
+      field: message
+      copy_from: _tmp.message
+      if: ctx._tmp?.message != null
   - remove:
       tag: remove_temporary_fields
       field:
