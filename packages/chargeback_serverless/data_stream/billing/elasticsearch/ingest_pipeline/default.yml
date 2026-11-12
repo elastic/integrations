@@ -19,6 +19,7 @@ processors:
   - remove:
       field: period_start
       ignore_missing: true
+      tag: remove_period_start
   - script:
       lang: painless
       tag: set_composite_key
@@ -41,14 +42,17 @@ processors:
       field: cost_type
       value: 'data-transfer'
       if: ctx.sku != null && ctx.sku =~ /^(aws|gcp|azure)\.(data-transfer|data-out).*/
+      tag: set_cost_type_data_transfer
   - set:
       field: cost_type
       value: 'snapshots'
       if: ctx.sku != null && ctx.sku =~ /^(aws|gcp|azure)\.snapshot-storage.*/
+      tag: set_cost_type_snapshots
   - set:
       field: cost_type
       value: 'inference'
       if: ctx.sku == 'global.inference-chat-input'
+      tag: set_cost_type_inference
   - script:
       lang: painless
       tag: classify_serverless_sku
@@ -182,6 +186,7 @@ processors:
   - grok:
       field: sku
       ignore_failure: true
+      tag: grok_fallback_cost_type
       patterns:
         - "%{WORD}.es.%{WORD:cost_type}.%{GREEDYDATA}"
         - "%{WORD}.%{DATA:cost_type}-vcu_%{GREEDYDATA}"
@@ -191,11 +196,14 @@ processors:
       if: ctx.cost_type == null && ctx.sku != null
 on_failure:
   - set:
+      tag: set_pipeline_error_to_event_kind
       field: event.kind
       value: "pipeline_error"
   - append:
+      tag: append_pipeline_error_message
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'

@@ -77,17 +77,21 @@ processors:
       field: cost_type
       value: 'data-transfer'
       if: ctx.sku != null && ctx.sku =~ /^(aws|gcp|azure)\.(data-transfer|data-out).*/
+      tag: set_cost_type_data_transfer
   - set:
       field: cost_type
       value: 'snapshots'
       if: ctx.sku != null && ctx.sku =~ /^(aws|gcp|azure)\.snapshot-storage.*/
+      tag: set_cost_type_snapshots
   - set:
       field: cost_type
       value: 'inference'
       if: ctx.sku == 'global.inference-chat-input'
+      tag: set_cost_type_inference
   - script:
       ignore_failure: true
       lang: painless
+      tag: classify_serverless_sku
       description: >-
         Serverless-only classification. Sets cost_type, cost_category, is_allocatable,
         and allocation_driver. Drivers: indexing (ingest VCU / Observability-Security
@@ -218,6 +222,7 @@ processors:
   - grok:
       field: sku
       ignore_failure: true
+      tag: grok_fallback_cost_type
       patterns:
         - "%{WORD}.es.%{WORD:cost_type}.%{GREEDYDATA}"
         - "%{WORD}.%{DATA:cost_type}-vcu_%{GREEDYDATA}"
@@ -229,3 +234,16 @@ processors:
       field: event.ingested
       value: "{{{_ingest.timestamp}}}"
       tag: set_event_ingested
+on_failure:
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: "pipeline_error"
+  - append:
+      tag: append_pipeline_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
