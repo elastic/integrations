@@ -6,7 +6,11 @@ processors:
       lang: painless
       source: |
         if (ctx['@timestamp'] != null && ctx.deployment_id != null) {
-            ctx.composite_key = ZonedDateTime.parse(ctx['@timestamp']).toLocalDate().toString() + '_' + ctx.deployment_id;
+            def rawTs = ctx['@timestamp'];
+            String dateStr = (rawTs instanceof Number)
+              ? Instant.ofEpochMilli(((Number)rawTs).longValue()).atZone(ZoneOffset.UTC).toLocalDate().toString()
+              : ZonedDateTime.parse(rawTs.toString()).toLocalDate().toString();
+            ctx.composite_key = dateStr + '_' + ctx.deployment_id;
         }
         if (ctx.data_tier_capacity_ecu != null) {
             // provisioned pool — utilization discount is applied later in ES|QL

@@ -1,7 +1,8 @@
 description: Aggregates daily allocatable data-tier capacity (chargeable units) per deployment for realized-cost allocation.
 source:
   index:
-    - metrics-ess_billing.billing-*
+    - metrics-chargeback.billing-*
+    - metrics-ess_billing.billing-onprem*
   query:
     bool:
       must:
@@ -30,13 +31,6 @@ source:
                     - wildcard:
                         ess.billing.sku: "*.es.datacontent.*"
                   minimum_should_match: 1
-        # Serverless projects (deployment_type: elasticsearch) bill VCU and retained storage
-        # instead of ECH data-tier node SKUs, so the *.es.data*.* patterns above never match
-        # them. Without this their cost stays is_allocatable: false and
-        # billing_realized_pool_lookup has no serverless rows, leaving the dashboards with no
-        # pool to allocate against. Search and ingest VCU plus retained storage are the
-        # serverless equivalent of data-tier capacity. ML VCU is deliberately excluded to
-        # match ECH semantics, where ML is cost_category "platform" and not allocatable.
         - bool:
             must:
               - term:
@@ -75,15 +69,12 @@ source:
           emit('');
 dest:
   index: billing_realized_pool_lookup
-  pipeline: logs-chargeback.lookup-0.5.0-realized_pool
-frequency: 60m
+  pipeline: logs-chargeback.lookup-0.6.0-realized_pool
+frequency: 5m
 sync:
   time:
-    # Use @timestamp (billing day), not event.ingested. On-Prem Billing and some
-    # seeded sources do not map event.ingested, which left this transform at 0 docs
-    # and emptied the Usage & Cost Allocation dashboard.
-    field: "@timestamp"
-    delay: 1h
+    field: event.ingested
+    delay: 60s
 pivot:
   group_by:
     "@timestamp":
@@ -115,4 +106,4 @@ settings:
 _meta:
   managed: true
   run_as_kibana_system: false
-  fleet_transform_version: 0.5.0
+  fleet_transform_version: 0.6.0

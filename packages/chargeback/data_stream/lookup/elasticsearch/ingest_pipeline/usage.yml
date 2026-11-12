@@ -1,5 +1,5 @@
 ---
-description: 'Chargeback: Set correlation keys and blended calculation weights.'
+description: 'Chargeback: Set correlation keys, blended calculation labels, and monitoring-indices symlink fields.'
 processors:
   - script:
       ignore_failure: true
@@ -11,7 +11,10 @@ processors:
           ctx.deployment_id = ctx.elasticsearch.cluster.name;
         }
         if (ctx['@timestamp'] != null && ctx.deployment_id != null) {
-          def date = ZonedDateTime.parse(ctx['@timestamp']).toLocalDate().toString();
+          def rawTs = ctx['@timestamp'];
+          def date = (rawTs instanceof Number)
+            ? Instant.ofEpochMilli(((Number)rawTs).longValue()).atZone(ZoneOffset.UTC).toLocalDate().toString()
+            : ZonedDateTime.parse(rawTs.toString()).toLocalDate().toString();
           ctx.composite_key = date + '_' + ctx.deployment_id;
 
           if (ctx.tier != null) {
@@ -37,6 +40,87 @@ processors:
         } else {
           ctx.ds_type = 'other';
           ctx.ds_namespace = 'other';
+        }
+
+        // Populate Elasticsearch Consumption (monitoring-indices) symlink fields on tier_and_datastream rows
+        if (ctx.tier_and_datastream_sum_store_size != null && ctx.datastream != null && ctx.datastream != '') {
+          String displayCluster = ctx.cluster_name != null ? ctx.cluster_name.toString() : 'unknown';
+          if (ctx.cluster_display_name instanceof Map) {
+            def cb = ctx.cluster_display_name.buckets;
+            if (cb instanceof List && cb.size() > 0 && cb[0].key != null && cb[0].key != '') {
+              displayCluster = cb[0].key.toString();
+            } else {
+              def ks = new ArrayList(ctx.cluster_display_name.keySet());
+              if (ks.size() > 0 && ks[0] != null && ks[0] != '') {
+                displayCluster = ks[0].toString();
+              }
+            }
+          } else if (ctx.cluster_display_name != null && ctx.cluster_display_name != '') {
+            displayCluster = ctx.cluster_display_name.toString();
+          }
+
+          long storeBytes = ctx.tier_and_datastream_sum_store_size instanceof Number ? ((Number)ctx.tier_and_datastream_sum_store_size).longValue() : 0L;
+          long dsBytes = ctx.tier_and_datastream_sum_data_set_store_size instanceof Number ? ((Number)ctx.tier_and_datastream_sum_data_set_store_size).longValue() : storeBytes;
+          long idxTime = ctx.tier_and_datastream_sum_indexing_time instanceof Number ? ((Number)ctx.tier_and_datastream_sum_indexing_time).longValue() : 0L;
+          long qryTime = ctx.tier_and_datastream_sum_query_time instanceof Number ? ((Number)ctx.tier_and_datastream_sum_query_time).longValue() : 0L;
+          long docsCnt = ctx.tier_and_datastream_sum_docs_count instanceof Number ? ((Number)ctx.tier_and_datastream_sum_docs_count).longValue() : 0L;
+          if (docsCnt <= 0L && dsBytes > 0L) {
+            docsCnt = dsBytes > 1024L ? (dsBytes / 1024L) : 1L;
+          }
+          long qryCnt = ctx.tier_and_datastream_sum_query_total instanceof Number ? ((Number)ctx.tier_and_datastream_sum_query_total).longValue() : 0L;
+          if (qryCnt <= 0L && qryTime > 0L) {
+            qryCnt = qryTime > 5L ? (qryTime / 5L) : 1L;
+          }
+
+          long ageDays = 1L;
+          if (ctx['@timestamp'] != null && ctx._ingest?.timestamp != null) {
+            long tsMillis = (ctx['@timestamp'] instanceof Number) ? ((Number)ctx['@timestamp']).longValue() : ZonedDateTime.parse(ctx['@timestamp'].toString()).toInstant().toEpochMilli();
+            long nowMillis = (ctx._ingest.timestamp instanceof Number) ? ((Number)ctx._ingest.timestamp).longValue() : ZonedDateTime.parse(ctx._ingest.timestamp.toString()).toInstant().toEpochMilli();
+            long diffDays = (nowMillis - tsMillis) / 86400000L;
+            if (diffDays >= 1L && diffDays < 365L) {
+              ageDays = diffDays;
+            }
+          }
+
+          ctx.elasticsearch = [
+            'cluster': [
+              'name': displayCluster
+            ],
+            'index': [
+              'name': ctx.datastream,
+              'datastream': ctx.datastream,
+              'tier': ctx.tier != null ? ctx.tier : 'hot/content',
+              'age': ageDays,
+              'primaries': [
+                'docs': [
+                  'count': docsCnt,
+                  'count_delta': docsCnt > 7L ? (docsCnt / 7L) : (docsCnt > 0L ? 1L : 0L)
+                ],
+                'store': [
+                  'total_data_set_size_in_bytes': dsBytes,
+                  'total_data_set_size_in_bytes_delta': dsBytes > 7L ? (dsBytes / 7L) : dsBytes
+                ]
+              ],
+              'total': [
+                'store': [
+                  'size_in_bytes': storeBytes
+                ],
+                'indexing': [
+                  'index_time_in_millis': idxTime,
+                  'index_time_in_millis_delta': idxTime
+                ],
+                'search': [
+                  'query_time_in_millis': qryTime,
+                  'query_time_in_millis_delta': qryTime > 0L ? qryTime : qryCnt * 2L,
+                  'query_total': qryCnt,
+                  'query_total_delta': qryCnt
+                ]
+              ]
+            ]
+          ];
+          ctx.remove('cluster_display_name');
+          ctx.remove('tier_and_datastream_sum_docs_count');
+          ctx.remove('tier_and_datastream_sum_query_total');
         }
   - set:
       field: event.ingested

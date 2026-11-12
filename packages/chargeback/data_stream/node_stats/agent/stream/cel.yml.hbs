@@ -1,0 +1,171 @@
+config_version: 2
+interval: "15m"
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl:
+  {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: "{{cloud_api_base}}/api/v1/deployments/_search"
+state:
+  api_key: !!str {{cloud_api_key}}
+  organization_id: !!str {{organization_id}}
+  cloud_api_base: !!str {{cloud_api_base}}
+  hub_es_url: !!str {{escape_string hub_es_url}}
+  hub_es_api_key: !!str {{hub_es_api_key}}
+  deployment_keys: !!str {{deployment_api_keys}}
+  conf_utilization_memory_weight: !!int {{utilization_memory_weight}}
+  conf_utilization_storage_weight: !!int {{utilization_storage_weight}}
+  conf_utilization_floor: !!str {{escape_string utilization_floor}}
+redact:
+  fields:
+    - api_key
+    - cloud_api_key
+    - hub_es_api_key
+    - deployment_keys
+    - deployment_api_keys
+program: |-
+  state.with(
+    now.format(time_layout.RFC3339).as(sample_ts,
+      (
+        !has(state.deployment_keys) || state.deployment_keys == null ? [] :
+        string(dyn(state.deployment_keys)).split(",")
+      ).map(k, k.trim_space()).filter(k, k != "" && k != "null" && !k.startsWith("$co.elastic.secret")).as(all_dkeys,
+        request(
+          "POST",
+          state.cloud_api_base + "/api/v1/deployments/_search"
+        ).with(
+          {
+            "Header": {
+              "Authorization": ["ApiKey " + state.api_key],
+              "Content-Type": ["application/json"],
+            },
+            "Body": { "size": 100 }.encode_json(),
+          }
+        ).do_request().as(dep_resp,
+          ((dep_resp.StatusCode == 200) ? bytes(dep_resp.Body).decode_json() : { "deployments": [] }).as(dep_body,
+            ((has(dep_body.deployments) && dep_body.deployments != null) ?
+              dep_body.deployments.filter(d,
+                has(d.resources) && d.resources != null && has(d.resources.elasticsearch) && d.resources.elasticsearch != null && size(d.resources.elasticsearch) > 0 &&
+                has(d.resources.elasticsearch[0].info) && has(d.resources.elasticsearch[0].info.metadata) && has(d.resources.elasticsearch[0].info.metadata.service_url) && d.resources.elasticsearch[0].info.metadata.service_url != null
+              ).map(d,
+                d.resources.elasticsearch[0].as(es_r,
+                  {
+                    "id": string(es_r.id),
+                    "alt_id": has(d.id) && d.id != null ? string(d.id) : string(es_r.id),
+                    "name": (has(d.name) && d.name != null && string(d.name) != "") ? string(d.name) : string(es_r.id),
+                    "es_url": string(es_r.info.metadata.service_url),
+                  }
+                )
+              )
+            : []).as(cloud_targets,
+              ((state.hub_es_url != "" && state.hub_es_api_key != "") ?
+                (state.hub_es_url.endsWith("/") ? state.hub_es_url.substring(0, size(state.hub_es_url) - 1) : state.hub_es_url).as(clean_hub_url,
+                  get_request(clean_hub_url + "/").with({ "Header": { "Authorization": ["ApiKey " + state.hub_es_api_key] } }).do_request().as(hub_info_resp,
+                    (hub_info_resp.StatusCode == 200) ?
+                      bytes(hub_info_resp.Body).decode_json().as(hub_info,
+                        string(hub_info.cluster_name).as(hub_cname,
+                          cloud_targets.exists(ct, ct.id == hub_cname || ct.es_url == clean_hub_url) ?
+                            cloud_targets
+                          :
+                            cloud_targets + [{
+                              "id": hub_cname,
+                              "alt_id": hub_cname,
+                              "name": hub_cname,
+                              "es_url": clean_hub_url,
+                            }]
+                        )
+                      )
+                    : cloud_targets
+                  )
+                )
+              : cloud_targets).as(targets,
+                targets.map(t,
+                  (t.es_url.endsWith("/") ? t.es_url.substring(0, size(t.es_url) - 1) : t.es_url).as(es_base,
+                    (
+                      all_dkeys.filter(k, k.startsWith(t.id + ":") || k.startsWith(t.alt_id + ":") || k.startsWith(t.name + ":")).map(k,
+                        k.substring(size(k.split(":")[0]) + 1, size(k))
+                      ) +
+                      (state.hub_es_api_key != "" && !state.hub_es_api_key.startsWith("$co.elastic.secret") ? [state.hub_es_api_key] : []) +
+                      all_dkeys.filter(k, !k.contains(":"))
+                    ).as(cand_keys,
+                      (es_base + "/_nodes/_all/stats/jvm,fs?filter_path=nodes.*.name,nodes.*.roles,nodes.*.jvm.mem.heap_used_percent,nodes.*.fs.total").as(stats_url,
+                        (size(cand_keys) == 0 ?
+                          { "ok": false, "body": {} }
+                        :
+                          get_request(stats_url).with({ "Header": { "Authorization": ["ApiKey " + cand_keys[0]] } }).do_request().as(r0,
+                            (r0.StatusCode == 200) ?
+                              { "ok": true, "body": bytes(r0.Body).decode_json() }
+                            : (size(cand_keys) > 1 ?
+                              get_request(stats_url).with({ "Header": { "Authorization": ["ApiKey " + cand_keys[1]] } }).do_request().as(r1,
+                                (r1.StatusCode == 200) ?
+                                  { "ok": true, "body": bytes(r1.Body).decode_json() }
+                                : { "ok": false, "body": {} }
+                              )
+                            : { "ok": false, "body": {} })
+                          )
+                        ).as(harvest,
+                          (!harvest.ok || !has(harvest.body.nodes) || harvest.body.nodes == null) ? [] :
+                          harvest.body.nodes.keys().map(nid,
+                            harvest.body.nodes[nid].as(nd,
+                              {
+                                "@timestamp": sample_ts,
+                                "deployment_name": t.name,
+                                "elasticsearch": {
+                                  "cluster": { "name": t.id },
+                                  "node": {
+                                    "name": (has(nd.name) && nd.name != null) ? string(nd.name) : string(nid),
+                                    "roles": (has(nd.roles) && nd.roles != null) ? nd.roles.map(r, string(r)) : ["data"],
+                                    "stats": {
+                                      "jvm": {
+                                        "mem": {
+                                          "heap": {
+                                            "used": {
+                                              "pct": (has(nd.jvm) && nd.jvm != null && has(nd.jvm.mem) && nd.jvm.mem != null && has(nd.jvm.mem.heap_used_percent) && nd.jvm.mem.heap_used_percent != null) ? double(nd.jvm.mem.heap_used_percent) : 0.0,
+                                            },
+                                          },
+                                        },
+                                      },
+                                      "fs": {
+                                        "total": {
+                                          "total_in_bytes": (has(nd.fs) && nd.fs != null && has(nd.fs.total) && nd.fs.total != null && has(nd.fs.total.total_in_bytes) && nd.fs.total.total_in_bytes != null) ? int(nd.fs.total.total_in_bytes) : 0,
+                                          "available_in_bytes": (has(nd.fs) && nd.fs != null && has(nd.fs.total) && nd.fs.total != null && has(nd.fs.total.available_in_bytes) && nd.fs.total.available_in_bytes != null) ? int(nd.fs.total.available_in_bytes) : 0,
+                                        },
+                                      },
+                                    },
+                                  },
+                                },
+                                "conf_utilization_memory_weight": int(state.conf_utilization_memory_weight),
+                                "conf_utilization_storage_weight": int(state.conf_utilization_storage_weight),
+                                "conf_utilization_floor": double(state.conf_utilization_floor),
+                              }
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                ).flatten().as(evts,
+                  {
+                    "events": size(evts) > 0 ? evts : [ { "fake": true } ],
+                    "want_more": false,
+                  }
+                )
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+
+processors:
+- drop_event.when.equals.fake: true

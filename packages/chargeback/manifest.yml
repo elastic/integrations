@@ -1,8 +1,8 @@
 format_version: 3.5.0
 name: chargeback
 title: "Chargeback"
-version: 0.5.0
-description: "This package calculates chargeback based on billing and consumption data"
+version: 0.6.0
+description: "Allocate Elastic Cloud Hosted (ECH) and Serverless billing to deployments, data tiers, and data streams. Native Fleet integration with self-contained Elastic Agent CEL collection, Elasticsearch Transforms, lookup indices, and symlink aliases for stock ESS Billing and Elasticsearch Consumption dashboards."
 type: integration
 categories:
   - cloud
@@ -30,6 +30,117 @@ icons:
     title: Elastic logo
     size: 32x32
     type: image/svg+xml
+policy_templates:
+  - name: chargeback
+    title: Chargeback
+    description: >-
+      Collect Elastic Cloud Hosted (ECH) and Serverless billing, index/tier usage, and node utilization metrics on a schedule. All credentials, deployment harvesting keys, currency rates, and cost weights are configured here. Secrets are encrypted in Fleet and never stored in plaintext indices.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: false
+    inputs:
+      - type: cel
+        title: Elastic Cloud & Deployment Access
+        description: >-
+          Configure your Elastic Cloud organization ID and API keys for Billing, Control Plane discovery, and target ECH / Serverless Elasticsearch clusters. Currency rates, credit commitments, and cost/utilization weights are configured in each data stream below.
+        vars:
+          - name: organization_id
+            type: text
+            title: Organization ID
+            description: >-
+              Elastic Cloud organization ID (found on Cloud Console → Organization).
+            multi: false
+            required: true
+            show_user: true
+            secret: false
+          - name: cloud_api_key
+            type: password
+            title: Elastic Cloud API Key
+            description: >-
+              Elastic Cloud API key created in Cloud Console → Organization → API keys with Billing Admin access (and Deployment / Serverless read access).
+            multi: false
+            required: true
+            show_user: true
+            secret: true
+          - name: hub_es_url
+            type: text
+            title: Monitoring / Hub Elasticsearch URL
+            description: >-
+              Optional Elasticsearch URL of the local Monitoring / Hub deployment (also used for Cross-Cluster Search fallback to remote clusters if configured).
+            multi: false
+            required: false
+            show_user: true
+            default: ""
+          - name: hub_es_api_key
+            type: password
+            title: Monitoring / Hub Elasticsearch API Key
+            description: >-
+              Optional Elasticsearch API key for harvesting local cluster index/node metrics and CCS remote clusters.
+            multi: false
+            required: false
+            show_user: true
+            secret: true
+          - name: deployment_api_keys
+            type: password
+            title: Target Deployment Elasticsearch API Keys
+            description: >-
+              Optional comma-separated least-privileged Elasticsearch API keys for target ECH deployments or Serverless projects in <deployment_id_or_name>:<encoded_api_key> format.
+            multi: false
+            required: false
+            show_user: true
+            secret: true
+          - name: billing_api_base
+            type: text
+            title: Billing API Base URL
+            description: Base URL of the Elastic Cloud Billing API.
+            required: false
+            show_user: false
+            default: "https://billing.elastic-cloud.com"
+          - name: cloud_api_base
+            type: text
+            title: Cloud Control Plane API Base URL
+            description: Base URL of the Elastic Cloud Control Plane API.
+            required: false
+            show_user: false
+            default: "https://api.elastic-cloud.com"
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            description: >-
+              URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>.
+            multi: false
+            required: false
+            show_user: false
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: >-
+              SSL configuration options.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities: []
+          - name: http_client_timeout
+            type: text
+            title: HTTP Client Timeout
+            description: >-
+              Duration before declaring that the HTTP client connection has timed out.
+            multi: false
+            required: false
+            show_user: false
+            default: "30s"
+          - name: enable_request_tracer
+            type: bool
+            title: Enable request tracing
+            description: >-
+              Logs HTTP requests and responses to the agent's local file-system for debugging.
+            multi: false
+            required: false
+            show_user: false
+            default: false
 owner:
   github: elastic/customer-architects
   type: elastic

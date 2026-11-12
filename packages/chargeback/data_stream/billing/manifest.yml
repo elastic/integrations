@@ -1,0 +1,48 @@
+title: "Chargeback Billing"
+type: metrics
+dataset: chargeback.billing
+elasticsearch:
+  source_mode: synthetic
+streams:
+  - input: cel
+    title: Elastic Cloud Daily Billing
+    description: Collect daily ECH and Serverless billing line items, deployment tags, currency conversion settings, and optional credit commitments from Elastic Cloud APIs.
+    template_path: cel.yml.hbs
+    enabled: true
+    vars:
+      - name: lookbehind
+        type: integer
+        title: Billing Lookbehind Days
+        description: >-
+          Number of historical days of billing data to backfill on initial install (default: 60).
+        multi: false
+        required: true
+        show_user: true
+        default: 60
+      - name: currency_unit
+        type: text
+        title: Currency Unit
+        description: >-
+          Target display currency code (for example, EUR, USD, GBP, ZAR).
+        multi: false
+        required: false
+        show_user: true
+        default: "EUR"
+      - name: unit_rate
+        type: text
+        title: Chargeable Unit Rate
+        description: >-
+          Monetary value per chargeable unit (ECU/ERU), for example 0.85.
+        multi: false
+        required: true
+        show_user: true
+        default: "0.85"
+      - name: collect_ess_credits
+        type: bool
+        title: Collect ESS Credit Commitment Data (for stock ESS Billing Credits dashboard)
+        description: >-
+          Pulls organization credit commitment line items (/api/v1/billing/organization/{id}/line_items) to populate the stock [Metrics ESS Billing] Credits dashboard via symlink. Chargeback does not use credit data in its own dashboards. Note: Load the stock ESS Billing (and Elasticsearch) dashboard assets in Kibana under Management → Integrations → ESS Billing / Elasticsearch → Assets → Install assets (without adding a second agent policy).
+        multi: false
+        required: false
+        show_user: true
+        default: false

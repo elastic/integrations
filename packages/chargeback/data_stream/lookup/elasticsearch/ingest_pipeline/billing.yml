@@ -1,14 +1,168 @@
 ---
-description: "Chargeback: Set composite_key from @timestamp and deployment_id, and extract cost_type from SKU."
+description: "Chargeback: Set composite_key from @timestamp and deployment_id, extract cost_type/cost_category, and populate ESS Billing symlink fields."
 processors:
   - script:
       ignore_failure: true
       lang: painless
+      tag: ess_billing
       source: |
         if (ctx['@timestamp'] != null && ctx.deployment_id != null) {
-            ctx.composite_key = ZonedDateTime.parse(ctx['@timestamp']).toLocalDate().toString() + '_' + ctx.deployment_id;
+          def rawTs = ctx['@timestamp'];
+          String dateStr = (rawTs instanceof Number)
+            ? Instant.ofEpochMilli(((Number)rawTs).longValue()).atZone(ZoneOffset.UTC).toLocalDate().toString()
+            : ZonedDateTime.parse(rawTs.toString()).toLocalDate().toString();
+          ctx.composite_key = dateStr + '_' + ctx.deployment_id;
         }
-      tag: ess_billing
+        // Unwrap optional transform terms-aggregation buckets
+        for (String fn : ['organization_id', 'deployment_type', 'billing_type', 'billing_kind', 'cloud_region', 'credit_start', 'credit_end']) {
+          def v = ctx[fn];
+          if (v instanceof Map) {
+            def b = v.buckets;
+            if (b instanceof List && b.size() > 0) {
+              ctx[fn] = b[0].key_as_string != null ? b[0].key_as_string : b[0].key;
+            } else {
+              def ks = new ArrayList(v.keySet());
+              ctx[fn] = ks.size() > 0 ? ks[0] : null;
+            }
+          }
+        }
+        if (ctx.credit_active instanceof Map) {
+          def cb = ctx.credit_active.buckets;
+          if (cb instanceof List && cb.size() > 0 && cb[0].key != null) {
+            String bs = cb[0].key.toString().toLowerCase();
+            ctx.credit_active = (bs == 'true' || bs == '1');
+          } else {
+            def ck = new ArrayList(ctx.credit_active.keySet());
+            if (ck.size() > 0 && ck[0] != null) {
+              String ks = ck[0].toString().toLowerCase();
+              ctx.credit_active = (ks == 'true' || ks == '1');
+            } else {
+              ctx.credit_active = null;
+            }
+          }
+        }
+
+        // Populate ESS Billing + ESS Credits symlink fields
+        ctx.data_stream = ['type': 'metrics', 'dataset': 'ess_billing.billing', 'namespace': 'default'];
+        if (ctx.event == null) { ctx.event = [:]; }
+        ctx.event.dataset = 'ess_billing.billing';
+
+        String s = ctx.sku != null ? ctx.sku.toString() : '';
+        String orgId = (ctx.organization_id != null && ctx.organization_id != '') ? ctx.organization_id.toString() : 'unknown';
+        String depName = (ctx.deployment_name != null && ctx.deployment_name != '') ? ctx.deployment_name.toString() : (ctx.deployment_id != null ? ctx.deployment_id.toString() : 'unknown');
+        String depType = (ctx.deployment_type != null && ctx.deployment_type != '')
+          ? ctx.deployment_type.toString()
+          : ((s.startsWith('elasticsearch.') || s.startsWith('observability.') || s.startsWith('security.') || s.startsWith('serverless.')) ? 'elasticsearch' : 'deployment');
+
+        if (ctx.ess == null) { ctx.ess = [:]; }
+        if (ctx.ess.billing == null) { ctx.ess.billing = [:]; }
+        ctx.ess.billing.organization_id = orgId;
+        ctx.ess.billing.deployment_id = ctx.deployment_id;
+        ctx.ess.billing.deployment_name = depName;
+        ctx.ess.billing.deployment_type = depType;
+        ctx.ess.billing.sku = ctx.sku;
+        ctx.ess.billing.total_ecu = ctx.total_chargeable_units instanceof Number ? ((Number)ctx.total_chargeable_units).doubleValue() : 0.0;
+        ctx.ess.billing.quantity = ['value': ctx.quantity_value instanceof Number ? ((Number)ctx.quantity_value).doubleValue() : 0.0];
+        if (ctx.billing_kind != null && ctx.billing_kind != '') {
+          ctx.ess.billing.kind = ctx.billing_kind.toString();
+        } else if (s.contains('.es.')) {
+          ctx.ess.billing.kind = 'elasticsearch';
+        }
+
+        String btype = (ctx.billing_type != null && ctx.billing_type != '') ? ctx.billing_type.toString() : '';
+        if (btype == '') {
+          if (s.contains('data-out') || s.contains('data-transfer-out') || s.contains('egress')) {
+            btype = 'data_out';
+          } else if (s.contains('data-in') || s.contains('data-transfer-in') || s.contains('ingress')) {
+            btype = 'data_in';
+          } else if (s.contains('snapshot') || s.contains('retained') || s.contains('storage')) {
+            btype = 'storage';
+          } else if (s.contains('support')) {
+            btype = 'support';
+          } else if (s.contains('.es.') || s.contains('.kibana.') || s.contains('.apm.') || s.contains('.integrationsserver.') || s.contains('.enterprisesearch.') || s.contains('vcu') || s.contains('complete')) {
+            btype = 'capacity';
+          } else {
+            btype = 'usage';
+          }
+        }
+        ctx.ess.billing.type = btype;
+
+        if (ctx.credit_active == true || ctx.credit_active == 'true') {
+          ctx.ess.billing.active = true;
+          if (ctx.credit_ecu_balance instanceof Number) {
+            ctx.ess.billing.ecu_balance = ((Number)ctx.credit_ecu_balance).longValue();
+          }
+          if (ctx.credit_ecu_quantity instanceof Number) {
+            ctx.ess.billing.ecu_quantity = ((Number)ctx.credit_ecu_quantity).longValue();
+          }
+          if (ctx.credit_start != null) {
+            ctx.ess.billing.start = ctx.credit_start;
+          }
+          if (ctx.credit_end != null) {
+            ctx.ess.billing.end = ctx.credit_end;
+          }
+        }
+
+        ctx.cloud = [
+          'account': ['id': orgId],
+          'instance': ['id': ctx.deployment_id, 'name': depName]
+        ];
+        if (ctx.cloud_region != null && ctx.cloud_region != '') {
+          ctx.cloud.region = ctx.cloud_region.toString();
+        }
+
+        Map regionGeo = [
+          'gcp-us-central1': ['location': ['lon': -93.2650, 'lat': 44.9778], 'name': 'gcp-us-central1'],
+          'gcp-us-east4': ['location': ['lon': -80.1918, 'lat': 25.7617], 'name': 'gcp-us-east4'],
+          'gcp-us-west1': ['location': ['lon': -122.4194, 'lat': 37.7749], 'name': 'gcp-us-west1'],
+          'gcp-us-east1': ['location': ['lon': -77.0369, 'lat': 38.9072], 'name': 'gcp-us-east1'],
+          'gcp-europe-west1': ['location': ['lon': -6.2603, 'lat': 53.3498], 'name': 'gcp-europe-west1'],
+          'gcp-europe-west3': ['location': ['lon': 11.5820, 'lat': 48.1351], 'name': 'gcp-europe-west3'],
+          'aws-us-east-1': ['location': ['lon': -77.0369, 'lat': 38.9072], 'name': 'aws-us-east-1'],
+          'us-east-1': ['location': ['lon': -77.0369, 'lat': 38.9072], 'name': 'us-east-1'],
+          'aws-eu-west-1': ['location': ['lon': -6.2603, 'lat': 53.3498], 'name': 'aws-eu-west-1'],
+          'eu-west-1': ['location': ['lon': -6.2603, 'lat': 53.3498], 'name': 'eu-west-1'],
+          'aws-us-west-2': ['location': ['lon': -122.6765, 'lat': 45.5235], 'name': 'aws-us-west-2'],
+          'us-west-2': ['location': ['lon': -122.6765, 'lat': 45.5235], 'name': 'us-west-2'],
+          'aws-af-south-1': ['location': ['lon': 18.4241, 'lat': -33.9249], 'name': 'aws-af-south-1'],
+          'azure-eastus': ['location': ['lon': -77.0369, 'lat': 38.9072], 'name': 'azure-eastus'],
+          'azure-eastus2': ['location': ['lon': -80.1918, 'lat': 25.7617], 'name': 'azure-eastus2'],
+          'azure-westeurope': ['location': ['lon': 4.9041, 'lat': 52.3676], 'name': 'azure-westeurope'],
+          'azure-southafricanorth': ['location': ['lon': 28.0473, 'lat': -26.2041], 'name': 'azure-southafricanorth']
+        ];
+
+        def echMatcher = /^(?:Cloud-[A-Za-z]+_)?(aws|gcp|azure|global)\.([^_]+)_([^_]+)_(\d+)_(\d+)$/.matcher(s);
+        if (echMatcher.matches()) {
+          ctx.cloud.provider = echMatcher.group(1);
+          ctx.cloud.machine = ['type': echMatcher.group(2)];
+          if (ctx.cloud.region == null || ctx.cloud.region == '') {
+            ctx.cloud.region = echMatcher.group(3);
+          }
+          ctx.ess.billing.ram_per_zone = Long.parseLong(echMatcher.group(4));
+          ctx.ess.billing.zone_count = Long.parseLong(echMatcher.group(5));
+        } else if (depType == 'deployment') {
+          ctx.cloud.provider = s.startsWith('aws.') ? 'aws' : (s.startsWith('gcp.') ? 'gcp' : (s.startsWith('azure.') ? 'azure' : (s == 'onprem_node' ? 'onprem' : 'cloud')));
+        } else {
+          ctx.cloud.provider = 'serverless';
+          def slsMatcher = /^[^.]+\.([^_]+)(?:_(.+))?$/.matcher(s);
+          if (slsMatcher.matches()) {
+            ctx.ess.billing.cloud = ['service': ['type': slsMatcher.group(1)]];
+            if ((ctx.cloud.region == null || ctx.cloud.region == '') && slsMatcher.group(2) != null && regionGeo.containsKey(slsMatcher.group(2))) {
+              ctx.cloud.region = slsMatcher.group(2);
+            }
+          }
+        }
+
+        String reg = ctx.cloud.region;
+        if (reg != null && regionGeo.containsKey(reg)) {
+          ctx.cloud.geo = regionGeo[reg];
+        } else {
+          ctx.cloud.geo = ['name': reg != null ? reg : 'gcp-us-central1', 'location': ['lon': -93.2650, 'lat': 44.9778]];
+        }
+
+        for (String tmp : ['quantity_value', 'organization_id', 'deployment_type', 'billing_type', 'billing_kind', 'cloud_region', 'credit_active', 'credit_ecu_balance', 'credit_ecu_quantity', 'credit_start', 'credit_end']) {
+          ctx.remove(tmp);
+        }
   - set:
       field: cost_type
       value: 'data-transfer'
@@ -93,7 +247,8 @@ processors:
         }
         if (ctx.cost_type != null) {
           if (ctx.cost_type == 'ml' || ctx.cost_type == 'kibana' || ctx.cost_type == 'apm'
-              || ctx.cost_type == 'enterprise_search' || ctx.cost_type == 'integrations_server') {
+              || ctx.cost_type == 'enterprise_search' || ctx.cost_type == 'enterprisesearch'
+              || ctx.cost_type == 'integrations_server' || ctx.cost_type == 'integrationsserver') {
             ctx.cost_category = 'platform';
             ctx.is_allocatable = false;
             return;

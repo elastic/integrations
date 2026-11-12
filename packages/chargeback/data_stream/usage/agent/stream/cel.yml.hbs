@@ -1,0 +1,254 @@
+config_version: 2
+interval: "1h"
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl:
+  {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: "{{cloud_api_base}}/api/v1/deployments/_search"
+state:
+  api_key: !!str {{cloud_api_key}}
+  organization_id: !!str {{organization_id}}
+  cloud_api_base: !!str {{cloud_api_base}}
+  hub_es_url: !!str {{escape_string hub_es_url}}
+  hub_es_api_key: !!str {{hub_es_api_key}}
+  deployment_keys: !!str {{deployment_api_keys}}
+  conf_indexing_weight: !!int {{indexing_weight}}
+  conf_query_weight: !!int {{query_weight}}
+  conf_storage_weight: !!int {{storage_weight}}
+  conf_memory_cost_weight: !!int {{memory_cost_weight}}
+  conf_storage_cost_weight: !!int {{storage_cost_weight}}
+redact:
+  fields:
+    - api_key
+    - cloud_api_key
+    - hub_es_api_key
+    - deployment_keys
+    - deployment_api_keys
+program: |-
+  state.with(
+    (string(state.conf_indexing_weight) + "|" + string(state.conf_query_weight) + "|" + string(state.conf_storage_weight) + "|" + string(state.conf_memory_cost_weight) + "|" + string(state.conf_storage_cost_weight)).as(conf_sig,
+    ((now - duration("2h")).format(time_layout.DateOnly).parse_time(time_layout.DateOnly) - duration("24h")).as(day_start,
+    day_start.format(time_layout.RFC3339).as(day_ts,
+    (state.?cursor.last_day.orValue("") == day_ts && state.?cursor.conf_sig.orValue("") == conf_sig) ?
+      {
+        "events": [],
+        "cursor": { "last_day": day_ts, "conf_sig": conf_sig },
+        "want_more": false,
+      }
+    :
+      (
+        !has(state.deployment_keys) || state.deployment_keys == null ? [] :
+        string(dyn(state.deployment_keys)).split(",")
+      ).map(k, k.trim_space()).filter(k, k != "" && k != "null" && !k.startsWith("$co.elastic.secret")).as(all_dkeys,
+        request(
+          "POST",
+          state.cloud_api_base + "/api/v1/deployments/_search"
+        ).with(
+          {
+            "Header": {
+              "Authorization": ["ApiKey " + state.api_key],
+              "Content-Type": ["application/json"],
+            },
+            "Body": { "size": 100 }.encode_json(),
+          }
+        ).do_request().as(dep_resp,
+          ((dep_resp.StatusCode == 200) ? bytes(dep_resp.Body).decode_json() : { "deployments": [] }).as(dep_body,
+            get_request(
+              state.cloud_api_base + "/api/v1/serverless/projects/elasticsearch"
+            ).with(
+              { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
+            ).do_request().as(es_resp,
+              ((es_resp.StatusCode == 200) ? bytes(es_resp.Body).decode_json() : { "items": [] }).as(es_body,
+                get_request(
+                  state.cloud_api_base + "/api/v1/serverless/projects/observability"
+                ).with(
+                  { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
+                ).do_request().as(obs_resp,
+                  ((obs_resp.StatusCode == 200) ? bytes(obs_resp.Body).decode_json() : { "items": [] }).as(obs_body,
+                    get_request(
+                      state.cloud_api_base + "/api/v1/serverless/projects/security"
+                    ).with(
+                      { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
+                    ).do_request().as(sec_resp,
+                      ((sec_resp.StatusCode == 200) ? bytes(sec_resp.Body).decode_json() : { "items": [] }).as(sec_body,
+                        (
+                          ((has(dep_body.deployments) && dep_body.deployments != null) ?
+                            dep_body.deployments.filter(d,
+                              has(d.resources) && d.resources != null && has(d.resources.elasticsearch) && d.resources.elasticsearch != null && size(d.resources.elasticsearch) > 0 &&
+                              has(d.resources.elasticsearch[0].info) && has(d.resources.elasticsearch[0].info.metadata) && has(d.resources.elasticsearch[0].info.metadata.service_url) && d.resources.elasticsearch[0].info.metadata.service_url != null
+                            ).map(d,
+                              d.resources.elasticsearch[0].as(es_r,
+                                {
+                                  "id": string(es_r.id),
+                                  "alt_id": has(d.id) && d.id != null ? string(d.id) : string(es_r.id),
+                                  "name": (has(d.name) && d.name != null && string(d.name) != "") ? string(d.name) : string(es_r.id),
+                                  "es_url": string(es_r.info.metadata.service_url),
+                                  "is_ech": true,
+                                }
+                              )
+                            )
+                          : []) +
+                          ((has(es_body.items) && es_body.items != null ? es_body.items : []) +
+                           (has(obs_body.items) && obs_body.items != null ? obs_body.items : []) +
+                           (has(sec_body.items) && sec_body.items != null ? sec_body.items : [])
+                          ).filter(p, has(p.endpoints) && p.endpoints != null && has(p.endpoints.elasticsearch) && p.endpoints.elasticsearch != null).map(p,
+                            {
+                              "id": string(p.id),
+                              "alt_id": string(p.id),
+                              "name": (has(p.name) && p.name != null && string(p.name) != "") ? string(p.name) : string(p.id),
+                              "es_url": string(p.endpoints.elasticsearch),
+                              "is_ech": false,
+                            }
+                          )
+                        ).as(cloud_targets,
+                          ((state.hub_es_url != "" && state.hub_es_api_key != "") ?
+                            (state.hub_es_url.endsWith("/") ? state.hub_es_url.substring(0, size(state.hub_es_url) - 1) : state.hub_es_url).as(clean_hub_url,
+                              get_request(clean_hub_url + "/").with({ "Header": { "Authorization": ["ApiKey " + state.hub_es_api_key] } }).do_request().as(hub_info_resp,
+                                (hub_info_resp.StatusCode == 200) ?
+                                  bytes(hub_info_resp.Body).decode_json().as(hub_info,
+                                    string(hub_info.cluster_name).as(hub_cname,
+                                      cloud_targets.exists(ct, ct.id == hub_cname || ct.es_url == clean_hub_url) ?
+                                        cloud_targets
+                                      :
+                                        cloud_targets + [{
+                                          "id": hub_cname,
+                                          "alt_id": hub_cname,
+                                          "name": hub_cname,
+                                          "es_url": clean_hub_url,
+                                          "is_ech": true,
+                                        }]
+                                    )
+                                  )
+                                : cloud_targets
+                              )
+                            )
+                          : cloud_targets).as(targets,
+                            targets.map(t,
+                              (t.es_url.endsWith("/") ? t.es_url.substring(0, size(t.es_url) - 1) : t.es_url).as(es_base,
+                                (
+                                  all_dkeys.filter(k, k.startsWith(t.id + ":") || k.startsWith(t.alt_id + ":") || k.startsWith(t.name + ":")).map(k,
+                                    k.substring(size(k.split(":")[0]) + 1, size(k))
+                                  ) +
+                                  (state.hub_es_api_key != "" && !state.hub_es_api_key.startsWith("$co.elastic.secret") ? [state.hub_es_api_key] : []) +
+                                  (!t.is_ech ? [state.api_key] : []) +
+                                  all_dkeys.filter(k, !k.contains(":"))
+                                ).as(cand_keys,
+                                  (es_base + "/_cat/indices?h=index,pri.store.size,store.size,dataset.size,docs.count,indexing.index_time,search.query_time,search.query_total&format=json&bytes=b&time=ms&expand_wildcards=open,hidden").as(cat_url,
+                                    (size(cand_keys) == 0 ?
+                                      { "ok": false, "body": [], "key": "", "via_ccs": false }
+                                    :
+                                      get_request(cat_url).with({ "Header": { "Authorization": ["ApiKey " + cand_keys[0]] } }).do_request().as(r0,
+                                        (r0.StatusCode == 200) ?
+                                          { "ok": true, "body": bytes(r0.Body).decode_json(), "key": cand_keys[0], "via_ccs": false }
+                                        : (size(cand_keys) > 1 ?
+                                          get_request(cat_url).with({ "Header": { "Authorization": ["ApiKey " + cand_keys[1]] } }).do_request().as(r1,
+                                            (r1.StatusCode == 200) ?
+                                              { "ok": true, "body": bytes(r1.Body).decode_json(), "key": cand_keys[1], "via_ccs": false }
+                                            : (state.hub_es_url != "" && state.hub_es_api_key != "" ?
+                                              (state.hub_es_url.endsWith("/") ? state.hub_es_url.substring(0, size(state.hub_es_url) - 1) : state.hub_es_url).as(clean_hub,
+                                                get_request(clean_hub + "/" + t.name + ":*,-.*/_cat/indices?h=index,pri.store.size,store.size,dataset.size,docs.count,indexing.index_time,search.query_time,search.query_total&format=json&bytes=b&time=ms&expand_wildcards=open,hidden").with({ "Header": { "Authorization": ["ApiKey " + state.hub_es_api_key] } }).do_request().as(rccs,
+                                                  (rccs.StatusCode == 200) ?
+                                                    { "ok": true, "body": bytes(rccs.Body).decode_json(), "key": state.hub_es_api_key, "via_ccs": true }
+                                                  : { "ok": false, "body": [], "key": "", "via_ccs": false }
+                                                )
+                                              )
+                                            : { "ok": false, "body": [], "key": "", "via_ccs": false })
+                                          )
+                                        : { "ok": false, "body": [], "key": "", "via_ccs": false })
+                                      )
+                                    ).as(harvest,
+                                      (!harvest.ok) ? [] :
+                                      ((t.is_ech && !harvest.via_ccs) ?
+                                        get_request(es_base + "/*,.ds-*/_settings/index.routing.allocation.include._tier_preference?expand_wildcards=open,hidden&flat_settings=true").with({ "Header": { "Authorization": ["ApiKey " + harvest.key] } }).do_request().as(set_resp,
+                                          (set_resp.StatusCode == 200) ? bytes(set_resp.Body).decode_json() : {}
+                                        )
+                                      : {}).as(settings_map,
+                                        harvest.body.filter(row, has(row.index) && row.index != null && string(row.index) != "").map(row,
+                                          string(row.index).as(raw_idx,
+                                            (raw_idx.contains(":") ? raw_idx.substring(size(raw_idx.split(":")[0]) + 1, size(raw_idx)) : raw_idx).as(idx_name,
+                                              (((idx_name in settings_map) && settings_map[idx_name] != null && has(settings_map[idx_name].settings) && settings_map[idx_name].settings != null && ("index.routing.allocation.include._tier_preference" in settings_map[idx_name].settings)) ?
+                                                string(settings_map[idx_name].settings["index.routing.allocation.include._tier_preference"])
+                                              : "data_hot,data_content").as(tier_pref,
+                                                (("dataset.size" in row && row["dataset.size"] != null && string(row["dataset.size"]) != "") ? int(row["dataset.size"]) : (("pri.store.size" in row && row["pri.store.size"] != null && string(row["pri.store.size"]) != "") ? int(row["pri.store.size"]) : 0)).as(dset_bytes,
+                                                  (("store.size" in row && row["store.size"] != null && string(row["store.size"]) != "") ? int(row["store.size"]) : dset_bytes).as(tot_bytes,
+                                                    {
+                                                      "@timestamp": day_ts,
+                                                      "period_start": day_ts,
+                                                      "deployment_name": t.name,
+                                                      "elasticsearch": {
+                                                        "cluster": { "name": t.id },
+                                                        "index": {
+                                                          "name": idx_name,
+                                                          "tier_preference": tier_pref,
+                                                          "primaries": {
+                                                            "docs": {
+                                                              "count": ("docs.count" in row && row["docs.count"] != null && string(row["docs.count"]) != "") ? int(row["docs.count"]) : 0,
+                                                            },
+                                                            "store": {
+                                                              "total_data_set_size_in_bytes": dset_bytes,
+                                                            },
+                                                          },
+                                                          "total": {
+                                                            "store": {
+                                                              "size_in_bytes": tot_bytes,
+                                                            },
+                                                            "indexing": {
+                                                              "index_time_in_millis": ("indexing.index_time" in row && row["indexing.index_time"] != null && string(row["indexing.index_time"]) != "") ? int(row["indexing.index_time"]) : 0,
+                                                            },
+                                                            "search": {
+                                                              "query_time_in_millis": ("search.query_time" in row && row["search.query_time"] != null && string(row["search.query_time"]) != "") ? int(row["search.query_time"]) : 0,
+                                                              "query_total": ("search.query_total" in row && row["search.query_total"] != null && string(row["search.query_total"]) != "") ? int(row["search.query_total"]) : 0,
+                                                            },
+                                                          },
+                                                        },
+                                                      },
+                                                      "conf_indexing_weight": int(state.conf_indexing_weight),
+                                                      "conf_query_weight": int(state.conf_query_weight),
+                                                      "conf_storage_weight": int(state.conf_storage_weight),
+                                                      "conf_memory_cost_weight": int(state.conf_memory_cost_weight),
+                                                      "conf_storage_cost_weight": int(state.conf_storage_cost_weight),
+                                                    }
+                                                  )
+                                                )
+                                              )
+                                            )
+                                          )
+                                        )
+                                      )
+                                    )
+                                  )
+                                )
+                              )
+                            ).flatten().as(evts,
+                              {
+                                "events": size(evts) > 0 ? evts : [ { "fake": true } ],
+                                "cursor": { "last_day": day_ts, "conf_sig": conf_sig },
+                                "want_more": false,
+                              }
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )))
+  )
+
+processors:
+- drop_event.when.equals.fake: true
