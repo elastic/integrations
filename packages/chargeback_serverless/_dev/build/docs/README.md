@@ -34,7 +34,7 @@ Configure your Organization ID, unified Elastic Cloud API key, lookbehind window
 | **Elastic Cloud API Key** | Yes | Unified Elastic Cloud API key with Organization role **`Billing Admin`** and **Cloud resource access** across `Elasticsearch`, `Observability`, and `Security` project types |
 | **Hub Project Elasticsearch API Key** | Yes | Optional advanced Elasticsearch API key (`hub_es_api_key`) for harvesting local `_cat/indices` metrics on the FinOps hub project |
 | **Remote Project Elasticsearch API Keys** | Yes | Optional advanced comma-separated least-privileged Elasticsearch API keys (`project_api_keys`) for remote projects in `<project_id>:<encoded_api_key>` format |
-| **Billing Lookbehind Days** | No | Historical UTC days of billing data to backfill on initial installation (default `60`) |
+| **Billing Lookbehind Days** | No | Historical UTC days of billing data to backfill from the Elastic Cloud Billing API on initial installation (default `60`, up to `365`). Live project usage (`_cat/indices`, `_ml/trained_models/_stats`, `synthetics-*`) is collected from installation forward; any script-based historical usage backfill projects current snapshots onto past days as an estimate |
 | **Currency Unit** | No | Three-letter currency code (for example, `USD`, `EUR`, or `GBP`) |
 | **Currency Symbol** | No | Currency symbol displayed in KPI panels (for example, `$`, `€`, or `£`) |
 | **Chargeable Unit Rate** | No | Conversion multiplier from chargeable units (ECU) to your configured currency |

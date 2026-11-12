@@ -4,7 +4,6 @@ description: >-
   allocation_driver (indexing | query | storage | ai | synthetics | none) on billing lookup rows.
 processors:
   - script:
-      ignore_failure: true
       lang: painless
       tag: set_composite_key
       source: |
@@ -102,7 +101,11 @@ processors:
           ctx.total_chargeable_units = ((Number)ctx.total_ecu).doubleValue();
         }
         if (ctx['@timestamp'] != null && ctx.project_id != null) {
-          ctx.composite_key = ZonedDateTime.parse(ctx['@timestamp']).toLocalDate().toString() + '_' + ctx.project_id;
+          def ts = ctx['@timestamp'];
+          def date = (ts instanceof Number)
+            ? Instant.ofEpochMilli(((Number) ts).longValue()).atZone(ZoneOffset.UTC).toLocalDate().toString()
+            : ZonedDateTime.parse(ts.toString()).toLocalDate().toString();
+          ctx.composite_key = date + '_' + ctx.project_id;
         }
   - set:
       field: cost_type
@@ -120,7 +123,6 @@ processors:
       if: ctx.sku == 'global.inference-chat-input'
       tag: set_cost_type_inference
   - script:
-      ignore_failure: true
       lang: painless
       tag: classify_serverless_sku
       description: >-

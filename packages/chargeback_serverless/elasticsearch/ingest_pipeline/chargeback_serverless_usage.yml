@@ -4,12 +4,14 @@ description: >-
   for usage lookup indices.
 processors:
   - script:
-      ignore_failure: true
       lang: painless
       tag: set_usage_lookup_keys
       source: |
         if (ctx['@timestamp'] != null && ctx.project_id != null) {
-          def date = ZonedDateTime.parse(ctx['@timestamp']).toLocalDate().toString();
+          def ts = ctx['@timestamp'];
+          def date = (ts instanceof Number)
+            ? Instant.ofEpochMilli(((Number) ts).longValue()).atZone(ZoneOffset.UTC).toLocalDate().toString()
+            : ZonedDateTime.parse(ts.toString()).toLocalDate().toString();
           ctx.composite_key = date + '_' + ctx.project_id;
           if (ctx.datastream != null) {
             ctx.composite_datastream_key = ctx.composite_key + '_' + ctx.datastream;

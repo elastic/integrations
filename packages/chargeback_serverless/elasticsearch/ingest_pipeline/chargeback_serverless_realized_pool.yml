@@ -4,12 +4,15 @@ description: >-
   daily allocatable ECU pools (indexing_ecu, query_ecu, storage_ecu, ai_ecu).
 processors:
   - script:
-      ignore_failure: true
       lang: painless
       tag: set_realized_pool_fields
       source: |
         if (ctx['@timestamp'] != null && ctx.project_id != null) {
-          ctx.composite_key = ZonedDateTime.parse(ctx['@timestamp']).toLocalDate().toString() + '_' + ctx.project_id;
+          def ts = ctx['@timestamp'];
+          def date = (ts instanceof Number)
+            ? Instant.ofEpochMilli(((Number) ts).longValue()).atZone(ZoneOffset.UTC).toLocalDate().toString()
+            : ZonedDateTime.parse(ts.toString()).toLocalDate().toString();
+          ctx.composite_key = date + '_' + ctx.project_id;
         }
         double idx = 0.0;
         if (ctx.indexing_ecu instanceof Map) {

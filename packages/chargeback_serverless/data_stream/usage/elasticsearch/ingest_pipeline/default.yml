@@ -31,7 +31,11 @@ processors:
           ctx.project_name = ctx.project_id;
         }
         if (ctx['@timestamp'] != null && ctx.project_id != null) {
-          ctx.composite_key = ZonedDateTime.parse(ctx['@timestamp']).toLocalDate().toString() + '_' + ctx.project_id;
+          def ts = ctx['@timestamp'];
+          def date = (ts instanceof Number)
+            ? Instant.ofEpochMilli(((Number) ts).longValue()).atZone(ZoneOffset.UTC).toLocalDate().toString()
+            : ZonedDateTime.parse(ts.toString()).toLocalDate().toString();
+          ctx.composite_key = date + '_' + ctx.project_id;
         }
         if (ctx.doc_type == 'datastream' && ctx.datastream != null && ctx.datastream != '') {
           if (ctx.backing_index == null || ctx.backing_index == '') {
