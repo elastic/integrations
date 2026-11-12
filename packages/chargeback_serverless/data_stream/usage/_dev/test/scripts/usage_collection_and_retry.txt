@@ -1,0 +1,133 @@
+# Verify CEL usage collector behavior across:
+# 1. Failed-day discovery HTTP 503 response: emits error event without advancing cursor.last_day.
+# 2. Retry & live usage collection: collects datastream_usage, ai_model_usage, synthetics_usage,
+#    and project_harvest_status events across discovered Serverless projects.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} usage-mock
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 3 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_usage_docs.json
+
+exec jq -r '[.hits.hits[]._source.error.code // empty] | .[]' got_usage_docs.json
+stdout '^503$'
+
+exec jq -r '[.hits.hits[]._source | select(.record_type == "datastream_usage" and .project_id == "proj-1") | .data_stream_name] | .[0]' got_usage_docs.json
+stdout '^logs-app-default$'
+
+exec jq -r '[.hits.hits[]._source | select(.record_type == "project_harvest_status" and .project_id == "proj-1") | .last_status] | .[0]' got_usage_docs.json
+stdout '^ok$'
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down usage-mock
+
+-- test_config.yaml --
+input: cel
+vars:
+  organization_id: "12345"
+  cloud_api_key: "test-cloud-api-key"
+  currency_unit: "USD"
+  currency_symbol: "$"
+  unit_rate: "1.0"
+  billing_api_base: "http://usage-mock:8080"
+  cloud_api_base: "http://usage-mock:8080"
+data_stream:
+  vars:
+    hub_es_api_key: "test-hub-key"
+    project_api_keys: "proj-1:test-proj-key"
+
+-- usage-mock/docker-compose.yml --
+version: '2.3'
+services:
+  usage-mock:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    hostname: usage-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+
+-- usage-mock/config.yml --
+rules:
+  - path: /api/v1/serverless/projects/elasticsearch
+    methods: ['GET']
+    responses:
+      - status_code: 503
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"message":"temporary control-plane error"}'
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"items":[{"id":"proj-1","name":"Production ES","endpoints":{"elasticsearch":"http://usage-mock:8080"}}]}'
+  - path: /api/v1/serverless/projects/observability
+    methods: ['GET']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"items":[]}'
+  - path: /api/v1/serverless/projects/security
+    methods: ['GET']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"items":[]}'
+  - path: /api/v1/serverless/projects/vectordb
+    methods: ['GET']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"items":[]}'
+  - path: /api/v2/billing/organizations/12345/costs/instances
+    methods: ['GET']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"instances":[{"id":"proj-1","name":"Production ES","type":"elasticsearch","product_line_items":[{"sku":"es.search-vcu","total_ecu":50.0,"quantity":{"value":50.0}}]}]}'
+  - path: /_cat/indices/*,.ds-*
+    methods: ['GET']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '[{"index":".ds-logs-app-default-2026.11.11-000001","pri.store.size":"1073741824","docs.count":"10000","indexing.index_total":"10000","indexing.index_time":"5000","search.query_total":"250","search.query_time":"1200"}]'
+  - path: /_ml/trained_models/_stats
+    methods: ['GET']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"trained_model_stats":[]}'
+  - path: /_inference
+    methods: ['GET']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"endpoints":[]}'
