@@ -71,9 +71,9 @@ processors:
     ##########################
     ## Instigator ##
     ##########################
-    # When both app and instigator are present, process.* is populated from the app.
-    # Copy the instigator to jamf_protect.telemetry.instigator.* before the renames below
-    # move its fields, so it is kept after jamf_protect.telemetry.event is removed.
+    # When both app and instigator are present, process.* is populated from the app only.
+    # Copy the instigator to jamf_protect.telemetry.instigator.*, then remove the source object
+    # so the instigator renames below cannot fill process.* fields that the app lacks.
     - set:
         tag: set_jamf_protect_telemetry_instigator_start_39396e1d
         field: jamf_protect.telemetry.instigator.start
@@ -277,6 +277,11 @@ processors:
         type: string
         ignore_missing: true
         if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_remove?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_remove?.instigator != null
+    - remove:
+        tag: remove_jamf_protect_telemetry_event_btm_launch_item_remove_instigator
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator
+        ignore_missing: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_remove?.app != null
 
 
     ##########################
