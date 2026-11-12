@@ -16,8 +16,8 @@ resource.url: "http://localhost"
 redact.fields:
   - password
 state:
-  username: {{{username}}}
-  password: {{{password}}}
+  username: {{escape_string username}}
+  password: {{escape_string password}}
   hosts:
 {{#each hosts}}
     - {{this}}
@@ -67,7 +67,7 @@ program: |-
                     ]
                   : (resp.StatusCode == 200) ?
                     try(decode_json(resp.Body)).as(body,
-                      (type(body) == type("") || !has(body.data) || !has(body.data.resultSet)) ?
+                      (type(body) != type({}) || !has(body.data) || type(body.data) != type({}) || !has(body.data.resultSet) || type(body.data.resultSet) != type([])) ?
                         [
                           {
                             "error": {
