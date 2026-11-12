@@ -378,22 +378,22 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2026-04-01T12:00:00.420Z",
     "agent": {
-        "ephemeral_id": "27473fa6-f8df-40aa-bb13-fac3afd5ee8f",
-        "id": "01c42930-4161-40be-91e5-dae8bc08c563",
-        "name": "elastic-agent-11358",
+        "ephemeral_id": "74599dbd-6404-4dfa-a305-467cdcdfb119",
+        "id": "9c286448-69a3-4274-8dd7-2168182fc97f",
+        "name": "elastic-agent-68307",
         "type": "filebeat",
         "version": "9.5.6"
     },
     "data_stream": {
         "dataset": "projectdiscovery.vulnerability",
-        "namespace": "49234",
+        "namespace": "34325",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "01c42930-4161-40be-91e5-dae8bc08c563",
+        "id": "9c286448-69a3-4274-8dd7-2168182fc97f",
         "snapshot": false,
         "version": "9.5.6"
     },
@@ -404,7 +404,7 @@ An example event for `vulnerability` looks as following:
         ],
         "dataset": "projectdiscovery.vulnerability",
         "id": "d7e0000000000000000e",
-        "ingested": "2026-11-09T11:23:54Z",
+        "ingested": "2026-11-11T22:03:23Z",
         "kind": "state",
         "module": "projectdiscovery",
         "original": "{\"created_at\":\"2026-03-15T09:00:00.98765\",\"description\":\"Weak TLS cipher suites are supported by the server.\",\"event\":[{\"extracted-results\":[\"[tls10 TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA]\"],\"host\":\"mail.example.com\",\"info\":{\"author\":[\"erin-p\"],\"metadata\":{\"max-request\":4},\"name\":\"Weak Cipher Suites Detection\",\"reference\":[\"https://www.example.com/tls-cipher-guidance\"],\"severity\":\"medium\",\"tags\":[\"ssl\",\"tls\",\"misconfig\"]},\"ip\":\"198.51.100.50\",\"matched-at\":\"mail.example.com:443\",\"matcher-name\":\"tls-1.0\",\"matcher-status\":true,\"port\":\"443\",\"template-id\":\"weak-cipher-suites\",\"template-path\":\"/ops/ssl/weak-cipher-suites.yaml\",\"timestamp\":\"2026-04-01T11:59:48.5012Z\",\"type\":\"ssl\"}],\"impact\":\"\",\"is_internal\":false,\"labels\":null,\"matcher_status\":true,\"port\":443,\"remediation\":\"Disable weak cipher suites.\",\"result_type\":\"scan\",\"scan_id\":\"d2o2aaaabbbbccccdd10\",\"target\":\"mail.example.com\",\"template_encoded\":\"\",\"template_id\":\"weak-cipher-suites\",\"template_path\":\"/ops/ssl/weak-cipher-suites.yaml\",\"template_url\":\"https://cloud.projectdiscovery.io/public/weak-cipher-suites\",\"updated_at\":\"2026-04-01T12:00:00.4201\",\"vuln_hash\":\"0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e\",\"vuln_id\":\"d7e0000000000000000e\",\"vuln_status\":\"triaged\"}",
@@ -517,6 +517,11 @@ An example event for `vulnerability` looks as following:
             "tls",
             "misconfig"
         ],
+        "data_source": {
+            "ID": "weak-cipher-suites",
+            "Name": "ProjectDiscovery Nuclei Templates",
+            "URL": "https://cloud.projectdiscovery.io/public/weak-cipher-suites"
+        },
         "description": "Weak TLS cipher suites are supported by the server.",
         "reference": [
             "https://www.example.com/tls-cipher-guidance",
@@ -662,22 +667,22 @@ An example event for `asset` looks as following:
 {
     "@timestamp": "2026-03-01T12:00:00.250Z",
     "agent": {
-        "ephemeral_id": "2b86f9c1-4781-4bee-a68c-a87ec71fe711",
-        "id": "66974224-6241-4ce2-9f34-ef70de3abba3",
-        "name": "elastic-agent-79073",
+        "ephemeral_id": "d101b451-610a-4628-9fc5-e597f19ed83a",
+        "id": "19cd3bb3-52f2-4974-99d1-d6b1352be33c",
+        "name": "elastic-agent-43397",
         "type": "filebeat",
         "version": "9.5.6"
     },
     "data_stream": {
         "dataset": "projectdiscovery.asset",
-        "namespace": "36573",
+        "namespace": "82288",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "66974224-6241-4ce2-9f34-ef70de3abba3",
+        "id": "19cd3bb3-52f2-4974-99d1-d6b1352be33c",
         "snapshot": false,
         "version": "9.5.6"
     },
@@ -698,7 +703,7 @@ An example event for `asset` looks as following:
         ],
         "dataset": "projectdiscovery.asset",
         "id": "4204700004",
-        "ingested": "2026-11-09T11:23:07Z",
+        "ingested": "2026-11-11T22:02:27Z",
         "kind": "asset",
         "module": "projectdiscovery",
         "original": "{\"asset_hash\":\"c3d4e5f60718293a4b5c6d7e8f90a1b2\",\"created_at\":\"2025-10-15T15:45:00.5Z\",\"domain_name\":\"example.com\",\"enumeration_id\":\"d0abcdefgh1234567890\",\"enumeration_name\":\"example.com\",\"host\":\"mail.example.com\",\"id\":4204700004,\"ip\":[\"192.0.2.25\"],\"is_new\":false,\"name\":\"mail.example.com\",\"port\":7785,\"source_type\":\"dns_passive\",\"technology_details\":{},\"tls_not_after\":\"0001-01-01T00:00:00Z\",\"tls_not_before\":\"0001-01-01T00:00:00Z\",\"updated_at\":\"2026-03-01T12:00:00.25Z\"}",
