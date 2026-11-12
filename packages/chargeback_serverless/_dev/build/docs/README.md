@@ -17,8 +17,9 @@ Use this integration when your central FinOps hub runs on **Elastic Cloud Server
 
 Prepare the following in your Elastic Cloud account before configuring the integration:
 
-1. **Elastic Cloud Organization ID**: Locate your numeric organization ID in the [Elastic Cloud Console](https://cloud.elastic.co) URL or under **Organization → Settings**.
-2. **Elastic Cloud API key and project harvesting credentials**: Open the [Elastic Cloud Console API keys page](https://cloud.elastic.co/deployment-features/keys) (**Organization → API keys**), click **Create API key**, and configure:
+1. **FinOps hub project (`Elasticsearch` or `Observability Complete`)**: Install this integration on an **Elasticsearch** Serverless project or an **Observability Complete** Serverless project. **Observability Logs Essentials** projects exclude `metrics` data streams (`is not allowed due to data stream type exclusions`) and cannot host the FinOps hub, though the hub monitors and attributes costs for all **Observability Logs Essentials**, **Observability Complete**, **Elasticsearch**, and **Security** projects in your organization.
+2. **Elastic Cloud Organization ID**: Locate your numeric organization ID in the [Elastic Cloud Console](https://cloud.elastic.co) URL or under **Organization → Settings**.
+3. **Elastic Cloud API key and project harvesting credentials**: Open the [Elastic Cloud Console API keys page](https://cloud.elastic.co/deployment-features/keys) (**Organization → API keys**), click **Create API key**, and configure:
    - **Organization role**: Select **`Billing Admin`** so the Elastic Cloud Billing API returns complete organization billing history, including deleted Serverless projects.
    - **Project telemetry harvesting (choose least-privilege scoped keys or unified Cloud resource access)**:
      - **Least-privilege scoped Elasticsearch API keys (recommended for strict data-plane isolation)**: Supply read-only Elasticsearch API keys in **Hub Project Elasticsearch API Key** (`hub_es_api_key`) and **Remote Project Elasticsearch API Keys** (`project_api_keys` in `<project_id>:<encoded_api_key>` format) scoped to cluster privileges `monitor` (`_ml/trained_models/_stats`) and `monitor_inference` (`_inference`), and index privileges `monitor` and `view_index_metadata` across `*` and `.ds-*` (including hidden backing indices for `_cat/indices`), plus `read` on `synthetics-*`.
@@ -139,3 +140,20 @@ Create alerting rules from the 4 packaged ES|QL rule templates directly from **M
 | **Elasticsearch Vector Database (`optimized_for: vector`)** | Indexing time and ingest bytes (`ingest-vcu`) | Search query time (`search-vcu`) | Primary dataset size (`retained`) |
 | **Observability** | Ingest bytes and indexing time (`ingest`) | — | Primary dataset size (`retained`) |
 | **Security** | Ingest bytes and indexing time (`ingest`) | — | Primary dataset size (`retained`) |
+
+## Performance and scaling
+
+- **Single-agent policy**: Attach the Chargeback Serverless integration to a dedicated Fleet policy with a single enrolled Elastic Agent (`v9.2+`). Enrolling multiple agents in the same policy causes duplicate organization-wide collection runs.
+- **Daily UTC cursor gating and bounded lookbehind**: Both the `billing` and `usage` Common Expression Language (CEL) streams poll on a 1-hour check interval and use persisted cursor state so each completed UTC day is collected once after `02:00 UTC`. On initial installation, `billing` backfills up to `lookbehind` days (default `60`, maximum `365`) in 1-day windows and replays a bounded 7-day trailing window once per day to capture delayed invoice adjustments.
+
+## Troubleshooting
+
+- **`Installation package: chargeback_serverless is not allowed due to data stream type exclusions`**: This error occurs when installing the integration on an **Observability Logs Essentials** Serverless project, which restricts `metrics` data streams in Kibana Fleet. Install the Chargeback Serverless FinOps hub on an **Elasticsearch** Serverless project or an **Observability Complete** Serverless project instead; the hub will still discover and attribute costs for all Logs Essentials and Security projects in your organization.
+- **Projects report `empty_or_unauthorized` or `missing_key` on the Configuration dashboard**: Verify that your Elastic Cloud API key has **Enable access to Cloud resources** toggled **ON** across **`Elasticsearch`**, **`Observability`**, and **`Security`** project types, or provide a least-privilege project API key in `project_api_keys` (`<project_id>:<encoded_api_key>`) with `monitor` and `view_index_metadata` privileges on `*` and `.ds-*`.
+- **Transforms or `LOOKUP JOIN` queries report an index mode error**: Confirm that all seven `serverless_*_lookup` destination indices are created with `"index.mode": "lookup"` and that all `logs-chargeback_serverless.*` transforms are in the `started` state under **Stack Management → Transforms**.
+
+## Reference
+
+- [Elastic Cloud Billing API documentation](https://www.elastic.co/docs/api/doc/cloud/operation/operation-get-organization-billing-costs)
+- [Elastic Cloud Serverless Projects API documentation](https://www.elastic.co/docs/api/doc/cloud)
+- [ES|QL `LOOKUP JOIN` documentation](https://www.elastic.co/docs/reference/query-languages/esql/esql-commands#esql-lookup-join)

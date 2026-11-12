@@ -553,7 +553,7 @@ program: |-
               ((base_ds.startsWith(".") || base_ds == "system" || (base_ds.startsWith("serverless_") && (base_ds.endsWith("_lookup") || base_ds.contains("_lookup-")))) ? "system" : base_ds).as(norm_ds,
               {
                 "ds": norm_ds,
-                "rep_idx": norm_ds == "system" ? "system" : raw_idx,
+                "representative_index": norm_ds == "system" ? "system" : raw_idx,
                 "idx_time": ("indexing.index_time" in row && row["indexing.index_time"] != null && row["indexing.index_time"] != "") ? int(row["indexing.index_time"]) : 0,
                 "qry_time": ("search.query_time" in row && row["search.query_time"] != null && row["search.query_time"] != "") ? int(row["search.query_time"]) : 0,
                 "store_bytes": ("dataset.size" in row && row["dataset.size"] != null && row["dataset.size"] != "") ? int(row["dataset.size"]) : 0,
@@ -600,7 +600,7 @@ program: |-
                 "project_id": p.id,
                 "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
                 "project_type": p.project_type,
-                "datastream": ds_grp[0].rep_idx,
+                "datastream": ds_grp[0].representative_index,
                 "backing_index": ds_name,
                 "datastream_sum_indexing_time": ds_grp.map(r, r.idx_time).sum(),
                 "datastream_sum_query_time": ds_grp.map(r, r.qry_time).sum(),
