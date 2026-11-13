@@ -1,0 +1,74 @@
+{
+  "id": "gcp_cloudsql_mysql_otel-failed-connection-surge-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud SQL MySQL OTel] Failed connection surge",
+        "description": "Alerts when at least 10% of connection attempts to a Cloud SQL for MySQL instance failed over the last 15 minutes (database/mysql/aborted_connects_count over database/mysql/connections_count, the same ratio as the Failed logins % column) and there was an average of at least 1 failed attempt per minute. Both counts are compared only in minutes where both arrived, and at least 5 such minutes are needed. The volume guard stops a single failure on an idle instance from alerting. Typical causes are rotated or wrong credentials, missing privileges, handshake timeouts, refusals at max_connections and brute-force attempts. This is a short-window, high-threshold signal for sudden breakage, not a long-term quality objective.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudsql",
+          "mysql"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "15m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudsql_mysql.otel-*\n| WHERE resource.attributes.gcp.resource_type == \"cloudsql_database\"\n// Per instance and minute: one-minute delta counts of connection attempts (successful or not) and failed attempts\n// (MySQL Aborted_connects). MAX collapses duplicate points. Both metrics are MySQL-only, so the rule is MySQL-scoped.\n| STATS attempts_min = MAX(MAX_OVER_TIME(`metrics.cloudsql.googleapis.com/database/mysql/connections_count`)),\n        failed_min = MAX(MAX_OVER_TIME(`metrics.cloudsql.googleapis.com/database/mysql/aborted_connects_count`))\n  BY `@timestamp` = TBUCKET(1 minute), database_id\n// The two counts are separate series: use only minutes where both arrived, so a missing minute of one can't skew the ratio\n| WHERE attempts_min IS NOT NULL AND failed_min IS NOT NULL\n| STATS attempts = SUM(attempts_min),\n        failed = SUM(failed_min),\n        matched_minutes = COUNT(*)\n  BY database_id",
+        "breach": {
+          "segment": "// At least 5 minutes with both counts in the window\nWHERE attempts > 0 AND matched_minutes >= 5\n| EVAL failed_connections_pct = failed * 100.0 / attempts,\n       failed_per_min = TO_DOUBLE(failed) / matched_minutes\n// Thresholds: at least 10% of attempts failed and at least 1 failed attempt per minute on average\n// (the volume guard stops a single failure on an idle instance from alerting)\n| WHERE failed_connections_pct >= 10 AND failed_per_min >= 1\n| EVAL failed_connections_pct = ROUND(failed_connections_pct, 1),\n       failed_per_min = ROUND(failed_per_min, 1)\n| SORT failed_connections_pct DESC, database_id ASC\n// Up to 1000 breaching instances per run (the ES|QL default row limit); raise it for larger fleets\n| LIMIT 1000\n| KEEP database_id, failed_connections_pct, failed_per_min, attempts, failed"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "database_id"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudsql_mysql_otel-failed-connection-surge-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud SQL MySQL failed connection surge\n\nA large share of connection attempts is failing. The affected clients can't reach the database.\n\n### Triage\n1. Open **[GCP OTel] Cloud SQL MySQL Instance Detail**, then *Connection attempts by outcome*. Note when failures started and whether successful connections dropped at the same time.\n2. Check *Connections near the max_connections limit*: refusals at the limit count as failed attempts.\n3. Look for a recent credential or secret rotation, a user or privilege change, IAM database authentication changes, SSL or TLS enforcement changes, or Cloud SQL Auth Proxy and connector errors in the application logs.\n4. Check the MySQL error log in Cloud Logging for `Access denied` or handshake errors and the client addresses involved. Many failures from unknown addresses suggest a brute-force attempt: restrict authorized networks or use private IP.\n\n### Actions\nRoll back or fix the credential or privilege change, fix connection limits, or block the offending sources.\n\n### Tuning\nChange `failed_connections_pct >= 10` and `failed_per_min >= 1` to adjust sensitivity."
+          }
+        },
+        {
+          "id": "gcp_cloudsql_mysql_otel-failed-connection-surge-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_mysql_otel-244a7e1a-2f13-4f93-b534-20a10a5158a7"
+          }
+        },
+        {
+          "id": "gcp_cloudsql_mysql_otel-failed-connection-surge-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_mysql_otel-deda1e6a-80e7-49cd-ba2e-fff6be787503"
+          }
+        }
+      ]
+    }
+  }
+}
