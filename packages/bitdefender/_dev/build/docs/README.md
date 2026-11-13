@@ -9,9 +9,9 @@ This integration additionally provides:
 2. Collection of push notification statistics via API polling, which includes the number of events sent, and counters for errors of different types, which you may wish to use to troubleshoot lost push notification events and for alerting purposes.
 3. Support for multiple instances of the integration, which may be needed for MSP/MSSP scenarios where multiple BitDefender GravityZone tenants exist.
 4. BitDefender company ID to your own company name/description mapping, in order to determine to which tenant the event relates to in a human friendly way. This is very useful for MSP/MSSP environments or for large organisations with multiple sub-organisations.
-5. GravityZone Public API polling for EDR/XDR incidents and individual incident alerts, and endpoint and account entity inventories.
+5. GravityZone Public API polling for EDR/XDR incidents and individual incident alerts, endpoint quarantine, endpoint and account entity inventories, and EDR blocklist state.
 
-This allows you to search, observe and visualize BitDefender GravityZone events, incidents, and entities through Elastic, trigger alerts, and monitor the BitDefender GravityZone Push Notification service for state and errors.
+This allows you to search, observe and visualize BitDefender GravityZone events, incidents, entities, and containment rules through Elastic, trigger alerts, and monitor the BitDefender GravityZone Push Notification service for state and errors.
 
 For more information about BitDefender GravityZone, refer to [BitDefender GravityZone](https://www.bitdefender.com/business/products/security-products.html) and refer to the [Public API - Push](https://www.bitdefender.com/business/support/en/77209-135318-push.html) documentation.
 
@@ -89,7 +89,8 @@ If Push and Public API polling require different key types or permissions, creat
 
 The Public API data streams require the corresponding GravityZone API permissions and product licenses:
 
-- Incidents: **Incidents API** and an EDR/XDR-capable subscription.
+- Incidents and blocklist: **Incidents API** and an EDR/XDR-capable subscription.
+- Quarantine: **Quarantine API**.
 - Endpoint inventory: **Network API**.
 - Account inventory: **Accounts API** and the required user-management rights.
 
@@ -98,7 +99,7 @@ Selecting an API area when creating a key does not grant the corresponding produ
 GravityZone rate limits vary by API method and tenant. A throttled request returns HTTP `429` and can include a `Retry-After` header. The integration retries throttled requests. Each polling cycle fetches every paginated response page for the enabled stream:
 
 - Incidents runs paginated `getIncidentsList` requests for the window and then resolves full details with `getIncidentsByIds` in batches of up to 10 incident IDs per request.
-- Endpoint inventory and account inventory append a full snapshot of the active inventory on every polling interval. Size retention and polling intervals according to your tenant's object counts and API rate limits, or split streams across separate API keys when needed.
+- Endpoint inventory, account inventory, and blocklist append a full snapshot of the active inventory or rules on every polling interval. Size retention and polling intervals according to your tenant's object counts and API rate limits, or split streams across separate API keys when needed.
 
 ### Creating the push notification configuration via BitDefender GravityZone API
 
@@ -228,6 +229,14 @@ The incident alerts dataset contains one document for each endpoint EDR or organ
 
 {{fields "incident_alert"}}
 
+### Log stream quarantine
+
+The quarantine dataset collects quarantined files from the GravityZone computers quarantine service across all pages in each polling window. Exchange quarantine is not included. Quarantine documents use a state-aware document ID derived from the quarantine item ID and `actionStatus` so boundary overlaps deduplicate while action status changes are retained. GravityZone returns `quarantinedOn` without a timezone, so the integration preserves it as a source string and uses the collection time for `@timestamp`.
+
+{{fields "quarantine"}}
+
+{{event "quarantine"}}
+
 ### Log stream endpoints
 
 The endpoint dataset collects bulk network inventory as host and container entity snapshots across all inventory pages on each polling interval. Each poll appends a full snapshot of matching endpoints and containers, including endpoint identity, addresses, operating system, policy, protection modules, management state, last successful scan, and risk posture without per-endpoint detail fan-out. GravityZone returns `firstSeen` without a timezone, so the integration preserves it as a source string and uses the collection time as the entity observation timestamp.
@@ -243,3 +252,11 @@ The account dataset collects Control Center users as entity snapshots across all
 {{fields "account"}}
 
 {{event "account"}}
+
+### Log stream blocklist
+
+The blocklist dataset collects full snapshots of active EDR hash, path, and connection blocklist rules across all pages on each polling interval. An empty response is valid when the company has no active blocklist rules.
+
+{{fields "blocklist"}}
+
+{{event "blocklist"}}

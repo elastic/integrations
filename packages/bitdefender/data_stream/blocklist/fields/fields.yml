@@ -1,0 +1,121 @@
+- name: bitdefender
+  type: group
+  description: Fields for BitDefender GravityZone related events.
+  fields:
+    - name: blocklist
+      type: group
+      description: Fields returned by the GravityZone Blocklist API.
+      fields:
+        - name: id
+          type: keyword
+          description: Stable GravityZone blocklist item identifier.
+        - name: type
+          type: keyword
+          description: Blocklist rule type, such as hash, path, or connection.
+        - name: source
+          type: group
+          description: Information about how the blocklist item was added.
+          fields:
+            - name: type
+              type: keyword
+              description: Origin of the blocklist item.
+            - name: description
+              type: keyword
+              description: Description supplied when the blocklist item was added.
+        - name: company
+          type: group
+          description: Company to which the blocklist item belongs.
+          fields:
+            - name: id
+              type: keyword
+              description: GravityZone company identifier.
+            - name: name
+              type: keyword
+              description: GravityZone company name.
+        - name: owner
+          type: group
+          description: GravityZone user who created the blocklist item.
+          fields:
+            - name: id
+              type: keyword
+              description: GravityZone user identifier.
+            - name: userName
+              type: keyword
+              description: Email address of the user who created the item.
+        - name: created
+          type: keyword
+          description: >-
+            Source date and time when the item was added to the blocklist. GravityZone does not document a timezone for this value, so it is preserved without date normalization.
+        - name: details
+          type: group
+          description: Rule-specific blocklist details.
+          fields:
+            - name: algorithm
+              type: keyword
+              description: Hash algorithm used for a hash rule.
+            - name: hash
+              type: keyword
+              description: File hash used by a hash or connection rule.
+            - name: file
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: Name of the file corresponding to the hash.
+            - name: path
+              type: keyword
+              description: Application path used by a path or connection rule.
+            - name: ruleName
+              type: keyword
+              description: Display name of a connection rule.
+            - name: ruleId
+              type: keyword
+              description: Internal identifier of a connection rule.
+            - name: commandLine
+              type: wildcard
+              description: Command line constraint of a connection rule.
+            - name: protocol
+              type: keyword
+              description: IP protocol constrained by a connection rule.
+            - name: direction
+              type: keyword
+              description: Network direction constrained by a connection rule.
+            - name: ipVersion
+              type: keyword
+              description: IP version constrained by a connection rule.
+            - name: operatingSystems
+              type: keyword
+              description: Operating systems to which a connection rule applies.
+            - name: localAddress
+              type: group
+              fields:
+                - name: any
+                  type: boolean
+                  description: Whether the connection rule matches any local address.
+                - name: ipMask
+                  type: keyword
+                  description: Local IP address or CIDR mask constrained by the rule.
+                - name: portRange
+                  type: keyword
+                  description: Local port or port range constrained by the rule.
+            - name: remoteAddress
+              type: group
+              fields:
+                - name: any
+                  type: boolean
+                  description: Whether the connection rule matches any remote address.
+                - name: ipMask
+                  type: keyword
+                  description: Remote IP address or CIDR mask constrained by the rule.
+                - name: portRange
+                  type: keyword
+                  description: Remote port or port range constrained by the rule.
+            - name: directlyConnected
+              type: group
+              fields:
+                - name: enable
+                  type: boolean
+                  description: Whether directly connected MAC address matching is enabled.
+                - name: remoteMac
+                  type: keyword
+                  description: Remote MAC addresses constrained by the connection rule.
