@@ -1,0 +1,74 @@
+{
+  "id": "gcp_cloudsql_postgresql_otel-disk-utilization-high-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud SQL PostgreSQL OTel] Disk utilization high",
+        "description": "Alerts when the latest disk utilization of a PostgreSQL instance is at or above 90% of its disk quota for 2 consecutive checks. A full disk stops writes. Uses the latest per-minute value in a 15-minute window and the PostgreSQL engine marker. Grouped by database_id.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudsql",
+          "postgresql"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "15m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudsql_postgresql.otel-*\n| WHERE gcp.resource_type == \"cloudsql_database\"\n// Resolve each gauge per minute first (fragmentation-safe), then pick the latest minute.\n| STATS disk_util = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/disk/utilization`)),\n        bytes_used = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/disk/bytes_used`)),\n        quota = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/disk/quota`)),\n        pg = SUM(COUNT_OVER_TIME(`cloudsql.googleapis.com/database/postgresql/num_backends`))\n    BY `@timestamp` = TBUCKET(1 minute), database_id\n// PostgreSQL engine marker: excludes MySQL / SQL Server instances that share these metrics\n| INLINE STATS pg_total = SUM(pg) BY database_id\n| WHERE pg_total > 0 AND disk_util IS NOT NULL\n| STATS disk_util = LAST(disk_util, `@timestamp`),\n        bytes_used = LAST(bytes_used, `@timestamp`),\n        quota = LAST(quota, `@timestamp`)\n    BY database_id\n| EVAL disk_used_pct = ROUND(disk_util * 100.0, 1),\n       free_gib = ROUND((quota - bytes_used) / 1073741824.0, 1)",
+        "breach": {
+          "segment": "// Alert threshold (percent of disk quota). A full disk makes the instance stop\n// accepting writes. Lower to 80 for an earlier warning, raise if automatic\n// storage increase is enabled and you only want to catch it failing to keep up.\nWHERE disk_used_pct >= 90\n| KEEP database_id, disk_used_pct, free_gib, bytes_used, quota\n| SORT disk_used_pct DESC\n| LIMIT 100"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 1
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "database_id"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudsql_postgresql_otel-disk-utilization-high-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud SQL PostgreSQL disk utilization high\n\nThe instance is close to its disk quota. When the disk fills, the instance stops accepting writes.\n\n### Triage\n1. Check whether automatic storage increase is enabled. If not, increase the disk size now (it can only grow).\n2. Find what is growing on the Instance Detail dashboard:\n   - WAL retention: lagging read replicas or abandoned replication slots (check replica byte lag and `oldest_transaction_age` with type `replication_slot`).\n   - Temp file spill: large sorts/hashes (`temp_bytes_written_count`).\n   - Table and index bloat: vacuum blocked by long-running transactions.\n3. Drop unused replication slots, end blocking transactions, and run VACUUM where bloat is the cause.\n\n### Tuning\n- Lower the threshold to 80 for an earlier warning. With automatic storage increase enabled, a high threshold catches the case where it cannot keep up."
+          }
+        },
+        {
+          "id": "gcp_cloudsql_postgresql_otel-disk-utilization-high-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_postgresql_otel-86472830-c83c-4f8b-8753-5d275d1d9391"
+          }
+        },
+        {
+          "id": "gcp_cloudsql_postgresql_otel-disk-utilization-high-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_postgresql_otel-b8e67303-561a-4a0c-9acf-b35357a26541"
+          }
+        }
+      ]
+    }
+  }
+}
