@@ -1,0 +1,19 @@
+wait_for_data_timeout: 3m
+input: cel
+service: stamus_networks-alerts-cursor-mock
+vars:
+  url: http://{{Hostname}}:{{Port}}
+  api_token: test-token
+data_stream:
+  vars:
+    interval: 2s
+    initial_interval: 24h
+    page_size: 2
+# One collector error is indexed after the six 503 responses exhaust HTTP-level
+# retries. The mock then verifies that collection retries the identical window,
+# that the stamus phase uses the same window, and that the following alert phase
+# starts at the prior window's to_date. Two recovery/progression alerts bring the
+# stable total to three documents. Any cursor mismatch makes the mock return a
+# persistent 409, causing the document count to exceed this assertion.
+assert:
+  hit_count: 3
