@@ -200,7 +200,6 @@ Sightings, Outlier Alert, and File Identification classification tags.
 | file.hash.sha256 | SHA256 hash. | keyword |
 | input.type | Type of Elastic Agent input. | keyword |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
-| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
@@ -213,6 +212,7 @@ Sightings, Outlier Alert, and File Identification classification tags.
 | rule.name | The name of the rule or signature generating the event. | keyword |
 | rule.version | The version / revision of the rule being used for analysis. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
@@ -247,7 +247,7 @@ Sightings, Outlier Alert, and File Identification classification tags.
 | stamus_networks.alerts.beaconing_statistics.assets | Asset(s) associated with the beaconing statistics. | keyword |
 | stamus_networks.alerts.beaconing_statistics.tech_info | Technical beaconing metrics (for example, interval/jitter statistics). Internal shape is not confirmed against a live example; stored as flattened until a populated sample is available. | flattened |
 | stamus_networks.alerts.capture_file | Full path to a per-alert pcap capture, only present when multi-mode pcap logging is enabled. | keyword |
-| stamus_networks.alerts.direction | Unrecognized packet direction relative to the flow. Known Suricata values are mapped to `network.direction`. | keyword |
+| stamus_networks.alerts.direction | Packet direction relative to the Suricata flow ("to_client" or "to_server"). | keyword |
 | stamus_networks.alerts.discovery.asset | Asset (IP/hostname) the sighting was observed on. | keyword |
 | stamus_networks.alerts.discovery.asset_net |  | keyword |
 | stamus_networks.alerts.discovery.key | Dotted field path that was newly observed, for example, "http.http_user_agent." | keyword |

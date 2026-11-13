@@ -57,13 +57,16 @@ program: |-
         ).do_request().as(resp,
           is_error(resp) ?
             {
-              "events": {
-                "error": {
-                  "code": "transport_error",
-                  "id": "transport_error",
-                  "message": "GET /rest/rules/es/events_tail/: transport-level failure (timeout, connection reset, DNS failure, TLS handshake failure, etc.) before an HTTP response was received: " + try(resp, "error").error,
+              "events": [
+                {
+                  "error": {
+                    "code": "transport_error",
+                    "id": "transport_error",
+                    "message": "GET /rest/rules/es/events_tail/: transport-level failure (timeout, connection reset, DNS failure, TLS handshake failure, etc.) before an HTTP response was received: " + try(resp, "error").error,
+                  },
                 },
-              },
+              ],
+              "cursor": cur,
               "want_more": false,
             }
           : (resp.StatusCode == 200) ?
@@ -120,7 +123,7 @@ program: |-
             }.as(err,
               (
                 // Skip an unavailable licensed declaration phase. All failures
-                // that do not advance the cursor use Agent-logged retry errors.
+                // that do not advance the cursor explicitly retain it for retry.
                 [400, 401, 403, 404, 422].exists(c, c == int(resp.StatusCode)) &&
                 cur.phase == "stamus"
               ) ?
@@ -130,7 +133,11 @@ program: |-
                   "want_more": false,
                 }
               :
-                {"events": {"error": err}, "want_more": false}
+                {
+                  "events": [{"error": err}],
+                  "cursor": cur,
+                  "want_more": false,
+                }
             )
         )
       )
