@@ -1,0 +1,262 @@
+# Mock of the ProjectDiscovery Cloud Platform asset inventory API (GET /v1/asset/enumerate/contents).
+#
+# All page rules are matched on X-API-Key/X-Team-Id and on the full query string the CEL
+# program sends (limit=2 from the system test batch_size, offset and sort_desc=updated_at).
+# The API has no server-side updated_at filter: round 1 and round 2 send identical requests,
+# so responses are selected with the per-rule request counter (.req_num).
+# The envelope paging metadata is always 0 in the real API and is mirrored here.
+#
+# Round 1 (initial run, boundary = now - initial_interval):
+#   offset=0 -> A (https, TLS, technologies), B (DNS-only, port -1; same updated_at as A)
+#   offset=2 -> C (https 404, self-signed certificate), D (http port 80, redirect)
+#   offset=4 -> E (port-only service; short page, terminates the pass; cursor = A.updated_at)  => 5 events
+# Round 2 (cursor = 2026-04-10T10:00:00.123456Z):
+#   offset=0 -> F (new), A (== cursor, inclusive boundary)
+#   offset=2 -> B (== cursor), C (< cursor, dropped; terminates the pass)                       => 3 events
+# Round 3+ (cursor = 2026-04-11T09:15:30.654321Z):
+#   offset=0 -> A (< cursor, dropped; short page)                                                => 0 events
+# Regression guard: offset=2 after round 2, offset=4 after round 1 and any request with
+# unexpected query parameters return a synthetic asset newer than every cursor, so a lost
+# cursor or a malformed request inflates the hit count (expected 8).
+#
+# Error and robustness rules (selected by X-API-Key) are used for CEL error-path testing only.
+rules:
+  # Credential check used by the research test-api.py script.
+  - path: /v1/user
+    methods: [GET]
+    request_headers:
+      X-API-Key:
+        - '^test-api-key$'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {"email":"alice.johnson@example.com","name":"Alice Johnson"}
+  # 401: invalid API key.
+  - path: /v1/asset/enumerate/contents
+    methods: [GET]
+    request_headers:
+      X-API-Key:
+        - '^unauthorized-key$'
+    responses:
+      - status_code: 401
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {"message":"User is not authorized to perform this action"}
+  # 400: invalid request.
+  - path: /v1/asset/enumerate/contents
+    methods: [GET]
+    request_headers:
+      X-API-Key:
+        - '^bad-request-key$'
+    responses:
+      - status_code: 400
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {"code":"invalid_request","error":"invalid sort column specified","error_id":"2ExampleErrorId0000000000003","kind":"invalid request error","message":"invalid sort column specified","param":"","status":400}
+  # 429: rate limit exceeded (body shape unverified).
+  - path: /v1/asset/enumerate/contents
+    methods: [GET]
+    request_headers:
+      X-API-Key:
+        - '^rate-limited-key$'
+    responses:
+      - status_code: 429
+        headers:
+          Content-Type:
+            - application/json
+          Retry-After:
+            - "2"
+          X-Ratelimit-Limit:
+            - "30"
+          X-Ratelimit-Remaining:
+            - "0"
+          X-Ratelimit-Reset:
+            - "1775815260"
+        body: |-
+          {"message":"rate limit exceeded"}
+  # 500: internal server error.
+  - path: /v1/asset/enumerate/contents
+    methods: [GET]
+    request_headers:
+      X-API-Key:
+        - '^server-error-key$'
+    responses:
+      - status_code: 500
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {"error_id":"2ExampleErrorId0000000000004","message":"An internal server error occurred. Please try again later.","status":500}
+  # 200 with a non-JSON body (for example an HTML error page from a proxy).
+  - path: /v1/asset/enumerate/contents
+    methods: [GET]
+    request_headers:
+      X-API-Key:
+        - '^non-json-key$'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - text/html
+        body: |-
+          <html><head><title>502 Bad Gateway</title></head><body>bad gateway</body></html>
+  # 200 with a null data array (treated as an empty page).
+  - path: /v1/asset/enumerate/contents
+    methods: [GET]
+    request_headers:
+      X-API-Key:
+        - '^null-data-key$'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {"current_page":0,"data":null,"message":"enumeration retrieved successfully","result_count":0,"total_pages":0,"total_results":0}
+  # 200 without a data key (treated as an empty page).
+  - path: /v1/asset/enumerate/contents
+    methods: [GET]
+    request_headers:
+      X-API-Key:
+        - '^missing-data-key$'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {"current_page":0,"message":"enumeration retrieved successfully","result_count":0,"total_pages":0,"total_results":0}
+  # 200 with an empty data array (end of the population on an exact page boundary).
+  - path: /v1/asset/enumerate/contents
+    methods: [GET]
+    request_headers:
+      X-API-Key:
+        - '^empty-data-key$'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {"current_page":0,"data":[],"message":"enumeration retrieved successfully","result_count":0,"total_pages":0,"total_results":0}
+  # 200 with records missing or carrying an unparseable updated_at.
+  - path: /v1/asset/enumerate/contents
+    methods: [GET]
+    request_headers:
+      X-API-Key:
+        - '^malformed-record-key$'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {"current_page":0,"data":[{"asset_hash":"e5f60718293a4b5c6d7e8f90a1b2c3d4","created_at":"2026-04-01T00:00:00Z","domain_name":"example.com","enumeration_id":"d0abcdefgh1234567890","enumeration_name":"example.com","host":"no-timestamp.example.com","id":4204700006,"ip":["192.0.2.50"],"is_new":false,"name":"no-timestamp.example.com","port":-1,"source_type":"dns_resolve","technology_details":{},"tls_not_after":"0001-01-01T00:00:00Z","tls_not_before":"0001-01-01T00:00:00Z"},{"asset_hash":"f60718293a4b5c6d7e8f90a1b2c3d4e5","created_at":"2026-04-01T00:00:00Z","domain_name":"example.com","enumeration_id":"d0abcdefgh1234567890","enumeration_name":"example.com","host":"bad-timestamp.example.com","id":4204700007,"ip":["192.0.2.51"],"is_new":false,"name":"bad-timestamp.example.com","port":-1,"source_type":"dns_resolve","technology_details":{},"tls_not_after":"0001-01-01T00:00:00Z","tls_not_before":"0001-01-01T00:00:00Z","updated_at":"not-a-timestamp"}],"message":"enumeration retrieved successfully","result_count":0,"total_pages":0,"total_results":0}
+  # Page offset=0: round 1 (A, B), round 2 (F, A), round 3+ (A only, older than the cursor).
+  - path: /v1/asset/enumerate/contents
+    methods: [GET]
+    request_headers:
+      X-API-Key:
+        - '^test-api-key$'
+      X-Team-Id:
+        - '^test-team-id$'
+    query_params:
+      limit: "2"
+      offset: "0"
+      sort_desc: updated_at
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+          X-Ratelimit-Limit:
+            - "30"
+          X-Ratelimit-Remaining:
+            - "29"
+          X-Ratelimit-Reset:
+            - "1775815260"
+        body: |-
+          {{ if eq .req_num 1 }}
+          {"current_page":0,"data":[{"asn":{"as_country":"US","as_name":"google-cloud-platform","as_number":"AS396982","as_range":["198.51.100.0/24","203.0.113.0/24"]},"asset_hash":"0f1e2d3c4b5a69788796a5b4c3d2e1f0","body":"http/1.1 200 ok\r\nconnection: close\r\ncontent-type: text/html; charset=utf-8\r\ndate: fri, 10 apr 2026 10:00:00 gmt\r\n\r\n<!doctype html><html><head><title>api-docs - swagger ui</title></head><body><div id=\"swagger-ui\"></div></body></html>","cdn_name":"google","chain_status_codes":["307","200"],"cname":["ingress.ci-prod.example.com"],"content_length":117,"created_at":"2025-08-28T10:32:36.036949Z","domain_name":"example.com","enumeration_id":"d0abcdefgh1234567890","enumeration_name":"example.com","host":"api-docs.example.com","id":3963100001,"ip":["198.51.100.21"],"is_new":false,"labels":["APIs","Microservice Endpoint"],"name":"https://api-docs.example.com","port":443,"redirect_location":"https://api-docs.example.com/docs","screenshot_path":"https://storage.googleapis.com/example-screenshots-bucket/images/000000000000000000000000000000000000000000000000000000001a2b3c4d?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=screenshot-reader%40example-project.iam.gserviceaccount.com%2F20260411%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260411T091530Z&X-Goog-Expires=86399&X-Goog-Signature=0000000000000000000000000000000000000000000000000000000000000000&X-Goog-SignedHeaders=host","source_type":"dns_bruteforce","status_code":200,"technologies":["FastAPI","Python","Swagger UI","core-js:3.40.0"],"technology_details":{"FastAPI":{"categories":["Web frameworks"],"description":"FastAPI is a web framework for building APIs with Python.","icon":"https://icons.example.com/FastAPI.svg","website":"https://fastapi.example.org"},"Python":{"categories":["Programming languages"],"description":"Python is an interpreted and general-purpose programming language.","icon":"https://icons.example.com/Python.png","website":"https://python.example.org"},"Swagger UI":{"categories":["Documentation"],"description":"Swagger UI generates documentation from a Swagger-compliant API.","icon":"https://icons.example.com/Swagger%20UI.svg","website":"https://swagger.example.org"},"core-js:3.40.0":{"categories":["JavaScript libraries"],"description":"core-js is a modular standard library for JavaScript.","icon":"https://icons.example.com/core-js.png","website":"https://corejs.example.org"}},"title":"Api-docs - Swagger UI","tls_issuer_org":"Let's Encrypt","tls_not_after":"2026-06-23T23:22:12Z","tls_not_before":"2026-03-25T23:22:13Z","tls_serial_number":"04:A1:B2:C3:D4:E5:F6:07:18:29:3A:4B:5C:6D:7E:8F:90:A1","tls_subject_an":["api-docs.example.com"],"tls_subject_cn":"api-docs.example.com","updated_at":"2026-04-10T10:00:00.123456Z","vulnerabilities":2},{"asset_hash":"00112233445566778899aabbccddeeff","created_at":"2026-04-01T10:38:29.784875Z","domain_name":"example.com","enumeration_id":"d0abcdefgh1234567890","enumeration_name":"example.com","host":"ingress-test-23198.team-b.example.com","id":4204700002,"ip":["192.0.2.10","192.0.2.11"],"is_new":false,"name":"ingress-test-23198.team-b.example.com","port":-1,"source_type":"dns_permute","technology_details":{},"tls_not_after":"0001-01-01T00:00:00Z","tls_not_before":"0001-01-01T00:00:00Z","updated_at":"2026-04-10T10:00:00.123456Z"}],"message":"enumeration retrieved successfully","result_count":0,"total_pages":0,"total_results":0}
+          {{ else if eq .req_num 2 }}
+          {"current_page":0,"data":[{"asn":{"as_country":"US","as_name":"fastly","as_number":"AS54113","as_range":["203.0.113.0/24"]},"asset_hash":"d4e5f60718293a4b5c6d7e8f90a1b2c3","body":"http/1.1 401 unauthorized\r\nconnection: close\r\ncontent-length: 12\r\nserver: Varnish\r\n\r\nunauthorized","content_length":12,"created_at":"2026-04-11T09:15:30.654321Z","domain_name":"example.com","enumeration_id":"d0abcdefgh1234567890","enumeration_name":"example.com","favicon":"-1258058404","favicon_body":"AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAA=","host":"portal.example.com","id":4204700005,"ip":["203.0.113.60"],"is_new":true,"labels":["Authentication","Internal Tool"],"name":"https://portal.example.com","port":8443,"screenshot_path":"https://storage.googleapis.com/example-screenshots-bucket/images/000000000000000000000000000000000000000000000000000000004d5e6f70?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=screenshot-reader%40example-project.iam.gserviceaccount.com%2F20260411%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260411T091530Z&X-Goog-Expires=86399&X-Goog-Signature=0000000000000000000000000000000000000000000000000000000000000000&X-Goog-SignedHeaders=host","source_type":"dns_resolve","status_code":401,"technology_details":{},"title":"Example Portal","tls_expired":true,"tls_issuer_org":"Example CA","tls_not_after":"2026-01-01T00:00:00Z","tls_not_before":"2025-01-01T00:00:00Z","tls_serial_number":"0A:1B:2C:3D:4E:5F:60:71:82:93","tls_subject_an":["portal.example.com","www.portal.example.com"],"tls_subject_cn":"portal.example.com","tls_subject_org":"Example Inc","tls_untrusted":true,"updated_at":"2026-04-11T09:15:30.654321Z","webserver":"Varnish"},{"asn":{"as_country":"US","as_name":"google-cloud-platform","as_number":"AS396982","as_range":["198.51.100.0/24","203.0.113.0/24"]},"asset_hash":"0f1e2d3c4b5a69788796a5b4c3d2e1f0","body":"http/1.1 200 ok\r\nconnection: close\r\ncontent-type: text/html; charset=utf-8\r\ndate: fri, 10 apr 2026 10:00:00 gmt\r\n\r\n<!doctype html><html><head><title>api-docs - swagger ui</title></head><body><div id=\"swagger-ui\"></div></body></html>","cdn_name":"google","chain_status_codes":["307","200"],"cname":["ingress.ci-prod.example.com"],"content_length":117,"created_at":"2025-08-28T10:32:36.036949Z","domain_name":"example.com","enumeration_id":"d0abcdefgh1234567890","enumeration_name":"example.com","host":"api-docs.example.com","id":3963100001,"ip":["198.51.100.21"],"is_new":false,"labels":["APIs","Microservice Endpoint"],"name":"https://api-docs.example.com","port":443,"redirect_location":"https://api-docs.example.com/docs","screenshot_path":"https://storage.googleapis.com/example-screenshots-bucket/images/000000000000000000000000000000000000000000000000000000001a2b3c4d?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=screenshot-reader%40example-project.iam.gserviceaccount.com%2F20260411%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260411T091530Z&X-Goog-Expires=86399&X-Goog-Signature=0000000000000000000000000000000000000000000000000000000000000000&X-Goog-SignedHeaders=host","source_type":"dns_bruteforce","status_code":200,"technologies":["FastAPI","Python","Swagger UI","core-js:3.40.0"],"technology_details":{"FastAPI":{"categories":["Web frameworks"],"description":"FastAPI is a web framework for building APIs with Python.","icon":"https://icons.example.com/FastAPI.svg","website":"https://fastapi.example.org"},"Python":{"categories":["Programming languages"],"description":"Python is an interpreted and general-purpose programming language.","icon":"https://icons.example.com/Python.png","website":"https://python.example.org"},"Swagger UI":{"categories":["Documentation"],"description":"Swagger UI generates documentation from a Swagger-compliant API.","icon":"https://icons.example.com/Swagger%20UI.svg","website":"https://swagger.example.org"},"core-js:3.40.0":{"categories":["JavaScript libraries"],"description":"core-js is a modular standard library for JavaScript.","icon":"https://icons.example.com/core-js.png","website":"https://corejs.example.org"}},"title":"Api-docs - Swagger UI","tls_issuer_org":"Let's Encrypt","tls_not_after":"2026-06-23T23:22:12Z","tls_not_before":"2026-03-25T23:22:13Z","tls_serial_number":"04:A1:B2:C3:D4:E5:F6:07:18:29:3A:4B:5C:6D:7E:8F:90:A1","tls_subject_an":["api-docs.example.com"],"tls_subject_cn":"api-docs.example.com","updated_at":"2026-04-10T10:00:00.123456Z","vulnerabilities":2}],"message":"enumeration retrieved successfully","result_count":0,"total_pages":0,"total_results":0}
+          {{ else }}
+          {"current_page":0,"data":[{"asn":{"as_country":"US","as_name":"google-cloud-platform","as_number":"AS396982","as_range":["198.51.100.0/24","203.0.113.0/24"]},"asset_hash":"0f1e2d3c4b5a69788796a5b4c3d2e1f0","body":"http/1.1 200 ok\r\nconnection: close\r\ncontent-type: text/html; charset=utf-8\r\ndate: fri, 10 apr 2026 10:00:00 gmt\r\n\r\n<!doctype html><html><head><title>api-docs - swagger ui</title></head><body><div id=\"swagger-ui\"></div></body></html>","cdn_name":"google","chain_status_codes":["307","200"],"cname":["ingress.ci-prod.example.com"],"content_length":117,"created_at":"2025-08-28T10:32:36.036949Z","domain_name":"example.com","enumeration_id":"d0abcdefgh1234567890","enumeration_name":"example.com","host":"api-docs.example.com","id":3963100001,"ip":["198.51.100.21"],"is_new":false,"labels":["APIs","Microservice Endpoint"],"name":"https://api-docs.example.com","port":443,"redirect_location":"https://api-docs.example.com/docs","screenshot_path":"https://storage.googleapis.com/example-screenshots-bucket/images/000000000000000000000000000000000000000000000000000000001a2b3c4d?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=screenshot-reader%40example-project.iam.gserviceaccount.com%2F20260411%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260411T091530Z&X-Goog-Expires=86399&X-Goog-Signature=0000000000000000000000000000000000000000000000000000000000000000&X-Goog-SignedHeaders=host","source_type":"dns_bruteforce","status_code":200,"technologies":["FastAPI","Python","Swagger UI","core-js:3.40.0"],"technology_details":{"FastAPI":{"categories":["Web frameworks"],"description":"FastAPI is a web framework for building APIs with Python.","icon":"https://icons.example.com/FastAPI.svg","website":"https://fastapi.example.org"},"Python":{"categories":["Programming languages"],"description":"Python is an interpreted and general-purpose programming language.","icon":"https://icons.example.com/Python.png","website":"https://python.example.org"},"Swagger UI":{"categories":["Documentation"],"description":"Swagger UI generates documentation from a Swagger-compliant API.","icon":"https://icons.example.com/Swagger%20UI.svg","website":"https://swagger.example.org"},"core-js:3.40.0":{"categories":["JavaScript libraries"],"description":"core-js is a modular standard library for JavaScript.","icon":"https://icons.example.com/core-js.png","website":"https://corejs.example.org"}},"title":"Api-docs - Swagger UI","tls_issuer_org":"Let's Encrypt","tls_not_after":"2026-06-23T23:22:12Z","tls_not_before":"2026-03-25T23:22:13Z","tls_serial_number":"04:A1:B2:C3:D4:E5:F6:07:18:29:3A:4B:5C:6D:7E:8F:90:A1","tls_subject_an":["api-docs.example.com"],"tls_subject_cn":"api-docs.example.com","updated_at":"2026-04-10T10:00:00.123456Z","vulnerabilities":2}],"message":"enumeration retrieved successfully","result_count":0,"total_pages":0,"total_results":0}
+          {{ end }}
+  # Page offset=2: round 1 (C, D), round 2 (B, C), afterwards regression guard.
+  - path: /v1/asset/enumerate/contents
+    methods: [GET]
+    request_headers:
+      X-API-Key:
+        - '^test-api-key$'
+      X-Team-Id:
+        - '^test-team-id$'
+    query_params:
+      limit: "2"
+      offset: "2"
+      sort_desc: updated_at
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+          X-Ratelimit-Limit:
+            - "30"
+          X-Ratelimit-Remaining:
+            - "29"
+          X-Ratelimit-Reset:
+            - "1775815260"
+        body: |-
+          {{ if eq .req_num 1 }}
+          {"current_page":0,"data":[{"asn":{"as_country":"US","as_name":"google-cloud-platform","as_number":"AS396982","as_range":["203.0.113.0/24"]},"asset_hash":"a1b2c3d4e5f60718293a4b5c6d7e8f90","body":"http/1.1 404 not found\r\nconnection: close\r\ncontent-length: 21\r\ncontent-type: text/plain; charset=utf-8\r\ndate: thu, 09 apr 2026 08:30:00 gmt\r\nstrict-transport-security: max-age=31536000; includesubdomains\r\n\r\ndefault backend - 404","cdn_name":"google","content_length":21,"created_at":"2026-04-01T10:40:33.459064Z","domain_name":"example.com","enumeration_id":"d0abcdefgh1234567890","enumeration_name":"example.com","host":"ingress-test-12345.team-a-prod.example.com","id":4204700001,"ip":["203.0.113.45"],"is_new":false,"name":"https://ingress-test-12345.team-a-prod.example.com","port":443,"screenshot_path":"https://storage.googleapis.com/example-screenshots-bucket/images/000000000000000000000000000000000000000000000000000000002b3c4d5e?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=screenshot-reader%40example-project.iam.gserviceaccount.com%2F20260411%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260411T091530Z&X-Goog-Expires=86399&X-Goog-Signature=0000000000000000000000000000000000000000000000000000000000000000&X-Goog-SignedHeaders=host","source_type":"dns_permute","status_code":404,"technology_details":{},"tls_issuer_org":"Acme Co","tls_mismatched":true,"tls_not_after":"2027-03-30T14:58:35Z","tls_not_before":"2026-03-30T14:58:35Z","tls_self_signed":true,"tls_serial_number":"1F:2E:3D:4C:5B:6A:79:88:97:A6:B5:C4:D3:E2:F1:00","tls_subject_an":["ingress.local"],"tls_subject_cn":"Kubernetes Ingress Controller Fake Certificate","tls_subject_org":"Acme Co","updated_at":"2026-04-09T08:30:00.5Z"},{"asn":{"as_country":"US","as_name":"amazon-02","as_number":"AS16509","as_range":["198.51.100.0/24"]},"asset_hash":"b2c3d4e5f60718293a4b5c6d7e8f90a1","body":"http/1.1 301 moved permanently\r\nconnection: close\r\ncontent-length: 0\r\nlocation: https://www.example.com/\r\nserver: awselb/2.0\r\n\r\n","cdn_name":"cloudfront","chain_status_codes":["301"],"content_length":0,"created_at":"2025-09-02T07:11:42.120003Z","domain_name":"example.com","enumeration_id":"d0abcdefgh1234567890","enumeration_name":"example.com","host":"www.example.com","id":4204700003,"ip":["198.51.100.30"],"is_new":false,"name":"http://www.example.com","port":80,"redirect_location":"https://www.example.com/","screenshot_path":"https://storage.googleapis.com/example-screenshots-bucket/images/000000000000000000000000000000000000000000000000000000003c4d5e6f?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=screenshot-reader%40example-project.iam.gserviceaccount.com%2F20260411%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260411T091530Z&X-Goog-Expires=86399&X-Goog-Signature=0000000000000000000000000000000000000000000000000000000000000000&X-Goog-SignedHeaders=host","source_type":"dns_resolve","status_code":301,"technology_details":{},"tls_not_after":"0001-01-01T00:00:00Z","tls_not_before":"0001-01-01T00:00:00Z","updated_at":"2026-04-08T07:00:00.000001Z","webserver":"awselb/2.0"}],"message":"enumeration retrieved successfully","result_count":0,"total_pages":0,"total_results":0}
+          {{ else if eq .req_num 2 }}
+          {"current_page":0,"data":[{"asset_hash":"00112233445566778899aabbccddeeff","created_at":"2026-04-01T10:38:29.784875Z","domain_name":"example.com","enumeration_id":"d0abcdefgh1234567890","enumeration_name":"example.com","host":"ingress-test-23198.team-b.example.com","id":4204700002,"ip":["192.0.2.10","192.0.2.11"],"is_new":false,"name":"ingress-test-23198.team-b.example.com","port":-1,"source_type":"dns_permute","technology_details":{},"tls_not_after":"0001-01-01T00:00:00Z","tls_not_before":"0001-01-01T00:00:00Z","updated_at":"2026-04-10T10:00:00.123456Z"},{"asn":{"as_country":"US","as_name":"google-cloud-platform","as_number":"AS396982","as_range":["203.0.113.0/24"]},"asset_hash":"a1b2c3d4e5f60718293a4b5c6d7e8f90","body":"http/1.1 404 not found\r\nconnection: close\r\ncontent-length: 21\r\ncontent-type: text/plain; charset=utf-8\r\ndate: thu, 09 apr 2026 08:30:00 gmt\r\nstrict-transport-security: max-age=31536000; includesubdomains\r\n\r\ndefault backend - 404","cdn_name":"google","content_length":21,"created_at":"2026-04-01T10:40:33.459064Z","domain_name":"example.com","enumeration_id":"d0abcdefgh1234567890","enumeration_name":"example.com","host":"ingress-test-12345.team-a-prod.example.com","id":4204700001,"ip":["203.0.113.45"],"is_new":false,"name":"https://ingress-test-12345.team-a-prod.example.com","port":443,"screenshot_path":"https://storage.googleapis.com/example-screenshots-bucket/images/000000000000000000000000000000000000000000000000000000002b3c4d5e?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=screenshot-reader%40example-project.iam.gserviceaccount.com%2F20260411%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260411T091530Z&X-Goog-Expires=86399&X-Goog-Signature=0000000000000000000000000000000000000000000000000000000000000000&X-Goog-SignedHeaders=host","source_type":"dns_permute","status_code":404,"technology_details":{},"tls_issuer_org":"Acme Co","tls_mismatched":true,"tls_not_after":"2027-03-30T14:58:35Z","tls_not_before":"2026-03-30T14:58:35Z","tls_self_signed":true,"tls_serial_number":"1F:2E:3D:4C:5B:6A:79:88:97:A6:B5:C4:D3:E2:F1:00","tls_subject_an":["ingress.local"],"tls_subject_cn":"Kubernetes Ingress Controller Fake Certificate","tls_subject_org":"Acme Co","updated_at":"2026-04-09T08:30:00.5Z"}],"message":"enumeration retrieved successfully","result_count":0,"total_pages":0,"total_results":0}
+          {{ else }}
+          {"current_page":0,"data":[{"asset_hash":"ffffffffffffffffffffffffffffffff","created_at":"2099-01-01T00:00:00.000001Z","domain_name":"example.com","enumeration_id":"d0abcdefgh1234567890","enumeration_name":"example.com","host":"regression-guard.example.com","id":4204799999,"ip":["192.0.2.99"],"is_new":false,"name":"regression-guard.example.com","port":-1,"source_type":"dns_resolve","technology_details":{},"tls_not_after":"0001-01-01T00:00:00Z","tls_not_before":"0001-01-01T00:00:00Z","updated_at":"2099-01-01T00:00:00.000001Z"}],"message":"enumeration retrieved successfully","result_count":0,"total_pages":0,"total_results":0}
+          {{ end }}
+  # Page offset=4: round 1 terminal short page (E), afterwards regression guard.
+  - path: /v1/asset/enumerate/contents
+    methods: [GET]
+    request_headers:
+      X-API-Key:
+        - '^test-api-key$'
+      X-Team-Id:
+        - '^test-team-id$'
+    query_params:
+      limit: "2"
+      offset: "4"
+      sort_desc: updated_at
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+          X-Ratelimit-Limit:
+            - "30"
+          X-Ratelimit-Remaining:
+            - "29"
+          X-Ratelimit-Reset:
+            - "1775815260"
+        body: |-
+          {{ if eq .req_num 1 }}
+          {"current_page":0,"data":[{"asset_hash":"c3d4e5f60718293a4b5c6d7e8f90a1b2","created_at":"2025-10-15T15:45:00.5Z","domain_name":"example.com","enumeration_id":"d0abcdefgh1234567890","enumeration_name":"example.com","host":"mail.example.com","id":4204700004,"ip":["192.0.2.25"],"is_new":false,"name":"mail.example.com","port":7785,"source_type":"dns_passive","technology_details":{},"tls_not_after":"0001-01-01T00:00:00Z","tls_not_before":"0001-01-01T00:00:00Z","updated_at":"2026-03-01T12:00:00.25Z"}],"message":"enumeration retrieved successfully","result_count":0,"total_pages":0,"total_results":0}
+          {{ else }}
+          {"current_page":0,"data":[{"asset_hash":"ffffffffffffffffffffffffffffffff","created_at":"2099-01-01T00:00:00.000001Z","domain_name":"example.com","enumeration_id":"d0abcdefgh1234567890","enumeration_name":"example.com","host":"regression-guard.example.com","id":4204799999,"ip":["192.0.2.99"],"is_new":false,"name":"regression-guard.example.com","port":-1,"source_type":"dns_resolve","technology_details":{},"tls_not_after":"0001-01-01T00:00:00Z","tls_not_before":"0001-01-01T00:00:00Z","updated_at":"2099-01-01T00:00:00.000001Z"}],"message":"enumeration retrieved successfully","result_count":0,"total_pages":0,"total_results":0}
+          {{ end }}
+  # Regression guard: any other /v1/asset/enumerate/contents request (unexpected offset or query).
+  - path: /v1/asset/enumerate/contents
+    methods: [GET]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {"current_page":0,"data":[{"asset_hash":"ffffffffffffffffffffffffffffffff","created_at":"2099-01-01T00:00:00.000001Z","domain_name":"example.com","enumeration_id":"d0abcdefgh1234567890","enumeration_name":"example.com","host":"regression-guard.example.com","id":4204799999,"ip":["192.0.2.99"],"is_new":false,"name":"regression-guard.example.com","port":-1,"source_type":"dns_resolve","technology_details":{},"tls_not_after":"0001-01-01T00:00:00Z","tls_not_before":"0001-01-01T00:00:00Z","updated_at":"2099-01-01T00:00:00.000001Z"}],"message":"enumeration retrieved successfully","result_count":0,"total_pages":0,"total_results":0}

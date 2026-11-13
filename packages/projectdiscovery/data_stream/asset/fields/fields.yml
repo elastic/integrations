@@ -1,0 +1,135 @@
+- name: projectdiscovery.asset
+  type: group
+  description: Fields from a ProjectDiscovery Cloud Platform asset inventory record, as returned by the `/v1/asset/enumerate/contents` API.
+  fields:
+    - name: id
+      type: keyword
+      description: Identifier of the asset record. Also stored in `entity.id`. Equals `projectdiscovery.vulnerability.asset_metadata.id` on vulnerability findings.
+    - name: asset_hash
+      type: keyword
+      description: Unique hash of the asset record.
+    - name: host
+      type: keyword
+      description: Host of the asset when the API returns it as a URL. Bare host names are stored in `host.name`.
+    - name: port
+      type: long
+      description: Port of the asset. `-1` for DNS-only host records. Service ports are also stored in `server.port`.
+    - name: cname
+      type: keyword
+      description: CNAME records of the asset.
+    - name: enumeration_id
+      type: keyword
+      description: Identifier of the discovery (enumeration) job.
+    - name: enumeration_name
+      type: keyword
+      description: Name of the discovery (enumeration) job.
+    - name: source_type
+      type: keyword
+      description: How the asset was discovered, for example `dns_resolve`, `dns_permute`, `dns_passive` or `dns_bruteforce`.
+    - name: source
+      type: flattened
+      description: Discovery sources of the asset, with their metadata.
+    - name: extended_metadata
+      type: flattened
+      description: Additional metadata of the asset.
+    - name: type
+      type: keyword
+      description: Type of the asset.
+    - name: method
+      type: keyword
+      description: HTTP method used to probe the asset.
+    - name: is_internal
+      type: boolean
+      description: Whether the asset was discovered by an internal enumeration.
+    - name: is_new
+      type: boolean
+      description: Whether the asset was created by the latest discovery run.
+    - name: created_at
+      type: date
+      description: Time the asset was first discovered (UTC).
+    - name: updated_at
+      type: date
+      description: Time the asset was last seen by a discovery run (UTC).
+    - name: asn
+      type: group
+      description: Autonomous system of the asset.
+      fields:
+        - name: as_number
+          type: keyword
+          description: Autonomous system number as reported, prefixed with `AS`. Only kept when it can't be parsed into `server.as.number`.
+        - name: as_country
+          type: keyword
+          description: Country code of the autonomous system.
+        - name: as_range
+          type: keyword
+          description: IP ranges announced by the autonomous system.
+    - name: cdn_name
+      type: keyword
+      description: CDN serving the asset.
+    - name: cloud_name
+      type: keyword
+      description: Cloud provider of the asset, as reported by the export and single-asset APIs.
+    - name: waf_name
+      type: keyword
+      description: Web application firewall protecting the asset.
+    - name: scheme
+      type: keyword
+      description: Scheme of the asset, as reported by the export API.
+    - name: chain_status_codes
+      type: keyword
+      description: HTTP status codes of the redirect chain.
+    - name: redirect_location
+      type: wildcard
+      ignore_above: 4096
+      description: Redirect location returned when probing the asset.
+    - name: title
+      type: keyword
+      description: HTML title of the asset.
+    - name: webserver
+      type: keyword
+      description: Web server of the asset.
+    - name: body
+      type: keyword
+      index: false
+      doc_values: false
+      description: Raw HTTP response (status line, headers and body) returned when probing the asset. Can be large. Not indexed.
+    - name: favicon
+      type: keyword
+      description: MurmurHash3 hash of the asset favicon.
+    - name: favicon_body
+      type: keyword
+      index: false
+      doc_values: false
+      description: Base64-encoded favicon of the asset. Not indexed.
+    - name: screenshot_path
+      type: keyword
+      index: false
+      doc_values: false
+      description: Signed URL of the asset screenshot, valid for 24 hours. Not indexed.
+    - name: technologies
+      type: keyword
+      description: Technologies detected on the asset, as `name[:version]`.
+    - name: technology_details
+      type: flattened
+      description: Details of the detected technologies, keyed by technology name.
+    - name: labels
+      type: keyword
+      description: Labels of the asset.
+    - name: vulnerabilities
+      type: long
+      description: Number of vulnerability findings linked to the asset.
+    - name: tls_self_signed
+      type: boolean
+      description: Whether the TLS certificate is self-signed.
+    - name: tls_mismatched
+      type: boolean
+      description: Whether the TLS certificate does not match the host name.
+    - name: tls_expired
+      type: boolean
+      description: Whether the TLS certificate is expired.
+    - name: tls_revoked
+      type: boolean
+      description: Whether the TLS certificate is revoked.
+    - name: tls_untrusted
+      type: boolean
+      description: Whether the TLS certificate is untrusted.
