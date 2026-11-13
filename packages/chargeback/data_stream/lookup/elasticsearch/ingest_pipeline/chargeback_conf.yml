@@ -2,74 +2,139 @@
 description: Post-process chargeback configuration from Fleet configuration snapshot events while preserving manual or historical rows when Fleet sync is inactive
 processors:
   - script:
-      description: Merge active per-stream top_metrics from config_snapshot events or drop write when Fleet config sync is inactive
+      description: Gate on newest policy-wide sync marker, merge active per-stream settings, and reject invalid configuration writes
       lang: painless
       source: |
+        Map snapRoot = null;
+        if (ctx.snapshots instanceof Map) {
+          snapRoot = (ctx.snapshots.latest instanceof Map) ? (Map)ctx.snapshots.latest : (Map)ctx.snapshots;
+        }
+        ctx.remove('snapshots');
+
+        // Gate writes on the newest policy-wide sync marker across all streams before merging per-stream settings.
+        if (snapRoot == null) {
+          ctx._skip_conf_write = true;
+          return;
+        }
+        def hasSnapsObj = snapRoot.get('has_snapshots');
+        boolean hasSnaps = (hasSnapsObj != null) && hasSnapsObj.toString().equalsIgnoreCase('true');
+        def policySyncObj = snapRoot.get('policy_sync_enabled');
+        boolean policySyncEnabled = (policySyncObj != null) && policySyncObj.toString().equalsIgnoreCase('true');
+        if (!hasSnaps || !policySyncEnabled) {
+          ctx._skip_conf_write = true;
+          return;
+        }
+
         Map m = [:];
-        boolean anyActiveSnapshot = false;
-        for (String bucketKey : ['billing_conf', 'usage_conf', 'node_stats_conf']) {
-          def bucket = ctx[bucketKey];
-          if (bucket instanceof Map) {
-            boolean hasDocs = !(bucket.doc_cnt instanceof Number) || ((Number)bucket.doc_cnt).longValue() > 0L;
-            if (hasDocs) {
-              def inner = bucket.latest instanceof Map ? bucket.latest : bucket;
-              if (inner.top instanceof List && inner.top.size() > 0 && inner.top[0] instanceof Map && inner.top[0].metrics instanceof Map) {
-                inner = inner.top[0].metrics;
-              }
-              if (inner instanceof Map && !inner.isEmpty()) {
-                def syncFlag = inner.get('conf_sync_enabled');
-                boolean syncEnabled = (syncFlag == null) || syncFlag.toString().equalsIgnoreCase('true');
-                if (syncEnabled) {
-                  anyActiveSnapshot = true;
-                  for (def entry : inner.entrySet()) {
-                    String k = entry.getKey().toString();
-                    if (entry.getValue() != null && k != 'doc_cnt' && k != 'conf_sync_enabled') {
-                      m[k] = entry.getValue();
-                    }
+        boolean anyActiveStream = false;
+        if (snapRoot.streams instanceof Map) {
+          Map streamsMap = (Map)snapRoot.streams;
+          for (String ds : ['chargeback.billing', 'chargeback.usage', 'chargeback.node_stats']) {
+            def bucket = streamsMap.get(ds);
+            if (bucket instanceof Map) {
+              def syncFlag = bucket.get('sync');
+              boolean syncEnabled = (syncFlag == null) || syncFlag.toString().equalsIgnoreCase('true');
+              if (syncEnabled) {
+                anyActiveStream = true;
+                for (def entry : bucket.entrySet()) {
+                  String k = entry.getKey().toString();
+                  if (entry.getValue() != null && k.startsWith('conf_') && k != 'conf_sync_enabled') {
+                    m[k] = entry.getValue();
                   }
                 }
               }
             }
           }
-          ctx.remove(bucketKey);
         }
-        if (!anyActiveSnapshot) {
+        if (!anyActiveStream) {
           ctx._skip_conf_write = true;
           return;
         }
+
         double rate = 0.85;
-        if (m.conf_chargeable_unit_rate instanceof Number) {
-          rate = ((Number)m.conf_chargeable_unit_rate).doubleValue();
-        } else if (m.conf_chargeable_unit_rate != null && m.conf_chargeable_unit_rate.toString() != '') {
-          rate = Double.parseDouble(m.conf_chargeable_unit_rate.toString());
+        try {
+          if (m.conf_chargeable_unit_rate instanceof Number) {
+            rate = ((Number)m.conf_chargeable_unit_rate).doubleValue();
+          } else if (m.conf_chargeable_unit_rate != null && m.conf_chargeable_unit_rate.toString().trim() != '') {
+            rate = Double.parseDouble(m.conf_chargeable_unit_rate.toString().trim());
+          }
+        } catch (Exception e) {
+          ctx._skip_conf_write = true;
+          return;
         }
-        ctx.conf_chargeable_unit_rate = rate;
-        ctx.conf_chargeable_unit_rate_unit = (m.conf_chargeable_unit_rate_unit != null && m.conf_chargeable_unit_rate_unit != '') ? m.conf_chargeable_unit_rate_unit.toString() : 'EUR';
-        ctx.conf_indexing_weight = m.conf_indexing_weight instanceof Number ? ((Number)m.conf_indexing_weight).intValue() : (m.conf_indexing_weight != null && m.conf_indexing_weight.toString() != '' ? (int)Double.parseDouble(m.conf_indexing_weight.toString()) : 20);
-        ctx.conf_query_weight = m.conf_query_weight instanceof Number ? ((Number)m.conf_query_weight).intValue() : (m.conf_query_weight != null && m.conf_query_weight.toString() != '' ? (int)Double.parseDouble(m.conf_query_weight.toString()) : 20);
-        ctx.conf_storage_weight = m.conf_storage_weight instanceof Number ? ((Number)m.conf_storage_weight).intValue() : (m.conf_storage_weight != null && m.conf_storage_weight.toString() != '' ? (int)Double.parseDouble(m.conf_storage_weight.toString()) : 40);
-        ctx.conf_utilization_memory_weight = m.conf_utilization_memory_weight instanceof Number ? ((Number)m.conf_utilization_memory_weight).intValue() : (m.conf_utilization_memory_weight != null && m.conf_utilization_memory_weight.toString() != '' ? (int)Double.parseDouble(m.conf_utilization_memory_weight.toString()) : 70);
-        ctx.conf_utilization_storage_weight = m.conf_utilization_storage_weight instanceof Number ? ((Number)m.conf_utilization_storage_weight).intValue() : (m.conf_utilization_storage_weight != null && m.conf_utilization_storage_weight.toString() != '' ? (int)Double.parseDouble(m.conf_utilization_storage_weight.toString()) : 30);
+        if (Double.isNaN(rate) || Double.isInfinite(rate) || rate < 0.0) {
+          ctx._skip_conf_write = true;
+          return;
+        }
+
+        int idxW = 20;
+        int qryW = 20;
+        int stoW = 40;
+        int memW = 70;
+        int diskW = 30;
         double floorVal = 0.10;
-        if (m.conf_utilization_floor instanceof Number) {
-          floorVal = ((Number)m.conf_utilization_floor).doubleValue();
-        } else if (m.conf_utilization_floor != null && m.conf_utilization_floor.toString() != '') {
-          floorVal = Double.parseDouble(m.conf_utilization_floor.toString());
+        try {
+          if (m.conf_indexing_weight != null && m.conf_indexing_weight.toString().trim() != '') {
+            idxW = m.conf_indexing_weight instanceof Number ? ((Number)m.conf_indexing_weight).intValue() : (int)Double.parseDouble(m.conf_indexing_weight.toString().trim());
+          }
+          if (m.conf_query_weight != null && m.conf_query_weight.toString().trim() != '') {
+            qryW = m.conf_query_weight instanceof Number ? ((Number)m.conf_query_weight).intValue() : (int)Double.parseDouble(m.conf_query_weight.toString().trim());
+          }
+          if (m.conf_storage_weight != null && m.conf_storage_weight.toString().trim() != '') {
+            stoW = m.conf_storage_weight instanceof Number ? ((Number)m.conf_storage_weight).intValue() : (int)Double.parseDouble(m.conf_storage_weight.toString().trim());
+          }
+          if (m.conf_utilization_memory_weight != null && m.conf_utilization_memory_weight.toString().trim() != '') {
+            memW = m.conf_utilization_memory_weight instanceof Number ? ((Number)m.conf_utilization_memory_weight).intValue() : (int)Double.parseDouble(m.conf_utilization_memory_weight.toString().trim());
+          }
+          if (m.conf_utilization_storage_weight != null && m.conf_utilization_storage_weight.toString().trim() != '') {
+            diskW = m.conf_utilization_storage_weight instanceof Number ? ((Number)m.conf_utilization_storage_weight).intValue() : (int)Double.parseDouble(m.conf_utilization_storage_weight.toString().trim());
+          }
+          if (m.conf_utilization_floor instanceof Number) {
+            floorVal = ((Number)m.conf_utilization_floor).doubleValue();
+          } else if (m.conf_utilization_floor != null && m.conf_utilization_floor.toString().trim() != '') {
+            floorVal = Double.parseDouble(m.conf_utilization_floor.toString().trim());
+          }
+        } catch (Exception e) {
+          ctx._skip_conf_write = true;
+          return;
         }
-        ctx.conf_utilization_floor = floorVal;
+        if (idxW < 0 || qryW < 0 || stoW < 0 || (qryW + stoW) <= 0 || memW < 0 || diskW < 0 || (memW + diskW) <= 0 || Double.isNaN(floorVal) || Double.isInfinite(floorVal) || floorVal < 0.0 || floorVal > 1.0) {
+          ctx._skip_conf_write = true;
+          return;
+        }
 
         long startMillis = 1262304000000L;
+        long endMillis = 2430518399999L;
         String effFrom = m.conf_effective_from != null ? m.conf_effective_from.toString().trim() : '';
         if (effFrom != '') {
           try {
             ZonedDateTime parsedEff = effFrom.contains('T') ? ZonedDateTime.parse(effFrom) : ZonedDateTime.parse(effFrom + 'T00:00:00Z');
+            String checkDate = effFrom.contains('T') ? effFrom.substring(0, effFrom.indexOf('T')) : effFrom;
+            if (!parsedEff.toLocalDate().toString().equals(checkDate)) {
+              ctx._skip_conf_write = true;
+              return;
+            }
             startMillis = parsedEff.toInstant().toEpochMilli();
           } catch (Exception e) {
-            startMillis = 1262304000000L;
+            ctx._skip_conf_write = true;
+            return;
+          }
+          if (startMillis >= endMillis) {
+            ctx._skip_conf_write = true;
+            return;
           }
         }
+
+        ctx.conf_chargeable_unit_rate = rate;
+        ctx.conf_chargeable_unit_rate_unit = (m.conf_chargeable_unit_rate_unit != null && m.conf_chargeable_unit_rate_unit.toString().trim() != '') ? m.conf_chargeable_unit_rate_unit.toString().trim() : 'EUR';
+        ctx.conf_indexing_weight = idxW;
+        ctx.conf_query_weight = qryW;
+        ctx.conf_storage_weight = stoW;
+        ctx.conf_utilization_memory_weight = memW;
+        ctx.conf_utilization_storage_weight = diskW;
+        ctx.conf_utilization_floor = floorVal;
         ctx.conf_start_date = startMillis;
-        ctx.conf_end_date = 2430518399999L;
+        ctx.conf_end_date = endMillis;
   - drop:
       if: "ctx._skip_conf_write == true"
       tag: preserve_existing_manual_config
@@ -89,6 +154,5 @@ processors:
       value: "{{{_ingest.timestamp}}}"
       tag: set_event_ingested
 on_failure:
-  - set:
-      field: error.message
-      value: "Failed to process chargeback config: {{ _ingest.on_failure_message }}"
+  - drop:
+      tag: drop_failed_config_write

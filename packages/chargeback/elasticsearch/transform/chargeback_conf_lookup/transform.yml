@@ -1,25 +1,83 @@
-description: Syncs chargeback configuration lookup index from native Fleet configuration snapshot events while preserving manual or historical periods when Fleet sync is not active.
+description: Syncs chargeback configuration lookup index from native Fleet configuration snapshot events while materializing an empty lookup for legacy-only installations and preserving manual or historical periods when Fleet sync is not active.
 source:
   index:
     - metrics-chargeback.billing-*
     - metrics-chargeback.usage-*
     - metrics-chargeback.node_stats-*
+    - metrics-ess_billing.billing-*
+    - metrics-elasticsearch.stack_monitoring.node_stats*
+    - .monitoring-es-*
+    - metricbeat-*
+    - monitoring-indices*
+    - "*:monitoring-indices*"
+    - -partial-*
+    - -metrics-ess_billing.billing-chargeback
+    - -monitoring-indices-chargeback
+    - "-*:monitoring-indices-chargeback"
     - -chargeback_lookup.*
+    - "-*:chargeback_lookup.*"
   query:
-    term:
-      doc_type: config_snapshot
+    bool:
+      should:
+        - term:
+            doc_type: config_snapshot
+        - bool:
+            filter:
+              - range:
+                  ess.billing.total_ecu:
+                    gt: 0
+            must_not:
+              - term:
+                  data_stream.dataset: chargeback.billing
+        - bool:
+            filter:
+              - range:
+                  "@timestamp":
+                    gte: now-2d
+            must_not:
+              - terms:
+                  data_stream.dataset:
+                    - chargeback.billing
+                    - chargeback.usage
+                    - chargeback.node_stats
+      minimum_should_match: 1
   runtime_mappings:
     config_join_key:
       type: keyword
       script:
         source: "emit('chargeback_config')"
+    cb_conf_sync_time:
+      type: date
+      script:
+        source: |
+          if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+            emit(doc['event.ingested'].value.toInstant().toEpochMilli());
+            return;
+          }
+          def rawIngested = params._source?.event?.ingested;
+          if (rawIngested != null) {
+            if (rawIngested instanceof Number) {
+              emit(((Number)rawIngested).longValue());
+              return;
+            }
+            String s = rawIngested.toString().trim();
+            if (s != '') {
+              try {
+                emit(ZonedDateTime.parse(s).toInstant().toEpochMilli());
+                return;
+              } catch (Exception e) {}
+            }
+          }
+          if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+            emit(doc['@timestamp'].value.toInstant().toEpochMilli());
+          }
 dest:
   index: chargeback_conf_lookup
   pipeline: logs-chargeback.lookup-0.6.0-chargeback_conf
 frequency: 5m
 sync:
   time:
-    field: event.ingested
+    field: cb_conf_sync_time
     delay: 60s
 pivot:
   group_by:
@@ -27,57 +85,82 @@ pivot:
       terms:
         field: config_join_key
   aggregations:
-    billing_conf:
+    snapshots:
       filter:
         term:
-          data_stream.dataset: chargeback.billing
+          doc_type: config_snapshot
       aggs:
-        doc_cnt:
-          value_count:
-            field: "@timestamp"
         latest:
-          top_metrics:
-            metrics:
-              - field: conf_sync_enabled
-              - field: conf_chargeable_unit_rate
-              - field: conf_chargeable_unit_rate_unit
-              - field: conf_effective_from
-            sort:
-              event.ingested: desc
-    usage_conf:
-      filter:
-        term:
-          data_stream.dataset: chargeback.usage
-      aggs:
-        doc_cnt:
-          value_count:
-            field: "@timestamp"
-        latest:
-          top_metrics:
-            metrics:
-              - field: conf_sync_enabled
-              - field: conf_indexing_weight
-              - field: conf_query_weight
-              - field: conf_storage_weight
-            sort:
-              event.ingested: desc
-    node_stats_conf:
-      filter:
-        term:
-          data_stream.dataset: chargeback.node_stats
-      aggs:
-        doc_cnt:
-          value_count:
-            field: "@timestamp"
-        latest:
-          top_metrics:
-            metrics:
-              - field: conf_sync_enabled
-              - field: conf_utilization_memory_weight
-              - field: conf_utilization_storage_weight
-              - field: conf_utilization_floor
-            sort:
-              event.ingested: desc
+          scripted_metric:
+            init_script: |
+              state.newestTs = -1L;
+              state.newestSync = false;
+              state.streams = [:];
+            map_script: |
+              if (params._source == null) {
+                return;
+              }
+              long ts = (doc.containsKey('cb_conf_sync_time') && !doc['cb_conf_sync_time'].empty)
+                ? doc['cb_conf_sync_time'].value.toInstant().toEpochMilli()
+                : ((doc.containsKey('@timestamp') && !doc['@timestamp'].empty) ? doc['@timestamp'].value.toInstant().toEpochMilli() : 0L);
+              def rawSync = params._source.get('conf_sync_enabled');
+              boolean syncEnabled = (rawSync == null) || rawSync.toString().equalsIgnoreCase('true');
+              if (ts > state.newestTs || (ts == state.newestTs && !syncEnabled)) {
+                state.newestTs = ts;
+                state.newestSync = syncEnabled;
+              }
+              String ds = params._source.data_stream instanceof Map && params._source.data_stream.dataset != null
+                ? params._source.data_stream.dataset.toString()
+                : '';
+              if (ds == 'chargeback.billing' || ds == 'chargeback.usage' || ds == 'chargeback.node_stats') {
+                def prev = state.streams.get(ds);
+                long prevTs = (prev instanceof Map && prev.ts instanceof Number) ? ((Number)prev.ts).longValue() : -1L;
+                if (prev == null || ts > prevTs || (ts == prevTs && !syncEnabled)) {
+                  Map snap = ['ts': ts, 'sync': syncEnabled];
+                  for (def entry : params._source.entrySet()) {
+                    String k = entry.getKey().toString();
+                    if (k.startsWith('conf_') && entry.getValue() != null) {
+                      snap[k] = entry.getValue();
+                    }
+                  }
+                  state.streams[ds] = snap;
+                }
+              }
+            combine_script: "return state;"
+            reduce_script: |
+              long newestTs = -1L;
+              boolean newestSync = false;
+              Map bestStreams = [:];
+              for (def s : states) {
+                if (s instanceof Map) {
+                  long sTs = s.newestTs instanceof Number ? ((Number)s.newestTs).longValue() : -1L;
+                  boolean sSync = s.newestSync instanceof Boolean ? (boolean)s.newestSync : false;
+                  if (sTs >= 0L && (sTs > newestTs || (sTs == newestTs && !sSync))) {
+                    newestTs = sTs;
+                    newestSync = sSync;
+                  }
+                  if (s.streams instanceof Map) {
+                    for (def entry : s.streams.entrySet()) {
+                      String ds = entry.getKey().toString();
+                      def cand = entry.getValue();
+                      if (cand instanceof Map) {
+                        long cTs = cand.ts instanceof Number ? ((Number)cand.ts).longValue() : -1L;
+                        boolean cSync = cand.sync instanceof Boolean ? (boolean)cand.sync : false;
+                        def cur = bestStreams.get(ds);
+                        long curTs = (cur instanceof Map && cur.ts instanceof Number) ? ((Number)cur.ts).longValue() : -1L;
+                        if (cur == null || cTs > curTs || (cTs == curTs && !cSync)) {
+                          bestStreams[ds] = cand;
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              return [
+                'has_snapshots': newestTs >= 0L,
+                'policy_sync_enabled': newestSync,
+                'streams': bestStreams
+              ];
 settings:
   deduce_mappings: false
   unattended: true
