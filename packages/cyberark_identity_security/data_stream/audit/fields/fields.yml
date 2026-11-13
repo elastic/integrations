@@ -1,0 +1,96 @@
+- name: cyberark_identity_security.audit
+  type: group
+  description: Fields from the CyberArk Identity Security Platform Audit SIEM integration API.
+  fields:
+    - name: tenant_id
+      type: keyword
+      description: ID of the CyberArk tenant (`tenantId`).
+    - name: application_code
+      type: keyword
+      description: Code of the CyberArk service that sent the event, for example IDP, PAM, DPA or ITDR (`applicationCode`).
+    - name: audit_type
+      type: keyword
+      description: Result or severity class of the audit event, for example Info, Success or Failure (`auditType`).
+    - name: action_type
+      type: keyword
+      description: Verb class of the action, for example Create, Edit or Login (`actionType`).
+    - name: component
+      type: keyword
+      description: Component that sent the event (`component`). For ITDR alerts this value is in `rule.name`.
+    - name: source
+      type: keyword
+      description: Source of the action when it is not an IP address, for example a component name such as PVWA or PSMApp (`source`). IP addresses are in `source.ip`.
+    - name: target
+      type: keyword
+      description: Target of the action (`target`). For Privilege Cloud and Secure Infrastructure Access events this value is in `destination.address`.
+    - name: target_network
+      type: keyword
+      description: Network name from a Secure Infrastructure Access SSH target of the form `user@host#network`.
+    - name: command
+      type: keyword
+      description: Command that was run (`command`).
+    - name: session_id
+      type: keyword
+      description: ID of the session (`sessionId`).
+    - name: access_method
+      type: keyword
+      description: Access method used, for example Vaulted (`accessMethod`).
+    - name: account_id
+      type: keyword
+      description: ID of the vault account (`accountId`).
+    - name: account_name
+      type: keyword
+      description: Name of the vault account object (`accountName`).
+    - name: safe
+      type: keyword
+      description: Name of the vault safe (`safe`).
+    - name: target_platform
+      type: keyword
+      description: Vault platform of the target, for example UnixSSH (`targetPlatform`).
+    - name: identity_type
+      type: keyword
+      description: Type of the identity that did the action, HUMAN or NON_HUMAN (`identityType`).
+    - name: correlation_id
+      type: keyword
+      description: ID that links related events (`correlationId`). For ITDR events this is the alert ID.
+    - name: cloud_provider
+      type: keyword
+      description: Cloud provider that runs the CyberArk service (`cloudProvider`).
+    - name: origin_region
+      type: keyword
+      description: Cloud region of the CyberArk service that logged the event (`originRegion`).
+    - name: cloud_identities
+      type: keyword
+      description: Cloud identities related to the event (`cloudIdentities`).
+    - name: cloud_assets
+      type: keyword
+      description: Cloud assets related to the event (`cloudAssets`).
+    - name: cloud_workspaces_and_roles
+      type: group
+      description: Cloud workspaces and the roles in each (`cloudWorkspacesAndRoles`).
+      fields:
+        - name: name
+          type: keyword
+          description: Name of the cloud workspace.
+        - name: roles
+          type: keyword
+          description: Roles in the cloud workspace.
+    - name: vaulted_accounts
+      type: keyword
+      description: Vaulted accounts related to the event (`vaultedAccounts`).
+    - name: is_dr
+      type: boolean
+      description: Whether the event came from a disaster recovery region (`isDr`).
+    - name: org_id
+      type: keyword
+      description: ID of the organization (`orgId`).
+    - name: when_occurred
+      type: date
+      description: Time when the action occurred, from `customData.when_occurred`.
+    - name: when_logged
+      type: date
+      description: Time when the action was logged, from `customData.when_logged`.
+    - name: custom_data
+      type: flattened
+      description: >-
+        Service-specific event details (`customData`). The keys depend on the application code and audit code. Keys that are mapped to ECS fields are removed. JSON-encoded string values are decoded, and the Privilege Cloud `new_target` value is split into its `Key=Value` pairs.

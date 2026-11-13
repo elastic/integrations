@@ -1,0 +1,122 @@
+format_version: "3.6.5"
+name: cyberark_identity_security
+title: CyberArk Identity Security (Idira)
+version: "0.1.0"
+source:
+  license: "Elastic-2.0"
+description: Collect audit events from the CyberArk Identity Security Platform (Idira) Audit Service with Elastic Agent.
+type: integration
+categories:
+  - security
+  - iam
+conditions:
+  kibana:
+    version: "^9.4.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/cyberark-logo.svg
+    title: CyberArk logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: cyberark_identity_security
+    title: CyberArk Identity Security Platform Audit Events
+    description: Collect audit events from the CyberArk Identity Security Platform Audit Service.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        release: beta
+        organization: security
+        division: engineering
+        team: security-service-integrations
+    inputs:
+      - type: cel
+        title: Collect CyberArk Identity Security Platform audit events via API
+        description: Collecting audit events from the CyberArk Identity Security Platform SIEM integration API.
+        vars:
+          - name: url
+            type: url
+            title: Audit API URL
+            description: The **API base URL** of the SIEM integration, for example `https://example.audit.cyberark.cloud`. Copy it from **Integrations** > **Export to SIEM** in the CyberArk administration portal.
+            multi: false
+            required: true
+            show_user: true
+          - name: api_key
+            type: password
+            title: SIEM API Key
+            description: The **API key** of the SIEM integration. CyberArk shows it only once, when the SIEM integration is created.
+            multi: false
+            required: true
+            show_user: true
+            secret: true
+          - name: identity_id
+            type: text
+            title: Identity ID
+            description: The Identity ID of your CyberArk Identity tenant, for example `ACF4874`. To find it, open Identity Administration and click your user name and select **About**, then copy the **ID** shown under **Identity**.
+            multi: false
+            required: true
+            show_user: true
+          - name: identity_application_id
+            type: text
+            title: Application ID
+            description: The **Application ID** on the **Settings** tab of the OAuth2 Server web app in Identity Administration, for example `elastic_siem`. It must match exactly because it forms the last part of the token URL.
+            multi: false
+            required: true
+            show_user: true
+          - name: client_id
+            type: text
+            title: Client ID
+            description: The full login name of the CyberArk Identity service user, including the tenant suffix, for example `svc_elastic@cyberark.cloud.1234`. The suffix is required, and is a different identifier from the ID in **Identity ID**.
+            multi: false
+            required: true
+            show_user: true
+          - name: client_secret
+            type: password
+            title: Client Secret
+            description: The password of the CyberArk Identity service user.
+            multi: false
+            required: true
+            show_user: true
+            secret: true
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            multi: false
+            required: false
+            show_user: false
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities:
+              #  - |
+              #    -----BEGIN CERTIFICATE-----
+              #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+              #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+              #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+              #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+              #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+              #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+              #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+              #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+              #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+              #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+              #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+              #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+              #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+              #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+              #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+              #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+              #    sxSmbIUfc2SGJGCJD4I=
+              #    -----END CERTIFICATE-----
+owner:
+  github: elastic/security-service-integrations
+  type: elastic

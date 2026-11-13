@@ -1,0 +1,266 @@
+---
+description: Pipeline for CyberArk Identity (IDP) audit events. Maps known `customData` keys to ECS.
+processors:
+  # Client and source addresses.
+  - convert:
+      field: json.customData.client_ip_address
+      tag: convert_client_ip_address
+      target_field: client.ip
+      type: ip
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: json.customData.client_ip_address
+      tag: remove_client_ip_address
+      ignore_missing: true
+      if: ctx.client?.ip != null
+  - convert:
+      field: json.customData.source_ip_address
+      tag: convert_source_ip_address
+      target_field: _tmp.source_ip_address
+      type: ip
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_source_ip_address
+      copy_from: _tmp.source_ip_address
+      if: ctx.source?.ip == null && ctx._tmp?.source_ip_address != null
+  - remove:
+      field: json.customData.source_ip_address
+      tag: remove_source_ip_address
+      ignore_missing: true
+      if: ctx._tmp?.source_ip_address != null && ctx._tmp.source_ip_address == ctx.source?.ip
+  - append:
+      field: related.ip
+      tag: append_source_ip_address_to_related_ip
+      value: '{{{_tmp.source_ip_address}}}'
+      allow_duplicates: false
+      if: ctx._tmp?.source_ip_address != null
+
+  # Vendor geolocation of the source address.
+  - rename:
+      field: json.customData.geoip_city_name
+      tag: rename_geoip_city_name
+      target_field: source.geo.city_name
+      ignore_missing: true
+      if: ctx.source?.ip != null
+  - rename:
+      field: json.customData.geoip_country_code
+      tag: rename_geoip_country_code
+      target_field: source.geo.country_iso_code
+      ignore_missing: true
+      if: ctx.source?.ip != null
+  - rename:
+      field: json.customData.geoip_country_name
+      tag: rename_geoip_country_name
+      target_field: source.geo.country_name
+      ignore_missing: true
+      if: ctx.source?.ip != null
+  - convert:
+      field: json.customData.geoip_latitude
+      tag: convert_geoip_latitude
+      target_field: source.geo.location.lat
+      type: double
+      if: ctx.source?.ip != null && ctx.json.customData?.geoip_latitude != null && ctx.json.customData.geoip_longitude != null
+  - convert:
+      field: json.customData.geoip_longitude
+      tag: convert_geoip_longitude
+      target_field: source.geo.location.lon
+      type: double
+      if: ctx.source?.geo?.location?.lat != null
+  - remove:
+      field:
+        - json.customData.geoip_latitude
+        - json.customData.geoip_longitude
+      tag: remove_geoip_location
+      ignore_missing: true
+      if: ctx.source?.geo?.location?.lon != null
+
+  # User agent.
+  - rename:
+      field: json.customData.user_agent
+      tag: rename_user_agent
+      target_field: user_agent.original
+      ignore_missing: true
+
+  # Actor.
+  - rename:
+      field: json.customData.roles
+      tag: rename_roles
+      target_field: user.roles
+      ignore_missing: true
+  - split:
+      field: user.roles
+      tag: split_user_roles
+      separator: '\s*,\s*'
+      ignore_missing: true
+  - rename:
+      field: json.customData.email_address
+      tag: rename_email_address
+      target_field: user.email
+      ignore_missing: true
+      if: ctx.json.customData?.email_address instanceof String && ctx.json.customData.email_address.contains('@')
+  - remove:
+      field: json.customData.failed_username
+      tag: remove_failed_username
+      ignore_missing: true
+      if: ctx.json.customData?.failed_username != null && ctx.json.customData.failed_username == ctx.user?.name
+  - rename:
+      field: json.customData.failed_username
+      tag: rename_failed_username
+      target_field: user.name
+      ignore_missing: true
+      if: ctx.user?.name == null
+  - append:
+      field: related.user
+      tag: append_failed_username_to_related_user
+      value: '{{{json.customData.failed_username}}}'
+      allow_duplicates: false
+      if: ctx.json.customData?.failed_username != null
+  - rename:
+      field: json.customData.failure_reason
+      tag: rename_failure_reason
+      target_field: event.reason
+      ignore_missing: true
+
+  # Target user of user management, role and application events.
+  - rename:
+      field: json.customData.entity_name
+      tag: rename_entity_name
+      target_field: user.target.name
+      ignore_missing: true
+      if: ctx.user?.target?.name == null && (ctx.json.customData?.classification == 'User' || ctx.event?.code == 'IDP3101')
+  - rename:
+      field: json.customData.entity_uuid
+      tag: rename_entity_uuid
+      target_field: user.target.id
+      ignore_missing: true
+      if: ctx.user?.target?.id == null && (ctx.json.customData?.classification == 'User' || ctx.event?.code == 'IDP3101')
+  - rename:
+      field: json.customData.principal_name
+      tag: rename_principal_name
+      target_field: user.target.name
+      ignore_missing: true
+      if: ctx.user?.target?.name == null && ctx.json.customData?.principal_type == 'User'
+  - rename:
+      field: json.customData.principal_uuid
+      tag: rename_principal_uuid
+      target_field: user.target.id
+      ignore_missing: true
+      if: ctx.user?.target?.id == null && ctx.json.customData?.principal_type == 'User'
+  - rename:
+      field: json.customData.principal
+      tag: rename_principal
+      target_field: user.target.id
+      ignore_missing: true
+      if: ctx.user?.target?.id == null && ctx.json.customData?.principal_type == 'User'
+  - rename:
+      field: json.customData.trustee
+      tag: rename_trustee
+      target_field: user.target.name
+      ignore_missing: true
+      if: ctx.user?.target?.name == null && ctx.json.customData?.trustee_type == 'User'
+
+  # Roles behave like groups.
+  - rename:
+      field: json.customData.role_name
+      tag: rename_role_name
+      target_field: group.name
+      ignore_missing: true
+  - rename:
+      field: json.customData.role_id
+      tag: rename_role_id
+      target_field: group.id
+      ignore_missing: true
+  - dissect:
+      field: json.customData.object_name
+      tag: dissect_object_name
+      pattern: 'Role|%{group.name}|%{group.id}'
+      if: ctx.group == null && ctx.json.customData?.object_name instanceof String && ctx.json.customData.object_name.startsWith('Role|')
+  - remove:
+      field: json.customData.object_name
+      tag: remove_object_name
+      ignore_missing: true
+      if: ctx.group?.id != null && ctx.json.customData?.object_name instanceof String && ctx.json.customData.object_name.startsWith('Role|')
+
+  # JSON-encoded strings.
+  - json:
+      field: json.customData.cookie_session
+      tag: json_cookie_session
+      ignore_failure: true
+      if: ctx.json.customData?.cookie_session instanceof String && ctx.json.customData.cookie_session.startsWith('{')
+  - json:
+      field: json.customData.new_entity
+      tag: json_new_entity
+      ignore_failure: true
+      if: ctx.json.customData?.new_entity instanceof String && ctx.json.customData.new_entity.startsWith('{')
+  - json:
+      field: json.customData.old_entity
+      tag: json_old_entity
+      ignore_failure: true
+      if: ctx.json.customData?.old_entity instanceof String && ctx.json.customData.old_entity.startsWith('{')
+
+  # Vendor times in M/D/YYYY h:mm:ss AM/PM format, UTC.
+  - date:
+      field: json.customData.when_occurred
+      tag: date_when_occurred
+      target_field: cyberark_identity_security.audit.when_occurred
+      formats:
+        - M/d/yyyy h:mm:ss a
+      locale: en
+      timezone: UTC
+      if: ctx.json.customData?.when_occurred instanceof String
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_date_when_occurred_error
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              in pipeline '{{{ _ingest.pipeline }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - remove:
+      field: json.customData.when_occurred
+      tag: remove_when_occurred
+      ignore_missing: true
+      if: ctx.cyberark_identity_security?.audit?.when_occurred != null
+  - date:
+      field: json.customData.when_logged
+      tag: date_when_logged
+      target_field: cyberark_identity_security.audit.when_logged
+      formats:
+        - M/d/yyyy h:mm:ss a
+      locale: en
+      timezone: UTC
+      if: ctx.json.customData?.when_logged instanceof String
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_date_when_logged_error
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              in pipeline '{{{ _ingest.pipeline }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - remove:
+      field: json.customData.when_logged
+      tag: remove_when_logged
+      ignore_missing: true
+      if: ctx.cyberark_identity_security?.audit?.when_logged != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

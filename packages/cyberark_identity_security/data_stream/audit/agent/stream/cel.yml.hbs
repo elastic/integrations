@@ -1,0 +1,186 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+resource.rate_limit.limit: {{resource_rate_limit_limit}}
+resource.rate_limit.burst: {{resource_rate_limit_burst}}
+resource.retry.max_attempts: {{resource_retry_max_attempts}}
+resource.retry.wait_min: {{resource_retry_wait_min}}
+resource.retry.wait_max: {{resource_retry_wait_max}}
+auth.oauth2:
+  client.id: {{escape_string client_id}}
+  client.secret: {{escape_string client_secret}}
+  token_url: https://{{identity_id}}.id.cyberark.cloud/oauth2/token/{{identity_application_id}}
+  scopes:
+    - isp.audit.events:read
+state:
+  api_key: {{escape_string api_key}}
+  page_size: {{page_size}}
+  initial_interval: {{initial_interval}}
+redact:
+  fields:
+    - api_key
+program: |-
+  // The Audit stream API uses a server-side cursor in two steps. createQuery starts
+  // an open-ended query (dateFrom only) and returns a cursorRef. results returns a
+  // page of events and the next cursorRef. An empty page means that the stream is
+  // caught up; the same cursorRef returns new events on later polls.
+  //
+  // cursor.ref is the stream cursorRef to resume from. cursor.last_timestamp is the
+  // largest event timestamp seen (epoch ms, 0 if none). It is the start of a new
+  // query when the API rejects the stored cursorRef.
+  state.?cursor.ref.orValue("").as(ref,
+    (ref != "") ?
+      // Steady state: fetch the next page of the stored stream cursor.
+      state.with(
+        request(
+          "POST",
+          state.url.trim_right("/") + "/api/audits/stream/results",
+          {
+            "cursorRef": ref,
+          }.encode_json()
+        ).with(
+          {
+            "Header": {
+              "Content-Type": ["application/json"],
+              "X-Api-Key": [state.api_key],
+            },
+          }
+        ).do_request().as(resp,
+          (resp.StatusCode == 200) ?
+            resp.Body.decode_json().as(body,
+              {
+                "items": body.?data.orValue([]),
+                "next": body.?paging.cursor.cursorRef,
+              }
+            ).as(page,
+              {
+                "events": page.items.map(e, {"message": e.encode_json()}),
+                "cursor": {
+                  "ref": page.next.orValue(ref),
+                  // 0 means no event timestamp seen yet.
+                  "last_timestamp": int(
+                    (
+                      [double(state.?cursor.last_timestamp.orValue(0))] +
+                      page.items.map(e, e.?timestamp.orValue(null) != null, double(e.timestamp))
+                    ).max()
+                  ),
+                },
+                "want_more": size(page.items) > 0 && page.next.orValue("") != "",
+              }
+            )
+          : (resp.StatusCode == 400 || resp.StatusCode == 403) ?
+            // The API rejected the stored cursor. Drop it and keep last_timestamp so the
+            // next poll creates a new query from there. This is published as an event so
+            // that the cursor change is stored; waiting for the next poll stops a tight
+            // loop if the new cursor is rejected too.
+            {
+              "events": [
+                {
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": string(resp.Status),
+                    "message": "POST /api/audits/stream/results: cursor rejected, a new query starts on the next poll: " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)),
+                  },
+                },
+              ],
+              "cursor": state.cursor.drop("ref"),
+              "want_more": false,
+            }
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "POST /api/audits/stream/results: " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)),
+                },
+              },
+              "want_more": false,
+            }
+        )
+      )
+    :
+      (
+        (state.?cursor.last_timestamp.orValue(0) > 0) ?
+          timestamp(int(state.cursor.last_timestamp) / 1000)
+        :
+          now - duration(state.initial_interval)
+      ).as(from,
+        state.with(
+          request(
+            "POST",
+            state.url.trim_right("/") + "/api/audits/stream/createQuery",
+            {
+              "query": {
+                "pageSize": int(state.page_size),
+                "filterModel": {
+                  "date": {
+                    // The API keeps events for 7 days, so never start earlier than that.
+                    "dateFrom": (
+                      (from < now - duration("168h")) ? (now - duration("168h")) : from
+                    ).format("2006-01-02 15:04:05"),
+                  },
+                },
+              },
+            }.encode_json()
+          ).with(
+            {
+              "Header": {
+                "Content-Type": ["application/json"],
+                "X-Api-Key": [state.api_key],
+              },
+            }
+          ).do_request().as(resp,
+            ((resp.StatusCode == 200) ? resp.Body.decode_json().?cursorRef.orValue("") : "").as(new_ref,
+              (new_ref != "") ?
+                // Publish a placeholder event so that the new cursor is stored, then fetch
+                // the first page at once.
+                {
+                  "events": [{"retry": true}],
+                  "cursor": state.?cursor.orValue({}).with({"ref": new_ref}),
+                  "want_more": true,
+                }
+              :
+                {
+                  "events": {
+                    "error": {
+                      "code": string(resp.StatusCode),
+                      "id": string(resp.Status),
+                      "message": "POST /api/audits/stream/createQuery: " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)),
+                    },
+                  },
+                  "want_more": false,
+                }
+            )
+          )
+        )
+      )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- drop_event.when.equals.retry: true
+{{#if processors}}
+{{processors}}
+{{/if}}

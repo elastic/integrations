@@ -1,0 +1,115 @@
+---
+description: Pipeline for CyberArk Identity Threat Detection and Response (ITDR) events.
+processors:
+  # Only ITDR0001 reports a new security alert. The other ITDR codes are user actions on
+  # alerts and settings (resolve, disable, enable, edit settings), so they stay events.
+  - set:
+      field: event.kind
+      tag: set_event_kind_alert
+      value: alert
+      if: ctx.event?.code == 'ITDR0001'
+  - rename:
+      field: json.component
+      tag: rename_component
+      target_field: rule.name
+      ignore_missing: true
+      if: ctx.event?.kind == 'alert'
+      description: For ITDR alerts the component is the name of the detector that made the alert.
+
+  # Severity. customData.Severity keeps the vendor label.
+  - set:
+      field: event.severity
+      tag: set_event_severity_low
+      value: 21
+      if: ctx.json.customData?.Severity instanceof String && ctx.json.customData.Severity.equalsIgnoreCase('low')
+  - set:
+      field: event.severity
+      tag: set_event_severity_medium
+      value: 47
+      if: ctx.json.customData?.Severity instanceof String && ctx.json.customData.Severity.equalsIgnoreCase('medium')
+  - set:
+      field: event.severity
+      tag: set_event_severity_high
+      value: 73
+      if: ctx.json.customData?.Severity instanceof String && ctx.json.customData.Severity.equalsIgnoreCase('high')
+  - set:
+      field: event.severity
+      tag: set_event_severity_critical
+      value: 99
+      if: ctx.json.customData?.Severity instanceof String && ctx.json.customData.Severity.equalsIgnoreCase('critical')
+
+  - rename:
+      field: json.customData.Alert_link
+      tag: rename_alert_link
+      target_field: event.url
+      ignore_missing: true
+
+  # Source of sign-in detections.
+  - convert:
+      field: json.customData.Source_ip_address
+      tag: convert_source_ip_address
+      target_field: _tmp.source_ip_address
+      type: ip
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_source_ip_address
+      copy_from: _tmp.source_ip_address
+      if: ctx.source?.ip == null && ctx._tmp?.source_ip_address != null
+  - remove:
+      field: json.customData.Source_ip_address
+      tag: remove_source_ip_address
+      ignore_missing: true
+      if: ctx._tmp?.source_ip_address != null && ctx._tmp.source_ip_address == ctx.source?.ip
+  - append:
+      field: related.ip
+      tag: append_source_ip_address_to_related_ip
+      value: '{{{_tmp.source_ip_address}}}'
+      allow_duplicates: false
+      if: ctx._tmp?.source_ip_address != null
+  - rename:
+      field: json.customData.City
+      tag: rename_city
+      target_field: source.geo.city_name
+      ignore_missing: true
+      if: ctx.source?.ip != null
+  - rename:
+      field: json.customData.Country
+      tag: rename_country
+      target_field: source.geo.country_name
+      ignore_missing: true
+      if: ctx.source?.ip != null
+
+  # JSON-encoded strings.
+  - json:
+      field: json.customData.Risky_commands
+      tag: json_risky_commands
+      ignore_failure: true
+      if: ctx.json.customData?.Risky_commands instanceof String && (ctx.json.customData.Risky_commands.startsWith('[') || ctx.json.customData.Risky_commands.startsWith('{'))
+  - json:
+      field: json.customData.Affected_accounts
+      tag: json_affected_accounts
+      ignore_failure: true
+      if: ctx.json.customData?.Affected_accounts instanceof String && (ctx.json.customData.Affected_accounts.startsWith('[') || ctx.json.customData.Affected_accounts.startsWith('{'))
+  - json:
+      field: json.customData.Risk_distribution
+      tag: json_risk_distribution
+      ignore_failure: true
+      if: ctx.json.customData?.Risk_distribution instanceof String && (ctx.json.customData.Risk_distribution.startsWith('[') || ctx.json.customData.Risk_distribution.startsWith('{'))
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

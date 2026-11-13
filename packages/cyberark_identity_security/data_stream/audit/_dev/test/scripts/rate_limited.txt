@@ -1,0 +1,287 @@
+# The Audit API rate-limits the results request (429 with Retry-After: 1). The
+# CEL input's retry client (resource.retry.*) waits and repeats the request, so
+# the poll recovers with no error document.
+#
+# Request flow (interval 5s, page_size 3, max_attempts 5):
+#   poll 1: token -> createQuery -> cursor-ref-a
+#           results(cursor-ref-a) -> 429, 429, then 2 events and cursor-ref-b
+#                                    (the two retries are inside one poll)
+#           results(cursor-ref-b) -> 0 events (caught up)
+#
+# The mock returns the responses of a rule in turn, so the first two calls for
+# cursor-ref-a get 429 and the third gets the events. The mock log must show
+# exactly two 429 responses, so the test cannot pass without the retry.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+# The token URL is built from identity_id, so the OAuth mock uses the host name
+# elastic-audit-test.id.cyberark.cloud over HTTPS. The policy trusts its
+# self-signed certificate through the ssl var.
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} audit-oauth
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} audit-mock
+
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# 2 audit events and no more.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+exec jq '.hits.total.value' got_docs.json
+stdout '^2$'
+
+# The retry recovered inside the poll: no error document.
+exec jq '[.hits.hits[]._source | select(.error.message != null)] | length' got_docs.json
+stdout '^0$'
+
+exec jq -r '[.hits.hits[]._source.event.id | select(. != null)] | sort | join(",")' got_docs.json
+stdout '^00000b01-0000-4000-8000-000000000b01,00000b02-0000-4000-8000-000000000b02$'
+
+# No pipeline errors.
+exec jq '[.hits.hits[]._source | select(.event.kind == "pipeline_error")] | length' got_docs.json
+stdout '^0$'
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+
+# docker_down prints the mock's request log. The API returned 429 exactly
+# twice, and the program created only one query.
+docker_down audit-mock
+cp stdout mock.log
+exec jq -n --rawfile log mock.log '$log | [scan("stream/results HTTP/[0-9.]+\" 429 ")] | length'
+stdout '^2$'
+exec jq -n --rawfile log mock.log '$log | [scan("stream/createQuery HTTP/[0-9.]+\" 200 ")] | length'
+stdout '^1$'
+docker_down audit-oauth
+
+-- test_config.yaml --
+input: cel
+vars:
+  url: http://audit-mock:8090
+  api_key: test-api-key
+  identity_id: elastic-audit-test
+  identity_application_id: elastic_audit_app
+  client_id: 'svc_elastic@cyberark.cloud.1234'
+  client_secret: 'p@ss"w/ord\test'
+  ssl: |
+    certificate_authorities:
+      - |
+        -----BEGIN CERTIFICATE-----
+        MIIDczCCAlugAwIBAgIUNCGmjOhQLgP2W0/QC36VDNSVeAQwDQYJKoZIhvcNAQEL
+        BQAwLzEtMCsGA1UEAwwkZWxhc3RpYy1hdWRpdC10ZXN0LmlkLmN5YmVyYXJrLmNs
+        b3VkMB4XDTI2MTEwNDIzNTIyOVoXDTM2MTEwMTIzNTIyOVowLzEtMCsGA1UEAwwk
+        ZWxhc3RpYy1hdWRpdC10ZXN0LmlkLmN5YmVyYXJrLmNsb3VkMIIBIjANBgkqhkiG
+        9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2FQe/UlPzBOJsY+31whTu6BlDZk5idwXSf8Q
+        nv9RVnWgQjmgSyh5uhhWd2NP8jfPv1v/1S3XKsqjo7siwQl5klG8+wqqtTOM+Kv+
+        FR6BOnZTRsDvYORr5j+9AebbrmjmtO3B3ZCErKXHVW58b/JY0TOgwpvev5claTeC
+        U6b5Am5dearsK+5WoakI8+ntG2OERJstBehZdCiA9aNcCog+n8cbTGQiLeELpGuV
+        QOYieAQZ9mTpq3vjz+OSzwnToi68E9gtYoE24JXyhlDugE4iUKFNcKo+YREXzseR
+        c2TpXN79YtOxo8O1RFVXYwcIHjrPPxktpfsg6vwOOOBE20ecCwIDAQABo4GGMIGD
+        MB0GA1UdDgQWBBQD92UTn3SDXcHrkup5xs5VFsNeMzAPBgNVHRMBAf8EBTADAQH/
+        MC8GA1UdEQQoMCaCJGVsYXN0aWMtYXVkaXQtdGVzdC5pZC5jeWJlcmFyay5jbG91
+        ZDATBgNVHSUEDDAKBggrBgEFBQcDATALBgNVHQ8EBAMCAqQwDQYJKoZIhvcNAQEL
+        BQADggEBAKXis19gjWOu4Gf50zttGp/IkxxkGZ4pD5lJO0AnKKQVxPBJKCDCSUvz
+        GJIT40Cb8hKqvU9uF3YSZ5rHg++xFWa2j1WaQzRKuEozKc/jwZfkSYTmTHRtyGDa
+        fnTitHyA0tx6qDm35st7rGZmiQHREG87kP+0gstFL8f46zezJdBwY+xCRCY2u79O
+        meEOL1xSeDXdpze2U029tUbLB0zDw7dEX61y++NhuhA/oA6ho8rnKJ2RQRo8ZWo1
+        cIPxkEAaSiynySYeGfjWvPdUHiYM24qKX3H8qvx35xmx4NmcI3rpw+oOpuIOMekQ
+        Wsauoo9qS5pk95p8D6WZEDZUeRmdSkU=
+        -----END CERTIFICATE-----
+data_stream:
+  vars:
+    interval: 5s
+    initial_interval: 24h
+    page_size: 3
+    resource_retry_max_attempts: 5
+    resource_retry_wait_min: 1s
+    resource_retry_wait_max: 2s
+    preserve_original_event: false
+    enable_request_tracer: false
+-- oauth-certificate.crt --
+-----BEGIN CERTIFICATE-----
+MIIDczCCAlugAwIBAgIUNCGmjOhQLgP2W0/QC36VDNSVeAQwDQYJKoZIhvcNAQEL
+BQAwLzEtMCsGA1UEAwwkZWxhc3RpYy1hdWRpdC10ZXN0LmlkLmN5YmVyYXJrLmNs
+b3VkMB4XDTI2MTEwNDIzNTIyOVoXDTM2MTEwMTIzNTIyOVowLzEtMCsGA1UEAwwk
+ZWxhc3RpYy1hdWRpdC10ZXN0LmlkLmN5YmVyYXJrLmNsb3VkMIIBIjANBgkqhkiG
+9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2FQe/UlPzBOJsY+31whTu6BlDZk5idwXSf8Q
+nv9RVnWgQjmgSyh5uhhWd2NP8jfPv1v/1S3XKsqjo7siwQl5klG8+wqqtTOM+Kv+
+FR6BOnZTRsDvYORr5j+9AebbrmjmtO3B3ZCErKXHVW58b/JY0TOgwpvev5claTeC
+U6b5Am5dearsK+5WoakI8+ntG2OERJstBehZdCiA9aNcCog+n8cbTGQiLeELpGuV
+QOYieAQZ9mTpq3vjz+OSzwnToi68E9gtYoE24JXyhlDugE4iUKFNcKo+YREXzseR
+c2TpXN79YtOxo8O1RFVXYwcIHjrPPxktpfsg6vwOOOBE20ecCwIDAQABo4GGMIGD
+MB0GA1UdDgQWBBQD92UTn3SDXcHrkup5xs5VFsNeMzAPBgNVHRMBAf8EBTADAQH/
+MC8GA1UdEQQoMCaCJGVsYXN0aWMtYXVkaXQtdGVzdC5pZC5jeWJlcmFyay5jbG91
+ZDATBgNVHSUEDDAKBggrBgEFBQcDATALBgNVHQ8EBAMCAqQwDQYJKoZIhvcNAQEL
+BQADggEBAKXis19gjWOu4Gf50zttGp/IkxxkGZ4pD5lJO0AnKKQVxPBJKCDCSUvz
+GJIT40Cb8hKqvU9uF3YSZ5rHg++xFWa2j1WaQzRKuEozKc/jwZfkSYTmTHRtyGDa
+fnTitHyA0tx6qDm35st7rGZmiQHREG87kP+0gstFL8f46zezJdBwY+xCRCY2u79O
+meEOL1xSeDXdpze2U029tUbLB0zDw7dEX61y++NhuhA/oA6ho8rnKJ2RQRo8ZWo1
+cIPxkEAaSiynySYeGfjWvPdUHiYM24qKX3H8qvx35xmx4NmcI3rpw+oOpuIOMekQ
+Wsauoo9qS5pk95p8D6WZEDZUeRmdSkU=
+-----END CERTIFICATE-----
+-- oauth-private.key --
+-----BEGIN PRIVATE KEY-----
+MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDYVB79SU/ME4mx
+j7fXCFO7oGUNmTmJ3BdJ/xCe/1FWdaBCOaBLKHm6GFZ3Y0/yN8+/W//VLdcqyqOj
+uyLBCXmSUbz7Cqq1M4z4q/4VHoE6dlNGwO9g5GvmP70B5tuuaOa07cHdkISspcdV
+bnxv8ljRM6DCm96/lyVpN4JTpvkCbl15quwr7lahqQjz6e0bY4REmy0F6Fl0KID1
+o1wKiD6fxxtMZCIt4Quka5VA5iJ4BBn2ZOmre+PP45LPCdOiLrwT2C1igTbglfKG
+UO6ATiJQoU1wqj5hERfOx5FzZOlc3v1i07Gjw7VEVVdjBwgeOs8/GS2l+yDq/A44
+4ETbR5wLAgMBAAECggEALzZUuRSp7LEK6Qyjo7N2islbpJcfPp4hGw4ms3ynZMYx
+HqLy/9QqlNnA7TdoeEWD+pB6ii0B+53UDuTFlfmaZbufEe7nCLridlcbEcLhkz/F
+tvhehff0MIESn/qhUTQlvbDyEYf73K4ljdiaIdhzV9z7pd1cxNWY3Zi2wcj8KXJD
+59NV4HsswJ8Csth2RF/YX9qU6GnnCdl1eRId2So/SM6t75JSxsHiVoYIXCt3jyLg
+gHPy0Cd9whcEiUhZxAR8BS137UEL4w7tH4q+/B8r+aObNNTJWcK4ky9yr9HoFhfl
+cHYyIpnShkp3yVL3BsU+OIYXx1PEYwSke/42NRCDoQKBgQD4XKriNHeR0dVyjreX
+aECi8GPPFh65P35Y777oZSoAqA6gTP+0aU84d0GAKmrrA6C3jTDSdh5NrP67yxhc
+A23E8kd4aA3vnEjEThOuNCLA1MZa3KjWqNBzqgd+EgC/r8SQChQSFtRR/xTUpnbq
+O716BFlDp3U3orQzx3AetX3NuwKBgQDe+0HpAE4HKiVS0FC5YOjEze0A60fWOjRK
+PDQMEC8JPPhPgAp7vrkTAzQ7mfc0Cwx1acARn1F9HzX60xnGAh7y6cRy/foM5f+b
+GtWp/VekRBLYy/Sxrw0tbO8UPBkwNYZTo2QiVl0jXxRWEOeGpgGaEhjPSEpQnQLK
+4MoDVJRd8QKBgQDiiZQNFJJj3aP2BBuN7TfX57ECeUi47CNQ+A2IaI4xXxlIOjOa
+2du6w3xpbUds6jg0dIKt1bO6YitQG+YyN6ZuWBe8yhy8DC+LbzQgV8nDXdE3m8Id
+WooYlmSTJ9SrA6YlRCwee9hamnLjrJsW+DrSCxlozlvqzWvVNvsb56vCdQKBgQDW
+RzgAdAWHxw2U9pEMhD9LmOSPxIoFKWvEhvQxP4Aj7Y5lv5LTdeWeiq6wM/Yl8hQn
+5NbpWGPTzKFwB1s2OCWLo+/f3Ydky8WFRRVcxRNqzOwboGvmMGWGaK+bj2FZPaZ3
+S4XXpYzdh+ogByCm+XKCn69tynd33lqnobsf1jC50QKBgQDWc+vF1XJN7Qp3kMyD
+2X7Fg3+OtkluvyNCS9tSEttmV1r4ehqxqdVwKh8KFxTwf6K5aHyvXgZirpFiX7Y0
+GZy+/SjD4T/lA43ClYu3cUHWtry4Nj3HPI1pvjFrXZisXZSVfmS7U2xqoaEOO5un
+mKqvOLhjlR89jfTHVJcARSw1dA==
+-----END PRIVATE KEY-----
+-- audit-oauth/docker-compose.yml --
+version: '2.3'
+services:
+  audit-oauth:
+    image: docker.elastic.co/observability/stream:v0.22.0
+    hostname: elastic-audit-test.id.cyberark.cloud
+    ports:
+      - 443
+    environment:
+      PORT: '443'
+    volumes:
+      - ./config.yml:/config.yml:ro
+      - ../oauth-certificate.crt:/oauth-certificate.crt:ro
+      - ../oauth-private.key:/oauth-private.key:ro
+    command:
+      - http-server
+      - --addr=:443
+      - --config=/config.yml
+      - --tls-cert=/oauth-certificate.crt
+      - --tls-key=/oauth-private.key
+-- audit-oauth/config.yml --
+rules:
+  # OAuth2 client_credentials token, client credentials in an HTTP Basic header
+  # (percent-encoded before Base64 encoding, RFC 6749 2.3.1).
+  - path: /oauth2/token/elastic_audit_app
+    methods: ['POST']
+    query_params:
+      grant_type: client_credentials
+      scope: 'isp.audit.events:read'
+    request_headers:
+      Authorization:
+        - '^Basic c3ZjX2VsYXN0aWMlNDBjeWJlcmFyay5jbG91ZC4xMjM0OnAlNDBzcyUyMnclMkZvcmQlNUN0ZXN0$'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"access_token":"test-access-token","token_type":"Bearer","expires_in":18000,"scope":"isp.audit.events:read"}
+  # OAuth2 client_credentials token, client credentials in the form body.
+  - path: /oauth2/token/elastic_audit_app
+    methods: ['POST']
+    query_params:
+      grant_type: client_credentials
+      scope: 'isp.audit.events:read'
+      client_id: 'svc_elastic@cyberark.cloud.1234'
+      client_secret: 'p@ss"w/ord\test'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"access_token":"test-access-token","token_type":"Bearer","expires_in":18000,"scope":"isp.audit.events:read"}
+-- audit-mock/docker-compose.yml --
+version: '2.3'
+services:
+  audit-mock:
+    image: docker.elastic.co/observability/stream:v0.22.0
+    hostname: audit-mock
+    ports:
+      - 8090
+    environment:
+      PORT: '8090'
+    volumes:
+      - ./config.yml:/config.yml:ro
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/config.yml
+-- audit-mock/config.yml --
+rules:
+  - path: /api/audits/stream/createQuery
+    methods: ['POST']
+    request_headers:
+      Authorization:
+        - '^Bearer test-access-token$'
+      X-Api-Key:
+        - '^test-api-key$'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"cursorRef":"cursor-ref-a"}
+  # Rate limited twice, then the page. Responses are returned in turn.
+  - path: /api/audits/stream/results
+    methods: ['POST']
+    request_headers:
+      Authorization:
+        - '^Bearer test-access-token$'
+      X-Api-Key:
+        - '^test-api-key$'
+    request_body: '/^\{"cursorRef": ?"cursor-ref-a"\}$/'
+    responses:
+      - status_code: 429
+        headers:
+          Content-Type:
+            - 'application/json'
+          Retry-After:
+            - '1'
+        body: |-
+          {"code":"429","message":"Too Many Requests"}
+      - status_code: 429
+        headers:
+          Content-Type:
+            - 'application/json'
+          Retry-After:
+            - '1'
+        body: |-
+          {"code":"429","message":"Too Many Requests"}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"data":[{"uuid":"00000b01-0000-4000-8000-000000000b01","tenantId":"00000002-0000-4000-8000-000000000002","timestamp":1793716962914,"username":"bob.smith@example.com","applicationCode":"IDP","auditCode":"IDP2006","auditType":"Info","action":"Logout","userId":"00000007-0000-4000-8000-000000000007","source":"203.0.113.11","actionType":"Logout","component":"Identity","serviceName":"Identity","message":"cloud.core.logout","customData":{}},{"uuid":"00000b02-0000-4000-8000-000000000b02","tenantId":"00000002-0000-4000-8000-000000000002","timestamp":1793716970000,"username":"carol.white@example.com","applicationCode":"IDP","auditCode":"IDP2006","auditType":"Info","action":"Logout","userId":"00000008-0000-4000-8000-000000000008","source":"198.51.100.12","actionType":"Logout","component":"Identity","serviceName":"Identity","message":"cloud.core.logout","customData":{}}],"paging":{"cursor":{"cursorRef":"cursor-ref-b"}}}
+  # Caught up.
+  - path: /api/audits/stream/results
+    methods: ['POST']
+    request_headers:
+      Authorization:
+        - '^Bearer test-access-token$'
+      X-Api-Key:
+        - '^test-api-key$'
+    request_body: '/^\{"cursorRef": ?"cursor-ref-b"\}$/'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"data":[],"paging":{"cursor":{"cursorRef":"cursor-ref-b"}}}

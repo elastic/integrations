@@ -1,0 +1,44 @@
+version: '2.3'
+services:
+  # Audit SIEM integration API (createQuery and results), plain HTTP.
+  cyberark_identity_security-audit:
+    image: docker.elastic.co/observability/stream:v0.22.0
+    hostname: cyberark_identity_security-audit
+    ports:
+      - 8090
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: '8090'
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/files/config-audit.yml
+  # CyberArk Identity OAuth2 token endpoint. The integration builds the token URL as
+  # https://<identity_id>.id.cyberark.cloud/oauth2/token/<identity_application_id>, so this
+  # service answers on that host name over HTTPS on the stack network. The test config
+  # trusts its self-signed certificate through the ssl var.
+  cyberark_identity_security-oauth:
+    image: docker.elastic.co/observability/stream:v0.22.0
+    hostname: elastic-audit-test.id.cyberark.cloud
+    networks:
+      elastic-package-stack_default:
+        aliases:
+          - elastic-audit-test.id.cyberark.cloud
+    ports:
+      - 443
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: '443'
+    command:
+      - http-server
+      - --addr=:443
+      - --config=/files/config-audit.yml
+      - --tls-cert=/files/oauth-certificate.crt
+      - --tls-key=/files/oauth-private.key
+networks:
+  elastic-package-stack_default:
+    driver: bridge
+    name: elastic-package-stack_default
+    external: true

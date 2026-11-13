@@ -1,0 +1,216 @@
+# Mock of the CyberArk Identity Security Platform Audit SIEM integration API.
+#
+# Served over HTTP for the Audit API (`url`) and over HTTPS (port 443, host
+# elastic-audit-test.id.cyberark.cloud) for the CyberArk Identity OAuth2 token endpoint,
+# whose URL the integration builds from `identity_id` and `identity_application_id`.
+#
+# Request flow modelled (system test, interval 2s, page_size 3):
+#   round 1: token -> createQuery -> cursor-ref-query
+#            results(cursor-ref-query)  -> 3 events, cursor-ref-page-1
+#            results(cursor-ref-page-1) -> 3 events, cursor-ref-page-2
+#            results(cursor-ref-page-2) -> 0 events, cursor-ref-page-2 (caught up)
+#   round 2: results(cursor-ref-page-2) -> 3 new events, cursor-ref-round-2
+#            results(cursor-ref-round-2) -> 0 events, cursor-ref-round-2 (caught up)
+# Expected hit_count: 9.
+#
+# Regression guard: a second createQuery returns cursor-ref-regression, whose results
+# rule returns an extra event on every call, so the hit count goes above 9 if the
+# program drops the stored cursor and creates a new query.
+#
+# Catch-all guards, not reached in a passing run: any other cursor gives 400 (like the
+# real API for a malformed cursor), and requests without valid credentials give 401.
+# The cursor-rejection fallback (403 on a stored cursor, new query from
+# cursor.last_timestamp) is tested by the script test
+# data_stream/audit/_dev/test/scripts/cursor_rejected.txt.
+rules:
+  # OAuth2 client_credentials token, client credentials in an HTTP Basic header. This is
+  # what the CEL input oauth2 client sends. The credentials are percent-encoded before
+  # Base64 encoding (RFC 6749 2.3.1); the plain values are
+  # 'svc_elastic@cyberark.cloud.1234' and 'p@ss"w/ord\test'.
+  - path: /oauth2/token/elastic_audit_app
+    methods: ['POST']
+    query_params:
+      grant_type: client_credentials
+      scope: 'isp.audit.events:read'
+    request_headers:
+      Authorization:
+        - '^Basic c3ZjX2VsYXN0aWMlNDBjeWJlcmFyay5jbG91ZC4xMjM0OnAlNDBzcyUyMnclMkZvcmQlNUN0ZXN0$'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"access_token":"test-access-token","token_type":"Bearer","expires_in":18000,"scope":"isp.audit.events:read"}
+  # OAuth2 client_credentials token, client credentials in the form body.
+  - path: /oauth2/token/elastic_audit_app
+    methods: ['POST']
+    query_params:
+      grant_type: client_credentials
+      scope: 'isp.audit.events:read'
+      client_id: 'svc_elastic@cyberark.cloud.1234'
+      client_secret: 'p@ss"w/ord\test'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"access_token":"test-access-token","token_type":"Bearer","expires_in":18000,"scope":"isp.audit.events:read"}
+  - path: /oauth2/token/elastic_audit_app
+    methods: ['POST']
+    responses:
+      - status_code: 400
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"error":"access_denied"}
+  # createQuery: open-ended query (dateFrom only) with pageSize 3. The first call starts
+  # the stream; any later call is a regression and gets the guard cursor.
+  - path: /api/audits/stream/createQuery
+    methods: ['POST']
+    request_headers:
+      Authorization:
+        - '^Bearer test-access-token$'
+      X-Api-Key:
+        - '^test-api-key$'
+      Content-Type:
+        - '^application/json'
+    request_body: '/^\{"query": ?\{("filterModel": ?\{"date": ?\{"dateFrom": ?"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}"\}\}, ?"pageSize": ?3|"pageSize": ?3, ?"filterModel": ?\{"date": ?\{"dateFrom": ?"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}"\}\})\}\}$/'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"cursorRef":"cursor-ref-query"}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"cursorRef":"cursor-ref-regression"}
+  # Round 1, page 1.
+  - path: /api/audits/stream/results
+    methods: ['POST']
+    request_headers:
+      Authorization:
+        - '^Bearer test-access-token$'
+      X-Api-Key:
+        - '^test-api-key$'
+      Content-Type:
+        - '^application/json'
+    request_body: '/^\{"cursorRef": ?"cursor-ref-query"\}$/'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"data":[{"uuid":"00000006-0000-4000-8000-000000000006","tenantId":"00000002-0000-4000-8000-000000000002","timestamp":1793716962914,"username":"bob.smith@example.com","applicationCode":"IDP","auditCode":"IDP2005","auditType":"Info","action":"Login","userId":"00000007-0000-4000-8000-000000000007","source":"203.0.113.11","actionType":"Login","component":"Identity","serviceName":"Identity","accessMethod":null,"accountId":null,"target":null,"command":null,"sessionId":null,"message":"cloud.core.login","customData":{"level":"Info","roles":"sysadmin,Everybody,Example_Role_1","factors":"UP,EMAIL","success":false,"hostname":"192.0.2.11","username":"bob.smith@example.com","device_os":"Mac","tenant_id":"ABC1234","user_guid":"00000007-0000-4000-8000-000000000007","session_id":"iE3y_KDCmdlLTiZbXOrDmc849Lsg1bvHyjcHDMIO5fl5","user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36","thread_type":"RestCall","browser_name":"Chrome","session_guid":"00000008-0000-4000-8000-000000000008","mobile_device":false,"when_occurred":"11/3/2026 2:42:40 PM","cookie_session":"{\"Session\":\"iE3y_KDCmdlLTiZbXOrDmc849Lsg1bvHyjcHDMIO5fl5\",\"AuthLevel\":\"High\",\"AuthMethod\":\"MultiFactorAuth\",\"Version\":1,\"AuthMechanismsPerformed\":{\"DSPassword\":\"2026-11-03T14:42:30.2071691Z\",\"EMail\":\"2026-11-03T14:42:40.1556939Z\"},\"AuthMechanismsInUse\":{\"DSPassword\":\"2026-11-03T14:42:30.2071691Z\",\"EMail\":\"2026-11-03T14:42:40.1556939Z\"},\"WhenIssued\":\"2026-11-03T14:42:40.2902814Z\",\"Persist\":false,\"Expires\":\"2026-11-04T02:42:40.2902814Z\"}","geoip_latitude":37.751,"geoip_city_name":"Example City","geoip_longitude":-97.822,"client_ip_address":"203.0.113.11","source_ip_address":"203.0.113.11","geoip_country_code":"US","geoip_country_name":"United States","internal_session_id":"g4w19_2RXH2O6I8HvkyY03BzkmicG-SWkg7_Mu7-e423","challenge_redirected":false,"authentication_method":"MultiAuth","directory_service_type":"CDS","directory_service_uuid":"00000005-0000-4000-8000-000000000005"},"cloudProvider":"aws","cloudWorkspacesAndRoles":[],"cloudIdentities":null,"cloudAssets":null,"safe":null,"accountName":null,"targetPlatform":null,"targetAccount":null,"identityType":"HUMAN","correlationId":null,"isDr":false,"originRegion":"us-east-1","orgId":null},{"uuid":"00000065-0000-4000-8000-000000000065","tenantId":"00000002-0000-4000-8000-000000000002","timestamp":1739363136939,"username":"alice.johnson@example.com","applicationCode":"PAM","auditCode":"PAM00295","auditType":"Info","action":"Retrieve password","userId":"alice.johnson@example.com","source":"PVWA","actionType":"Password","component":"Vault","serviceName":"Privilege Cloud","accessMethod":null,"accountId":"15_3","target":"192.0.2.50","command":null,"sessionId":null,"message":"(Action: Copy Password)access","customData":{"PAM":{"new_target":"","target":"EXAMPLE\\alice.johnson"}},"cloudProvider":null,"cloudWorkspacesAndRoles":[],"cloudIdentities":null,"cloudAssets":null,"safe":"Example-Linux-Safe","accountName":"Operating System-UnixSSH-192.0.2.50-root","targetPlatform":"UnixSSH","targetAccount":"root","identityType":null},{"uuid":"000000c9-0000-4000-8000-0000000000c9","tenantId":"00000002-0000-4000-8000-000000000002","timestamp":1787213141688,"username":"carol.white@example.com","applicationCode":"ITDR","auditCode":"ITDR0001","auditType":"Info","action":"New alert created","userId":"000000ca-0000-4000-8000-0000000000ca","source":"203.0.113.5","actionType":"Create","component":"Anomalous Sign In","serviceName":"Threat Detection and Response","accessMethod":null,"accountId":null,"target":"Idira Identity","command":null,"sessionId":"N/A","message":"Security alert Anomalous Sign In has been reported.","customData":{"Status":"Pending","Target_entity_type":"Idira Identity","Severity":"Low","Identity_group":"workforce","Alert_ID":"000000cb-0000-4000-8000-0000000000cb","Alert_link":"https://example-tenant.cyberark.cloud/intelligence/itdr/events/000000cb-0000-4000-8000-0000000000cb","City":"Example City","Country":"Example Country","Source_ip_address":"203.0.113.5","Browser":"N/A","Operating_system":"Windows","Session_id":"N/A","Authentication_method":"None","Event_type":"cloud.core.mfasummary","Identity_user_uuid":"000000ca-0000-4000-8000-0000000000ca","Risk_distribution":"[{\"risk_factor_key\": \"Location\", \"risk_factor_value\": 0}, {\"risk_factor_key\": \"OS\", \"risk_factor_value\": 0}, {\"risk_factor_key\": \"Browser\", \"risk_factor_value\": 42}, {\"risk_factor_key\": \"Time of Access\", \"risk_factor_value\": 14}, {\"risk_factor_key\": \"Authentication Pattern\", \"risk_factor_value\": 44}]","Username":"carol.white@example.com"},"cloudProvider":null,"cloudWorkspacesAndRoles":[],"cloudIdentities":null,"cloudAssets":null,"safe":null,"accountName":null,"targetPlatform":null,"targetAccount":null,"identityType":"HUMAN","correlationId":"000000cb-0000-4000-8000-0000000000cb","isDr":false,"originRegion":"eu-west-1","orgId":null}],"paging":{"cursor":{"cursorRef":"cursor-ref-page-1"}}}
+  # Round 1, page 2.
+  - path: /api/audits/stream/results
+    methods: ['POST']
+    request_headers:
+      Authorization:
+        - '^Bearer test-access-token$'
+      X-Api-Key:
+        - '^test-api-key$'
+      Content-Type:
+        - '^application/json'
+    request_body: '/^\{"cursorRef": ?"cursor-ref-page-1"\}$/'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"data":[{"uuid":"00000191-0000-4000-8000-000000000191","tenantId":"00000002-0000-4000-8000-000000000002","timestamp":1790514300000,"username":"frank.miller@example.com","applicationCode":"DPA","auditCode":"DPAI401","auditType":"Info","action":"RDP session started","userId":"00000192-0000-4000-8000-000000000192","source":"192.0.2.40","actionType":"Start","component":"DPA-RDP Connection","serviceName":"Secure Infrastructure Access","accessMethod":"Vaulted","accountId":null,"target":"srv-db02.example.com","command":null,"sessionId":"00000193-0000-4000-8000-000000000193","message":"RDP session started","customData":{"source_user":"frank.miller@example.com","access_method":"Vaulted","ephemeral_user":"EXAMPLE\\eph_fmiller01","target_machine":"srv-db02.example.com","source_hostname":"ws-fmiller02","connection_string":"/v srv-db02.example.com /u EXAMPLE\\eph_fmiller01 /p ***","authentication_methods":"MFA"},"cloudProvider":null,"cloudWorkspacesAndRoles":[],"cloudIdentities":null,"cloudAssets":null,"safe":null,"accountName":null,"targetPlatform":null,"targetAccount":null,"identityType":null,"correlationId":null,"isDr":false,"originRegion":"us-east-1"},{"uuid":"0000012d-0000-4000-8000-00000000012d","tenantId":"00000002-0000-4000-8000-000000000002","timestamp":1784643644442,"username":"erin.lee","applicationCode":"IDP","auditCode":"IDP2007","auditType":"Info","action":"Failed login","userId":"0000012e-0000-4000-8000-00000000012e","source":"203.0.113.30","actionType":"Deny","component":"Identity","serviceName":"Identity","accessMethod":null,"accountId":null,"target":null,"command":null,"sessionId":null,"message":"cloud.core.loginfail","customData":{"source_ip_address":"203.0.113.30","user_guid":"0000012e-0000-4000-8000-00000000012e","device_os":"Windows","browser_name":"Chrome","authentication_method":"MultiAuth","factors":"[UP],[EMAIL]","when_occurred":"7/21/2026 2:20:41 PM","failure_reason":"Challenge not answered or answered incorrectly","tenant_id":"ABC1234","failed_username":"erin.lee","thread_type":"RestCall","mobile_device":"False","level":"Warning","hostname":"192.0.2.30","username":"erin.lee","internal_session_id":"aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789AbCdEfG1","directory_service_uuid":"0000012F-0000-4000-8000-00000000012F","user_agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36","challenge_redirected":"False","success":"False","geoip_latitude":"37.751","geoip_longitude":"-97.822","geoip_city_name":"Example City","geoip_country_name":"United States","geoip_country_code":"US","client_ip_address":"203.0.113.30","cookie_session":"null"},"cloudProvider":"aws","cloudWorkspacesAndRoles":[],"cloudIdentities":null,"cloudAssets":null,"safe":null,"accountName":null,"targetPlatform":null,"targetAccount":null,"identityType":"HUMAN","correlationId":null,"isDr":false,"originRegion":"us-east-1"},{"uuid":"00000068-0000-4000-8000-000000000068","tenantId":"00000002-0000-4000-8000-000000000002","timestamp":1739363055534,"username":"alice.johnson@example.com","applicationCode":"PAM","auditCode":"PAM00185","auditType":"Info","action":"Add Safe","userId":"alice.johnson@example.com","source":"PVWA","actionType":"Execute","component":"Vault","serviceName":"Privilege Cloud","accessMethod":null,"accountId":"","target":"","command":null,"sessionId":null,"message":"","customData":{"PAM":{"new_target":"","target":""}},"cloudProvider":null,"cloudWorkspacesAndRoles":[],"cloudIdentities":null,"cloudAssets":null,"safe":"Example-New-Safe","accountName":"","targetPlatform":"","targetAccount":"","identityType":null}],"paging":{"cursor":{"cursorRef":"cursor-ref-page-2"}}}
+  # Round 1 terminal page (empty, same cursor), then round 2 (new events on the stored cursor).
+  - path: /api/audits/stream/results
+    methods: ['POST']
+    request_headers:
+      Authorization:
+        - '^Bearer test-access-token$'
+      X-Api-Key:
+        - '^test-api-key$'
+      Content-Type:
+        - '^application/json'
+    request_body: '/^\{"cursorRef": ?"cursor-ref-page-2"\}$/'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"data":[],"paging":{"cursor":{"cursorRef":"cursor-ref-page-2"}}}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"data":[{"uuid":"00000011-0000-4000-8000-000000000011","tenantId":"00000002-0000-4000-8000-000000000002","timestamp":1793728210035,"username":"alice.johnson@example.com","applicationCode":"IDP","auditCode":"IDP2001","auditType":"Info","action":"add-user","userId":"00000003-0000-4000-8000-000000000003","source":"198.51.100.12","actionType":"Create","component":"Identity","serviceName":"Identity","accessMethod":null,"accountId":null,"target":null,"command":null,"sessionId":null,"message":"add-user","customData":{"level":"Error","action":"Add","status":"Normal","hostname":"192.0.2.11","username":"alice.johnson@example.com","tenant_id":"ABC1234","user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:144.0) Gecko/20100101 Firefox/144.0","entity_name":"alice.johnson@example.com","entity_uuid":"00000012-0000-4000-8000-000000000012","thread_type":"RestCall","browser_name":"Firefox","session_guid":"00000013-0000-4000-8000-000000000013","mobile_device":false,"when_occurred":"11/3/2026 5:50:09 PM","classification":"User","password_change":false,"has_cloud_seen_user":true,"internal_session_id":"2691MmtOQ4RaV1V8y4Y5DJnfOaXXiqYFqdujUqT3Ely2","authentication_method":"OAuth2","has_cloud_seen_entity":true,"directory_service_name":"CDS","directory_service_type":"CDS","directory_service_uuid":"00000005-0000-4000-8000-000000000005"},"cloudProvider":"aws","cloudWorkspacesAndRoles":[],"cloudIdentities":null,"cloudAssets":null,"safe":null,"accountName":null,"targetPlatform":null,"targetAccount":null,"identityType":"HUMAN","correlationId":null,"isDr":false,"originRegion":"us-east-1","orgId":null},{"uuid":"00000197-0000-4000-8000-000000000197","tenantId":"00000002-0000-4000-8000-000000000002","timestamp":1790517600000,"username":"henry.ward@example.com","applicationCode":"DPA","auditCode":"PSMSTRT","auditType":"Info","action":"SIA Vaulted Access Linux session started","userId":"00000198-0000-4000-8000-000000000198","source":"ws-hward04.example.com","actionType":"Start","component":"SSH","serviceName":"Secure Infrastructure Access","accessMethod":null,"accountId":null,"target":"root@lnx-web01.example.com#default_network","command":null,"sessionId":"00000199-0000-4000-8000-000000000199","message":"SIA Vaulted Access Linux session started","customData":{"Profile":"admin","protocol":"SSH","target_id":"lnx-web01.example.com_default_network","target_ip":"lnx-web01.example.com","recording_enabled":"False"},"cloudProvider":null,"cloudWorkspacesAndRoles":[],"cloudIdentities":null,"cloudAssets":null,"safe":null,"accountName":null,"targetPlatform":null,"targetAccount":null,"identityType":null,"correlationId":null,"isDr":false,"originRegion":"us-east-1"},{"uuid":"000000d3-0000-4000-8000-0000000000d3","tenantId":"00000002-0000-4000-8000-000000000002","timestamp":1789717414000,"username":"dave.brown@example.com","applicationCode":"ITDR","auditCode":"ITDR0001","auditType":"Info","action":"New alert created","userId":"000000d4-0000-4000-8000-0000000000d4","source":"198.51.100.2","actionType":"Create","component":"Suspicious activities in a privileged session","serviceName":"Threat Detection and Response","accessMethod":null,"accountId":null,"target":"srv-db01.example.com","command":null,"sessionId":"000000d5-0000-4000-8000-0000000000d5","message":"Security alert Suspicious activities in a privileged session has been reported.","customData":{"nested_items":[{"name":"Status","value":"Failed"},{"name":"Target_entity_type","value":"Server"},{"name":"Severity","value":"High"},{"name":"Identity_group","value":"IT"},{"name":"Alert_ID","value":"000000d6-0000-4000-8000-0000000000d6"},{"name":"Alert_link","value":"https://example-tenant.cyberark.cloud/intelligence/itdr/events/000000d6-0000-4000-8000-0000000000d6"},{"name":"Risky_commands","value":"[{\"risky_command\": \"Example admin console\", \"command_regex\": \"(?i)\\\\b(Example Console)\\\\b\", \"command_description\": \"[Custom] - Example detection of admin consoles\", \"video_offset\": \"3T\", \"risk_level\": \"high\", \"score\": 80, \"risky_command_last_update_timestamp\": 1789717414000, \"source_audit_uuid\": null, \"is_excluded\": null}]"},{"name":"Source_service","value":"PSM"}]},"cloudProvider":null,"cloudWorkspacesAndRoles":[],"cloudIdentities":null,"cloudAssets":null,"safe":null,"accountName":null,"targetPlatform":null,"targetAccount":null,"identityType":"HUMAN","correlationId":"000000d6-0000-4000-8000-0000000000d6","isDr":false,"originRegion":"eu-central-1","orgId":null}],"paging":{"cursor":{"cursorRef":"cursor-ref-round-2"}}}
+  # Round 2 terminal page.
+  - path: /api/audits/stream/results
+    methods: ['POST']
+    request_headers:
+      Authorization:
+        - '^Bearer test-access-token$'
+      X-Api-Key:
+        - '^test-api-key$'
+      Content-Type:
+        - '^application/json'
+    request_body: '/^\{"cursorRef": ?"cursor-ref-round-2"\}$/'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"data":[],"paging":{"cursor":{"cursorRef":"cursor-ref-round-2"}}}
+  # Regression guard: extra event on every call.
+  - path: /api/audits/stream/results
+    methods: ['POST']
+    request_headers:
+      Authorization:
+        - '^Bearer test-access-token$'
+      X-Api-Key:
+        - '^test-api-key$'
+      Content-Type:
+        - '^application/json'
+    request_body: '/^\{"cursorRef": ?"cursor-ref-regression"\}$/'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"data":[{"uuid":"ffffffff-0000-4000-8000-ffffffffffff","tenantId":"00000002-0000-4000-8000-000000000002","timestamp":1793730000000,"username":"regression@example.com","applicationCode":"IDP","auditCode":"IDP0000","auditType":"Info","action":"Regression guard","message":"The CEL program created a second query instead of resuming the stored cursor.","serviceName":"Identity","customData":{}}],"paging":{"cursor":{"cursorRef":"cursor-ref-regression"}}}
+  # Any other cursor is malformed.
+  - path: /api/audits/stream/results
+    methods: ['POST']
+    request_headers:
+      Authorization:
+        - '^Bearer test-access-token$'
+      X-Api-Key:
+        - '^test-api-key$'
+      Content-Type:
+        - '^application/json'
+    responses:
+      - status_code: 400
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"code":"400","message":"Bad Request","description":"Bad request syntax or unsupported method"}
+  # Missing or wrong bearer token or API key.
+  - path: /api/audits/stream/{endpoint:(?:createQuery|results)}
+    methods: ['POST']
+    responses:
+      - status_code: 401
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"code":"401","message":"Unauthorized","description":"The access token or API key is missing or not valid."}
