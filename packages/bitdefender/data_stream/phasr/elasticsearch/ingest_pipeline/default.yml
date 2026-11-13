@@ -1,0 +1,216 @@
+---
+description: Parse Bitdefender GravityZone PHASR posture events.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.5.0'
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes fields added by Agentless as metadata when they would collide
+        with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: Error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: >-
+        Renames the original message field to event.original. The field is not
+        touched when an upstream processor has already populated event.original.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The message field is redundant after event.original is populated.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: bitdefender.phasr
+      tag: parse_phasr_json
+      if: ctx.event?.original != null
+  - fail:
+      tag: validate_phasr_object
+      if: ctx.bitdefender?.phasr == null || !(ctx.bitdefender.phasr instanceof Map)
+      message: The PHASR posture event must be a JSON object.
+  - fail:
+      tag: validate_phasr_record_type
+      if: ctx.bitdefender.phasr.record_type == null || !['recommendation', 'monitored_rule'].contains(ctx.bitdefender.phasr.record_type)
+      message: The PHASR record_type must be recommendation or monitored_rule.
+  - fail:
+      tag: validate_recommendation_id
+      if: ctx.bitdefender.phasr.record_type == 'recommendation' && (ctx.bitdefender.phasr.objectId == null || ctx.bitdefender.phasr.objectId == '')
+      message: A PHASR recommendation must contain an objectId.
+  - fail:
+      tag: validate_monitored_rule_id
+      if: ctx.bitdefender.phasr.record_type == 'monitored_rule' && ctx.bitdefender.phasr.ruleId == null
+      message: A PHASR monitored rule must contain a ruleId.
+  - set:
+      field: '@timestamp'
+      tag: set_observation_timestamp
+      value: '{{{_ingest.timestamp}}}'
+      if: ctx['@timestamp'] == null
+      description: Uses the collection observation time for the posture snapshot.
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: state
+  - append:
+      field: event.category
+      tag: append_event_category
+      value:
+        - configuration
+        - host
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type
+      value:
+        - info
+      allow_duplicates: false
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Bitdefender
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: GravityZone
+  - rename:
+      field: bitdefender.phasr.companyId
+      target_field: organization.id
+      ignore_missing: true
+      tag: rename_company_id_to_organization_id
+      if: ctx.bitdefender.phasr.companyId instanceof String && ctx.bitdefender.phasr.companyId != ''
+  - remove:
+      field: bitdefender.phasr.companyId
+      ignore_missing: true
+      tag: remove_empty_company_id
+  - set:
+      field: event.id
+      tag: set_recommendation_event_id
+      copy_from: bitdefender.phasr.objectId
+      ignore_empty_value: true
+      if: ctx.bitdefender.phasr.record_type == 'recommendation' && ctx.bitdefender.phasr.objectId != null
+  - set:
+      field: rule.id
+      tag: set_rule_id
+      value: '{{{bitdefender.phasr.ruleId}}}'
+      if: ctx.bitdefender.phasr.ruleId != null
+  - set:
+      field: rule.name
+      tag: set_monitored_rule_name
+      copy_from: bitdefender.phasr.name
+      ignore_empty_value: true
+      if: ctx.bitdefender.phasr.record_type == 'monitored_rule' && ctx.bitdefender.phasr.name != null
+  - set:
+      field: rule.category
+      tag: set_monitored_rule_category
+      copy_from: bitdefender.phasr.category
+      ignore_empty_value: true
+      if: ctx.bitdefender.phasr.record_type == 'monitored_rule' && ctx.bitdefender.phasr.category != null
+  - set:
+      field: rule.description
+      tag: set_monitored_rule_description
+      copy_from: bitdefender.phasr.description
+      ignore_empty_value: true
+      if: ctx.bitdefender.phasr.record_type == 'monitored_rule' && ctx.bitdefender.phasr.description != null
+  - date:
+      field: bitdefender.phasr.createdOn
+      target_field: event.created
+      formats:
+        - ISO8601
+      tag: parse_recommendation_created
+      if: ctx.bitdefender.phasr.record_type == 'recommendation' && ctx.bitdefender.phasr.createdOn != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_parse_recommendation_created
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        - remove:
+            field: bitdefender.phasr.createdOn
+            tag: remove_invalid_recommendation_created
+            ignore_missing: true
+  - remove:
+      field: bitdefender.phasr.lastTriggered
+      tag: remove_null_last_triggered
+      if: ctx.bitdefender.phasr.record_type == 'monitored_rule' && ctx.bitdefender.phasr.containsKey('lastTriggered') && ctx.bitdefender.phasr.lastTriggered == null
+  - remove:
+      field: bitdefender.phasr.latestUpdate
+      tag: remove_null_latest_update
+      if: ctx.bitdefender.phasr.record_type == 'monitored_rule' && ctx.bitdefender.phasr.containsKey('latestUpdate') && ctx.bitdefender.phasr.latestUpdate == null
+  - date:
+      field: bitdefender.phasr.lastTriggered
+      target_field: bitdefender.phasr.last_triggered
+      formats:
+        - UNIX
+      tag: parse_monitored_rule_last_triggered
+      if: ctx.bitdefender.phasr.record_type == 'monitored_rule' && ctx.bitdefender.phasr.lastTriggered != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_parse_monitored_rule_last_triggered
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        - remove:
+            field: bitdefender.phasr.lastTriggered
+            tag: remove_invalid_monitored_rule_last_triggered
+            ignore_missing: true
+  - date:
+      field: bitdefender.phasr.latestUpdate
+      target_field: bitdefender.phasr.latest_update
+      formats:
+        - UNIX
+      tag: parse_monitored_rule_latest_update
+      if: ctx.bitdefender.phasr.record_type == 'monitored_rule' && ctx.bitdefender.phasr.latestUpdate != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_parse_monitored_rule_latest_update
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        - remove:
+            field: bitdefender.phasr.latestUpdate
+            tag: remove_invalid_monitored_rule_latest_update
+            ignore_missing: true
+  - append:
+      field: tags
+      tag: preserve_original_event_on_collector_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: preserve_original_event_on_pipeline_error
+      value: preserve_original_event
+      allow_duplicates: false

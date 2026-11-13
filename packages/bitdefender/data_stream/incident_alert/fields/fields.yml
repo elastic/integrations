@@ -1,0 +1,115 @@
+- name: bitdefender
+  type: group
+  description: Fields for BitDefender GravityZone related events.
+  fields:
+    - name: incident_alert
+      type: group
+      description: A single alert emitted from a GravityZone incident.
+      fields:
+        - name: alert
+          type: group
+          description: The complete individual endpoint or organization alert.
+          fields:
+            - name: id
+              type: keyword
+              description: Stable identifier of the individual alert.
+            - name: name
+              type: keyword
+              description: Name of the alert.
+            - name: date
+              type: date
+              description: Date and time when the alert was detected.
+            - name: detectedBy
+              type: group
+              description: Endpoint technology that detected the alert.
+              fields:
+                - name: name
+                  type: keyword
+                  description: Name of the detecting technology.
+                - name: class
+                  type: keyword
+                  description: Class of the detecting technology.
+            - name: sensors
+              type: keyword
+              description: Organization sensors that detected the alert.
+            - name: tactic
+              type: keyword
+              description: Vendor MITRE ATT&CK tactic identifier.
+            - name: extra
+              type: flattened
+              description: Polymorphic extra alert attributes.
+            - name: resources
+              type: flattened
+              description: Polymorphic endpoint alert resources.
+            - name: transitions
+              type: flattened
+              description: Polymorphic organization alert transitions and resources.
+        - name: incident
+          type: group
+          description: Compact context for the parent GravityZone incident.
+          fields:
+            - name: incidentId
+              type: keyword
+              description: Stable identifier of the parent incident.
+            - name: incidentNumber
+              type: long
+              description: Incident number displayed in GravityZone Control Center.
+            - name: incidentType
+              type: keyword
+              description: Scope of the parent incident.
+            - name: status
+              type: keyword
+              description: Investigation status of the parent incident.
+            - name: mainAction
+              type: keyword
+              description: Main automatic action taken for the parent incident.
+            - name: created
+              type: date
+              description: Date and time when the parent incident was created.
+            - name: lastUpdated
+              type: date
+              description: Date and time when the parent incident was last updated.
+            - name: lastProcessed
+              type: date
+              description: Date and time when the parent incident was last processed.
+            - name: lastIncidentChange
+              type: date
+              description: Date and time of the most recent parent incident change.
+            - name: severityScore
+              type: long
+              description: Severity score of the parent incident.
+            - name: priority
+              type: keyword
+              description: Priority of the parent incident.
+            - name: incidentLink
+              type: keyword
+              ignore_above: 4096
+              description: Link to the parent incident in GravityZone Control Center.
+            - name: company
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: Identifier of the company where the incident occurred.
+                - name: name
+                  type: keyword
+                  description: Name of the company where the incident occurred.
+            - name: details
+              type: group
+              description: Compact endpoint context from the parent incident.
+              fields:
+                - name: computerId
+                  type: keyword
+                  description: Identifier of the endpoint that generated the incident.
+                - name: computerName
+                  type: keyword
+                  description: Name of the endpoint that generated the incident.
+                - name: computerFqdn
+                  type: keyword
+                  description: FQDN of the endpoint that generated the incident.
+                - name: computerIp
+                  type: ip
+                  description: Communication IP address of the endpoint.
+                - name: computerMacAddresses
+                  type: keyword
+                  description: MAC addresses of the endpoint.

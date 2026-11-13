@@ -1,0 +1,147 @@
+rules:
+  - path: /v1.0/jsonrpc/quarantine/computers
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-api-key"
+    request_body: /.*"method":"getQuarantineItemsList".*"companyId":"eeeeeeeeeeeeeeeeeeeeeeee".*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"quarantine-list-initial","jsonrpc":"2.0","error":{"code":-32001,"message":"Authorization error","data":{"details":"Synthetic application error"}}}'
+  - path: /v1.0/jsonrpc/quarantine/computers
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-api-key"
+    request_body: /.*"method":"getQuarantineItemsList".*"companyId":"ffffffffffffffffffffffff".*/
+    responses:
+      - status_code: 429
+        headers:
+          Content-Type:
+            - "application/json"
+          Retry-After:
+            - "1"
+        body: '{"id":"quarantine-list-initial","jsonrpc":"2.0","error":{"code":-32003,"message":"Too many requests","data":{"details":"Synthetic rate limit"}}}'
+  - path: /v1.0/jsonrpc/quarantine/computers
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Authorization:
+        - "Basic dGVzdC1hcGkta2V5Og=="
+      Content-Type:
+        - "application/json"
+    request_body: /.*"method":"getQuarantineItemsList".*"companyId":"bbbbbbbbbbbbbbbbbbbbbbbb".*"page":1.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"quarantine-list-initial","jsonrpc":"2.0","result":{"total":1,"page":1,"perPage":100,"pagesCount":1,"items":[{"id":"65a0000000000000000000b1","quarantinedOn":"2026-11-01T09:00:00","actionStatus":0,"companyId":"bbbbbbbbbbbbbbbbbbbbbbbb","endpointId":"5d4c3b2a190876543210feb1","endpointName":"example-host-basic","endpointIP":"192.0.2.31","canBeRestored":true,"canBeRemoved":true,"threatName":"Synthetic.Basic.Test","details":{"filePath":"C:\\ProgramData\\Example\\basic-test.exe","fileSha256":"11111111111111111111111111111111"}}]}}'
+  # Active-item reconciliation for items quarantined prior to the current window:
+  # - 0001 transitioned from actionStatus 0 -> 4 (emitted)
+  # - 0002 and 0004 are unchanged (suppressed)
+  # - 0003 was removed from quarantine (pruned from cursor.states)
+  # - 0000 is an untouched pre-install item with actionStatus 0 (suppressed)
+  - path: /v1.0/jsonrpc/quarantine/computers
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-api-key"
+    request_body: /.*"quarantine-reconcile".*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"quarantine-reconcile","jsonrpc":"2.0","result":{"total":4,"page":1,"perPage":100,"pagesCount":1,"items":[{"id":"65a000000000000000000000","quarantinedOn":"2025-01-01T00:00:00","actionStatus":0,"companyId":"5e4d3c2b1a0987654321fedc","endpointId":"5d4c3b2a190876543210fe00","endpointName":"example-host-00","endpointIP":"192.0.2.20","canBeRestored":true,"canBeRemoved":true,"threatName":"Synthetic.Legacy.Untouched","details":{"filePath":"C:\\ProgramData\\Example\\legacy.exe","fileSha256":"00000000000000000000000000000000"}},{"id":"65a000000000000000000001","quarantinedOn":"2026-11-01T01:00:00","actionStatus":4,"companyId":"5e4d3c2b1a0987654321fedc","endpointId":"5d4c3b2a190876543210fe01","endpointName":"example-host-01","endpointIP":"192.0.2.21","canBeRestored":true,"canBeRemoved":true,"threatName":"Synthetic.Test.File","details":{"filePath":"C:\\ProgramData\\Example\\test-file.exe","fileSha256":"11111111111111111111111111111111"}},{"id":"65a000000000000000000002","quarantinedOn":"2026-11-01T02:00:00","actionStatus":2,"companyId":"5e4d3c2b1a0987654321fedc","endpointId":"5d4c3b2a190876543210fe02","endpointName":"example-host-02","endpointIP":"198.51.100.22","canBeRestored":false,"canBeRemoved":true,"threatName":"Synthetic.Pending.Restore","details":{"filePath":"C:\\ProgramData\\Example\\pending-restore.exe","fileSha256":"22222222222222222222222222222222"}},{"id":"65a000000000000000000004","quarantinedOn":"2026-11-01T04:00:00","actionStatus":4,"companyId":"5e4d3c2b1a0987654321fedc","endpointId":"5d4c3b2a190876543210fe04","endpointName":"example-host-04","endpointIP":"192.0.2.24","canBeRestored":true,"canBeRemoved":true,"threatName":"Synthetic.Restore.Failure","details":{"filePath":"C:\\ProgramData\\Example\\restore-failure.exe","fileSha256":"44444444444444444444444444444444"}}]}}'
+  - path: /v1.0/jsonrpc/quarantine/computers
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-api-key"
+    request_body: /.*"quarantine-list-resume".*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ if eq .req_num 1 }}
+          {"id":"quarantine-list-resume","jsonrpc":"2.0","result":{"total":1,"page":1,"perPage":100,"pagesCount":1,"items":[{"id":"65a000000000000000000005","quarantinedOn":"2026-11-02T00:00:01","actionStatus":1,"companyId":"5e4d3c2b1a0987654321fedc","endpointId":"5d4c3b2a190876543210fe05","endpointName":"example-host-05","endpointIP":"203.0.113.25","canBeRestored":false,"canBeRemoved":false,"threatName":"Synthetic.Resume.Test","details":{"filePath":"C:\\ProgramData\\Example\\resume-test.exe","fileSha256":"55555555555555555555555555555555"}}]}}
+          {{ else }}
+          {"id":"quarantine-list-resume","jsonrpc":"2.0","result":{"total":0,"page":1,"perPage":100,"pagesCount":1,"items":[]}}
+          {{ end }}
+  - path: /v1.0/jsonrpc/quarantine/computers
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-api-key"
+    request_body: /.*"method":"getQuarantineItemsList".*"page":3.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"quarantine-list-initial","jsonrpc":"2.0","result":{"total":4,"page":3,"perPage":100,"pagesCount":3,"items":[{"id":"65a000000000000000000003","quarantinedOn":"2026-11-01T03:00:00","actionStatus":3,"companyId":"5e4d3c2b1a0987654321fedc","endpointId":"5d4c3b2a190876543210fe03","endpointName":"example-host-03","endpointIP":"203.0.113.23","canBeRestored":false,"canBeRemoved":true,"threatName":"Synthetic.Remove.Failure","details":{"filePath":"C:\\ProgramData\\Example\\remove-failure.exe","fileSha256":"33333333333333333333333333333333"}},{"id":"65a000000000000000000004","quarantinedOn":"2026-11-01T04:00:00","actionStatus":4,"companyId":"5e4d3c2b1a0987654321fedc","endpointId":"5d4c3b2a190876543210fe04","endpointName":"example-host-04","endpointIP":"192.0.2.24","canBeRestored":true,"canBeRemoved":true,"threatName":"Synthetic.Restore.Failure","details":{"filePath":"C:\\ProgramData\\Example\\restore-failure.exe","fileSha256":"44444444444444444444444444444444"}}]}}'
+  # Empty intermediate page; pagesCount remains authoritative.
+  - path: /v1.0/jsonrpc/quarantine/computers
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-api-key"
+    request_body: /.*"method":"getQuarantineItemsList".*"page":2.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"quarantine-list-initial","jsonrpc":"2.0","result":{"total":4,"page":2,"perPage":100,"pagesCount":3,"items":[]}}'
+  - path: /v1.0/jsonrpc/quarantine/computers
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-api-key"
+    request_body: /.*"method":"getQuarantineItemsList".*"page":1.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ if eq .req_num 1 }}
+          {"id":"quarantine-list-initial","jsonrpc":"2.0","result":{"total":4,"page":1,"perPage":100,"pagesCount":3,"items":[{"id":"65a000000000000000000001","quarantinedOn":"2026-11-01T01:00:00","actionStatus":0,"companyId":"5e4d3c2b1a0987654321fedc","endpointId":"5d4c3b2a190876543210fe01","endpointName":"example-host-01","endpointIP":"192.0.2.21","canBeRestored":true,"canBeRemoved":true,"threatName":"Synthetic.Test.File","details":{"filePath":"C:\\ProgramData\\Example\\test-file.exe","fileSha256":"11111111111111111111111111111111"}},{"id":"65a000000000000000000002","quarantinedOn":"2026-11-01T02:00:00","actionStatus":2,"companyId":"5e4d3c2b1a0987654321fedc","endpointId":"5d4c3b2a190876543210fe02","endpointName":"example-host-02","endpointIP":"198.51.100.22","canBeRestored":false,"canBeRemoved":true,"threatName":"Synthetic.Pending.Restore","details":{"filePath":"C:\\ProgramData\\Example\\pending-restore.exe","fileSha256":"22222222222222222222222222222222"}}]}}
+          {{ else }}
+          {"id":"quarantine-list-initial","jsonrpc":"2.0","result":{"total":2,"page":1,"perPage":100,"pagesCount":1,"items":[{"id":"65a0000000000000000000f1","quarantinedOn":"2026-10-31T23:59:58","actionStatus":0,"companyId":"5e4d3c2b1a0987654321fedc","endpointId":"5d4c3b2a190876543210fef1","endpointName":"regression-guard-01","endpointIP":"192.0.2.241","canBeRestored":true,"canBeRemoved":true,"threatName":"Synthetic.Cursor.Regression","details":{"filePath":"C:\\ProgramData\\Example\\regression-01.exe","fileSha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}},{"id":"65a0000000000000000000f2","quarantinedOn":"2026-10-31T23:59:59","actionStatus":0,"companyId":"5e4d3c2b1a0987654321fedc","endpointId":"5d4c3b2a190876543210fef2","endpointName":"regression-guard-02","endpointIP":"198.51.100.242","canBeRestored":true,"canBeRemoved":true,"threatName":"Synthetic.Cursor.Regression","details":{"filePath":"C:\\ProgramData\\Example\\regression-02.exe","fileSha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}}]}}
+          {{ end }}

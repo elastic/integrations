@@ -1,0 +1,309 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.rate_limit.limit: 10
+resource.rate_limit.burst: 10
+resource.retry.max_attempts: 5
+resource.retry.wait_min: 1s
+resource.retry.wait_max: 60s
+resource.url: {{public_api_url}}/v1.2/jsonrpc/incidents
+state:
+  api_key: {{api_key}}
+  auth_type: {{auth_type}}
+  company_id: '{{company_id}}'
+  page_size: {{page_size}}
+  initial_interval: {{initial_interval}}
+  collection_delay: {{collection_delay}}
+redact:
+  fields:
+    - api_key
+max_executions: 10000
+program: |-
+  {
+    "start": state.?cursor.window.start.orValue(
+      (
+        state.?cursor.bookmark.optMap(
+          bookmark,
+          string(timestamp(bookmark) - duration("1s"))
+        )
+      ).orValue(string(now - duration(state.collection_delay) - duration(state.initial_interval)))
+    ),
+    "end": state.?cursor.window.end.orValue(string(now - duration(state.collection_delay))),
+    "page": int(state.?cursor.page.orValue(1)),
+    "pages_count": int(state.?cursor.pages_count.orValue(1)),
+    "pending": state.?cursor.pending.orValue([]),
+  }.as(run,
+    (size(run.pending) == 0 && timestamp(run.end) <= timestamp(run.start)) ?
+      state.with({"events": [], "want_more": false})
+    :
+      state.with(
+        request("POST", state.url).with(
+          {
+            "Header": {
+              "Accept": ["application/json"],
+              "Content-Type": ["application/json"],
+              ?"Authorization": (state.auth_type == "basic") ?
+                optional.of(["Basic " + bytes(state.api_key + ":").base64()])
+              :
+                optional.none(),
+              ?"X-API-Key": (state.auth_type == "x_api_key") ?
+                optional.of([state.api_key])
+              :
+                optional.none(),
+            },
+            "Body": (
+              (size(run.pending) != 0) ?
+                {
+                  "id": "incident-details",
+                  "jsonrpc": "2.0",
+                  "method": "getIncidentsByIds",
+                  "params": {"ids": front(run.pending, 10)},
+                }
+              :
+                {
+                  "id": "incident-list",
+                  "jsonrpc": "2.0",
+                  "method": "getIncidentsList",
+                  "params": {
+                    "page": run.page,
+                    "perPage": int(state.page_size),
+                    "filters": {
+                      "changeStartDate": run.start,
+                      "changeEndDate": run.end,
+                      ?"companyId": (state.company_id != "") ?
+                        optional.of(state.company_id)
+                      :
+                        optional.none(),
+                    },
+                    "options": {"sortBy": "lastIncidentChange"},
+                  },
+                }
+            ).encode_json(),
+          }
+        ).do_request().as(resp,
+          is_error(resp) ?
+            {
+              "events": {
+                "error": {
+                  "code": "transport_error",
+                  "id": "transport_error",
+                  "message": "POST /v1.2/jsonrpc/incidents: " + try(resp),
+                },
+              },
+              "want_more": false,
+            }
+          : (resp.StatusCode == 200) ?
+            try(resp.Body.decode_json()).as(body,
+              (is_error(body) || type(body) != map) ?
+                {
+                  "events": {
+                    "error": {
+                      "code": "invalid_json_rpc_response",
+                      "id": "invalid_response",
+                      "message": "POST /v1.2/jsonrpc/incidents: response was not a JSON object",
+                    },
+                  },
+                  "want_more": false,
+                }
+              : (body.?error.orValue(null) != null) ?
+                {
+                  "events": {
+                    "error": {
+                      "code": "json_rpc_error",
+                      "id": string(body.error.message),
+                      "message": "POST /v1.2/jsonrpc/incidents: " + body.error.encode_json(),
+                    },
+                  },
+                  "want_more": false,
+                }
+              : !has(body.result) ?
+                {
+                  "events": {
+                    "error": {
+                      "code": "invalid_json_rpc_response",
+                      "id": "missing_result",
+                      "message": "POST /v1.2/jsonrpc/incidents: response did not contain a result",
+                    },
+                  },
+                  "want_more": false,
+                }
+              :
+                {
+                  "items_opt": (size(run.pending) != 0) ?
+                    (
+                      (type(body.result) == list) ?
+                        optional.of(body.result)
+                      : (type(body.result) == map) ?
+                        ([
+                          body.result.?items.orValue(null),
+                          body.result.?incidents.orValue(null),
+                          body.result.?data.orValue(null),
+                        ].filter(candidate, type(candidate) == list)[?0])
+                      :
+                        optional.none()
+                    )
+                  : (type(body.result) == map) ?
+                    ([
+                      body.result.?items.orValue(null),
+                      body.result.?incidents.orValue(null),
+                      body.result.?data.orValue(null),
+                    ].filter(candidate, type(candidate) == list)[?0])
+                  :
+                    optional.none(),
+                  "pages_count": (
+                    (type(body.result) == map) ?
+                      [
+                        body.result.?pagesCount.orValue(null),
+                        body.result.?pageCount.orValue(null),
+                        body.result.?totalPages.orValue(null),
+                      ]
+                    :
+                      []
+                  ).map(count,
+                    type(count) in [double, int] && int(count) >= 0,
+                    int(count)
+                  )[?0].orValue(run.page),
+                }.as(result,
+                  !result.items_opt.hasValue() ?
+                    {
+                      "events": {
+                        "error": {
+                          "code": "invalid_json_rpc_response",
+                          "id": "invalid_result",
+                          "message": "POST /v1.2/jsonrpc/incidents: result did not contain a valid incident list",
+                        },
+                      },
+                      "want_more": false,
+                    }
+                  : (size(run.pending) != 0) ?
+                    {
+                      "events": result.items_opt.orValue([]).map(incident,
+                        [{"message": incident.encode_json()}] + incident.?details.alerts.orValue([]).map(alert,
+                          type(alert) == map,
+                          {
+                            "message": {
+                              "record_type": "incident_alert",
+                              "alert": alert,
+                              "incident": {
+                                ?"incidentId": incident.?incidentId,
+                                ?"incidentNumber": incident.?incidentNumber,
+                                ?"incidentType": incident.?incidentType,
+                                ?"status": incident.?status,
+                                ?"mainAction": incident.?mainAction,
+                                ?"created": incident.?created,
+                                ?"lastUpdated": incident.?lastUpdated,
+                                ?"lastProcessed": incident.?lastProcessed,
+                                ?"lastIncidentChange": incident.?lastIncidentChange,
+                                ?"severityScore": incident.?severityScore,
+                                ?"priority": incident.?priority,
+                                ?"incidentLink": incident.?incidentLink,
+                                ?"company": incident.?company,
+                                "details": {
+                                  ?"computerId": incident.?details.computerId,
+                                  ?"computerName": incident.?details.computerName,
+                                  ?"computerFqdn": incident.?details.computerFqdn,
+                                  ?"computerIp": incident.?details.computerIp,
+                                  ?"computerMacAddresses": incident.?details.computerMacAddresses,
+                                },
+                              },
+                            }.encode_json(),
+                          }
+                        )
+                      ).flatten().as(events,
+                        (size(events) != 0) ? dyn(events) : dyn([{"retry": true}])
+                      ),
+                      "cursor": (size(tail(run.pending, 10)) != 0) ?
+                        {
+                          "window": {"start": run.start, "end": run.end},
+                          "page": run.page,
+                          "pages_count": run.pages_count,
+                          "pending": tail(run.pending, 10),
+                        }
+                      : (run.page < run.pages_count) ?
+                        {
+                          "window": {"start": run.start, "end": run.end},
+                          "page": run.page + 1,
+                        }
+                      :
+                        {"bookmark": run.end},
+                      "want_more": size(tail(run.pending, 10)) != 0 || run.page < run.pages_count,
+                    }
+                  :
+                    result.items_opt.orValue([]).map(incident,
+                      type(incident) == map,
+                      [
+                        incident.?id.orValue(null),
+                        incident.?incidentId.orValue(null),
+                        incident.?incident_id.orValue(null),
+                      ].map(candidate,
+                        type(candidate) in [string, double, int] && string(candidate) != "",
+                        string(candidate)
+                      )[?0].orValue("")
+                    ).filter(id, id != "").as(ids,
+                      {
+                        "events": [{"retry": true}],
+                        "cursor": (size(ids) != 0) ?
+                          {
+                            "window": {"start": run.start, "end": run.end},
+                            "page": run.page,
+                            "pages_count": result.pages_count,
+                            "pending": ids,
+                          }
+                        : (run.page < result.pages_count) ?
+                          {
+                            "window": {"start": run.start, "end": run.end},
+                            "page": run.page + 1,
+                          }
+                        :
+                          {"bookmark": run.end},
+                        "want_more": size(ids) != 0 || run.page < result.pages_count,
+                      }
+                    )
+                )
+            )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": resp.Status,
+                  "message": "POST /v1.2/jsonrpc/incidents: " + (
+                    (size(resp.Body) != 0) ?
+                      string(resp.Body)
+                    :
+                      resp.Status + " (" + string(resp.StatusCode) + ")"
+                  ),
+                },
+              },
+              "want_more": false,
+            }
+        )
+      )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{escape_string tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+  - drop_event.when.equals.retry: true
+{{#if processors}}
+{{processors}}
+{{/if}}

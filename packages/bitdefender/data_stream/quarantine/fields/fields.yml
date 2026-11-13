@@ -1,0 +1,51 @@
+- name: bitdefender
+  type: group
+  description: Fields for BitDefender GravityZone related events.
+  fields:
+    - name: quarantine
+      type: group
+      description: Fields returned by the GravityZone computer Quarantine API.
+      fields:
+        - name: id
+          type: keyword
+          description: Stable GravityZone quarantine item identifier.
+        - name: quarantinedOn
+          type: keyword
+          description: >-
+            Raw quarantine time from GravityZone. The value has no timezone and is intentionally not parsed as a date. @timestamp records the collection or ingest observation time instead.
+        - name: actionStatus
+          type: long
+          description: >-
+            Quarantine action status code. Values include 0 (none), 1 (pending remove), 2 (pending restore), 3 (remove failed), and 4 (restore failed).
+        - name: companyId
+          type: keyword
+          description: GravityZone company identifier.
+        - name: endpointId
+          type: keyword
+          description: Identifier of the endpoint where the item was quarantined.
+        - name: endpointName
+          type: keyword
+          description: Name of the endpoint where the item was quarantined.
+        - name: endpointIP
+          type: ip
+          description: IP address of the endpoint where the item was quarantined.
+        - name: canBeRestored
+          type: boolean
+          description: Whether the quarantine item can be restored.
+        - name: canBeRemoved
+          type: boolean
+          description: Whether the quarantine item can be removed.
+        - name: threatName
+          type: keyword
+          description: Name of the detected threat.
+        - name: details
+          type: group
+          fields:
+            - name: filePath
+              type: keyword
+              ignore_above: 4096
+              description: Original path of the quarantined file.
+            - name: fileSha256
+              type: keyword
+              description: >-
+                File hash returned by the vendor's fileSha256 field. Valid 64-character hexadecimal values map to file.hash.sha256, 32-character hexadecimal values map to file.hash.md5, and other values remain only in this source field.

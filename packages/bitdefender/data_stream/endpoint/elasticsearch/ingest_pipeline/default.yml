@@ -1,0 +1,398 @@
+---
+description: Parse Bitdefender GravityZone endpoint inventory entities.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.5.0'
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes fields added by Agentless as metadata when they would collide
+        with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: Error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: >-
+        Renames the original message field to event.original. The field is not
+        touched when an upstream processor has already populated event.original.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The message field is redundant after event.original is populated.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: bitdefender.endpoint
+      tag: parse_endpoint_json
+      if: ctx.event?.original != null
+  - fail:
+      tag: validate_endpoint_object
+      if: ctx.bitdefender?.endpoint == null || !(ctx.bitdefender.endpoint instanceof Map)
+      message: The endpoint inventory event must be a JSON object.
+  - fail:
+      tag: validate_endpoint_inventory_type
+      if: ctx.bitdefender.endpoint.type == null || ![5, 6, 7, 16].contains(ctx.bitdefender.endpoint.type)
+      message: The endpoint inventory type must be 5, 6, 7, or 16.
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: asset
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: host
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: info
+      allow_duplicates: false
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Bitdefender
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: GravityZone
+  - set:
+      field: entity.id
+      tag: set_entity_id
+      copy_from: bitdefender.endpoint.id
+      ignore_empty_value: true
+      if: ctx.bitdefender.endpoint.id != null
+  - set:
+      field: entity.name
+      tag: set_entity_name
+      copy_from: bitdefender.endpoint.name
+      ignore_empty_value: true
+      if: ctx.bitdefender.endpoint.name != null
+  - set:
+      field: entity.source
+      tag: set_entity_source
+      value: bitdefender_gravityzone
+  - set:
+      field: entity.type
+      tag: set_root_host_entity_type
+      value:
+        - host
+      if: ctx.bitdefender.endpoint.type != 16
+  - set:
+      field: entity.type
+      tag: set_root_container_entity_type
+      value:
+        - container
+      if: ctx.bitdefender.endpoint.type == 16
+  - set:
+      field: entity.last_seen_timestamp
+      tag: set_entity_last_seen
+      copy_from: '@timestamp'
+      ignore_empty_value: true
+      if: ctx['@timestamp'] != null
+  - set:
+      field: host.id
+      tag: set_host_id
+      copy_from: bitdefender.endpoint.id
+      ignore_empty_value: true
+      if: ctx.bitdefender.endpoint.id != null
+  - set:
+      field: host.name
+      tag: set_host_name
+      copy_from: bitdefender.endpoint.name
+      ignore_empty_value: true
+      if: ctx.bitdefender.endpoint.name != null
+  - set:
+      field: host.entity.id
+      tag: set_host_entity_id
+      copy_from: bitdefender.endpoint.id
+      ignore_empty_value: true
+      if: ctx.bitdefender.endpoint.type != 16 && ctx.bitdefender.endpoint.id != null
+  - set:
+      field: host.entity.name
+      tag: set_host_entity_name
+      copy_from: bitdefender.endpoint.name
+      ignore_empty_value: true
+      if: ctx.bitdefender.endpoint.type != 16 && ctx.bitdefender.endpoint.name != null
+  - set:
+      field: host.entity.source
+      tag: set_host_entity_source
+      value: bitdefender_gravityzone
+      if: ctx.bitdefender.endpoint.type != 16
+  - set:
+      field: host.entity.type
+      tag: set_host_entity_type
+      value:
+        - host
+      if: ctx.bitdefender.endpoint.type != 16
+  - set:
+      field: host.entity.last_seen_timestamp
+      tag: set_host_entity_last_seen
+      copy_from: '@timestamp'
+      ignore_empty_value: true
+      if: ctx.bitdefender.endpoint.type != 16 && ctx['@timestamp'] != null
+  - set:
+      field: host.entity.attributes.managed
+      tag: set_host_entity_managed
+      copy_from: bitdefender.endpoint.details.isManaged
+      ignore_empty_value: true
+      if: ctx.bitdefender.endpoint.type != 16 && ctx.bitdefender.endpoint.details?.isManaged != null
+  - set:
+      field: container.id
+      tag: set_container_id
+      copy_from: bitdefender.endpoint.id
+      ignore_empty_value: true
+      if: ctx.bitdefender.endpoint.type == 16 && ctx.bitdefender.endpoint.id != null
+  - set:
+      field: container.name
+      tag: set_container_name
+      copy_from: bitdefender.endpoint.name
+      ignore_empty_value: true
+      if: ctx.bitdefender.endpoint.type == 16 && ctx.bitdefender.endpoint.name != null
+  - set:
+      field: organization.id
+      tag: set_organization_id
+      copy_from: bitdefender.endpoint.companyId
+      ignore_empty_value: true
+      if: ctx.bitdefender.endpoint.companyId != null
+  - set:
+      field: host.hostname
+      tag: set_host_hostname
+      copy_from: bitdefender.endpoint.details.fqdn
+      ignore_empty_value: true
+      if: ctx.bitdefender.endpoint.details?.fqdn != null
+  - grok:
+      field: host.hostname
+      tag: extract_host_domain
+      patterns:
+        - '^[^.]+\.(?<host.domain>.+)$'
+      if: ctx.host?.hostname instanceof String && ctx.host.hostname.contains('.')
+  - append:
+      field: host.ip
+      tag: append_private_host_ip
+      value: '{{{bitdefender.endpoint.details.ip}}}'
+      allow_duplicates: false
+      if: ctx.bitdefender.endpoint.details?.ip != null && ctx.bitdefender.endpoint.details.ip != ''
+  - append:
+      field: host.ip
+      tag: append_public_host_ip
+      value: '{{{bitdefender.endpoint.details.publicIp}}}'
+      allow_duplicates: false
+      if: ctx.bitdefender.endpoint.details?.publicIp != null && ctx.bitdefender.endpoint.details.publicIp != ''
+  - set:
+      field: host.mac
+      tag: set_host_mac
+      copy_from: bitdefender.endpoint.details.macs
+      ignore_empty_value: true
+      if: ctx.bitdefender.endpoint.details?.macs != null
+  - foreach:
+      field: host.mac
+      tag: uppercase_host_macs
+      ignore_missing: true
+      processor:
+        uppercase:
+          field: _ingest._value
+          tag: uppercase_host_mac
+  - foreach:
+      field: host.mac
+      tag: replace_host_mac_separators
+      ignore_missing: true
+      processor:
+        gsub:
+          field: _ingest._value
+          pattern: ':'
+          replacement: '-'
+          tag: replace_host_mac_separator
+  - foreach:
+      field: host.mac
+      tag: format_unseparated_host_macs
+      ignore_missing: true
+      processor:
+        gsub:
+          field: _ingest._value
+          pattern: '^([0-9A-F]{2})([0-9A-F]{2})([0-9A-F]{2})([0-9A-F]{2})([0-9A-F]{2})([0-9A-F]{2})$'
+          replacement: '$1-$2-$3-$4-$5-$6'
+          tag: format_unseparated_host_mac
+  - set:
+      field: host.os.full
+      tag: set_host_os_full
+      copy_from: bitdefender.endpoint.details.operatingSystemVersion
+      ignore_empty_value: true
+      if: ctx.bitdefender.endpoint.details?.operatingSystemVersion != null
+  - grok:
+      field: host.os.full
+      tag: extract_host_os_name
+      ignore_failure: true
+      patterns:
+        - '^(?<host.os.name>Windows Server)(?: .*)?$'
+        - '^(?<host.os.name>Windows)(?: .*)?$'
+        - '^(?:Linux )?(?<host.os.name>Ubuntu)(?: .*)?$'
+        - '^(?<host.os.name>Amazon Linux)(?: .*)?$'
+        - '^(?<host.os.name>Linux)(?: .*)?$'
+      if: ctx.host?.os?.full != null
+  - set:
+      field: host.os.type
+      tag: set_windows_os_type
+      value: windows
+      if: ctx.host?.os?.full != null && ctx.host.os.full.startsWith('Windows')
+  - set:
+      field: host.os.platform
+      tag: set_windows_os_platform
+      value: windows
+      if: ctx.host?.os?.full != null && ctx.host.os.full.startsWith('Windows')
+  - set:
+      field: host.os.type
+      tag: set_linux_os_type
+      value: linux
+      if: ctx.host?.os?.full != null && (ctx.host.os.full.startsWith('Linux') || ctx.host.os.full.startsWith('Ubuntu') || ctx.host.os.full.startsWith('Amazon Linux'))
+  - set:
+      field: host.os.platform
+      tag: set_ubuntu_os_platform
+      value: ubuntu
+      if: ctx.host?.os?.full != null && ctx.host.os.full.contains('Ubuntu')
+  - set:
+      field: host.os.platform
+      tag: set_amazon_linux_os_platform
+      value: amzn
+      if: ctx.host?.os?.full != null && ctx.host.os.full.startsWith('Amazon Linux')
+  - set:
+      field: host.os.platform
+      tag: set_generic_linux_os_platform
+      value: linux
+      if: ctx.host?.os?.full != null && ctx.host.os.full.startsWith('Linux') && !ctx.host.os.full.contains('Ubuntu')
+  - set:
+      field: host.type
+      tag: set_computer_host_type
+      value: computer
+      if: ctx.bitdefender.endpoint.type != 16 && ctx.bitdefender.endpoint.details?.machineType == 1
+  - set:
+      field: host.type
+      tag: set_virtual_machine_host_type
+      value: virtual_machine
+      if: ctx.bitdefender.endpoint.type != 16 && ctx.bitdefender.endpoint.details?.machineType == 2
+  - set:
+      field: host.type
+      tag: set_cloud_host_type
+      value: cloud
+      if: ctx.bitdefender.endpoint.type != 16 && ctx.bitdefender.endpoint.details?.machineType == 3
+  - set:
+      field: host.type
+      tag: set_container_host_type
+      value: container
+      if: ctx.bitdefender.endpoint.type == 16
+  - set:
+      field: host.risk.calculated_score
+      tag: copy_host_risk_score
+      copy_from: bitdefender.endpoint.details.riskScore.value
+      ignore_empty_value: true
+      if: ctx.bitdefender.endpoint.details?.riskScore?.value != null
+  - gsub:
+      field: host.risk.calculated_score
+      tag: remove_host_risk_percent_sign
+      pattern: '%$'
+      replacement: ''
+      if: ctx.host?.risk?.calculated_score instanceof String
+  - convert:
+      field: host.risk.calculated_score
+      tag: convert_host_risk_score
+      type: float
+      ignore_missing: true
+      if: ctx.host?.risk?.calculated_score != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_convert_host_risk_score
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        - remove:
+            field: host.risk.calculated_score
+            tag: remove_invalid_host_risk_score
+            ignore_missing: true
+  - date:
+      field: bitdefender.endpoint.lastSuccessfulScan.date
+      target_field: bitdefender.endpoint.lastSuccessfulScan.date
+      formats:
+        - ISO8601
+      tag: parse_last_successful_scan_date
+      if: ctx.bitdefender.endpoint.lastSuccessfulScan?.date != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_parse_last_successful_scan_date
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        - remove:
+            field: bitdefender.endpoint.lastSuccessfulScan.date
+            tag: remove_invalid_last_successful_scan_date
+            ignore_missing: true
+  - set:
+      field: host.risk.calculated_level
+      tag: set_host_risk_level
+      copy_from: bitdefender.endpoint.details.riskScore.impact
+      ignore_empty_value: true
+      if: ctx.bitdefender.endpoint.details?.riskScore?.impact != null
+  - append:
+      field: related.ip
+      tag: append_private_ip_to_related
+      value: '{{{bitdefender.endpoint.details.ip}}}'
+      allow_duplicates: false
+      if: ctx.bitdefender.endpoint.details?.ip != null && ctx.bitdefender.endpoint.details.ip != ''
+  - append:
+      field: related.ip
+      tag: append_public_ip_to_related
+      value: '{{{bitdefender.endpoint.details.publicIp}}}'
+      allow_duplicates: false
+      if: ctx.bitdefender.endpoint.details?.publicIp != null && ctx.bitdefender.endpoint.details.publicIp != ''
+  - append:
+      field: related.hosts
+      tag: append_name_to_related_hosts
+      value: '{{{bitdefender.endpoint.name}}}'
+      allow_duplicates: false
+      if: ctx.bitdefender.endpoint.name != null && ctx.bitdefender.endpoint.name != ''
+  - append:
+      field: related.hosts
+      tag: append_fqdn_to_related_hosts
+      value: '{{{bitdefender.endpoint.details.fqdn}}}'
+      allow_duplicates: false
+      if: ctx.bitdefender.endpoint.details?.fqdn != null && ctx.bitdefender.endpoint.details.fqdn != ''
+  - append:
+      field: tags
+      tag: preserve_original_event_on_collector_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: preserve_original_event_on_pipeline_error
+      value: preserve_original_event
+      allow_duplicates: false

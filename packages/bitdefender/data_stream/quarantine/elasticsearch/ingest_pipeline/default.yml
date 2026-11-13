@@ -1,0 +1,197 @@
+---
+description: Parse Bitdefender GravityZone computer quarantine events.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.5.0'
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes fields added by Agentless as metadata when they would collide
+        with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: Error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: >-
+        Renames the original message field to event.original. The field is not
+        touched when an upstream processor has already populated event.original.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The message field is redundant after event.original is populated.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: bitdefender.quarantine
+      tag: parse_quarantine_json
+      if: ctx.event?.original != null
+  - fail:
+      tag: validate_quarantine_object
+      if: ctx.bitdefender?.quarantine == null || !(ctx.bitdefender.quarantine instanceof Map)
+      message: The quarantine event must be a JSON object.
+  - set:
+      field: '@timestamp'
+      tag: set_observation_timestamp
+      value: '{{{_ingest.timestamp}}}'
+      if: ctx['@timestamp'] == null
+      description: >-
+        Uses the ingest observation time because the source quarantine timestamp
+        has no documented timezone.
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_event_category
+      value:
+        - malware
+        - file
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type
+      value:
+        - info
+      allow_duplicates: false
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_failure
+      value: failure
+      if: ctx.bitdefender.quarantine.actionStatus == 3 || ctx.bitdefender.quarantine.actionStatus == 4
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Bitdefender
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: GravityZone
+  - set:
+      field: event.id
+      tag: set_event_id
+      copy_from: bitdefender.quarantine.id
+      if: ctx.bitdefender.quarantine.id != null
+  - set:
+      field: organization.id
+      tag: set_organization_id
+      copy_from: bitdefender.quarantine.companyId
+      if: ctx.bitdefender.quarantine.companyId != null
+  - set:
+      field: host.id
+      tag: set_host_id
+      copy_from: bitdefender.quarantine.endpointId
+      if: ctx.bitdefender.quarantine.endpointId != null
+  - set:
+      field: host.name
+      tag: set_host_name
+      copy_from: bitdefender.quarantine.endpointName
+      if: ctx.bitdefender.quarantine.endpointName != null
+  - append:
+      field: host.ip
+      tag: append_host_ip
+      value: '{{{bitdefender.quarantine.endpointIP}}}'
+      allow_duplicates: false
+      if: ctx.bitdefender.quarantine.endpointIP != null
+  - set:
+      field: threat.indicator.name
+      tag: set_threat_indicator_name
+      copy_from: bitdefender.quarantine.threatName
+      if: ctx.bitdefender.quarantine.threatName != null
+  - set:
+      field: rule.name
+      tag: set_rule_name
+      copy_from: bitdefender.quarantine.threatName
+      if: ctx.bitdefender.quarantine.threatName != null
+  - set:
+      field: file.path
+      tag: set_file_path
+      copy_from: bitdefender.quarantine.details.filePath
+      if: ctx.bitdefender.quarantine.details?.filePath != null
+  - grok:
+      field: file.path
+      tag: derive_file_name_and_directory
+      patterns:
+        - '^(?<file.directory>.*)[\\/](?<file.name>[^\\/]+)$'
+        - '^(?<file.name>[^\\/]+)$'
+      if: ctx.file?.path instanceof String && ctx.file.path != ''
+      ignore_failure: true
+      description: Derives file.name and file.directory without changing file.path.
+  - grok:
+      field: bitdefender.quarantine.details.fileSha256
+      tag: classify_sha256_hash
+      patterns:
+        - '^(?<file.hash.sha256>[0-9A-Fa-f]{64})$'
+      if: ctx.bitdefender.quarantine.details?.fileSha256 instanceof String && ctx.bitdefender.quarantine.details.fileSha256.length() == 64
+      ignore_failure: true
+      description: Maps valid 64-character hexadecimal values to file.hash.sha256.
+  - grok:
+      field: bitdefender.quarantine.details.fileSha256
+      tag: classify_md5_hash
+      patterns:
+        - '^(?<file.hash.md5>[0-9A-Fa-f]{32})$'
+      if: ctx.bitdefender.quarantine.details?.fileSha256 instanceof String && ctx.bitdefender.quarantine.details.fileSha256.length() == 32
+      ignore_failure: true
+      description: Maps valid 32-character hexadecimal values to file.hash.md5.
+  - append:
+      field: related.ip
+      tag: append_host_ip_to_related
+      value: '{{{bitdefender.quarantine.endpointIP}}}'
+      allow_duplicates: false
+      if: ctx.bitdefender.quarantine.endpointIP != null
+  - append:
+      field: related.hosts
+      tag: append_host_name_to_related
+      value: '{{{host.name}}}'
+      allow_duplicates: false
+      if: ctx.host?.name != null
+  - append:
+      field: related.hash
+      tag: append_sha256_to_related
+      value: '{{{file.hash.sha256}}}'
+      allow_duplicates: false
+      if: ctx.file?.hash?.sha256 != null
+  - append:
+      field: related.hash
+      tag: append_md5_to_related
+      value: '{{{file.hash.md5}}}'
+      allow_duplicates: false
+      if: ctx.file?.hash?.md5 != null
+  - append:
+      field: tags
+      tag: preserve_original_event_on_collector_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: preserve_original_event_on_pipeline_error
+      value: preserve_original_event
+      allow_duplicates: false
