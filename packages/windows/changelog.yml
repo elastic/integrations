@@ -1,4 +1,24 @@
 # newer versions go on top
+- version: "4.0.0"
+  changes:
+    - description: >-
+        The forwarded data stream now converts and maps `winlog.event_data.EventIdx`, `EventCountTotal`, `Options`,
+        `StatusCode` and `StartUSN` as `long`, `RemoteAddress_ip` as `ip` and `ClientCreationTime` as `date`. They were
+        previously mapped as `keyword`. After the data stream rolls over, these fields have conflicting types across
+        backing indices, so queries, dashboards and alerts that filter or aggregate on them can fail or return partial
+        results until older indices age out or are reindexed.
+      type: breaking-change
+      link: https://github.com/elastic/integrations/pull/21236
+    - description: >-
+        Move the Security winlog normalization pipelines, field definitions and input template used by the forwarded
+        data stream to shared files so the System integration can link to them.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21236
+    - description: >-
+        Forwarded Security events now get ECS categorization for additional event codes and `file.path` for object
+        access events such as 4674 and 4907, matching the System integration's Security data stream.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21236
 - version: "3.13.1"
   changes:
     - description: Fix PowerShell 4103 `ContextInfo` parsing so lines of a multi-line `Host Application` script are not taken as keys, and localized keys that contain non-ASCII letters, apostrophes or dots, such as `Aplicación host`, `Nom d’hôte` and `Id. de host`, are parsed.
