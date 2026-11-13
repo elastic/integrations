@@ -67,7 +67,7 @@ program: |-
         "conf_utilization_storage_weight": int(state.conf_utilization_storage_weight),
         "conf_utilization_floor": double(clean_floor),
       })]
-    : ((!state.sync_fleet_config && state.?cursor.conf_sig.orValue("disabled") != "disabled") ?
+    : ((!state.sync_fleet_config && state.?cursor.conf_sig.orValue("") != "disabled") ?
       [dyn({
         "@timestamp": now.format(time_layout.RFC3339),
         "doc_type": "config_snapshot",
@@ -134,15 +134,9 @@ program: |-
           }
       )
     : { "ok": true, "err": dyn({}), "items": [], "next_from": -1 }).as(dep_page,
-      (!dep_page.ok) ?
-        {
-          "events": conf_evts + [dep_page.err],
-          "cursor": { "conf_sig": conf_sig },
-          "want_more": false,
-        }
-      :
+      (!dep_page.ok ? [dep_page.err] : []).as(cloud_disc_errs,
         (acc_targets + dep_page.items).as(cloud_targets,
-          (dep_page.next_from >= 0) ?
+          (dep_page.ok && dep_page.next_from >= 0) ?
             {
               "events": size(conf_evts) > 0 ? conf_evts : [dyn({ "fake": true })],
               "cursor": {
@@ -151,6 +145,12 @@ program: |-
                 "disc_targets": cloud_targets,
               },
               "want_more": true,
+            }
+          : ((!has_hub && size(cloud_targets) == 0) ?
+            {
+              "events": size(conf_evts + cloud_disc_errs) > 0 ? (conf_evts + cloud_disc_errs) : [dyn({ "fake": true })],
+              "cursor": { "conf_sig": conf_sig },
+              "want_more": false,
             }
           :
             (has_hub ?
@@ -258,7 +258,7 @@ program: |-
                   )
                 ))
               ).flatten().as(node_evts,
-                (conf_evts + (!hub_disc.ok ? [hub_disc.err] : []) + node_evts).as(evts,
+                (conf_evts + cloud_disc_errs + (!hub_disc.ok ? [hub_disc.err] : []) + node_evts).as(evts,
                   {
                     "events": size(evts) > 0 ? evts : [dyn({ "fake": true })],
                     "cursor": { "conf_sig": conf_sig },
@@ -267,7 +267,9 @@ program: |-
                 )
               )
             )
+          )
         )
+      )
     ))))))))))))))
   )
 

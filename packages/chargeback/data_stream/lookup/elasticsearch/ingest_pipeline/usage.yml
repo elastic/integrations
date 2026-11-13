@@ -1,26 +1,101 @@
 ---
-description: 'Chargeback: Set correlation keys, source tags, blended calculation labels, and monitoring-indices compatibility fields.'
+description: 'Chargeback: Set correlation keys, full-day source selection tags, and blended calculation labels.'
 processors:
   - script:
       ignore_failure: true
       lang: painless
       source: |
-        // Record selected source ("native" vs "legacy") so child allocation queries
-        // joining chargeback_lookup.cluster_deployment_contribution enforce consistent per-(day, deployment) selection.
+        // Select "native" vs "legacy" for the day, retaining legacy when both exist on a partial
+        // cutover day until native delta-bearing samples cover the legacy day window.
+        Map nat = ctx.native instanceof Map ? (Map)ctx.native : null;
+        Map leg = ctx.legacy instanceof Map ? (Map)ctx.legacy : null;
+        long natCnt = (nat != null && nat.doc_cnt instanceof Number) ? ((Number)nat.doc_cnt).longValue() : 0L;
+        long legCnt = (leg != null && leg.doc_cnt instanceof Number) ? ((Number)leg.doc_cnt).longValue() : 0L;
+
+        long natDeltaCnt = 0L;
+        long natMinDeltaTs = -1L;
+        long natMaxDeltaTs = -1L;
+        if (nat != null && nat.has_delta instanceof Map) {
+          Map hd = (Map)nat.has_delta;
+          if (hd.cnt instanceof Number) {
+            natDeltaCnt = ((Number)hd.cnt).longValue();
+          }
+          for (String tk : ['min_ts', 'max_ts']) {
+            def rv = hd.get(tk);
+            if (rv instanceof Map) {
+              rv = rv.value != null ? rv.value : rv.value_as_string;
+            }
+            if (rv != null && rv.toString() != '') {
+              try {
+                long parsedMs = (rv instanceof Number)
+                  ? ((Number)rv).longValue()
+                  : ZonedDateTime.parse(rv.toString()).toInstant().toEpochMilli();
+                if (tk == 'min_ts') { natMinDeltaTs = parsedMs; } else { natMaxDeltaTs = parsedMs; }
+              } catch (Exception e) {}
+            }
+          }
+        }
+
+        long legMinTs = -1L;
+        long legMaxTs = -1L;
+        if (leg != null) {
+          for (String tk : ['min_ts', 'max_ts']) {
+            def rv = leg.get(tk);
+            if (rv instanceof Map) {
+              rv = rv.value != null ? rv.value : rv.value_as_string;
+            }
+            if (rv != null && rv.toString() != '') {
+              try {
+                long parsedMs = (rv instanceof Number)
+                  ? ((Number)rv).longValue()
+                  : ZonedDateTime.parse(rv.toString()).toInstant().toEpochMilli();
+                if (tk == 'min_ts') { legMinTs = parsedMs; } else { legMaxTs = parsedMs; }
+              } catch (Exception e) {}
+            }
+          }
+        }
+
+        for (String pfx : ['tier', 'datastream', 'tier_and_datastream']) {
+          if ((nat != null && nat.containsKey(pfx + '_sum_store_size')) || (leg != null && leg.containsKey(pfx + '_sum_store_size'))) {
+            ctx.has_native_usage = natCnt > 0L;
+            ctx.has_legacy_usage = legCnt > 0L;
+            for (String m : ['sum_indexing_time', 'sum_query_time', 'sum_store_size', 'sum_data_set_store_size']) {
+              def nv = (nat != null) ? nat.get(pfx + '_' + m) : null;
+              def lv = (leg != null) ? leg.get(pfx + '_' + m) : null;
+              ctx['native_' + m] = (nv instanceof Number) ? ((Number)nv).longValue() : 0L;
+              ctx['legacy_' + m] = (lv instanceof Number) ? ((Number)lv).longValue() : 0L;
+            }
+          }
+        }
+
+        boolean chooseNative = false;
+        if (natCnt > 0L && legCnt <= 0L) {
+          chooseNative = true;
+        } else if (natCnt > 0L && legCnt > 0L) {
+          if (natDeltaCnt > 0L && natMinDeltaTs > 0L && legMinTs > 0L
+              && natMinDeltaTs <= (legMinTs + 3900000L)
+              && (legMaxTs <= 0L || natMaxDeltaTs >= (legMaxTs - 3900000L))) {
+            chooseNative = true;
+          }
+        }
+
         Map chosen = ctx;
-        if (ctx.native instanceof Map && ctx.native.doc_cnt instanceof Number && ((Number)ctx.native.doc_cnt).longValue() > 0L) {
-          chosen = ctx.native;
+        if (chooseNative && nat != null) {
+          chosen = nat;
           ctx.usage_source = 'native';
-        } else if (ctx.legacy instanceof Map) {
-          chosen = ctx.legacy;
+        } else if (leg != null && legCnt > 0L) {
+          chosen = leg;
           ctx.usage_source = 'legacy';
+        } else if (nat != null && natCnt > 0L) {
+          chosen = nat;
+          ctx.usage_source = 'native';
         } else if (ctx.usage_source == null) {
           ctx.usage_source = 'legacy';
         }
         if (chosen != ctx) {
           for (def entry : chosen.entrySet()) {
             String k = entry.getKey().toString();
-            if (k != 'doc_cnt') {
+            if (k != 'doc_cnt' && k != 'has_delta' && k != 'min_ts' && k != 'max_ts') {
               ctx[k] = entry.getValue();
             }
           }
@@ -33,13 +108,11 @@ processors:
         } else if (ctx.elasticsearch?.cluster?.name != null) {
           ctx.deployment_id = ctx.elasticsearch.cluster.name;
         }
-        long bucketTsMillis = -1L;
         if (ctx['@timestamp'] != null && ctx.deployment_id != null) {
           def rawTs = ctx['@timestamp'];
           Instant tsInst = (rawTs instanceof Number)
             ? Instant.ofEpochMilli(((Number)rawTs).longValue())
             : ZonedDateTime.parse(rawTs.toString()).toInstant();
-          bucketTsMillis = tsInst.toEpochMilli();
           String date = tsInst.atZone(ZoneOffset.UTC).toLocalDate().toString();
           ctx.composite_key = date + '_' + ctx.deployment_id;
 
@@ -66,147 +139,6 @@ processors:
         } else {
           ctx.ds_type = 'other';
           ctx.ds_namespace = 'other';
-        }
-
-        // Populate Elasticsearch Consumption (monitoring-indices) compatibility fields on tier_and_datastream rows
-        if (ctx.tier_and_datastream_sum_store_size != null && ctx.datastream != null && ctx.datastream != '') {
-          String displayCluster = ctx.cluster_name != null ? ctx.cluster_name.toString() : 'unknown';
-          if (ctx.cluster_display_name instanceof Map) {
-            def cb = ctx.cluster_display_name.buckets;
-            if (cb instanceof List && cb.size() > 0 && cb[0].key != null && cb[0].key != '') {
-              displayCluster = cb[0].key.toString();
-            } else {
-              def ks = new ArrayList(ctx.cluster_display_name.keySet());
-              if (ks.size() > 0 && ks[0] != null && ks[0] != '') {
-                displayCluster = ks[0].toString();
-              }
-            }
-          } else if (ctx.cluster_display_name != null && ctx.cluster_display_name != '') {
-            displayCluster = ctx.cluster_display_name.toString();
-          }
-
-          long sumStoreBytes = ctx.tier_and_datastream_sum_store_size instanceof Number ? ((Number)ctx.tier_and_datastream_sum_store_size).longValue() : 0L;
-          long sumDsBytes = ctx.tier_and_datastream_sum_data_set_store_size instanceof Number ? ((Number)ctx.tier_and_datastream_sum_data_set_store_size).longValue() : sumStoreBytes;
-          long sumIdxTime = ctx.tier_and_datastream_sum_indexing_time instanceof Number ? ((Number)ctx.tier_and_datastream_sum_indexing_time).longValue() : 0L;
-          long sumQryTime = ctx.tier_and_datastream_sum_query_time instanceof Number ? ((Number)ctx.tier_and_datastream_sum_query_time).longValue() : 0L;
-          long sumDocsCnt = ctx.tier_and_datastream_sum_docs_count instanceof Number ? ((Number)ctx.tier_and_datastream_sum_docs_count).longValue() : 0L;
-          long sumQryCnt = ctx.tier_and_datastream_sum_query_total instanceof Number ? ((Number)ctx.tier_and_datastream_sum_query_total).longValue() : 0L;
-
-          // Aggregate latest per-index gauges so repeated daily snapshots do not inflate compatibility gauges
-          long compatDocsCnt = 0L;
-          long compatDsBytes = 0L;
-          long compatStoreBytes = 0L;
-          long compatIdxTime = 0L;
-          long compatQryTime = 0L;
-          long compatQryCnt = 0L;
-          boolean hasPerIndex = false;
-          if (ctx.per_index instanceof Map) {
-            Collection idxEntries = (ctx.per_index.buckets instanceof List) ? (List)ctx.per_index.buckets : ((Map)ctx.per_index).values();
-            for (def item : idxEntries) {
-              if (item instanceof Map) {
-                def lat = item.latest instanceof Map ? item.latest : item;
-                if (lat.top instanceof List && lat.top.size() > 0 && lat.top[0] instanceof Map && lat.top[0].metrics instanceof Map) {
-                  lat = lat.top[0].metrics;
-                }
-                if (lat instanceof Map && !lat.isEmpty()) {
-                  hasPerIndex = true;
-                  def vDocs = lat.get('elasticsearch.index.primaries.docs.count');
-                  if (vDocs != null && vDocs.toString() != '') { compatDocsCnt += (vDocs instanceof Number) ? ((Number)vDocs).longValue() : (long)Double.parseDouble(vDocs.toString()); }
-                  def vDset = lat.get('elasticsearch.index.primaries.store.total_data_set_size_in_bytes');
-                  if (vDset != null && vDset.toString() != '') { compatDsBytes += (vDset instanceof Number) ? ((Number)vDset).longValue() : (long)Double.parseDouble(vDset.toString()); }
-                  def vStore = lat.get('elasticsearch.index.total.store.size_in_bytes');
-                  if (vStore != null && vStore.toString() != '') { compatStoreBytes += (vStore instanceof Number) ? ((Number)vStore).longValue() : (long)Double.parseDouble(vStore.toString()); }
-                  def vIdx = lat.get('elasticsearch.index.total.indexing.index_time_in_millis');
-                  if (vIdx != null && vIdx.toString() != '') { compatIdxTime += (vIdx instanceof Number) ? ((Number)vIdx).longValue() : (long)Double.parseDouble(vIdx.toString()); }
-                  def vQry = lat.get('elasticsearch.index.total.search.query_time_in_millis');
-                  if (vQry != null && vQry.toString() != '') { compatQryTime += (vQry instanceof Number) ? ((Number)vQry).longValue() : (long)Double.parseDouble(vQry.toString()); }
-                  def vQcnt = lat.get('elasticsearch.index.total.search.query_total');
-                  if (vQcnt != null && vQcnt.toString() != '') { compatQryCnt += (vQcnt instanceof Number) ? ((Number)vQcnt).longValue() : (long)Double.parseDouble(vQcnt.toString()); }
-                }
-              }
-            }
-          }
-
-          long docsCnt = hasPerIndex ? compatDocsCnt : sumDocsCnt;
-          long storeBytes = hasPerIndex ? compatStoreBytes : sumStoreBytes;
-          long dsBytes = hasPerIndex ? (compatDsBytes > 0L ? compatDsBytes : compatStoreBytes) : sumDsBytes;
-          boolean isNative = (ctx.usage_source == 'native');
-          long idxTime = (!isNative && hasPerIndex) ? compatIdxTime : sumIdxTime;
-          long qryTime = (!isNative && hasPerIndex) ? compatQryTime : sumQryTime;
-          long qryCnt = (!isNative && hasPerIndex) ? compatQryCnt : sumQryCnt;
-          long deltaCount = ctx.delta_doc_count instanceof Number ? ((Number)ctx.delta_doc_count).longValue() : 0L;
-
-          Map docsMap = ['count': docsCnt];
-          Map priStoreMap = ['total_data_set_size_in_bytes': dsBytes];
-          Map indexingMap = ['index_time_in_millis': idxTime];
-          Map searchMap = [
-            'query_time_in_millis': qryTime,
-            'query_total': qryCnt
-          ];
-
-          if (deltaCount > 0L) {
-            if (ctx.sum_docs_delta instanceof Number) {
-              docsMap['count_delta'] = ((Number)ctx.sum_docs_delta).longValue();
-            }
-            if (ctx.sum_dset_delta instanceof Number) {
-              priStoreMap['total_data_set_size_in_bytes_delta'] = ((Number)ctx.sum_dset_delta).longValue();
-            }
-            if (ctx.sum_idx_time_delta instanceof Number) {
-              indexingMap['index_time_in_millis_delta'] = ((Number)ctx.sum_idx_time_delta).longValue();
-            }
-            if (ctx.sum_qry_time_delta instanceof Number) {
-              searchMap['query_time_in_millis_delta'] = ((Number)ctx.sum_qry_time_delta).longValue();
-            }
-            if (ctx.sum_qry_total_delta instanceof Number) {
-              searchMap['query_total_delta'] = ((Number)ctx.sum_qry_total_delta).longValue();
-            }
-          }
-
-          Map indexMap = [
-            'name': ctx.datastream,
-            'datastream': ctx.datastream,
-            'tier': ctx.tier != null ? ctx.tier : 'hot/content',
-            'primaries': [
-              'docs': docsMap,
-              'store': priStoreMap
-            ],
-            'total': [
-              'store': [
-                'size_in_bytes': storeBytes
-              ],
-              'indexing': indexingMap,
-              'search': searchMap
-            ]
-          ];
-
-          def rawMinCdate = ctx.min_creation_date;
-          if (rawMinCdate instanceof Map) {
-            rawMinCdate = rawMinCdate.value_as_string != null ? rawMinCdate.value_as_string : rawMinCdate.value;
-          }
-          if (rawMinCdate != null && rawMinCdate.toString() != '') {
-            try {
-              long createdMillis = (rawMinCdate instanceof Number)
-                ? ((Number)rawMinCdate).longValue()
-                : ZonedDateTime.parse(rawMinCdate.toString()).toInstant().toEpochMilli();
-              indexMap['creation_date'] = Instant.ofEpochMilli(createdMillis).toString();
-              if (bucketTsMillis > 0L) {
-                long ageDays = (bucketTsMillis - createdMillis) / 86400000L;
-                indexMap['age'] = ageDays > 0L ? ageDays : 0L;
-              }
-            } catch (Exception e) {}
-          }
-
-          ctx.elasticsearch = [
-            'cluster': [
-              'name': displayCluster
-            ],
-            'index': indexMap
-          ];
-          for (String tmp : ['per_index', 'cluster_display_name', 'tier_and_datastream_sum_docs_count', 'tier_and_datastream_sum_query_total', 'min_creation_date', 'delta_doc_count', 'sum_docs_delta', 'sum_dset_delta', 'sum_idx_time_delta', 'sum_qry_time_delta', 'sum_qry_total_delta']) {
-            ctx.remove(tmp);
-          }
-        } else {
-          ctx.remove('per_index');
         }
   - set:
       field: event.ingested

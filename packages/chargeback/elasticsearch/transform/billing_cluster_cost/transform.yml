@@ -7,10 +7,12 @@ source:
     - -chargeback_lookup.*
   query:
     bool:
-      must:
+      filter:
+        - exists:
+            field: ess.billing.sku
         - range:
             ess.billing.total_ecu:
-              gt: 0
+              gte: 0
       must_not:
         - terms:
             doc_type:

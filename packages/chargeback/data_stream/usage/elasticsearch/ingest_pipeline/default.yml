@@ -72,16 +72,36 @@ processors:
             idx.tier = 'unknown';
           }
         }
+        if (idx.creation_date != null && ctx['@timestamp'] != null) {
+          try {
+            long tsMillis = (ctx['@timestamp'] instanceof Number)
+              ? ((Number)ctx['@timestamp']).longValue()
+              : ZonedDateTime.parse(ctx['@timestamp'].toString()).toInstant().toEpochMilli();
+            long createdMillis = (idx.creation_date instanceof Number)
+              ? ((Number)idx.creation_date).longValue()
+              : (/^\d+$/.matcher(idx.creation_date.toString()).matches()
+                  ? Long.parseLong(idx.creation_date.toString())
+                  : ZonedDateTime.parse(idx.creation_date.toString()).toInstant().toEpochMilli());
+            if (createdMillis > 0L) {
+              long ageDays = (tsMillis - createdMillis) / 86400000L;
+              idx.age = ageDays > 0L ? ageDays : 0L;
+            }
+          } catch (Exception e) {}
+        }
   - drop:
       if: "ctx._drop_internal == true"
   - fingerprint:
       fields:
         - elasticsearch.cluster.name
         - "@timestamp"
+        - period_obs_ts
         - elasticsearch.index.name
       target_field: _id
       ignore_missing: true
       tag: fingerprint_usage_event
+  - remove:
+      field: period_obs_ts
+      ignore_missing: true
 on_failure:
   - set:
       field: event.kind

@@ -58,7 +58,7 @@ processors:
           } else if (m.conf_chargeable_unit_rate != null && m.conf_chargeable_unit_rate.toString().trim() != '') {
             rate = Double.parseDouble(m.conf_chargeable_unit_rate.toString().trim());
           }
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
           ctx._skip_conf_write = true;
           return;
         }
@@ -94,7 +94,7 @@ processors:
           } else if (m.conf_utilization_floor != null && m.conf_utilization_floor.toString().trim() != '') {
             floorVal = Double.parseDouble(m.conf_utilization_floor.toString().trim());
           }
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
           ctx._skip_conf_write = true;
           return;
         }
@@ -115,7 +115,7 @@ processors:
               return;
             }
             startMillis = parsedEff.toInstant().toEpochMilli();
-          } catch (Exception e) {
+          } catch (DateTimeException e) {
             ctx._skip_conf_write = true;
             return;
           }
@@ -154,5 +154,8 @@ processors:
       value: "{{{_ingest.timestamp}}}"
       tag: set_event_ingested
 on_failure:
-  - drop:
-      tag: drop_failed_config_write
+  - fail:
+      message: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'

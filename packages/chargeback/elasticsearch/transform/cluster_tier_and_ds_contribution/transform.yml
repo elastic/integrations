@@ -5,9 +5,9 @@ source:
     - monitoring-indices*
     - "*:monitoring-indices*"
     - -monitoring-indices-chargeback
-    - "-*:monitoring-indices-chargeback"
+    - "*:-monitoring-indices-chargeback"
     - -chargeback_lookup.*
-    - "-*:chargeback_lookup.*"
+    - "*:-chargeback_lookup.*"
   query:
     bool:
       must_not:
@@ -79,8 +79,6 @@ dest:
   aliases:
     - alias: chargeback_lookup.cluster_tier_and_datastream_contribution
       move_on_creation: true
-    - alias: monitoring-indices-chargeback
-      move_on_creation: true
   pipeline: logs-chargeback.lookup-0.6.0-usage
 frequency: 60m
 sync:
@@ -141,10 +139,20 @@ pivot:
         doc_cnt:
           value_count:
             field: "@timestamp"
-        cluster_display_name:
-          terms:
-            field: deployment_name
-            size: 1
+        has_delta:
+          filter:
+            exists:
+              field: elasticsearch.index.primaries.docs.count_delta
+          aggs:
+            cnt:
+              value_count:
+                field: "@timestamp"
+            min_ts:
+              min:
+                field: "@timestamp"
+            max_ts:
+              max:
+                field: "@timestamp"
         tier_and_datastream_sum_indexing_time:
           sum:
             field: elasticsearch.index.total.indexing.index_time_in_millis
@@ -157,49 +165,6 @@ pivot:
         tier_and_datastream_sum_data_set_store_size:
           sum:
             field: elasticsearch.index.primaries.store.total_data_set_size_in_bytes
-        tier_and_datastream_sum_docs_count:
-          sum:
-            field: elasticsearch.index.primaries.docs.count
-        tier_and_datastream_sum_query_total:
-          sum:
-            field: elasticsearch.index.total.search.query_total
-        min_creation_date:
-          min:
-            field: elasticsearch.index.creation_date
-        delta_doc_count:
-          value_count:
-            field: elasticsearch.index.primaries.docs.count_delta
-        sum_docs_delta:
-          sum:
-            field: elasticsearch.index.primaries.docs.count_delta
-        sum_dset_delta:
-          sum:
-            field: elasticsearch.index.primaries.store.total_data_set_size_in_bytes_delta
-        sum_idx_time_delta:
-          sum:
-            field: elasticsearch.index.total.indexing.index_time_in_millis_delta
-        sum_qry_time_delta:
-          sum:
-            field: elasticsearch.index.total.search.query_time_in_millis_delta
-        sum_qry_total_delta:
-          sum:
-            field: elasticsearch.index.total.search.query_total_delta
-        per_index:
-          terms:
-            field: cb_index_name
-            size: 10000
-          aggs:
-            latest:
-              top_metrics:
-                metrics:
-                  - field: elasticsearch.index.primaries.docs.count
-                  - field: elasticsearch.index.primaries.store.total_data_set_size_in_bytes
-                  - field: elasticsearch.index.total.store.size_in_bytes
-                  - field: elasticsearch.index.total.indexing.index_time_in_millis
-                  - field: elasticsearch.index.total.search.query_time_in_millis
-                  - field: elasticsearch.index.total.search.query_total
-                sort:
-                  "@timestamp": desc
     legacy:
       filter:
         bool:
@@ -210,10 +175,12 @@ pivot:
         doc_cnt:
           value_count:
             field: "@timestamp"
-        cluster_display_name:
-          terms:
-            field: deployment_name
-            size: 1
+        min_ts:
+          min:
+            field: "@timestamp"
+        max_ts:
+          max:
+            field: "@timestamp"
         tier_and_datastream_sum_indexing_time:
           sum:
             field: elasticsearch.index.total.indexing.index_time_in_millis
@@ -226,49 +193,6 @@ pivot:
         tier_and_datastream_sum_data_set_store_size:
           sum:
             field: elasticsearch.index.primaries.store.total_data_set_size_in_bytes
-        tier_and_datastream_sum_docs_count:
-          sum:
-            field: elasticsearch.index.primaries.docs.count
-        tier_and_datastream_sum_query_total:
-          sum:
-            field: elasticsearch.index.total.search.query_total
-        min_creation_date:
-          min:
-            field: elasticsearch.index.creation_date
-        delta_doc_count:
-          value_count:
-            field: elasticsearch.index.primaries.docs.count_delta
-        sum_docs_delta:
-          sum:
-            field: elasticsearch.index.primaries.docs.count_delta
-        sum_dset_delta:
-          sum:
-            field: elasticsearch.index.primaries.store.total_data_set_size_in_bytes_delta
-        sum_idx_time_delta:
-          sum:
-            field: elasticsearch.index.total.indexing.index_time_in_millis_delta
-        sum_qry_time_delta:
-          sum:
-            field: elasticsearch.index.total.search.query_time_in_millis_delta
-        sum_qry_total_delta:
-          sum:
-            field: elasticsearch.index.total.search.query_total_delta
-        per_index:
-          terms:
-            field: cb_index_name
-            size: 10000
-          aggs:
-            latest:
-              top_metrics:
-                metrics:
-                  - field: elasticsearch.index.primaries.docs.count
-                  - field: elasticsearch.index.primaries.store.total_data_set_size_in_bytes
-                  - field: elasticsearch.index.total.store.size_in_bytes
-                  - field: elasticsearch.index.total.indexing.index_time_in_millis
-                  - field: elasticsearch.index.total.search.query_time_in_millis
-                  - field: elasticsearch.index.total.search.query_total
-                sort:
-                  "@timestamp": desc
 settings:
   deduce_mappings: false
   unattended: true

@@ -5,43 +5,128 @@ processors:
       ignore_failure: true
       lang: painless
       source: |
-        Map chosen = ctx;
-        if (ctx.native instanceof Map && ctx.native.doc_cnt instanceof Number && ((Number)ctx.native.doc_cnt).longValue() > 0L) {
-          chosen = ctx.native;
-        } else if (ctx.legacy instanceof Map) {
-          chosen = ctx.legacy;
-        }
-        if (chosen != ctx) {
-          for (String k : ['data_tier_capacity_ecu', 'data_tier_capacity_hours', 'data_tier_ram_per_zone_mb', 'deployment_group', 'deployment_name']) {
-            if (chosen.containsKey(k)) {
-              ctx[k] = chosen[k];
+        if (ctx.by_sku instanceof Map) {
+          double sumEcu = 0.0;
+          Double maxHours = null;
+          Long maxRam = null;
+          String bestGroup = null;
+          String bestName = null;
+          Collection skuItems = (ctx.by_sku.buckets instanceof List)
+            ? (List)ctx.by_sku.buckets
+            : ((Map)ctx.by_sku).values();
+          for (def skuObj : skuItems) {
+            if (skuObj instanceof Map) {
+              Map chosenSku = null;
+              boolean skuIsNative = false;
+              if (skuObj.native instanceof Map && skuObj.native.doc_cnt instanceof Number && ((Number)skuObj.native.doc_cnt).longValue() > 0L) {
+                chosenSku = (Map)skuObj.native;
+                skuIsNative = true;
+              } else if (skuObj.legacy instanceof Map && skuObj.legacy.doc_cnt instanceof Number && ((Number)skuObj.legacy.doc_cnt).longValue() > 0L) {
+                chosenSku = (Map)skuObj.legacy;
+              }
+              if (chosenSku != null) {
+                if (chosenSku.data_tier_capacity_ecu instanceof Number) {
+                  double ecuVal = ((Number)chosenSku.data_tier_capacity_ecu).doubleValue();
+                  if (!Double.isNaN(ecuVal) && !Double.isInfinite(ecuVal)) {
+                    sumEcu += ecuVal;
+                  }
+                }
+                if (chosenSku.data_tier_capacity_hours instanceof Number) {
+                  double h = ((Number)chosenSku.data_tier_capacity_hours).doubleValue();
+                  if (!Double.isNaN(h) && !Double.isInfinite(h) && (maxHours == null || h > maxHours.doubleValue())) {
+                    maxHours = Double.valueOf(h);
+                  }
+                }
+                if (chosenSku.data_tier_ram_per_zone_mb instanceof Number) {
+                  double rd = ((Number)chosenSku.data_tier_ram_per_zone_mb).doubleValue();
+                  if (!Double.isNaN(rd) && !Double.isInfinite(rd)) {
+                    long r = ((Number)chosenSku.data_tier_ram_per_zone_mb).longValue();
+                    if (maxRam == null || r > maxRam.longValue()) {
+                      maxRam = Long.valueOf(r);
+                    }
+                  }
+                }
+                for (String fn : ['deployment_group', 'deployment_name']) {
+                  def rawV = chosenSku.get(fn);
+                  String extracted = null;
+                  if (rawV instanceof Map) {
+                    def b = rawV.buckets;
+                    if (b instanceof List && b.size() > 0) {
+                      def kv = b[0].key_as_string != null ? b[0].key_as_string : b[0].key;
+                      extracted = kv != null ? kv.toString() : null;
+                    } else {
+                      def ks = new ArrayList(rawV.keySet());
+                      extracted = ks.size() > 0 && ks[0] != null ? ks[0].toString() : null;
+                    }
+                  } else if (rawV != null) {
+                    extracted = rawV.toString();
+                  }
+                  if (extracted != null && extracted != '') {
+                    if (fn == 'deployment_group') {
+                      if (bestGroup == null || bestGroup == '' || skuIsNative) {
+                        bestGroup = extracted;
+                      }
+                    } else {
+                      if (bestName == null || bestName == '' || skuIsNative) {
+                        bestName = extracted;
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
-        }
-        ctx.remove('native');
-        ctx.remove('legacy');
+          ctx.remove('by_sku');
+          ctx.data_tier_capacity_ecu = sumEcu;
+          if (maxHours != null) {
+            ctx.data_tier_capacity_hours = maxHours.doubleValue();
+          }
+          if (maxRam != null) {
+            ctx.data_tier_ram_per_zone_mb = maxRam.longValue();
+          }
+          ctx.deployment_group = bestGroup != null ? bestGroup : '';
+          ctx.deployment_name = (bestName != null && bestName != '')
+            ? bestName
+            : (ctx.deployment_id != null ? ctx.deployment_id.toString() : 'unknown');
+        } else {
+          Map chosen = ctx;
+          if (ctx.native instanceof Map && ctx.native.doc_cnt instanceof Number && ((Number)ctx.native.doc_cnt).longValue() > 0L) {
+            chosen = ctx.native;
+          } else if (ctx.legacy instanceof Map) {
+            chosen = ctx.legacy;
+          }
+          if (chosen != ctx) {
+            for (String k : ['data_tier_capacity_ecu', 'data_tier_capacity_hours', 'data_tier_ram_per_zone_mb', 'deployment_group', 'deployment_name']) {
+              if (chosen.containsKey(k)) {
+                ctx[k] = chosen[k];
+              }
+            }
+          }
+          ctx.remove('native');
+          ctx.remove('legacy');
 
-        for (String fn : ['deployment_group', 'deployment_name']) {
-          def v = ctx[fn];
-          if (v instanceof Map) {
-            def b = v.buckets;
-            if (b instanceof List && b.size() > 0) {
-              ctx[fn] = b[0].key_as_string != null ? b[0].key_as_string : b[0].key;
-            } else {
-              def ks = new ArrayList(v.keySet());
-              ctx[fn] = ks.size() > 0 ? ks[0] : null;
+          for (String fn : ['deployment_group', 'deployment_name']) {
+            def v = ctx[fn];
+            if (v instanceof Map) {
+              def b = v.buckets;
+              if (b instanceof List && b.size() > 0) {
+                ctx[fn] = b[0].key_as_string != null ? b[0].key_as_string : b[0].key;
+              } else {
+                def ks = new ArrayList(v.keySet());
+                ctx[fn] = ks.size() > 0 ? ks[0] : null;
+              }
             }
           }
-        }
-        if (ctx.deployment_group == null) {
-          ctx.deployment_group = '';
-        } else {
-          ctx.deployment_group = ctx.deployment_group.toString();
-        }
-        if (ctx.deployment_name == null || ctx.deployment_name.toString() == '') {
-          ctx.deployment_name = ctx.deployment_id != null ? ctx.deployment_id.toString() : 'unknown';
-        } else {
-          ctx.deployment_name = ctx.deployment_name.toString();
+          if (ctx.deployment_group == null) {
+            ctx.deployment_group = '';
+          } else {
+            ctx.deployment_group = ctx.deployment_group.toString();
+          }
+          if (ctx.deployment_name == null || ctx.deployment_name.toString() == '') {
+            ctx.deployment_name = ctx.deployment_id != null ? ctx.deployment_id.toString() : 'unknown';
+          } else {
+            ctx.deployment_name = ctx.deployment_name.toString();
+          }
         }
 
         if (ctx['@timestamp'] != null && ctx.deployment_id != null) {

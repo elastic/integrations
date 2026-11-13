@@ -1,5 +1,5 @@
 config_version: 2
-interval: "1h"
+interval: "10m"
 {{#if enable_request_tracer}}
 resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
 resource.tracer.maxbackups: 5
@@ -57,7 +57,7 @@ program: |-
         "conf_query_weight": int(state.conf_query_weight),
         "conf_storage_weight": int(state.conf_storage_weight),
       })]
-    : ((!state.sync_fleet_config && state.?cursor.conf_sig.orValue("disabled") != "disabled") ?
+    : ((!state.sync_fleet_config && state.?cursor.conf_sig.orValue("") != "disabled") ?
       [dyn({
         "@timestamp": now.format(time_layout.RFC3339),
         "doc_type": "config_snapshot",
@@ -65,10 +65,11 @@ program: |-
       })]
     : []))).as(conf_evts,
     int(now).as(now_sec,
-    now.format(time_layout.RFC3339).as(now_ts,
+    now.format(time_layout.RFC3339).as(obs_ts,
+    timestamp(now_sec - (now_sec % 600)).format(time_layout.RFC3339).as(now_ts,
     today_utc.parse_time(time_layout.DateOnly).as(today_start,
     int(today_start).as(today_start_sec,
-    (today_start - duration("1s")).format(time_layout.RFC3339).as(prev_midnight_ts,
+    (today_start - duration("10m")).format(time_layout.RFC3339).as(prev_midnight_ts,
     state.?cursor.idx_baselines.orValue(dyn({})).as(raw_baselines,
     (type(raw_baselines) == list ?
       (size(raw_baselines) > 0 ?
@@ -146,7 +147,7 @@ program: |-
           }
       )
     : { "ok": true, "err": dyn({}), "items": [], "next_from": -1 }).as(dep_page,
-    ((has_cloud && es_next != "") ?
+    ((has_cloud && dep_page.ok && es_next != "") ?
       get_request(
         state.cloud_api_base + "/api/v1/serverless/projects/elasticsearch?" + (es_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [es_next] }).format_query()
       ).with({ "Header": { "Authorization": ["ApiKey " + state.api_key] } }).do_request().as(r,
@@ -176,7 +177,7 @@ program: |-
           })
       )
     : { "ok": true, "err": dyn({}), "items": [], "next": "" }).as(es_page,
-    ((has_cloud && obs_next != "") ?
+    ((has_cloud && dep_page.ok && es_page.ok && obs_next != "") ?
       get_request(
         state.cloud_api_base + "/api/v1/serverless/projects/observability?" + (obs_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [obs_next] }).format_query()
       ).with({ "Header": { "Authorization": ["ApiKey " + state.api_key] } }).do_request().as(r,
@@ -206,7 +207,7 @@ program: |-
           })
       )
     : { "ok": true, "err": dyn({}), "items": [], "next": "" }).as(obs_page,
-    ((has_cloud && sec_next != "") ?
+    ((has_cloud && dep_page.ok && es_page.ok && obs_page.ok && sec_next != "") ?
       get_request(
         state.cloud_api_base + "/api/v1/serverless/projects/security?" + (sec_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [sec_next] }).format_query()
       ).with({ "Header": { "Authorization": ["ApiKey " + state.api_key] } }).do_request().as(r,
@@ -236,18 +237,14 @@ program: |-
           })
       )
     : { "ok": true, "err": dyn({}), "items": [], "next": "" }).as(sec_page,
-      (!dep_page.ok || !es_page.ok || !obs_page.ok || !sec_page.ok) ?
-        {
-          "events": conf_evts + (!dep_page.ok ? [dep_page.err] : []) + (!es_page.ok ? [es_page.err] : []) + (!obs_page.ok ? [obs_page.err] : []) + (!sec_page.ok ? [sec_page.err] : []),
-          "cursor": {
-            "conf_sig": conf_sig,
-            "idx_baselines": base_map,
-          },
-          "want_more": false,
-        }
-      :
+      (
+        (!dep_page.ok ? [dep_page.err] : []) +
+        (!es_page.ok ? [es_page.err] : []) +
+        (!obs_page.ok ? [obs_page.err] : []) +
+        (!sec_page.ok ? [sec_page.err] : [])
+      ).as(cloud_disc_errs,
         (acc_targets + dep_page.items + es_page.items + obs_page.items + sec_page.items).as(cloud_targets,
-          (dep_page.next_from >= 0 || es_page.next != "" || obs_page.next != "" || sec_page.next != "") ?
+          (size(cloud_disc_errs) == 0 && (dep_page.next_from >= 0 || es_page.next != "" || obs_page.next != "" || sec_page.next != "")) ?
             {
               "events": size(conf_evts) > 0 ? conf_evts : [dyn({ "fake": true })],
               "cursor": {
@@ -260,6 +257,15 @@ program: |-
                 "disc_targets": cloud_targets,
               },
               "want_more": true,
+            }
+          : ((!has_hub && size(cloud_targets) == 0) ?
+            {
+              "events": size(conf_evts + cloud_disc_errs) > 0 ? (conf_evts + cloud_disc_errs) : [dyn({ "fake": true })],
+              "cursor": {
+                "conf_sig": conf_sig,
+                "idx_baselines": base_map,
+              },
+              "want_more": false,
             }
           :
             (has_hub ?
@@ -450,6 +456,14 @@ program: |-
                                   (bkey in base_map).as(has_prev,
                                   (has_prev ? base_map[bkey] : dyn({})).as(prev_b,
                                   ((has_prev && ("t" in prev_b) && prev_b.t != null) ? int(prev_b.t) : 0).as(prev_t,
+                                  (prev_t > 0 && (prev_t / 600) == (now_sec / 600)).as(same_bucket,
+                                  same_bucket ?
+                                    {
+                                      "gap_sec": 0,
+                                      "evts": [],
+                                      "base": prev_b,
+                                    }
+                                  :
                                   (prev_t > 0 && ((now_sec - prev_t) > 86400 || now_sec <= prev_t || prev_t < (today_start_sec - 86400))).as(is_gap,
                                   (prev_t > 0 && !is_gap).as(is_valid_interval,
                                   (!has_prev && created_sec >= today_start_sec && (now_sec - created_sec) <= 7200).as(is_new_intraday,
@@ -458,7 +472,7 @@ program: |-
                                   (is_valid_interval ? ((cur_qry_cnt >= int(prev_b.m[2])) ? (cur_qry_cnt - int(prev_b.m[2])) : cur_qry_cnt) : (is_new_intraday ? cur_qry_cnt : 0)).as(raw_qcnt,
                                   (is_valid_interval ? (cur_docs - int(prev_b.m[3])) : cur_docs).as(raw_docs,
                                   (is_valid_interval ? (cur_dset - int(prev_b.m[4])) : cur_dset).as(raw_dset,
-                                    (is_valid_interval && prev_t < today_start_sec) ?
+                                    (is_valid_interval && prev_t < (today_start_sec - 600)) ?
                                       (double(today_start_sec - prev_t) / double(now_sec - prev_t)).as(prev_ratio,
                                       int(double(raw_idx) * prev_ratio).as(p_idx,
                                       int(double(raw_qry) * prev_ratio).as(p_qry,
@@ -471,6 +485,7 @@ program: |-
                                             dyn({
                                               "@timestamp": prev_midnight_ts,
                                               "period_start": prev_midnight_ts,
+                                              "period_obs_ts": obs_ts + ":prev",
                                               "doc_type": "index_usage",
                                               "deployment_name": string(t.name),
                                               "elasticsearch": {
@@ -507,6 +522,7 @@ program: |-
                                             dyn({
                                               "@timestamp": now_ts,
                                               "period_start": now_ts,
+                                              "period_obs_ts": obs_ts,
                                               "doc_type": "index_usage",
                                               "deployment_name": string(t.name),
                                               "elasticsearch": {
@@ -557,6 +573,7 @@ program: |-
                                             dyn({
                                               "@timestamp": now_ts,
                                               "period_start": now_ts,
+                                              "period_obs_ts": obs_ts,
                                               "doc_type": "index_usage",
                                               "deployment_name": string(t.name),
                                               "elasticsearch": {
@@ -608,7 +625,7 @@ program: |-
                                           }),
                                         }
                                       )
-                                  ))))))))))))))))))))))
+                                  )))))))))))))))))))))))
                                 ).as(idx_items,
                                   idx_items.filter(x, int(x.gap_sec) > 0).as(gap_items,
                                     {
@@ -643,6 +660,7 @@ program: |-
                 ).as(merged_baselines,
                 (
                   conf_evts +
+                  cloud_disc_errs +
                   (!hub_disc.ok ? [hub_disc.err] : []) +
                   results.filter(r, !r.ok).map(r, r.err) +
                   results.map(r, r.evts).flatten()
@@ -658,8 +676,10 @@ program: |-
                 )))))
               )
             )
+          )
         )
-    ))))))))))))))))))))))))
+      )
+    )))))))))))))))))))))))))
   )
 
 processors:
