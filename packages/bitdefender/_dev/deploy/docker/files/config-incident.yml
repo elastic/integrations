@@ -1,0 +1,194 @@
+rules:
+  - path: /v1.2/jsonrpc/incidents
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+    request_body: /.*"method":"getIncidentsList".*"companyId":"eeeeeeeeeeeeeeeeeeeeeeee".*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"incident-list","jsonrpc":"2.0","error":{"code":-32001,"message":"Authorization error","data":{"details":"Synthetic application error"}}}'
+  - path: /v1.2/jsonrpc/incidents
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+    request_body: /.*"method":"getIncidentsList".*"companyId":"ffffffffffffffffffffffff".*/
+    responses:
+      - status_code: 429
+        headers:
+          Content-Type:
+            - "application/json"
+          Retry-After:
+            - "1"
+        body: '{"id":"incident-list","jsonrpc":"2.0","error":{"code":-32003,"message":"Too many requests","data":{"details":"Synthetic rate limit"}}}'
+  # Mito-only no-cap regression: 101 empty API-reported pages must be
+  # exhausted before page 102 is fetched and its pending detail is resolved.
+  - path: /v1.2/jsonrpc/incidents
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+    request_body: /.*"method":"getIncidentsByIds".*"ids":\["65f04c2e1234567890abc010"\].*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"incident-details","jsonrpc":"2.0","result":[{"incidentId":"65f04c2e1234567890abc010","incidentNumber":116,"status":"open","lastIncidentChange":"2026-11-02T13:03:00Z","severityScore":50,"priority":"medium","company":{"id":"cccccccccccccccccccccccc","name":"Example Corp"},"incidentType":"incident","details":{"detectionName":"Synthetic no-cap incident","alerts":[],"nodes":[]},"notes":[]}]}'
+  - path: /v1.2/jsonrpc/incidents
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+    request_body: /.*"method":"getIncidentsList".*"companyId":"cccccccccccccccccccccccc".*"page":102,.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"incident-list","jsonrpc":"2.0","result":{"total":1,"page":102,"perPage":100,"pagesCount":102,"items":[{"incidentId":"65f04c2e1234567890abc010","lastIncidentChange":"2026-11-02T13:03:00Z"}]}}'
+  - path: /v1.2/jsonrpc/incidents
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+    request_body: /.*"method":"getIncidentsList".*"companyId":"cccccccccccccccccccccccc".*"page":(?:[1-9]|[1-9][0-9]|10[01]),.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"incident-list","jsonrpc":"2.0","result":{"total":1,"page":1,"perPage":100,"pagesCount":102,"items":[]}}'
+  - path: /v1.2/jsonrpc/incidents
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+    request_body: /.*"method":"getIncidentsByIds".*"ids":\["65f04c2e1234567890abc00f"\].*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"incident-details","jsonrpc":"2.0","result":[{"incidentId":"65f04c2e1234567890abc00f","incidentNumber":115,"status":"open","mainAction":"reported","created":"2026-11-02T12:00:00Z","lastUpdated":"2026-11-02T12:01:00Z","lastProcessed":"2026-11-02T12:02:00Z","lastIncidentChange":"2026-11-02T12:03:00Z","severityScore":42,"priority":"medium","attackTypes":["Discovery"],"company":{"id":"5e4d3c2b1a0987654321fedc","name":"Example Corp"},"incidentType":"incident","details":{"detectionName":"Synthetic discovery activity","computerId":"5d4c3b2a190876543210fe0f","computerName":"example-host-15","computerFqdn":"example-host-15.example.local","computerIp":"192.0.2.15","computerMacAddresses":["00:00:5E:00:53:15"],"alerts":[],"nodes":[],"mitreTags":[]},"notes":[]}]}'
+  - path: /v1.2/jsonrpc/incidents
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+    request_body: /.*"method":"getIncidentsByIds".*"ids":\["65f04c2e1234567890abc00e"\].*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"incident-details","jsonrpc":"2.0","result":[{"incidentId":"65f04c2e1234567890abc00e","incidentNumber":114,"status":"closed","mainAction":"blocked","created":"2026-11-01T14:00:00Z","lastUpdated":"2026-11-01T14:01:00Z","lastProcessed":"2026-11-01T14:02:00Z","lastIncidentChange":"2026-11-01T14:03:00Z","severityScore":90,"incidentLink":"https://console.example.com/incidents/65f04c2e1234567890abc00e","priority":"critical","attackTypes":["Malware"],"company":{"id":"5e4d3c2b1a0987654321fedc","name":"Example Corp"},"incidentType":"extendedIncident","details":{"killChainPhases":["execution"],"lastKillChainPhase":"execution","alerts":[{"id":"75a1b2c3d4e5f67890abc002","name":"SyntheticCloudActivity","date":"2026-11-01T13:59:00Z","sensors":["azure","XDR"],"tactic":"execution","transitions":[{"from":"85a1b2c3d4e5f67890abc001","to":"85a1b2c3d4e5f67890abc002","resources":[{"name":"Synthetic automation policy","type":"policy","details":{"id":"95a1b2c3d4e5f67890abc001","name":"Example Policy","resourcePolicyType":"automation"}}]}]}],"nodes":[],"narrative":[["Synthetic organization incident"]],"reasoning":[["Synthetic test reasoning"]]},"notes":[]}]}'
+  - path: /v1.2/jsonrpc/incidents
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+    request_body: /.*"method":"getIncidentsByIds".*"ids":\["65f04c2e1234567890abc00c","65f04c2e1234567890abc00d"\].*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"incident-details","jsonrpc":"2.0","result":[{"incidentId":"65f04c2e1234567890abc00c","incidentNumber":112,"status":"open","mainAction":"reported","created":"2026-11-01T12:00:00Z","lastUpdated":"2026-11-01T12:01:00Z","lastProcessed":"2026-11-01T12:02:00Z","lastIncidentChange":"2026-11-01T12:03:00Z","severityScore":55,"incidentLink":"https://console.example.com/incidents/65f04c2e1234567890abc00c","priority":"medium","attackTypes":["Persistence"],"company":{"id":"5e4d3c2b1a0987654321fedc","name":"Example Corp"},"incidentType":"incident","details":{"detectionName":"Synthetic persistence activity","computerId":"5d4c3b2a190876543210fe0c","computerName":"example-host-12","computerFqdn":"example-host-12.example.local","computerIp":"192.0.2.12","computerMacAddresses":["00:00:5E:00:53:12"],"alerts":[{"id":"75a1b2c3d4e5f67890abc001","name":"Synthetic Process Detection","date":"2026-11-01T11:59:00Z","detectedBy":{"name":"Behavior Analyzer","class":"endpoint_detection"},"resources":[{"type":"process","details":{"pid":4242,"processPath":"C:\\Windows\\System32\\example.exe","parentPid":1024,"parentProcessPath":"C:\\Windows\\System32\\services.exe","processIntegrityLevel":"medium"}},{"type":"registry","details":{"registryKey":"HKLM\\Software\\Example","registryValue":"SyntheticValue","registryData":"enabled","registryType":"REG_SZ","registryAccessType":"WRITE"}}],"extra":[{"key":"classification","value":"synthetic"}]}],"nodes":[]},"notes":[]},{"incidentId":"65f04c2e1234567890abc00d","incidentNumber":113,"status":"in_progress","mainAction":"partially_blocked","created":"2026-11-01T13:00:00Z","lastUpdated":"2026-11-01T13:01:00Z","lastProcessed":"2026-11-01T13:02:00Z","lastIncidentChange":"2026-11-01T13:03:00Z","severityScore":70,"priority":"high","attackTypes":["Credential Access"],"company":{"id":"5e4d3c2b1a0987654321fedc","name":"Example Corp"},"incidentType":"incident","details":{"detectionName":"Synthetic credential activity","alerts":[],"nodes":[]},"notes":[]}]}'
+  - path: /v1.2/jsonrpc/incidents
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+    request_body: /.*"method":"getIncidentsByIds".*"ids":\["65f04c2e1234567890abc001","65f04c2e1234567890abc002","65f04c2e1234567890abc003","65f04c2e1234567890abc004","65f04c2e1234567890abc005","65f04c2e1234567890abc006","65f04c2e1234567890abc007","65f04c2e1234567890abc008","65f04c2e1234567890abc009","65f04c2e1234567890abc00a"\].*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"incident-details","jsonrpc":"2.0","result":[{"incidentId":"65f04c2e1234567890abc001","incidentNumber":101,"status":"open","lastIncidentChange":"2026-11-01T01:01:00Z","severityScore":31,"priority":"low","company":{"id":"5e4d3c2b1a0987654321fedc","name":"Example Corp"},"incidentType":"incident","details":{"detectionName":"Synthetic incident 1","alerts":[],"nodes":[]},"notes":[]},{"incidentId":"65f04c2e1234567890abc002","incidentNumber":102,"status":"open","lastIncidentChange":"2026-11-01T01:02:00Z","severityScore":32,"priority":"low","company":{"id":"5e4d3c2b1a0987654321fedc","name":"Example Corp"},"incidentType":"incident","details":{"detectionName":"Synthetic incident 2","alerts":[],"nodes":[]},"notes":[]},{"incidentId":"65f04c2e1234567890abc003","incidentNumber":103,"status":"open","lastIncidentChange":"2026-11-01T01:03:00Z","severityScore":33,"priority":"low","company":{"id":"5e4d3c2b1a0987654321fedc","name":"Example Corp"},"incidentType":"incident","details":{"detectionName":"Synthetic incident 3","alerts":[],"nodes":[]},"notes":[]},{"incidentId":"65f04c2e1234567890abc004","incidentNumber":104,"status":"open","lastIncidentChange":"2026-11-01T01:04:00Z","severityScore":34,"priority":"medium","company":{"id":"5e4d3c2b1a0987654321fedc","name":"Example Corp"},"incidentType":"incident","details":{"detectionName":"Synthetic incident 4","alerts":[],"nodes":[]},"notes":[]},{"incidentId":"65f04c2e1234567890abc005","incidentNumber":105,"status":"open","lastIncidentChange":"2026-11-01T01:05:00Z","severityScore":35,"priority":"medium","company":{"id":"5e4d3c2b1a0987654321fedc","name":"Example Corp"},"incidentType":"incident","details":{"detectionName":"Synthetic incident 5","alerts":[],"nodes":[]},"notes":[]},{"incidentId":"65f04c2e1234567890abc006","incidentNumber":106,"status":"open","lastIncidentChange":"2026-11-01T01:06:00Z","severityScore":36,"priority":"medium","company":{"id":"5e4d3c2b1a0987654321fedc","name":"Example Corp"},"incidentType":"incident","details":{"detectionName":"Synthetic incident 6","alerts":[],"nodes":[]},"notes":[]},{"incidentId":"65f04c2e1234567890abc007","incidentNumber":107,"status":"in_progress","lastIncidentChange":"2026-11-01T01:07:00Z","severityScore":37,"priority":"medium","company":{"id":"5e4d3c2b1a0987654321fedc","name":"Example Corp"},"incidentType":"incident","details":{"detectionName":"Synthetic incident 7","alerts":[],"nodes":[]},"notes":[]},{"incidentId":"65f04c2e1234567890abc008","incidentNumber":108,"status":"in_progress","lastIncidentChange":"2026-11-01T01:08:00Z","severityScore":38,"priority":"high","company":{"id":"5e4d3c2b1a0987654321fedc","name":"Example Corp"},"incidentType":"incident","details":{"detectionName":"Synthetic incident 8","alerts":[],"nodes":[]},"notes":[]},{"incidentId":"65f04c2e1234567890abc009","incidentNumber":109,"status":"in_progress","lastIncidentChange":"2026-11-01T01:09:00Z","severityScore":39,"priority":"high","company":{"id":"5e4d3c2b1a0987654321fedc","name":"Example Corp"},"incidentType":"incident","details":{"detectionName":"Synthetic incident 9","alerts":[],"nodes":[]},"notes":[]},{"incidentId":"65f04c2e1234567890abc00a","incidentNumber":110,"status":"closed","lastIncidentChange":"2026-11-01T01:10:00Z","severityScore":40,"priority":"high","company":{"id":"5e4d3c2b1a0987654321fedc","name":"Example Corp"},"incidentType":"incident","details":{"detectionName":"Synthetic incident 10","alerts":[],"nodes":[]},"notes":[]}]}'
+  - path: /v1.2/jsonrpc/incidents
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+    request_body: /.*"method":"getIncidentsByIds".*"ids":\["65f04c2e1234567890abc00b"\].*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"incident-details","jsonrpc":"2.0","result":[{"incidentId":"65f04c2e1234567890abc00b","incidentNumber":111,"status":"closed","lastIncidentChange":"2026-11-01T01:11:00Z","severityScore":41,"priority":"high","company":{"id":"5e4d3c2b1a0987654321fedc","name":"Example Corp"},"incidentType":"incident","details":{"detectionName":"Synthetic incident 11","alerts":[],"nodes":[]},"notes":[]}]}'
+  - path: /v1.2/jsonrpc/incidents
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+    request_body: /.*"method":"getIncidentsList".*"page":3,.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"incident-list","jsonrpc":"2.0","result":{"total":14,"page":3,"perPage":100,"pagesCount":3,"items":[{"incidentId":"65f04c2e1234567890abc00e","lastIncidentChange":"2026-11-01T14:03:00Z"}]}}'
+  - path: /v1.2/jsonrpc/incidents
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+    request_body: /.*"method":"getIncidentsList".*"page":2,.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"incident-list","jsonrpc":"2.0","result":{"total":14,"page":2,"perPage":100,"pagesCount":3,"items":[{"incidentId":"65f04c2e1234567890abc00c","lastIncidentChange":"2026-11-01T12:03:00Z"},{"incidentId":"65f04c2e1234567890abc00d","lastIncidentChange":"2026-11-01T13:03:00Z"}]}}'
+  - path: /v1.2/jsonrpc/incidents
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+    request_body: /.*"method":"getIncidentsList".*"page":1,.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ if eq .req_num 1 }}
+          {"id":"incident-list","jsonrpc":"2.0","result":{"total":14,"page":1,"perPage":100,"pagesCount":3,"items":[{"incidentId":"65f04c2e1234567890abc001","lastIncidentChange":"2026-11-01T01:01:00Z"},{"incidentId":"65f04c2e1234567890abc002","lastIncidentChange":"2026-11-01T01:02:00Z"},{"incidentId":"65f04c2e1234567890abc003","lastIncidentChange":"2026-11-01T01:03:00Z"},{"incidentId":"65f04c2e1234567890abc004","lastIncidentChange":"2026-11-01T01:04:00Z"},{"incidentId":"65f04c2e1234567890abc005","lastIncidentChange":"2026-11-01T01:05:00Z"},{"incidentId":"65f04c2e1234567890abc006","lastIncidentChange":"2026-11-01T01:06:00Z"},{"incidentId":"65f04c2e1234567890abc007","lastIncidentChange":"2026-11-01T01:07:00Z"},{"incidentId":"65f04c2e1234567890abc008","lastIncidentChange":"2026-11-01T01:08:00Z"},{"incidentId":"65f04c2e1234567890abc009","lastIncidentChange":"2026-11-01T01:09:00Z"},{"incidentId":"65f04c2e1234567890abc00a","lastIncidentChange":"2026-11-01T01:10:00Z"},{"incidentId":"65f04c2e1234567890abc00b","lastIncidentChange":"2026-11-01T01:11:00Z"}]}}
+          {{ else if eq .req_num 2 }}
+          {"id":"incident-list","jsonrpc":"2.0","result":{"total":1,"page":1,"perPage":100,"pagesCount":1,"items":[{"incidentId":"65f04c2e1234567890abc00f","lastIncidentChange":"2026-11-02T12:03:00Z"}]}}
+          {{ else }}
+          {"id":"incident-list","jsonrpc":"2.0","result":{"total":0,"page":1,"perPage":100,"pagesCount":1,"items":[]}}
+          {{ end }}

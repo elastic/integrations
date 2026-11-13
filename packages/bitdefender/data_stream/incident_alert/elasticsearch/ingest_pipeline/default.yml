@@ -1,0 +1,887 @@
+---
+description: Parse individual Bitdefender GravityZone incident alerts.
+processors:
+  - remove:
+      field: routing
+      ignore_missing: true
+      tag: remove_routing_metadata
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.5.0'
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes fields added by Agentless as metadata when they would collide
+        with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: Error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: >-
+        Renames the original message field to event.original. The field is not
+        touched when an upstream pipeline has already populated event.original.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The message field is redundant after event.original is populated.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: bitdefender.incident_alert
+      tag: parse_incident_alert_json
+      if: ctx.event?.original != null
+  - fail:
+      tag: validate_incident_alert_envelope
+      if: ctx.bitdefender?.incident_alert == null || !(ctx.bitdefender.incident_alert instanceof Map)
+      message: The incident alert event must be a JSON object.
+  - remove:
+      field: bitdefender.incident_alert.record_type
+      ignore_missing: true
+      tag: remove_envelope_record_type
+  - fail:
+      tag: validate_incident_alert_objects
+      if: >-
+        !(ctx.bitdefender.incident_alert.alert instanceof Map) ||
+        !(ctx.bitdefender.incident_alert.incident instanceof Map)
+      message: The incident alert event must contain alert and incident objects.
+  - fail:
+      tag: validate_incident_alert_required_fields
+      if: >-
+        ctx.bitdefender.incident_alert.alert.id == null ||
+        ctx.bitdefender.incident_alert.alert.name == null ||
+        ctx.bitdefender.incident_alert.alert.date == null ||
+        ctx.bitdefender.incident_alert.incident.incidentId == null
+      message: The incident alert event is missing an alert ID, name, date, or parent incident ID.
+  - set:
+      field: message
+      tag: set_message
+      copy_from: bitdefender.incident_alert.alert.name
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: alert
+  - append:
+      field: event.category
+      tag: append_event_category
+      value:
+        - intrusion_detection
+        - threat
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type
+      value:
+        - info
+        - indicator
+      allow_duplicates: false
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Bitdefender
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: GravityZone
+  - set:
+      field: observer.type
+      tag: set_observer_type
+      value: security_software
+  - set:
+      field: event.id
+      tag: set_event_id
+      copy_from: bitdefender.incident_alert.alert.id
+  - set:
+      field: rule.name
+      tag: set_rule_name
+      copy_from: bitdefender.incident_alert.alert.name
+  - set:
+      field: rule.id
+      tag: set_rule_id_from_alert_name
+      copy_from: bitdefender.incident_alert.alert.name
+  - set:
+      field: rule.id
+      tag: set_rule_id_from_detector_name
+      copy_from: bitdefender.incident_alert.alert.detectedBy.name
+      if: >-
+        ctx.bitdefender.incident_alert.alert.detectedBy?.name instanceof String &&
+        !ctx.bitdefender.incident_alert.alert.detectedBy.name.isEmpty()
+  - set:
+      field: event.code
+      tag: set_event_code_from_alert_name
+      copy_from: bitdefender.incident_alert.alert.name
+  - set:
+      field: event.code
+      tag: set_event_code_from_detector_name
+      copy_from: bitdefender.incident_alert.alert.detectedBy.name
+      if: >-
+        ctx.bitdefender.incident_alert.alert.detectedBy?.name instanceof String &&
+        !ctx.bitdefender.incident_alert.alert.detectedBy.name.isEmpty()
+  - set:
+      field: rule.category
+      tag: set_rule_category
+      copy_from: bitdefender.incident_alert.alert.detectedBy.class
+      if: >-
+        ctx.bitdefender.incident_alert.alert.detectedBy?.class instanceof String &&
+        !ctx.bitdefender.incident_alert.alert.detectedBy.class.isEmpty()
+  - set:
+      field: event.provider
+      tag: set_endpoint_event_provider
+      copy_from: bitdefender.incident_alert.alert.detectedBy.class
+      if: >-
+        ctx.bitdefender.incident_alert.alert.detectedBy?.class instanceof String &&
+        !ctx.bitdefender.incident_alert.alert.detectedBy.class.isEmpty()
+  - set:
+      field: observer.name
+      tag: set_endpoint_observer_name
+      copy_from: bitdefender.incident_alert.alert.detectedBy.name
+      if: >-
+        ctx.bitdefender.incident_alert.alert.detectedBy?.name instanceof String &&
+        !ctx.bitdefender.incident_alert.alert.detectedBy.name.isEmpty()
+  - set:
+      field: event.provider
+      tag: set_organization_event_provider
+      copy_from: bitdefender.incident_alert.alert.sensors
+      if: ctx.event?.provider == null && ctx.bitdefender.incident_alert.alert.sensors != null
+  - set:
+      field: observer.name
+      tag: set_organization_observer_name
+      copy_from: bitdefender.incident_alert.alert.sensors
+      if: ctx.bitdefender.incident_alert.alert.sensors != null
+  - date:
+      field: bitdefender.incident_alert.alert.date
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      tag: parse_alert_timestamp
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_parse_alert_timestamp
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - date:
+      field: bitdefender.incident_alert.alert.date
+      target_field: event.created
+      formats:
+        - ISO8601
+      tag: parse_alert_created
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_parse_alert_created
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        - remove:
+            field: bitdefender.incident_alert.alert.date
+            tag: remove_invalid_alert_date
+            ignore_missing: true
+  - date:
+      field: bitdefender.incident_alert.incident.created
+      target_field: bitdefender.incident_alert.incident.created
+      formats:
+        - ISO8601
+      tag: parse_parent_incident_created
+      if: ctx.bitdefender.incident_alert.incident.created != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_parse_parent_incident_created
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        - remove:
+            field: bitdefender.incident_alert.incident.created
+            tag: remove_invalid_parent_incident_created
+            ignore_missing: true
+  - date:
+      field: bitdefender.incident_alert.incident.lastUpdated
+      target_field: bitdefender.incident_alert.incident.lastUpdated
+      formats:
+        - ISO8601
+      tag: parse_parent_incident_last_updated
+      if: ctx.bitdefender.incident_alert.incident.lastUpdated != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_parse_parent_incident_last_updated
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        - remove:
+            field: bitdefender.incident_alert.incident.lastUpdated
+            tag: remove_invalid_parent_incident_last_updated
+            ignore_missing: true
+  - date:
+      field: bitdefender.incident_alert.incident.lastProcessed
+      target_field: bitdefender.incident_alert.incident.lastProcessed
+      formats:
+        - ISO8601
+      tag: parse_parent_incident_last_processed
+      if: ctx.bitdefender.incident_alert.incident.lastProcessed != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_parse_parent_incident_last_processed
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        - remove:
+            field: bitdefender.incident_alert.incident.lastProcessed
+            tag: remove_invalid_parent_incident_last_processed
+            ignore_missing: true
+  - date:
+      field: bitdefender.incident_alert.incident.lastIncidentChange
+      target_field: bitdefender.incident_alert.incident.lastIncidentChange
+      formats:
+        - ISO8601
+      tag: parse_parent_incident_last_change
+      if: ctx.bitdefender.incident_alert.incident.lastIncidentChange != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_parse_parent_incident_last_change
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        - remove:
+            field: bitdefender.incident_alert.incident.lastIncidentChange
+            tag: remove_invalid_parent_incident_last_change
+            ignore_missing: true
+  - set:
+      field: event.action
+      tag: set_event_action
+      copy_from: bitdefender.incident_alert.incident.mainAction
+      if: ctx.bitdefender.incident_alert.incident.mainAction != null
+  - set:
+      field: event.reference
+      tag: set_event_reference
+      copy_from: bitdefender.incident_alert.incident.incidentLink
+      if: ctx.bitdefender.incident_alert.incident.incidentLink != null
+  - convert:
+      field: bitdefender.incident_alert.incident.severityScore
+      target_field: _temp.incident_severity_score
+      type: double
+      ignore_missing: true
+      tag: convert_incident_severity_score
+      if: ctx.bitdefender.incident_alert.incident.severityScore != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_convert_incident_severity_score
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        - remove:
+            field: bitdefender.incident_alert.incident.severityScore
+            tag: remove_invalid_incident_severity_score
+            ignore_missing: true
+  - set:
+      field: event.risk_score
+      tag: set_event_risk_score
+      copy_from: _temp.incident_severity_score
+      if: >-
+        ctx._temp?.incident_severity_score != null &&
+        ctx._temp.incident_severity_score >= 0 &&
+        ctx._temp.incident_severity_score <= 100
+  - set:
+      field: event.severity
+      tag: set_low_event_severity
+      value: 21
+      if: >-
+        ctx.event?.risk_score != null &&
+        ctx.event.risk_score <= 25
+  - set:
+      field: event.severity
+      tag: set_medium_event_severity
+      value: 47
+      if: >-
+        ctx.event?.risk_score != null &&
+        ctx.event.risk_score > 25 &&
+        ctx.event.risk_score <= 50
+  - set:
+      field: event.severity
+      tag: set_high_event_severity
+      value: 73
+      if: >-
+        ctx.event?.risk_score != null &&
+        ctx.event.risk_score > 50 &&
+        ctx.event.risk_score <= 75
+  - set:
+      field: event.severity
+      tag: set_critical_event_severity
+      value: 99
+      if: >-
+        ctx.event?.risk_score != null &&
+        ctx.event.risk_score > 75
+  - remove:
+      field: _temp
+      ignore_missing: true
+      tag: remove_temporary_fields
+  - set:
+      field: organization.id
+      tag: set_organization_id
+      copy_from: bitdefender.incident_alert.incident.company.id
+      if: ctx.bitdefender.incident_alert.incident.company?.id != null
+  - set:
+      field: organization.name
+      tag: set_organization_name
+      copy_from: bitdefender.incident_alert.incident.company.name
+      if: ctx.bitdefender.incident_alert.incident.company?.name != null
+  - set:
+      field: host.id
+      tag: set_host_id
+      copy_from: bitdefender.incident_alert.incident.details.computerId
+      if: ctx.bitdefender.incident_alert.incident.details?.computerId != null
+  - set:
+      field: host.name
+      tag: set_host_name
+      copy_from: bitdefender.incident_alert.incident.details.computerName
+      if: ctx.bitdefender.incident_alert.incident.details?.computerName != null
+  - set:
+      field: host.hostname
+      tag: set_host_hostname
+      copy_from: bitdefender.incident_alert.incident.details.computerFqdn
+      if: ctx.bitdefender.incident_alert.incident.details?.computerFqdn != null
+  - append:
+      field: host.ip
+      tag: append_host_ip
+      value: '{{{bitdefender.incident_alert.incident.details.computerIp}}}'
+      allow_duplicates: false
+      if: ctx.bitdefender.incident_alert.incident.details?.computerIp != null
+  - set:
+      field: host.mac
+      tag: set_host_mac
+      copy_from: bitdefender.incident_alert.incident.details.computerMacAddresses
+      if: ctx.bitdefender.incident_alert.incident.details?.computerMacAddresses != null
+  - script:
+      lang: painless
+      tag: map_alert_tactic
+      description: Map the vendor organization alert tactic to MITRE ATT&CK ECS fields.
+      if: ctx.bitdefender?.incident_alert?.alert?.tactic != null
+      params:
+        initial_access:
+          id: TA0001
+          name: Initial Access
+        execution:
+          id: TA0002
+          name: Execution
+        persistence:
+          id: TA0003
+          name: Persistence
+        privilege_escalation:
+          id: TA0004
+          name: Privilege Escalation
+        defence_evasion:
+          id: TA0005
+          name: Defense Evasion
+        credential_access:
+          id: TA0006
+          name: Credential Access
+        discovery:
+          id: TA0007
+          name: Discovery
+        lateral_movement:
+          id: TA0008
+          name: Lateral Movement
+        collection:
+          id: TA0009
+          name: Collection
+        exfiltration:
+          id: TA0010
+          name: Exfiltration
+        command_and_control:
+          id: TA0011
+          name: Command and Control
+        impact:
+          id: TA0040
+          name: Impact
+      source: |-
+        def mapping = params[ctx.bitdefender.incident_alert.alert.tactic];
+        if (mapping == null) {
+          return;
+        }
+        ctx.threat = ctx.threat != null && ctx.threat instanceof Map ? ctx.threat : new HashMap();
+        ctx.threat.framework = 'MITRE ATT&CK';
+        ctx.threat.tactic = new HashMap();
+        ctx.threat.tactic.id = [mapping.id];
+        ctx.threat.tactic.name = [mapping.name];
+  - script:
+      lang: painless
+      tag: extract_alert_resource_fields
+      description: >-
+        Extract ECS file, process, network, registry, user, host, and related
+        values from endpoint resources and organization transition resources.
+      params:
+        related_ip_fields:
+          - ip
+          - ips
+          - requesterIp
+          - rawConnectionSourceIp
+          - rawConnectionDestIp
+        related_host_fields:
+          - requesterSystemName
+          - smbHostName
+        related_user_fields:
+          - user
+          - parentProcessUser
+          - rawConnectionUser
+          - smbUser
+          - userId
+        hash_fields:
+          - md5
+          - sha256
+          - fileMd5
+          - fileSha256
+        allowed_directions:
+          - inbound
+          - outbound
+          - ingress
+          - egress
+          - internal
+          - external
+          - unknown
+        transport_protocols:
+          - tcp
+          - udp
+          - icmp
+          - ipv6-icmp
+          - sctp
+      source: |-
+        void addValue(def values, def candidate) {
+          if (candidate == null) {
+            return;
+          }
+          if (candidate instanceof Collection) {
+            for (def value : candidate) {
+              addValue(values, value);
+            }
+            return;
+          }
+          if (!(candidate instanceof String) || !candidate.isEmpty()) {
+            values.add(candidate);
+          }
+        }
+        void addBasename(def values, def pathCandidate) {
+          if (!(pathCandidate instanceof String) || pathCandidate.isEmpty()) {
+            return;
+          }
+          String pathStr = (String) pathCandidate;
+          int fwdSlash = pathStr.lastIndexOf('/');
+          int backSlash = pathStr.lastIndexOf('\\');
+          int lastSlash = fwdSlash > backSlash ? fwdSlash : backSlash;
+          String base = lastSlash >= 0 ? pathStr.substring(lastSlash + 1) : pathStr;
+          if (!base.isEmpty()) {
+            values.add(base);
+          }
+        }
+        Object scalarOrList(def values) {
+          def result = new ArrayList(values);
+          return result.size() == 1 ? result.get(0) : result;
+        }
+        void addNormalizedProtocol(def candidate, def out, def p) {
+          if (candidate == null) {
+            return;
+          }
+          if (candidate instanceof Collection) {
+            for (def value : candidate) {
+              addNormalizedProtocol(value, out, p);
+            }
+            return;
+          }
+          if (!(candidate instanceof String) || candidate.isEmpty()) {
+            return;
+          }
+          def lower = candidate.toLowerCase();
+          if (lower == 'any') {
+            return;
+          }
+          if (p.transport_protocols.contains(lower)) {
+            out.network_transports.add(lower);
+          } else {
+            out.network_protocols.add(lower);
+          }
+        }
+        void addNormalizedDirection(def candidate, def out, def p) {
+          if (candidate == null) {
+            return;
+          }
+          if (candidate instanceof Collection) {
+            for (def value : candidate) {
+              addNormalizedDirection(value, out, p);
+            }
+            return;
+          }
+          if (!(candidate instanceof String) || candidate.isEmpty()) {
+            return;
+          }
+          def lower = candidate.toLowerCase();
+          if (p.allowed_directions.contains(lower)) {
+            out.network_directions.add(lower);
+          }
+        }
+        void collectResource(def resource, def out, def p) {
+          if (!(resource instanceof Map) || !(resource.details instanceof Map)) {
+            return;
+          }
+          def details = resource.details;
+          for (def field : p.related_ip_fields) {
+            addValue(out.related_ips, details[field]);
+          }
+          for (def field : p.related_host_fields) {
+            addValue(out.related_hosts, details[field]);
+          }
+          for (def field : p.related_user_fields) {
+            addValue(out.related_users, details[field]);
+          }
+          for (def field : p.hash_fields) {
+            addValue(out.related_hashes, details[field]);
+          }
+          if (details.file instanceof Map) {
+            for (def field : p.hash_fields) {
+              addValue(out.related_hashes, details.file[field]);
+            }
+          }
+          if (details.attachments instanceof List) {
+            for (def attachment : details.attachments) {
+              if (attachment instanceof Map) {
+                for (def field : p.hash_fields) {
+                  addValue(out.related_hashes, attachment[field]);
+                }
+              }
+            }
+          }
+          if (details.sender instanceof Map) {
+            addValue(out.related_users, details.sender.name);
+            addValue(out.related_users, details.sender.address);
+          }
+          for (def field : ['toRecipients', 'ccRecipients', 'bccRecipients']) {
+            if (details[field] instanceof List) {
+              for (def recipient : details[field]) {
+                if (recipient instanceof Map) {
+                  addValue(out.related_users, recipient.name);
+                  addValue(out.related_users, recipient.address);
+                }
+              }
+            }
+          }
+
+          def type = resource.type;
+          if (type == 'file') {
+            addValue(out.file_paths, details.filePath);
+            addValue(out.file_paths, details.newFilePath);
+            addValue(out.file_paths, details.path);
+            addValue(out.file_names, details.originalFileName);
+            addValue(out.file_names, details.internalName);
+            addValue(out.file_names, resource.name);
+            addValue(out.file_sizes, details.fileSize);
+            addValue(out.file_sizes, details.size);
+            addValue(out.file_extensions, details.fileType);
+            addValue(out.md5, details.md5);
+            addValue(out.sha256, details.sha256);
+          } else if (type == 'process') {
+            addValue(out.process_pids, details.pid);
+            addValue(out.process_paths, details.processPath);
+            addBasename(out.process_names, details.processPath);
+            addValue(out.process_commands, details.commandLine);
+            addValue(out.parent_pids, details.parentPid);
+            addValue(out.parent_paths, details.parentProcessPath);
+            addValue(out.parent_commands, details.parentProcessCmdline);
+            addValue(out.parent_commands, details.parentProcessCmdLine);
+            addValue(out.users, details.user);
+            addValue(out.users, details.parentProcessUser);
+          } else if (type == 'network') {
+            addValue(out.client_ips, details.requesterIp);
+            addValue(out.client_macs, details.requesterMac);
+            addValue(out.source_ips, details.rawConnectionSourceIp);
+            if (details.rawConnectionSourceIp == null) {
+              addValue(out.source_ips, details.requesterIp);
+            }
+            addValue(out.destination_ips, details.rawConnectionDestIp);
+            addValue(out.source_ports, details.rawConnectionSourcePort);
+            addValue(out.destination_ports, details.rawConnectionDestPort);
+            if (details.rawConnectionDestPort == null) {
+              addValue(out.destination_ports, details.port);
+            }
+            addNormalizedProtocol(details.rawConnectionProtocol, out, p);
+            addNormalizedProtocol(details.protocol, out, p);
+            addNormalizedDirection(details.rawConnectionDirection, out, p);
+            addValue(out.destination_domains, details.domain);
+            addValue(out.destination_domains, details.httpConnectionHost);
+            addValue(out.urls, details.uri);
+            addValue(out.urls, details.httpConnectionUri);
+            addValue(out.file_paths, details.rawConnectionFilePath);
+            addValue(out.file_names, details.smbFileName);
+            addValue(out.users, details.rawConnectionUser);
+            addValue(out.users, details.smbUser);
+          } else if (type == 'registry') {
+            addValue(out.registry_paths, details.registryKey);
+            addValue(out.registry_values, details.registryValue);
+            addValue(out.registry_data, details.registryData);
+            addValue(out.registry_types, details.registryType);
+          }
+
+          addValue(out.urls, details.url);
+          addValue(out.urls, details.urls);
+          addValue(out.urls, details.appAddress);
+          addValue(out.users, details.userId);
+        }
+
+        def alert = ctx.bitdefender.incident_alert.alert;
+        def out = new HashMap();
+        for (def key : [
+          'related_ips', 'related_hosts', 'related_users', 'related_hashes',
+          'file_paths', 'file_names', 'file_sizes', 'file_extensions', 'md5', 'sha256',
+          'process_pids', 'process_paths', 'process_names', 'process_commands',
+          'parent_pids', 'parent_paths', 'parent_commands', 'users',
+          'client_ips', 'client_macs', 'source_ips', 'destination_ips',
+          'source_ports', 'destination_ports', 'network_transports', 'network_protocols',
+          'network_directions', 'destination_domains', 'urls',
+          'registry_paths', 'registry_values', 'registry_data', 'registry_types'
+        ]) {
+          out[key] = new LinkedHashSet();
+        }
+
+        if (alert.resources instanceof List) {
+          for (def resource : alert.resources) {
+            collectResource(resource, out, params);
+          }
+        }
+        if (alert.transitions instanceof List) {
+          for (def transition : alert.transitions) {
+            if (transition instanceof Map && transition.resources instanceof List) {
+              for (def resource : transition.resources) {
+                collectResource(resource, out, params);
+              }
+            }
+          }
+        }
+
+        if (ctx.host != null && ctx.host instanceof Map) {
+          addValue(out.related_ips, ctx.host.ip);
+          addValue(out.related_hosts, ctx.host.name);
+          addValue(out.related_hosts, ctx.host.hostname);
+        }
+        addValue(out.related_hosts, out.destination_domains);
+        addValue(out.related_ips, out.source_ips);
+        addValue(out.related_ips, out.destination_ips);
+        addValue(out.related_ips, out.client_ips);
+        addValue(out.related_users, out.users);
+        addValue(out.related_hashes, out.md5);
+        addValue(out.related_hashes, out.sha256);
+
+        ctx._temp = ctx._temp != null && ctx._temp instanceof Map ? ctx._temp : new HashMap();
+        if (!out.file_sizes.isEmpty()) ctx._temp.file_size = scalarOrList(out.file_sizes);
+        if (!out.process_pids.isEmpty()) ctx._temp.process_pid = scalarOrList(out.process_pids);
+        if (!out.parent_pids.isEmpty()) ctx._temp.parent_pid = scalarOrList(out.parent_pids);
+        if (!out.source_ports.isEmpty()) ctx._temp.source_port = scalarOrList(out.source_ports);
+        if (!out.destination_ports.isEmpty()) ctx._temp.destination_port = scalarOrList(out.destination_ports);
+
+        if (!out.file_paths.isEmpty() || !out.file_names.isEmpty() ||
+            !out.file_extensions.isEmpty() || !out.md5.isEmpty() || !out.sha256.isEmpty()) {
+          ctx.file = ctx.file != null && ctx.file instanceof Map ? ctx.file : new HashMap();
+          if (!out.file_paths.isEmpty()) ctx.file.path = scalarOrList(out.file_paths);
+          if (!out.file_names.isEmpty()) ctx.file.name = scalarOrList(out.file_names);
+          if (!out.file_extensions.isEmpty()) ctx.file.extension = scalarOrList(out.file_extensions);
+          if (!out.md5.isEmpty() || !out.sha256.isEmpty()) {
+            ctx.file.hash = new HashMap();
+            if (!out.md5.isEmpty()) ctx.file.hash.md5 = scalarOrList(out.md5);
+            if (!out.sha256.isEmpty()) ctx.file.hash.sha256 = scalarOrList(out.sha256);
+          }
+        }
+        if (!out.process_paths.isEmpty() || !out.process_names.isEmpty() || !out.process_commands.isEmpty() ||
+            !out.parent_paths.isEmpty() || !out.parent_commands.isEmpty()) {
+          ctx.process = ctx.process != null && ctx.process instanceof Map ? ctx.process : new HashMap();
+          if (!out.process_paths.isEmpty()) ctx.process.executable = scalarOrList(out.process_paths);
+          if (!out.process_names.isEmpty()) ctx.process.name = scalarOrList(out.process_names);
+          if (!out.process_commands.isEmpty()) ctx.process.command_line = scalarOrList(out.process_commands);
+          if (!out.parent_paths.isEmpty() || !out.parent_commands.isEmpty()) {
+            ctx.process.parent = new HashMap();
+            if (!out.parent_paths.isEmpty()) ctx.process.parent.executable = scalarOrList(out.parent_paths);
+            if (!out.parent_commands.isEmpty()) ctx.process.parent.command_line = scalarOrList(out.parent_commands);
+          }
+        }
+        if (!out.users.isEmpty()) {
+          ctx.user = ctx.user != null && ctx.user instanceof Map ? ctx.user : new HashMap();
+          ctx.user.name = scalarOrList(out.users);
+        }
+        if (!out.source_ips.isEmpty()) {
+          ctx.source = ctx.source != null && ctx.source instanceof Map ? ctx.source : new HashMap();
+          ctx.source.ip = scalarOrList(out.source_ips);
+        }
+        if (!out.destination_ips.isEmpty() || !out.destination_domains.isEmpty()) {
+          ctx.destination = ctx.destination != null && ctx.destination instanceof Map ? ctx.destination : new HashMap();
+          if (!out.destination_ips.isEmpty()) ctx.destination.ip = scalarOrList(out.destination_ips);
+          if (!out.destination_domains.isEmpty()) ctx.destination.domain = scalarOrList(out.destination_domains);
+        }
+        if (!out.client_ips.isEmpty() || !out.client_macs.isEmpty()) {
+          ctx.client = ctx.client != null && ctx.client instanceof Map ? ctx.client : new HashMap();
+          if (!out.client_ips.isEmpty()) ctx.client.ip = scalarOrList(out.client_ips);
+          if (!out.client_macs.isEmpty()) ctx.client.mac = scalarOrList(out.client_macs);
+        }
+        if (!out.network_transports.isEmpty() || !out.network_protocols.isEmpty() || !out.network_directions.isEmpty()) {
+          ctx.network = ctx.network != null && ctx.network instanceof Map ? ctx.network : new HashMap();
+          if (!out.network_transports.isEmpty()) ctx.network.transport = scalarOrList(out.network_transports);
+          if (!out.network_protocols.isEmpty()) ctx.network.protocol = scalarOrList(out.network_protocols);
+          if (!out.network_directions.isEmpty()) ctx.network.direction = scalarOrList(out.network_directions);
+        }
+        if (!out.urls.isEmpty()) {
+          ctx.url = ctx.url != null && ctx.url instanceof Map ? ctx.url : new HashMap();
+          ctx.url.original = scalarOrList(out.urls);
+        }
+        if (!out.registry_paths.isEmpty() || !out.registry_values.isEmpty() ||
+            !out.registry_data.isEmpty() || !out.registry_types.isEmpty()) {
+          ctx.registry = ctx.registry != null && ctx.registry instanceof Map ? ctx.registry : new HashMap();
+          if (!out.registry_paths.isEmpty()) ctx.registry.path = scalarOrList(out.registry_paths);
+          if (!out.registry_values.isEmpty()) ctx.registry.value = scalarOrList(out.registry_values);
+          if (!out.registry_data.isEmpty() || !out.registry_types.isEmpty()) {
+            ctx.registry.data = new HashMap();
+            if (!out.registry_data.isEmpty()) ctx.registry.data.strings = new ArrayList(out.registry_data);
+            if (!out.registry_types.isEmpty()) ctx.registry.data.type = scalarOrList(out.registry_types);
+          }
+        }
+        if (!out.related_ips.isEmpty() || !out.related_hosts.isEmpty() ||
+            !out.related_users.isEmpty() || !out.related_hashes.isEmpty()) {
+          ctx.related = ctx.related != null && ctx.related instanceof Map ? ctx.related : new HashMap();
+          if (!out.related_ips.isEmpty()) ctx.related.ip = new ArrayList(out.related_ips);
+          if (!out.related_hosts.isEmpty()) ctx.related.hosts = new ArrayList(out.related_hosts);
+          if (!out.related_users.isEmpty()) ctx.related.user = new ArrayList(out.related_users);
+          if (!out.related_hashes.isEmpty()) ctx.related.hash = new ArrayList(out.related_hashes);
+        }
+  - convert:
+      field: _temp.file_size
+      target_field: file.size
+      type: long
+      ignore_missing: true
+      tag: convert_file_size_to_long
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_convert_file_size
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - convert:
+      field: _temp.process_pid
+      target_field: process.pid
+      type: long
+      ignore_missing: true
+      tag: convert_process_pid_to_long
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_convert_process_pid
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - convert:
+      field: _temp.parent_pid
+      target_field: process.parent.pid
+      type: long
+      ignore_missing: true
+      tag: convert_process_parent_pid_to_long
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_convert_process_parent_pid
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - convert:
+      field: _temp.source_port
+      target_field: source.port
+      type: long
+      ignore_missing: true
+      tag: convert_source_port_to_long
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_convert_source_port
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - convert:
+      field: _temp.destination_port
+      target_field: destination.port
+      type: long
+      ignore_missing: true
+      tag: convert_destination_port_to_long
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_convert_destination_port
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - remove:
+      field: _temp
+      ignore_missing: true
+      tag: remove_resource_temp_fields
+  - fingerprint:
+      fields:
+        - bitdefender.incident_alert.incident.incidentId
+        - bitdefender.incident_alert.alert.id
+        - bitdefender.incident_alert.incident.lastIncidentChange
+        - bitdefender.incident_alert.incident.status
+        - bitdefender.incident_alert.incident.mainAction
+        - bitdefender.incident_alert.incident.severityScore
+      target_field: _id
+      method: SHA-256
+      ignore_missing: true
+      tag: fingerprint_incident_alert_id
+  - append:
+      field: tags
+      tag: preserve_original_event_on_collector_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - remove:
+      field:
+        - _temp
+        - routing
+      ignore_missing: true
+      tag: remove_temp_on_pipeline_error
+  - append:
+      field: error.message
+      tag: append_pipeline_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: preserve_original_event_on_pipeline_error
+      value: preserve_original_event
+      allow_duplicates: false

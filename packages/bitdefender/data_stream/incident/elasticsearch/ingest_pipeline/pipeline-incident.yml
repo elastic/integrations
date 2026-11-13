@@ -1,0 +1,574 @@
+---
+description: Parse parent Bitdefender GravityZone incident events.
+processors:
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: alert
+  - append:
+      field: event.category
+      tag: append_event_category
+      value:
+        - intrusion_detection
+        - malware
+        - threat
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type
+      value:
+        - indicator
+        - info
+      allow_duplicates: false
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Bitdefender
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: GravityZone
+  - set:
+      field: event.id
+      tag: set_event_id
+      copy_from: bitdefender.incident.incidentId
+      if: ctx.bitdefender.incident.incidentId != null
+  - set:
+      field: bitdefender.incident.id
+      tag: set_vendor_incident_id
+      copy_from: bitdefender.incident.incidentId
+      if: ctx.bitdefender.incident.incidentId != null
+  - fingerprint:
+      fields:
+        - bitdefender.incident.incidentId
+        - bitdefender.incident.lastIncidentChange
+      target_field: _id
+      method: SHA-256
+      ignore_missing: true
+      tag: fingerprint_incident_revision_id
+      if: ctx.bitdefender.incident.incidentId != null
+  - set:
+      field: event.action
+      tag: set_event_action
+      copy_from: bitdefender.incident.mainAction
+      if: ctx.bitdefender.incident.mainAction != null
+  - set:
+      field: event.severity
+      tag: set_event_severity
+      copy_from: bitdefender.incident.severityScore
+      if: ctx.bitdefender.incident.severityScore != null
+  - set:
+      field: event.reference
+      tag: set_event_reference
+      copy_from: bitdefender.incident.incidentLink
+      if: ctx.bitdefender.incident.incidentLink != null
+  - date:
+      field: bitdefender.incident.created
+      target_field: event.created
+      formats:
+        - ISO8601
+      tag: parse_event_created
+      if: ctx.bitdefender.incident.created != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_parse_event_created
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        - remove:
+            field: bitdefender.incident.created
+            tag: remove_invalid_incident_created
+            ignore_missing: true
+  - date:
+      field: bitdefender.incident.lastIncidentChange
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      tag: parse_event_timestamp
+      if: ctx.bitdefender.incident.lastIncidentChange != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_parse_event_timestamp
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        - remove:
+            field: bitdefender.incident.lastIncidentChange
+            tag: remove_invalid_last_incident_change
+            ignore_missing: true
+  - date:
+      field: bitdefender.incident.lastUpdated
+      target_field: bitdefender.incident.lastUpdated
+      formats:
+        - ISO8601
+      tag: parse_incident_last_updated
+      if: ctx.bitdefender.incident.lastUpdated != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_parse_incident_last_updated
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        - remove:
+            field: bitdefender.incident.lastUpdated
+            tag: remove_invalid_incident_last_updated
+            ignore_missing: true
+  - date:
+      field: bitdefender.incident.lastProcessed
+      target_field: bitdefender.incident.lastProcessed
+      formats:
+        - ISO8601
+      tag: parse_incident_last_processed
+      if: ctx.bitdefender.incident.lastProcessed != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_parse_incident_last_processed
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        - remove:
+            field: bitdefender.incident.lastProcessed
+            tag: remove_invalid_incident_last_processed
+            ignore_missing: true
+  - set:
+      field: organization.id
+      tag: set_organization_id
+      copy_from: bitdefender.incident.company.id
+      if: ctx.bitdefender.incident.company?.id != null
+  - set:
+      field: organization.name
+      tag: set_organization_name
+      copy_from: bitdefender.incident.company.name
+      if: ctx.bitdefender.incident.company?.name != null
+  - set:
+      field: user.id
+      tag: set_assignee_user_id
+      copy_from: bitdefender.incident.assignee.userId
+      if: ctx.bitdefender.incident.assignee instanceof Map && ctx.bitdefender.incident.assignee.userId != null
+  - set:
+      field: user.id
+      tag: set_string_assignee_user_id
+      copy_from: bitdefender.incident.assignee
+      if: ctx.bitdefender.incident.assignee instanceof String
+  - set:
+      field: user.name
+      tag: set_assignee_user_name
+      copy_from: bitdefender.incident.assignee.userName
+      if: ctx.bitdefender.incident.assignee instanceof Map && ctx.bitdefender.incident.assignee.userName != null
+  - set:
+      field: message
+      tag: set_detection_message
+      copy_from: bitdefender.incident.details.detectionName
+      if: ctx.bitdefender.incident.details instanceof Map && ctx.bitdefender.incident.details.detectionName != null
+  - set:
+      field: rule.name
+      tag: set_detection_rule_name
+      copy_from: bitdefender.incident.details.detectionName
+      if: ctx.bitdefender.incident.details instanceof Map && ctx.bitdefender.incident.details.detectionName != null
+  - set:
+      field: host.id
+      tag: set_host_id
+      copy_from: bitdefender.incident.details.computerId
+      if: ctx.bitdefender.incident.details instanceof Map && ctx.bitdefender.incident.details.computerId != null
+  - set:
+      field: host.name
+      tag: set_host_name
+      copy_from: bitdefender.incident.details.computerName
+      if: ctx.bitdefender.incident.details instanceof Map && ctx.bitdefender.incident.details.computerName != null
+  - set:
+      field: host.hostname
+      tag: set_host_hostname
+      copy_from: bitdefender.incident.details.computerFqdn
+      if: ctx.bitdefender.incident.details instanceof Map && ctx.bitdefender.incident.details.computerFqdn != null
+  - set:
+      field: host.ip
+      tag: set_host_ip
+      copy_from: bitdefender.incident.details.computerIp
+      if: ctx.bitdefender.incident.details instanceof Map && ctx.bitdefender.incident.details.computerIp != null
+  - set:
+      field: host.mac
+      tag: set_host_mac
+      copy_from: bitdefender.incident.details.computerMacAddresses
+      if: ctx.bitdefender.incident.details instanceof Map && ctx.bitdefender.incident.details.computerMacAddresses != null
+  - script:
+      lang: painless
+      tag: extract_polymorphic_incident_fields
+      description: >-
+        Extracts ECS threat, host, vulnerability, rule, and related values from
+        polymorphic endpoint EDR and organization XDR detail graphs.
+      if: ctx.bitdefender?.incident?.details instanceof Map
+      params:
+        host_node_types:
+          - endpoint
+          - server
+          - container_host
+          - virtual_server_aws
+          - virtual_server_azure
+          - virtual_server_gcp
+        hash_fields:
+          - md5
+          - sha256
+          - fileMd5
+          - fileSha256
+      source: |-
+        void addValue(def values, def candidate) {
+          if (candidate == null) {
+            return;
+          }
+          if (candidate instanceof Collection) {
+            for (def value : candidate) {
+              if (value != null && (!(value instanceof String) || !value.isEmpty())) {
+                values.add(value);
+              }
+            }
+            return;
+          }
+          if (!(candidate instanceof String) || !candidate.isEmpty()) {
+            values.add(candidate);
+          }
+        }
+        void addMacValue(def values, def candidate) {
+          if (candidate == null) {
+            return;
+          }
+          if (candidate instanceof Collection) {
+            for (def value : candidate) {
+              addMacValue(values, value);
+            }
+            return;
+          }
+          if (!(candidate instanceof String) || candidate.isEmpty()) {
+            return;
+          }
+          def mac = candidate.toUpperCase().replace(':', '-');
+          if (mac.length() == 12) {
+            mac = mac.substring(0, 2) + '-' + mac.substring(2, 4) + '-' +
+              mac.substring(4, 6) + '-' + mac.substring(6, 8) + '-' +
+              mac.substring(8, 10) + '-' + mac.substring(10, 12);
+          }
+          values.add(mac);
+        }
+        Object asScalarOrList(def values) {
+          def result = new ArrayList(values);
+          return result.size() == 1 ? result.get(0) : result;
+        }
+        void collectResource(def resource, def ips, def hosts, def users, def hashes, def hashFields) {
+          if (!(resource instanceof Map) || !(resource.details instanceof Map)) {
+            return;
+          }
+          def data = resource.details;
+          addValue(ips, data.ip);
+          addValue(ips, data.ips);
+          addValue(ips, data.requesterIp);
+          addValue(ips, data.rawConnectionSourceIp);
+          addValue(ips, data.rawConnectionDestIp);
+          addValue(hosts, data.requesterSystemName);
+          addValue(hosts, data.smbHostName);
+          addValue(hosts, data.domain);
+          addValue(hosts, data.httpConnectionHost);
+          addValue(users, data.user);
+          addValue(users, data.parentProcessUser);
+          addValue(users, data.rawConnectionUser);
+          addValue(users, data.smbUser);
+          addValue(users, data.userId);
+          for (def hashField : hashFields) {
+            addValue(hashes, data[hashField]);
+          }
+          if (data.file instanceof Map) {
+            for (def hashField : hashFields) {
+              addValue(hashes, data.file[hashField]);
+            }
+          }
+          if (data.sender instanceof Map) {
+            addValue(users, data.sender.name);
+            addValue(users, data.sender.address);
+          }
+          for (def recipientsField : ['toRecipients', 'ccRecipients', 'bccRecipients']) {
+            def recipients = data[recipientsField];
+            if (recipients instanceof List) {
+              for (def recipient : recipients) {
+                if (recipient instanceof Map) {
+                  addValue(users, recipient.name);
+                  addValue(users, recipient.address);
+                }
+              }
+            }
+          }
+          if (data.attachments instanceof List) {
+            for (def attachment : data.attachments) {
+              if (attachment instanceof Map) {
+                for (def hashField : hashFields) {
+                  addValue(hashes, attachment[hashField]);
+                }
+              }
+            }
+          }
+        }
+
+        def incident = ctx.bitdefender.incident;
+        def details = incident.details;
+        def hostIds = new LinkedHashSet();
+        def hostNames = new LinkedHashSet();
+        def hostHostnames = new LinkedHashSet();
+        def hostIps = new LinkedHashSet();
+        def hostMacs = new LinkedHashSet();
+        def relatedIps = new LinkedHashSet();
+        def relatedHosts = new LinkedHashSet();
+        def relatedUsers = new LinkedHashSet();
+        def relatedHashes = new LinkedHashSet();
+        def tacticNames = new LinkedHashSet();
+        def techniqueIds = new LinkedHashSet();
+        def techniqueNames = new LinkedHashSet();
+        def subtechniqueIds = new LinkedHashSet();
+        def subtechniqueNames = new LinkedHashSet();
+        def vulnerabilityIds = new LinkedHashSet();
+        def threatGroupNames = new LinkedHashSet();
+        def ruleNames = new LinkedHashSet();
+
+        if (ctx.host != null && ctx.host instanceof Map) {
+          addValue(hostIds, ctx.host.id);
+          addValue(hostNames, ctx.host.name);
+          addValue(hostHostnames, ctx.host.hostname);
+          addValue(hostIps, ctx.host.ip);
+          addMacValue(hostMacs, ctx.host.mac);
+        }
+        if (ctx.user != null && ctx.user instanceof Map) {
+          addValue(relatedUsers, ctx.user.id);
+          addValue(relatedUsers, ctx.user.name);
+        }
+        if (ctx.rule != null && ctx.rule instanceof Map) {
+          addValue(ruleNames, ctx.rule.name);
+        }
+        if (ctx.related != null && ctx.related instanceof Map) {
+          addValue(relatedIps, ctx.related.ip);
+          addValue(relatedHosts, ctx.related.hosts);
+          addValue(relatedUsers, ctx.related.user);
+          addValue(relatedHashes, ctx.related.hash);
+        }
+        if (incident.assignee instanceof Map) {
+          addValue(relatedUsers, incident.assignee.userId);
+          addValue(relatedUsers, incident.assignee.userName);
+        } else if (incident.assignee instanceof String) {
+          addValue(relatedUsers, incident.assignee);
+        }
+        if (incident.notes instanceof List) {
+          for (def note : incident.notes) {
+            if (note instanceof Map) {
+              addValue(relatedUsers, note.userId);
+              addValue(relatedUsers, note.userName);
+            }
+          }
+        }
+
+        if (details.mitreTags instanceof List) {
+          for (def mitreTag : details.mitreTags) {
+            if (!(mitreTag instanceof Map)) {
+              continue;
+            }
+            addValue(tacticNames, mitreTag.category);
+            if (mitreTag.techniques instanceof List) {
+              for (def technique : mitreTag.techniques) {
+                if (!(technique instanceof Map)) {
+                  continue;
+                }
+                addValue(techniqueIds, technique.id);
+                addValue(techniqueNames, technique.name);
+                if (technique.subtechniques instanceof List) {
+                  for (def subtechnique : technique.subtechniques) {
+                    if (subtechnique instanceof Map) {
+                      addValue(subtechniqueIds, subtechnique.id);
+                      addValue(subtechniqueNames, subtechnique.name);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        if (details.cves instanceof List) {
+          for (def cve : details.cves) {
+            if (cve instanceof Map) {
+              addValue(vulnerabilityIds, cve.id);
+            } else {
+              addValue(vulnerabilityIds, cve);
+            }
+          }
+        }
+        if (details.suspectedActors instanceof List) {
+          for (def actor : details.suspectedActors) {
+            if (actor instanceof Map) {
+              addValue(threatGroupNames, actor.name);
+            }
+          }
+        }
+
+        if (details.alerts instanceof List) {
+          for (def alert : details.alerts) {
+            if (!(alert instanceof Map)) {
+              continue;
+            }
+            addValue(ruleNames, alert.name);
+            if (alert.resources instanceof List) {
+              for (def resource : alert.resources) {
+                collectResource(resource, relatedIps, relatedHosts, relatedUsers, relatedHashes, params.hash_fields);
+              }
+            }
+            if (alert.transitions instanceof List) {
+              for (def transition : alert.transitions) {
+                if (transition instanceof Map && transition.resources instanceof List) {
+                  for (def resource : transition.resources) {
+                    collectResource(resource, relatedIps, relatedHosts, relatedUsers, relatedHashes, params.hash_fields);
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        if (details.nodes instanceof List) {
+          for (def node : details.nodes) {
+            if (!(node instanceof Map)) {
+              continue;
+            }
+            def nodeDetails = node.details;
+            if (!(nodeDetails instanceof Map)) {
+              nodeDetails = new HashMap();
+            }
+            if (params.host_node_types.contains(node.type)) {
+              addValue(hostIds, nodeDetails.id);
+              addValue(hostIds, nodeDetails.endpointId);
+              addValue(hostNames, nodeDetails.name);
+              if (node.name instanceof String && node.name.contains('.')) {
+                addValue(hostHostnames, node.name);
+              } else {
+                addValue(hostNames, node.name);
+              }
+              addValue(hostIps, nodeDetails.ip);
+              addValue(hostIps, nodeDetails.ips);
+              addMacValue(hostMacs, nodeDetails.mac);
+              addMacValue(hostMacs, nodeDetails.macs);
+            }
+            if (node.type == 'ip') {
+              addValue(relatedIps, node.name);
+              addValue(relatedIps, nodeDetails.ip);
+              addValue(relatedHosts, nodeDetails.domains);
+            }
+            if (node.type instanceof String && node.type.startsWith('user_')) {
+              addValue(relatedUsers, node.name);
+              addValue(relatedUsers, nodeDetails.emails);
+            }
+            if (nodeDetails.process instanceof Map) {
+              addValue(relatedUsers, nodeDetails.process.userId);
+              addValue(relatedUsers, nodeDetails.process.userName);
+            }
+            if (nodeDetails.file instanceof Map) {
+              for (def hashField : params.hash_fields) {
+                addValue(relatedHashes, nodeDetails.file[hashField]);
+              }
+            }
+            for (def hashField : params.hash_fields) {
+              addValue(relatedHashes, nodeDetails[hashField]);
+            }
+          }
+        }
+
+        addValue(relatedIps, hostIps);
+        addValue(relatedHosts, hostNames);
+        addValue(relatedHosts, hostHostnames);
+
+        if (!hostIds.isEmpty() || !hostNames.isEmpty() || !hostHostnames.isEmpty() || !hostIps.isEmpty() || !hostMacs.isEmpty()) {
+          ctx.host = ctx.host instanceof Map ? ctx.host : new HashMap();
+          if (!hostIds.isEmpty()) {
+            ctx.host.id = asScalarOrList(hostIds);
+          }
+          if (!hostNames.isEmpty()) {
+            ctx.host.name = asScalarOrList(hostNames);
+          }
+          if (!hostHostnames.isEmpty()) {
+            ctx.host.hostname = asScalarOrList(hostHostnames);
+          }
+          if (!hostIps.isEmpty()) {
+            ctx.host.ip = new ArrayList(hostIps);
+          }
+          if (!hostMacs.isEmpty()) {
+            ctx.host.mac = new ArrayList(hostMacs);
+          }
+        }
+        if (!ruleNames.isEmpty()) {
+          ctx.rule = ctx.rule instanceof Map ? ctx.rule : new HashMap();
+          ctx.rule.name = asScalarOrList(ruleNames);
+          if (ctx.message == null) {
+            ctx.message = new ArrayList(ruleNames).get(0);
+          }
+        }
+        if (!tacticNames.isEmpty() || !techniqueIds.isEmpty() || !techniqueNames.isEmpty() || !subtechniqueIds.isEmpty() || !subtechniqueNames.isEmpty() || !threatGroupNames.isEmpty()) {
+          ctx.threat = ctx.threat instanceof Map ? ctx.threat : new HashMap();
+          if (!tacticNames.isEmpty()) {
+            ctx.threat.tactic = ['name': new ArrayList(tacticNames)];
+          }
+          if (!techniqueIds.isEmpty() || !techniqueNames.isEmpty() || !subtechniqueIds.isEmpty() || !subtechniqueNames.isEmpty()) {
+            ctx.threat.technique = ctx.threat.technique instanceof Map ? ctx.threat.technique : new HashMap();
+            if (!techniqueIds.isEmpty()) {
+              ctx.threat.technique.id = new ArrayList(techniqueIds);
+            }
+            if (!techniqueNames.isEmpty()) {
+              ctx.threat.technique.name = new ArrayList(techniqueNames);
+            }
+            if (!subtechniqueIds.isEmpty() || !subtechniqueNames.isEmpty()) {
+              ctx.threat.technique.subtechnique = new HashMap();
+              if (!subtechniqueIds.isEmpty()) {
+                ctx.threat.technique.subtechnique.id = new ArrayList(subtechniqueIds);
+              }
+              if (!subtechniqueNames.isEmpty()) {
+                ctx.threat.technique.subtechnique.name = new ArrayList(subtechniqueNames);
+              }
+            }
+          }
+          if (!threatGroupNames.isEmpty()) {
+            ctx.threat.group = ['name': new ArrayList(threatGroupNames)];
+          }
+        }
+        if (!vulnerabilityIds.isEmpty()) {
+          ctx.vulnerability = ctx.vulnerability instanceof Map ? ctx.vulnerability : new HashMap();
+          ctx.vulnerability.id = new ArrayList(vulnerabilityIds);
+        }
+        if (!relatedIps.isEmpty() || !relatedHosts.isEmpty() || !relatedUsers.isEmpty() || !relatedHashes.isEmpty()) {
+          ctx.related = ctx.related instanceof Map ? ctx.related : new HashMap();
+          if (!relatedIps.isEmpty()) {
+            ctx.related.ip = new ArrayList(relatedIps);
+          }
+          if (!relatedHosts.isEmpty()) {
+            ctx.related.hosts = new ArrayList(relatedHosts);
+          }
+          if (!relatedUsers.isEmpty()) {
+            ctx.related.user = new ArrayList(relatedUsers);
+          }
+          if (!relatedHashes.isEmpty()) {
+            ctx.related.hash = new ArrayList(relatedHashes);
+          }
+        }
+on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: preserve_original_event_on_pipeline_error
+      value: preserve_original_event
+      allow_duplicates: false
