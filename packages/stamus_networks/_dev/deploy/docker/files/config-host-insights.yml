@@ -1,0 +1,149 @@
+rules:
+  # --- page_number:1 ---
+  # Change detection is now entirely a CEL-side concern (cursor.host_states, keyed by
+  # host.ip) rather than a pipeline-side content fingerprint -- see
+  # data_stream/host_insights/agent/stream/cel.yml.hbs for the full design rationale.
+  # Each poll below is driven by `.req_num` (elastic/stream's per-rule request counter),
+  # modelling consecutive poll cycles against the same CEL program instance.
+  #
+  # req_num 1 (round 1 / first poll): full page (198.51.100.10 content "A", plus
+  # 198.51.100.11), next non-null -> page 2 follows (198.51.100.13). All three hosts are
+  # new to cursor.host_states, so all three must be emitted. Pagination/page-reset test.
+  # req_num 2 (round 2 / second poll): Host Insights has NO incremental filter (no
+  # from_date/to_date, no cursor) -- every poll does a full re-read starting at page 1
+  # again. This response returns a DIFFERENT, previously-unseen host (198.51.100.12) and
+  # is intentionally SHORT (next: null) so it is observably different from req_num 1 and
+  # proves the CEL program resets its page counter to 1 on each new poll cycle rather
+  # than continuing from the previous poll's last page. 198.51.100.12 is new -> emit.
+  # req_num 3 (round 3 / third poll): re-returns 198.51.100.10 -- a host ALREADY in
+  # cursor.host_states from round 1 -- but with CHANGED content ("B"): an added
+  # `hostname` entry (host-a-new.example.com joins host-a.example.com) and a new
+  # tcp/8443 service. A real content change must be emitted.
+  # req_num 4 (round 4 / fourth poll): THE CORE REGRESSION TEST. 198.51.100.10 reverts
+  # to EXACTLY round 1's content ("A" again -- same hostname[] entry, same single
+  # tcp/443 service, nothing else). This is the A -> B -> A scenario a pure content
+  # fingerprint cannot handle (round 3's "B" and round 4's "A" would each collide with
+  # whichever document first produced that hash, rather than being compared against the
+  # immediately preceding observation). cursor.host_states compares against round 3's
+  # stored "B", sees a difference, and correctly re-emits "A" a second time.
+  # req_num 5 (round 5 / fifth poll): re-returns 198.51.100.10 with the exact same
+  # hostname/services content as round 4 -- only a first_seen/last_seen timestamp
+  # (services[].values[].last_seen) has advanced further (still-active host, nothing
+  # actually changed). Regression test for timestamp stripping: this must NOT be
+  # emitted -- it should be silently suppressed against round 4's stored comparable.
+  # req_num 6 (round 6 / sixth poll): 198.51.100.10 gains a second hostname[] entry
+  # (host-a-alt.example.com) with a LATER last_seen than host-a.example.com, flipping
+  # which entry the ingest pipeline's resolve_latest_hostname script would pick as the
+  # host's current name. hostname[] (including its own timestamps) is kept in full in
+  # the comparable snapshot specifically so this kind of timestamp-driven resolved-name
+  # change is treated as a real, must-emit state transition.
+  # req_num 7 (round 7 / seventh poll): re-returns 198.51.100.10 with byte-identical
+  # hostname/services content to round 6 (only the top-level host_id.last_seen, which is
+  # excluded from the comparable entirely, advances). Steady-state suppression test:
+  # must NOT be emitted.
+  # req_num 8 (round 8 / eighth poll): THE INTERRUPTED-SCAN REGRESSION TEST (GitHub
+  # Copilot review finding on PR #22143). This page-1 response changes 198.51.100.10's
+  # content again (round 6/7's stored baseline "D" + a new tcp/22 service -- call it
+  # "E"), with `next` non-null so a page 2 is requested. Page 2 (see the page_number:2
+  # rule below, req_num 2 there) returns a non-retryable 4xx, halting this scan BEFORE
+  # its terminal page. The fix under test: cursor.host_states["198.51.100.10"] must
+  # already be durably updated to "E" the moment this page-1 response is processed --
+  # not deferred to a terminal page this scan never reaches.
+  # req_num 9 (round 9 / ninth poll): a full, uninterrupted scan where 198.51.100.10
+  # reverts to EXACTLY round 6/7's content ("E" -> "D" again). If round 8's "E" baseline
+  # update had been lost (the pre-fix bug -- staged only in a plain, non-cursor
+  # accumulator that never reached cursor.host_states because the scan was interrupted
+  # before its terminal page), this round would incorrectly compare against the stale
+  # "D" baseline and suppress this document as "unchanged" -- even though the most
+  # recently indexed document for this host (round 8's page 1) shows "E". Confirming
+  # this IS emitted proves cursor.host_states was correctly checkpointed mid-scan.
+  # req_num >=10 (all subsequent polls within the 1m test window): terminal empty
+  # response -- stops hit_count from growing unboundedly across repeated full reads.
+  - path: /rest/appliances/host_id/
+    methods: ['GET']
+    query_params:
+      page_number: '1'
+      page_size: '2'
+    request_headers:
+      Authorization:
+        - 'Token test-token'
+      Content-Type:
+        - 'application/json'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {{ if eq .req_num 1 }}
+          {"count": 3, "next": "http://{{ hostname }}:{{ env "PORT" }}/rest/appliances/host_id/?page_size=2&page_number=2", "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}], "username": [], "roles": [], "services": [{"proto": "tcp", "port": 443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}]}]}}, {"ip": "198.51.100.11", "host_id": {"first_seen": "2024-01-11T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000", "in_home_net": false, "hostname": [{"host": "host-b.example.com", "first_seen": "2024-01-11T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}], "username": [], "roles": [], "services": []}}]}
+          {{ else if eq .req_num 2 }}
+          {"count": 1, "next": null, "previous": null, "results": [{"ip": "198.51.100.12", "host_id": {"first_seen": "2024-01-15T13:00:00.000000+0000", "last_seen": "2024-01-15T13:05:00.000000+0000", "in_home_net": true, "hostname": [], "username": [], "roles": [], "services": []}}]}
+          {{ else if eq .req_num 3 }}
+          {"count": 1, "next": null, "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T15:30:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}, {"host": "host-a-new.example.com", "first_seen": "2024-01-15T14:00:00.000000+0000", "last_seen": "2024-01-15T15:30:00.000000+0000"}], "username": [], "roles": [], "services": [{"proto": "tcp", "port": 443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}]}, {"proto": "tcp", "port": 8443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-15T15:00:00.000000+0000", "last_seen": "2024-01-15T15:30:00.000000+0000"}]}]}}]}
+          {{ else if eq .req_num 4 }}
+          {"count": 1, "next": null, "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T16:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}], "username": [], "roles": [], "services": [{"proto": "tcp", "port": 443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}]}]}}]}
+          {{ else if eq .req_num 5 }}
+          {"count": 1, "next": null, "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T18:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}], "username": [], "roles": [], "services": [{"proto": "tcp", "port": 443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T18:00:00.000000+0000"}]}]}}]}
+          {{ else if eq .req_num 6 }}
+          {"count": 1, "next": null, "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-20T09:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}, {"host": "host-a-alt.example.com", "first_seen": "2024-01-18T08:00:00.000000+0000", "last_seen": "2024-01-20T09:00:00.000000+0000"}], "username": [], "roles": [], "services": [{"proto": "tcp", "port": 443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T18:00:00.000000+0000"}]}]}}]}
+          {{ else if eq .req_num 7 }}
+          {"count": 1, "next": null, "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-20T11:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}, {"host": "host-a-alt.example.com", "first_seen": "2024-01-18T08:00:00.000000+0000", "last_seen": "2024-01-20T09:00:00.000000+0000"}], "username": [], "roles": [], "services": [{"proto": "tcp", "port": 443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T18:00:00.000000+0000"}]}]}}]}
+          {{ else if eq .req_num 8 }}
+          {"count": 1, "next": "http://{{ hostname }}:{{ env "PORT" }}/rest/appliances/host_id/?page_size=2&page_number=2", "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-21T09:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}, {"host": "host-a-alt.example.com", "first_seen": "2024-01-18T08:00:00.000000+0000", "last_seen": "2024-01-20T09:00:00.000000+0000"}], "username": [], "roles": [], "services": [{"proto": "tcp", "port": 443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T18:00:00.000000+0000"}]}, {"proto": "tcp", "port": 22, "overflow": 0, "values": [{"app_proto": "ssh", "first_seen": "2024-01-21T08:30:00.000000+0000", "last_seen": "2024-01-21T09:00:00.000000+0000"}]}]}}]}
+          {{ else if eq .req_num 9 }}
+          {"count": 1, "next": null, "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-22T10:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}, {"host": "host-a-alt.example.com", "first_seen": "2024-01-18T08:00:00.000000+0000", "last_seen": "2024-01-20T09:00:00.000000+0000"}], "username": [], "roles": [], "services": [{"proto": "tcp", "port": 443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T18:00:00.000000+0000"}]}]}}]}
+          {{ else }}
+          {"count": 0, "next": null, "previous": null, "results": []}
+          {{ end }}
+  # --- page_number:2 ---
+  # elastic/stream cycles through multiple `responses` list entries in order (one per
+  # request to this rule, by index -- status_code is NOT Go-template-able, only
+  # headers/body are, so distinct status codes per request require distinct list
+  # entries rather than a single templated body).
+  # Request 1 (round 1 only -- every subsequent round's page-1 response is already
+  # terminal, so no page-2 request is expected until round 8): 200, returns host
+  # 198.51.100.13, terminal (next: null).
+  # Request 2 (round 8's page 2 -- the interrupted-scan regression test): a
+  # non-retryable 4xx (404) so the scan halts BEFORE its terminal page. Round 8's page
+  # 1 (see the page_number:1 rule, req_num 8) has already published its event and, per
+  # the fix, already durably merged 198.51.100.10's new content into cursor.host_states
+  # -- this 4xx must not roll that back.
+  - path: /rest/appliances/host_id/
+    methods: ['GET']
+    query_params:
+      page_number: '2'
+      page_size: '2'
+    request_headers:
+      Authorization:
+        - 'Token test-token'
+      Content-Type:
+        - 'application/json'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {"count": 1, "next": null, "previous": "http://{{ hostname }}:{{ env "PORT" }}/rest/appliances/host_id/?page_size=2&page_number=1", "results": [{"ip": "198.51.100.13", "host_id": {"first_seen": "2024-01-12T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-c.example.com", "first_seen": "2024-01-12T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}], "username": [], "roles": [], "services": []}}]}
+      - status_code: 404
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"detail": "not found"}'
+  # --- Regression guard: catch-all for any other host_id request (e.g. missing/unmatched
+  # query params, or a bug that keeps advancing page_number past where this poll's
+  # reads should have reset to page 1). Returns an oversized batch so hit_count
+  # assertions fail loudly instead of silently under/over-counting. ---
+  - path: /rest/appliances/host_id/
+    methods: ['GET']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {"count": 50, "next": null, "previous": null, "results": [
+            {"ip": "203.0.113.200", "host_id": {"first_seen": "2020-01-01T00:00:00Z", "last_seen": "2020-01-01T00:00:00Z", "in_home_net": false, "hostname": [{"host": "regression-guard.example.com", "first_seen": "2020-01-01T00:00:00Z", "last_seen": "2020-01-01T00:00:00Z"}], "username": [], "roles": [], "services": []}},
+            {"ip": "203.0.113.201", "host_id": {"first_seen": "2020-01-01T00:00:00Z", "last_seen": "2020-01-01T00:00:00Z", "in_home_net": false, "hostname": [{"host": "regression-guard.example.com", "first_seen": "2020-01-01T00:00:00Z", "last_seen": "2020-01-01T00:00:00Z"}], "username": [], "roles": [], "services": []}}
+          ]}
