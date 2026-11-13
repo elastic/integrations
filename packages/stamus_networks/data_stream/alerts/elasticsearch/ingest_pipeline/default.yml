@@ -195,22 +195,6 @@ processors:
       target_field: stamus_networks.alerts.direction
       tag: rename_direction
       ignore_missing: true
-  - set:
-      field: network.direction
-      tag: set_network_direction_inbound
-      value: inbound
-      if: ctx.stamus_networks?.alerts?.direction == 'to_client'
-  - set:
-      field: network.direction
-      tag: set_network_direction_outbound
-      value: outbound
-      if: ctx.stamus_networks?.alerts?.direction == 'to_server'
-  - remove:
-      field: stamus_networks.alerts.direction
-      tag: remove_mapped_suricata_direction
-      ignore_missing: true
-      if: ctx.network?.direction != null
-      description: Preserve unrecognized Suricata direction values in the vendor field.
   - rename:
       field: json.capture_file
       target_field: stamus_networks.alerts.capture_file
@@ -732,14 +716,21 @@ processors:
           ignore_empty_values: true
   - rename:
       field: json.http.hostname
-      target_field: destination.domain
-      tag: rename_http_hostname_to_destination_domain
+      target_field: url.domain
+      tag: rename_http_hostname_to_url_domain
       ignore_missing: true
   - set:
-      field: url.domain
-      tag: set_url_domain_from_destination_domain
-      copy_from: destination.domain
-      if: ctx.network?.protocol == 'http' && ctx.destination?.domain != null
+      field: source.domain
+      tag: set_source_domain_from_url_domain
+      copy_from: url.domain
+      if: ctx.url?.domain != null && ctx.json?._flow_orientation_flipped == true
+      description: The HTTP hostname identifies the flow's server endpoint, which may be the final ECS source after attacker/victim attribution.
+  - set:
+      field: destination.domain
+      tag: set_destination_domain_from_url_domain
+      copy_from: url.domain
+      if: ctx.url?.domain != null && ctx.json?._flow_orientation_flipped != true
+      description: The HTTP hostname identifies the flow's server endpoint, which is normally the final ECS destination.
 
   ###
   # related.* enrichment
@@ -758,10 +749,10 @@ processors:
       if: ctx.destination?.ip != null
   - append:
       field: related.hosts
-      tag: append_related_hosts_destination_domain
-      value: '{{{destination.domain}}}'
+      tag: append_related_hosts_url_domain
+      value: '{{{url.domain}}}'
       allow_duplicates: false
-      if: ctx.destination?.domain != null
+      if: ctx.url?.domain != null
   - append:
       field: related.hosts
       tag: append_related_hosts_hostname_info

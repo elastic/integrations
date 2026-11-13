@@ -15,12 +15,13 @@ data_stream:
 #   window 2 (round 2, cursor resume): alert=1 + stamus=1                    = 2
 #   window 3 (persistent stamus 403):  alert=0 + stamus error (indexed)=1    = 1
 #   window 4 (alert collection resumes after the stamus error): alert=1 + stamus=0 = 1
-#   window 5 (transient 503 on the ALERT phase, same-window retry): alert
+#   window 5 (sustained 503 on the ALERT phase, same-window retry): alert
 #     recovery event=1, stamus=0                                            = 1
-#   window 6 (transient 503 on the STAMUS phase, same-window retry): alert=0,
+#   window 6 (sustained 503 on the STAMUS phase, same-window retry): alert=0,
 #     stamus recovery event=1                                               = 1
 #   total = 9, stable thereafter.
-# Elastic Agent retries the transient 503 responses before the CEL program
-# receives them, so only the recovery events are indexed.
+# Each sustained failure outlasts Elastic Agent's HTTP-level retries, forcing
+# the CEL program to return and persist its explicit retry cursor before the
+# later recovery response is served. Only the recovery events are indexed.
 assert:
   hit_count: 9
