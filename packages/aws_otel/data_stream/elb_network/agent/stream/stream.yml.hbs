@@ -1,0 +1,34 @@
+receivers:
+  awscloudwatch:
+    metrics:
+      collection_interval: {{collection_interval}}
+      period: {{period}}
+      delay: {{delay}}
+      discovery:
+        filters:
+          namespace: "AWS/NetworkELB"
+        limit: {{autodiscover_limit}}
+        recently_active: true
+{{#if autodiscover_aggregation}}
+        stats:
+{{#each autodiscover_aggregation}}
+          - "{{this}}"
+{{/each}}
+{{/if}}
+
+processors:
+  resourcedetection/system:
+    detectors: ["system"]
+    system:
+      hostname_sources: ["os"]
+      resource_attributes:
+        host.name:
+          enabled: true
+        host.id:
+          enabled: false
+
+service:
+  pipelines:
+    metrics:
+      processors:
+        - resourcedetection/system
