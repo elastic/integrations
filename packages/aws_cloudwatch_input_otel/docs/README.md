@@ -112,6 +112,13 @@ Use credentials scoped to read-only CloudWatch access wherever possible.
 
 For the complete list of metrics available in each namespace, see the [Amazon CloudWatch metrics and dimensions reference](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CW_Support_For_AWS.html).
 
+## Known limitations
+
+- **Data arrives with a delay.** CloudWatch publishes metrics a few minutes after they are recorded, so the integration requests each time window after the **Delay** (5 minutes by default) and polls once per **Collection Interval**. With the defaults, a data point reaches Elasticsearch about 5 to 10 minutes after its timestamp.
+- **No backfill.** The integration doesn't track what it has already collected. Data points from periods when it isn't running, for example during an outage or a restart that takes longer than one **Collection Interval**, are not collected afterwards, even though CloudWatch still holds them.
+- **Overlaps after a restart.** After a quick restart, the first poll can re-read up to one **Collection Interval** of data points that were already collected. On Elastic Managed deployments these data points are stored a second time, so sums and counts over those few minutes can be slightly higher.
+- **No dashboard for AWS Classic ELB.** Metrics from the `AWS/ELB` namespace are collected, but no prebuilt dashboard is available for them.
+
 ## Troubleshooting
 
 ### No metrics appear
@@ -119,7 +126,9 @@ For the complete list of metrics available in each namespace, see the [Amazon Cl
 1. Confirm the AWS Region matches where your resources are running.
 2. Verify the credentials are valid and not expired (temporary credentials require a session token).
 3. Ensure the credentials have `cloudwatch:ListMetrics` and `cloudwatch:GetMetricData` permissions.
-4. Allow time for the first collection cycle to complete, and remember that CloudWatch publishes metrics with a short delay.
+4. Allow 5 to 10 minutes for the first data points to arrive (see [Known limitations](#known-limitations)).
+
+Collection errors, such as invalid or expired credentials or missing permissions, don't change the integration's status in Fleet, which keeps showing it as healthy. If no data arrives, work through the checks above.
 
 ### Authentication errors
 
