@@ -1,0 +1,16 @@
+wait_for_data_timeout: 15s
+input: cel
+service: stamus_networks-host-insights-refresh-mock
+vars:
+  url: http://{{Hostname}}:{{Port}}
+  api_token: test-token
+data_stream:
+  vars:
+    interval: 1s
+    page_size: 2
+    refresh_interval: 3s
+assert:
+  # The mock returns one unchanged host on every poll. The first observation emits
+  # immediately, subsequent polls are suppressed, and the same host is emitted again
+  # once the bounded refresh interval elapses.
+  hit_count: 2
