@@ -201,11 +201,11 @@ program: |-
                                 get_request(stats_url).with({ "Header": { "Authorization": ["ApiKey " + cand_keys[2]] } }).do_request().as(r2,
                                   (r2.StatusCode == 200) ?
                                     { "ok": true, "body": bytes(r2.Body).decode_json(), "resp": r2 }
-                                  : { "ok": false, "body": {}, "resp": r2 }
+                                  : { "ok": false, "body": dyn({}), "resp": r2 }
                                 )
-                              : { "ok": false, "body": {}, "resp": r1 })
+                              : { "ok": false, "body": dyn({}), "resp": r1 })
                             )
-                          : { "ok": false, "body": {}, "resp": r0 })
+                          : { "ok": false, "body": dyn({}), "resp": r0 })
                         ).as(harvest,
                           (!harvest.ok) ?
                             [dyn({
@@ -216,36 +216,40 @@ program: |-
                               },
                             })]
                           : (!has(harvest.body.nodes) || harvest.body.nodes == null) ? [] :
-                            harvest.body.nodes.keys().map(nid,
-                              harvest.body.nodes[nid].as(nd,
-                                dyn({
-                                  "doc_type": "node_sample",
-                                  "deployment_name": string(t.name),
-                                  "elasticsearch": {
-                                    "cluster": { "name": tid },
-                                    "node": {
-                                      "name": (has(nd.name) && nd.name != null) ? string(nd.name) : string(nid),
-                                      "roles": (has(nd.roles) && nd.roles != null) ? nd.roles.map(r, string(r)) : ["data"],
-                                      "stats": {
-                                        "jvm": {
-                                          "mem": {
-                                            "heap": {
-                                              "used": {
-                                                "pct": (has(nd.jvm) && nd.jvm != null && has(nd.jvm.mem) && nd.jvm.mem != null && has(nd.jvm.mem.heap_used_percent) && nd.jvm.mem.heap_used_percent != null) ? double(nd.jvm.mem.heap_used_percent) : 0.0,
+                            ((has(harvest.body.nodes) && harvest.body.nodes != null) ? harvest.body.nodes : dyn({})).as(nodes_obj,
+                              nodes_obj.keys().map(nid,
+                                string(nid).as(node_id,
+                                nodes_obj[nid].as(nd,
+                                  dyn({
+                                    "doc_type": "node_sample",
+                                    "deployment_name": string(t.name),
+                                    "elasticsearch": {
+                                      "cluster": { "name": tid },
+                                      "node": {
+                                        "id": node_id,
+                                        "name": (has(nd.name) && nd.name != null) ? string(nd.name) : node_id,
+                                        "roles": (has(nd.roles) && nd.roles != null) ? nd.roles.map(r, string(r)) : ["data"],
+                                        "stats": {
+                                          "jvm": {
+                                            "mem": {
+                                              "heap": {
+                                                "used": {
+                                                  "pct": (has(nd.jvm) && nd.jvm != null && has(nd.jvm.mem) && nd.jvm.mem != null && has(nd.jvm.mem.heap_used_percent) && nd.jvm.mem.heap_used_percent != null) ? double(nd.jvm.mem.heap_used_percent) : 0.0,
+                                                },
                                               },
                                             },
                                           },
-                                        },
-                                        "fs": {
-                                          "total": {
-                                            "total_in_bytes": (has(nd.fs) && nd.fs != null && has(nd.fs.total) && nd.fs.total != null && has(nd.fs.total.total_in_bytes) && nd.fs.total.total_in_bytes != null) ? int(nd.fs.total.total_in_bytes) : 0,
-                                            "available_in_bytes": (has(nd.fs) && nd.fs != null && has(nd.fs.total) && nd.fs.total != null && has(nd.fs.total.available_in_bytes) && nd.fs.total.available_in_bytes != null) ? int(nd.fs.total.available_in_bytes) : 0,
+                                          "fs": {
+                                            "total": {
+                                              "total_in_bytes": (has(nd.fs) && nd.fs != null && has(nd.fs.total) && nd.fs.total != null && has(nd.fs.total.total_in_bytes) && nd.fs.total.total_in_bytes != null) ? int(nd.fs.total.total_in_bytes) : 0,
+                                              "available_in_bytes": (has(nd.fs) && nd.fs != null && has(nd.fs.total) && nd.fs.total != null && has(nd.fs.total.available_in_bytes) && nd.fs.total.available_in_bytes != null) ? int(nd.fs.total.available_in_bytes) : 0,
+                                            },
                                           },
                                         },
                                       },
                                     },
-                                  },
-                                })
+                                  })
+                                ))
                               )
                             )
                         )

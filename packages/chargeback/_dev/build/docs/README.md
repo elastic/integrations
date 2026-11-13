@@ -14,9 +14,9 @@ The Chargeback integration assists organizations in addressing a crucial questio
 
 > **"How is your organization consuming the Elastic solution, and to which tenants can you allocate these costs?"**
 
-The integration provides a breakdown of chargeable units (ECU/ERU) per deployment, data tier, data stream, and day.
+The integration provides a breakdown of chargeable units (ECU or `mERU`) per deployment, data tier, data stream, and day.
 
-Chargeback costs are presented based on a configured rate and unit, used to convert raw consumption (ECU or ERU) into your preferred currency (for example `EUR` at a rate of `0.85` per chargeable unit).
+Chargeback costs are presented based on a configured rate and unit, used to convert raw consumption (ECU for Elastic Cloud or `mERU` for On-Premises Billing) into your preferred currency (for example `EUR` at `0.85` per ECU or `0.00085` per `mERU`).
 
 ## Requirements
 
@@ -49,7 +49,7 @@ POST /_aliases
 
 **Data flow:**
 1. Elastic Agent collects billing into `metrics-chargeback.billing-*`, index/tier usage into `metrics-chargeback.usage-*`, and node stats into `metrics-chargeback.node_stats-*` (alongside On-Premises Billing or any existing monitoring streams).
-2. Chargeback continuous transforms (`5m` configuration sync and `60m` billing, credit commitment, usage, and utilization rollups) aggregate and enrich this telemetry into eight `lookup`-mode indices and one credit-commitment compatibility index.
+2. Chargeback continuous transforms (`5m` configuration sync and `60m` billing, credit commitment, usage, and utilization rollups) aggregate and enrich this telemetry into nine `lookup`-mode indices.
 3. Chargeback dashboards (and optional stock dashboards) query the lookup indices via ES|QL and Lens.
 
 ## Configuration
@@ -88,7 +88,7 @@ POST chargeback_conf_lookup/_update/config
 **Elastic Cloud Daily Billing & Rate Settings (`chargeback.billing`):**
 - **Billing Lookbehind Days (`lookbehind`)**: Historical days backfilled on initial install (default: `60`).
 - **Currency Unit (`currency_unit`)**: Target display currency code, for example `"EUR"`, `"USD"`, `"GBP"`, `"ZAR"` (default: `"EUR"`).
-- **Chargeable Unit Rate (`unit_rate`)**: Monetary value per chargeable unit (ECU/ERU), for example `0.85`.
+- **Chargeable Unit Rate (`unit_rate`)**: Monetary value per chargeable unit: per ECU for Elastic Cloud billing, or per milli-ERU (`mERU`) when consuming the On-Premises Billing producer (for example `0.85` per ECU or `0.00085` per `mERU`).
 - **Configuration Effective Start Date (Optional) (`config_effective_from`)**: Optional ISO-8601 UTC start timestamp (for example `2026-01-01T00:00:00Z`) applied to `_id: config` when preserving earlier non-overlapping historical rate windows in `chargeback_conf_lookup`.
 - **Collect ESS Credit Commitment Data (for stock ESS Billing Credits dashboard) (`collect_ess_credits`)**: Pulls daily organization credit commitment snapshots into `metrics-chargeback.billing-*` for the opt-in stock **[Metrics ESS Billing] Credits dashboard** alias (default: `false`).
 
