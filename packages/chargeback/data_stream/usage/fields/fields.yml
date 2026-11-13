@@ -1,3 +1,6 @@
+- name: doc_type
+  type: keyword
+  description: Chargeback usage event record type (index_usage, config_snapshot).
 - name: deployment_name
   type: keyword
   description: Human-readable deployment or Serverless project name.
@@ -16,24 +19,42 @@
 - name: elasticsearch.index.tier_preference
   type: keyword
   description: Raw index.routing.allocation.include._tier_preference setting.
+- name: elasticsearch.index.creation_date
+  type: date
+  description: Index creation timestamp reported by Elasticsearch.
 - name: elasticsearch.index.primaries.docs.count
   type: long
   description: Primary document count for the index.
+- name: elasticsearch.index.primaries.docs.count_delta
+  type: long
+  description: Daily change in primary document count computed from successive observations.
 - name: elasticsearch.index.primaries.store.total_data_set_size_in_bytes
   type: long
   description: Primary dataset size in bytes.
+- name: elasticsearch.index.primaries.store.total_data_set_size_in_bytes_delta
+  type: long
+  description: Daily change in primary dataset size in bytes computed from successive observations.
 - name: elasticsearch.index.total.store.size_in_bytes
   type: long
   description: Total shard store size in bytes.
 - name: elasticsearch.index.total.indexing.index_time_in_millis
   type: long
-  description: Cumulative/daily indexing time in milliseconds.
+  description: Daily reset-aware indexing time in milliseconds.
+- name: elasticsearch.index.total.indexing.index_time_in_millis_delta
+  type: long
+  description: Daily reset-aware indexing time delta in milliseconds.
 - name: elasticsearch.index.total.search.query_time_in_millis
   type: long
-  description: Cumulative/daily search query time in milliseconds.
+  description: Daily reset-aware search query time in milliseconds.
+- name: elasticsearch.index.total.search.query_time_in_millis_delta
+  type: long
+  description: Daily reset-aware search query time delta in milliseconds.
 - name: elasticsearch.index.total.search.query_total
   type: long
-  description: Cumulative/daily search query count.
+  description: Observed or daily search query count.
+- name: elasticsearch.index.total.search.query_total_delta
+  type: long
+  description: Daily reset-aware search query count delta.
 - name: conf_indexing_weight
   type: long
   description: Configured blended indexing weight from Fleet Usage data stream settings.
@@ -43,12 +64,6 @@
 - name: conf_storage_weight
   type: long
   description: Configured blended storage weight from Fleet Usage data stream settings.
-- name: conf_memory_cost_weight
-  type: long
-  description: Configured memory split display weight from Fleet Usage data stream settings.
-- name: conf_storage_cost_weight
-  type: long
-  description: Configured storage split display weight from Fleet Usage data stream settings.
 - name: event.ingested
   type: date
   description: Ingest pipeline execution timestamp.

@@ -1,20 +1,40 @@
 ---
-description: 'Chargeback: Set correlation keys, blended calculation labels, and monitoring-indices symlink fields.'
+description: 'Chargeback: Set correlation keys, blended calculation labels, and monitoring-indices compatibility fields.'
 processors:
   - script:
       ignore_failure: true
       lang: painless
       source: |
+        Map chosen = ctx;
+        if (ctx.native instanceof Map && ctx.native.doc_cnt instanceof Number && ((Number)ctx.native.doc_cnt).longValue() > 0L) {
+          chosen = ctx.native;
+        } else if (ctx.legacy instanceof Map) {
+          chosen = ctx.legacy;
+        }
+        if (chosen != ctx) {
+          for (def entry : chosen.entrySet()) {
+            String k = entry.getKey().toString();
+            if (k != 'doc_cnt') {
+              ctx[k] = entry.getValue();
+            }
+          }
+        }
+        ctx.remove('native');
+        ctx.remove('legacy');
+
         if (ctx.cluster_name != null) {
           ctx.deployment_id = ctx.cluster_name;
         } else if (ctx.elasticsearch?.cluster?.name != null) {
           ctx.deployment_id = ctx.elasticsearch.cluster.name;
         }
+        long bucketTsMillis = -1L;
         if (ctx['@timestamp'] != null && ctx.deployment_id != null) {
           def rawTs = ctx['@timestamp'];
-          def date = (rawTs instanceof Number)
-            ? Instant.ofEpochMilli(((Number)rawTs).longValue()).atZone(ZoneOffset.UTC).toLocalDate().toString()
-            : ZonedDateTime.parse(rawTs.toString()).toLocalDate().toString();
+          Instant tsInst = (rawTs instanceof Number)
+            ? Instant.ofEpochMilli(((Number)rawTs).longValue())
+            : ZonedDateTime.parse(rawTs.toString()).toInstant();
+          bucketTsMillis = tsInst.toEpochMilli();
+          String date = tsInst.atZone(ZoneOffset.UTC).toLocalDate().toString();
           ctx.composite_key = date + '_' + ctx.deployment_id;
 
           if (ctx.tier != null) {
@@ -27,7 +47,7 @@ processors:
         }
 
         // Parse Fleet data stream naming: <type>-<dataset>-<namespace>
-        // first segment → ds_type; last segment → ds_namespace; else other
+        // first segment -> ds_type; last segment -> ds_namespace; else other
         if (ctx.datastream != null && ctx.datastream != '') {
           def parts = ctx.datastream.splitOnToken('-');
           if (parts.length >= 2) {
@@ -42,7 +62,7 @@ processors:
           ctx.ds_namespace = 'other';
         }
 
-        // Populate Elasticsearch Consumption (monitoring-indices) symlink fields on tier_and_datastream rows
+        // Populate Elasticsearch Consumption (monitoring-indices) compatibility fields on tier_and_datastream rows
         if (ctx.tier_and_datastream_sum_store_size != null && ctx.datastream != null && ctx.datastream != '') {
           String displayCluster = ctx.cluster_name != null ? ctx.cluster_name.toString() : 'unknown';
           if (ctx.cluster_display_name instanceof Map) {
@@ -64,63 +84,78 @@ processors:
           long idxTime = ctx.tier_and_datastream_sum_indexing_time instanceof Number ? ((Number)ctx.tier_and_datastream_sum_indexing_time).longValue() : 0L;
           long qryTime = ctx.tier_and_datastream_sum_query_time instanceof Number ? ((Number)ctx.tier_and_datastream_sum_query_time).longValue() : 0L;
           long docsCnt = ctx.tier_and_datastream_sum_docs_count instanceof Number ? ((Number)ctx.tier_and_datastream_sum_docs_count).longValue() : 0L;
-          if (docsCnt <= 0L && dsBytes > 0L) {
-            docsCnt = dsBytes > 1024L ? (dsBytes / 1024L) : 1L;
-          }
           long qryCnt = ctx.tier_and_datastream_sum_query_total instanceof Number ? ((Number)ctx.tier_and_datastream_sum_query_total).longValue() : 0L;
-          if (qryCnt <= 0L && qryTime > 0L) {
-            qryCnt = qryTime > 5L ? (qryTime / 5L) : 1L;
+          long deltaCount = ctx.delta_doc_count instanceof Number ? ((Number)ctx.delta_doc_count).longValue() : 0L;
+
+          Map docsMap = ['count': docsCnt];
+          Map priStoreMap = ['total_data_set_size_in_bytes': dsBytes];
+          Map indexingMap = ['index_time_in_millis': idxTime];
+          Map searchMap = [
+            'query_time_in_millis': qryTime,
+            'query_total': qryCnt
+          ];
+
+          if (deltaCount > 0L) {
+            if (ctx.sum_docs_delta instanceof Number) {
+              docsMap['count_delta'] = ((Number)ctx.sum_docs_delta).longValue();
+            }
+            if (ctx.sum_dset_delta instanceof Number) {
+              priStoreMap['total_data_set_size_in_bytes_delta'] = ((Number)ctx.sum_dset_delta).longValue();
+            }
+            if (ctx.sum_idx_time_delta instanceof Number) {
+              indexingMap['index_time_in_millis_delta'] = ((Number)ctx.sum_idx_time_delta).longValue();
+            }
+            if (ctx.sum_qry_time_delta instanceof Number) {
+              searchMap['query_time_in_millis_delta'] = ((Number)ctx.sum_qry_time_delta).longValue();
+            }
+            if (ctx.sum_qry_total_delta instanceof Number) {
+              searchMap['query_total_delta'] = ((Number)ctx.sum_qry_total_delta).longValue();
+            }
           }
 
-          long ageDays = 1L;
-          if (ctx['@timestamp'] != null && ctx._ingest?.timestamp != null) {
-            long tsMillis = (ctx['@timestamp'] instanceof Number) ? ((Number)ctx['@timestamp']).longValue() : ZonedDateTime.parse(ctx['@timestamp'].toString()).toInstant().toEpochMilli();
-            long nowMillis = (ctx._ingest.timestamp instanceof Number) ? ((Number)ctx._ingest.timestamp).longValue() : ZonedDateTime.parse(ctx._ingest.timestamp.toString()).toInstant().toEpochMilli();
-            long diffDays = (nowMillis - tsMillis) / 86400000L;
-            if (diffDays >= 1L && diffDays < 365L) {
-              ageDays = diffDays;
-            }
+          Map indexMap = [
+            'name': ctx.datastream,
+            'datastream': ctx.datastream,
+            'tier': ctx.tier != null ? ctx.tier : 'hot/content',
+            'primaries': [
+              'docs': docsMap,
+              'store': priStoreMap
+            ],
+            'total': [
+              'store': [
+                'size_in_bytes': storeBytes
+              ],
+              'indexing': indexingMap,
+              'search': searchMap
+            ]
+          ];
+
+          def rawMinCdate = ctx.min_creation_date;
+          if (rawMinCdate instanceof Map) {
+            rawMinCdate = rawMinCdate.value_as_string != null ? rawMinCdate.value_as_string : rawMinCdate.value;
+          }
+          if (rawMinCdate != null && rawMinCdate.toString() != '') {
+            try {
+              long createdMillis = (rawMinCdate instanceof Number)
+                ? ((Number)rawMinCdate).longValue()
+                : ZonedDateTime.parse(rawMinCdate.toString()).toInstant().toEpochMilli();
+              indexMap['creation_date'] = Instant.ofEpochMilli(createdMillis).toString();
+              if (bucketTsMillis > 0L) {
+                long ageDays = (bucketTsMillis - createdMillis) / 86400000L;
+                indexMap['age'] = ageDays > 0L ? ageDays : 0L;
+              }
+            } catch (Exception e) {}
           }
 
           ctx.elasticsearch = [
             'cluster': [
               'name': displayCluster
             ],
-            'index': [
-              'name': ctx.datastream,
-              'datastream': ctx.datastream,
-              'tier': ctx.tier != null ? ctx.tier : 'hot/content',
-              'age': ageDays,
-              'primaries': [
-                'docs': [
-                  'count': docsCnt,
-                  'count_delta': docsCnt > 7L ? (docsCnt / 7L) : (docsCnt > 0L ? 1L : 0L)
-                ],
-                'store': [
-                  'total_data_set_size_in_bytes': dsBytes,
-                  'total_data_set_size_in_bytes_delta': dsBytes > 7L ? (dsBytes / 7L) : dsBytes
-                ]
-              ],
-              'total': [
-                'store': [
-                  'size_in_bytes': storeBytes
-                ],
-                'indexing': [
-                  'index_time_in_millis': idxTime,
-                  'index_time_in_millis_delta': idxTime
-                ],
-                'search': [
-                  'query_time_in_millis': qryTime,
-                  'query_time_in_millis_delta': qryTime > 0L ? qryTime : qryCnt * 2L,
-                  'query_total': qryCnt,
-                  'query_total_delta': qryCnt
-                ]
-              ]
-            ]
+            'index': indexMap
           ];
-          ctx.remove('cluster_display_name');
-          ctx.remove('tier_and_datastream_sum_docs_count');
-          ctx.remove('tier_and_datastream_sum_query_total');
+          for (String tmp : ['cluster_display_name', 'tier_and_datastream_sum_docs_count', 'tier_and_datastream_sum_query_total', 'min_creation_date', 'delta_doc_count', 'sum_docs_delta', 'sum_dset_delta', 'sum_idx_time_delta', 'sum_qry_time_delta', 'sum_qry_total_delta']) {
+            ctx.remove(tmp);
+          }
         }
   - set:
       field: event.ingested

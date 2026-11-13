@@ -1,14 +1,21 @@
-description: Aggregates daily allocatable data-tier capacity (chargeable units) per deployment for realized-cost allocation.
+description: Aggregates daily allocatable data-tier and Serverless workload capacity (chargeable units) per deployment for realized-cost allocation.
 source:
   index:
     - metrics-chargeback.billing-*
-    - metrics-ess_billing.billing-onprem*
+    - metrics-ess_billing.billing-*
+    - -metrics-ess_billing.billing-chargeback
+    - -chargeback_lookup.*
   query:
     bool:
       must:
         - range:
             ess.billing.total_ecu:
               gt: 0
+      must_not:
+        - terms:
+            doc_type:
+              - config_snapshot
+              - credit_line_item
       should:
         - term:
             ess.billing.sku: onprem_node
@@ -31,21 +38,91 @@ source:
                     - wildcard:
                         ess.billing.sku: "*.es.datacontent.*"
                   minimum_should_match: 1
+        # Serverless projects (elasticsearch, observability, security, vectordb) bill VCU,
+        # solution ingest, and retained storage rather than ECH *.es.data*.* node SKUs.
+        # Non-allocatable platform/support/transfer/snapshot SKUs (ML VCU, Synthetics,
+        # inference, support, egress, snapshots) are explicitly excluded.
         - bool:
             must:
-              - term:
-                  ess.billing.deployment_type: elasticsearch
+              - terms:
+                  ess.billing.deployment_type:
+                    - elasticsearch
+                    - observability
+                    - security
+                    - vectordb
               - bool:
                   should:
                     - wildcard:
-                        ess.billing.sku: "elasticsearch.*-search-vcu_*"
+                        ess.billing.sku: "*search-vcu*"
                     - wildcard:
-                        ess.billing.sku: "elasticsearch.*-ingest-vcu_*"
+                        ess.billing.sku: "*ingest-vcu*"
                     - wildcard:
-                        ess.billing.sku: "elasticsearch.retained_*"
+                        ess.billing.sku: "*retained*"
+                    - wildcard:
+                        ess.billing.sku: "*retention*"
+                    - wildcard:
+                        ess.billing.sku: "observability.*"
+                    - wildcard:
+                        ess.billing.sku: "*.observability.*"
+                    - wildcard:
+                        ess.billing.sku: "security.*"
+                    - wildcard:
+                        ess.billing.sku: "*.security.*"
+                    - wildcard:
+                        ess.billing.sku: "vectordb.*"
+                    - wildcard:
+                        ess.billing.sku: "*.vectordb.*"
                   minimum_should_match: 1
+            must_not:
+              - wildcard:
+                  ess.billing.sku: "*ml-vcu*"
+              - wildcard:
+                  ess.billing.sku: "*synthetic*"
+              - wildcard:
+                  ess.billing.sku: "*inference*"
+              - wildcard:
+                  ess.billing.sku: "*llm*"
+              - wildcard:
+                  ess.billing.sku: "*agent-builder*"
+              - wildcard:
+                  ess.billing.sku: "*.eis*"
+              - wildcard:
+                  ess.billing.sku: "*support*"
+              - wildcard:
+                  ess.billing.sku: "*data-transfer*"
+              - wildcard:
+                  ess.billing.sku: "*data-out*"
+              - wildcard:
+                  ess.billing.sku: "*data-in*"
+              - wildcard:
+                  ess.billing.sku: "*egress*"
+              - wildcard:
+                  ess.billing.sku: "*ingress*"
+              - wildcard:
+                  ess.billing.sku: "*snapshot*"
+              - wildcard:
+                  ess.billing.sku: "*workflow*"
+              - wildcard:
+                  ess.billing.sku: "*cross-project*"
       minimum_should_match: 1
   runtime_mappings:
+    cb_sync_time:
+      type: date
+      script:
+        source: |
+          if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+            emit(doc['event.ingested'].value.toInstant().toEpochMilli());
+            return;
+          }
+          if (params._source?.event?.ingested != null) {
+            try {
+              emit(ZonedDateTime.parse(params._source.event.ingested.toString()).toInstant().toEpochMilli());
+              return;
+            } catch (Exception e) {}
+          }
+          if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+            emit(doc['@timestamp'].value.toInstant().toEpochMilli());
+          }
     deployment_group:
       type: keyword
       script:
@@ -73,7 +150,7 @@ dest:
 frequency: 5m
 sync:
   time:
-    field: event.ingested
+    field: cb_sync_time
     delay: 60s
 pivot:
   group_by:
@@ -81,25 +158,62 @@ pivot:
       date_histogram:
         field: "@timestamp"
         calendar_interval: 1d
-    deployment_group:
-      terms:
-        field: deployment_group
     deployment_id:
       terms:
         field: ess.billing.deployment_id
-    deployment_name:
-      terms:
-        field: ess.billing.deployment_name
   aggregations:
-    data_tier_capacity_ecu:
-      sum:
-        field: ess.billing.total_ecu
-    data_tier_capacity_hours:
-      max:
-        field: ess.billing.quantity.value
-    data_tier_ram_per_zone_mb:
-      max:
-        field: ess.billing.ram_per_zone
+    native:
+      filter:
+        term:
+          data_stream.dataset: chargeback.billing
+      aggs:
+        doc_cnt:
+          value_count:
+            field: "@timestamp"
+        data_tier_capacity_ecu:
+          sum:
+            field: ess.billing.total_ecu
+        data_tier_capacity_hours:
+          max:
+            field: ess.billing.quantity.value
+        data_tier_ram_per_zone_mb:
+          max:
+            field: ess.billing.ram_per_zone
+        deployment_group:
+          terms:
+            field: deployment_group
+            size: 1
+        deployment_name:
+          terms:
+            field: ess.billing.deployment_name
+            size: 1
+    legacy:
+      filter:
+        bool:
+          must_not:
+            - term:
+                data_stream.dataset: chargeback.billing
+      aggs:
+        doc_cnt:
+          value_count:
+            field: "@timestamp"
+        data_tier_capacity_ecu:
+          sum:
+            field: ess.billing.total_ecu
+        data_tier_capacity_hours:
+          max:
+            field: ess.billing.quantity.value
+        data_tier_ram_per_zone_mb:
+          max:
+            field: ess.billing.ram_per_zone
+        deployment_group:
+          terms:
+            field: deployment_group
+            size: 1
+        deployment_name:
+          terms:
+            field: ess.billing.deployment_name
+            size: 1
 settings:
   deduce_mappings: false
   unattended: true

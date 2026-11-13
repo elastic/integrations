@@ -9,48 +9,61 @@ processors:
       ignore_failure: true
       lang: painless
       source: |
+        Map chosen = ctx;
+        if (ctx.native instanceof Map && ctx.native.doc_cnt instanceof Number && ((Number)ctx.native.doc_cnt).longValue() > 0L) {
+          chosen = ctx.native;
+        } else if (ctx.legacy instanceof Map) {
+          chosen = ctx.legacy;
+        }
+        if (chosen != ctx) {
+          if (chosen.containsKey('heap_used_pct_p95')) { ctx.heap_used_pct_p95 = chosen.heap_used_pct_p95; }
+          if (chosen.containsKey('disk_used_pct_p95')) { ctx.disk_used_pct_p95 = chosen.disk_used_pct_p95; }
+        }
+        ctx.remove('native');
+        ctx.remove('legacy');
+
         if (ctx['@timestamp'] != null && ctx.deployment_id != null) {
-            def rawTs = ctx['@timestamp'];
-            String dateStr = (rawTs instanceof Number)
-              ? Instant.ofEpochMilli(((Number)rawTs).longValue()).atZone(ZoneOffset.UTC).toLocalDate().toString()
-              : ZonedDateTime.parse(rawTs.toString()).toLocalDate().toString();
-            ctx.composite_key = dateStr + '_' + ctx.deployment_id;
+          def rawTs = ctx['@timestamp'];
+          String dateStr = (rawTs instanceof Number)
+            ? Instant.ofEpochMilli(((Number)rawTs).longValue()).atZone(ZoneOffset.UTC).toLocalDate().toString()
+            : ZonedDateTime.parse(rawTs.toString()).toLocalDate().toString();
+          ctx.composite_key = dateStr + '_' + ctx.deployment_id;
         }
         if (ctx.heap_used_pct_p95 != null) {
-            def heap = ctx.heap_used_pct_p95;
-            def v = null;
-            if (heap instanceof Map) {
-              if (heap.values != null) {
-                v = heap.values['95.0'];
-                if (v == null) { v = heap.values['95']; }
-              }
-              if (v == null) { v = heap['95.0']; }
-              if (v == null) { v = heap['95']; }
-              // Map present but no scalar found — remove to avoid double mapping conflict
-              if (v == null) { ctx.remove('heap_used_pct_p95'); }
+          def heap = ctx.heap_used_pct_p95;
+          def v = null;
+          if (heap instanceof Map) {
+            if (heap.values != null) {
+              v = heap.values['95.0'];
+              if (v == null) { v = heap.values['95']; }
             }
-            if (v != null) {
-              ctx.heap_used_pct_p95 = v;
-              ctx.memory_utilization = v / 100.0;
-            }
+            if (v == null) { v = heap['95.0']; }
+            if (v == null) { v = heap['95']; }
+            // Map present but no scalar found — remove to avoid double mapping conflict
+            if (v == null) { ctx.remove('heap_used_pct_p95'); }
+          }
+          if (v != null) {
+            ctx.heap_used_pct_p95 = v;
+            ctx.memory_utilization = v / 100.0;
+          }
         }
         if (ctx.disk_used_pct_p95 != null) {
-            def disk = ctx.disk_used_pct_p95;
-            def v = null;
-            if (disk instanceof Map) {
-              if (disk.values != null) {
-                v = disk.values['95.0'];
-                if (v == null) { v = disk.values['95']; }
-              }
-              if (v == null) { v = disk['95.0']; }
-              if (v == null) { v = disk['95']; }
-              // Map present but no scalar found — remove to avoid double mapping conflict
-              if (v == null) { ctx.remove('disk_used_pct_p95'); }
+          def disk = ctx.disk_used_pct_p95;
+          def v = null;
+          if (disk instanceof Map) {
+            if (disk.values != null) {
+              v = disk.values['95.0'];
+              if (v == null) { v = disk.values['95']; }
             }
-            if (v != null) {
-              ctx.disk_used_pct_p95 = v;
-              ctx.storage_utilization = v / 100.0;
-            }
+            if (v == null) { v = disk['95.0']; }
+            if (v == null) { v = disk['95']; }
+            // Map present but no scalar found — remove to avoid double mapping conflict
+            if (v == null) { ctx.remove('disk_used_pct_p95'); }
+          }
+          if (v != null) {
+            ctx.disk_used_pct_p95 = v;
+            ctx.storage_utilization = v / 100.0;
+          }
         }
   - set:
       field: event.ingested

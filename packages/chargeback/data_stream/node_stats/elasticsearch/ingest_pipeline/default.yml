@@ -2,10 +2,10 @@
 description: "Ingest pipeline for Chargeback self-collected node utilization metrics."
 processors:
   - drop:
-      if: "ctx.elasticsearch?.node?.roles == null && ctx.error?.message == null"
+      if: "ctx.elasticsearch?.node?.roles == null && ctx.doc_type != 'config_snapshot' && ctx.error?.message == null"
   - terminate:
       tag: data_collection_error
-      if: ctx.error?.message != null && ctx.elasticsearch?.node?.roles == null
+      if: ctx.error?.message != null && ctx.elasticsearch?.node?.roles == null && ctx.doc_type != 'config_snapshot'
       description: Terminate early on collection error documents.
   - set:
       field: event.ingested

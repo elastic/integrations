@@ -1,11 +1,30 @@
-description: Syncs chargeback configuration lookup index (_id "config") from per-data-stream Fleet UI settings across billing, usage, and node_stats streams.
+description: Syncs chargeback configuration lookup index from native Fleet configuration snapshot events while preserving manual or historical periods when Fleet sync is not active.
 source:
   index:
     - metrics-chargeback.billing-*
     - metrics-chargeback.usage-*
     - metrics-chargeback.node_stats-*
-    - metrics-ess_billing.billing-onprem*
+    - metrics-ess_billing.billing-*
+    - -metrics-ess_billing.billing-chargeback
+    - -chargeback_lookup.*
   runtime_mappings:
+    cb_sync_time:
+      type: date
+      script:
+        source: |
+          if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+            emit(doc['event.ingested'].value.toInstant().toEpochMilli());
+            return;
+          }
+          if (params._source?.event?.ingested != null) {
+            try {
+              emit(ZonedDateTime.parse(params._source.event.ingested.toString()).toInstant().toEpochMilli());
+              return;
+            } catch (Exception e) {}
+          }
+          if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+            emit(doc['@timestamp'].value.toInstant().toEpochMilli());
+          }
     config_join_key:
       type: keyword
       script:
@@ -16,7 +35,7 @@ dest:
 frequency: 5m
 sync:
   time:
-    field: event.ingested
+    field: cb_sync_time
     delay: 60s
 pivot:
   group_by:
@@ -26,38 +45,56 @@ pivot:
   aggregations:
     billing_conf:
       filter:
-        terms:
-          data_stream.dataset:
-            - chargeback.billing
-            - ess_billing.billing
+        bool:
+          filter:
+            - term:
+                data_stream.dataset: chargeback.billing
+            - term:
+                doc_type: config_snapshot
       aggs:
+        doc_cnt:
+          value_count:
+            field: "@timestamp"
         latest:
           top_metrics:
             metrics:
               - field: conf_chargeable_unit_rate
               - field: conf_chargeable_unit_rate_unit
+              - field: conf_effective_from
             sort:
-              event.ingested: desc
+              cb_sync_time: desc
     usage_conf:
       filter:
-        term:
-          data_stream.dataset: chargeback.usage
+        bool:
+          filter:
+            - term:
+                data_stream.dataset: chargeback.usage
+            - term:
+                doc_type: config_snapshot
       aggs:
+        doc_cnt:
+          value_count:
+            field: "@timestamp"
         latest:
           top_metrics:
             metrics:
               - field: conf_indexing_weight
               - field: conf_query_weight
               - field: conf_storage_weight
-              - field: conf_memory_cost_weight
-              - field: conf_storage_cost_weight
             sort:
-              event.ingested: desc
+              cb_sync_time: desc
     node_stats_conf:
       filter:
-        term:
-          data_stream.dataset: chargeback.node_stats
+        bool:
+          filter:
+            - term:
+                data_stream.dataset: chargeback.node_stats
+            - term:
+                doc_type: config_snapshot
       aggs:
+        doc_cnt:
+          value_count:
+            field: "@timestamp"
         latest:
           top_metrics:
             metrics:
@@ -65,7 +102,7 @@ pivot:
               - field: conf_utilization_storage_weight
               - field: conf_utilization_floor
             sort:
-              event.ingested: desc
+              cb_sync_time: desc
 settings:
   deduce_mappings: false
   unattended: true
