@@ -27,7 +27,7 @@ Chargeback costs are presented based on a configured rate and unit, used to conv
 **Self-contained data collection and legacy coexistence:**
 - Chargeback collects its own billing, index/tier usage, and node utilization telemetry directly via Elastic Agent CEL inputs:
   - `metrics-chargeback.billing-*`: Elastic Cloud Hosted (ECH) and Serverless billing line items across all project types, deployment tags (`chargeback_group:*`), regions, configuration snapshots, and optional organization credit commitments (`collect_ess_credits`).
-  - `metrics-chargeback.usage-*`: Daily reset-aware `_stats`, `_cat/indices`, and `_tier_preference` metrics harvested directly from target clusters via `deployment_api_keys` or `hub_es_url` and `hub_es_api_key`.
+  - `metrics-chargeback.usage-*`: Hourly reset-aware index usage metrics harvested via `/_stats` and `/_settings` (`_tier_preference`, `creation_date`) on ECH and self-managed clusters (`primaries.store.total_data_set_size_in_bytes`) and `/_cat/indices` on Cloud Serverless projects, attributing timestamped counter intervals across UTC days and reporting observation gaps.
   - `metrics-chargeback.node_stats-*`: 15-minute `/_nodes/_all/stats/jvm,fs` samples across data-role nodes for realized capacity utilization scoring.
 - **On-Premises and legacy collector coexistence**: **On-Premises Billing** (`metrics-ess_billing.billing-onprem*`), **ESS Billing** (`metrics-ess_billing.billing-*`), **Elasticsearch** (`monitoring-indices*` and `.monitoring-es-*`), and Cross-Cluster Search (`*:monitoring-indices*` and `*:.monitoring-es-*`) remain supported. When both native `chargeback.*` and legacy streams report the same deployment and UTC day, Chargeback transforms prefer the native `chargeback.*` bucket so totals are not double-counted.
 
@@ -48,7 +48,7 @@ POST /_aliases
 
 **Data flow:**
 1. Elastic Agent collects billing into `metrics-chargeback.billing-*`, index/tier usage into `metrics-chargeback.usage-*`, and node stats into `metrics-chargeback.node_stats-*` (alongside any existing On-Premises or legacy monitoring streams).
-2. Chargeback continuous transforms (`5m` frequency) aggregate and enrich this telemetry into eight `lookup`-mode indices.
+2. Chargeback continuous transforms (`5m` configuration sync and `60m` billing, usage, and utilization rollups) aggregate and enrich this telemetry into eight `lookup`-mode indices.
 3. Chargeback dashboards (and optional stock dashboards) query the lookup indices via ES|QL and Lens.
 
 ## Configuration
@@ -60,7 +60,7 @@ Credentials, currency settings, optional credit commitments, and cost/utilizatio
 - **Elastic Cloud API Key (`cloud_api_key`)**: Optional API key with **Billing Admin** role and Cloud deployment or Serverless project read access. Leave empty for On-Premises or local Hub-only collection.
 - **Monitoring / Hub Elasticsearch URL and API Key (`hub_es_url`, `hub_es_api_key`)**: Optional direct endpoint and API key for harvesting the local Monitoring, Hub, or On-Premises cluster.
 - **Target Deployment Elasticsearch API Keys (`deployment_api_keys`)**: Optional comma-separated `<deployment_id_or_name>:<encoded_api_key>` entries for direct harvesting of remote ECH deployments or Serverless projects.
-- **Sync Fleet Policy Settings to Configuration Lookup (`sync_fleet_config`)**: Emits lightweight `config_snapshot` events into `chargeback_conf_lookup` (default: `true`). Set to `false` to preserve manual edits or custom multi-period rows in `chargeback_conf_lookup`.
+- **Sync Fleet Policy Settings to Configuration Lookup (`sync_fleet_config`)**: Emits daily `config_snapshot` events into `chargeback_conf_lookup` across whichever streams are enabled (default: `true`). Set to `false` to preserve manual edits or custom multi-period rows in `chargeback_conf_lookup`. On legacy-only (assets-only) installations without a Chargeback Agent policy, dashboards apply default rates and weights automatically, and you can create or update `_id: config` via `POST chargeback_conf_lookup/_update/config` with `"doc_as_upsert": true` (including `config_join_key: "chargeback_config"`, `conf_start_date`, and `conf_end_date` in `"upsert"`).
 
 ### Per-Data-Stream UI Settings
 
@@ -111,7 +111,7 @@ The integration creates eight transforms to aggregate cost and usage data:
 
 **Billing transforms:**
 1. **`billing_cluster_cost`**: aggregates daily chargeable units (ECU/ERU) per deployment and SKU into `chargeback_lookup.dest_billing_cluster_cost-1` (aliased as `chargeback_lookup.billing_cluster_cost`), adding `cost_type`, `cost_category`, `is_allocatable`, and ESS Billing compatibility fields.
-2. **`billing_realized_pool`**: aggregates daily allocatable data-tier capacity per deployment across ECH data tiers, Serverless workload and retained storage SKUs, and On-Premises nodes.
+2. **`billing_realized_pool`**: aggregates daily allocatable data-tier capacity per deployment across ECH data tiers, Serverless workload and retained storage SKUs, and On-Premises nodes into `chargeback_lookup.dest_billing_realized_pool-1` (aliased as `chargeback_lookup.billing_realized_pool`).
 3. **`chargeback_conf_lookup`**: syncs `config_snapshot` events into `chargeback_conf_lookup` (`_id: config`) while preserving manual configuration rows when Fleet sync is inactive.
 
 **Utilization transforms:**
@@ -186,7 +186,7 @@ Two distinct totals appear across the dashboards. Both are valid and intentional
 | Total | Source | Dashboard |
 |---|---|---|
 | **Full deployment bill** | `SUM(total_chargeable_units)` over all SKUs in `chargeback_lookup.billing_cluster_cost` | Billing Components Overview |
-| **Chargeable pool** | `billing_realized_pool_lookup` capacity x utilization score | Usage and Cost Allocation |
+| **Chargeable pool** | `chargeback_lookup.billing_realized_pool` capacity x utilization score | Usage and Cost Allocation |
 
 Do not expect the chargeable pool to equal the full deployment bill. Non-allocatable SKUs (ML, Kibana, transfer, snapshots) appear in the Billing Components Overview only. The utilization discount is not spread to tiers or data streams by design.
 
@@ -227,7 +227,7 @@ For more information, refer to the [Elastic documentation](https://www.elastic.c
 ### Upgrading to 0.6.0
 
 1. Upgrade the Fleet package to **0.6.0**. Kibana requirement remains `^9.2.0`.
-2. `billing_cluster_cost` and `cluster_tier_and_ds_contribution` now write to versioned lookup indices (`chargeback_lookup.dest_billing_cluster_cost-1` aliased as `chargeback_lookup.billing_cluster_cost`, and `chargeback_lookup.dest_cluster_tier_and_datastream_contribution-1` aliased as `chargeback_lookup.cluster_tier_and_datastream_contribution` and `monitoring-indices-chargeback`) so in-place upgrades do not collide with concrete `0.5.0` lookup indices.
+2. `billing_cluster_cost`, `billing_realized_pool`, and `cluster_tier_and_ds_contribution` now write to versioned lookup indices (`chargeback_lookup.dest_billing_cluster_cost-1` aliased as `chargeback_lookup.billing_cluster_cost`, `chargeback_lookup.dest_billing_realized_pool-1` aliased as `chargeback_lookup.billing_realized_pool`, and `chargeback_lookup.dest_cluster_tier_and_datastream_contribution-1` aliased as `chargeback_lookup.cluster_tier_and_datastream_contribution` and `monitoring-indices-chargeback`) so in-place upgrades do not collide with concrete `0.5.0` lookup indices or retain stale `group_by` document IDs.
 3. Existing manual rates and historical effective-date windows in `chargeback_conf_lookup` remain untouched on package upgrade until a **Chargeback** Fleet policy with `sync_fleet_config: true` emits `config_snapshot` events. Before enabling `sync_fleet_config: true` on an installation with customized rates or historical rate periods, copy your active rate and weights into the Fleet policy UI and set **Configuration Effective Start Date** (`config_effective_from`) to the start timestamp of your current open-ended period so earlier closed historical rows do not overlap, or set `sync_fleet_config: false` to continue managing `chargeback_conf_lookup` manually.
 4. Existing **ESS Billing**, **On-Premises Billing**, and **Elasticsearch** monitoring inputs continue to work alongside native `chargeback.*` CEL streams. When both native and legacy sources exist for the same deployment and UTC day, transforms automatically select the native `chargeback.*` bucket to prevent duplicate aggregation.
 

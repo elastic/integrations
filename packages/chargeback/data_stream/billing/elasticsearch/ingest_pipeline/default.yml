@@ -33,10 +33,15 @@ processors:
       ignore_missing: true
       if: "ctx.doc_type == 'credit_line_item'"
       tag: fingerprint_credit_event
+  - set:
+      field: event.dataset
+      value: ess_billing.credits
+      if: "ctx.doc_type == 'credit_line_item'"
+      tag: set_credit_event_dataset
   - terminate:
       tag: credit_line_item_complete
       if: "ctx.doc_type == 'credit_line_item'"
-      description: Credit commitment events retain snapshot @timestamp and ESS credit fields.
+      description: Credit commitment events retain snapshot @timestamp, event.dataset compatibility, and ESS credit fields.
   - date:
       field: ess.billing.from
       target_field: "@timestamp"

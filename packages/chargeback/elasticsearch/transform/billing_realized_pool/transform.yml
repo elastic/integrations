@@ -9,6 +9,9 @@ source:
     bool:
       must:
         - range:
+            "@timestamp":
+              gte: now-366d
+        - range:
             ess.billing.total_ecu:
               gt: 0
       must_not:
@@ -114,12 +117,6 @@ source:
             emit(doc['event.ingested'].value.toInstant().toEpochMilli());
             return;
           }
-          if (params._source?.event?.ingested != null) {
-            try {
-              emit(ZonedDateTime.parse(params._source.event.ingested.toString()).toInstant().toEpochMilli());
-              return;
-            } catch (Exception e) {}
-          }
           if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
             emit(doc['@timestamp'].value.toInstant().toEpochMilli());
           }
@@ -145,9 +142,12 @@ source:
           }
           emit('');
 dest:
-  index: billing_realized_pool_lookup
+  index: chargeback_lookup.dest_billing_realized_pool-1
+  aliases:
+    - alias: chargeback_lookup.billing_realized_pool
+      move_on_creation: true
   pipeline: logs-chargeback.lookup-0.6.0-realized_pool
-frequency: 5m
+frequency: 60m
 sync:
   time:
     field: cb_sync_time

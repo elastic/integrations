@@ -11,7 +11,7 @@ source:
       filter:
         - range:
             "@timestamp":
-              gte: now-90d
+              gte: now-26h
         - exists:
             field: elasticsearch.node.roles
         - terms:
@@ -26,23 +26,6 @@ source:
         - term:
             doc_type: config_snapshot
   runtime_mappings:
-    cb_sync_time:
-      type: date
-      script:
-        source: |
-          if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
-            emit(doc['event.ingested'].value.toInstant().toEpochMilli());
-            return;
-          }
-          if (params._source?.event?.ingested != null) {
-            try {
-              emit(ZonedDateTime.parse(params._source.event.ingested.toString()).toInstant().toEpochMilli());
-              return;
-            } catch (Exception e) {}
-          }
-          if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
-            emit(doc['@timestamp'].value.toInstant().toEpochMilli());
-          }
     cb_cluster_name:
       type: keyword
       script:
@@ -78,11 +61,11 @@ source:
 dest:
   index: cluster_capacity_utilization_lookup
   pipeline: logs-chargeback.lookup-0.6.0-capacity_utilization
-frequency: 5m
+frequency: 60m
 sync:
   time:
-    field: cb_sync_time
-    delay: 60s
+    field: "@timestamp"
+    delay: 1h
 pivot:
   group_by:
     "@timestamp":
