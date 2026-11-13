@@ -83,7 +83,7 @@ The `site` data stream provides site-level metrics from evcc of the following ty
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |  |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |  |
 | error.message | Error message. | match_only_text |  |  |
-| evcc.site.battery.capacity | Home battery capacity, in kWh. | double |  | gauge |
+| evcc.site.battery.capacity | Home battery capacity, in kWh. Only set when every battery has a configured capacity. | double |  | gauge |
 | evcc.site.battery.power | Current home battery power, in watts. Positive values indicate discharging, negative values indicate charging. | double |  | gauge |
 | evcc.site.battery.soc | Home battery state of charge, as a fraction where 1 means 100%. | double | percent | gauge |
 | evcc.site.currency | Currency used for cost and tariff values. | keyword |  |  |
@@ -237,7 +237,7 @@ The `loadpoint` data stream provides one event per evcc loadpoint (charge point)
 | evcc.loadpoint.charger_status_reason | Reason reported by the charger for its current status. | keyword |  |  |
 | evcc.loadpoint.charging | Whether the loadpoint is currently charging. | boolean |  |  |
 | evcc.loadpoint.connected | Whether a vehicle is currently connected to the loadpoint. | boolean |  |  |
-| evcc.loadpoint.connected_duration.sec | Duration a vehicle has been connected to the loadpoint, in seconds. | double |  | gauge |
+| evcc.loadpoint.connected_duration.sec | Duration the current vehicle has been connected to the loadpoint, in seconds. Not set while no vehicle is connected. | double |  | gauge |
 | evcc.loadpoint.effective.limit_soc | Effective vehicle state-of-charge charging limit for this loadpoint, as a fraction where 1 means 100%. | double | percent | gauge |
 | evcc.loadpoint.effective.max_current | Effective maximum charging current for this loadpoint, in amperes. | double |  | gauge |
 | evcc.loadpoint.effective.min_current | Effective minimum charging current for this loadpoint, in amperes. | double |  | gauge |
