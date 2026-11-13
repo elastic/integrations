@@ -1,0 +1,126 @@
+rules:
+  - path: /v1.2/jsonrpc/incidents
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-api-key"
+    request_body: /.*"method":"getBlocklistItems".*"companyId":"eeeeeeeeeeeeeeeeeeeeeeee".*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"blocklist-items","jsonrpc":"2.0","error":{"code":-32001,"message":"Authorization error","data":{"details":"Synthetic application error"}}}'
+  - path: /v1.2/jsonrpc/incidents
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-api-key"
+    request_body: /.*"method":"getBlocklistItems".*"companyId":"ffffffffffffffffffffffff".*/
+    responses:
+      - status_code: 429
+        headers:
+          Content-Type:
+            - "application/json"
+          Retry-After:
+            - "1"
+        body: '{"id":"blocklist-items","jsonrpc":"2.0","error":{"code":-32003,"message":"Too many requests","data":{"details":"Synthetic rate limit"}}}'
+  - path: /v1.2/jsonrpc/incidents
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Authorization:
+        - "Basic dGVzdC1hcGkta2V5Og=="
+      Content-Type:
+        - "application/json"
+    request_body: /.*"method":"getBlocklistItems".*"companyId":"bbbbbbbbbbbbbbbbbbbbbbbb".*"page":1.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"blocklist-items","jsonrpc":"2.0","result":{"total":1,"page":1,"perPage":100,"pagesCount":1,"items":[{"id":"6a71000000000000000000b1","type":"path","source":{"type":"manual","description":"Synthetic Basic authentication rule"},"company":{"id":"bbbbbbbbbbbbbbbbbbbbbbbb","name":"Example Basic Corp"},"owner":{"id":"69e7000000000000000000b1","userName":"basic.user@example.com"},"created":"2026-08-05T09:00:00","details":{"path":"C:\\Program Files\\Example\\basic.exe"}}]}}'
+  - path: /v1.2/jsonrpc/incidents
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-api-key"
+    request_body: /.*"id":"blocklist-items-resume".*"page":1.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ if eq .req_num 1 }}
+          {"id":"blocklist-items-resume","jsonrpc":"2.0","result":{"total":1,"page":1,"perPage":100,"pagesCount":1,"items":[{"id":"6a7100000000000000000004","type":"hash","source":{"type":"MDR","description":"Synthetic resumed snapshot rule"},"company":{"id":"5e4d3c2b1a0987654321fedc","name":"Example Corp"},"owner":{"id":"69e700000000000000000004","userName":"analyst@example.com"},"created":"2026-08-05T10:00:00","details":{"algorithm":"md5","hash":"098f6bcd4621d373cade4e832627b4f6","file":{"name":"resume-test.exe"}}}]}}
+          {{ else }}
+          {"id":"blocklist-items-resume","jsonrpc":"2.0","result":{"total":0,"page":1,"perPage":100,"pagesCount":1,"items":[]}}
+          {{ end }}
+  - path: /v1.2/jsonrpc/incidents
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-api-key"
+    request_body: /.*"id":"blocklist-items".*"page":3.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"blocklist-items","jsonrpc":"2.0","result":{"total":201,"page":3,"perPage":100,"pagesCount":3,"items":[{"id":"6a7100000000000000000003","type":"connection","source":{"type":"manual","description":"Synthetic connection rule"},"company":{"id":"5e4d3c2b1a0987654321fedc","name":"Example Corp"},"owner":{"id":"69e700000000000000000003","userName":"security.admin@example.com"},"created":"2026-08-04T16:11:52","details":{"remoteAddress":{"any":true,"ipMask":null,"portRange":"300-400"},"localAddress":{"any":false,"ipMask":"192.0.2.10/32","portRange":"300-400"},"directlyConnected":{"enable":true,"remoteMac":"00:00:5E:00:53:23"},"protocol":"TCP","path":null,"hash":null,"commandLine":null,"ipVersion":"IPV4","direction":"both","ruleName":"Example connection rule","ruleId":"89a1d5c1-2b3e-4f67-8a9b-0c1d2e3f4a5b","operatingSystems":["windows"]}}]}}'
+  # Empty intermediate page; pagesCount remains authoritative.
+  - path: /v1.2/jsonrpc/incidents
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-api-key"
+    request_body: /.*"id":"blocklist-items".*"page":2.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"blocklist-items","jsonrpc":"2.0","result":{"total":201,"page":2,"perPage":100,"pagesCount":3,"items":[]}}'
+  - path: /v1.2/jsonrpc/incidents
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-api-key"
+    request_body: /.*"id":"blocklist-items".*"page":1.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ if eq .req_num 1 }}
+          {"id":"blocklist-items","jsonrpc":"2.0","result":{"total":201,"page":1,"perPage":100,"pagesCount":3,"items":[{"id":"6a7100000000000000000001","type":"hash","source":{"type":"incident","description":"Synthetic hash rule"},"company":{"id":"5e4d3c2b1a0987654321fedc","name":"Example Corp"},"owner":{"id":"69e700000000000000000001","userName":"alice.johnson@example.com"},"created":"2026-08-04T16:09:52","details":{"algorithm":"sha256","hash":"1e0905327f443c54aa617e2ff323067c985428e5566886f2aa8296cddfe6ddf9","file":{"name":"example-threat.exe"}}},{"id":"6a7100000000000000000002","type":"path","source":{"type":"import","description":"Synthetic path rule"},"company":{"id":"5e4d3c2b1a0987654321fedc","name":"Example Corp"},"owner":{"id":"69e700000000000000000002","userName":"bob.smith@example.com"},"created":"2026-08-04T16:10:52","details":{"path":"C:\\ProgramData\\Example\\blocked.exe"}}]}}
+          {{ else }}
+          {"id":"blocklist-items","jsonrpc":"2.0","result":{"total":2,"page":1,"perPage":100,"pagesCount":1,"items":[{"id":"6a71000000000000000000f1","type":"hash","source":{"type":"manual","description":"Synthetic cursor regression guard"},"company":{"id":"5e4d3c2b1a0987654321fedc","name":"Example Corp"},"owner":{"id":"69e7000000000000000000f1","userName":"guard.one@example.com"},"created":"2026-08-04T15:59:58","details":{"algorithm":"md5","hash":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","file":{"name":"regression-one.exe"}}},{"id":"6a71000000000000000000f2","type":"hash","source":{"type":"manual","description":"Synthetic cursor regression guard"},"company":{"id":"5e4d3c2b1a0987654321fedc","name":"Example Corp"},"owner":{"id":"69e7000000000000000000f2","userName":"guard.two@example.com"},"created":"2026-08-04T15:59:59","details":{"algorithm":"md5","hash":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","file":{"name":"regression-two.exe"}}}]}}
+          {{ end }}

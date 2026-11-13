@@ -1,0 +1,287 @@
+---
+description: Parse Bitdefender GravityZone blocklist state events.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.5.0'
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes fields added by Agentless as metadata when they would collide
+        with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: Error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: >-
+        Renames the original message field to event.original. The field is not
+        touched when an upstream processor has already populated event.original.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The message field is redundant after event.original is populated.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: bitdefender.blocklist
+      tag: parse_blocklist_json
+      if: ctx.event?.original != null
+  - fail:
+      tag: validate_blocklist_object
+      if: ctx.bitdefender?.blocklist == null || !(ctx.bitdefender.blocklist instanceof Map)
+      message: The blocklist state event must be a JSON object.
+  - fail:
+      tag: validate_blocklist_id
+      if: ctx.bitdefender.blocklist.id == null || ctx.bitdefender.blocklist.id == ''
+      message: The blocklist state event must contain a stable item ID.
+  - remove:
+      field: bitdefender.blocklist.source.description
+      tag: remove_null_source_description
+      ignore_missing: true
+      if: ctx.bitdefender.blocklist.source instanceof Map && ctx.bitdefender.blocklist.source.containsKey('description') && ctx.bitdefender.blocklist.source.description == null
+  - remove:
+      field: bitdefender.blocklist.details.file.name
+      tag: remove_null_file_name
+      ignore_missing: true
+      if: ctx.bitdefender.blocklist.details?.file instanceof Map && ctx.bitdefender.blocklist.details.file.containsKey('name') && ctx.bitdefender.blocklist.details.file.name == null
+  - remove:
+      field: bitdefender.blocklist.details.file
+      tag: remove_empty_file
+      ignore_missing: true
+      if: ctx.bitdefender.blocklist.details?.file instanceof Map && ctx.bitdefender.blocklist.details.file.isEmpty()
+  - remove:
+      field: bitdefender.blocklist.details.hash
+      tag: remove_null_hash
+      ignore_missing: true
+      if: ctx.bitdefender.blocklist.details instanceof Map && ctx.bitdefender.blocklist.details.containsKey('hash') && ctx.bitdefender.blocklist.details.hash == null
+  - remove:
+      field: bitdefender.blocklist.details.path
+      tag: remove_null_path
+      ignore_missing: true
+      if: ctx.bitdefender.blocklist.details instanceof Map && ctx.bitdefender.blocklist.details.containsKey('path') && ctx.bitdefender.blocklist.details.path == null
+  - remove:
+      field: bitdefender.blocklist.details.commandLine
+      tag: remove_null_command_line
+      ignore_missing: true
+      if: ctx.bitdefender.blocklist.details instanceof Map && ctx.bitdefender.blocklist.details.containsKey('commandLine') && ctx.bitdefender.blocklist.details.commandLine == null
+  - remove:
+      field: bitdefender.blocklist.details.localAddress.ipMask
+      tag: remove_null_local_ip_mask
+      ignore_missing: true
+      if: ctx.bitdefender.blocklist.details?.localAddress instanceof Map && ctx.bitdefender.blocklist.details.localAddress.containsKey('ipMask') && ctx.bitdefender.blocklist.details.localAddress.ipMask == null
+  - remove:
+      field: bitdefender.blocklist.details.remoteAddress.ipMask
+      tag: remove_null_remote_ip_mask
+      ignore_missing: true
+      if: ctx.bitdefender.blocklist.details?.remoteAddress instanceof Map && ctx.bitdefender.blocklist.details.remoteAddress.containsKey('ipMask') && ctx.bitdefender.blocklist.details.remoteAddress.ipMask == null
+  - remove:
+      field: bitdefender.blocklist.details.directlyConnected.remoteMac
+      tag: remove_null_remote_mac
+      ignore_missing: true
+      if: ctx.bitdefender.blocklist.details?.directlyConnected instanceof Map && ctx.bitdefender.blocklist.details.directlyConnected.containsKey('remoteMac') && ctx.bitdefender.blocklist.details.directlyConnected.remoteMac == null
+  - remove:
+      field: bitdefender.blocklist.details.localAddress
+      tag: remove_null_local_address
+      ignore_missing: true
+      if: ctx.bitdefender.blocklist.details instanceof Map && ctx.bitdefender.blocklist.details.containsKey('localAddress') && ctx.bitdefender.blocklist.details.localAddress == null
+  - remove:
+      field: bitdefender.blocklist.details.remoteAddress
+      tag: remove_null_remote_address
+      ignore_missing: true
+      if: ctx.bitdefender.blocklist.details instanceof Map && ctx.bitdefender.blocklist.details.containsKey('remoteAddress') && ctx.bitdefender.blocklist.details.remoteAddress == null
+  - remove:
+      field: bitdefender.blocklist.details.directlyConnected
+      tag: remove_null_directly_connected
+      ignore_missing: true
+      if: ctx.bitdefender.blocklist.details instanceof Map && ctx.bitdefender.blocklist.details.containsKey('directlyConnected') && ctx.bitdefender.blocklist.details.directlyConnected == null
+  - remove:
+      field: bitdefender.blocklist.details.operatingSystems
+      tag: remove_null_operating_systems
+      ignore_missing: true
+      if: ctx.bitdefender.blocklist.details instanceof Map && ctx.bitdefender.blocklist.details.containsKey('operatingSystems') && ctx.bitdefender.blocklist.details.operatingSystems == null
+  - set:
+      field: '@timestamp'
+      tag: set_observation_timestamp
+      value: '{{{_ingest.timestamp}}}'
+      if: ctx['@timestamp'] == null
+      description: Uses ingest time only when the collector did not provide its observation time.
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: state
+  - append:
+      field: event.category
+      tag: append_event_category
+      value:
+        - threat
+        - configuration
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type
+      value:
+        - indicator
+        - info
+      allow_duplicates: false
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Bitdefender
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: GravityZone
+  - set:
+      field: event.id
+      tag: set_event_id
+      copy_from: bitdefender.blocklist.id
+      ignore_empty_value: true
+      if: ctx.bitdefender.blocklist.id != null
+  - set:
+      field: organization.id
+      tag: set_organization_id
+      copy_from: bitdefender.blocklist.company.id
+      ignore_empty_value: true
+      if: ctx.bitdefender.blocklist.company?.id != null
+  - set:
+      field: organization.name
+      tag: set_organization_name
+      copy_from: bitdefender.blocklist.company.name
+      ignore_empty_value: true
+      if: ctx.bitdefender.blocklist.company?.name != null
+  - set:
+      field: user.id
+      tag: set_user_id
+      copy_from: bitdefender.blocklist.owner.id
+      ignore_empty_value: true
+      if: ctx.bitdefender.blocklist.owner?.id != null
+  - set:
+      field: user.name
+      tag: set_user_name
+      copy_from: bitdefender.blocklist.owner.userName
+      ignore_empty_value: true
+      if: ctx.bitdefender.blocklist.owner?.userName != null
+  - set:
+      field: user.email
+      tag: set_user_email
+      copy_from: bitdefender.blocklist.owner.userName
+      ignore_empty_value: true
+      if: ctx.bitdefender.blocklist.owner?.userName instanceof String && ctx.bitdefender.blocklist.owner.userName.indexOf('@') > 0
+  - set:
+      field: file.name
+      tag: set_hash_rule_file_name
+      copy_from: bitdefender.blocklist.details.file.name
+      ignore_empty_value: true
+      if: ctx.bitdefender.blocklist.type == 'hash' && ctx.bitdefender.blocklist.details?.file?.name != null
+  - grok:
+      field: bitdefender.blocklist.details.hash
+      tag: classify_sha256_hash
+      patterns:
+        - '^(?<file.hash.sha256>[0-9A-Fa-f]{64})$'
+      if: ctx.bitdefender.blocklist.type == 'hash' && ctx.bitdefender.blocklist.details?.algorithm == 'sha256' && ctx.bitdefender.blocklist.details?.hash instanceof String
+      ignore_failure: true
+      description: Maps valid SHA-256 rule values to file.hash.sha256.
+  - grok:
+      field: bitdefender.blocklist.details.hash
+      tag: classify_md5_hash
+      patterns:
+        - '^(?<file.hash.md5>[0-9A-Fa-f]{32})$'
+      if: ctx.bitdefender.blocklist.type == 'hash' && ctx.bitdefender.blocklist.details?.algorithm == 'md5' && ctx.bitdefender.blocklist.details?.hash instanceof String
+      ignore_failure: true
+      description: Maps valid MD5 rule values to file.hash.md5.
+  - set:
+      field: file.path
+      tag: set_path_rule_file_path
+      copy_from: bitdefender.blocklist.details.path
+      ignore_empty_value: true
+      if: ctx.bitdefender.blocklist.type == 'path' && ctx.bitdefender.blocklist.details?.path != null
+  - set:
+      field: rule.id
+      tag: set_connection_rule_id
+      copy_from: bitdefender.blocklist.details.ruleId
+      ignore_empty_value: true
+      if: ctx.bitdefender.blocklist.type == 'connection' && ctx.bitdefender.blocklist.details?.ruleId != null
+  - set:
+      field: rule.name
+      tag: set_connection_rule_name
+      copy_from: bitdefender.blocklist.details.ruleName
+      ignore_empty_value: true
+      if: ctx.bitdefender.blocklist.type == 'connection' && ctx.bitdefender.blocklist.details?.ruleName != null
+  - set:
+      field: network.transport
+      tag: set_connection_network_transport
+      copy_from: bitdefender.blocklist.details.protocol
+      ignore_empty_value: true
+      if: ctx.bitdefender.blocklist.type == 'connection' && ctx.bitdefender.blocklist.details?.protocol instanceof String && ctx.bitdefender.blocklist.details.protocol != '' && !ctx.bitdefender.blocklist.details.protocol.equalsIgnoreCase('any')
+  - lowercase:
+      field: network.transport
+      tag: lowercase_network_transport
+      ignore_missing: true
+      if: ctx.network?.transport instanceof String
+  - set:
+      field: network.direction
+      tag: set_connection_network_direction
+      copy_from: bitdefender.blocklist.details.direction
+      ignore_empty_value: true
+      if: ctx.bitdefender.blocklist.type == 'connection' && ['inbound', 'outbound'].contains(ctx.bitdefender.blocklist.details?.direction)
+  - append:
+      field: related.user
+      tag: append_user_id_to_related
+      value: '{{{user.id}}}'
+      allow_duplicates: false
+      if: ctx.user?.id != null
+  - append:
+      field: related.user
+      tag: append_user_name_to_related
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.hash
+      tag: append_sha256_to_related
+      value: '{{{file.hash.sha256}}}'
+      allow_duplicates: false
+      if: ctx.file?.hash?.sha256 != null
+  - append:
+      field: related.hash
+      tag: append_md5_to_related
+      value: '{{{file.hash.md5}}}'
+      allow_duplicates: false
+      if: ctx.file?.hash?.md5 != null
+  - append:
+      field: tags
+      tag: preserve_original_event_on_collector_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: preserve_original_event_on_pipeline_error
+      value: preserve_original_event
+      allow_duplicates: false
