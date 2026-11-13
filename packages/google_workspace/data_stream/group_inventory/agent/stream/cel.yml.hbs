@@ -1,0 +1,525 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+  maxsize: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+auth.oauth2:
+  provider: google
+  google:
+    jwt_file: {{jwt_file}}
+    jwt_json: {{jwt_json}}
+    delegated_account: {{delegated_account}}
+  scopes:
+    - https://www.googleapis.com/auth/admin.directory.group.readonly
+{{#if collect_group_settings}}
+    - https://www.googleapis.com/auth/apps.groups.settings
+{{/if}}
+{{#if collect_admin_roles}}
+    - https://www.googleapis.com/auth/admin.directory.rolemanagement.readonly
+{{/if}}
+resource.url: {{directory_api_host}}
+state:
+  customer: {{customer}}
+{{#if domain}}
+  domain: {{domain}}
+{{/if}}
+  batch_size: {{batch_size}}
+  settings_url: {{groups_settings_api_host}}
+  collect_group_settings: {{collect_group_settings}}
+  collect_admin_roles: {{collect_admin_roles}}
+redact:
+  fields: ~
+# A cycle makes one request per evaluation: every roles and role assignments
+# page, every groups page, every members page of every group and, with group
+# settings, one settings call per group. If the budget runs out mid-cycle, the
+# next interval resumes that cycle instead of starting a new one.
+max_executions: 250000
+program: |-
+  (
+    // One cycle is a sequence of phases, one HTTP request per evaluation,
+    // with "want_more" set between steps. Disabled phases are skipped:
+    // roles            (collect_admin_roles)    roleId -> role name/privileges
+    // role_assignments (collect_admin_roles)    unexpired assignments to groups
+    // groups           (always)                 queue of groups, set of domains
+    // members          (always)                 direct members of the head group
+    // settings         (collect_group_settings) Groups Settings of the head group
+    // Every group is listed before any member walk, so that the set of group
+    // email domains used to classify external members is complete. A group's
+    // document is published once its members (and settings) are read.
+    // Per-cycle state: phase, page_token, roles, assignments, groups_todo,
+    // domains, current (the head group's accumulator), head_done and the
+    // settings_ok/settings_denied/settings_failure flags; resp and result
+    // live within one evaluation. All of it is dropped when the cycle ends,
+    // so every cycle is a full snapshot and no page token is carried over.
+    // Steps that publish nothing emit a placeholder event (dropped by a
+    // processor) so that the input keeps evaluating.
+    //
+    // Stage 1: start a new cycle unless the previous evaluation asked for
+    // more. A failed evaluation hands back the previous state with
+    // "want_more" false, so any leftover per-cycle state is dropped here
+    // rather than resumed.
+    state.?want_more.orValue(false) ?
+      state
+    :
+      state.drop(["phase", "page_token", "roles", "assignments", "groups_todo", "domains", "current", "head_done", "settings_ok", "settings_denied", "settings_failure"]).with(
+        {
+          "phase": state.?collect_admin_roles.orValue(false) ? "roles" : "groups",
+          "page_token": "",
+        }
+      )
+  ).as(state,
+    // Stage 2: a fresh accumulator for the group at the head of the queue.
+    // Owner, manager, group and external counts are the sizes of the lists.
+    (state.phase == "members" && !has(state.current)) ?
+      state.with(
+        {
+          "current": {
+            "owners": [],
+            "managers": [],
+            "member_groups": [],
+            "external_members": [],
+            "customer_member_ids": [],
+            "counts": {
+              "user": 0,
+              "customer": 0,
+              "other_type": 0,
+              "member": 0,
+              "other_role": 0,
+            },
+          },
+        }
+      )
+    :
+      state
+  ).as(state,
+    (
+      // Stage 3: the one request of this evaluation.
+      (state.phase == "roles") ?
+        {
+          "url": state.url.trim_right("/") + "/admin/directory/v1/customer/" + state.customer + "/roles",
+          "query": {"maxResults": ["100"]},
+        }
+      : (state.phase == "role_assignments") ?
+        {
+          "url": state.url.trim_right("/") + "/admin/directory/v1/customer/" + state.customer + "/roleassignments",
+          "query": {"maxResults": ["200"]},
+        }
+      : (state.phase == "groups") ?
+        {
+          "url": state.url.trim_right("/") + "/admin/directory/v1/groups",
+          "query": {
+            "customer": [state.customer],
+            ?"domain": (state.?domain.orValue("") != "") ? optional.of([state.domain]) : optional.none(),
+            "maxResults": [string(int(state.batch_size))],
+          },
+        }
+      : (state.phase == "members") ?
+        {
+          "url": state.url.trim_right("/") + "/admin/directory/v1/groups/" + state.groups_todo[0].id + "/members",
+          "query": {"maxResults": [string(int(state.batch_size))]},
+        }
+      :
+        // Groups Settings takes the group email as one percent-encoded path
+        // segment ("@" and "/" included); format_query does that encoding.
+        // Without alt=json the API answers in Atom/XML.
+        {
+          "url": state.settings_url.trim_right("/") + "/groups/v1/groups/" + {
+            "e": [state.groups_todo[0].email],
+          }.format_query().trim_prefix("e="),
+          "query": {"alt": ["json"]},
+        }
+    ).as(req,
+      request(
+        "GET",
+        req.url + "?" + req.query.with(
+          {
+            ?"pageToken": (state.page_token != "") ? optional.of([state.page_token]) : optional.none(),
+          }
+        ).format_query()
+      ).do_request().as(resp,
+        dyn(
+          state.with(
+            {
+              "resp": {
+                "url": req.url,
+                "code": resp.StatusCode,
+                "status": resp.Status,
+                "body": resp.Body,
+              },
+            }
+          )
+        )
+      )
+    )
+  ).as(state,
+    // Stage 4: decode the response into "result": the body of a JSON 200, or
+    // the error. try returns a string when decoding fails.
+    try(state.resp.body.decode_json()).as(body,
+      dyn(
+        state.drop("resp").with(
+          {
+            "result": (state.resp.code == 200 && type(body) == map) ?
+              {"ok": true, "body": body}
+            :
+              {
+                "ok": false,
+                // A 401, a rate limit or quota, or a 403 for a disabled API or
+                // a missing scope.
+                "every_call": state.resp.code in [401, 429] || state.resp.code == 403 &&
+                [
+                  // Reasons from Google's error envelope; anything else gives none that
+                  // match. They tell a Groups Settings failure that applies to every
+                  // call from a per-group one.
+                  try(body.error.errors.map(e, has(e.reason), e.reason)),
+                  try(body.error.details.map(e, has(e.reason), e.reason)),
+                  [try(body.error.status)],
+                ].filter(l, type(l) == list).flatten().exists(r,
+                  r in [
+                    "SERVICE_DISABLED",
+                    "accessNotConfigured",
+                    "insufficientPermissions",
+                    "ACCESS_TOKEN_SCOPE_INSUFFICIENT",
+                    "domainCannotUseApis",
+                    "rateLimitExceeded",
+                    "userRateLimitExceeded",
+                    "quotaExceeded",
+                    "RATE_LIMIT_EXCEEDED",
+                    "RESOURCE_EXHAUSTED",
+                  ]
+                ),
+                "error": {
+                  "code": string(state.resp.code),
+                  "id": state.resp.status,
+                  "message": "GET " + state.resp.url + ": " + (
+                    (state.resp.code == 200) ?
+                      "the response body is not a JSON object"
+                    : (size(state.resp.body) != 0) ?
+                      string(state.resp.body)
+                    :
+                      state.resp.status + " (" + string(state.resp.code) + ")"
+                  ),
+                },
+              },
+          }
+        )
+      )
+    )
+  ).as(state,
+    // Stage 5: fold the result into the per-cycle state.
+    (state.phase in ["roles", "role_assignments"] && !state.result.ok) ?
+      // Admin roles enrichment failed: publish the error once (as a list, so
+      // that the input is not marked as degraded) and list the groups without
+      // role assignments.
+      state.drop(["result", "roles", "assignments"]).with(
+        {
+          "events": [{"error": state.result.error}],
+          "phase": "groups",
+          "page_token": "",
+          "want_more": true,
+        }
+      )
+    : (state.phase == "roles") ?
+      // roles: map roleId to role name, privileges and flags.
+      state.drop("result").with(
+        {
+          "events": [],
+          "roles": state.?roles.orValue({}).with(
+            state.result.body.?items.orValue([]).map(r, has(r.roleId), r.roleId).zip(
+              state.result.body.?items.orValue([]).map(r, has(r.roleId),
+                {
+                  ?"role_name": r.?roleName,
+                  "privileges": r.?rolePrivileges.orValue([]).map(p, has(p.privilegeName), p.privilegeName),
+                  ?"is_super_admin_role": r.?isSuperAdminRole,
+                  ?"is_system_role": r.?isSystemRole,
+                }
+              )
+            )
+          ),
+          "phase": (state.result.body.?nextPageToken.orValue("") != "") ? "roles" : "role_assignments",
+          "page_token": state.result.body.?nextPageToken.orValue(""),
+          "want_more": true,
+        }
+      )
+    : (state.phase == "role_assignments") ?
+      // role_assignments: keep unexpired assignments to groups (assigneeType
+      // is compared case-insensitively), joined with their role.
+      state.drop((state.result.body.?nextPageToken.orValue("") != "") ? ["result"] : ["result", "roles"]).with(
+        {
+          "events": [],
+          "assignments": state.?assignments.orValue([]) + state.result.body.?items.orValue([]).map(r,
+            r.?assigneeType.orValue("").to_lower() == "group" && (
+              r.?expirationDetails.expireTime.orValue("") == "" || is_error(timestamp(r.expirationDetails.expireTime)) ||
+              timestamp(r.expirationDetails.expireTime) > now
+            ),
+            {
+              "assigned_to": r.?assignedTo.orValue(""),
+              ?"role_assignment_id": r.?roleAssignmentId,
+              ?"role_id": r.?roleId,
+              ?"scope_type": r.?scopeType,
+              ?"org_unit_id": r.?orgUnitId,
+              ?"condition": r.?condition,
+              ?"expire_time": r.?expirationDetails.expireTime,
+            }.with(state.roles[?r.?roleId.orValue("")].orValue({}))
+          ),
+          "phase": (state.result.body.?nextPageToken.orValue("") != "") ? "role_assignments" : "groups",
+          "page_token": state.result.body.?nextPageToken.orValue(""),
+          "want_more": true,
+        }
+      )
+    : (state.phase == "groups" && !state.result.ok) ?
+      // groups.list failed: one error, end the cycle.
+      state.drop(["phase", "page_token", "roles", "assignments", "groups_todo", "domains", "result"]).with(
+        {
+          "events": {"error": state.result.error},
+          "want_more": false,
+        }
+      )
+    : (state.phase == "groups") ?
+      // groups.list page: queue the groups and record their email domains.
+      state.result.body.?groups.orValue([]).filter(g, has(g.id)).as(groups,
+        state.drop("result").with(
+          {
+            "events": [],
+            "groups_todo": state.?groups_todo.orValue([]) + groups,
+            "domains": state.?domains.orValue({}).with(
+              groups.map(g, g.?email.orValue("").to_lower().split("@")).map(p, size(p) > 1, p[size(p) - 1]).as(d,
+                d.zip(d.map(x, true))
+              )
+            ),
+            "page_token": state.result.body.?nextPageToken.orValue(""),
+          }
+        ).as(next,
+          (next.page_token != "") ?
+            next.with({"want_more": true})
+          : (size(next.groups_todo) > 0) ?
+            next.with({"phase": "members", "want_more": true})
+          :
+            // No groups at all: end the cycle.
+            next.drop(["phase", "page_token", "roles", "assignments", "groups_todo", "domains"]).with({"want_more": false})
+        )
+      )
+    : (state.phase == "settings" && state.result.ok) ?
+      // Groups Settings of the head group, merged into its document as is.
+      state.drop("result").with(
+        {
+          "events": [],
+          "current": state.current.with({"settings": state.result.body}),
+          "settings_ok": true,
+          "head_done": true,
+          "want_more": true,
+        }
+      )
+    : (state.phase == "settings" && state.result.every_call) ?
+      // A Groups Settings failure that applies to every call: publish it once
+      // and stop asking for settings this cycle. Every later document carries
+      // the same settings error.
+      state.drop("result").with(
+        {
+          "events": [{"error": state.result.error}],
+          "current": state.current.with({"settings_error": state.result.error}),
+          "settings_failure": state.result.error,
+          "head_done": true,
+          "want_more": true,
+        }
+      )
+    : (state.phase == "settings") ?
+      // A Groups Settings failure for this group (deleted group, special group,
+      // conditional role, missing privilege): the error goes on its document.
+      // The first 403 is kept and published at the end of the cycle if no
+      // settings call succeeded, which is what a missing privilege looks like.
+      state.drop("result").with(
+        {
+          "events": [],
+          "current": state.current.with({"settings_error": state.result.error}),
+          ?"settings_denied": (state.result.error.code == "403" && !has(state.settings_denied)) ?
+            optional.of(state.result.error)
+          :
+            state.?settings_denied,
+          "head_done": true,
+          "want_more": true,
+        }
+      )
+    : !state.result.ok ?
+      // members.list failed for this group: keep the error on its document.
+      state.drop("result").with(
+        {
+          "events": [],
+          "current": {"members_error": state.result.error},
+          "page_token": "",
+          "head_done": true,
+          "want_more": true,
+        }
+      )
+    :
+      // members.list page of the head group. Only owners, managers, nested
+      // groups, external members and the whole-domain member are kept; plain
+      // user members are counted. A member is external when it is of type
+      // EXTERNAL, or a USER or GROUP whose email domain is not the domain of
+      // any group listed in this cycle.
+      state.result.body.?members.orValue([]).map(m,
+        {
+          ?"id": m.?id,
+          ?"email": m.?email,
+          ?"role": m.?role,
+          ?"type": m.?type,
+          ?"status": m.?status,
+        }
+      ).as(rows,
+        state.drop("result").with(
+          {
+            "events": [],
+            "current": state.current.with(
+              {
+                "owners": state.current.owners + rows.filter(m, m.?role.orValue("") == "OWNER"),
+                "managers": state.current.managers + rows.filter(m, m.?role.orValue("") == "MANAGER"),
+                "member_groups": state.current.member_groups + rows.filter(m, m.?type.orValue("") == "GROUP"),
+                "external_members": state.current.external_members + rows.filter(m,
+                  m.?type.orValue("") == "EXTERNAL" || m.?type.orValue("") in ["USER", "GROUP"] &&
+                  m.?email.orValue("").to_lower().split("@").as(p,
+                    size(p) > 1 && !(p[size(p) - 1] in state.domains)
+                  )
+                ),
+                "customer_member_ids": state.current.customer_member_ids + rows.map(m,
+                  m.?type.orValue("") == "CUSTOMER" && has(m.id),
+                  m.id
+                ),
+                // State numbers come back as doubles: cast before adding.
+                "counts": {
+                  "user": int(state.current.counts.user) + size(rows.filter(m, m.?type.orValue("") == "USER")),
+                  "customer": int(state.current.counts.customer) + size(rows.filter(m, m.?type.orValue("") == "CUSTOMER")),
+                  "other_type": int(state.current.counts.other_type) + size(
+                    rows.filter(m,
+                      !(m.?type.orValue("") in ["USER", "GROUP", "CUSTOMER"])
+                    )
+                  ),
+                  // A row without a role is counted as a member.
+                  "member": int(state.current.counts.member) + size(rows.filter(m, m.?role.orValue("MEMBER") == "MEMBER")),
+                  "other_role": int(state.current.counts.other_role) + size(
+                    rows.filter(m,
+                      !(m.?role.orValue("MEMBER") in ["OWNER", "MANAGER", "MEMBER"])
+                    )
+                  ),
+                },
+              }
+            ),
+            "page_token": state.result.body.?nextPageToken.orValue(""),
+            "head_done": state.result.body.?nextPageToken.orValue("") == "",
+            "want_more": true,
+          }
+        )
+      )
+  ).as(state,
+    (
+      // Stage 6: once the members walk of the head group is over, ask for
+      // its settings when they are collected and have not failed for every
+      // call.
+      state.?phase.orValue("") == "members" && state.?head_done.orValue(false) &&
+      state.?collect_group_settings.orValue(false) && !has(state.settings_failure) &&
+      has(state.groups_todo[0].email)
+    ) ?
+      state.drop("head_done").with({"phase": "settings"})
+    :
+      state
+  ).as(state,
+    // Stage 7: publish the head group once it is complete, then move on.
+    !state.?head_done.orValue(false) ?
+      state
+    :
+      state.groups_todo[0].with(
+        has(state.current.members_error) ?
+          {"members_error": state.current.members_error}
+        :
+          {
+            "owners": state.current.owners,
+            "managers": state.current.managers,
+            "member_groups": state.current.member_groups,
+            "external_members": state.current.external_members,
+            "has_customer_member": int(state.current.counts.customer) > 0,
+            "customer_member_ids": state.current.customer_member_ids,
+            "member_counts": {
+              "total": int(state.current.counts.user) + size(state.current.member_groups) + int(state.current.counts.customer) + int(state.current.counts.other_type),
+              "by_type": {
+                "user": int(state.current.counts.user),
+                "group": size(state.current.member_groups),
+                "customer": int(state.current.counts.customer),
+                "other": int(state.current.counts.other_type),
+              },
+              "by_role": {
+                "owner": size(state.current.owners),
+                "manager": size(state.current.managers),
+                "member": int(state.current.counts.member),
+                "other": int(state.current.counts.other_role),
+              },
+              "external": size(state.current.external_members),
+            },
+          }
+      ).with(
+        {
+          ?"settings": state.current.?settings,
+          // Settings skipped after a failure that applies to every call carry
+          // that failure.
+          ?"settings_error": state.current.?settings_error.or(state.?settings_failure),
+          // Present only when the admin roles enrichment completed.
+          ?"role_assignments": state.?assignments.optMap(a,
+            a.map(x, x.assigned_to == state.groups_todo[0].id, x.drop("assigned_to"))
+          ),
+        }
+      ).as(doc,
+        (size(state.groups_todo) > 1) ?
+          state.drop(["current", "head_done"]).with(
+            {
+              "events": state.events + [{"message": doc.encode_json()}],
+              "groups_todo": tail(state.groups_todo),
+              "phase": "members",
+              "page_token": "",
+              "want_more": true,
+            }
+          )
+        :
+          // Last group: end the cycle. If no settings call succeeded and one
+          // was refused with a 403, publish that refusal once.
+          state.drop(["phase", "page_token", "roles", "assignments", "groups_todo", "domains", "current", "head_done", "settings_ok", "settings_denied", "settings_failure"]).with(
+            {
+              "events": state.events + [{"message": doc.encode_json()}] + (
+                (has(state.settings_denied) && !has(state.settings_ok) && !has(state.settings_failure)) ?
+                  [{"error": state.settings_denied}]
+                :
+                  []
+              ),
+              "want_more": false,
+            }
+          )
+      )
+  ).as(state,
+    // Stage 8: keep evaluating through steps that publish nothing.
+    (state.want_more && size(state.events) == 0) ?
+      state.with({"events": [{"retry": true}]})
+    :
+      state
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- drop_event.when.equals.retry: true
+{{#if processors}}
+{{processors}}
+{{/if}}

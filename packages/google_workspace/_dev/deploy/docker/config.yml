@@ -5351,3 +5351,1261 @@ rules:
             }
           }
           `}}
+  # Directory and Groups Settings API routes for the group_inventory entity
+  # data stream. They never match a users stream request: groups.list needs
+  # maxResults=2 (the system tests set batch_size: 2; users always sends 200),
+  # and every members and settings path uses a group id or email that no other
+  # stream's mock uses. Admin roles are listed for their own customer IDs
+  # (C0groupinv, C0rolesdenied), not my_customer.
+  #
+  # groups.list: four pages. Pages 1-3 are shared by the three test customers.
+  # Page 2 has no "groups" key but still carries a token. Page 4 differs:
+  # C0groupinv (test-enrichment-config.yml) also lists a group that is deleted
+  # before its members and settings are read.
+  - path: /admin/directory/v1/groups
+    methods: [GET]
+    query_params:
+      customer: "{customer:my_customer|C0groupinv|C0rolesdenied}"
+      maxResults: "2"
+      pageToken: null
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#groups",
+            "etag": "\"exampleEtag_gi_groups_1\"",
+            "groups": [
+              {
+                "kind": "admin#directory#group",
+                "id": "00example0chd01",
+                "etag": "\"exampleEtag_group_chd01\"",
+                "email": "platform-oncall@example.com",
+                "name": "Platform on-call",
+                "directMembersCount": "3",
+                "description": "Nested in platform-eng@example.com.",
+                "adminCreated": true
+              },
+              {
+                "kind": "admin#directory#group",
+                "id": "00example0emp01",
+                "etag": "\"exampleEtag_group_emp01\"",
+                "email": "empty-project@example.com",
+                "name": "Empty project",
+                "directMembersCount": "0",
+                "description": "Created for a project that never started.",
+                "adminCreated": true
+              }
+            ],
+            "nextPageToken": "gi-groups-page-2"
+          }
+          `}}
+  - path: /admin/directory/v1/groups
+    methods: [GET]
+    query_params:
+      customer: "{customer:my_customer|C0groupinv|C0rolesdenied}"
+      maxResults: "2"
+      pageToken: "gi-groups-page-2"
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#groups",
+            "etag": "\"exampleEtag_gi_groups_2\"",
+            "nextPageToken": "gi-groups-page-3"
+          }
+          `}}
+  - path: /admin/directory/v1/groups
+    methods: [GET]
+    query_params:
+      customer: "{customer:my_customer|C0groupinv|C0rolesdenied}"
+      maxResults: "2"
+      pageToken: "gi-groups-page-3"
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#groups",
+            "etag": "\"exampleEtag_gi_groups_3\"",
+            "groups": [
+              {
+                "kind": "admin#directory#group",
+                "id": "00example0par01",
+                "etag": "\"exampleEtag_group_par01\"",
+                "email": "platform-eng@example.com",
+                "name": "Platform engineering",
+                "directMembersCount": "6",
+                "description": "All platform engineers. Contains the on-call group and the whole-domain member.",
+                "adminCreated": true,
+                "aliases": [
+                  "platform@example.com"
+                ],
+                "nonEditableAliases": [
+                  "platform-eng@example.com.test-google-a.com"
+                ],
+                "externalIds": [
+                  {
+                    "namespace": "system/external",
+                    "id": "ext-group-0001"
+                  }
+                ]
+              },
+              {
+                "kind": "admin#directory#group",
+                "id": "00example0usr01",
+                "etag": "\"exampleEtag_group_usr01\"",
+                "email": "book-club@example.com",
+                "name": "Book club",
+                "directMembersCount": "2",
+                "description": "Created by a user in Google Groups."
+              }
+            ],
+            "nextPageToken": "gi-groups-page-4"
+          }
+          `}}
+  - path: /admin/directory/v1/groups
+    methods: [GET]
+    query_params:
+      customer: "C0groupinv"
+      maxResults: "2"
+      pageToken: "gi-groups-page-4"
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#groups",
+            "etag": "\"exampleEtag_gi_groups_4\"",
+            "groups": [
+              {
+                "kind": "admin#directory#group",
+                "id": "00example0sec01",
+                "etag": "\"exampleEtag_group_sec01\"",
+                "email": "sales-emea@example.org",
+                "name": "Sales EMEA",
+                "directMembersCount": "3",
+                "description": "Group on the secondary domain example.org.",
+                "adminCreated": true
+              },
+              {
+                "kind": "admin#directory#group",
+                "id": "00example0del01",
+                "etag": "\"exampleEtag_group_del01\"",
+                "email": "retired-project@example.com",
+                "name": "Retired project",
+                "directMembersCount": "1",
+                "description": "Deleted after groups.list and before its members and settings were read.",
+                "adminCreated": true
+              }
+            ]
+          }
+          `}}
+  - path: /admin/directory/v1/groups
+    methods: [GET]
+    query_params:
+      customer: "{customer:my_customer|C0rolesdenied}"
+      maxResults: "2"
+      pageToken: "gi-groups-page-4"
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#groups",
+            "etag": "\"exampleEtag_gi_groups_4\"",
+            "groups": [
+              {
+                "kind": "admin#directory#group",
+                "id": "00example0sec01",
+                "etag": "\"exampleEtag_group_sec01\"",
+                "email": "sales-emea@example.org",
+                "name": "Sales EMEA",
+                "directMembersCount": "3",
+                "description": "Group on the secondary domain example.org.",
+                "adminCreated": true
+              }
+            ]
+          }
+          `}}
+  # members.list. maxResults is 2 in the system tests (batch_size) and 200
+  # when test-api.py, which always asks for 200, is run against this mock.
+  # Empty group: one page without a "members" key.
+  - path: /admin/directory/v1/groups/00example0emp01/members
+    methods: [GET]
+    query_params:
+      maxResults: "{max_results:2|200}"
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#members",
+            "etag": "\"exampleEtag_members_emp01\""
+          }
+          `}}
+  # Nested group: two pages, one OWNER and two MEMBER users.
+  - path: /admin/directory/v1/groups/00example0chd01/members
+    methods: [GET]
+    query_params:
+      maxResults: "{max_results:2|200}"
+      pageToken: null
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#members",
+            "etag": "\"exampleEtag_members_chd01_1\"",
+            "members": [
+              {
+                "kind": "admin#directory#member",
+                "etag": "\"exampleEtag_member_00001\"",
+                "id": "100000000000000000001",
+                "email": "alice.johnson@example.com",
+                "role": "MEMBER",
+                "type": "USER",
+                "status": "ACTIVE"
+              },
+              {
+                "kind": "admin#directory#member",
+                "etag": "\"exampleEtag_member_00004\"",
+                "id": "100000000000000000004",
+                "email": "erin.davis@example.com",
+                "role": "OWNER",
+                "type": "USER",
+                "status": "ACTIVE"
+              }
+            ],
+            "nextPageToken": "members-chd01-p2"
+          }
+          `}}
+  - path: /admin/directory/v1/groups/00example0chd01/members
+    methods: [GET]
+    query_params:
+      maxResults: "{max_results:2|200}"
+      pageToken: "members-chd01-p2"
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#members",
+            "etag": "\"exampleEtag_members_chd01_2\"",
+            "members": [
+              {
+                "kind": "admin#directory#member",
+                "etag": "\"exampleEtag_member_00005\"",
+                "id": "100000000000000000005",
+                "email": "frank.miller@example.com",
+                "role": "MEMBER",
+                "type": "USER",
+                "status": "ACTIVE"
+              }
+            ]
+          }
+          `}}
+  # Parent group: four pages. An OWNER and a MANAGER; an empty page that
+  # still carries a token; a suspended member and an external user without
+  # status; the nested group (type GROUP, its id is the child's group id) and
+  # the whole-domain member (type CUSTOMER, no email, id is the customer ID).
+  - path: /admin/directory/v1/groups/00example0par01/members
+    methods: [GET]
+    query_params:
+      maxResults: "{max_results:2|200}"
+      pageToken: null
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#members",
+            "etag": "\"exampleEtag_members_par01_1\"",
+            "members": [
+              {
+                "kind": "admin#directory#member",
+                "etag": "\"exampleEtag_member_00001\"",
+                "id": "100000000000000000001",
+                "email": "alice.johnson@example.com",
+                "role": "OWNER",
+                "type": "USER",
+                "status": "ACTIVE"
+              },
+              {
+                "kind": "admin#directory#member",
+                "etag": "\"exampleEtag_member_00002\"",
+                "id": "100000000000000000002",
+                "email": "bob.smith@example.com",
+                "role": "MANAGER",
+                "type": "USER",
+                "status": "ACTIVE"
+              }
+            ],
+            "nextPageToken": "members-par01-p2"
+          }
+          `}}
+  - path: /admin/directory/v1/groups/00example0par01/members
+    methods: [GET]
+    query_params:
+      maxResults: "{max_results:2|200}"
+      pageToken: "members-par01-p2"
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#members",
+            "etag": "\"exampleEtag_members_par01_2\"",
+            "members": [],
+            "nextPageToken": "members-par01-p3"
+          }
+          `}}
+  - path: /admin/directory/v1/groups/00example0par01/members
+    methods: [GET]
+    query_params:
+      maxResults: "{max_results:2|200}"
+      pageToken: "members-par01-p3"
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#members",
+            "etag": "\"exampleEtag_members_par01_3\"",
+            "members": [
+              {
+                "kind": "admin#directory#member",
+                "etag": "\"exampleEtag_member_00003\"",
+                "id": "100000000000000000003",
+                "email": "carol.white@example.com",
+                "role": "MEMBER",
+                "type": "USER",
+                "status": "SUSPENDED"
+              },
+              {
+                "kind": "admin#directory#member",
+                "etag": "\"exampleEtag_member_00901\"",
+                "id": "100000000000000000901",
+                "email": "dana@partner.example.net",
+                "role": "MEMBER",
+                "type": "USER"
+              }
+            ],
+            "nextPageToken": "members-par01-p4"
+          }
+          `}}
+  - path: /admin/directory/v1/groups/00example0par01/members
+    methods: [GET]
+    query_params:
+      maxResults: "{max_results:2|200}"
+      pageToken: "members-par01-p4"
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#members",
+            "etag": "\"exampleEtag_members_par01_4\"",
+            "members": [
+              {
+                "kind": "admin#directory#member",
+                "etag": "\"exampleEtag_member_chd01\"",
+                "id": "00example0chd01",
+                "email": "platform-oncall@example.com",
+                "role": "MEMBER",
+                "type": "GROUP",
+                "status": "ACTIVE"
+              },
+              {
+                "kind": "admin#directory#member",
+                "etag": "\"exampleEtag_member_z79cb\"",
+                "id": "C03az79cb",
+                "role": "MEMBER",
+                "type": "CUSTOMER"
+              }
+            ]
+          }
+          `}}
+  # User-created group: one page; the second member has no role.
+  - path: /admin/directory/v1/groups/00example0usr01/members
+    methods: [GET]
+    query_params:
+      maxResults: "{max_results:2|200}"
+      pageToken: null
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#members",
+            "etag": "\"exampleEtag_members_usr01\"",
+            "members": [
+              {
+                "kind": "admin#directory#member",
+                "etag": "\"exampleEtag_member_00006\"",
+                "id": "100000000000000000006",
+                "email": "grace.lee@example.com",
+                "role": "OWNER",
+                "type": "USER",
+                "status": "ACTIVE"
+              },
+              {
+                "kind": "admin#directory#member",
+                "etag": "\"exampleEtag_member_00007\"",
+                "id": "100000000000000000007",
+                "email": "henry.wilson@example.com",
+                "type": "USER",
+                "status": "ACTIVE"
+              }
+            ]
+          }
+          `}}
+  # Secondary-domain group: an owner on example.org (internal, a group domain),
+  # a group from another account and a type EXTERNAL row (both external).
+  - path: /admin/directory/v1/groups/00example0sec01/members
+    methods: [GET]
+    query_params:
+      maxResults: "{max_results:2|200}"
+      pageToken: null
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#members",
+            "etag": "\"exampleEtag_members_sec01_1\"",
+            "members": [
+              {
+                "kind": "admin#directory#member",
+                "etag": "\"exampleEtag_member_00010\"",
+                "id": "100000000000000000010",
+                "email": "judy.moore@example.org",
+                "role": "OWNER",
+                "type": "USER",
+                "status": "ACTIVE"
+              },
+              {
+                "kind": "admin#directory#member",
+                "etag": "\"exampleEtag_member_ext01\"",
+                "id": "00example0ext01",
+                "email": "resellers@example.net",
+                "role": "MEMBER",
+                "type": "GROUP",
+                "status": "ACTIVE"
+              }
+            ],
+            "nextPageToken": "members-sec01-p2"
+          }
+          `}}
+  - path: /admin/directory/v1/groups/00example0sec01/members
+    methods: [GET]
+    query_params:
+      maxResults: "{max_results:2|200}"
+      pageToken: "members-sec01-p2"
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#members",
+            "etag": "\"exampleEtag_members_sec01_2\"",
+            "members": [
+              {
+                "kind": "admin#directory#member",
+                "etag": "\"exampleEtag_member_00902\"",
+                "id": "100000000000000000902",
+                "email": "contractor@example.net",
+                "role": "MEMBER",
+                "type": "EXTERNAL"
+              }
+            ]
+          }
+          `}}
+  # Group deleted after groups.list: 404 (test-enrichment-config.yml).
+  - path: /admin/directory/v1/groups/00example0del01/members
+    methods: [GET]
+    query_params:
+      maxResults: "{max_results:2|200}"
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 404
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "error": {
+              "code": 404,
+              "message": "Resource Not Found: groupKey",
+              "errors": [
+                {
+                  "message": "Resource Not Found: groupKey",
+                  "domain": "global",
+                  "reason": "notFound"
+                }
+              ]
+            }
+          }
+          `}}
+  # Groups Settings API groups.get, one call per group email (the request
+  # sends the email percent-encoded; the mock matches the decoded path).
+  # alt=json is required: without it the API answers in Atom/XML.
+  # Sparse variant: no whoCanAddExternalMembers, default_sender key.
+  - path: /groups/v1/groups/empty-project@example.com
+    methods: [GET]
+    query_params:
+      alt: "json"
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "groupsSettings#groups",
+            "email": "empty-project@example.com",
+            "name": "Empty project",
+            "whoCanAdd": "ALL_MANAGERS_CAN_ADD",
+            "whoCanJoin": "INVITED_CAN_JOIN",
+            "whoCanViewMembership": "ALL_IN_DOMAIN_CAN_VIEW",
+            "whoCanViewGroup": "ALL_IN_DOMAIN_CAN_VIEW",
+            "whoCanInvite": "ALL_MANAGERS_CAN_INVITE",
+            "allowExternalMembers": "true",
+            "whoCanPostMessage": "ALL_IN_DOMAIN_CAN_POST",
+            "allowWebPosting": "true",
+            "primaryLanguage": "en",
+            "maxMessageBytes": 26214400,
+            "isArchived": "true",
+            "archiveOnly": "false",
+            "messageModerationLevel": "MODERATE_NONE",
+            "spamModerationLevel": "ALLOW",
+            "replyTo": "REPLY_TO_IGNORE",
+            "includeCustomFooter": "true",
+            "sendMessageDenyNotification": "true",
+            "showInGroupDirectory": "false",
+            "allowGoogleCommunication": "false",
+            "membersCanPostAsTheGroup": "false",
+            "messageDisplayFont": "DEFAULT_FONT",
+            "includeInGlobalAddressList": "false",
+            "whoCanLeaveGroup": "ALL_MEMBERS_CAN_LEAVE",
+            "whoCanContactOwner": "ALL_IN_DOMAIN_CAN_CONTACT",
+            "whoCanAddReferences": "ALL_MEMBERS",
+            "whoCanAssignTopics": "NONE",
+            "whoCanUnassignTopic": "NONE",
+            "whoCanTakeTopics": "NONE",
+            "whoCanMarkDuplicate": "NONE",
+            "whoCanMarkNoResponseNeeded": "NONE",
+            "whoCanMarkFavoriteReplyOnAnyTopic": "NONE",
+            "whoCanMarkFavoriteReplyOnOwnTopic": "NONE",
+            "whoCanUnmarkFavoriteReplyOnAnyTopic": "NONE",
+            "whoCanEnterFreeFormTags": "NONE",
+            "whoCanModifyTagsAndCategories": "NONE",
+            "favoriteRepliesOnTop": "false",
+            "whoCanApproveMembers": "ALL_MANAGERS_CAN_APPROVE",
+            "whoCanBanUsers": "OWNERS_AND_MANAGERS",
+            "whoCanModifyMembers": "OWNERS_AND_MANAGERS",
+            "whoCanApproveMessages": "OWNERS_ONLY",
+            "whoCanDeleteAnyPost": "OWNERS_AND_MANAGERS",
+            "whoCanDeleteTopics": "OWNERS_AND_MANAGERS",
+            "whoCanLockTopics": "OWNERS_AND_MANAGERS",
+            "whoCanMoveTopicsIn": "NONE",
+            "whoCanMoveTopicsOut": "NONE",
+            "whoCanPostAnnouncements": "NONE",
+            "whoCanHideAbuse": "OWNERS_AND_MANAGERS",
+            "whoCanMakeTopicsSticky": "OWNERS_AND_MANAGERS",
+            "whoCanModerateMembers": "OWNERS_AND_MANAGERS",
+            "whoCanModerateContent": "OWNERS_ONLY",
+            "whoCanAssistContent": "ALL_MEMBERS",
+            "customRolesEnabledForSettingsToBeMerged": "false",
+            "enableCollaborativeInbox": "false",
+            "whoCanDiscoverGroup": "ALL_IN_DOMAIN_CAN_DISCOVER",
+            "default_sender": "DEFAULT_SELF"
+          }
+          `}}
+  # Google's documented example.
+  - path: /groups/v1/groups/platform-oncall@example.com
+    methods: [GET]
+    query_params:
+      alt: "json"
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "groupsSettings#groups",
+            "email": "platform-oncall@example.com",
+            "name": "Platform on-call",
+            "description": "Nested in platform-eng@example.com.",
+            "whoCanAdd": "ALL_MANAGERS_CAN_ADD",
+            "whoCanJoin": "INVITED_CAN_JOIN",
+            "whoCanViewMembership": "ALL_IN_DOMAIN_CAN_VIEW",
+            "whoCanViewGroup": "ALL_IN_DOMAIN_CAN_VIEW",
+            "whoCanInvite": "ALL_MANAGERS_CAN_INVITE",
+            "allowExternalMembers": "true",
+            "whoCanAddExternalMembers": "ONLY_ADMINS_CAN_ADD_EXTERNAL_MEMBERS",
+            "whoCanPostMessage": "ALL_IN_DOMAIN_CAN_POST",
+            "allowWebPosting": "true",
+            "primaryLanguage": "en",
+            "maxMessageBytes": 10240,
+            "isArchived": "true",
+            "archiveOnly": "false",
+            "messageModerationLevel": "MODERATE_NONE",
+            "spamModerationLevel": "ALLOW",
+            "replyTo": "REPLY_TO_IGNORE",
+            "customReplyTo": "platform-oncall-replies@example.com",
+            "includeCustomFooter": "true",
+            "customFooterText": "This message is from the Platform on-call group at example.com",
+            "sendMessageDenyNotification": "true",
+            "defaultMessageDenyNotificationText": "Your Message has been denied.",
+            "showInGroupDirectory": "false",
+            "allowGoogleCommunication": "false",
+            "membersCanPostAsTheGroup": "false",
+            "messageDisplayFont": "DEFAULT_FONT",
+            "includeInGlobalAddressList": "false",
+            "whoCanLeaveGroup": "ALL_MEMBERS_CAN_LEAVE",
+            "whoCanContactOwner": "ALL_IN_DOMAIN_CAN_CONTACT",
+            "whoCanAddReferences": "ALL_MEMBERS",
+            "whoCanAssignTopics": "NONE",
+            "whoCanUnassignTopic": "NONE",
+            "whoCanTakeTopics": "NONE",
+            "whoCanMarkDuplicate": "NONE",
+            "whoCanMarkNoResponseNeeded": "NONE",
+            "whoCanMarkFavoriteReplyOnAnyTopic": "NONE",
+            "whoCanMarkFavoriteReplyOnOwnTopic": "NONE",
+            "whoCanUnmarkFavoriteReplyOnAnyTopic": "NONE",
+            "whoCanEnterFreeFormTags": "NONE",
+            "whoCanModifyTagsAndCategories": "NONE",
+            "favoriteRepliesOnTop": "false",
+            "whoCanApproveMembers": "ALL_MANAGERS_CAN_APPROVE",
+            "whoCanBanUsers": "OWNERS_AND_MANAGERS",
+            "whoCanModifyMembers": "OWNERS_AND_MANAGERS",
+            "whoCanApproveMessages": "OWNERS_ONLY",
+            "whoCanDeleteAnyPost": "OWNERS_AND_MANAGERS",
+            "whoCanDeleteTopics": "OWNERS_AND_MANAGERS",
+            "whoCanLockTopics": "OWNERS_AND_MANAGERS",
+            "whoCanMoveTopicsIn": "NONE",
+            "whoCanMoveTopicsOut": "NONE",
+            "whoCanPostAnnouncements": "NONE",
+            "whoCanHideAbuse": "OWNERS_AND_MANAGERS",
+            "whoCanMakeTopicsSticky": "OWNERS_AND_MANAGERS",
+            "whoCanModerateMembers": "OWNERS_AND_MANAGERS",
+            "whoCanModerateContent": "OWNERS_ONLY",
+            "whoCanAssistContent": "ALL_MEMBERS",
+            "customRolesEnabledForSettingsToBeMerged": "false",
+            "enableCollaborativeInbox": "false",
+            "whoCanDiscoverGroup": "ALL_IN_DOMAIN_CAN_DISCOVER",
+            "defaultSender": "DEFAULT_SELF"
+          }
+          `}}
+  # Restricted, security-relevant group.
+  - path: /groups/v1/groups/platform-eng@example.com
+    methods: [GET]
+    query_params:
+      alt: "json"
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "groupsSettings#groups",
+            "email": "platform-eng@example.com",
+            "name": "Platform engineering",
+            "description": "All platform engineers. Contains the on-call group and the whole-domain member.",
+            "whoCanAdd": "ALL_OWNERS_CAN_ADD",
+            "whoCanJoin": "INVITED_CAN_JOIN",
+            "whoCanViewMembership": "ALL_MANAGERS_CAN_VIEW",
+            "whoCanViewGroup": "ALL_MEMBERS_CAN_VIEW",
+            "whoCanInvite": "ALL_OWNERS_CAN_INVITE",
+            "allowExternalMembers": "false",
+            "whoCanAddExternalMembers": "ONLY_ADMINS_CAN_ADD_EXTERNAL_MEMBERS",
+            "whoCanPostMessage": "ALL_MEMBERS_CAN_POST",
+            "allowWebPosting": "false",
+            "primaryLanguage": "en",
+            "maxMessageBytes": 26214400,
+            "isArchived": "true",
+            "archiveOnly": "false",
+            "messageModerationLevel": "MODERATE_NON_MEMBERS",
+            "spamModerationLevel": "REJECT",
+            "replyTo": "REPLY_TO_SENDER",
+            "customReplyTo": "",
+            "includeCustomFooter": "false",
+            "customFooterText": "",
+            "sendMessageDenyNotification": "false",
+            "showInGroupDirectory": "false",
+            "allowGoogleCommunication": "false",
+            "membersCanPostAsTheGroup": "false",
+            "messageDisplayFont": "DEFAULT_FONT",
+            "includeInGlobalAddressList": "false",
+            "whoCanLeaveGroup": "NONE_CAN_LEAVE",
+            "whoCanContactOwner": "ALL_MEMBERS_CAN_CONTACT",
+            "whoCanAddReferences": "NONE",
+            "whoCanAssignTopics": "NONE",
+            "whoCanUnassignTopic": "NONE",
+            "whoCanTakeTopics": "NONE",
+            "whoCanMarkDuplicate": "NONE",
+            "whoCanMarkNoResponseNeeded": "NONE",
+            "whoCanMarkFavoriteReplyOnAnyTopic": "NONE",
+            "whoCanMarkFavoriteReplyOnOwnTopic": "NONE",
+            "whoCanUnmarkFavoriteReplyOnAnyTopic": "NONE",
+            "whoCanEnterFreeFormTags": "NONE",
+            "whoCanModifyTagsAndCategories": "NONE",
+            "favoriteRepliesOnTop": "false",
+            "whoCanApproveMembers": "ALL_OWNERS_CAN_APPROVE",
+            "whoCanBanUsers": "OWNERS_ONLY",
+            "whoCanModifyMembers": "OWNERS_ONLY",
+            "whoCanApproveMessages": "OWNERS_ONLY",
+            "whoCanDeleteAnyPost": "OWNERS_AND_MANAGERS",
+            "whoCanDeleteTopics": "OWNERS_AND_MANAGERS",
+            "whoCanLockTopics": "OWNERS_AND_MANAGERS",
+            "whoCanMoveTopicsIn": "NONE",
+            "whoCanMoveTopicsOut": "NONE",
+            "whoCanPostAnnouncements": "NONE",
+            "whoCanHideAbuse": "OWNERS_AND_MANAGERS",
+            "whoCanMakeTopicsSticky": "OWNERS_AND_MANAGERS",
+            "whoCanModerateMembers": "OWNERS_ONLY",
+            "whoCanModerateContent": "OWNERS_ONLY",
+            "whoCanAssistContent": "OWNERS_ONLY",
+            "customRolesEnabledForSettingsToBeMerged": "false",
+            "enableCollaborativeInbox": "false",
+            "whoCanDiscoverGroup": "ALL_MEMBERS_CAN_DISCOVER",
+            "defaultSender": "DEFAULT_SELF"
+          }
+          `}}
+  # A conditional Groups role that excludes this group: 403 for this group
+  # only, after other settings calls in the cycle succeeded.
+  - path: /groups/v1/groups/book-club@example.com
+    methods: [GET]
+    query_params:
+      alt: "json"
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 403
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "error": {
+              "code": 403,
+              "message": "Not Authorized to access this resource/api",
+              "errors": [
+                {
+                  "message": "Not Authorized to access this resource/api",
+                  "domain": "global",
+                  "reason": "forbidden"
+                }
+              ]
+            }
+          }
+          `}}
+  # Open group with external members.
+  - path: /groups/v1/groups/sales-emea@example.org
+    methods: [GET]
+    query_params:
+      alt: "json"
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "groupsSettings#groups",
+            "email": "sales-emea@example.org",
+            "name": "Sales EMEA",
+            "description": "Group on the secondary domain example.org.",
+            "whoCanAdd": "ALL_MEMBERS_CAN_ADD",
+            "whoCanJoin": "ANYONE_CAN_JOIN",
+            "whoCanViewMembership": "ALL_IN_DOMAIN_CAN_VIEW",
+            "whoCanViewGroup": "ANYONE_CAN_VIEW",
+            "whoCanInvite": "ALL_MEMBERS_CAN_INVITE",
+            "allowExternalMembers": "true",
+            "whoCanAddExternalMembers": "END_USERS_CAN_ADD_EXTERNAL_MEMBERS",
+            "whoCanPostMessage": "ANYONE_CAN_POST",
+            "allowWebPosting": "true",
+            "primaryLanguage": "en",
+            "maxMessageBytes": 26214400,
+            "isArchived": "true",
+            "archiveOnly": "false",
+            "messageModerationLevel": "MODERATE_NONE",
+            "spamModerationLevel": "ALLOW",
+            "replyTo": "REPLY_TO_CUSTOM",
+            "customReplyTo": "replies@example.net",
+            "includeCustomFooter": "false",
+            "customFooterText": "",
+            "sendMessageDenyNotification": "false",
+            "showInGroupDirectory": "true",
+            "allowGoogleCommunication": "false",
+            "membersCanPostAsTheGroup": "true",
+            "messageDisplayFont": "DEFAULT_FONT",
+            "includeInGlobalAddressList": "true",
+            "whoCanLeaveGroup": "ALL_MEMBERS_CAN_LEAVE",
+            "whoCanContactOwner": "ANYONE_CAN_CONTACT",
+            "whoCanAddReferences": "NONE",
+            "whoCanAssignTopics": "NONE",
+            "whoCanUnassignTopic": "NONE",
+            "whoCanTakeTopics": "NONE",
+            "whoCanMarkDuplicate": "NONE",
+            "whoCanMarkNoResponseNeeded": "NONE",
+            "whoCanMarkFavoriteReplyOnAnyTopic": "NONE",
+            "whoCanMarkFavoriteReplyOnOwnTopic": "NONE",
+            "whoCanUnmarkFavoriteReplyOnAnyTopic": "NONE",
+            "whoCanEnterFreeFormTags": "NONE",
+            "whoCanModifyTagsAndCategories": "NONE",
+            "favoriteRepliesOnTop": "false",
+            "whoCanApproveMembers": "ALL_MEMBERS_CAN_APPROVE",
+            "whoCanBanUsers": "ALL_MEMBERS",
+            "whoCanModifyMembers": "ALL_MEMBERS",
+            "whoCanApproveMessages": "OWNERS_ONLY",
+            "whoCanDeleteAnyPost": "OWNERS_AND_MANAGERS",
+            "whoCanDeleteTopics": "OWNERS_AND_MANAGERS",
+            "whoCanLockTopics": "OWNERS_AND_MANAGERS",
+            "whoCanMoveTopicsIn": "NONE",
+            "whoCanMoveTopicsOut": "NONE",
+            "whoCanPostAnnouncements": "NONE",
+            "whoCanHideAbuse": "OWNERS_AND_MANAGERS",
+            "whoCanMakeTopicsSticky": "OWNERS_AND_MANAGERS",
+            "whoCanModerateMembers": "ALL_MEMBERS",
+            "whoCanModerateContent": "OWNERS_AND_MANAGERS",
+            "whoCanAssistContent": "ALL_MEMBERS",
+            "customRolesEnabledForSettingsToBeMerged": "false",
+            "enableCollaborativeInbox": "true",
+            "whoCanDiscoverGroup": "ANYONE_CAN_DISCOVER",
+            "defaultSender": "GROUP"
+          }
+          `}}
+  # Group deleted after groups.list.
+  - path: /groups/v1/groups/retired-project@example.com
+    methods: [GET]
+    query_params:
+      alt: "json"
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 404
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "error": {
+              "code": 404,
+              "message": "Not Found",
+              "errors": [
+                {
+                  "message": "Not Found",
+                  "domain": "global",
+                  "reason": "notFound"
+                }
+              ]
+            }
+          }
+          `}}
+  # Groups Settings API not enabled in the Cloud project
+  # (test-settings-disabled-config.yml points groups_settings_api_host at
+  # /disabled): every call returns the same 403 SERVICE_DISABLED.
+  - path: /disabled/groups/v1/groups/{email}
+    methods: [GET]
+    query_params:
+      alt: "json"
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 403
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "error": {
+              "code": 403,
+              "message": "Groups Settings API has not been used in project 123456789012 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/groupssettings.googleapis.com/overview?project=123456789012 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.",
+              "errors": [
+                {
+                  "message": "Groups Settings API has not been used in project 123456789012 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/groupssettings.googleapis.com/overview?project=123456789012 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.",
+                  "domain": "usageLimits",
+                  "reason": "accessNotConfigured",
+                  "extendedHelp": "https://console.developers.google.com"
+                }
+              ],
+              "status": "PERMISSION_DENIED",
+              "details": [
+                {
+                  "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+                  "reason": "SERVICE_DISABLED",
+                  "domain": "googleapis.com",
+                  "metadata": {
+                    "consumer": "projects/123456789012",
+                    "service": "groupssettings.googleapis.com"
+                  }
+                },
+                {
+                  "@type": "type.googleapis.com/google.rpc.Help",
+                  "links": [
+                    {
+                      "description": "Google developers console API activation",
+                      "url": "https://console.developers.google.com/apis/api/groupssettings.googleapis.com/overview?project=123456789012"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+          `}}
+  # The delegated admin lacks the settings privilege
+  # (test-settings-denied-config.yml points groups_settings_api_host at
+  # /denied): every call returns 403 forbidden.
+  - path: /denied/groups/v1/groups/{email}
+    methods: [GET]
+    query_params:
+      alt: "json"
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 403
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "error": {
+              "code": 403,
+              "message": "Not Authorized to access this resource/api",
+              "errors": [
+                {
+                  "message": "Not Authorized to access this resource/api",
+                  "domain": "global",
+                  "reason": "forbidden"
+                }
+              ]
+            }
+          }
+          `}}
+  # Admin roles for customer C0groupinv (test-enrichment-config.yml): two
+  # roles pages and two role assignments pages.
+  - path: /admin/directory/v1/customer/C0groupinv/roles
+    methods: [GET]
+    query_params:
+      maxResults: "100"
+      pageToken: null
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#roles",
+            "etag": "\"exampleEtag_gi_roles_1\"",
+            "items": [
+              {
+                "kind": "admin#directory#role",
+                "etag": "\"exampleEtag_gi_role_101\"",
+                "roleId": "10000000000000101",
+                "roleName": "_GROUPS_ADMIN_ROLE",
+                "roleDescription": "Groups Administrator",
+                "rolePrivileges": [
+                  {
+                    "privilegeName": "ADMIN_DASHBOARD",
+                    "serviceId": "00example000001"
+                  },
+                  {
+                    "privilegeName": "GROUPS_ALL",
+                    "serviceId": "00example000002"
+                  }
+                ],
+                "isSystemRole": true,
+                "isSuperAdminRole": false
+              }
+            ],
+            "nextPageToken": "gi-roles-page-2"
+          }
+          `}}
+  - path: /admin/directory/v1/customer/C0groupinv/roles
+    methods: [GET]
+    query_params:
+      maxResults: "100"
+      pageToken: "gi-roles-page-2"
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#roles",
+            "etag": "\"exampleEtag_gi_roles_2\"",
+            "items": [
+              {
+                "kind": "admin#directory#role",
+                "etag": "\"exampleEtag_gi_role_102\"",
+                "roleId": "10000000000000102",
+                "roleName": "Example Sales Helpdesk",
+                "roleDescription": "Custom role held by the sales group",
+                "rolePrivileges": [
+                  {
+                    "privilegeName": "USERS_RETRIEVE",
+                    "serviceId": "00example000003"
+                  },
+                  {
+                    "privilegeName": "USERS_UPDATE",
+                    "serviceId": "00example000003"
+                  }
+                ],
+                "isSystemRole": false,
+                "isSuperAdminRole": false
+              }
+            ]
+          }
+          `}}
+  # Page 1: a lowercase "group" assignee (kept) and a user assignee (dropped).
+  # Page 2: an uppercase "GROUP" assignee scoped to an OU with a condition and
+  # a future expiry (kept) and an expired group assignee (dropped).
+  - path: /admin/directory/v1/customer/C0groupinv/roleassignments
+    methods: [GET]
+    query_params:
+      maxResults: "200"
+      pageToken: null
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#roleAssignments",
+            "etag": "\"exampleEtag_gi_ra_1\"",
+            "items": [
+              {
+                "kind": "admin#directory#roleAssignment",
+                "etag": "\"exampleEtag_gi_ra_101\"",
+                "roleAssignmentId": "20000000000000101",
+                "roleId": "10000000000000101",
+                "assignedTo": "00example0par01",
+                "assigneeType": "group",
+                "scopeType": "CUSTOMER"
+              },
+              {
+                "kind": "admin#directory#roleAssignment",
+                "etag": "\"exampleEtag_gi_ra_102\"",
+                "roleAssignmentId": "20000000000000102",
+                "roleId": "10000000000000102",
+                "assignedTo": "100000000000000000001",
+                "assigneeType": "user",
+                "scopeType": "CUSTOMER"
+              }
+            ],
+            "nextPageToken": "gi-ra-page-2"
+          }
+          `}}
+  - path: /admin/directory/v1/customer/C0groupinv/roleassignments
+    methods: [GET]
+    query_params:
+      maxResults: "200"
+      pageToken: "gi-ra-page-2"
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#roleAssignments",
+            "etag": "\"exampleEtag_gi_ra_2\"",
+            "items": [
+              {
+                "kind": "admin#directory#roleAssignment",
+                "etag": "\"exampleEtag_gi_ra_103\"",
+                "roleAssignmentId": "20000000000000103",
+                "roleId": "10000000000000102",
+                "assignedTo": "00example0sec01",
+                "assigneeType": "GROUP",
+                "scopeType": "ORG_UNIT",
+                "orgUnitId": "03ph8a2z00sales",
+                "condition": "api.getAttribute('cloudidentity.googleapis.com/groups.labels', []).hasAny(['groups.security']) && resource.type == 'cloudidentity.googleapis.com/Group'",
+                "expirationDetails": {
+                  "expireTime": "2099-12-31T00:00:00Z"
+                }
+              },
+              {
+                "kind": "admin#directory#roleAssignment",
+                "etag": "\"exampleEtag_gi_ra_104\"",
+                "roleAssignmentId": "20000000000000104",
+                "roleId": "10000000000000101",
+                "assignedTo": "00example0chd01",
+                "assigneeType": "group",
+                "scopeType": "CUSTOMER",
+                "expirationDetails": {
+                  "expireTime": "2020-01-01T00:00:00Z"
+                }
+              }
+            ]
+          }
+          `}}
+  # Admin roles for customer C0rolesdenied (test-settings-disabled-config.yml):
+  # the delegated account is not a super admin.
+  - path: /admin/directory/v1/customer/C0rolesdenied/roles
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 403
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "error": {
+              "code": 403,
+              "message": "Not Authorized to access this resource/api",
+              "errors": [
+                {
+                  "message": "Not Authorized to access this resource/api",
+                  "domain": "global",
+                  "reason": "forbidden"
+                }
+              ]
+            }
+          }
+          `}}

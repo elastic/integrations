@@ -1,0 +1,16 @@
+wait_for_data_timeout: 1m
+input: cel
+service: google_workspace
+vars:
+  jwt_file: "{{SERVICE_LOGS_DIR}}/credentials.json"
+  delegated_account: test@example.com
+  enable_request_tracer: true
+data_stream:
+  vars:
+    directory_api_host: http://{{Hostname}}:{{Port}}
+    batch_size: 2
+    preserve_original_event: true
+assert:
+  # One document per group: 5 groups over 4 groups.list pages (one of them
+  # empty), each with a full members walk.
+  hit_count: 5

@@ -66,7 +66,16 @@ The Reports API data streams use the following *oauth2 scope*:
 
 - `https://www.googleapis.com/auth/admin.reports.audit.readonly`
 
-The `users` data stream needs different scopes. See the Google Workspace Users section.
+The `users` and `group_inventory` data streams need different scopes. See the Google Workspace Users and Google Workspace Groups inventory sections.
+
+### Inventory data streams
+
+Most data streams of this integration contain audit **events** from the Reports API: what happened. Two data streams instead contain an **inventory** from the Admin SDK Directory API: what exists, collected again in full on every cycle, with `event.kind: asset`. Both are turned off by default.
+
+| Inventory data stream | Contains | Related audit data streams |
+|---|---|---|
+| `users` | One document per user account | `user_accounts`, `admin` |
+| `group_inventory` | One document per Google group | `groups`, `group_enterprise` |
 
 Once you have downloaded your service account credentials as a JSON file, you are ready to set up your integration.
 
@@ -275,7 +284,7 @@ The Directory API has no filter for changed users, so each cycle reads the whole
 
 Two optional settings add more information to each user document. Both are off by default:
 
-- **Collect group membership** adds the groups each user is a direct member of (`user.group.id`, `user.group.name` and `google_workspace.users.groups`). Membership inherited through nested groups is not included.
+- **Collect group membership** adds the groups each user is a direct member of (`user.group.id`, `user.group.name` and `google_workspace.users.groups`). Membership inherited through nested groups is not included. It also links each user to the groups they own (`user.entity.relationships.owns.entity.id`) and manage (added to `user.entity.relationships.administers.entity.id`). These IDs are the `entity.id` of the group documents in the `group_inventory` data stream. The Entity Store graph draws `owns` links from Kibana 9.4 and `administers` links from Kibana 9.5.
 - **Collect admin roles and privileges** adds the admin roles assigned to each user (`user.roles`), their privileges (`user.entity.attributes.permissions`) and the scope each role applies to (`user.entity.relationships.administers.entity.id`): an organizational unit ID, or the customer ID for roles that apply to the whole account, such as super administrator. The full assignments are in `google_workspace.users.role_assignments`. Only roles assigned **directly** to the user are included. Roles a user gets through a group are not, because the Directory API only returns those for a single user at a time.
 
 `user.roles` always includes `super_admin` or `delegated_admin` when Google flags the user as one, even when the roles option is off.
@@ -318,6 +327,68 @@ The data stream calls `https://admin.googleapis.com`. You can change this with t
 - **An error document reports HTTP 403 on a roles, role assignments, groups or members request.** The delegated account lacks the privilege for that option. Users are still collected, without that information. For the roles option, the delegated account must be a super administrator.
 - **Fewer users than expected.** The delegated account's role is probably limited to some organizational units. Grant Users → Read on all organizational units.
 
+# Google Workspace Groups inventory
+
+The `group_inventory` data stream collects an **inventory** of the Google groups in your Google Workspace account from the [Admin SDK Directory API](https://developers.google.com/workspace/admin/directory/reference/rest/v1/groups/list). Each collection cycle produces one document per group, describing what exists: the group's email, name, aliases and member count, its owners and managers, the groups nested in it, its external members and, optionally, its access settings and admin roles. Documents have `event.kind: asset`.
+
+This is different from the `groups` and `group_enterprise` data streams, which contain Groups audit **events** (what happened), such as a member being added or a setting being changed.
+
+The data stream is turned off by default.
+
+## Collection
+
+The Directory API has no filter for changed groups, so each cycle lists every group and reads every group's direct members again. The default interval is `24h`. A cycle needs one request per 200 groups, plus at least one request per group for its members (one per 200 members). The `users` data stream reads the same group members when its Collect group membership option is on, and both data streams share the Directory API quota of the delegated account with the Reports API data streams.
+
+Each group document contains:
+
+- `group.id` and `group.name`, and the group as an entity: `entity.id` (the group ID), `entity.name` (the group email), `entity.display_name` and `entity.sub_type: google_workspace_group`. ECS has no entity type for groups, so `entity.type` is not set. From Kibana 9.4 the Entity Store keeps each group as a generic entity.
+- The owners and managers (`google_workspace.group_inventory.owners` and `managers`, also in `related.user`), the groups that are direct members of this group (`member_groups`), the external members (`external_members`), whether the whole account is a member (`has_customer_member`) and member counts by type and role (`member_counts`).
+- The plain user members are **not** listed on group documents. They are on the user documents of the `users` data stream (`user.group.id`) when its Collect group membership option is on. `group.id` on a group document is the same value as `user.group.id` on a user document.
+
+Two optional settings add more information to each group document. Both are off by default:
+
+- **Collect group settings** adds the group's access settings from the [Groups Settings API](https://developers.google.com/workspace/admin/groups-settings/v1/reference/groups) under `google_workspace.group_inventory.settings`: who can join, post, view members, view and find the group, whether external members are allowed, moderation and others. It costs one more request per group, against the Groups Settings API quota of 100,000 requests a day per Google Cloud project. At the default `24h` interval that covers about 90,000 groups, and at `1h` about 4,000. When the quota is used up, settings are not requested again in that cycle, one error document is published and the remaining group documents carry `google_workspace.group_inventory.settings_error`. These are the values set on the group. Organization-wide Groups for Business sharing settings can restrict them further and are not included.
+- **Collect admin roles and privileges** adds the admin roles assigned directly to each group (`google_workspace.group_inventory.role_assignments`), their privileges (`entity.attributes.permissions`) and, for roles limited to an organizational unit, that unit's ID (`entity.relationships.administers.entity.id`). The members of such a group hold the role through the group.
+
+## Requirements
+
+The `group_inventory` data stream uses the same service account and `Delegated Account` as the Reports API data streams. It needs these extra scopes and privileges:
+
+| Setting | OAuth scope to add | Privilege the delegated account needs |
+|---|---|---|
+| Always | `https://www.googleapis.com/auth/admin.directory.group.readonly` | Groups → Read. If you use a Groups Reader or Groups Editor role assignment instead, it must cover all groups. |
+| Collect group settings | `https://www.googleapis.com/auth/apps.groups.settings` | The Groups privilege (for example the Groups Admin or Groups Editor role), or super administrator. In accounts with several domains, use a delegated account on the primary domain. |
+| Collect admin roles and privileges | `https://www.googleapis.com/auth/admin.directory.rolemanagement.readonly` | The delegated account must be a **super administrator**. |
+
+The first and last scopes are the same as for the `users` data stream, so they may already be delegated.
+
+> NOTE: Google offers no read-only scope for group settings. `https://www.googleapis.com/auth/apps.groups.settings` allows **changing** the settings of any group the delegated account can manage. The integration only reads settings. Keep the delegated account's privileges as low as the table allows.
+
+For Collect group settings, also enable the **Groups Settings API** in the service account's Google Cloud project, next to the Admin SDK API.
+
+Add the scopes to the service account's domain-wide delegation as described in the Google Workspace Users section: **Edit** the existing client ID, keep the scopes already listed and use the exact scope strings. Scope changes can take up to 24 hours to take effect.
+
+> NOTE: The integration requests all the scopes the data stream needs in one token request. If any of them is not delegated yet, Google issues no token and the **whole** `group_inventory` data stream stops, including the basic group inventory. Turn on an optional setting only after its scope is delegated and in effect. The other data streams of the integration, including `users`, are not affected.
+
+The data stream calls `https://admin.googleapis.com` and, for group settings, `https://www.googleapis.com`. You can change them with the **Directory API Host** and **Groups Settings API Host** settings under the data stream's advanced options.
+
+## Notes on the data
+
+- Only **direct** members are read. A user who is a member through a nested group is not counted in this group's `member_counts`. Find the groups that contain a group by searching for its ID in `google_workspace.group_inventory.member_groups.id`.
+- External members are found by email domain: a member is external when its email domain is not the domain of any group listed in the same cycle. A domain of your account that has no groups therefore looks external, and so do the other domains of your account when the **Domain** setting limits the listing to one domain.
+- Admin roles that apply to the whole account add their privileges to `entity.attributes.permissions` but no ID to `entity.relationships.administers.entity.id`, because the group listing does not return the customer ID.
+- Group owners in this data stream are the members with the Owner role. Administrators can manage every group without being listed as owners.
+- Deleted groups are not included.
+
+## Troubleshooting
+
+- **The data stream stops with `oauth2: cannot fetch token` and the input health is Degraded.** Google rejected the token request. Check that every scope for the settings you enabled is delegated exactly as in the table above, and that enough time has passed for the change to take effect.
+- **An error document reports an HTTP error on the groups request, no group documents are written and the input health is Degraded.** The group listing itself failed, so the cycle stopped. For HTTP 403, grant the delegated account Groups → Read with an assignment that has no condition. The next cycle starts again from the beginning.
+- **A group document has `google_workspace.group_inventory.members_error`.** Its members could not be read, usually because the group was deleted during the cycle (HTTP 404). The other groups are not affected.
+- **An error document reports HTTP 403 on a Groups Settings request, and group documents have `google_workspace.group_inventory.settings_error`.** Either the Groups Settings API is not enabled in the Google Cloud project, or the delegated account lacks the Groups privilege. Groups are still collected, without settings.
+- **An error document reports HTTP 403 on a roles or role assignments request.** The delegated account is not a super administrator. Groups are still collected, without admin roles.
+- **Fewer groups than expected.** The delegated account's Groups role assignment is probably limited by a condition, for example to security groups only. Use an assignment without a condition.
+
 ## Elastic Managed enabled integration
 
 Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
@@ -356,6 +427,14 @@ This is the `users` dataset. It contains an inventory of user accounts, not even
 {{event "users"}}
 
 {{fields "users"}}
+
+### Group Inventory
+
+This is the `group_inventory` dataset. It contains an inventory of Google groups, not events. See the Google Workspace Groups inventory section.
+
+{{event "group_inventory"}}
+
+{{fields "group_inventory"}}
 
 ### User Accounts
 

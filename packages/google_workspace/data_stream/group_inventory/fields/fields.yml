@@ -1,0 +1,421 @@
+- name: google_workspace
+  type: group
+  fields:
+    - name: group_inventory
+      type: group
+      description: Google group from the Admin SDK Directory API `groups.list` method, with facts derived from its direct members (`members.list`) and, when enabled, its Groups Settings and the admin roles assigned to it.
+      fields:
+        - name: email
+          type: keyword
+          description: The group's email address. Changes when the group is renamed. Also in `entity.name`. The group ID is in `group.id` and the display name in `group.name`.
+        - name: email_domain
+          type: keyword
+          description: The domain part of the group's email address, in lowercase.
+        - name: description
+          type: keyword
+          description: The group's description.
+        - name: direct_members_count
+          type: long
+          description: The number of direct members of the group, as reported by the Directory API. Whether nested groups and the whole-domain member are counted is not documented; see `member_counts` for the counts from the members walk.
+        - name: admin_created
+          type: boolean
+          description: Whether the group was created by an administrator (`false` for groups created by users). May be absent when false.
+        - name: aliases
+          type: keyword
+          description: 'The group''s alias email addresses. The API documents them as strings and Google''s examples show `{"alias": ...}` objects; both forms are stored as addresses.'
+        - name: non_editable_aliases
+          type: keyword
+          description: The group's non-editable alias email addresses, typically outside the account's primary domain or sub-domain. Stored as addresses, like `aliases`.
+        - name: external_ids
+          type: group
+          description: The group's external IDs.
+          fields:
+            - name: namespace
+              type: keyword
+              description: The namespace of the external ID.
+            - name: id
+              type: keyword
+              description: The external ID.
+        - name: kind
+          type: keyword
+          description: The type of the API resource.
+        - name: etag
+          type: keyword
+          description: ETag of the resource.
+        - name: owners
+          type: group
+          description: Direct members with role `OWNER`.
+          fields:
+            - name: id
+              type: keyword
+              description: The member ID. For a user, the user ID.
+            - name: email
+              type: keyword
+              description: The member's email address.
+            - name: role
+              type: keyword
+              description: The member's role in the group.
+            - name: type
+              type: keyword
+              description: The member type (`USER`, `GROUP`, `CUSTOMER` or `EXTERNAL`).
+            - name: status
+              type: keyword
+              description: The member's status, for example `ACTIVE` or `SUSPENDED`. Often absent for external members.
+        - name: managers
+          type: group
+          description: Direct members with role `MANAGER`.
+          fields:
+            - name: id
+              type: keyword
+              description: The member ID. For a user, the user ID.
+            - name: email
+              type: keyword
+              description: The member's email address.
+            - name: role
+              type: keyword
+              description: The member's role in the group.
+            - name: type
+              type: keyword
+              description: The member type (`USER`, `GROUP`, `CUSTOMER` or `EXTERNAL`).
+            - name: status
+              type: keyword
+              description: The member's status, for example `ACTIVE` or `SUSPENDED`.
+        - name: member_groups
+          type: group
+          description: Groups that are direct members of this group (members of type `GROUP`). A group that is a member is always role `MEMBER`.
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the member group. Equals that group's `group.id` when it belongs to the same account.
+            - name: email
+              type: keyword
+              description: The email address of the member group.
+            - name: role
+              type: keyword
+              description: The member group's role in this group.
+            - name: type
+              type: keyword
+              description: The member type, `GROUP`.
+            - name: status
+              type: keyword
+              description: The member group's status.
+        - name: external_members
+          type: group
+          description: Direct members outside the account. A member is external when its type is `EXTERNAL`, or when it is a `USER` or `GROUP` whose email domain is not the domain of any group listed in the same collection cycle. A domain of the account that has no group therefore looks external.
+          fields:
+            - name: id
+              type: keyword
+              description: The member ID.
+            - name: email
+              type: keyword
+              description: The member's email address.
+            - name: role
+              type: keyword
+              description: The member's role in the group.
+            - name: type
+              type: keyword
+              description: The member type.
+            - name: status
+              type: keyword
+              description: The member's status. Often absent for external members.
+        - name: has_customer_member
+          type: boolean
+          description: Whether the group has a member of type `CUSTOMER`, which stands for every user of the account.
+        - name: customer_member_ids
+          type: keyword
+          description: The customer IDs of the group's `CUSTOMER` members.
+        - name: member_counts
+          type: group
+          description: Counts of the group's direct members from the members walk.
+          fields:
+            - name: total
+              type: long
+              description: The number of direct members of every type.
+            - name: by_type
+              type: group
+              description: Counts of the group's direct members by member type.
+              fields:
+                - name: user
+                  type: long
+                  description: The number of members of type `USER`.
+                - name: group
+                  type: long
+                  description: The number of members of type `GROUP`.
+                - name: customer
+                  type: long
+                  description: The number of members of type `CUSTOMER`.
+                - name: other
+                  type: long
+                  description: The number of members of any other type, including `EXTERNAL`, or without a type.
+            - name: by_role
+              type: group
+              description: Counts of the group's direct members by role.
+              fields:
+                - name: owner
+                  type: long
+                  description: The number of members with role `OWNER`.
+                - name: manager
+                  type: long
+                  description: The number of members with role `MANAGER`.
+                - name: member
+                  type: long
+                  description: The number of members with role `MEMBER` or without a role.
+                - name: other
+                  type: long
+                  description: The number of members with any other role.
+            - name: external
+              type: long
+              description: The number of external members (see `external_members`).
+        - name: members_error
+          type: group
+          description: The error returned when the group's members could not be read, for example because the group was deleted during the collection cycle. When present, the member fields are absent.
+          fields:
+            - name: code
+              type: keyword
+              description: The HTTP status code.
+            - name: id
+              type: keyword
+              description: The HTTP status.
+            - name: message
+              type: match_only_text
+              description: The request and the response body.
+        - name: settings_error
+          type: group
+          description: The error returned when the group's settings could not be read. When a failure applies to every settings call (for example the Groups Settings API is not enabled), settings are not requested again in that cycle and every later group carries the same error.
+          fields:
+            - name: code
+              type: keyword
+              description: The HTTP status code.
+            - name: id
+              type: keyword
+              description: The HTTP status.
+            - name: message
+              type: match_only_text
+              description: The request and the response body.
+        - name: role_assignments
+          type: group
+          description: Admin roles assigned directly to the group. Present only when admin role collection is enabled and succeeded; an empty list means the group has no direct assignment.
+          fields:
+            - name: role_assignment_id
+              type: keyword
+              description: The ID of the role assignment.
+            - name: role_id
+              type: keyword
+              description: The ID of the assigned role.
+            - name: role_name
+              type: keyword
+              description: The name of the assigned role.
+            - name: privileges
+              type: keyword
+              description: The names of the privileges granted by the role.
+            - name: is_super_admin_role
+              type: boolean
+              description: Whether the role is a super admin role.
+            - name: is_system_role
+              type: boolean
+              description: Whether the role is a pre-defined system role.
+            - name: scope_type
+              type: keyword
+              description: The scope in which the role is assigned (`CUSTOMER` or `ORG_UNIT`).
+            - name: org_unit_id
+              type: keyword
+              description: The ID of the organizational unit the role is restricted to, for `ORG_UNIT` assignments.
+            - name: condition
+              type: keyword
+              description: The condition associated with the role assignment.
+            - name: expire_time
+              type: date
+              description: The time the role assignment expires.
+        - name: settings
+          type: group
+          description: The group's settings from the Groups Settings API, with the keys in snake_case. Present only when group settings collection is enabled and succeeded for this group. The API sends booleans as the strings `"true"` and `"false"`; they are stored as booleans. Empty values are dropped. Many settings are deprecated but still returned.
+          fields:
+            - name: kind
+              type: keyword
+              description: The type of the API resource.
+            - name: email
+              type: keyword
+              description: The group's email address, as returned by the Groups Settings API.
+            - name: name
+              type: keyword
+              description: The group's name, as stored by the Groups Settings API. May differ from the Directory API copy.
+            - name: description
+              type: keyword
+              description: The group's description, as stored by the Groups Settings API. May differ from the Directory API copy.
+            - name: who_can_join
+              type: keyword
+              description: Who can join the group, for example `ANYONE_CAN_JOIN`, `ALL_IN_DOMAIN_CAN_JOIN`, `INVITED_CAN_JOIN` or `CAN_REQUEST_TO_JOIN`.
+            - name: allow_external_members
+              type: boolean
+              description: Whether users outside the organization can be members.
+            - name: who_can_add_external_members
+              type: keyword
+              description: Who can add external members. Added to the API in 2026; may be absent.
+            - name: who_can_moderate_members
+              type: keyword
+              description: Who can manage members (add, remove, approve and ban).
+            - name: who_can_view_membership
+              type: keyword
+              description: Who can see the member list.
+            - name: who_can_leave_group
+              type: keyword
+              description: Who can leave the group.
+            - name: who_can_view_group
+              type: keyword
+              description: Who can read the group's conversations.
+            - name: who_can_discover_group
+              type: keyword
+              description: Who can find the group by searching for its name, address or conversations.
+            - name: show_in_group_directory
+              type: boolean
+              description: Deprecated, merged into `who_can_discover_group`. Whether the group is listed in the groups directory.
+            - name: include_in_global_address_list
+              type: boolean
+              description: Whether the group is listed in the Global Address List.
+            - name: who_can_post_message
+              type: keyword
+              description: Who can send messages to the group, for example `ANYONE_CAN_POST` for any internet sender.
+            - name: message_moderation_level
+              type: keyword
+              description: Which incoming messages need approval.
+            - name: spam_moderation_level
+              type: keyword
+              description: How messages flagged as spam are handled.
+            - name: members_can_post_as_the_group
+              type: boolean
+              description: Whether members can send messages using the group's address.
+            - name: default_sender
+              type: keyword
+              description: The default sender of messages sent from the group (`DEFAULT_SELF` or `GROUP`). Google documents the key as `defaultSender` and the discovery document as `default_sender`; either is stored here, and `default_sender` is used when both are present.
+            - name: allow_web_posting
+              type: boolean
+              description: Whether members can post through the web interface.
+            - name: who_can_contact_owner
+              type: keyword
+              description: Who can contact the group owners through the web interface.
+            - name: who_can_moderate_content
+              type: keyword
+              description: Who can approve, block and delete messages.
+            - name: who_can_assist_content
+              type: keyword
+              description: Who can moderate metadata, such as assigning and tagging conversations.
+            - name: enable_collaborative_inbox
+              type: boolean
+              description: Whether the group works as a collaborative inbox.
+            - name: custom_roles_enabled_for_settings_to_be_merged
+              type: boolean
+              description: Whether a custom role of the group is included in one of the merged settings.
+            - name: is_archived
+              type: boolean
+              description: Whether the group's conversation history is kept.
+            - name: archive_only
+              type: boolean
+              description: Whether the group is archive-only (inactive; new messages are rejected).
+            - name: reply_to
+              type: keyword
+              description: Where replies to group messages go.
+            - name: custom_reply_to
+              type: keyword
+              description: The reply address used when `reply_to` is `REPLY_TO_CUSTOM`.
+            - name: include_custom_footer
+              type: boolean
+              description: Whether a custom footer is added to messages.
+            - name: custom_footer_text
+              type: keyword
+              description: The custom footer text.
+            - name: send_message_deny_notification
+              type: boolean
+              description: Whether authors of rejected messages are notified.
+            - name: default_message_deny_notification_text
+              type: keyword
+              description: The notification text sent to authors of rejected messages. Absent when empty.
+            - name: primary_language
+              type: keyword
+              description: The language for notifications and footers.
+            - name: max_message_bytes
+              type: long
+              description: Deprecated. The maximum message size in bytes.
+            - name: message_display_font
+              type: keyword
+              description: Deprecated. Always `DEFAULT_FONT`.
+            - name: allow_google_communication
+              type: boolean
+              description: Deprecated. Whether Google may contact the group managers.
+            - name: favorite_replies_on_top
+              type: boolean
+              description: Whether favorite replies are shown above other replies.
+            - name: who_can_add
+              type: keyword
+              description: Deprecated, merged into `who_can_moderate_members`. Who can add members.
+            - name: who_can_invite
+              type: keyword
+              description: Deprecated, merged into `who_can_moderate_members`. Who can invite members.
+            - name: who_can_approve_members
+              type: keyword
+              description: Deprecated, merged into `who_can_moderate_members`. Who can approve members asking to join.
+            - name: who_can_ban_users
+              type: keyword
+              description: Deprecated, merged into `who_can_moderate_members`. Who can ban users.
+            - name: who_can_modify_members
+              type: keyword
+              description: Deprecated, merged into `who_can_moderate_members`. Who can change members' roles.
+            - name: who_can_approve_messages
+              type: keyword
+              description: Deprecated, merged into `who_can_moderate_content`. Who can approve messages in the moderation queue.
+            - name: who_can_delete_any_post
+              type: keyword
+              description: Deprecated, merged into `who_can_moderate_content`. Who can delete replies to topics.
+            - name: who_can_delete_topics
+              type: keyword
+              description: Deprecated, merged into `who_can_moderate_content`. Who can delete topics.
+            - name: who_can_lock_topics
+              type: keyword
+              description: Deprecated, merged into `who_can_moderate_content`. Who can stop replies to topics.
+            - name: who_can_move_topics_in
+              type: keyword
+              description: Deprecated, merged into `who_can_moderate_content`. Who can move topics into the group.
+            - name: who_can_move_topics_out
+              type: keyword
+              description: Deprecated, merged into `who_can_moderate_content`. Who can move topics out of the group.
+            - name: who_can_post_announcements
+              type: keyword
+              description: Deprecated, merged into `who_can_moderate_content`. Who can post announcements.
+            - name: who_can_hide_abuse
+              type: keyword
+              description: Deprecated, merged into `who_can_moderate_content`. Who can hide posts by reporting them as abuse.
+            - name: who_can_make_topics_sticky
+              type: keyword
+              description: Deprecated, merged into `who_can_moderate_content`. Who can pin topics.
+            - name: who_can_assign_topics
+              type: keyword
+              description: Deprecated, merged into `who_can_assist_content`. Who can assign topics.
+            - name: who_can_unassign_topic
+              type: keyword
+              description: Deprecated, merged into `who_can_assist_content`. Who can unassign topics.
+            - name: who_can_take_topics
+              type: keyword
+              description: Deprecated, merged into `who_can_assist_content`. Who can take topics.
+            - name: who_can_mark_duplicate
+              type: keyword
+              description: Deprecated, merged into `who_can_assist_content`. Who can mark a topic as a duplicate.
+            - name: who_can_mark_no_response_needed
+              type: keyword
+              description: Deprecated, merged into `who_can_assist_content`. Who can mark a topic as not needing a response.
+            - name: who_can_mark_favorite_reply_on_any_topic
+              type: keyword
+              description: Deprecated, merged into `who_can_assist_content`. Who can mark another user's post as a favorite reply.
+            - name: who_can_mark_favorite_reply_on_own_topic
+              type: keyword
+              description: Deprecated, merged into `who_can_assist_content`. Who can mark a favorite reply on their own topic.
+            - name: who_can_unmark_favorite_reply_on_any_topic
+              type: keyword
+              description: Deprecated, merged into `who_can_assist_content`. Who can unmark a favorite reply.
+            - name: who_can_enter_free_form_tags
+              type: keyword
+              description: Deprecated, merged into `who_can_assist_content`. Who can enter free-form tags.
+            - name: who_can_modify_tags_and_categories
+              type: keyword
+              description: Deprecated, merged into `who_can_assist_content`. Who can change tags and categories.
+            - name: who_can_add_references
+              type: keyword
+              description: Deprecated, no longer supported. Who can add references to a topic.
