@@ -1,0 +1,24 @@
+input: cel
+service: chargeback
+vars:
+  organization_id: "1111"
+  cloud_api_key: cloud-key
+  cloud_api_base: http://{{Hostname}}:{{Port}}
+  hub_es_url: http://{{Hostname}}:{{Port}}/hub
+  hub_es_api_key: hub-key
+  deployment_api_keys: "dep-ech-01:ech-key"
+  sync_fleet_config: true
+  enable_request_tracer: true
+data_stream:
+  vars:
+    utilization_memory_weight: 70
+    utilization_storage_weight: 30
+    utilization_floor: "0.10"
+    processors: |-
+      - add_fields:
+          target: labels
+          fields:
+            test_run_id: "{{Test.RunID}}"
+assert:
+  # 1 config_snapshot + 3 node_sample documents (2 ECH data nodes + 1 Hub data node).
+  hit_count: 4

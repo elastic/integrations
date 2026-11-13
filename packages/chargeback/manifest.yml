@@ -1,7 +1,7 @@
 format_version: 3.5.0
 name: chargeback
 title: "Chargeback"
-version: 0.6.0
+version: 0.1.0
 description: "Allocate Elastic Cloud Hosted (ECH), Serverless, and On-Premises billing to deployments, data tiers, and data streams. Native Fleet integration with self-contained Elastic Agent CEL collection, Elasticsearch Transforms, lookup indices, and opt-in compatibility aliases for stock ESS Billing and Elasticsearch Consumption dashboards."
 type: integration
 categories:
@@ -34,7 +34,7 @@ policy_templates:
   - name: chargeback
     title: Chargeback
     description: >-
-      Collect Elastic Cloud Hosted (ECH), Serverless, and self-managed cluster billing, index/tier usage, and node utilization metrics on a schedule. Connection settings, currency rates, and cost weights are configured in Fleet. Secrets are encrypted in Fleet and never stored in plaintext indices.
+      Collect Elastic Cloud Hosted (ECH) and Serverless billing alongside ECH, Serverless, and self-managed index/tier usage and node utilization metrics on a schedule. Self-managed cost allocation requires On-Premises Billing (metrics-ess_billing.billing-onprem*) or a compatible billing producer. Connection settings, currency rates, and cost weights are configured in Fleet. Secrets are encrypted in Fleet and never stored in plaintext indices.
     deployment_modes:
       default:
         enabled: true
@@ -44,13 +44,13 @@ policy_templates:
       - type: cel
         title: Elastic Cloud & Cluster Access
         description: >-
-          Configure Elastic Cloud credentials (for Cloud Billing and Control Plane discovery) and/or a local Hub / self-managed Elasticsearch URL and API keys. Leave Organization ID and Elastic Cloud API Key empty when running in On-Premises / Hub-only mode. Currency rates, credit commitments, and cost/utilization weights are configured in each data stream below.
+          Configure Elastic Cloud credentials (for Cloud Billing and Control Plane discovery) and/or a local Hub / self-managed Elasticsearch URL and API keys. Leave Organization ID and Elastic Cloud API Key empty when running in On-Premises / Hub-only mode alongside On-Premises Billing (metrics-ess_billing.billing-onprem*) or a compatible billing producer. Currency rates, credit commitments, and cost/utilization weights are configured in each data stream below.
         vars:
           - name: organization_id
             type: text
             title: Organization ID
             description: >-
-              Elastic Cloud organization ID (found on Cloud Console → Organization). Leave empty for On-Premises / self-managed hub-only mode.
+              Elastic Cloud organization ID (found on Cloud Console → Organization). Leave empty for On-Premises / self-managed hub-only mode (requires On-Premises Billing or a compatible billing producer for cost dashboards).
             multi: false
             required: false
             show_user: true
@@ -60,7 +60,7 @@ policy_templates:
             type: password
             title: Elastic Cloud API Key
             description: >-
-              Elastic Cloud API key created in Cloud Console → Organization → API keys with Billing Admin access (and Deployment / Serverless read access). Leave empty for On-Premises / self-managed hub-only mode.
+              Elastic Cloud API key created in Cloud Console → Organization → API keys with Billing Admin access (and Deployment / Serverless read access). Leave empty for On-Premises / self-managed hub-only mode (requires On-Premises Billing or a compatible billing producer for cost dashboards).
             multi: false
             required: false
             show_user: true

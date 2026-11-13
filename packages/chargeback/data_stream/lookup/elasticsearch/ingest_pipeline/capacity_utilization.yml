@@ -9,11 +9,21 @@ processors:
       ignore_failure: true
       lang: painless
       source: |
+        long natCnt = (ctx.native instanceof Map && ctx.native.doc_cnt instanceof Number)
+          ? ((Number)ctx.native.doc_cnt).longValue()
+          : 0L;
+        long legCnt = (ctx.legacy instanceof Map && ctx.legacy.doc_cnt instanceof Number)
+          ? ((Number)ctx.legacy.doc_cnt).longValue()
+          : 0L;
+        boolean nativeCovers = (ctx.coverage instanceof Map && ctx.coverage.native_covers_day != null)
+          && ctx.coverage.native_covers_day.toString().equalsIgnoreCase('true');
         Map chosen = ctx;
-        if (ctx.native instanceof Map && ctx.native.doc_cnt instanceof Number && ((Number)ctx.native.doc_cnt).longValue() > 0L) {
-          chosen = ctx.native;
-        } else if (ctx.legacy instanceof Map) {
-          chosen = ctx.legacy;
+        if (natCnt > 0L && (legCnt <= 0L || nativeCovers) && ctx.native instanceof Map) {
+          chosen = (Map)ctx.native;
+        } else if (legCnt > 0L && ctx.legacy instanceof Map) {
+          chosen = (Map)ctx.legacy;
+        } else if (natCnt > 0L && ctx.native instanceof Map) {
+          chosen = (Map)ctx.native;
         }
         if (chosen != ctx) {
           if (chosen.containsKey('heap_used_pct_p95')) { ctx.heap_used_pct_p95 = chosen.heap_used_pct_p95; }
@@ -21,6 +31,7 @@ processors:
         }
         ctx.remove('native');
         ctx.remove('legacy');
+        ctx.remove('coverage');
 
         if (ctx['@timestamp'] != null && ctx.deployment_id != null) {
           def rawTs = ctx['@timestamp'];
@@ -70,14 +81,10 @@ processors:
       value: "{{{_ingest.timestamp}}}"
       tag: set_event_ingested
   - pipeline:
-      description: '[Fleet] Global pipeline for all data streams'
+      description: '[Fleet] Pipeline for Chargeback lookup destination rows'
       ignore_missing_pipeline: true
-      name: global@custom
+      name: logs-chargeback.lookup@custom
   - pipeline:
-      description: '[Fleet] Pipeline for all data streams of type `metrics`'
+      description: '[Fleet] Pipeline for Chargeback capacity-utilization lookup destination rows'
       ignore_missing_pipeline: true
-      name: metrics@custom
-  - pipeline:
-      description: '[Fleet] Pipeline for all data streams of type `metrics` defined by the `chargeback` integration'
-      ignore_missing_pipeline: true
-      name: metrics-chargeback.integration@custom
+      name: logs-chargeback.lookup-capacity_utilization@custom

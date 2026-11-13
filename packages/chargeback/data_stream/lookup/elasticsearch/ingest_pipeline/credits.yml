@@ -1,0 +1,77 @@
+---
+description: "Chargeback: Populate ESS Billing Credits compatibility fields for daily credit commitment snapshots."
+processors:
+  - script:
+      ignore_failure: true
+      lang: painless
+      tag: ess_billing_credits
+      source: |
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC);
+        String orgId = ctx.organization_id != null ? ctx.organization_id.toString() : 'unknown';
+
+        String startIso = null;
+        if (ctx.credit_start != null) {
+          if (ctx.credit_start instanceof Number) {
+            startIso = fmt.format(Instant.ofEpochMilli(((Number)ctx.credit_start).longValue()));
+          } else {
+            startIso = fmt.format(ZonedDateTime.parse(ctx.credit_start.toString()).toInstant());
+          }
+        }
+        String endIso = null;
+        if (ctx.credit_end != null) {
+          if (ctx.credit_end instanceof Number) {
+            endIso = fmt.format(Instant.ofEpochMilli(((Number)ctx.credit_end).longValue()));
+          } else {
+            endIso = fmt.format(ZonedDateTime.parse(ctx.credit_end.toString()).toInstant());
+          }
+        }
+
+        double bal = 0.0;
+        boolean act = false;
+        if (ctx.latest_credit instanceof Map) {
+          if (ctx.latest_credit.ecu_balance instanceof Number) {
+            bal = ((Number)ctx.latest_credit.ecu_balance).doubleValue();
+          }
+          if (ctx.latest_credit.active != null) {
+            act = ctx.latest_credit.active.toString().equalsIgnoreCase('true');
+          }
+        }
+        double qty = ctx.ecu_quantity instanceof Number ? ((Number)ctx.ecu_quantity).doubleValue() : 0.0;
+
+        ctx.data_stream = ['type': 'metrics', 'dataset': 'ess_billing.credits', 'namespace': 'default'];
+        if (ctx.event == null) { ctx.event = [:]; }
+        ctx.event.dataset = 'ess_billing.credits';
+        ctx.cloud = ['account': ['id': orgId]];
+        ctx.ess = [
+          'billing': [
+            'organization_id': orgId,
+            'active': act,
+            'ecu_balance': bal,
+            'ecu_quantity': qty
+          ]
+        ];
+        if (ctx.credit_type != null && ctx.credit_type.toString() != '') {
+          ctx.ess.billing.type = ctx.credit_type.toString();
+        }
+        if (startIso != null) {
+          ctx.ess.billing.start = startIso;
+        }
+        if (endIso != null) {
+          ctx.ess.billing.end = endIso;
+        }
+
+        for (String tmp : ['organization_id', 'credit_start', 'credit_end', 'credit_type', 'ecu_quantity', 'latest_credit']) {
+          ctx.remove(tmp);
+        }
+  - set:
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+      tag: set_event_ingested
+  - pipeline:
+      description: '[Fleet] Pipeline for Chargeback lookup destination rows'
+      ignore_missing_pipeline: true
+      name: logs-chargeback.lookup@custom
+  - pipeline:
+      description: '[Fleet] Pipeline for Chargeback credits lookup destination rows'
+      ignore_missing_pipeline: true
+      name: logs-chargeback.lookup-credits@custom

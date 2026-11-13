@@ -1,0 +1,108 @@
+description: Materializes daily Elastic Cloud credit commitment snapshots with ESS Billing Credits compatibility fields.
+source:
+  index:
+    - metrics-chargeback.billing-*
+    - -metrics-ess_billing.credits-chargeback
+    - -chargeback_lookup.*
+  query:
+    term:
+      doc_type: credit_line_item
+  runtime_mappings:
+    cb_sync_time:
+      type: date
+      script:
+        source: |
+          for (String df : ['event.ingested', 'event.created']) {
+            try {
+              if (doc.containsKey(df) && !doc[df].empty) {
+                emit(doc[df].value.toInstant().toEpochMilli());
+                return;
+              }
+            } catch (Exception e) {}
+            def rawVal = (df == 'event.ingested') ? params._source?.event?.ingested : params._source?.event?.created;
+            if (rawVal != null) {
+              if (rawVal instanceof Number) {
+                emit(((Number)rawVal).longValue());
+                return;
+              }
+              String s = rawVal.toString().trim();
+              if (s != '') {
+                try {
+                  emit(ZonedDateTime.parse(s).toInstant().toEpochMilli());
+                  return;
+                } catch (Exception e) {}
+              }
+            }
+          }
+          if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+            emit(doc['@timestamp'].value.toInstant().toEpochMilli());
+          }
+dest:
+  index: chargeback_lookup.dest_billing_credits-1
+  aliases:
+    - alias: chargeback_lookup.billing_credits
+      move_on_creation: true
+  pipeline: logs-chargeback.lookup-0.1.0-credits
+frequency: 60m
+sync:
+  time:
+    field: cb_sync_time
+    delay: 60s
+pivot:
+  group_by:
+    "@timestamp":
+      date_histogram:
+        field: "@timestamp"
+        calendar_interval: 1d
+    organization_id:
+      terms:
+        field: ess.billing.organization_id
+    credit_start:
+      terms:
+        field: ess.billing.start
+    credit_end:
+      terms:
+        field: ess.billing.end
+    credit_type:
+      terms:
+        field: ess.billing.type
+        missing_bucket: true
+    ecu_quantity:
+      terms:
+        field: ess.billing.ecu_quantity
+  aggregations:
+    latest_credit:
+      scripted_metric:
+        init_script: |
+          state.docs = [];
+        map_script: |
+          long ts = (!doc['@timestamp'].empty) ? doc['@timestamp'].value.toInstant().toEpochMilli() : 0L;
+          double bal = (doc.containsKey('ess.billing.ecu_balance') && !doc['ess.billing.ecu_balance'].empty) ? doc['ess.billing.ecu_balance'].value : 0.0;
+          boolean act = (doc.containsKey('ess.billing.active') && !doc['ess.billing.active'].empty)
+            && doc['ess.billing.active'].value.toString().equalsIgnoreCase('true');
+          state.docs.add([ts, bal, act]);
+        combine_script: |
+          return state.docs;
+        reduce_script: |
+          long bestTs = -1L;
+          double bestBal = 0.0;
+          boolean bestAct = false;
+          for (shardDocs in states) {
+            if (shardDocs == null) { continue; }
+            for (d in shardDocs) {
+              long ts = ((Number)d[0]).longValue();
+              if (ts >= bestTs) {
+                bestTs = ts;
+                bestBal = ((Number)d[1]).doubleValue();
+                bestAct = d[2] != null && d[2].toString().equalsIgnoreCase('true');
+              }
+            }
+          }
+          return ['ecu_balance': bestBal, 'active': bestAct];
+settings:
+  deduce_mappings: false
+  unattended: true
+_meta:
+  managed: true
+  run_as_kibana_system: false
+  fleet_transform_version: 0.1.0
