@@ -1,0 +1,23 @@
+version: '2.3'
+services:
+  stamus_networks-alerts-mock:
+    image: docker.elastic.co/observability/stream:v0.22.0
+    hostname: stamus_networks-alerts-mock
+    ports:
+      - 8090
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: '8090'
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/files/config-alerts.yml
+  stamus_networks-alerts-cursor-mock:
+    build:
+      context: ./files/cursor-mock
+    hostname: stamus_networks-alerts-cursor-mock
+    ports:
+      - 8091
+    environment:
+      PORT: '8091'
