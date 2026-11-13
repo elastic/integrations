@@ -167,6 +167,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.springcloudlogs.properties.thread | Thread | keyword |
 | azure.springcloudlogs.properties.type | Type | keyword |
 | azure.springcloudlogs.status | Status | keyword |
+| azure.springcloudlogs.tenantId | Tenant ID from the log envelope, as sent by Azure, kept for backward compatibility. Prefer `azure.tenant_id`. | keyword |
 | azure.subscription_id | Azure subscription ID | keyword |
 | azure.tenant_id | tenant ID | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
