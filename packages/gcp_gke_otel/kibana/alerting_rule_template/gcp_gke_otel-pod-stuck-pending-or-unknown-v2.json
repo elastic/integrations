@@ -1,0 +1,84 @@
+{
+  "id": "gcp_gke_otel-pod-stuck-pending-or-unknown-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP GKE OTel] Pod stuck Pending or Unknown",
+        "description": "Fires for each pod whose latest phase is Pending or Unknown and has been for at least 10 minutes. Pending pods can't be scheduled (not enough CPU or memory, node selectors, taints, unbound volumes) or can't start their containers (image pulls, init containers); Unknown means the control plane lost contact with the pod's node. Failed pods are ignored because they persist until garbage collection, and Succeeded is normal for Jobs. Pods deleted more than 5 minutes before their cluster's newest sample are ignored. Needs Managed Service for Prometheus kube state metrics (POD component). The rule never fires for clusters without them, or for system namespaces (`kube-system`, `gmp-system`, `gke-managed-*` and others), because kube state metrics aren't collected there.",
+        "tags": [
+          "observability",
+          "gcp",
+          "gke"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "30m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-*\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\"\n    AND `metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge` IS NOT NULL\n// Five phase series per pod; the current phase has value 1\n| STATS v = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge`))\n    BY resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster,\n       resource.attributes.namespace, attributes.pod, attributes.phase, bucket = TBUCKET(1 minute)\n| WHERE v == 1\n// Newest phase sample of each cluster, for the per-cluster freshness rule\n| INLINE STATS cluster_newest = MAX(bucket)\n    BY resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster\n// Latest phase per pod, and the last minute it was in any other phase (Running, Succeeded, Failed)\n| STATS phase = LAST(attributes.phase, bucket),\n        first_seen = MIN(bucket),\n        last_seen = MAX(bucket),\n        last_not_stuck = MAX(bucket) WHERE attributes.phase NOT IN (\"Pending\", \"Unknown\"),\n        cluster_newest = MAX(cluster_newest)\n    BY resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster,\n       resource.attributes.namespace, attributes.pod\n// Minutes from the start of the current Pending/Unknown streak (or the window start) to the latest sample\n| EVAL stuck_minutes = CASE(last_not_stuck IS NULL, DATE_DIFF(\"minute\", first_seen, last_seen),\n                            DATE_DIFF(\"minute\", last_not_stuck, last_seen) - 1)",
+        "breach": {
+          "segment": "// Ignore pods that stopped reporting (deleted) more than 5 minutes before their cluster's newest sample\nWHERE last_seen >= cluster_newest - 5 minutes\n// Failed pods persist until garbage collection and Succeeded is normal for Jobs, so only Pending and Unknown alert.\n// Threshold: minutes stuck. Keep it at least 15 minutes below the rule's lookback, because data arrives\n// several minutes late.\n| WHERE phase IN (\"Pending\", \"Unknown\") AND stuck_minutes >= 10\n| KEEP resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster,\n       resource.attributes.namespace, attributes.pod, phase, stuck_minutes, last_seen\n| SORT stuck_minutes DESC"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.project_id",
+          "resource.attributes.location",
+          "resource.attributes.cluster",
+          "resource.attributes.namespace",
+          "attributes.pod"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_gke_otel-pod-stuck-pending-or-unknown-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Pod stuck Pending or Unknown\n\nThe pod's latest phase has been `Pending` or `Unknown` for at least 10 minutes (`stuck_minutes`).\n\n### Triage\n1. Open **[GCP OTel] GKE Pods** and **[GCP OTel] GKE Pod Detail** for the pod. A pod with no CPU or memory usage has never started its containers.\n2. Check scheduling headroom on **[GCP OTel] GKE Cluster Detail**: if CPU or memory requested is close to allocatable, the scheduler can't place the pod and the cluster autoscaler (if enabled) should be adding nodes. Look for new nodes on the Nodes dashboard.\n3. Run `kubectl describe pod` and check the events: `FailedScheduling` (resources, affinity, taints, PVC binding), `ErrImagePull` / `ImagePullBackOff`, or init container failures.\n4. `Unknown`: the pod's node stopped reporting. Check the **Node not ready** alert and the Nodes dashboard for the same cluster; pod series carry no node label, so correlate by cluster and time.\n\n### Remediation\n- Scheduling: add capacity (node pool size or autoscaler limits), lower the pod's requests, or fix node selectors, affinities and tolerations.\n- Volumes: check that the PersistentVolumeClaim is bound and in the pod's zone.\n- Images: fix the image name or tag, or the registry permissions of the node service account.\n\n### Notes\n- Needs Managed Service for Prometheus kube state metrics (POD component). Clusters without them and system namespaces are never evaluated.\n- `stuck_minutes` is measured inside the 30-minute window, and data arrives several minutes late, so it stops growing at about 20 minutes even if the pod has been stuck longer."
+          }
+        },
+        {
+          "id": "gcp_gke_otel-pod-stuck-pending-or-unknown-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_gke_otel-31ed370d-b0bd-4e83-821d-c7b1481edcc9"
+          }
+        },
+        {
+          "id": "gcp_gke_otel-pod-stuck-pending-or-unknown-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_gke_otel-f4e74d4e-c3b1-40aa-872f-901840e8d3fb"
+          }
+        },
+        {
+          "id": "gcp_gke_otel-pod-stuck-pending-or-unknown-v2-dashboard-2",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_gke_otel-a8c033b4-994a-4ec7-9b6f-82d41ea34078"
+          }
+        }
+      ]
+    }
+  }
+}

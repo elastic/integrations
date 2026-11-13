@@ -1,0 +1,69 @@
+{
+  "attributes": {
+    "name": "[GCP GKE OTel] Node readiness 99.5% rolling 30 days",
+    "description": "Tracks the share of node-time in which GKE nodes report the Ready condition as True, per cluster (GCP project, location and cluster). Good events are kubernetes.io/node/status_condition documents with condition Ready and status True; total events are all documents for the Ready condition. GKE emits only the current status of each condition, one document per node per collection interval, so the ratio is Ready node-time over all node-time. Ready False (the kubelet reports the node unhealthy) and Ready Unknown (the control plane lost contact with the node) both count as bad. The objective is 99.5% over a rolling 30-day window, which allows 0.5% of node-time NotReady, for example about 36 node-hours a month in a 10-node cluster. NotReady time is lost capacity: pods on a node that is not Ready are evicted after about five minutes and rescheduled, so sustained burn shows up as Pending pods and replica shortfalls elsewhere in the cluster. GKE auto-repair recreates nodes that stay NotReady for about 10 minutes, so persistent burn points to auto-repair being disabled or failing, a zonal or node pool problem, or a bad node image or configuration. Works for every cluster with GKE system metrics and doesn't need kube state metrics. Limitations: nodes are briefly NotReady while they join (autoscaling, upgrades, auto-repair) and when Spot or preemptible VMs are reclaimed; these use a small part of the budget, but clusters that rely heavily on Spot or preemptible nodes may need a lower target. Deleted nodes stop reporting and leave the population, so capacity lost by deleting nodes isn't measured. Node pressure conditions (MemoryPressure, DiskPressure, PIDPressure) don't change Ready and aren't measured here. Data delay: the receiver polls Cloud Monitoring on an interval and node conditions become visible up to 2 minutes after sampling, so the latest minutes can be incomplete and burn rates lag real time by several minutes. Set the SLO sync delay to at least 10 minutes so late documents are not skipped.",
+    "indicator": {
+      "type": "sli.metric.custom",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"gcp.gke.otel\" and resource.attributes.gcp.resource_type: \"k8s_node\" and attributes.condition: \"Ready\"",
+        "good": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "doc_count",
+              "filter": "attributes.status: \"True\""
+            }
+          ],
+          "equation": "A"
+        },
+        "total": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "doc_count"
+            }
+          ],
+          "equation": "A"
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "occurrences",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995
+    },
+    "tags": [
+      "gcp",
+      "gke",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.project_id",
+      "resource.attributes.location",
+      "resource.attributes.cluster_name"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "gcp_gke_otel-e045e040-ce0b-4057-986c-ecd534a569b7"
+        },
+        {
+          "id": "gcp_gke_otel-a8c033b4-994a-4ec7-9b6f-82d41ea34078"
+        },
+        {
+          "id": "gcp_gke_otel-b3188cbe-aa34-4bbe-8384-a089fcf9c6d0"
+        },
+        {
+          "id": "gcp_gke_otel-ff682663-564f-4b10-bd9a-8cba4d15d1dd"
+        }
+      ]
+    }
+  },
+  "id": "gcp_gke_otel-node-readiness-99.5-Rolling30Days",
+  "type": "slo_template"
+}

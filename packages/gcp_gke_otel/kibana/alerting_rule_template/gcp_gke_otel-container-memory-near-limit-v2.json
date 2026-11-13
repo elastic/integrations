@@ -1,0 +1,85 @@
+{
+  "id": "gcp_gke_otel-container-memory-near-limit-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP GKE OTel] Container memory near limit",
+        "description": "Fires for each container whose non-evictable (working set) memory has averaged at least 95% of its memory limit over the last 15 minutes and is still at least 95%. At 100% the kernel OOM-kills the container, which then shows up as restarts. The average is sample-weighted over the window. Only containers with a memory limit report `container/memory/limit_utilization`, so containers without a limit never fire. Uses GKE system metrics, so it covers every cluster and system namespaces. The working set includes some reclaimable page cache, so cache-heavy workloads can sit in the 90s without OOM kills: tune the threshold, or exclude namespaces in the query. Containers that stopped reporting more than 5 minutes before their cluster's newest sample are ignored.",
+        "tags": [
+          "observability",
+          "gcp",
+          "gke"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "15m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-*\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\"\n    // Non-evictable memory is the working set the OOM killer acts on\n    AND attributes.memory_type == \"non-evictable\"\n// Per container and minute: limit utilization sample sum and count (for a sample-weighted mean) and the latest value.\n// limit_utilization is only emitted for containers with a memory limit; used_bytes is emitted for every container.\n| STATS utilization_sum = SUM(SUM_OVER_TIME(`metrics.kubernetes.io/container/memory/limit_utilization`)),\n        utilization_samples = SUM(COUNT_OVER_TIME(`metrics.kubernetes.io/container/memory/limit_utilization`)),\n        utilization_last = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/limit_utilization`)),\n        used_samples = SUM(COUNT_OVER_TIME(`metrics.kubernetes.io/container/memory/used_bytes`))\n    BY resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster_name,\n       resource.attributes.namespace_name, resource.attributes.pod_name, resource.attributes.container_name,\n       bucket = TBUCKET(1 minute)\n// Newest memory sample of each cluster, for the per-cluster freshness rule. Containers without a limit count, so a\n// deleted limited container can't stay the newest; limit_utilization can arrive minutes after used_bytes.\n| EVAL sampled = CASE(used_samples > 0 OR utilization_samples > 0, bucket)\n| INLINE STATS cluster_newest = MAX(sampled)\n    BY resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster_name\n| STATS utilization_sum = SUM(utilization_sum),\n        utilization_samples = SUM(utilization_samples),\n        latest_utilization = LAST(utilization_last, bucket) WHERE utilization_samples > 0,\n        last_seen = MAX(sampled),\n        cluster_newest = MAX(cluster_newest)\n    BY resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster_name,\n       resource.attributes.namespace_name, resource.attributes.pod_name, resource.attributes.container_name",
+        "breach": {
+          "segment": "// Containers without a memory limit have no utilization\nWHERE utilization_samples > 0\n// Sample-weighted mean of the fraction of the memory limit in use over the rule window\n| EVAL avg_utilization = utilization_sum / utilization_samples\n// Ignore containers that stopped reporting (deleted pods) more than 5 minutes before their cluster's newest sample\n| WHERE last_seen >= cluster_newest - 5 minutes\n// Threshold: fraction of the memory limit (can't exceed 1.0, where the container is OOM-killed). The working set\n// includes some reclaimable page cache, so cache-heavy workloads sit in the 90s; lower it for tighter warning.\n// Both the window average and the latest value must reach it, so short spikes and already-restarted containers don't alert.\n| WHERE avg_utilization >= 0.95 AND latest_utilization >= 0.95\n| KEEP resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster_name,\n       resource.attributes.namespace_name, resource.attributes.pod_name, resource.attributes.container_name,\n       latest_utilization, avg_utilization, last_seen\n| SORT latest_utilization DESC"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.project_id",
+          "resource.attributes.location",
+          "resource.attributes.cluster_name",
+          "resource.attributes.namespace_name",
+          "resource.attributes.pod_name",
+          "resource.attributes.container_name"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_gke_otel-container-memory-near-limit-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Container memory near limit\n\nThe container's non-evictable memory has stayed at or above 95% of its memory limit for the window (`avg_utilization`) and still is (`latest_utilization`).\n\n### Triage\n1. Open **[GCP OTel] GKE Pod Detail** for the pod. **Memory used by container** shows the trend against the request and limit: a steady climb suggests a leak, a flat line at the limit suggests an undersized limit or a cache that fills whatever it gets.\n2. Check **Restarts over time** on the same dashboard. Restarts with memory at the limit are the evidence of OOM kills; OOM reasons aren't in this data.\n3. Use **[GCP OTel] GKE Cluster Detail** to see whether other replicas of the workload behave the same way.\n\n### Remediation\n- Raise the container's memory limit (and request) if the working set is legitimately larger.\n- Fix leaks, or cap runtime heaps and caches (for example JVM `-Xmx` or `MaxRAMPercentage`) below the limit.\n\n### Notes\n- Non-evictable memory is the working-set equivalent; it includes active page cache, which the kernel can reclaim under pressure before killing.\n- Raise or lower the 0.95 threshold in both conditions of the last `WHERE`. To exclude namespaces, add `AND resource.attributes.namespace_name NOT IN (...)` to the first `WHERE`."
+          }
+        },
+        {
+          "id": "gcp_gke_otel-container-memory-near-limit-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_gke_otel-31ed370d-b0bd-4e83-821d-c7b1481edcc9"
+          }
+        },
+        {
+          "id": "gcp_gke_otel-container-memory-near-limit-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_gke_otel-f4e74d4e-c3b1-40aa-872f-901840e8d3fb"
+          }
+        },
+        {
+          "id": "gcp_gke_otel-container-memory-near-limit-v2-dashboard-2",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_gke_otel-a8c033b4-994a-4ec7-9b6f-82d41ea34078"
+          }
+        }
+      ]
+    }
+  }
+}

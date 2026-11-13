@@ -1,0 +1,83 @@
+{
+  "id": "gcp_gke_otel-node-not-ready-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP GKE OTel] Node not ready",
+        "description": "Fires for each GKE node whose latest Ready condition is False (the kubelet reports the node unhealthy) or Unknown (the control plane lost contact with it) in 5 consecutive checks, one minute apart. Kubernetes evicts pods from a not-ready node after about 5 minutes, which shows up elsewhere as restarts, Pending pods and replica shortfalls. Uses GKE system metrics (`node/status_condition`), so it covers every cluster. Nodes that stopped reporting more than 5 minutes before their cluster's newest sample (deleted or replaced by upgrades, autoscaling or spot reclaim) are ignored. Raise the alert delay to about 15 checks to leave room for GKE node auto-repair.",
+        "tags": [
+          "observability",
+          "gcp",
+          "gke"
+        ]
+      },
+      "schedule": {
+        "every": "1m",
+        "lookback": "15m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-*\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n    AND attributes.condition == \"Ready\"\n// node/status_condition only emits the current status (value 1). A status change ends the old\n// (condition, status) series and starts a new one, so take the latest status across series per minute.\n| STATS v = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/node/status_condition`))\n    BY resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster_name,\n       resource.attributes.node_name, attributes.status, bucket = TBUCKET(1 minute)\n// Newest Ready sample of each cluster, for the per-cluster freshness rule\n| INLINE STATS cluster_newest = MAX(bucket)\n    BY resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster_name\n// Latest Ready status per node\n| STATS ready_status = LAST(attributes.status, bucket),\n        last_seen = MAX(bucket),\n        cluster_newest = MAX(cluster_newest)\n    BY resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster_name,\n       resource.attributes.node_name",
+        "breach": {
+          "segment": "// Ignore nodes that stopped reporting (deleted or replaced) more than 5 minutes before their cluster's newest sample\nWHERE last_seen >= cluster_newest - 5 minutes\n// False: the kubelet reports the node unhealthy. Unknown: the control plane lost contact with the node.\n| WHERE ready_status != \"True\"\n| KEEP resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster_name,\n       resource.attributes.node_name, ready_status, last_seen"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 4
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.project_id",
+          "resource.attributes.location",
+          "resource.attributes.cluster_name",
+          "resource.attributes.node_name"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_gke_otel-node-not-ready-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Node not ready\n\nThe node's latest `Ready` condition is `False` or `Unknown`.\n\n- `False`: the kubelet is running but reports the node unhealthy (container runtime down, kubelet errors, resource exhaustion).\n- `Unknown`: the control plane stopped hearing from the kubelet (VM stopped, preempted or unreachable, network partition).\n\n### Triage\n1. Open **[GCP OTel] GKE Node Detail** for the node. Check the other node conditions (`MemoryPressure`, `DiskPressure`, `PIDPressure`, node-problem-detector conditions), CPU, memory, ephemeral storage and PIDs leading up to the change.\n2. Check **Interruptions** on the same dashboard: spot or preemptible reclaim and Compute Engine evictions make nodes go `Unknown` before they are replaced.\n3. Open **[GCP OTel] GKE Cluster Detail** for the cluster. If several nodes are not ready at once, suspect a node pool upgrade, a zonal outage or a networking change rather than one bad VM.\n4. In the Google Cloud console, check the node's VM, the node pool's upgrade and auto-repair operations, and the cluster's operations log.\n\n### Impact\nPods on the node are evicted after the default 5-minute toleration and rescheduled elsewhere if capacity allows. Expect restarts, Pending pods and replica shortfalls on the cluster while that happens. Pod series carry no node label, so correlate by cluster and time.\n\n### Remediation\n- Let auto-repair recreate the node, or cordon and drain it, then delete the VM so the node pool replaces it.\n- If the node is resource-exhausted, find the workload responsible on Cluster Detail and fix its requests and limits.\n\n### Notes\n- Fires after 5 consecutive checks at a 1-minute interval. Collection lags real time by a few minutes.\n- Nodes deleted or replaced during the 15-minute window are dropped once their last sample is more than 5 minutes older than the cluster's newest sample. If a whole cluster stops reporting, its nodes keep their last known status until the window passes."
+          }
+        },
+        {
+          "id": "gcp_gke_otel-node-not-ready-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_gke_otel-b3188cbe-aa34-4bbe-8384-a089fcf9c6d0"
+          }
+        },
+        {
+          "id": "gcp_gke_otel-node-not-ready-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_gke_otel-ff682663-564f-4b10-bd9a-8cba4d15d1dd"
+          }
+        },
+        {
+          "id": "gcp_gke_otel-node-not-ready-v2-dashboard-2",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_gke_otel-a8c033b4-994a-4ec7-9b6f-82d41ea34078"
+          }
+        }
+      ]
+    }
+  }
+}
