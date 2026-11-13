@@ -493,9 +493,9 @@ Possible values are `earliest` and `latest`.
 
 `migrate_checkpoint` :
 _boolean_
-(processor v2 only) Flag to control whether the processor should perform the checkpoint information migration from v1 to v2 at startup. The checkpoint migration converts the checkpoint information from the v1 format to the v2 format.
+(Processor v2 only) Import v1 checkpoints at startup for partitions without a v2 checkpoint. Defaults to `true`.
 
-Default is `false`, which means the processor will not perform the checkpoint migration.
+Setting this to `false` skips the import; it does not reset existing v2 checkpoints. For partitions without a v2 checkpoint, `processor_start_position` determines where collection starts.
 
 `endpoint_suffix` :
 _string_

@@ -694,11 +694,9 @@ Possible values are `earliest` and `latest`.
 
 `migrate_checkpoint` :
 _boolean_
-(processor v2 only) Controls processor behavior upon the initial transition from v1 to v2. If you are starting directly with v2, you can disregard this setting.
+(Processor v2 only) Import v1 checkpoints at startup for partitions without a v2 checkpoint. Defaults to `true`.
 
-Defaults to `true`, which means the processor will automatically migrate checkpoint information from the v1 format to v2.
-
-If set to `false`, the processor will bypass existing v1 checkpoints and replay all events in the Event Hub from the start of the retention window. For example, if set to `false` on an Event Hub with a 1-hour retention period, the processor will replay the last hour's worth of data.
+Setting this to `false` skips the import; it does not reset existing v2 checkpoints. For partitions without a v2 checkpoint, `processor_start_position` determines where collection starts.
 
 `endpoint_suffix` :
 _string_
