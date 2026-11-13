@@ -38,8 +38,9 @@ program: |-
     now.format(time_layout.DateOnly).as(today_utc,
     state.conf_utilization_floor.trim_space().as(clean_floor,
     clean_floor.matches("^(0(\\.[0-9]+)?|1(\\.0+)?)$").as(floor_valid,
+    (int(state.conf_utilization_memory_weight) >= 0 && int(state.conf_utilization_storage_weight) >= 0 && (int(state.conf_utilization_memory_weight) + int(state.conf_utilization_storage_weight)) > 0).as(weights_valid,
     (!state.sync_fleet_config ? "disabled" : (
-      floor_valid ? (string(state.conf_utilization_memory_weight) + "|" + string(state.conf_utilization_storage_weight) + "|" + clean_floor + "|" + today_utc) : state.?cursor.conf_sig.orValue("")
+      (floor_valid && weights_valid) ? (string(state.conf_utilization_memory_weight) + "|" + string(state.conf_utilization_storage_weight) + "|" + clean_floor + "|" + today_utc) : state.?cursor.conf_sig.orValue("")
     )).as(conf_sig,
     ((state.sync_fleet_config && !floor_valid) ?
       [dyn({
@@ -47,6 +48,14 @@ program: |-
           "code": "invalid_config",
           "id": "utilization_floor",
           "message": "Invalid utilization_floor '" + state.conf_utilization_floor + "': expected decimal between 0.0 and 1.0 using '.' (for example 0.10)",
+        },
+      })]
+    : ((state.sync_fleet_config && !weights_valid) ?
+      [dyn({
+        "error": {
+          "code": "invalid_config",
+          "id": "utilization_weights",
+          "message": "Invalid utilization weights (memory=" + string(state.conf_utilization_memory_weight) + ", storage=" + string(state.conf_utilization_storage_weight) + "): weights must be non-negative and their sum must be greater than 0",
         },
       })]
     : ((state.sync_fleet_config && state.?cursor.conf_sig.orValue("") != conf_sig) ?
@@ -64,7 +73,7 @@ program: |-
         "doc_type": "config_snapshot",
         "conf_sync_enabled": false,
       })]
-    : []))).as(conf_evts,
+    : [])))).as(conf_evts,
     now.format(time_layout.RFC3339).as(sample_ts,
     (state.organization_id != "" && state.api_key != "" && !state.api_key.startsWith("$co.elastic.secret")).as(has_cloud,
     (state.hub_es_url != "" && state.hub_es_api_key != "" && !state.hub_es_api_key.startsWith("$co.elastic.secret")).as(has_hub,
@@ -259,7 +268,7 @@ program: |-
               )
             )
         )
-    )))))))))))))
+    ))))))))))))))
   )
 
 processors:

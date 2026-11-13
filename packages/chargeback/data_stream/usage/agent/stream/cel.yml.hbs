@@ -36,8 +36,19 @@ redact:
 program: |-
   state.with(
     now.format(time_layout.DateOnly).as(today_utc,
-    (state.sync_fleet_config ? (string(state.conf_indexing_weight) + "|" + string(state.conf_query_weight) + "|" + string(state.conf_storage_weight) + "|" + today_utc) : "disabled").as(conf_sig,
-    ((state.sync_fleet_config && state.?cursor.conf_sig.orValue("") != conf_sig) ?
+    (int(state.conf_indexing_weight) >= 0 && int(state.conf_query_weight) >= 0 && int(state.conf_storage_weight) >= 0 && (int(state.conf_query_weight) + int(state.conf_storage_weight)) > 0).as(weights_valid,
+    (!state.sync_fleet_config ? "disabled" : (
+      weights_valid ? (string(state.conf_indexing_weight) + "|" + string(state.conf_query_weight) + "|" + string(state.conf_storage_weight) + "|" + today_utc) : state.?cursor.conf_sig.orValue("")
+    )).as(conf_sig,
+    ((state.sync_fleet_config && !weights_valid) ?
+      [dyn({
+        "error": {
+          "code": "invalid_config",
+          "id": "usage_weights",
+          "message": "Invalid blended usage weights (indexing=" + string(state.conf_indexing_weight) + ", query=" + string(state.conf_query_weight) + ", storage=" + string(state.conf_storage_weight) + "): weights must be non-negative and query_weight + storage_weight must be greater than 0",
+        },
+      })]
+    : ((state.sync_fleet_config && state.?cursor.conf_sig.orValue("") != conf_sig) ?
       [dyn({
         "@timestamp": now.format(time_layout.RFC3339),
         "doc_type": "config_snapshot",
@@ -52,7 +63,7 @@ program: |-
         "doc_type": "config_snapshot",
         "conf_sync_enabled": false,
       })]
-    : [])).as(conf_evts,
+    : []))).as(conf_evts,
     int(now).as(now_sec,
     now.format(time_layout.RFC3339).as(now_ts,
     today_utc.parse_time(time_layout.DateOnly).as(today_start,
@@ -582,7 +593,7 @@ program: |-
                                                       "query_total_delta": raw_qcnt,
                                                     } : {
                                                       "query_time_in_millis": 0,
-                                                      "query_total": cur_qry_cnt,
+                                                      "query_total": 0,
                                                     },
                                                   },
                                                 }).with(created_ms > 0 ? { "creation_date": created_ms } : {}),
@@ -648,7 +659,7 @@ program: |-
               )
             )
         )
-    )))))))))))))))))))))))
+    ))))))))))))))))))))))))
   )
 
 processors:

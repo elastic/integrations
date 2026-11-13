@@ -9,9 +9,6 @@ source:
     bool:
       must:
         - range:
-            "@timestamp":
-              gte: now-366d
-        - range:
             ess.billing.total_ecu:
               gt: 0
       must_not:
@@ -27,6 +24,20 @@ source:
           if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
             emit(doc['event.ingested'].value.toInstant().toEpochMilli());
             return;
+          }
+          def rawIngested = params._source?.event?.ingested;
+          if (rawIngested != null) {
+            if (rawIngested instanceof Number) {
+              emit(((Number)rawIngested).longValue());
+              return;
+            }
+            String s = rawIngested.toString().trim();
+            if (s != '') {
+              try {
+                emit(ZonedDateTime.parse(s).toInstant().toEpochMilli());
+                return;
+              } catch (Exception e) {}
+            }
           }
           if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
             emit(doc['@timestamp'].value.toInstant().toEpochMilli());
