@@ -87,6 +87,16 @@ processors:
       field: observer.product
       tag: set_observer_product
       value: GravityZone
+  - rename:
+      field: bitdefender.phasr.companyId
+      target_field: organization.id
+      ignore_missing: true
+      tag: rename_company_id_to_organization_id
+      if: ctx.bitdefender.phasr.companyId instanceof String && ctx.bitdefender.phasr.companyId != ''
+  - remove:
+      field: bitdefender.phasr.companyId
+      ignore_missing: true
+      tag: remove_empty_company_id
   - set:
       field: event.id
       tag: set_recommendation_event_id

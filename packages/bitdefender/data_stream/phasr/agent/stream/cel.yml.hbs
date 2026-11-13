@@ -121,7 +121,15 @@ program: |-
                   dyn(
                     body.result.items.map(item,
                       {
-                        "message": item.with({"record_type": run.record_type}).encode_json(),
+                        "message": item.with(
+                          {
+                            "record_type": run.record_type,
+                            ?"companyId": (state.company_id != "") ?
+                              optional.of(state.company_id)
+                            :
+                              optional.none(),
+                          }
+                        ).encode_json(),
                       }
                     )
                   )

@@ -1851,6 +1851,7 @@ The PHASR dataset collects full snapshots of Proactive Hardening and Attack Surf
 | log.offset | Log offset. | long |
 | observer.product | The product name of the observer. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
+| organization.id | Unique identifier for the organization. | keyword |
 | rule.category | A categorization value keyword used by the entity using the rule for detection of this event. | keyword |
 | rule.description | The description of the rule generating the event. | keyword |
 | rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
@@ -1862,11 +1863,11 @@ An example event for `phasr` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-11-02T21:55:37.858Z",
+    "@timestamp": "2026-11-13T19:13:49.148Z",
     "agent": {
-        "ephemeral_id": "ec97e681-80f1-422d-b174-27184df1dd04",
-        "id": "a3e29646-f153-4ee2-9981-cd61e36cf966",
-        "name": "elastic-agent-89439",
+        "ephemeral_id": "c04ebf68-163e-4fd4-9d39-0088ef7f5412",
+        "id": "db00fb9a-5d21-4756-a2e9-d9afb02944bd",
+        "name": "elastic-agent-73380",
         "type": "filebeat",
         "version": "9.5.5"
     },
@@ -1884,14 +1885,14 @@ An example event for `phasr` looks as following:
     },
     "data_stream": {
         "dataset": "bitdefender.phasr",
-        "namespace": "30949",
+        "namespace": "24172",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "a3e29646-f153-4ee2-9981-cd61e36cf966",
+        "id": "db00fb9a-5d21-4756-a2e9-d9afb02944bd",
         "snapshot": false,
         "version": "9.5.5"
     },
@@ -1904,10 +1905,10 @@ An example event for `phasr` looks as following:
         "created": "2026-01-15T09:30:00.000Z",
         "dataset": "bitdefender.phasr",
         "id": "65a000000000000000000001",
-        "ingested": "2026-11-02T21:55:41Z",
+        "ingested": "2026-11-13T19:13:52Z",
         "kind": "state",
         "module": "bitdefender",
-        "original": "{\"actionTaken\":0,\"attackSurfaceReduction\":0.15,\"behavioralProfiles\":4,\"createdOn\":\"2026-01-15T09:30:00.000Z\",\"objectId\":\"65a000000000000000000001\",\"record_type\":\"recommendation\",\"ruleId\":619,\"type\":1}",
+        "original": "{\"actionTaken\":0,\"attackSurfaceReduction\":0.15,\"behavioralProfiles\":4,\"companyId\":\"5e4d3c2b1a0987654321fedc\",\"createdOn\":\"2026-01-15T09:30:00.000Z\",\"objectId\":\"65a000000000000000000001\",\"record_type\":\"recommendation\",\"ruleId\":619,\"type\":1}",
         "type": [
             "info"
         ]
@@ -1918,6 +1919,9 @@ An example event for `phasr` looks as following:
     "observer": {
         "product": "GravityZone",
         "vendor": "Bitdefender"
+    },
+    "organization": {
+        "id": "5e4d3c2b1a0987654321fedc"
     },
     "rule": {
         "id": "619"
