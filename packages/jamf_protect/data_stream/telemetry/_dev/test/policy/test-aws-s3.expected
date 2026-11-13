@@ -1,0 +1,39 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: jamf_protect
+      name: test-aws-s3-jamf_protect
+      streams:
+        - bucket_arn: arn:aws:s3:::jamf-protect-test
+          bucket_list_interval: 5m
+          bucket_list_prefix: protect-/telemetriesV2/
+          data_stream:
+            dataset: jamf_protect.telemetry
+          default_region: us-east-1
+          number_of_workers: 5
+          publisher_pipeline.disable_host: true
+          role_arn: arn:aws:iam::123456789012:role/jamf-protect-reader
+          tags:
+            - collect_s3_logs
+            - forwarded
+            - jamf_protect-telemetry
+            - jamf_protect.telemetry
+      type: aws-s3
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-jamf_protect.telemetry-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []

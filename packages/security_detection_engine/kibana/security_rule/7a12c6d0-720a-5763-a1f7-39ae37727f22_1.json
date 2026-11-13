@@ -1,0 +1,102 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects pod or attach exec API calls where the decoded request query implies \"curl\" or \"wget\" fetching an \"https\" URL. Attackers with permission to exec into workloads often run one-liners to stage tooling, pull scripts or binaries, or exfiltrate data over HTTPS\u2014activity that should be rare compared to shells, debuggers, or expected health checks. The rule decodes the audit requestURI, reconstructs a readable command string from repeated command parameters, and applies noise filters for common cluster health and OIDC/JWKS endpoints so benign automation is less likely to alert.",
+        "from": "now-6m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "AWS EKS Pod Exec with Curl or Wget to HTTPS",
+        "note": "## Triage and analysis\n\n### Investigating AWS EKS Pod Exec with Curl or Wget to HTTPS\nKubernetes audit logs record exec (and similar attach) calls on requestURI, including URL-encoded\ncommand segments. This rule URL-decodes the URI, extracts the query portion into a single string, and\nflags curl or wget combined with https, excluding several ommon health, localhost, and OIDC/JWKS patterns.\n\n### Possible investigation steps\n\n- Confirm who may exec into the target namespace: review aws.eks.audit.user.username, groups, impersonation, and\n  source.ip / user_agent.original (kubectl, CI, webhooks).\n- Map the pod (aws.eks.audit.objectRef.name) and workload owner; retrieve the exact decoded URI from\n  Esql.decoded_uri and the reconstructed Esql.command in the alert.\n- Search for adjacent audit events from the same identity: secret reads, additional execs, RBAC changes, or anonymous\n  access.\n- If malicious, revoke credentials used for exec, review RoleBindings for **`pods/exec`**, and inspect the pod\n  filesystem or snapshot for dropped artifacts.\n\n### False positive analysis\n\n- Approved runbooks or support sessions may use kubectl exec with curl/wget to test egress or download vendor tools;\n  document break-glass identities and tune exclusions.\n- Some cluster components use HTTPS to **kubernetes.default.svc** or **.well-known** endpoints; the rule attempts to\n  filter those\u2014expand the exclusion list if your platform uses additional first-party URLs.\n\n### Response and remediation\n\n- Rotate any secrets accessible from the pod, cordon or delete the workload if compromised, and tighten RBAC so only\n  required principals retain **`pods/exec`** on sensitive namespaces.",
+        "query": "FROM logs-aws.eks_audit-* metadata _id, _index, _version\n| WHERE aws.eks.audit.objectRef.subresource == \"exec\"\n  AND aws.eks.audit.requestURI LIKE \"*command=*\"\n| EVAL decoded_uri = URL_DECODE(aws.eks.audit.requestURI)\n| GROK decoded_uri \"%{DATA}/exec\\\\?%{DATA:raw_commands}&(?:container|stdin|stdout|stderr)=%{GREEDYDATA}\"\n| EVAL command = REPLACE(raw_commands, \"command=\", \"\")\n| EVAL command = REPLACE(command, \"&\", \" \")\n| EVAL Esql.executed_command = REPLACE(command, \"\\\\+\", \" \")\n| WHERE Esql.executed_command IS NOT NULL\n  AND Esql.executed_command RLIKE \"\"\".*(curl.*https|wget.*https).*\"\"\"\n  AND NOT Esql.executed_command RLIKE \"\"\".*(/api/v1/health|/healthz|/readyz|/livez|127\\.0\\.0\\.1|localhost|/openid/v1/jwks|/openid-connect/certs|/.well-known/openid-configuration|/.well-known/jwks\\.json|kubernetes\\.default\\.svc).*\"\"\"\n| KEEP Esql.*, @timestamp, user.name, source.ip, user_agent.original, event.action, aws.eks.audit.objectRef.namespace, aws.eks.audit.objectRef.name, aws.eks.audit.requestURI, aws.eks.audit.user.username, data_stream.namespace, _id, _index, _version\n",
+        "references": [
+            "https://cloud.hacktricks.wiki/en/pentesting-cloud/kubernetes-security/kubernetes-privilege-escalation/workload-and-pod-access.html"
+        ],
+        "related_integrations": [
+            {
+                "package": "aws",
+                "version": ">=8.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.eks.audit.objectRef.subresource",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.eks.audit.requestURI",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "command",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "raw_commands",
+                "type": "unknown"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "7a12c6d0-720a-5763-a1f7-39ae37727f22",
+        "setup": "This rule reads EKS control-plane audit logs collected by the AWS integration\ninto `logs-aws.eks_audit-*`, where the AWS EKS audit ingest\npipelines normalize each audit record under `aws.eks.audit.*`.\n\nEnable the `audit` control-plane log type on the EKS cluster, send its\nCloudWatch log group through the AWS integration, and confirm events carry\n`data_stream.dataset: aws.eks_audit` and\n`cloud.provider: aws` before enabling this rule.\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Containers",
+            "Platform: AWS",
+            "Platform: Kubernetes",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: Kubernetes API Server Audit Logs",
+            "Service: AWS EKS",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Tactic: Command and Control",
+            "Rule Type: ES|QL",
+            "Resources: Investigation Guide",
+            "Profile: Beta"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1609",
+                        "name": "Container Administration Command",
+                        "reference": "https://attack.mitre.org/techniques/T1609/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1105",
+                        "name": "Ingress Tool Transfer",
+                        "reference": "https://attack.mitre.org/techniques/T1105/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "7a12c6d0-720a-5763-a1f7-39ae37727f22_1",
+    "type": "security-rule"
+}
