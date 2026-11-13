@@ -20,6 +20,9 @@ exec sh run_regression.sh
 exec jq -r '.hits.hits[0]._source.project_name' billing_lookup_doc.json
 stdout '^Healthy Renamed ES$'
 
+exec jq -r '.hits.hits[0]._source.total_ecu' billing_lookup_doc.json
+stdout '^120(\.0)?$'
+
 exec jq -r 'length' alert_rows.json
 stdout '^1$'
 
@@ -31,6 +34,9 @@ stdout '^Stale Unbilled Obs$'
 
 exec jq -r '.[0].issue_type' alert_rows.json
 stdout '^stale_or_unauthorized_harvest$'
+
+exec jq -r '.[0].unit' alert_rows.json
+stdout '^ECU$'
 
 -- run_regression.sh --
 #!/bin/sh
@@ -89,11 +95,11 @@ jq -n \
     "latest_snapshot": {
       "project_name": "Healthy Renamed ES",
       "project_type": "elasticsearch",
-      "total_ecu": 120.0,
-      "quantity_value": 120.0,
-      "conf_chargeable_unit_rate": 1.0,
-      "conf_chargeable_unit_rate_unit": "USD",
-      "conf_currency_symbol": "$"
+      "total_ecu": "120.0",
+      "quantity_value": "120.0",
+      "conf_chargeable_unit_rate": "1.0",
+      "conf_chargeable_unit_rate_unit": "ECU",
+      "conf_currency_symbol": "ECU"
     }
   }' | es_curl -X POST "${ES_HOST}/serverless_billing_cost_lookup-1/_doc?refresh=true&pipeline=${BILL_PIPELINE}" \
   -H 'Content-Type: application/json' -d @- >/dev/null
@@ -113,9 +119,9 @@ jq -n \
       "project_type": "elasticsearch",
       "optimized_for": "general_purpose",
       "es_url": "https://example.es.io",
-      "conf_chargeable_unit_rate": 1.0,
-      "conf_chargeable_unit_rate_unit": "USD",
-      "conf_currency_symbol": "$"
+      "conf_chargeable_unit_rate": "1.0",
+      "conf_chargeable_unit_rate_unit": "ECU",
+      "conf_currency_symbol": "ECU"
     }
   }' | es_curl -X POST "${ES_HOST}/serverless_project_status_lookup-1/_doc?refresh=true&pipeline=${USAGE_PIPELINE}" \
   -H 'Content-Type: application/json' -d @- >/dev/null

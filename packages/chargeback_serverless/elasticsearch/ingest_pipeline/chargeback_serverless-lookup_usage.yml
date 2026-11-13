@@ -44,37 +44,6 @@ processors:
             ctx.ds_namespace = keys.size() > 0 ? keys[0] : null;
           }
         }
-        if (ctx.datastream != null && ctx.datastream != '') {
-          def m = /^(?:partial-)?(?:restored-)?(?:shrink-.{4}-)?\.ds-(.+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d+)?$/.matcher(ctx.datastream);
-          def isBackingIndex = m.matches();
-          if (isBackingIndex) {
-            ctx.datastream = m.group(1);
-          }
-          if (ctx.datastream.startsWith('.') || ctx.datastream == 'system' || (ctx.datastream.startsWith('serverless_') && (ctx.datastream.endsWith('_lookup') || ctx.datastream.contains('_lookup-')))) {
-            ctx.datastream = 'system';
-            ctx.ds_type = 'system';
-            ctx.ds_namespace = 'system';
-            ctx.ds_dataset = 'system';
-          } else if (ctx.ds_type == null || ctx.ds_type == '' || ctx.ds_dataset == null || ctx.ds_dataset == '' || ctx.ds_namespace == null || ctx.ds_namespace == '') {
-            def parts = ctx.datastream.splitOnToken('-');
-            if (isBackingIndex && (parts[0] == 'logs' || parts[0] == 'metrics' || parts[0] == 'traces' || parts[0] == 'synthetics' || parts[0] == 'profiling') && parts.length >= 3) {
-              ctx.ds_type = parts[0];
-              ctx.ds_dataset = parts[1];
-              def nsParts = new ArrayList();
-              for (int i = 2; i < parts.length; i++) {
-                nsParts.add(parts[i]);
-              }
-              ctx.ds_namespace = String.join('-', nsParts);
-            } else {
-              ctx.ds_type = 'index';
-              ctx.ds_dataset = ctx.datastream;
-              ctx.ds_namespace = 'default';
-            }
-          }
-          if (ctx.composite_key != null) {
-            ctx.composite_datastream_key = ctx.composite_key + '_' + ctx.datastream;
-          }
-        }
         if (ctx.monitor_name instanceof Map) {
           def buckets = ctx.monitor_name.buckets;
           if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
@@ -142,6 +111,15 @@ processors:
           if (curr.project_type != null && curr.project_type.toString() != '') {
             ctx.project_type = curr.project_type.toString();
           }
+          if (curr.ds_type != null && curr.ds_type.toString() != '') {
+            ctx.ds_type = curr.ds_type.toString();
+          }
+          if (curr.ds_dataset != null && curr.ds_dataset.toString() != '') {
+            ctx.ds_dataset = curr.ds_dataset.toString();
+          }
+          if (curr.ds_namespace != null && curr.ds_namespace.toString() != '') {
+            ctx.ds_namespace = curr.ds_namespace.toString();
+          }
           if (curr.optimized_for != null && curr.optimized_for.toString() != '') {
             ctx.optimized_for = curr.optimized_for.toString();
           }
@@ -156,6 +134,8 @@ processors:
           }
           if (curr.conf_chargeable_unit_rate instanceof Number) {
             ctx.conf_chargeable_unit_rate = ((Number)curr.conf_chargeable_unit_rate).doubleValue();
+          } else if (curr.conf_chargeable_unit_rate != null && curr.conf_chargeable_unit_rate.toString() != '') {
+            ctx.conf_chargeable_unit_rate = Double.parseDouble(curr.conf_chargeable_unit_rate.toString());
           }
           if (curr.conf_chargeable_unit_rate_unit != null) {
             ctx.conf_chargeable_unit_rate_unit = curr.conf_chargeable_unit_rate_unit.toString();
@@ -164,6 +144,53 @@ processors:
             ctx.conf_currency_symbol = curr.conf_currency_symbol.toString();
           }
           ctx.remove('latest_currency');
+        }
+        if (ctx.project_name == null || ctx.project_name == '') {
+          ctx.project_name = ctx.project_id;
+        }
+        if (ctx.project_type == null || ctx.project_type == '') {
+          ctx.project_type = 'elasticsearch';
+        }
+        if (ctx.datastream != null && ctx.datastream != '') {
+          def m = /^(?:partial-)?(?:restored-)?(?:shrink-.{4}-)?(?:downsample-[^-]+-)?\.ds-(.+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d+)?$/.matcher(ctx.datastream);
+          def isBackingIndex = m.matches();
+          if (isBackingIndex) {
+            ctx.datastream = m.group(1);
+          }
+          if (ctx.datastream.startsWith('.') || ctx.datastream == 'system' || (ctx.datastream.startsWith('serverless_') && (ctx.datastream.endsWith('_lookup') || ctx.datastream.contains('_lookup-')))) {
+            ctx.datastream = 'system';
+            ctx.ds_type = 'system';
+            ctx.ds_namespace = 'system';
+            ctx.ds_dataset = 'system';
+          } else {
+            def parts = ctx.datastream.splitOnToken('-');
+            def isCanonicalStream = parts.length >= 3 && (
+              ((parts[0] == 'logs' || parts[0] == 'metrics' || parts[0] == 'traces') && parts[1].contains('.')) ||
+              parts[0] == 'synthetics' ||
+              parts[0] == 'profiling' ||
+              ctx.datastream.startsWith('logs-generic-') ||
+              ctx.datastream.startsWith('metrics-generic-') ||
+              ctx.datastream.startsWith('traces-apm-')
+            );
+            if (ctx.ds_type == null || ctx.ds_type == '' || ctx.ds_dataset == null || ctx.ds_dataset == '' || ctx.ds_namespace == null || ctx.ds_namespace == '' || (ctx.ds_type == 'index' && (isBackingIndex || isCanonicalStream))) {
+              if ((isBackingIndex || isCanonicalStream) && (parts[0] == 'logs' || parts[0] == 'metrics' || parts[0] == 'traces' || parts[0] == 'synthetics' || parts[0] == 'profiling') && parts.length >= 3) {
+                ctx.ds_type = parts[0];
+                ctx.ds_dataset = parts[1];
+                def nsParts = new ArrayList();
+                for (int i = 2; i < parts.length; i++) {
+                  nsParts.add(parts[i]);
+                }
+                ctx.ds_namespace = String.join('-', nsParts);
+              } else {
+                ctx.ds_type = 'index';
+                ctx.ds_dataset = ctx.datastream;
+                ctx.ds_namespace = 'default';
+              }
+            }
+          }
+          if (ctx.composite_key != null) {
+            ctx.composite_datastream_key = ctx.composite_key + '_' + ctx.datastream;
+          }
         }
         if (ctx.conf_chargeable_unit_rate_unit instanceof Map) {
           def buckets = ctx.conf_chargeable_unit_rate_unit.buckets;

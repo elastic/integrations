@@ -515,7 +515,8 @@ inputs:
                         string(row.index).as(raw_idx,
                         (raw_idx.startsWith("partial-") ? raw_idx.substring(8, size(raw_idx)) : raw_idx).as(s1,
                         (s1.startsWith("restored-") ? s1.substring(9, size(s1)) : s1).as(s2,
-                        ((s2.startsWith("shrink-") && size(s2) > 12 && s2.substring(11, 12) == "-") ? s2.substring(12, size(s2)) : s2).as(s3,
+                        ((s2.startsWith("shrink-") && size(s2) > 12 && s2.substring(11, 12) == "-") ? s2.substring(12, size(s2)) : s2).as(s2b,
+                        ((s2b.startsWith("downsample-") && s2b.contains("-.ds-") && size(s2b.split("-.ds-")[0]) > 11 && !s2b.split("-.ds-")[0].substring(11, size(s2b.split("-.ds-")[0])).contains("-")) ? s2b.substring(size(s2b.split("-.ds-")[0]) + 1, size(s2b)) : s2b).as(s3,
                         s3.startsWith(".ds-").as(from_ds,
                         (from_ds ?
                           s3.substring(4, size(s3)).as(s4,
@@ -536,6 +537,7 @@ inputs:
                           "qry_time": ("search.query_time" in row && row["search.query_time"] != null && row["search.query_time"] != "") ? int(row["search.query_time"]) : 0,
                           "store_bytes": ("dataset.size" in row && row["dataset.size"] != null && row["dataset.size"] != "") ? int(row["dataset.size"]) : 0,
                         }
+                        )
                         )
                         )
                         )

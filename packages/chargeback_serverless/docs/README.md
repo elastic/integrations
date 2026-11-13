@@ -2,7 +2,7 @@
 
 The **Chargeback Serverless** integration allocates Elastic Cloud Serverless billing costs to **projects**, **data streams**, **namespaces**, **AI models**, and **Synthetics monitors** on an Elastic Cloud Serverless FinOps hub project.
 
-Use this integration when your central FinOps hub runs on **Elastic Cloud Serverless**. If your central FinOps hub runs on an Elastic Cloud Hosted or self-managed monitoring cluster, use the `chargeback` integration with Elasticsearch Service (ESS) Billing instead.
+Use this integration when your central FinOps hub runs on **Elastic Cloud Serverless**. For organization-wide billing and ECU credit tracking on an Elastic Cloud Hosted or self-managed monitoring cluster, use the **Elasticsearch Service (ESS) Billing** (`ess_billing`) integration.
 
 ## Overview
 
@@ -225,7 +225,7 @@ Create alerting rules from the 4 packaged ES|QL rule templates directly from **M
 
 - **`Installation package: chargeback_serverless is not allowed due to data stream type exclusions`**: This error occurs when installing the integration on an **Observability Logs Essentials** Serverless project, which restricts `metrics` data streams in Kibana Fleet. Install the Chargeback Serverless FinOps hub on an **Elasticsearch** Serverless project or an **Observability Complete** Serverless project instead; the hub will still discover and attribute costs for all Logs Essentials and Security projects in your organization.
 - **Projects report `empty_or_unauthorized` or `missing_key` on the Configuration dashboard**: Verify that your Elastic Cloud API key has **Enable access to Cloud resources** toggled **ON** across **`Elasticsearch`**, **`Observability`**, and **`Security`** project types, or provide a least-privilege project API key in `project_api_keys` (`<project_id>:<encoded_api_key>`) with `monitor` and `view_index_metadata` privileges on `*` and `.ds-*`.
-- **Transforms or `LOOKUP JOIN` queries report an index mode error**: Confirm that all seven `serverless_*_lookup` destination indices are created with `"index.mode": "lookup"` and that all `logs-chargeback_serverless.*` transforms are in the `started` state under **Stack Management → Transforms**.
+- **Transforms or `LOOKUP JOIN` queries report an index mode error**: Confirm that all seven `serverless_*_lookup` destination indices are created with `"index.mode": "lookup"` and that all `chargeback_serverless-*` transforms are in the `started` state under **Stack Management → Transforms**.
 
 ## Reference
 
