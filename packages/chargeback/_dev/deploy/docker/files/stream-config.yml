@@ -1,0 +1,523 @@
+rules:
+  - path: /api/v1/deployments/_search
+    methods: ["POST"]
+    request_headers:
+      Authorization:
+        - "ApiKey cloud-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+            {
+              "match_count": 1,
+              "deployments": [
+                {
+                  "id": "dep-ech-01-wrap",
+                  "name": "prod-observability",
+                  "metadata": {
+                    "tags": [
+                      {
+                        "key": "chargeback_group",
+                        "value": "team-alpha"
+                      }
+                    ]
+                  },
+                  "resources": {
+                    "elasticsearch": [
+                      {
+                        "id": "dep-ech-01",
+                        "region": "us-east-1",
+                        "info": {
+                          "metadata": {
+                            "service_url": "http://chargeback:8080/ech1"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          `}}
+
+  - path: /api/v1/serverless/projects/elasticsearch
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey cloud-key"
+    query_params:
+      size: "100"
+      next_page: "page2"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+            {
+              "items": [
+                {
+                  "id": "proj-sls-02",
+                  "name": "serverless-catalog-prod",
+                  "region_id": "gcp-us-central1",
+                  "endpoints": {
+                    "elasticsearch": "http://chargeback:8080/sls2"
+                  }
+                }
+              ],
+              "next_page": ""
+            }
+          `}}
+
+  - path: /api/v1/serverless/projects/elasticsearch
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey cloud-key"
+    query_params:
+      size: "100"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+            {
+              "items": [
+                {
+                  "id": "proj-sls-01",
+                  "name": "serverless-search-prod",
+                  "region_id": "aws-eu-west-1",
+                  "endpoints": {
+                    "elasticsearch": "http://chargeback:8080/sls1"
+                  }
+                }
+              ],
+              "next_page": "page2"
+            }
+          `}}
+
+  - path: /api/v1/serverless/projects/observability
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey cloud-key"
+    query_params:
+      size: "100"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"items":[],"next_page":""}
+
+  - path: /api/v1/serverless/projects/security
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey cloud-key"
+    query_params:
+      size: "100"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"items":[],"next_page":""}
+
+  - path: /api/v1/billing/organization/1111/line_items
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey cloud-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+            [
+              {
+                "active": true,
+                "type": "prepaid",
+                "ecu_balance": 34200,
+                "ecu_quantity": 50000,
+                "start": "2026-01-01T00:00:00Z",
+                "end": "2026-12-31T23:59:59Z"
+              }
+            ]
+          `}}
+
+  - path: /api/v2/billing/organizations/1111/costs/instances
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey cloud-key"
+    query_params:
+      from: "{from:.+}"
+      to: "{to:.+}"
+      include_names: "true"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+            {
+              "total_ecu": 19.8728,
+              "instances": [
+                {
+                  "id": "dep-ech-01",
+                  "name": "prod-observability",
+                  "type": "deployment",
+                  "total_ecu": 7.3728,
+                  "product_line_items": [
+                    {
+                      "sku": "aws.es.datahot.c6gd_us-east-1_4096_2",
+                      "type": "capacity",
+                      "kind": "elasticsearch",
+                      "total_ecu": 7.3728,
+                      "quantity": {
+                        "value": 24.0
+                      }
+                    },
+                    {
+                      "sku": "aws.data-transfer-in",
+                      "type": "data_in",
+                      "kind": "",
+                      "total_ecu": 0.0,
+                      "quantity": {
+                        "value": 8.5
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "proj-sls-02",
+                  "name": "proj-sls-02",
+                  "type": "elasticsearch",
+                  "total_ecu": 12.5,
+                  "product_line_items": [
+                    {
+                      "sku": "elasticsearch.gcp-search-vcu_gcp-us-central1",
+                      "type": "VCU",
+                      "kind": "elasticsearch",
+                      "total_ecu": 12.5,
+                      "quantity": {
+                        "value": 50.0
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          `}}
+
+  - path: /hub/
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey hub-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"cluster_name":"hub-cluster-01"}
+
+  - path: /ech1/{indices}/_stats/{metrics}
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey ech-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+            {
+              "indices": {
+                ".ds-logs-nginx.access-prod-2026.03.10-000001": {
+                  "primaries": {
+                    "docs": {
+                      "count": 120000
+                    },
+                    "store": {
+                      "total_data_set_size_in_bytes": 536870912
+                    }
+                  },
+                  "total": {
+                    "store": {
+                      "size_in_bytes": 1073741824
+                    },
+                    "indexing": {
+                      "index_time_in_millis": 420
+                    },
+                    "search": {
+                      "query_time_in_millis": 810,
+                      "query_total": 95
+                    }
+                  }
+                },
+                ".security-7": {
+                  "primaries": {
+                    "docs": {
+                      "count": 42
+                    },
+                    "store": {
+                      "total_data_set_size_in_bytes": 65536
+                    }
+                  },
+                  "total": {
+                    "store": {
+                      "size_in_bytes": 131072
+                    }
+                  }
+                }
+              }
+            }
+          `}}
+
+  - path: /ech1/{indices}/_settings/{settings}
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey ech-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+            {
+              ".ds-logs-nginx.access-prod-2026.03.10-000001": {
+                "settings": {
+                  "index.routing.allocation.include._tier_preference": "data_warm,data_hot",
+                  "index.creation_date": "1773100800000"
+                }
+              }
+            }
+          `}}
+
+  - path: /sls1/_cat/indices/{indices}
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey cloud-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+            [
+              {
+                "index": ".ds-metrics-apm.app-team_a-2026.03.16-000002",
+                "docs.count": "5000",
+                "store.size": "16777216",
+                "dataset.size": "16777216",
+                "indexing.index_time": "150",
+                "search.query_time": "60",
+                "search.query_total": "12",
+                "creation.date": "1773619200000"
+              }
+            ]
+          `}}
+
+  - path: /sls2/_cat/indices/{indices}
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey cloud-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+            [
+              {
+                "index": "search-catalog-v1",
+                "docs.count": "2500",
+                "store.size": "8388608",
+                "dataset.size": "8388608",
+                "indexing.index_time": "90",
+                "search.query_time": "45",
+                "search.query_total": "9",
+                "creation.date": "1773619200000"
+              }
+            ]
+          `}}
+
+  - path: /hub/{indices}/_stats/{metrics}
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey hub-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+            {
+              "indices": {
+                "app-orders-2026.03": {
+                  "primaries": {
+                    "docs": {
+                      "count": 80000
+                    },
+                    "store": {
+                      "total_data_set_size_in_bytes": 268435456
+                    }
+                  },
+                  "total": {
+                    "store": {
+                      "size_in_bytes": 268435456
+                    },
+                    "indexing": {
+                      "index_time_in_millis": 0
+                    },
+                    "search": {
+                      "query_time_in_millis": 320,
+                      "query_total": 20
+                    }
+                  }
+                },
+                "chargeback_lookup.dest_billing_cluster_cost-1": {
+                  "primaries": {
+                    "docs": {
+                      "count": 100
+                    },
+                    "store": {
+                      "total_data_set_size_in_bytes": 131072
+                    }
+                  },
+                  "total": {
+                    "store": {
+                      "size_in_bytes": 131072
+                    }
+                  }
+                }
+              }
+            }
+          `}}
+
+  - path: /hub/{indices}/_settings/{settings}
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey hub-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+            {
+              "app-orders-2026.03": {
+                "settings": {
+                  "index.routing.allocation.include._tier_preference": "data_cold",
+                  "index.creation_date": "1772323200000"
+                }
+              }
+            }
+          `}}
+
+  - path: /ech1/_nodes/_all/stats/{metrics}
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey ech-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+            {
+              "nodes": {
+                "node-ech-1": {
+                  "name": "instance-0000000001",
+                  "roles": ["data_hot", "data_content"],
+                  "jvm": {
+                    "mem": {
+                      "heap_used_percent": 68
+                    }
+                  },
+                  "fs": {
+                    "total": {
+                      "total_in_bytes": 107374182400,
+                      "available_in_bytes": 32212254720
+                    }
+                  }
+                },
+                "node-ech-2": {
+                  "name": "instance-0000000002",
+                  "roles": ["data_warm"],
+                  "jvm": {
+                    "mem": {
+                      "heap_used_percent": 54
+                    }
+                  },
+                  "fs": {
+                    "total": {
+                      "total_in_bytes": 214748364800,
+                      "available_in_bytes": 85899345920
+                    }
+                  }
+                }
+              }
+            }
+          `}}
+
+  - path: /hub/_nodes/_all/stats/{metrics}
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey hub-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+            {
+              "nodes": {
+                "node-hub-1": {
+                  "name": "hub-data-01",
+                  "roles": ["data_hot"],
+                  "jvm": {
+                    "mem": {
+                      "heap_used_percent": 47
+                    }
+                  },
+                  "fs": {
+                    "total": {
+                      "total_in_bytes": 536870912000,
+                      "available_in_bytes": 268435456000
+                    }
+                  }
+                }
+              }
+            }
+          `}}

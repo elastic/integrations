@@ -110,22 +110,26 @@ source:
       type: date
       script:
         source: |
-          if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
-            emit(doc['event.ingested'].value.toInstant().toEpochMilli());
-            return;
-          }
-          def rawIngested = params._source?.event?.ingested;
-          if (rawIngested != null) {
-            if (rawIngested instanceof Number) {
-              emit(((Number)rawIngested).longValue());
-              return;
-            }
-            String s = rawIngested.toString().trim();
-            if (s != '') {
-              try {
-                emit(ZonedDateTime.parse(s).toInstant().toEpochMilli());
+          for (String df : ['event.ingested', 'event.created']) {
+            try {
+              if (doc.containsKey(df) && !doc[df].empty) {
+                emit(doc[df].value.toInstant().toEpochMilli());
                 return;
-              } catch (Exception e) {}
+              }
+            } catch (Exception e) {}
+            def rawVal = (df == 'event.ingested') ? params._source?.event?.ingested : params._source?.event?.created;
+            if (rawVal != null) {
+              if (rawVal instanceof Number) {
+                emit(((Number)rawVal).longValue());
+                return;
+              }
+              String s = rawVal.toString().trim();
+              if (s != '') {
+                try {
+                  emit(ZonedDateTime.parse(s).toInstant().toEpochMilli());
+                  return;
+                } catch (Exception e) {}
+              }
             }
           }
           if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
@@ -157,7 +161,7 @@ dest:
   aliases:
     - alias: chargeback_lookup.billing_realized_pool
       move_on_creation: true
-  pipeline: logs-chargeback.lookup-0.6.0-realized_pool
+  pipeline: logs-chargeback.lookup-0.1.0-realized_pool
 frequency: 60m
 sync:
   time:
@@ -236,4 +240,4 @@ settings:
 _meta:
   managed: true
   run_as_kibana_system: false
-  fleet_transform_version: 0.6.0
+  fleet_transform_version: 0.1.0

@@ -35,9 +35,18 @@ source:
             if (!doc[kw].empty) { emit(doc[kw].value.toString()); }
             return;
           }
-          if (doc.containsKey('elasticsearch.index.name') && !doc['elasticsearch.index.name'].empty) {
-            emit(doc['elasticsearch.index.name'].value.toString());
-          }
+          try {
+            if (doc.containsKey('elasticsearch.index.name') && !doc['elasticsearch.index.name'].empty) {
+              emit(doc['elasticsearch.index.name'].value.toString());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            def iname = params._source?.elasticsearch?.index?.name;
+            if (iname != null && iname.toString() != '') {
+              emit(iname.toString());
+            }
+          } catch (Exception e) {}
     cb_index_datastream:
       type: keyword
       script:
@@ -55,7 +64,7 @@ dest:
   aliases:
     - alias: chargeback_lookup.cluster_datastream_contribution
       move_on_creation: true
-  pipeline: logs-chargeback.lookup-0.6.0-usage
+  pipeline: logs-chargeback.lookup-0.1.0-usage
 frequency: 60m
 sync:
   time:
@@ -88,6 +97,162 @@ pivot:
             }
             return 'unknown';
   aggregations:
+    coverage:
+      scripted_metric:
+        init_script: |
+          state.nat = new HashMap();
+          state.leg = new HashMap();
+          state.nat_delta_docs = 0L;
+        map_script: |
+          if (!doc.containsKey('@timestamp') || doc['@timestamp'].empty) { return; }
+          long ts = doc['@timestamp'].value.toInstant().toEpochMilli();
+          long rem = ts % 86400000L;
+          if (rem < 0L) { rem += 86400000L; }
+          int b = (int)(rem / 600000L);
+          if (b < 0) { b = 0; }
+          if (b > 143) { b = 143; }
+          int w = b >> 6;
+          long bit = 1L << (b & 63);
+          String idx = '_default_';
+          if (doc.containsKey('cb_index_name') && !doc['cb_index_name'].empty) {
+            idx = doc['cb_index_name'].value.toString();
+          } else if (params._source?.elasticsearch?.index?.datastream != null && params._source.elasticsearch.index.datastream.toString() != '') {
+            idx = 'ds:' + params._source.elasticsearch.index.datastream.toString();
+          }
+          boolean isNat = doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty && doc['data_stream.dataset'].value == 'chargeback.usage';
+          if (isNat) {
+            boolean hasDelta = false;
+            try {
+              if (doc.containsKey('elasticsearch.index.primaries.docs.count_delta') && !doc['elasticsearch.index.primaries.docs.count_delta'].empty) {
+                hasDelta = true;
+              }
+            } catch (Exception e) {}
+            if (!hasDelta) {
+              try {
+                if (params._source?.elasticsearch?.index?.primaries?.docs?.count_delta != null) {
+                  hasDelta = true;
+                }
+              } catch (Exception e) {}
+            }
+            List m = (List)state.nat.get(idx);
+            if (m == null) {
+              m = [0L, 0L, 0L, 0L, 0L, 0L];
+              state.nat.put(idx, m);
+            }
+            if (hasDelta) {
+              m.set(w, ((Number)m.get(w)).longValue() | bit);
+              state.nat_delta_docs = ((Number)state.nat_delta_docs).longValue() + 1L;
+            } else {
+              m.set(3 + w, ((Number)m.get(3 + w)).longValue() | bit);
+            }
+          } else {
+            List m = (List)state.leg.get(idx);
+            if (m == null) {
+              m = [0L, 0L, 0L];
+              state.leg.put(idx, m);
+            }
+            m.set(w, ((Number)m.get(w)).longValue() | bit);
+          }
+        combine_script: "return state;"
+        reduce_script: |
+          Map mergedNat = new HashMap();
+          Map mergedLeg = new HashMap();
+          long totalNatDelta = 0L;
+          for (def st : states) {
+            if (st == null) { continue; }
+            if (st.nat_delta_docs instanceof Number) {
+              totalNatDelta += ((Number)st.nat_delta_docs).longValue();
+            }
+            if (st.nat instanceof Map) {
+              for (def e : ((Map)st.nat).entrySet()) {
+                String k = e.getKey().toString();
+                List v = (List)e.getValue();
+                List acc = (List)mergedNat.get(k);
+                if (acc == null) {
+                  acc = [0L, 0L, 0L, 0L, 0L, 0L];
+                  mergedNat.put(k, acc);
+                }
+                for (int i = 0; i < 6; i++) {
+                  acc.set(i, ((Number)acc.get(i)).longValue() | ((Number)v.get(i)).longValue());
+                }
+              }
+            }
+            if (st.leg instanceof Map) {
+              for (def e : ((Map)st.leg).entrySet()) {
+                String k = e.getKey().toString();
+                List v = (List)e.getValue();
+                List acc = (List)mergedLeg.get(k);
+                if (acc == null) {
+                  acc = [0L, 0L, 0L];
+                  mergedLeg.put(k, acc);
+                }
+                for (int i = 0; i < 3; i++) {
+                  acc.set(i, ((Number)acc.get(i)).longValue() | ((Number)v.get(i)).longValue());
+                }
+              }
+            }
+          }
+          boolean coversAll = false;
+          if (mergedLeg.isEmpty()) {
+            coversAll = !mergedNat.isEmpty();
+          } else if (totalNatDelta > 0L && !mergedNat.isEmpty()) {
+            coversAll = true;
+            for (def le : mergedLeg.entrySet()) {
+              String idx = le.getKey().toString();
+              List legM = (List)le.getValue();
+              List natM = (List)mergedNat.get(idx);
+              if (natM == null) {
+                coversAll = false;
+                break;
+              }
+              int firstDelta = -1;
+              int firstBase = -1;
+              for (int b = 0; b < 144; b++) {
+                int w = b >> 6;
+                long bit = 1L << (b & 63);
+                if (firstDelta < 0 && (((Number)natM.get(w)).longValue() & bit) != 0L) { firstDelta = b; }
+                if (firstBase < 0 && (((Number)natM.get(3 + w)).longValue() & bit) != 0L) { firstBase = b; }
+              }
+              if (firstDelta < 0) {
+                coversAll = false;
+                break;
+              }
+              for (int b = 0; b < 144; b++) {
+                int w = b >> 6;
+                long bit = 1L << (b & 63);
+                if ((((Number)legM.get(w)).longValue() & bit) == 0L) { continue; }
+                if ((((Number)natM.get(3 + w)).longValue() & bit) != 0L) {
+                  coversAll = false;
+                  break;
+                }
+                if (firstBase >= 0 && firstBase <= firstDelta && b <= firstBase) {
+                  coversAll = false;
+                  break;
+                }
+                boolean exactMatch = ((((Number)natM.get(w)).longValue() & bit) != 0L);
+                boolean nextMatch = false;
+                if (!exactMatch && (b + 1) < 144) {
+                  int nw = (b + 1) >> 6;
+                  long nbit = 1L << ((b + 1) & 63);
+                  if ((((Number)natM.get(nw)).longValue() & nbit) != 0L
+                      && (((Number)natM.get(3 + nw)).longValue() & nbit) == 0L
+                      && (b > firstDelta || (b == 0 && firstBase < 0))) {
+                    nextMatch = true;
+                  }
+                }
+                if (!exactMatch && !nextMatch) {
+                  coversAll = false;
+                  break;
+                }
+              }
+              if (!coversAll) { break; }
+            }
+          }
+          Map res = new HashMap();
+          res.put('native_covers_all', coversAll);
+          res.put('native_index_cnt', mergedNat.size());
+          res.put('legacy_index_cnt', mergedLeg.size());
+          return res;
     native:
       filter:
         term:
@@ -96,20 +261,6 @@ pivot:
         doc_cnt:
           value_count:
             field: "@timestamp"
-        has_delta:
-          filter:
-            exists:
-              field: elasticsearch.index.primaries.docs.count_delta
-          aggs:
-            cnt:
-              value_count:
-                field: "@timestamp"
-            min_ts:
-              min:
-                field: "@timestamp"
-            max_ts:
-              max:
-                field: "@timestamp"
         datastream_sum_indexing_time:
           sum:
             field: elasticsearch.index.total.indexing.index_time_in_millis
@@ -132,18 +283,12 @@ pivot:
         doc_cnt:
           value_count:
             field: "@timestamp"
-        min_ts:
-          min:
-            field: "@timestamp"
-        max_ts:
-          max:
-            field: "@timestamp"
         datastream_sum_indexing_time:
           sum:
-            field: elasticsearch.index.total.indexing.index_time_in_millis
+            field: elasticsearch.index.total.indexing.index_time_in_millis_delta
         datastream_sum_query_time:
           sum:
-            field: elasticsearch.index.total.search.query_time_in_millis
+            field: elasticsearch.index.total.search.query_time_in_millis_delta
         datastream_sum_store_size:
           sum:
             field: elasticsearch.index.total.store.size_in_bytes
@@ -156,4 +301,4 @@ settings:
 _meta:
   managed: true
   run_as_kibana_system: false
-  fleet_transform_version: 0.6.0
+  fleet_transform_version: 0.1.0

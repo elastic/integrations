@@ -8,8 +8,7 @@ resource.tracer.maxbackups: 5
 resource.proxy_url: {{proxy_url}}
 {{/if}}
 {{#if ssl}}
-resource.ssl:
-  {{ssl}}
+resource.ssl: {{ssl}}
 {{/if}}
 {{#if http_client_timeout}}
 resource.timeout: {{http_client_timeout}}
@@ -60,7 +59,6 @@ program: |-
       })]
     : ((state.sync_fleet_config && state.?cursor.conf_sig.orValue("") != conf_sig) ?
       [dyn({
-        "@timestamp": now.format(time_layout.RFC3339),
         "doc_type": "config_snapshot",
         "conf_sync_enabled": true,
         "conf_utilization_memory_weight": int(state.conf_utilization_memory_weight),
@@ -69,7 +67,6 @@ program: |-
       })]
     : ((!state.sync_fleet_config && state.?cursor.conf_sig.orValue("") != "disabled") ?
       [dyn({
-        "@timestamp": now.format(time_layout.RFC3339),
         "doc_type": "config_snapshot",
         "conf_sync_enabled": false,
       })]
@@ -223,7 +220,6 @@ program: |-
                             harvest.body.nodes.keys().map(nid,
                               harvest.body.nodes[nid].as(nd,
                                 dyn({
-                                  "@timestamp": sample_ts,
                                   "doc_type": "node_sample",
                                   "deployment_name": string(t.name),
                                   "elasticsearch": {
@@ -275,3 +271,6 @@ program: |-
 
 processors:
 - drop_event.when.equals.fake: true
+{{#if processors}}
+{{processors}}
+{{/if}}

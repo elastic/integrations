@@ -8,8 +8,7 @@ resource.tracer.maxbackups: 5
 resource.proxy_url: {{proxy_url}}
 {{/if}}
 {{#if ssl}}
-resource.ssl:
-  {{ssl}}
+resource.ssl: {{ssl}}
 {{/if}}
 {{#if http_client_timeout}}
 resource.timeout: {{http_client_timeout}}
@@ -70,7 +69,6 @@ program: |-
       })]
     : ((state.sync_fleet_config && state.?cursor.conf_sig.orValue("") != conf_sig) ?
       [dyn({
-        "@timestamp": now.format(time_layout.RFC3339),
         "doc_type": "config_snapshot",
         "conf_sync_enabled": true,
         "conf_chargeable_unit_rate": double(clean_rate),
@@ -79,7 +77,6 @@ program: |-
       })]
     : ((!state.sync_fleet_config && state.?cursor.conf_sig.orValue("") != "disabled") ?
       [dyn({
-        "@timestamp": now.format(time_layout.RFC3339),
         "doc_type": "config_snapshot",
         "conf_sync_enabled": false,
       })]
@@ -108,7 +105,6 @@ program: |-
                 {
                   "evts": cred_items.map(item,
                     dyn({
-                      "@timestamp": cred_ts,
                       "doc_type": "credit_line_item",
                       "ess": {
                         "billing": {
@@ -142,7 +138,7 @@ program: |-
       : { "evts": [], "credit_day": prev_credit_day }).as(cred_res,
         (conf_evts + cred_res.evts).as(meta_evts,
         state.?cursor.last_to.optMap(ts, (type(ts) == string) ? timestamp(ts) : ts).orValue(
-          now - duration(string(int(state.lookbehind) * 24) + "h")
+          now - duration("2h") - duration(string(int(state.lookbehind) * 24) + "h")
         ).format(
           time_layout.DateOnly
         ).parse_time(time_layout.DateOnly).as(raw_from,
@@ -360,7 +356,6 @@ program: |-
                                               (has(instance.product_line_items) && instance.product_line_items != null) ?
                                                 instance.product_line_items.filter(li, has(li.sku) && li.sku != null && string(li.sku) != "").map(li,
                                                   dyn({
-                                                    "@timestamp": req.from.format(time_layout.RFC3339),
                                                     "doc_type": "billing_line_item",
                                                     "cloud": resolved_region != "" ? { "region": resolved_region } : {},
                                                     "ess": {
@@ -444,3 +439,6 @@ program: |-
 
 processors:
 - drop_event.when.equals.fake: true
+{{#if processors}}
+{{processors}}
+{{/if}}
