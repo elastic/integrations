@@ -1,8 +1,34 @@
-description: Aggregates daily total indexing, query, and storage usage per deployment from self-collected index metrics.
+description: Aggregates daily total indexing, query, and storage usage per deployment across native Chargeback and legacy monitoring-indices sources.
 source:
   index:
     - metrics-chargeback.usage-*
+    - monitoring-indices*
+    - "*:monitoring-indices*"
+    - -monitoring-indices-chargeback
+    - -chargeback_lookup.*
+  query:
+    bool:
+      must_not:
+        - term:
+            doc_type: config_snapshot
   runtime_mappings:
+    cb_sync_time:
+      type: date
+      script:
+        source: |
+          if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+            emit(doc['event.ingested'].value.toInstant().toEpochMilli());
+            return;
+          }
+          if (params._source?.event?.ingested != null) {
+            try {
+              emit(ZonedDateTime.parse(params._source.event.ingested.toString()).toInstant().toEpochMilli());
+              return;
+            } catch (Exception e) {}
+          }
+          if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+            emit(doc['@timestamp'].value.toInstant().toEpochMilli());
+          }
     cb_cluster_name:
       type: keyword
       script:
@@ -21,7 +47,7 @@ dest:
 frequency: 5m
 sync:
   time:
-    field: event.ingested
+    field: cb_sync_time
     delay: 60s
 pivot:
   group_by:
@@ -33,18 +59,48 @@ pivot:
       terms:
         field: cb_cluster_name
   aggregations:
-    deployment_sum_indexing_time:
-      sum:
-        field: elasticsearch.index.total.indexing.index_time_in_millis
-    deployment_sum_query_time:
-      sum:
-        field: elasticsearch.index.total.search.query_time_in_millis
-    deployment_sum_store_size:
-      sum:
-        field: elasticsearch.index.total.store.size_in_bytes
-    deployment_sum_data_set_store_size:
-      sum:
-        field: elasticsearch.index.primaries.store.total_data_set_size_in_bytes
+    native:
+      filter:
+        term:
+          data_stream.dataset: chargeback.usage
+      aggs:
+        doc_cnt:
+          value_count:
+            field: "@timestamp"
+        deployment_sum_indexing_time:
+          sum:
+            field: elasticsearch.index.total.indexing.index_time_in_millis
+        deployment_sum_query_time:
+          sum:
+            field: elasticsearch.index.total.search.query_time_in_millis
+        deployment_sum_store_size:
+          sum:
+            field: elasticsearch.index.total.store.size_in_bytes
+        deployment_sum_data_set_store_size:
+          sum:
+            field: elasticsearch.index.primaries.store.total_data_set_size_in_bytes
+    legacy:
+      filter:
+        bool:
+          must_not:
+            - term:
+                data_stream.dataset: chargeback.usage
+      aggs:
+        doc_cnt:
+          value_count:
+            field: "@timestamp"
+        deployment_sum_indexing_time:
+          sum:
+            field: elasticsearch.index.total.indexing.index_time_in_millis
+        deployment_sum_query_time:
+          sum:
+            field: elasticsearch.index.total.search.query_time_in_millis
+        deployment_sum_store_size:
+          sum:
+            field: elasticsearch.index.total.store.size_in_bytes
+        deployment_sum_data_set_store_size:
+          sum:
+            field: elasticsearch.index.primaries.store.total_data_set_size_in_bytes
 settings:
   deduce_mappings: false
   unattended: true

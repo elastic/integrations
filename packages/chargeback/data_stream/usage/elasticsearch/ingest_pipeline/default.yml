@@ -2,16 +2,20 @@
 description: "Ingest pipeline for Chargeback self-collected index and tier usage data."
 processors:
   - drop:
-      if: "ctx.elasticsearch?.index?.name == null && ctx.error?.message == null"
+      if: "ctx.elasticsearch?.index?.name == null && ctx.doc_type != 'config_snapshot' && ctx.error?.message == null"
   - terminate:
       tag: data_collection_error
-      if: ctx.error?.message != null && ctx.elasticsearch?.index?.name == null
+      if: ctx.error?.message != null && ctx.elasticsearch?.index?.name == null && ctx.doc_type != 'config_snapshot'
       description: Terminate early on collection error documents.
   - set:
       field: event.ingested
       value: "{{{_ingest.timestamp}}}"
       if: ctx.event?.ingested == null
       tag: set_event_ingested
+  - terminate:
+      tag: config_snapshot_complete
+      if: "ctx.doc_type == 'config_snapshot'"
+      description: Configuration snapshot events are complete after stamping event.ingested.
   - date:
       field: period_start
       target_field: "@timestamp"
@@ -33,8 +37,14 @@ processors:
         }
         def idx = ctx.elasticsearch.index;
         String name = idx.name != null ? idx.name.toString() : '';
-        // Drop internal non-.ds system indices and Chargeback lookup indices to avoid feedback
-        if ((name.startsWith('.') && !name.startsWith('.ds-')) || name.endsWith('_lookup') || name.contains('_lookup-') || name.contains('metrics-chargeback.')) {
+        boolean isCbLookup = (
+          name.startsWith('chargeback_lookup.') ||
+          name == 'monitoring-indices' ||
+          name == 'monitoring-indices-chargeback' ||
+          /^(?:billing_cluster_cost_lookup|billing_realized_pool_lookup|chargeback_conf_lookup|cluster_capacity_utilization_lookup|cluster_deployment_contribution_lookup|cluster_tier_contribution_lookup|cluster_datastream_contribution_lookup|cluster_tier_and_datastream_contribution_lookup)(?:-\d+)?$/.matcher(name).matches()
+        );
+        // Drop internal non-.ds system indices and explicit Chargeback indices to avoid feedback
+        if ((name.startsWith('.') && !name.startsWith('.ds-')) || name.startsWith('.ds-.') || name.startsWith('.ds-ilm-history') || isCbLookup || name.contains('metrics-chargeback.') || name.contains('logs-chargeback.')) {
           ctx._drop_internal = true;
           return;
         }

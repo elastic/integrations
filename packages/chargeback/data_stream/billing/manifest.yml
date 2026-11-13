@@ -5,7 +5,7 @@ elasticsearch:
   source_mode: synthetic
 streams:
   - input: cel
-    title: Elastic Cloud Daily Billing
+    title: Elastic Cloud Daily Billing & Rate Settings
     description: Collect daily ECH and Serverless billing line items, deployment tags, currency conversion settings, and optional credit commitments from Elastic Cloud APIs.
     template_path: cel.yml.hbs
     enabled: true
@@ -37,11 +37,20 @@ streams:
         required: true
         show_user: true
         default: "0.85"
+      - name: config_effective_from
+        type: text
+        title: Configuration Effective Start Date (Optional)
+        description: >-
+          Optional ISO-8601 UTC start timestamp (for example, 2026-01-01T00:00:00Z) when preserving earlier non-overlapping rate periods in chargeback_conf_lookup. Leave empty to apply the configured rate across the default validity window.
+        multi: false
+        required: false
+        show_user: true
+        default: ""
       - name: collect_ess_credits
         type: bool
         title: Collect ESS Credit Commitment Data (for stock ESS Billing Credits dashboard)
         description: >-
-          Pulls organization credit commitment line items (/api/v1/billing/organization/{id}/line_items) to populate the stock [Metrics ESS Billing] Credits dashboard via symlink. Chargeback does not use credit data in its own dashboards. Note: Load the stock ESS Billing (and Elasticsearch) dashboard assets in Kibana under Management → Integrations → ESS Billing / Elasticsearch → Assets → Install assets (without adding a second agent policy).
+          Pulls organization credit commitment line items (/api/v1/billing/organization/{id}/line_items) into metrics-chargeback.billing-* so standalone deployments can expose opt-in compatibility aliases for the stock [Metrics ESS Billing] Billing and Credits dashboards.
         multi: false
         required: false
         show_user: true

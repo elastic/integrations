@@ -22,11 +22,10 @@ state:
   hub_es_url: !!str {{escape_string hub_es_url}}
   hub_es_api_key: !!str {{hub_es_api_key}}
   deployment_keys: !!str {{deployment_api_keys}}
+  sync_fleet_config: !!bool {{sync_fleet_config}}
   conf_indexing_weight: !!int {{indexing_weight}}
   conf_query_weight: !!int {{query_weight}}
   conf_storage_weight: !!int {{storage_weight}}
-  conf_memory_cost_weight: !!int {{memory_cost_weight}}
-  conf_storage_cost_weight: !!int {{storage_cost_weight}}
 redact:
   fields:
     - api_key
@@ -36,20 +35,48 @@ redact:
     - deployment_api_keys
 program: |-
   state.with(
-    (string(state.conf_indexing_weight) + "|" + string(state.conf_query_weight) + "|" + string(state.conf_storage_weight) + "|" + string(state.conf_memory_cost_weight) + "|" + string(state.conf_storage_cost_weight)).as(conf_sig,
+    (state.sync_fleet_config ? (string(state.conf_indexing_weight) + "|" + string(state.conf_query_weight) + "|" + string(state.conf_storage_weight)) : "disabled").as(conf_sig,
+    ((state.sync_fleet_config && state.?cursor.conf_sig.orValue("") != conf_sig) ?
+      [dyn({
+        "@timestamp": now.format(time_layout.RFC3339),
+        "doc_type": "config_snapshot",
+        "conf_indexing_weight": int(state.conf_indexing_weight),
+        "conf_query_weight": int(state.conf_query_weight),
+        "conf_storage_weight": int(state.conf_storage_weight),
+      })]
+    : []).as(conf_evts,
     ((now - duration("2h")).format(time_layout.DateOnly).parse_time(time_layout.DateOnly) - duration("24h")).as(day_start,
     day_start.format(time_layout.RFC3339).as(day_ts,
-    (state.?cursor.last_day.orValue("") == day_ts && state.?cursor.conf_sig.orValue("") == conf_sig) ?
+    (int(day_start) * 1000).as(day_start_ms,
+    state.?cursor.idx_baselines.orValue([]).as(prev_baselines,
+    (state.?cursor.last_day.orValue("") == day_ts) ?
       {
-        "events": [],
-        "cursor": { "last_day": day_ts, "conf_sig": conf_sig },
+        "events": size(conf_evts) > 0 ? conf_evts : [dyn({ "fake": true })],
+        "cursor": {
+          "last_day": day_ts,
+          "pending_day": day_ts,
+          "completed_targets": state.?cursor.completed_targets.orValue([]),
+          "conf_sig": conf_sig,
+          "idx_baselines": prev_baselines,
+        },
         "want_more": false,
       }
     :
+      (state.?cursor.pending_day.orValue("") == day_ts ? state.?cursor.completed_targets.orValue([]) : []).as(done_targets,
+      state.?cursor.last_day.orValue("").as(prev_last_day,
+      (state.organization_id != "" && state.api_key != "" && !state.api_key.startsWith("$co.elastic.secret")).as(has_cloud,
+      (state.hub_es_url != "" && state.hub_es_api_key != "" && !state.hub_es_api_key.startsWith("$co.elastic.secret")).as(has_hub,
+      (state.hub_es_url.endsWith("/") ? state.hub_es_url.substring(0, size(state.hub_es_url) - 1) : state.hub_es_url).as(clean_hub_url,
       (
         !has(state.deployment_keys) || state.deployment_keys == null ? [] :
         string(dyn(state.deployment_keys)).split(",")
       ).map(k, k.trim_space()).filter(k, k != "" && k != "null" && !k.startsWith("$co.elastic.secret")).as(all_dkeys,
+      int(state.?cursor.disc_dep_from.orValue(has_cloud ? 0 : -1)).as(dep_from,
+      string(state.?cursor.disc_es_next.orValue(has_cloud ? "START" : "")).as(es_next,
+      string(state.?cursor.disc_obs_next.orValue(has_cloud ? "START" : "")).as(obs_next,
+      string(state.?cursor.disc_sec_next.orValue(has_cloud ? "START" : "")).as(sec_next,
+      state.?cursor.disc_targets.orValue([]).as(acc_targets,
+      ((has_cloud && dep_from >= 0) ?
         request(
           "POST",
           state.cloud_api_base + "/api/v1/deployments/_search"
@@ -59,195 +86,383 @@ program: |-
               "Authorization": ["ApiKey " + state.api_key],
               "Content-Type": ["application/json"],
             },
-            "Body": { "size": 100 }.encode_json(),
+            "Body": { "size": 500, "from": dep_from }.encode_json(),
           }
         ).do_request().as(dep_resp,
-          ((dep_resp.StatusCode == 200) ? bytes(dep_resp.Body).decode_json() : { "deployments": [] }).as(dep_body,
-            get_request(
-              state.cloud_api_base + "/api/v1/serverless/projects/elasticsearch"
-            ).with(
-              { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
-            ).do_request().as(es_resp,
-              ((es_resp.StatusCode == 200) ? bytes(es_resp.Body).decode_json() : { "items": [] }).as(es_body,
-                get_request(
-                  state.cloud_api_base + "/api/v1/serverless/projects/observability"
-                ).with(
-                  { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
-                ).do_request().as(obs_resp,
-                  ((obs_resp.StatusCode == 200) ? bytes(obs_resp.Body).decode_json() : { "items": [] }).as(obs_body,
-                    get_request(
-                      state.cloud_api_base + "/api/v1/serverless/projects/security"
-                    ).with(
-                      { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
-                    ).do_request().as(sec_resp,
-                      ((sec_resp.StatusCode == 200) ? bytes(sec_resp.Body).decode_json() : { "items": [] }).as(sec_body,
-                        (
-                          ((has(dep_body.deployments) && dep_body.deployments != null) ?
-                            dep_body.deployments.filter(d,
-                              has(d.resources) && d.resources != null && has(d.resources.elasticsearch) && d.resources.elasticsearch != null && size(d.resources.elasticsearch) > 0 &&
-                              has(d.resources.elasticsearch[0].info) && has(d.resources.elasticsearch[0].info.metadata) && has(d.resources.elasticsearch[0].info.metadata.service_url) && d.resources.elasticsearch[0].info.metadata.service_url != null
-                            ).map(d,
-                              d.resources.elasticsearch[0].as(es_r,
-                                {
-                                  "id": string(es_r.id),
-                                  "alt_id": has(d.id) && d.id != null ? string(d.id) : string(es_r.id),
-                                  "name": (has(d.name) && d.name != null && string(d.name) != "") ? string(d.name) : string(es_r.id),
-                                  "es_url": string(es_r.info.metadata.service_url),
-                                  "is_ech": true,
-                                }
-                              )
-                            )
-                          : []) +
-                          ((has(es_body.items) && es_body.items != null ? es_body.items : []) +
-                           (has(obs_body.items) && obs_body.items != null ? obs_body.items : []) +
-                           (has(sec_body.items) && sec_body.items != null ? sec_body.items : [])
-                          ).filter(p, has(p.endpoints) && p.endpoints != null && has(p.endpoints.elasticsearch) && p.endpoints.elasticsearch != null).map(p,
-                            {
-                              "id": string(p.id),
-                              "alt_id": string(p.id),
-                              "name": (has(p.name) && p.name != null && string(p.name) != "") ? string(p.name) : string(p.id),
-                              "es_url": string(p.endpoints.elasticsearch),
-                              "is_ech": false,
-                            }
-                          )
-                        ).as(cloud_targets,
-                          ((state.hub_es_url != "" && state.hub_es_api_key != "") ?
-                            (state.hub_es_url.endsWith("/") ? state.hub_es_url.substring(0, size(state.hub_es_url) - 1) : state.hub_es_url).as(clean_hub_url,
-                              get_request(clean_hub_url + "/").with({ "Header": { "Authorization": ["ApiKey " + state.hub_es_api_key] } }).do_request().as(hub_info_resp,
-                                (hub_info_resp.StatusCode == 200) ?
-                                  bytes(hub_info_resp.Body).decode_json().as(hub_info,
-                                    string(hub_info.cluster_name).as(hub_cname,
-                                      cloud_targets.exists(ct, ct.id == hub_cname || ct.es_url == clean_hub_url) ?
-                                        cloud_targets
-                                      :
-                                        cloud_targets + [{
-                                          "id": hub_cname,
-                                          "alt_id": hub_cname,
-                                          "name": hub_cname,
-                                          "es_url": clean_hub_url,
-                                          "is_ech": true,
-                                        }]
-                                    )
-                                  )
-                                : cloud_targets
-                              )
-                            )
-                          : cloud_targets).as(targets,
-                            targets.map(t,
-                              (t.es_url.endsWith("/") ? t.es_url.substring(0, size(t.es_url) - 1) : t.es_url).as(es_base,
-                                (
-                                  all_dkeys.filter(k, k.startsWith(t.id + ":") || k.startsWith(t.alt_id + ":") || k.startsWith(t.name + ":")).map(k,
-                                    k.substring(size(k.split(":")[0]) + 1, size(k))
-                                  ) +
-                                  (state.hub_es_api_key != "" && !state.hub_es_api_key.startsWith("$co.elastic.secret") ? [state.hub_es_api_key] : []) +
-                                  (!t.is_ech ? [state.api_key] : []) +
-                                  all_dkeys.filter(k, !k.contains(":"))
-                                ).as(cand_keys,
-                                  (es_base + "/_cat/indices?h=index,pri.store.size,store.size,dataset.size,docs.count,indexing.index_time,search.query_time,search.query_total&format=json&bytes=b&time=ms&expand_wildcards=open,hidden").as(cat_url,
-                                    (size(cand_keys) == 0 ?
-                                      { "ok": false, "body": [], "key": "", "via_ccs": false }
-                                    :
-                                      get_request(cat_url).with({ "Header": { "Authorization": ["ApiKey " + cand_keys[0]] } }).do_request().as(r0,
-                                        (r0.StatusCode == 200) ?
-                                          { "ok": true, "body": bytes(r0.Body).decode_json(), "key": cand_keys[0], "via_ccs": false }
-                                        : (size(cand_keys) > 1 ?
-                                          get_request(cat_url).with({ "Header": { "Authorization": ["ApiKey " + cand_keys[1]] } }).do_request().as(r1,
-                                            (r1.StatusCode == 200) ?
-                                              { "ok": true, "body": bytes(r1.Body).decode_json(), "key": cand_keys[1], "via_ccs": false }
-                                            : (state.hub_es_url != "" && state.hub_es_api_key != "" ?
-                                              (state.hub_es_url.endsWith("/") ? state.hub_es_url.substring(0, size(state.hub_es_url) - 1) : state.hub_es_url).as(clean_hub,
-                                                get_request(clean_hub + "/" + t.name + ":*,-.*/_cat/indices?h=index,pri.store.size,store.size,dataset.size,docs.count,indexing.index_time,search.query_time,search.query_total&format=json&bytes=b&time=ms&expand_wildcards=open,hidden").with({ "Header": { "Authorization": ["ApiKey " + state.hub_es_api_key] } }).do_request().as(rccs,
-                                                  (rccs.StatusCode == 200) ?
-                                                    { "ok": true, "body": bytes(rccs.Body).decode_json(), "key": state.hub_es_api_key, "via_ccs": true }
-                                                  : { "ok": false, "body": [], "key": "", "via_ccs": false }
-                                                )
-                                              )
-                                            : { "ok": false, "body": [], "key": "", "via_ccs": false })
-                                          )
-                                        : { "ok": false, "body": [], "key": "", "via_ccs": false })
-                                      )
-                                    ).as(harvest,
-                                      (!harvest.ok) ? [] :
-                                      ((t.is_ech && !harvest.via_ccs) ?
-                                        get_request(es_base + "/*,.ds-*/_settings/index.routing.allocation.include._tier_preference?expand_wildcards=open,hidden&flat_settings=true").with({ "Header": { "Authorization": ["ApiKey " + harvest.key] } }).do_request().as(set_resp,
-                                          (set_resp.StatusCode == 200) ? bytes(set_resp.Body).decode_json() : {}
-                                        )
-                                      : {}).as(settings_map,
-                                        harvest.body.filter(row, has(row.index) && row.index != null && string(row.index) != "").map(row,
-                                          string(row.index).as(raw_idx,
-                                            (raw_idx.contains(":") ? raw_idx.substring(size(raw_idx.split(":")[0]) + 1, size(raw_idx)) : raw_idx).as(idx_name,
-                                              (((idx_name in settings_map) && settings_map[idx_name] != null && has(settings_map[idx_name].settings) && settings_map[idx_name].settings != null && ("index.routing.allocation.include._tier_preference" in settings_map[idx_name].settings)) ?
-                                                string(settings_map[idx_name].settings["index.routing.allocation.include._tier_preference"])
-                                              : "data_hot,data_content").as(tier_pref,
-                                                (("dataset.size" in row && row["dataset.size"] != null && string(row["dataset.size"]) != "") ? int(row["dataset.size"]) : (("pri.store.size" in row && row["pri.store.size"] != null && string(row["pri.store.size"]) != "") ? int(row["pri.store.size"]) : 0)).as(dset_bytes,
-                                                  (("store.size" in row && row["store.size"] != null && string(row["store.size"]) != "") ? int(row["store.size"]) : dset_bytes).as(tot_bytes,
-                                                    {
-                                                      "@timestamp": day_ts,
-                                                      "period_start": day_ts,
-                                                      "deployment_name": t.name,
-                                                      "elasticsearch": {
-                                                        "cluster": { "name": t.id },
-                                                        "index": {
-                                                          "name": idx_name,
-                                                          "tier_preference": tier_pref,
-                                                          "primaries": {
-                                                            "docs": {
-                                                              "count": ("docs.count" in row && row["docs.count"] != null && string(row["docs.count"]) != "") ? int(row["docs.count"]) : 0,
-                                                            },
-                                                            "store": {
-                                                              "total_data_set_size_in_bytes": dset_bytes,
-                                                            },
-                                                          },
-                                                          "total": {
-                                                            "store": {
-                                                              "size_in_bytes": tot_bytes,
-                                                            },
-                                                            "indexing": {
-                                                              "index_time_in_millis": ("indexing.index_time" in row && row["indexing.index_time"] != null && string(row["indexing.index_time"]) != "") ? int(row["indexing.index_time"]) : 0,
-                                                            },
-                                                            "search": {
-                                                              "query_time_in_millis": ("search.query_time" in row && row["search.query_time"] != null && string(row["search.query_time"]) != "") ? int(row["search.query_time"]) : 0,
-                                                              "query_total": ("search.query_total" in row && row["search.query_total"] != null && string(row["search.query_total"]) != "") ? int(row["search.query_total"]) : 0,
-                                                            },
-                                                          },
-                                                        },
-                                                      },
-                                                      "conf_indexing_weight": int(state.conf_indexing_weight),
-                                                      "conf_query_weight": int(state.conf_query_weight),
-                                                      "conf_storage_weight": int(state.conf_storage_weight),
-                                                      "conf_memory_cost_weight": int(state.conf_memory_cost_weight),
-                                                      "conf_storage_cost_weight": int(state.conf_storage_cost_weight),
-                                                    }
-                                                  )
-                                                )
-                                              )
-                                            )
-                                          )
-                                        )
-                                      )
-                                    )
-                                  )
-                                )
-                              )
-                            ).flatten().as(evts,
-                              {
-                                "events": size(evts) > 0 ? evts : [ { "fake": true } ],
-                                "cursor": { "last_day": day_ts, "conf_sig": conf_sig },
-                                "want_more": false,
-                              }
-                            )
-                          )
+          (dep_resp.StatusCode == 200) ?
+            bytes(dep_resp.Body).decode_json().as(dep_body,
+              ((has(dep_body.deployments) && dep_body.deployments != null) ? dep_body.deployments : []).as(raw_deps,
+                {
+                  "ok": true,
+                  "err": dyn({}),
+                  "items": raw_deps.filter(d,
+                    has(d.resources) && d.resources != null && has(d.resources.elasticsearch) && d.resources.elasticsearch != null && size(d.resources.elasticsearch) > 0 &&
+                    has(d.resources.elasticsearch[0].info) && has(d.resources.elasticsearch[0].info.metadata) && has(d.resources.elasticsearch[0].info.metadata.service_url) && d.resources.elasticsearch[0].info.metadata.service_url != null
+                  ).map(d,
+                    d.resources.elasticsearch[0].as(es_r,
+                      string(es_r.info.metadata.service_url).as(raw_surl,
+                        (raw_surl.endsWith("/") ? raw_surl.substring(0, size(raw_surl) - 1) : raw_surl).as(surl,
+                          dyn({
+                            "id": string(es_r.id),
+                            "alt_id": has(d.id) && d.id != null ? string(d.id) : string(es_r.id),
+                            "name": (has(d.name) && d.name != null && string(d.name) != "") ? string(d.name) : string(es_r.id),
+                            "es_url": surl,
+                            "is_ech": true,
+                            "is_hub": (has_hub && surl == clean_hub_url),
+                          })
                         )
                       )
                     )
-                  )
-                )
+                  ),
+                  "next_from": (has(dep_body.match_count) && dep_body.match_count != null && size(raw_deps) > 0 && (dep_from + size(raw_deps)) < int(dep_body.match_count)) ? (dep_from + size(raw_deps)) : -1,
+                }
               )
             )
-          )
+          :
+            {
+              "ok": false,
+              "err": dyn({ "error": { "code": string(dep_resp.StatusCode), "id": string(dep_resp.Status), "message": "POST " + dep_resp.Request.URL + ": " + ((size(dep_resp.Body) != 0) ? string(dep_resp.Body) : string(dep_resp.Status)) } }),
+              "items": [],
+              "next_from": -1,
+            }
         )
-      )
-    )))
+      : { "ok": true, "err": dyn({}), "items": [], "next_from": -1 }).as(dep_page,
+      ((has_cloud && es_next != "") ?
+        get_request(
+          state.cloud_api_base + "/api/v1/serverless/projects/elasticsearch?" + (es_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [es_next] }).format_query()
+        ).with({ "Header": { "Authorization": ["ApiKey " + state.api_key] } }).do_request().as(r,
+          (r.StatusCode == 200) ?
+            bytes(r.Body).decode_json().as(b,
+              {
+                "ok": true,
+                "err": dyn({}),
+                "items": ((has(b.items) && b.items != null) ? b.items : []).filter(p, has(p.endpoints) && p.endpoints != null && has(p.endpoints.elasticsearch) && p.endpoints.elasticsearch != null).map(p,
+                  dyn({
+                    "id": string(p.id),
+                    "alt_id": string(p.id),
+                    "name": (has(p.name) && p.name != null && string(p.name) != "") ? string(p.name) : string(p.id),
+                    "es_url": string(p.endpoints.elasticsearch),
+                    "is_ech": false,
+                    "is_hub": false,
+                  })
+                ),
+                "next": (has(b.next_page) && b.next_page != null && string(b.next_page) != "") ? string(b.next_page) : "",
+              }
+            )
+          : (r.StatusCode == 404 ? { "ok": true, "err": dyn({}), "items": [], "next": "" } : {
+              "ok": false,
+              "err": dyn({ "error": { "code": string(r.StatusCode), "id": string(r.Status), "message": "GET " + r.Request.URL + ": " + ((size(r.Body) != 0) ? string(r.Body) : string(r.Status)) } }),
+              "items": [],
+              "next": "",
+            })
+        )
+      : { "ok": true, "err": dyn({}), "items": [], "next": "" }).as(es_page,
+      ((has_cloud && obs_next != "") ?
+        get_request(
+          state.cloud_api_base + "/api/v1/serverless/projects/observability?" + (obs_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [obs_next] }).format_query()
+        ).with({ "Header": { "Authorization": ["ApiKey " + state.api_key] } }).do_request().as(r,
+          (r.StatusCode == 200) ?
+            bytes(r.Body).decode_json().as(b,
+              {
+                "ok": true,
+                "err": dyn({}),
+                "items": ((has(b.items) && b.items != null) ? b.items : []).filter(p, has(p.endpoints) && p.endpoints != null && has(p.endpoints.elasticsearch) && p.endpoints.elasticsearch != null).map(p,
+                  dyn({
+                    "id": string(p.id),
+                    "alt_id": string(p.id),
+                    "name": (has(p.name) && p.name != null && string(p.name) != "") ? string(p.name) : string(p.id),
+                    "es_url": string(p.endpoints.elasticsearch),
+                    "is_ech": false,
+                    "is_hub": false,
+                  })
+                ),
+                "next": (has(b.next_page) && b.next_page != null && string(b.next_page) != "") ? string(b.next_page) : "",
+              }
+            )
+          : (r.StatusCode == 404 ? { "ok": true, "err": dyn({}), "items": [], "next": "" } : {
+              "ok": false,
+              "err": dyn({ "error": { "code": string(r.StatusCode), "id": string(r.Status), "message": "GET " + r.Request.URL + ": " + ((size(r.Body) != 0) ? string(r.Body) : string(r.Status)) } }),
+              "items": [],
+              "next": "",
+            })
+        )
+      : { "ok": true, "err": dyn({}), "items": [], "next": "" }).as(obs_page,
+      ((has_cloud && sec_next != "") ?
+        get_request(
+          state.cloud_api_base + "/api/v1/serverless/projects/security?" + (sec_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [sec_next] }).format_query()
+        ).with({ "Header": { "Authorization": ["ApiKey " + state.api_key] } }).do_request().as(r,
+          (r.StatusCode == 200) ?
+            bytes(r.Body).decode_json().as(b,
+              {
+                "ok": true,
+                "err": dyn({}),
+                "items": ((has(b.items) && b.items != null) ? b.items : []).filter(p, has(p.endpoints) && p.endpoints != null && has(p.endpoints.elasticsearch) && p.endpoints.elasticsearch != null).map(p,
+                  dyn({
+                    "id": string(p.id),
+                    "alt_id": string(p.id),
+                    "name": (has(p.name) && p.name != null && string(p.name) != "") ? string(p.name) : string(p.id),
+                    "es_url": string(p.endpoints.elasticsearch),
+                    "is_ech": false,
+                    "is_hub": false,
+                  })
+                ),
+                "next": (has(b.next_page) && b.next_page != null && string(b.next_page) != "") ? string(b.next_page) : "",
+              }
+            )
+          : (r.StatusCode == 404 ? { "ok": true, "err": dyn({}), "items": [], "next": "" } : {
+              "ok": false,
+              "err": dyn({ "error": { "code": string(r.StatusCode), "id": string(r.Status), "message": "GET " + r.Request.URL + ": " + ((size(r.Body) != 0) ? string(r.Body) : string(r.Status)) } }),
+              "items": [],
+              "next": "",
+            })
+        )
+      : { "ok": true, "err": dyn({}), "items": [], "next": "" }).as(sec_page,
+        (!dep_page.ok || !es_page.ok || !obs_page.ok || !sec_page.ok) ?
+          {
+            "events": conf_evts + (!dep_page.ok ? [dep_page.err] : []) + (!es_page.ok ? [es_page.err] : []) + (!obs_page.ok ? [obs_page.err] : []) + (!sec_page.ok ? [sec_page.err] : []),
+            "cursor": {
+              "last_day": prev_last_day,
+              "pending_day": day_ts,
+              "completed_targets": done_targets,
+              "conf_sig": conf_sig,
+              "idx_baselines": prev_baselines,
+            },
+            "want_more": false,
+          }
+        :
+          (acc_targets + dep_page.items + es_page.items + obs_page.items + sec_page.items).as(cloud_targets,
+            (dep_page.next_from >= 0 || es_page.next != "" || obs_page.next != "" || sec_page.next != "") ?
+              {
+                "events": size(conf_evts) > 0 ? conf_evts : [dyn({ "fake": true })],
+                "cursor": {
+                  "last_day": prev_last_day,
+                  "pending_day": day_ts,
+                  "completed_targets": done_targets,
+                  "conf_sig": conf_sig,
+                  "idx_baselines": prev_baselines,
+                  "disc_dep_from": dep_page.next_from,
+                  "disc_es_next": es_page.next,
+                  "disc_obs_next": obs_page.next,
+                  "disc_sec_next": sec_page.next,
+                  "disc_targets": cloud_targets,
+                },
+                "want_more": true,
+              }
+            :
+              (has_hub ?
+                get_request(clean_hub_url + "/").with({ "Header": { "Authorization": ["ApiKey " + state.hub_es_api_key] } }).do_request().as(hub_resp,
+                  (hub_resp.StatusCode == 200) ?
+                    bytes(hub_resp.Body).decode_json().as(hub_info,
+                      string(hub_info.cluster_name).as(hub_cname,
+                        {
+                          "ok": true,
+                          "err": dyn({}),
+                          "targets": cloud_targets.exists(ct, string(ct.id) == hub_cname || string(ct.es_url) == clean_hub_url) ?
+                            cloud_targets.map(ct, (string(ct.id) == hub_cname || string(ct.es_url) == clean_hub_url) ? dyn(ct.with({ "is_hub": true })) : ct)
+                          :
+                            cloud_targets + [dyn({
+                              "id": hub_cname,
+                              "alt_id": hub_cname,
+                              "name": hub_cname,
+                              "es_url": clean_hub_url,
+                              "is_ech": true,
+                              "is_hub": true,
+                            })],
+                        }
+                      )
+                    )
+                  :
+                    {
+                      "ok": false,
+                      "err": dyn({ "error": { "code": string(hub_resp.StatusCode), "id": string(hub_resp.Status), "message": "GET " + hub_resp.Request.URL + ": " + ((size(hub_resp.Body) != 0) ? string(hub_resp.Body) : string(hub_resp.Status)) } }),
+                      "targets": cloud_targets,
+                    }
+                )
+              : { "ok": true, "err": dyn({}), "targets": cloud_targets }).as(hub_disc,
+                hub_disc.targets.filter(t, !(string(t.id) in done_targets)).map(t,
+                  string(t.id).as(tid,
+                  (string(t.es_url).endsWith("/") ? string(t.es_url).substring(0, size(string(t.es_url)) - 1) : string(t.es_url)).as(es_base,
+                    (
+                      all_dkeys.filter(k, k.startsWith(tid + ":") || k.startsWith(string(t.alt_id) + ":") || k.startsWith(string(t.name) + ":")).map(k,
+                        k.substring(size(k.split(":")[0]) + 1, size(k))
+                      ) +
+                      (bool(t.is_hub) && has_hub ? [state.hub_es_api_key] : []) +
+                      (!bool(t.is_ech) && has_cloud ? [state.api_key] : []) +
+                      all_dkeys.filter(k, !k.contains(":"))
+                    ).as(cand_keys,
+                      (size(cand_keys) == 0) ?
+                        { "ok": true, "skipped": true, "id": tid, "evts": [], "baselines": [], "err": dyn({}) }
+                      :
+                        (es_base + "/_cat/indices?h=index,creation.date,pri.store.size,store.size,dataset.size,docs.count,indexing.index_time,search.query_time,search.query_total&format=json&bytes=b&time=ms&expand_wildcards=open,hidden").as(cat_url,
+                          get_request(cat_url).with({ "Header": { "Authorization": ["ApiKey " + cand_keys[0]] } }).do_request().as(r0,
+                            (r0.StatusCode == 200) ?
+                              { "ok": true, "body": bytes(r0.Body).decode_json(), "key": cand_keys[0], "resp": r0 }
+                            : (size(cand_keys) > 1 ?
+                              get_request(cat_url).with({ "Header": { "Authorization": ["ApiKey " + cand_keys[1]] } }).do_request().as(r1,
+                                (r1.StatusCode == 200) ?
+                                  { "ok": true, "body": bytes(r1.Body).decode_json(), "key": cand_keys[1], "resp": r1 }
+                                : (size(cand_keys) > 2 ?
+                                  get_request(cat_url).with({ "Header": { "Authorization": ["ApiKey " + cand_keys[2]] } }).do_request().as(r2,
+                                    (r2.StatusCode == 200) ?
+                                      { "ok": true, "body": bytes(r2.Body).decode_json(), "key": cand_keys[2], "resp": r2 }
+                                    : { "ok": false, "body": [], "key": "", "resp": r2 }
+                                  )
+                                : { "ok": false, "body": [], "key": "", "resp": r1 })
+                              )
+                            : { "ok": false, "body": [], "key": "", "resp": r0 })
+                          ).as(harvest,
+                            (!harvest.ok) ?
+                              {
+                                "ok": false,
+                                "skipped": false,
+                                "id": tid,
+                                "evts": [],
+                                "baselines": [],
+                                "err": dyn({
+                                  "error": {
+                                    "code": string(harvest.resp.StatusCode),
+                                    "id": string(harvest.resp.Status),
+                                    "message": "GET " + harvest.resp.Request.URL + ": " + ((size(harvest.resp.Body) != 0) ? string(harvest.resp.Body) : string(harvest.resp.Status)),
+                                  },
+                                }),
+                              }
+                            :
+                              (bool(t.is_ech) ?
+                                get_request(es_base + "/*,.ds-*/_settings/index.routing.allocation.include._tier_preference?expand_wildcards=open,hidden&flat_settings=true").with({ "Header": { "Authorization": ["ApiKey " + harvest.key] } }).do_request().as(set_resp,
+                                  (set_resp.StatusCode == 200) ? bytes(set_resp.Body).decode_json() : {}
+                                )
+                              : {}).as(settings_map,
+                                harvest.body.filter(row,
+                                  has(row.index) && row.index != null && string(row.index) != "" &&
+                                  !(string(row.index).startsWith(".") && !string(row.index).startsWith(".ds-")) &&
+                                  !string(row.index).startsWith(".ds-.") &&
+                                  !string(row.index).contains("metrics-chargeback.") &&
+                                  !string(row.index).contains("logs-chargeback.") &&
+                                  !string(row.index).startsWith("chargeback_lookup.")
+                                ).map(row,
+                                  string(row.index).as(raw_idx,
+                                    (raw_idx.contains(":") ? raw_idx.substring(size(raw_idx.split(":")[0]) + 1, size(raw_idx)) : raw_idx).as(idx_name,
+                                      (((idx_name in settings_map) && settings_map[idx_name] != null && has(settings_map[idx_name].settings) && settings_map[idx_name].settings != null && ("index.routing.allocation.include._tier_preference" in settings_map[idx_name].settings)) ?
+                                        string(settings_map[idx_name].settings["index.routing.allocation.include._tier_preference"])
+                                      : "data_hot,data_content").as(tier_pref,
+                                        (("creation.date" in row && row["creation.date"] != null && string(row["creation.date"]) != "") ? int(row["creation.date"]) : 0).as(created_ms,
+                                        (("docs.count" in row && row["docs.count"] != null && string(row["docs.count"]) != "") ? int(row["docs.count"]) : 0).as(cur_docs,
+                                        (("dataset.size" in row && row["dataset.size"] != null && string(row["dataset.size"]) != "") ? int(row["dataset.size"]) : (("pri.store.size" in row && row["pri.store.size"] != null && string(row["pri.store.size"]) != "") ? int(row["pri.store.size"]) : 0)).as(cur_dset,
+                                        (("store.size" in row && row["store.size"] != null && string(row["store.size"]) != "") ? int(row["store.size"]) : cur_dset).as(cur_tot,
+                                        (("indexing.index_time" in row && row["indexing.index_time"] != null && string(row["indexing.index_time"]) != "") ? int(row["indexing.index_time"]) : 0).as(cur_idx_ms,
+                                        (("search.query_time" in row && row["search.query_time"] != null && string(row["search.query_time"]) != "") ? int(row["search.query_time"]) : 0).as(cur_qry_ms,
+                                        (("search.query_total" in row && row["search.query_total"] != null && string(row["search.query_total"]) != "") ? int(row["search.query_total"]) : 0).as(cur_qry_cnt,
+                                          prev_baselines.filter(b, string(b.c) == tid && string(b.i) == idx_name).as(bmatch,
+                                            (size(bmatch) > 0).as(has_prev,
+                                            (has_prev || (created_ms > 0 && created_ms >= day_start_ms)).as(has_delta,
+                                            (has_prev ? ((cur_idx_ms >= int(bmatch[0].m[0])) ? (cur_idx_ms - int(bmatch[0].m[0])) : cur_idx_ms) : (has_delta ? cur_idx_ms : 0)).as(d_idx_ms,
+                                            (has_prev ? ((cur_qry_ms >= int(bmatch[0].m[1])) ? (cur_qry_ms - int(bmatch[0].m[1])) : cur_qry_ms) : (has_delta ? cur_qry_ms : 0)).as(d_qry_ms,
+                                            (has_prev ? ((cur_qry_cnt >= int(bmatch[0].m[2])) ? (cur_qry_cnt - int(bmatch[0].m[2])) : cur_qry_cnt) : (has_delta ? cur_qry_cnt : 0)).as(d_qry_cnt,
+                                            (has_prev ? (cur_docs - int(bmatch[0].m[3])) : cur_docs).as(d_docs,
+                                            (has_prev ? (cur_dset - int(bmatch[0].m[4])) : cur_dset).as(d_dset,
+                                              {
+                                                "evt": dyn({
+                                                  "@timestamp": day_ts,
+                                                  "doc_type": "index_usage",
+                                                  "period_start": day_ts,
+                                                  "deployment_name": string(t.name),
+                                                  "elasticsearch": {
+                                                    "cluster": { "name": tid },
+                                                    "index": ({
+                                                      "name": idx_name,
+                                                      "tier_preference": tier_pref,
+                                                      "primaries": {
+                                                        "docs": has_delta ? {
+                                                          "count": cur_docs,
+                                                          "count_delta": d_docs,
+                                                        } : {
+                                                          "count": cur_docs,
+                                                        },
+                                                        "store": has_delta ? {
+                                                          "total_data_set_size_in_bytes": cur_dset,
+                                                          "total_data_set_size_in_bytes_delta": d_dset,
+                                                        } : {
+                                                          "total_data_set_size_in_bytes": cur_dset,
+                                                        },
+                                                      },
+                                                      "total": {
+                                                        "store": {
+                                                          "size_in_bytes": cur_tot,
+                                                        },
+                                                        "indexing": has_delta ? {
+                                                          "index_time_in_millis": d_idx_ms,
+                                                          "index_time_in_millis_delta": d_idx_ms,
+                                                        } : {
+                                                          "index_time_in_millis": 0,
+                                                        },
+                                                        "search": has_delta ? {
+                                                          "query_time_in_millis": d_qry_ms,
+                                                          "query_time_in_millis_delta": d_qry_ms,
+                                                          "query_total": d_qry_cnt,
+                                                          "query_total_delta": d_qry_cnt,
+                                                        } : {
+                                                          "query_time_in_millis": 0,
+                                                          "query_total": cur_qry_cnt,
+                                                        },
+                                                      },
+                                                    }).with(created_ms > 0 ? { "creation_date": created_ms } : {}),
+                                                  },
+                                                }),
+                                                "base": dyn({
+                                                  "c": tid,
+                                                  "i": idx_name,
+                                                  "m": [cur_idx_ms, cur_qry_ms, cur_qry_cnt, cur_docs, cur_dset],
+                                                }),
+                                              }
+                                            )))))))
+                                          )
+                                        )))))))
+                                      )
+                                    )
+                                  )
+                                ).as(idx_items,
+                                  {
+                                    "ok": true,
+                                    "skipped": false,
+                                    "id": tid,
+                                    "evts": idx_items.map(x, x.evt),
+                                    "baselines": idx_items.map(x, x.base),
+                                    "err": dyn({}),
+                                  }
+                                )
+                              )
+                          )
+                        )
+                    )
+                  ))
+                ).as(results,
+                  results.filter(r, r.ok && !r.skipped).map(r, r.id).as(newly_harvested_ids,
+                  (done_targets + results.filter(r, r.ok).map(r, r.id)).as(new_done_targets,
+                  (hub_disc.ok && results.all(r, r.ok)).as(all_ok,
+                  (prev_baselines.filter(b, !(string(b.c) in newly_harvested_ids)) + results.map(r, r.baselines).flatten()).as(merged_baselines,
+                  (
+                    conf_evts +
+                    (!hub_disc.ok ? [hub_disc.err] : []) +
+                    results.filter(r, !r.ok).map(r, r.err) +
+                    results.map(r, r.evts).flatten()
+                  ).as(out_evts,
+                    {
+                      "events": size(out_evts) > 0 ? out_evts : [dyn({ "fake": true })],
+                      "cursor": {
+                        "last_day": all_ok ? day_ts : prev_last_day,
+                        "pending_day": day_ts,
+                        "completed_targets": all_ok ? [] : new_done_targets,
+                        "conf_sig": conf_sig,
+                        "idx_baselines": merged_baselines,
+                      },
+                      "want_more": false,
+                    }
+                  )))))
+                )
+              )
+          )
+      )))))))))))
+    ))))))
   )
 
 processors:

@@ -5,17 +5,56 @@ processors:
       ignore_failure: true
       lang: painless
       source: |
+        Map chosen = ctx;
+        if (ctx.native instanceof Map && ctx.native.doc_cnt instanceof Number && ((Number)ctx.native.doc_cnt).longValue() > 0L) {
+          chosen = ctx.native;
+        } else if (ctx.legacy instanceof Map) {
+          chosen = ctx.legacy;
+        }
+        if (chosen != ctx) {
+          for (String k : ['data_tier_capacity_ecu', 'data_tier_capacity_hours', 'data_tier_ram_per_zone_mb', 'deployment_group', 'deployment_name']) {
+            if (chosen.containsKey(k)) {
+              ctx[k] = chosen[k];
+            }
+          }
+        }
+        ctx.remove('native');
+        ctx.remove('legacy');
+
+        for (String fn : ['deployment_group', 'deployment_name']) {
+          def v = ctx[fn];
+          if (v instanceof Map) {
+            def b = v.buckets;
+            if (b instanceof List && b.size() > 0) {
+              ctx[fn] = b[0].key_as_string != null ? b[0].key_as_string : b[0].key;
+            } else {
+              def ks = new ArrayList(v.keySet());
+              ctx[fn] = ks.size() > 0 ? ks[0] : null;
+            }
+          }
+        }
+        if (ctx.deployment_group == null) {
+          ctx.deployment_group = '';
+        } else {
+          ctx.deployment_group = ctx.deployment_group.toString();
+        }
+        if (ctx.deployment_name == null || ctx.deployment_name.toString() == '') {
+          ctx.deployment_name = ctx.deployment_id != null ? ctx.deployment_id.toString() : 'unknown';
+        } else {
+          ctx.deployment_name = ctx.deployment_name.toString();
+        }
+
         if (ctx['@timestamp'] != null && ctx.deployment_id != null) {
-            def rawTs = ctx['@timestamp'];
-            String dateStr = (rawTs instanceof Number)
-              ? Instant.ofEpochMilli(((Number)rawTs).longValue()).atZone(ZoneOffset.UTC).toLocalDate().toString()
-              : ZonedDateTime.parse(rawTs.toString()).toLocalDate().toString();
-            ctx.composite_key = dateStr + '_' + ctx.deployment_id;
+          def rawTs = ctx['@timestamp'];
+          String dateStr = (rawTs instanceof Number)
+            ? Instant.ofEpochMilli(((Number)rawTs).longValue()).atZone(ZoneOffset.UTC).toLocalDate().toString()
+            : ZonedDateTime.parse(rawTs.toString()).toLocalDate().toString();
+          ctx.composite_key = dateStr + '_' + ctx.deployment_id;
         }
         if (ctx.data_tier_capacity_ecu != null) {
-            // provisioned pool — utilization discount is applied later in ES|QL
-            ctx.realized_chargeable_units = ctx.data_tier_capacity_ecu;
-            ctx.total_chargeable_units = ctx.data_tier_capacity_ecu;
+          // provisioned pool — utilization discount is applied later in ES|QL
+          ctx.realized_chargeable_units = ctx.data_tier_capacity_ecu;
+          ctx.total_chargeable_units = ctx.data_tier_capacity_ecu;
         }
   - set:
       field: event.ingested

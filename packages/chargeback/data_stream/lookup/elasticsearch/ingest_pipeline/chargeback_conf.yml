@@ -1,22 +1,30 @@
 ---
-description: Post-process chargeback configuration from latest Fleet policy metrics with fallback defaults
+description: Post-process chargeback configuration from Fleet configuration snapshot events while preserving manual or historical rows when Fleet sync is inactive
 processors:
   - script:
-      description: Unpack per-stream top_metrics from billing, usage, and node_stats or apply default configuration values
+      description: Unpack per-stream top_metrics from config_snapshot events or mark for drop when Fleet config sync is inactive
       lang: painless
       source: |
+        boolean hasBillingConf = (ctx.billing_conf instanceof Map && ctx.billing_conf.doc_cnt instanceof Number && ((Number)ctx.billing_conf.doc_cnt).longValue() > 0L);
+        if (!hasBillingConf) {
+          ctx._skip_conf_write = true;
+          return;
+        }
         Map m = [:];
-        for (String bucketKey : ['latest_conf', 'billing_conf', 'usage_conf', 'node_stats_conf']) {
+        for (String bucketKey : ['billing_conf', 'usage_conf', 'node_stats_conf']) {
           def bucket = ctx[bucketKey];
           if (bucket instanceof Map) {
-            def inner = bucket.latest instanceof Map ? bucket.latest : bucket;
-            if (inner.top instanceof List && inner.top.size() > 0 && inner.top[0] instanceof Map && inner.top[0].metrics instanceof Map) {
-              inner = inner.top[0].metrics;
-            }
-            if (inner instanceof Map) {
-              for (def entry : inner.entrySet()) {
-                if (entry.getValue() != null) {
-                  m[entry.getKey()] = entry.getValue();
+            boolean hasDocs = !(bucket.doc_cnt instanceof Number) || ((Number)bucket.doc_cnt).longValue() > 0L;
+            if (hasDocs) {
+              def inner = bucket.latest instanceof Map ? bucket.latest : bucket;
+              if (inner.top instanceof List && inner.top.size() > 0 && inner.top[0] instanceof Map && inner.top[0].metrics instanceof Map) {
+                inner = inner.top[0].metrics;
+              }
+              if (inner instanceof Map) {
+                for (def entry : inner.entrySet()) {
+                  if (entry.getValue() != null && entry.getKey() != 'doc_cnt') {
+                    m[entry.getKey()] = entry.getValue();
+                  }
                 }
               }
             }
@@ -31,11 +39,11 @@ processors:
         }
         ctx.conf_chargeable_unit_rate = rate;
         ctx.conf_chargeable_unit_rate_unit = (m.conf_chargeable_unit_rate_unit != null && m.conf_chargeable_unit_rate_unit != '') ? m.conf_chargeable_unit_rate_unit.toString() : 'EUR';
-        ctx.conf_indexing_weight = m.conf_indexing_weight instanceof Number ? ((Number)m.conf_indexing_weight).intValue() : (m.conf_indexing_weight != null ? Integer.parseInt(m.conf_indexing_weight.toString()) : 20);
-        ctx.conf_query_weight = m.conf_query_weight instanceof Number ? ((Number)m.conf_query_weight).intValue() : (m.conf_query_weight != null ? Integer.parseInt(m.conf_query_weight.toString()) : 20);
-        ctx.conf_storage_weight = m.conf_storage_weight instanceof Number ? ((Number)m.conf_storage_weight).intValue() : (m.conf_storage_weight != null ? Integer.parseInt(m.conf_storage_weight.toString()) : 40);
-        ctx.conf_utilization_memory_weight = m.conf_utilization_memory_weight instanceof Number ? ((Number)m.conf_utilization_memory_weight).intValue() : (m.conf_utilization_memory_weight != null ? Integer.parseInt(m.conf_utilization_memory_weight.toString()) : 70);
-        ctx.conf_utilization_storage_weight = m.conf_utilization_storage_weight instanceof Number ? ((Number)m.conf_utilization_storage_weight).intValue() : (m.conf_utilization_storage_weight != null ? Integer.parseInt(m.conf_utilization_storage_weight.toString()) : 30);
+        ctx.conf_indexing_weight = m.conf_indexing_weight instanceof Number ? ((Number)m.conf_indexing_weight).intValue() : (m.conf_indexing_weight != null && m.conf_indexing_weight.toString() != '' ? (int)Double.parseDouble(m.conf_indexing_weight.toString()) : 20);
+        ctx.conf_query_weight = m.conf_query_weight instanceof Number ? ((Number)m.conf_query_weight).intValue() : (m.conf_query_weight != null && m.conf_query_weight.toString() != '' ? (int)Double.parseDouble(m.conf_query_weight.toString()) : 20);
+        ctx.conf_storage_weight = m.conf_storage_weight instanceof Number ? ((Number)m.conf_storage_weight).intValue() : (m.conf_storage_weight != null && m.conf_storage_weight.toString() != '' ? (int)Double.parseDouble(m.conf_storage_weight.toString()) : 40);
+        ctx.conf_utilization_memory_weight = m.conf_utilization_memory_weight instanceof Number ? ((Number)m.conf_utilization_memory_weight).intValue() : (m.conf_utilization_memory_weight != null && m.conf_utilization_memory_weight.toString() != '' ? (int)Double.parseDouble(m.conf_utilization_memory_weight.toString()) : 70);
+        ctx.conf_utilization_storage_weight = m.conf_utilization_storage_weight instanceof Number ? ((Number)m.conf_utilization_storage_weight).intValue() : (m.conf_utilization_storage_weight != null && m.conf_utilization_storage_weight.toString() != '' ? (int)Double.parseDouble(m.conf_utilization_storage_weight.toString()) : 30);
         double floorVal = 0.10;
         if (m.conf_utilization_floor instanceof Number) {
           floorVal = ((Number)m.conf_utilization_floor).doubleValue();
@@ -43,17 +51,28 @@ processors:
           floorVal = Double.parseDouble(m.conf_utilization_floor.toString());
         }
         ctx.conf_utilization_floor = floorVal;
-        ctx.conf_memory_cost_weight = m.conf_memory_cost_weight instanceof Number ? ((Number)m.conf_memory_cost_weight).intValue() : (m.conf_memory_cost_weight != null ? Integer.parseInt(m.conf_memory_cost_weight.toString()) : 50);
-        ctx.conf_storage_cost_weight = m.conf_storage_cost_weight instanceof Number ? ((Number)m.conf_storage_cost_weight).intValue() : (m.conf_storage_cost_weight != null ? Integer.parseInt(m.conf_storage_cost_weight.toString()) : 50);
-        ctx.conf_start_date = 1262304000000L;
+
+        long startMillis = 1262304000000L;
+        String effFrom = m.conf_effective_from != null ? m.conf_effective_from.toString().trim() : '';
+        if (effFrom != '') {
+          try {
+            ZonedDateTime parsedEff = effFrom.contains('T') ? ZonedDateTime.parse(effFrom) : ZonedDateTime.parse(effFrom + 'T00:00:00Z');
+            startMillis = parsedEff.toInstant().toEpochMilli();
+          } catch (Exception e) {
+            startMillis = 1262304000000L;
+          }
+        }
+        ctx.conf_start_date = startMillis;
         ctx.conf_end_date = 2430518399999L;
+  - drop:
+      if: "ctx._skip_conf_write == true"
+      tag: preserve_existing_manual_config
   # LOOKUP JOIN overwrites left-side @timestamp with the right-side field when present.
   # Conf docs must not carry @timestamp (including null), or billing panels bucket into null / wrong dates.
   - remove:
       field: "@timestamp"
       ignore_missing: true
       tag: remove_conf_timestamp
-  # Force the bootstrap row to _id "config" so POST chargeback_conf_lookup/_update/config matches the documented update path.
   - set:
       field: _id
       value: config

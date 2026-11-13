@@ -1,8 +1,34 @@
-description: Aggregates daily total indexing, query, and storage usage per tier and data stream from self-collected index metrics, and exposes monitoring-indices symlink aliases for the stock Elasticsearch Consumption dashboard.
+description: Aggregates daily total indexing, query, and storage usage per tier and data stream across native Chargeback and legacy monitoring-indices sources.
 source:
   index:
     - metrics-chargeback.usage-*
+    - monitoring-indices*
+    - "*:monitoring-indices*"
+    - -monitoring-indices-chargeback
+    - -chargeback_lookup.*
+  query:
+    bool:
+      must_not:
+        - term:
+            doc_type: config_snapshot
   runtime_mappings:
+    cb_sync_time:
+      type: date
+      script:
+        source: |
+          if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+            emit(doc['event.ingested'].value.toInstant().toEpochMilli());
+            return;
+          }
+          if (params._source?.event?.ingested != null) {
+            try {
+              emit(ZonedDateTime.parse(params._source.event.ingested.toString()).toInstant().toEpochMilli());
+              return;
+            } catch (Exception e) {}
+          }
+          if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+            emit(doc['@timestamp'].value.toInstant().toEpochMilli());
+          }
     cb_cluster_name:
       type: keyword
       script:
@@ -64,17 +90,17 @@ source:
             emit(doc['elasticsearch.index.tier_preference'].value.toString());
           }
 dest:
-  index: cluster_tier_and_datastream_contribution_lookup
+  index: chargeback_lookup.dest_cluster_tier_and_datastream_contribution-1
   aliases:
-    - alias: monitoring-indices-chargeback
+    - alias: chargeback_lookup.cluster_tier_and_datastream_contribution
       move_on_creation: true
-    - alias: monitoring-indices
+    - alias: monitoring-indices-chargeback
       move_on_creation: true
   pipeline: logs-chargeback.lookup-0.6.0-usage
 frequency: 5m
 sync:
   time:
-    field: event.ingested
+    field: cb_sync_time
     delay: 60s
 pivot:
   group_by:
@@ -97,7 +123,7 @@ pivot:
             }
             def pref = doc.containsKey('cb_index_tier_preference') && !doc['cb_index_tier_preference'].empty ? doc['cb_index_tier_preference'].value : null;
             if (pref == null) return 'unknown';
-            /* Match monitoring_indices.yml: frozen → cold → warm → hot/content
+            /* Match monitoring_indices.yml: frozen -> cold -> warm -> hot/content
                (preference lists like data_cold,data_warm,data_hot must not resolve to hot) */
             if (pref.contains('data_frozen')) return 'frozen';
             if (pref.contains('data_cold')) return 'cold';
@@ -112,40 +138,120 @@ pivot:
             if (doc.containsKey('cb_index_datastream') && !doc['cb_index_datastream'].empty) {
               return doc['cb_index_datastream'].value;
             }
-
             def name = doc.containsKey('cb_index_name') && !doc['cb_index_name'].empty
               ? doc['cb_index_name'].value
               : null;
             if (name == null) return 'unknown';
-
             def matcher = /^(?:partial-)?(?:restored-)?(?:shrink-.{4}-)?(?:\.ds-)?([a-z_0-9\-.]+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d+)?$/.matcher(name);
             if (matcher.matches()) {
               return matcher.group(1);
             }
             return 'unknown';
   aggregations:
-    cluster_display_name:
-      terms:
-        field: deployment_name
-        size: 1
-    tier_and_datastream_sum_indexing_time:
-      sum:
-        field: elasticsearch.index.total.indexing.index_time_in_millis
-    tier_and_datastream_sum_query_time:
-      sum:
-        field: elasticsearch.index.total.search.query_time_in_millis
-    tier_and_datastream_sum_store_size:
-      sum:
-        field: elasticsearch.index.total.store.size_in_bytes
-    tier_and_datastream_sum_data_set_store_size:
-      sum:
-        field: elasticsearch.index.primaries.store.total_data_set_size_in_bytes
-    tier_and_datastream_sum_docs_count:
-      sum:
-        field: elasticsearch.index.primaries.docs.count
-    tier_and_datastream_sum_query_total:
-      sum:
-        field: elasticsearch.index.total.search.query_total
+    native:
+      filter:
+        term:
+          data_stream.dataset: chargeback.usage
+      aggs:
+        doc_cnt:
+          value_count:
+            field: "@timestamp"
+        cluster_display_name:
+          terms:
+            field: deployment_name
+            size: 1
+        tier_and_datastream_sum_indexing_time:
+          sum:
+            field: elasticsearch.index.total.indexing.index_time_in_millis
+        tier_and_datastream_sum_query_time:
+          sum:
+            field: elasticsearch.index.total.search.query_time_in_millis
+        tier_and_datastream_sum_store_size:
+          sum:
+            field: elasticsearch.index.total.store.size_in_bytes
+        tier_and_datastream_sum_data_set_store_size:
+          sum:
+            field: elasticsearch.index.primaries.store.total_data_set_size_in_bytes
+        tier_and_datastream_sum_docs_count:
+          sum:
+            field: elasticsearch.index.primaries.docs.count
+        tier_and_datastream_sum_query_total:
+          sum:
+            field: elasticsearch.index.total.search.query_total
+        min_creation_date:
+          min:
+            field: elasticsearch.index.creation_date
+        delta_doc_count:
+          value_count:
+            field: elasticsearch.index.primaries.docs.count_delta
+        sum_docs_delta:
+          sum:
+            field: elasticsearch.index.primaries.docs.count_delta
+        sum_dset_delta:
+          sum:
+            field: elasticsearch.index.primaries.store.total_data_set_size_in_bytes_delta
+        sum_idx_time_delta:
+          sum:
+            field: elasticsearch.index.total.indexing.index_time_in_millis_delta
+        sum_qry_time_delta:
+          sum:
+            field: elasticsearch.index.total.search.query_time_in_millis_delta
+        sum_qry_total_delta:
+          sum:
+            field: elasticsearch.index.total.search.query_total_delta
+    legacy:
+      filter:
+        bool:
+          must_not:
+            - term:
+                data_stream.dataset: chargeback.usage
+      aggs:
+        doc_cnt:
+          value_count:
+            field: "@timestamp"
+        cluster_display_name:
+          terms:
+            field: deployment_name
+            size: 1
+        tier_and_datastream_sum_indexing_time:
+          sum:
+            field: elasticsearch.index.total.indexing.index_time_in_millis
+        tier_and_datastream_sum_query_time:
+          sum:
+            field: elasticsearch.index.total.search.query_time_in_millis
+        tier_and_datastream_sum_store_size:
+          sum:
+            field: elasticsearch.index.total.store.size_in_bytes
+        tier_and_datastream_sum_data_set_store_size:
+          sum:
+            field: elasticsearch.index.primaries.store.total_data_set_size_in_bytes
+        tier_and_datastream_sum_docs_count:
+          sum:
+            field: elasticsearch.index.primaries.docs.count
+        tier_and_datastream_sum_query_total:
+          sum:
+            field: elasticsearch.index.total.search.query_total
+        min_creation_date:
+          min:
+            field: elasticsearch.index.creation_date
+        delta_doc_count:
+          value_count:
+            field: elasticsearch.index.primaries.docs.count_delta
+        sum_docs_delta:
+          sum:
+            field: elasticsearch.index.primaries.docs.count_delta
+        sum_dset_delta:
+          sum:
+            field: elasticsearch.index.primaries.store.total_data_set_size_in_bytes_delta
+        sum_idx_time_delta:
+          sum:
+            field: elasticsearch.index.total.indexing.index_time_in_millis_delta
+        sum_qry_time_delta:
+          sum:
+            field: elasticsearch.index.total.search.query_time_in_millis_delta
+        sum_qry_total_delta:
+          sum:
+            field: elasticsearch.index.total.search.query_total_delta
 settings:
   deduce_mappings: false
   unattended: true

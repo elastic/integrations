@@ -2,7 +2,7 @@ format_version: 3.5.0
 name: chargeback
 title: "Chargeback"
 version: 0.6.0
-description: "Allocate Elastic Cloud Hosted (ECH) and Serverless billing to deployments, data tiers, and data streams. Native Fleet integration with self-contained Elastic Agent CEL collection, Elasticsearch Transforms, lookup indices, and symlink aliases for stock ESS Billing and Elasticsearch Consumption dashboards."
+description: "Allocate Elastic Cloud Hosted (ECH), Serverless, and On-Premises billing to deployments, data tiers, and data streams. Native Fleet integration with self-contained Elastic Agent CEL collection, Elasticsearch Transforms, lookup indices, and opt-in compatibility aliases for stock ESS Billing and Elasticsearch Consumption dashboards."
 type: integration
 categories:
   - cloud
@@ -34,7 +34,7 @@ policy_templates:
   - name: chargeback
     title: Chargeback
     description: >-
-      Collect Elastic Cloud Hosted (ECH) and Serverless billing, index/tier usage, and node utilization metrics on a schedule. All credentials, deployment harvesting keys, currency rates, and cost weights are configured here. Secrets are encrypted in Fleet and never stored in plaintext indices.
+      Collect Elastic Cloud Hosted (ECH), Serverless, and self-managed cluster billing, index/tier usage, and node utilization metrics on a schedule. Connection settings, currency rates, and cost weights are configured in Fleet. Secrets are encrypted in Fleet and never stored in plaintext indices.
     deployment_modes:
       default:
         enabled: true
@@ -42,42 +42,43 @@ policy_templates:
         enabled: false
     inputs:
       - type: cel
-        title: Elastic Cloud & Deployment Access
+        title: Elastic Cloud & Cluster Access
         description: >-
-          Configure your Elastic Cloud organization ID and API keys for Billing, Control Plane discovery, and target ECH / Serverless Elasticsearch clusters. Currency rates, credit commitments, and cost/utilization weights are configured in each data stream below.
+          Configure Elastic Cloud credentials (for Cloud Billing and Control Plane discovery) and/or a local Hub / self-managed Elasticsearch URL and API keys. Leave Organization ID and Elastic Cloud API Key empty when running in On-Premises / Hub-only mode. Currency rates, credit commitments, and cost/utilization weights are configured in each data stream below.
         vars:
           - name: organization_id
             type: text
             title: Organization ID
             description: >-
-              Elastic Cloud organization ID (found on Cloud Console → Organization).
+              Elastic Cloud organization ID (found on Cloud Console → Organization). Leave empty for On-Premises / self-managed hub-only mode.
             multi: false
-            required: true
+            required: false
             show_user: true
             secret: false
+            default: ""
           - name: cloud_api_key
             type: password
             title: Elastic Cloud API Key
             description: >-
-              Elastic Cloud API key created in Cloud Console → Organization → API keys with Billing Admin access (and Deployment / Serverless read access).
+              Elastic Cloud API key created in Cloud Console → Organization → API keys with Billing Admin access (and Deployment / Serverless read access). Leave empty for On-Premises / self-managed hub-only mode.
             multi: false
-            required: true
+            required: false
             show_user: true
             secret: true
           - name: hub_es_url
             type: text
-            title: Monitoring / Hub Elasticsearch URL
+            title: Local / Hub Elasticsearch URL
             description: >-
-              Optional Elasticsearch URL of the local Monitoring / Hub deployment (also used for Cross-Cluster Search fallback to remote clusters if configured).
+              Optional Elasticsearch URL of the local or self-managed Hub cluster for direct index and node stats harvesting. Cross-Cluster Search (CCS) remote monitoring indices (*:monitoring-indices*) are read directly by the Chargeback usage transforms.
             multi: false
             required: false
             show_user: true
             default: ""
           - name: hub_es_api_key
             type: password
-            title: Monitoring / Hub Elasticsearch API Key
+            title: Local / Hub Elasticsearch API Key
             description: >-
-              Optional Elasticsearch API key for harvesting local cluster index/node metrics and CCS remote clusters.
+              Optional Elasticsearch API key for harvesting local or self-managed Hub cluster index and node metrics.
             multi: false
             required: false
             show_user: true
@@ -86,11 +87,20 @@ policy_templates:
             type: password
             title: Target Deployment Elasticsearch API Keys
             description: >-
-              Optional comma-separated least-privileged Elasticsearch API keys for target ECH deployments or Serverless projects in <deployment_id_or_name>:<encoded_api_key> format.
+              Optional comma-separated least-privileged Elasticsearch API keys for direct harvesting of target ECH deployments or Serverless projects in <deployment_id_or_name>:<encoded_api_key> format.
             multi: false
             required: false
             show_user: true
             secret: true
+          - name: sync_fleet_config
+            type: bool
+            title: Sync Fleet Rate & Weight Settings to Configuration Lookup
+            description: >-
+              Continuously sync Fleet currency rates, workload weights, and utilization settings into chargeback_conf_lookup. Disable when preserving manual rate updates or custom multi-period rows managed directly via the chargeback_conf_lookup API.
+            multi: false
+            required: false
+            show_user: true
+            default: true
           - name: billing_api_base
             type: text
             title: Billing API Base URL

@@ -13,7 +13,7 @@
             "timeWindowSize": 3,
             "timeWindowUnit": "d",
             "esqlQuery": {
-                "esql": "FROM billing_cluster_cost_lookup\n| WHERE deployment_group != \"\"\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| WHERE cluster_name IS NULL\n| INLINE STATS count = COUNT(*) BY deployment_id, deployment_name, deployment_group\n| EVAL result = CONCAT(\"Deployment `\", deployment_name,\"` (`\", deployment_id,\"`) in deployment group `\", deployment_group, \"` did not have usage data since \", left(composite_key,10),\".\")\n| STATS result = VALUES(result)\n| MV_EXPAND result"
+                "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE deployment_group != \"\"\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| WHERE cluster_name IS NULL\n| INLINE STATS count = COUNT(*) BY deployment_id, deployment_name, deployment_group\n| EVAL result = CONCAT(\"Deployment `\", deployment_name,\"` (`\", deployment_id,\"`) in deployment group `\", deployment_group, \"` did not have usage data since \", left(composite_key,10),\".\")\n| STATS result = VALUES(result)\n| MV_EXPAND result"
             },
             "size": 100,
             "threshold": [0],

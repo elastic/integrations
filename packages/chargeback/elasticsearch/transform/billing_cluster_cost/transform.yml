@@ -1,13 +1,39 @@
-description: Aggregates daily total chargeable units (ECU/ERU) per deployment from self-collected billing metrics and exposes symlink aliases for stock ESS Billing dashboards.
+description: Aggregates daily total chargeable units (ECU/ERU) per deployment and SKU across native Chargeback and legacy ESS/On-Prem Billing sources.
 source:
   index:
     - metrics-chargeback.billing-*
-    - metrics-ess_billing.billing-onprem*
+    - metrics-ess_billing.billing-*
+    - -metrics-ess_billing.billing-chargeback
+    - -chargeback_lookup.*
   query:
-    range:
-      ess.billing.total_ecu:
-        gt: 0
+    bool:
+      must:
+        - range:
+            ess.billing.total_ecu:
+              gt: 0
+      must_not:
+        - terms:
+            doc_type:
+              - config_snapshot
+              - credit_line_item
   runtime_mappings:
+    cb_sync_time:
+      type: date
+      script:
+        source: |
+          if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+            emit(doc['event.ingested'].value.toInstant().toEpochMilli());
+            return;
+          }
+          if (params._source?.event?.ingested != null) {
+            try {
+              emit(ZonedDateTime.parse(params._source.event.ingested.toString()).toInstant().toEpochMilli());
+              return;
+            } catch (Exception e) {}
+          }
+          if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+            emit(doc['@timestamp'].value.toInstant().toEpochMilli());
+          }
     deployment_group:
       type: keyword
       script:
@@ -30,17 +56,15 @@ source:
           }
           emit('');
 dest:
-  index: billing_cluster_cost_lookup
+  index: chargeback_lookup.dest_billing_cluster_cost-1
   aliases:
-    - alias: metrics-ess_billing.billing-chargeback
-      move_on_creation: true
-    - alias: metrics-ess_billing.credits-chargeback
+    - alias: chargeback_lookup.billing_cluster_cost
       move_on_creation: true
   pipeline: logs-chargeback.lookup-0.6.0-billing
 frequency: 5m
 sync:
   time:
-    field: event.ingested
+    field: cb_sync_time
     delay: 60s
 pivot:
   group_by:
@@ -48,63 +72,99 @@ pivot:
       date_histogram:
         field: "@timestamp"
         calendar_interval: 1d
-    deployment_group:
-      terms:
-        field: deployment_group
     deployment_id:
       terms:
         field: ess.billing.deployment_id
-    deployment_name:
-      terms:
-        field: ess.billing.deployment_name
     sku:
       terms:
         field: ess.billing.sku
   aggregations:
-    total_chargeable_units:
-      sum:
-        field: ess.billing.total_ecu
-    quantity_value:
-      sum:
-        field: ess.billing.quantity.value
-    organization_id:
-      terms:
-        field: ess.billing.organization_id
-        size: 1
-    deployment_type:
-      terms:
-        field: ess.billing.deployment_type
-        size: 1
-    billing_type:
-      terms:
-        field: ess.billing.type
-        size: 1
-    billing_kind:
-      terms:
-        field: ess.billing.kind
-        size: 1
-    cloud_region:
-      terms:
-        field: cloud.region
-        size: 1
-    credit_active:
-      terms:
-        field: credit_active
-        size: 1
-    credit_ecu_balance:
-      max:
-        field: credit_ecu_balance
-    credit_ecu_quantity:
-      max:
-        field: credit_ecu_quantity
-    credit_start:
-      terms:
-        field: credit_start
-        size: 1
-    credit_end:
-      terms:
-        field: credit_end
-        size: 1
+    native:
+      filter:
+        term:
+          data_stream.dataset: chargeback.billing
+      aggs:
+        doc_cnt:
+          value_count:
+            field: "@timestamp"
+        total_chargeable_units:
+          sum:
+            field: ess.billing.total_ecu
+        quantity_value:
+          sum:
+            field: ess.billing.quantity.value
+        deployment_group:
+          terms:
+            field: deployment_group
+            size: 1
+        deployment_name:
+          terms:
+            field: ess.billing.deployment_name
+            size: 1
+        organization_id:
+          terms:
+            field: ess.billing.organization_id
+            size: 1
+        deployment_type:
+          terms:
+            field: ess.billing.deployment_type
+            size: 1
+        billing_type:
+          terms:
+            field: ess.billing.type
+            size: 1
+        billing_kind:
+          terms:
+            field: ess.billing.kind
+            size: 1
+        cloud_region:
+          terms:
+            field: cloud.region
+            size: 1
+    legacy:
+      filter:
+        bool:
+          must_not:
+            - term:
+                data_stream.dataset: chargeback.billing
+      aggs:
+        doc_cnt:
+          value_count:
+            field: "@timestamp"
+        total_chargeable_units:
+          sum:
+            field: ess.billing.total_ecu
+        quantity_value:
+          sum:
+            field: ess.billing.quantity.value
+        deployment_group:
+          terms:
+            field: deployment_group
+            size: 1
+        deployment_name:
+          terms:
+            field: ess.billing.deployment_name
+            size: 1
+        organization_id:
+          terms:
+            field: ess.billing.organization_id
+            size: 1
+        deployment_type:
+          terms:
+            field: ess.billing.deployment_type
+            size: 1
+        billing_type:
+          terms:
+            field: ess.billing.type
+            size: 1
+        billing_kind:
+          terms:
+            field: ess.billing.kind
+            size: 1
+        cloud_region:
+          terms:
+            field: cloud.region
+            size: 1
 settings:
   # This is required to prevent the transform from clobbering the Fleet-managed mappings.
   deduce_mappings: false
