@@ -1,0 +1,74 @@
+{
+  "id": "gcp_cloudsql_sqlserver_otel-blocking-lock-contention-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud SQL SQL Server OTel] Blocking or lock waits high",
+        "description": "Alerts when a SQL Server instance has sessions blocked at every sample over 15 minutes (processes_blocked never drops to 0, i.e. a persistent blocking chain), or lock waits average at least 5 seconds each with at least 30 lock waits in the window, for 2 consecutive checks. Built on SQL Server-only metrics. Grouped by database_id.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudsql",
+          "sqlserver"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "15m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudsql_sqlserver.otel-*\n| WHERE gcp.resource_type == \"cloudsql_database\"\n// SQL Server-only metrics: no engine marker needed.\n// Per minute: blocked sessions (gauge) and lock wait count / time (DELTA, summed\n// across locked_resource series).\n| STATS blocked = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/sqlserver/connections/processes_blocked`)),\n        lock_waits = SUM(SUM_OVER_TIME(`cloudsql.googleapis.com/database/sqlserver/transactions/lock_wait_count`)),\n        lock_wait_ms = SUM(SUM_OVER_TIME(`cloudsql.googleapis.com/database/sqlserver/transactions/lock_wait_time`))\n    BY `@timestamp` = TBUCKET(1 minute), database_id\n| STATS blocked_n = COUNT(blocked),\n        blocked_min = MIN(blocked),\n        blocked_avg = AVG(blocked),\n        blocked_max = MAX(blocked),\n        lock_waits = SUM(lock_waits),\n        lock_wait_ms = SUM(lock_wait_ms)\n    BY database_id",
+        "breach": {
+          "segment": "WHERE blocked_n > 0 OR lock_waits > 0\n| EVAL lock_waits = COALESCE(lock_waits, 0),\n       avg_lock_wait_ms = CASE(lock_waits > 0, ROUND(lock_wait_ms * 1.0 / lock_waits, 0), NULL),\n       blocked_avg = ROUND(blocked_avg, 1)\n// Breach conditions (either):\n//  - persistent blocking: at least 1 blocked session at every sample (min >= 1),\n//    with ~5 minutes of samples. Raise the 1 to require deeper chains.\n//  - slow lock waits: average lock wait >= 5000 ms over at least 30 waits.\n| EVAL blocking_breach = blocked_n >= 5 AND blocked_min >= 1,\n       wait_breach = lock_waits >= 30 AND avg_lock_wait_ms >= 5000\n| WHERE blocking_breach OR wait_breach\n| EVAL reason = CASE(\n    blocking_breach AND wait_breach, \"persistent blocking and slow lock waits\",\n    blocking_breach, \"persistent blocking\",\n    \"slow lock waits\")\n| KEEP database_id, reason, blocked_min, blocked_avg, blocked_max, lock_waits, avg_lock_wait_ms\n| SORT database_id\n| LIMIT 100"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 1
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "database_id"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudsql_sqlserver_otel-blocking-lock-contention-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud SQL for SQL Server blocking or lock waits high\n\nSessions are being blocked by other sessions' locks. Blocking chains are the most common cause of user-visible latency and application timeouts on SQL Server.\n\n### Triage\n1. Find the head blocker: `sys.dm_exec_requests` (`blocking_session_id`) or `sp_who2`. Look for an idle session holding an open transaction (application forgot to commit), a long-running batch job, or schema changes.\n2. Open the Instance Detail dashboard: check blocked processes, lock wait count and time per `locked_resource`, and deadlocks. Rising blocking followed by deadlocks indicates lock-ordering problems.\n3. Short-term mitigation is to end the head blocker's session (after confirming impact with the owner). Longer-term: shorter transactions, proper indexing (to avoid lock escalation from scans), or READ_COMMITTED_SNAPSHOT.\n\n### Tuning\n- `blocked_min >= 1`: the minimum blocked-session count across samples. Raise to require deeper chains.\n- `avg_lock_wait_ms >= 5000` and `lock_waits >= 30`: lower the duration for latency-sensitive OLTP.\n\n### Behaviour notes\n- Healthy: blocked processes drop to 0 at least once in the window, and lock waits are short or rare. Breaching: blocked processes at least 1 in every one of 5+ samples, or 30+ lock waits averaging 5000 ms or more (equality breaches), for 2 consecutive checks.\n- Missing data: no SQL Server samples in the window means no evaluation."
+          }
+        },
+        {
+          "id": "gcp_cloudsql_sqlserver_otel-blocking-lock-contention-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_sqlserver_otel-46d11bef-3642-4b3f-b979-d748c687acd6"
+          }
+        },
+        {
+          "id": "gcp_cloudsql_sqlserver_otel-blocking-lock-contention-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_sqlserver_otel-0953c329-69c9-4605-9c7c-b2c2d5b10846"
+          }
+        }
+      ]
+    }
+  }
+}
