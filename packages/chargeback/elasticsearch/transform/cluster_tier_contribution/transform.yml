@@ -5,30 +5,19 @@ source:
     - monitoring-indices*
     - "*:monitoring-indices*"
     - -monitoring-indices-chargeback
+    - "-*:monitoring-indices-chargeback"
     - -chargeback_lookup.*
+    - "-*:chargeback_lookup.*"
   query:
     bool:
+      filter:
+        - range:
+            "@timestamp":
+              gte: now-366d
       must_not:
         - term:
             doc_type: config_snapshot
   runtime_mappings:
-    cb_sync_time:
-      type: date
-      script:
-        source: |
-          if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
-            emit(doc['event.ingested'].value.toInstant().toEpochMilli());
-            return;
-          }
-          if (params._source?.event?.ingested != null) {
-            try {
-              emit(ZonedDateTime.parse(params._source.event.ingested.toString()).toInstant().toEpochMilli());
-              return;
-            } catch (Exception e) {}
-          }
-          if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
-            emit(doc['@timestamp'].value.toInstant().toEpochMilli());
-          }
     cb_cluster_name:
       type: keyword
       script:
@@ -68,10 +57,10 @@ source:
 dest:
   index: cluster_tier_contribution_lookup
   pipeline: logs-chargeback.lookup-0.6.0-usage
-frequency: 5m
+frequency: 60m
 sync:
   time:
-    field: cb_sync_time
+    field: event.ingested
     delay: 60s
 pivot:
   group_by:

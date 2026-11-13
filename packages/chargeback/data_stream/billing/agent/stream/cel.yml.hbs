@@ -16,10 +16,10 @@ resource.timeout: {{http_client_timeout}}
 {{/if}}
 resource.url: "{{billing_api_base}}"
 state:
-  api_key: !!str {{cloud_api_key}}
-  organization_id: !!str {{organization_id}}
-  billing_api_base: !!str {{billing_api_base}}
-  cloud_api_base: !!str {{cloud_api_base}}
+  api_key: !!str {{escape_string cloud_api_key}}
+  organization_id: !!str {{escape_string organization_id}}
+  billing_api_base: !!str {{escape_string billing_api_base}}
+  cloud_api_base: !!str {{escape_string cloud_api_base}}
   lookbehind: !!int {{lookbehind}}
   sync_fleet_config: !!bool {{sync_fleet_config}}
   conf_unit_rate: !!str {{escape_string unit_rate}}
@@ -32,16 +32,36 @@ redact:
     - cloud_api_key
 program: |-
   state.with(
-    (state.sync_fleet_config ? (state.conf_unit_rate + "|" + state.conf_currency_unit + "|" + state.conf_effective_from) : "disabled").as(conf_sig,
-    ((state.sync_fleet_config && state.?cursor.conf_sig.orValue("") != conf_sig) ?
+    now.format(time_layout.DateOnly).as(today_utc,
+    state.conf_unit_rate.trim_space().as(clean_rate,
+    clean_rate.matches("^[0-9]+(\\.[0-9]+)?$").as(rate_valid,
+    (!state.sync_fleet_config ? "disabled" : (
+      rate_valid ? (clean_rate + "|" + state.conf_currency_unit + "|" + state.conf_effective_from + "|" + today_utc) : state.?cursor.conf_sig.orValue("")
+    )).as(conf_sig,
+    ((state.sync_fleet_config && !rate_valid) ?
+      [dyn({
+        "error": {
+          "code": "invalid_config",
+          "id": "unit_rate",
+          "message": "Invalid unit_rate '" + state.conf_unit_rate + "': expected non-negative decimal using '.' (for example 0.85)",
+        },
+      })]
+    : ((state.sync_fleet_config && state.?cursor.conf_sig.orValue("") != conf_sig) ?
       [dyn({
         "@timestamp": now.format(time_layout.RFC3339),
         "doc_type": "config_snapshot",
-        "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+        "conf_sync_enabled": true,
+        "conf_chargeable_unit_rate": double(clean_rate),
         "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
         "conf_effective_from": state.conf_effective_from,
       })]
-    : []).as(conf_evts,
+    : ((!state.sync_fleet_config && state.?cursor.conf_sig.orValue("disabled") != "disabled") ?
+      [dyn({
+        "@timestamp": now.format(time_layout.RFC3339),
+        "doc_type": "config_snapshot",
+        "conf_sync_enabled": false,
+      })]
+    : []))).as(conf_evts,
     (state.organization_id == "" || state.api_key == "" || state.api_key.startsWith("$co.elastic.secret")) ?
       {
         "events": size(conf_evts) > 0 ? conf_evts : [dyn({ "fake": true })],
@@ -49,7 +69,6 @@ program: |-
         "want_more": false,
       }
     :
-      now.format(time_layout.DateOnly).as(today_utc,
       state.?cursor.last_credit_day.orValue("").as(prev_credit_day,
       int(state.?cursor.disc_dep_from.orValue(0)).as(dep_from,
       string(state.?cursor.disc_es_next.orValue("START")).as(es_next,
@@ -385,8 +404,8 @@ program: |-
         )
         )
       )
-      ))))))
-    ))
+      )))))
+    )))))
   )
 
 processors:

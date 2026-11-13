@@ -9,6 +9,9 @@ source:
     bool:
       must:
         - range:
+            "@timestamp":
+              gte: now-366d
+        - range:
             ess.billing.total_ecu:
               gt: 0
       must_not:
@@ -24,12 +27,6 @@ source:
           if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
             emit(doc['event.ingested'].value.toInstant().toEpochMilli());
             return;
-          }
-          if (params._source?.event?.ingested != null) {
-            try {
-              emit(ZonedDateTime.parse(params._source.event.ingested.toString()).toInstant().toEpochMilli());
-              return;
-            } catch (Exception e) {}
           }
           if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
             emit(doc['@timestamp'].value.toInstant().toEpochMilli());
@@ -61,7 +58,7 @@ dest:
     - alias: chargeback_lookup.billing_cluster_cost
       move_on_creation: true
   pipeline: logs-chargeback.lookup-0.6.0-billing
-frequency: 5m
+frequency: 60m
 sync:
   time:
     field: cb_sync_time

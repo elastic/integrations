@@ -16,12 +16,12 @@ resource.timeout: {{http_client_timeout}}
 {{/if}}
 resource.url: "{{cloud_api_base}}/api/v1/deployments/_search"
 state:
-  api_key: !!str {{cloud_api_key}}
-  organization_id: !!str {{organization_id}}
-  cloud_api_base: !!str {{cloud_api_base}}
+  api_key: !!str {{escape_string cloud_api_key}}
+  organization_id: !!str {{escape_string organization_id}}
+  cloud_api_base: !!str {{escape_string cloud_api_base}}
   hub_es_url: !!str {{escape_string hub_es_url}}
-  hub_es_api_key: !!str {{hub_es_api_key}}
-  deployment_keys: !!str {{deployment_api_keys}}
+  hub_es_api_key: !!str {{escape_string hub_es_api_key}}
+  deployment_keys: !!str {{escape_string deployment_api_keys}}
   sync_fleet_config: !!bool {{sync_fleet_config}}
   conf_utilization_memory_weight: !!int {{utilization_memory_weight}}
   conf_utilization_storage_weight: !!int {{utilization_storage_weight}}
@@ -35,16 +35,36 @@ redact:
     - deployment_api_keys
 program: |-
   state.with(
-    (state.sync_fleet_config ? (string(state.conf_utilization_memory_weight) + "|" + string(state.conf_utilization_storage_weight) + "|" + state.conf_utilization_floor) : "disabled").as(conf_sig,
-    ((state.sync_fleet_config && state.?cursor.conf_sig.orValue("") != conf_sig) ?
+    now.format(time_layout.DateOnly).as(today_utc,
+    state.conf_utilization_floor.trim_space().as(clean_floor,
+    clean_floor.matches("^(0(\\.[0-9]+)?|1(\\.0+)?)$").as(floor_valid,
+    (!state.sync_fleet_config ? "disabled" : (
+      floor_valid ? (string(state.conf_utilization_memory_weight) + "|" + string(state.conf_utilization_storage_weight) + "|" + clean_floor + "|" + today_utc) : state.?cursor.conf_sig.orValue("")
+    )).as(conf_sig,
+    ((state.sync_fleet_config && !floor_valid) ?
+      [dyn({
+        "error": {
+          "code": "invalid_config",
+          "id": "utilization_floor",
+          "message": "Invalid utilization_floor '" + state.conf_utilization_floor + "': expected decimal between 0.0 and 1.0 using '.' (for example 0.10)",
+        },
+      })]
+    : ((state.sync_fleet_config && state.?cursor.conf_sig.orValue("") != conf_sig) ?
       [dyn({
         "@timestamp": now.format(time_layout.RFC3339),
         "doc_type": "config_snapshot",
+        "conf_sync_enabled": true,
         "conf_utilization_memory_weight": int(state.conf_utilization_memory_weight),
         "conf_utilization_storage_weight": int(state.conf_utilization_storage_weight),
-        "conf_utilization_floor": double(state.conf_utilization_floor),
+        "conf_utilization_floor": double(clean_floor),
       })]
-    : []).as(conf_evts,
+    : ((!state.sync_fleet_config && state.?cursor.conf_sig.orValue("disabled") != "disabled") ?
+      [dyn({
+        "@timestamp": now.format(time_layout.RFC3339),
+        "doc_type": "config_snapshot",
+        "conf_sync_enabled": false,
+      })]
+    : []))).as(conf_evts,
     now.format(time_layout.RFC3339).as(sample_ts,
     (state.organization_id != "" && state.api_key != "" && !state.api_key.startsWith("$co.elastic.secret")).as(has_cloud,
     (state.hub_es_url != "" && state.hub_es_api_key != "" && !state.hub_es_api_key.startsWith("$co.elastic.secret")).as(has_hub,
@@ -128,7 +148,7 @@ program: |-
               get_request(clean_hub_url + "/").with({ "Header": { "Authorization": ["ApiKey " + state.hub_es_api_key] } }).do_request().as(hub_resp,
                 (hub_resp.StatusCode == 200) ?
                   bytes(hub_resp.Body).decode_json().as(hub_info,
-                    string(hub_info.cluster_name).as(hub_cname,
+                    ((has(hub_info.cluster_name) && hub_info.cluster_name != null && string(hub_info.cluster_name) != "") ? string(hub_info.cluster_name) : "hub").as(hub_cname,
                       {
                         "ok": true,
                         "err": dyn({}),
@@ -239,7 +259,7 @@ program: |-
               )
             )
         )
-    ))))))))))
+    )))))))))))))
   )
 
 processors:

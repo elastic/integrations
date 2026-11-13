@@ -1,15 +1,21 @@
 ---
-description: 'Chargeback: Set correlation keys, blended calculation labels, and monitoring-indices compatibility fields.'
+description: 'Chargeback: Set correlation keys, source tags, blended calculation labels, and monitoring-indices compatibility fields.'
 processors:
   - script:
       ignore_failure: true
       lang: painless
       source: |
+        // Record selected source ("native" vs "legacy") so child allocation queries
+        // joining cluster_deployment_contribution_lookup enforce consistent per-(day, deployment) selection.
         Map chosen = ctx;
         if (ctx.native instanceof Map && ctx.native.doc_cnt instanceof Number && ((Number)ctx.native.doc_cnt).longValue() > 0L) {
           chosen = ctx.native;
+          ctx.usage_source = 'native';
         } else if (ctx.legacy instanceof Map) {
           chosen = ctx.legacy;
+          ctx.usage_source = 'legacy';
+        } else if (ctx.usage_source == null) {
+          ctx.usage_source = 'legacy';
         }
         if (chosen != ctx) {
           for (def entry : chosen.entrySet()) {
@@ -79,12 +85,55 @@ processors:
             displayCluster = ctx.cluster_display_name.toString();
           }
 
-          long storeBytes = ctx.tier_and_datastream_sum_store_size instanceof Number ? ((Number)ctx.tier_and_datastream_sum_store_size).longValue() : 0L;
-          long dsBytes = ctx.tier_and_datastream_sum_data_set_store_size instanceof Number ? ((Number)ctx.tier_and_datastream_sum_data_set_store_size).longValue() : storeBytes;
-          long idxTime = ctx.tier_and_datastream_sum_indexing_time instanceof Number ? ((Number)ctx.tier_and_datastream_sum_indexing_time).longValue() : 0L;
-          long qryTime = ctx.tier_and_datastream_sum_query_time instanceof Number ? ((Number)ctx.tier_and_datastream_sum_query_time).longValue() : 0L;
-          long docsCnt = ctx.tier_and_datastream_sum_docs_count instanceof Number ? ((Number)ctx.tier_and_datastream_sum_docs_count).longValue() : 0L;
-          long qryCnt = ctx.tier_and_datastream_sum_query_total instanceof Number ? ((Number)ctx.tier_and_datastream_sum_query_total).longValue() : 0L;
+          long sumStoreBytes = ctx.tier_and_datastream_sum_store_size instanceof Number ? ((Number)ctx.tier_and_datastream_sum_store_size).longValue() : 0L;
+          long sumDsBytes = ctx.tier_and_datastream_sum_data_set_store_size instanceof Number ? ((Number)ctx.tier_and_datastream_sum_data_set_store_size).longValue() : sumStoreBytes;
+          long sumIdxTime = ctx.tier_and_datastream_sum_indexing_time instanceof Number ? ((Number)ctx.tier_and_datastream_sum_indexing_time).longValue() : 0L;
+          long sumQryTime = ctx.tier_and_datastream_sum_query_time instanceof Number ? ((Number)ctx.tier_and_datastream_sum_query_time).longValue() : 0L;
+          long sumDocsCnt = ctx.tier_and_datastream_sum_docs_count instanceof Number ? ((Number)ctx.tier_and_datastream_sum_docs_count).longValue() : 0L;
+          long sumQryCnt = ctx.tier_and_datastream_sum_query_total instanceof Number ? ((Number)ctx.tier_and_datastream_sum_query_total).longValue() : 0L;
+
+          // Aggregate latest per-index gauges so repeated daily snapshots do not inflate compatibility gauges
+          long compatDocsCnt = 0L;
+          long compatDsBytes = 0L;
+          long compatStoreBytes = 0L;
+          long compatIdxTime = 0L;
+          long compatQryTime = 0L;
+          long compatQryCnt = 0L;
+          boolean hasPerIndex = false;
+          if (ctx.per_index instanceof Map) {
+            Collection idxEntries = (ctx.per_index.buckets instanceof List) ? (List)ctx.per_index.buckets : ((Map)ctx.per_index).values();
+            for (def item : idxEntries) {
+              if (item instanceof Map) {
+                def lat = item.latest instanceof Map ? item.latest : item;
+                if (lat.top instanceof List && lat.top.size() > 0 && lat.top[0] instanceof Map && lat.top[0].metrics instanceof Map) {
+                  lat = lat.top[0].metrics;
+                }
+                if (lat instanceof Map && !lat.isEmpty()) {
+                  hasPerIndex = true;
+                  def vDocs = lat.get('elasticsearch.index.primaries.docs.count');
+                  if (vDocs != null && vDocs.toString() != '') { compatDocsCnt += (vDocs instanceof Number) ? ((Number)vDocs).longValue() : (long)Double.parseDouble(vDocs.toString()); }
+                  def vDset = lat.get('elasticsearch.index.primaries.store.total_data_set_size_in_bytes');
+                  if (vDset != null && vDset.toString() != '') { compatDsBytes += (vDset instanceof Number) ? ((Number)vDset).longValue() : (long)Double.parseDouble(vDset.toString()); }
+                  def vStore = lat.get('elasticsearch.index.total.store.size_in_bytes');
+                  if (vStore != null && vStore.toString() != '') { compatStoreBytes += (vStore instanceof Number) ? ((Number)vStore).longValue() : (long)Double.parseDouble(vStore.toString()); }
+                  def vIdx = lat.get('elasticsearch.index.total.indexing.index_time_in_millis');
+                  if (vIdx != null && vIdx.toString() != '') { compatIdxTime += (vIdx instanceof Number) ? ((Number)vIdx).longValue() : (long)Double.parseDouble(vIdx.toString()); }
+                  def vQry = lat.get('elasticsearch.index.total.search.query_time_in_millis');
+                  if (vQry != null && vQry.toString() != '') { compatQryTime += (vQry instanceof Number) ? ((Number)vQry).longValue() : (long)Double.parseDouble(vQry.toString()); }
+                  def vQcnt = lat.get('elasticsearch.index.total.search.query_total');
+                  if (vQcnt != null && vQcnt.toString() != '') { compatQryCnt += (vQcnt instanceof Number) ? ((Number)vQcnt).longValue() : (long)Double.parseDouble(vQcnt.toString()); }
+                }
+              }
+            }
+          }
+
+          long docsCnt = hasPerIndex ? compatDocsCnt : sumDocsCnt;
+          long storeBytes = hasPerIndex ? compatStoreBytes : sumStoreBytes;
+          long dsBytes = hasPerIndex ? (compatDsBytes > 0L ? compatDsBytes : compatStoreBytes) : sumDsBytes;
+          boolean isNative = (ctx.usage_source == 'native');
+          long idxTime = (!isNative && hasPerIndex) ? compatIdxTime : sumIdxTime;
+          long qryTime = (!isNative && hasPerIndex) ? compatQryTime : sumQryTime;
+          long qryCnt = (!isNative && hasPerIndex) ? compatQryCnt : sumQryCnt;
           long deltaCount = ctx.delta_doc_count instanceof Number ? ((Number)ctx.delta_doc_count).longValue() : 0L;
 
           Map docsMap = ['count': docsCnt];
@@ -153,9 +202,11 @@ processors:
             ],
             'index': indexMap
           ];
-          for (String tmp : ['cluster_display_name', 'tier_and_datastream_sum_docs_count', 'tier_and_datastream_sum_query_total', 'min_creation_date', 'delta_doc_count', 'sum_docs_delta', 'sum_dset_delta', 'sum_idx_time_delta', 'sum_qry_time_delta', 'sum_qry_total_delta']) {
+          for (String tmp : ['per_index', 'cluster_display_name', 'tier_and_datastream_sum_docs_count', 'tier_and_datastream_sum_query_total', 'min_creation_date', 'delta_doc_count', 'sum_docs_delta', 'sum_dset_delta', 'sum_idx_time_delta', 'sum_qry_time_delta', 'sum_qry_total_delta']) {
             ctx.remove(tmp);
           }
+        } else {
+          ctx.remove('per_index');
         }
   - set:
       field: event.ingested
