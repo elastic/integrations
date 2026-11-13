@@ -1,0 +1,39 @@
+services:
+  api-mock:
+    image: docker.elastic.co/observability/stream:v0.25.0
+    command:
+    - http-server
+    - --addr=:8080
+    - --config=/config/api.yml
+    volumes:
+    - ./api.yml:/config/api.yml:ro
+    ports:
+    - '8080'
+  fortigate-tcp:
+    image: docker.elastic.co/observability/stream:v0.25.0
+    command:
+    - log
+    - --addr=host.docker.internal:19514
+    - --protocol=tcp
+    - --start-signal=SIGUSR1
+    - --delay=5s
+    - --template
+    - /config/events.log
+    volumes:
+    - ./fortigate-tcp.log:/config/events.log:ro
+    extra_hosts:
+    - host.docker.internal:host-gateway
+  fortigate-udp:
+    image: docker.elastic.co/observability/stream:v0.25.0
+    command:
+    - log
+    - --addr=host.docker.internal:19514
+    - --protocol=udp
+    - --start-signal=SIGUSR1
+    - --delay=5s
+    - --template
+    - /config/events.log
+    volumes:
+    - ./fortigate-udp.log:/config/events.log:ro
+    extra_hosts:
+    - host.docker.internal:host-gateway
