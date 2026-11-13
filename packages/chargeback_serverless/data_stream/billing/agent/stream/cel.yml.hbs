@@ -32,7 +32,9 @@ program: |-
   state.with(
     state.?want_more.orValue(false).as(is_continuation,
       max(
-        (now - duration(string(int(state.lookbehind) * 24) + "h")).format(
+        state.?cursor.initial_from.optMap(ts, (type(ts) == string) ? timestamp(ts) : ts).orValue(
+          now - duration(string(min(max(int(state.lookbehind), 0), 365) * 24) + "h")
+        ).format(
           time_layout.DateOnly
         ).parse_time(time_layout.DateOnly),
         timestamp("2023-01-01T00:00:00Z")
@@ -90,8 +92,9 @@ program: |-
                           pruned_recent_keys.filter(pk, string(pk.day) == req.from.format(time_layout.RFC3339)).as(prev_day_keys,
                             ((!is_continuation && high_water >= latest_ready_to && replay_completed_to == latest_ready_to_str) || (req.to + duration("2h") > now)) ?
                               {
-                                "events": [],
+                                "events": state.?cursor.last_to.hasValue() ? [] : [ { "fake": true } ],
                                 "cursor": {
+                                  "initial_from": initial_from.format(time_layout.RFC3339),
                                   "last_to": max(high_water, req.from).format(time_layout.RFC3339),
                                   "replay_target_to": latest_ready_to_str,
                                   "replay_completed_to": replay_completed_to,
@@ -465,6 +468,7 @@ program: |-
                                           {
                                             "events": size(evts) > 0 ? evts : [ { "fake": true } ],
                                             "cursor": {
+                                              "initial_from": initial_from.format(time_layout.RFC3339),
                                               "last_to": max(high_water, req.to).format(time_layout.RFC3339),
                                               "replay_target_to": (high_water >= latest_ready_to || req.to + duration("26h") > now) ? latest_ready_to_str : replay_target_to,
                                               "replay_completed_to": (high_water >= latest_ready_to && req.to + duration("26h") > now) ? latest_ready_to_str : replay_completed_to,
@@ -488,6 +492,7 @@ program: |-
                         {
                           "events": { "error": { "code": string(items_resp.StatusCode), "id": string(items_resp.Status), "message": "GET " + items_resp.Request.URL + ": " + ( (size(items_resp.Body) != 0) ? string(items_resp.Body) : string(items_resp.Status) + " (" + string(items_resp.StatusCode) + ")" ) } },
                           "cursor": {
+                            "initial_from": initial_from.format(time_layout.RFC3339),
                             "last_to": max(high_water, req.from).format(time_layout.RFC3339),
                             "replay_target_to": (high_water >= latest_ready_to) ? latest_ready_to_str : replay_target_to,
                             "replay_completed_to": replay_completed_to,
@@ -503,6 +508,7 @@ program: |-
                     {
                       "events": { "error": { "code": string(resp.StatusCode), "id": string(resp.Status), "message": "GET " + resp.Request.URL + ": " + ( (size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status) + " (" + string(resp.StatusCode) + ")" ) } },
                       "cursor": {
+                        "initial_from": initial_from.format(time_layout.RFC3339),
                         "last_to": max(high_water, req.from).format(time_layout.RFC3339),
                         "replay_target_to": (high_water >= latest_ready_to) ? latest_ready_to_str : replay_target_to,
                         "replay_completed_to": replay_completed_to,

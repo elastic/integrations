@@ -30,19 +30,13 @@ pivot:
       terms:
         field: sku
   aggregations:
-    project_name:
-      terms:
-        field: project_name
-        size: 5
-    project_type:
-      terms:
-        field: project_type
-        size: 1
-    # Daily (project_id, sku) components are pre-summed into a single snapshot
-    # during CEL collection; top_metrics selects the newest snapshot on replay.
+    # Daily (project_id, sku) components and project metadata are pre-summed into a single
+    # snapshot during CEL collection; top_metrics selects the newest snapshot on replay.
     latest_snapshot:
       top_metrics:
         metrics:
+          - field: project_name
+          - field: project_type
           - field: total_ecu
           - field: quantity_value
           - field: conf_chargeable_unit_rate

@@ -1,0 +1,176 @@
+# Regression test for the data-trust & project harvest health alerting rule and
+# billing snapshot metadata extraction:
+# 1. One healthy, billed project on the latest closed billing day (with renamed
+#    project metadata in latest_snapshot) must NOT trigger an alert.
+# 2. One active project whose latest status row is older than the billing day and
+#    stale (> 26h) with no billing row on the target day MUST trigger
+#    stale_or_unauthorized_harvest.
+# 3. One decommissioned (inactive) project on an older day must NOT trigger an alert.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+[!exec:curl] skip 'Skipping test requiring absent curl command'
+[!exec:sh] skip 'Skipping test requiring absent sh command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+exec sh run_regression.sh
+
+exec jq -r '.hits.hits[0]._source.project_name' billing_lookup_doc.json
+stdout '^Healthy Renamed ES$'
+
+exec jq -r 'length' alert_rows.json
+stdout '^1$'
+
+exec jq -r '.[0].project_id' alert_rows.json
+stdout '^proj-stale-unbilled$'
+
+exec jq -r '.[0].project' alert_rows.json
+stdout '^Stale Unbilled Obs$'
+
+exec jq -r '.[0].issue_type' alert_rows.json
+stdout '^stale_or_unauthorized_harvest$'
+
+-- run_regression.sh --
+#!/bin/sh
+set -eu
+
+STACK_CFG="${CONFIG_PROFILES}/${PROFILE}/stack/config.json"
+if [ -f "${STACK_CFG}" ]; then
+  ES_HOST="$(jq -r '.elasticsearch_host' "${STACK_CFG}")"
+  ES_USER="$(jq -r '.elasticsearch_username' "${STACK_CFG}")"
+  ES_PASS="$(jq -r '.elasticsearch_password' "${STACK_CFG}")"
+  CA_CERT="$(jq -r '.ca_cert_file' "${STACK_CFG}")"
+else
+  ES_HOST="https://localhost:9200"
+  ES_USER="elastic"
+  ES_PASS="changeme"
+  CA_CERT="${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem"
+fi
+
+es_curl() {
+  curl -fsS -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" "$@"
+}
+
+cleanup() {
+  curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" \
+    -X POST "${ES_HOST}/serverless_billing_cost_lookup-1,serverless_project_status_lookup-1/_delete_by_query?refresh=true" \
+    -H 'Content-Type: application/json' \
+    -d '{"query":{"terms":{"project_id":["proj-healthy","proj-stale-unbilled","proj-inactive"]}}}' >/dev/null 2>&1 || true
+}
+trap cleanup EXIT
+
+i=0
+while [ "$i" -lt 30 ]; do
+  if es_curl "${ES_HOST}/_alias/serverless_billing_cost_lookup" >/dev/null 2>&1 && \
+     es_curl "${ES_HOST}/_alias/serverless_project_status_lookup" >/dev/null 2>&1; then
+    break
+  fi
+  i=$((i + 1))
+  sleep 1
+done
+
+BILL_DAY="$(jq -nr '(((now - 21600) / 86400 | floor) * 86400 - 86400) | strftime("%Y-%m-%dT00:00:00Z")')"
+HEALTHY_UPDATED_AT="$(jq -nr '(now - 3600) | strftime("%Y-%m-%dT%H:%M:%SZ")')"
+STALE_DAY="$(jq -nr '(((now - 21600) / 86400 | floor) * 86400 - 4 * 86400) | strftime("%Y-%m-%dT00:00:00Z")')"
+STALE_UPDATED_AT="$(jq -nr '(now - 96 * 3600) | strftime("%Y-%m-%dT%H:%M:%SZ")')"
+
+BILL_PIPELINE="${CURRENT_VERSION}-chargeback_serverless-lookup_billing"
+USAGE_PIPELINE="${CURRENT_VERSION}-chargeback_serverless-lookup_usage"
+
+jq -n \
+  --arg ts "${BILL_DAY}" \
+  '{
+    "@timestamp": $ts,
+    "project_id": "proj-healthy",
+    "sku": "es.search-vcu",
+    "project_name": {"buckets": [{"key": "Old Stale Name", "doc_count": 2}]},
+    "latest_snapshot": {
+      "project_name": "Healthy Renamed ES",
+      "project_type": "elasticsearch",
+      "total_ecu": 120.0,
+      "quantity_value": 120.0,
+      "conf_chargeable_unit_rate": 1.0,
+      "conf_chargeable_unit_rate_unit": "USD",
+      "conf_currency_symbol": "$"
+    }
+  }' | es_curl -X POST "${ES_HOST}/serverless_billing_cost_lookup-1/_doc?refresh=true&pipeline=${BILL_PIPELINE}" \
+  -H 'Content-Type: application/json' -d @- >/dev/null
+
+jq -n \
+  --arg ts "${BILL_DAY}" \
+  --arg upd "${HEALTHY_UPDATED_AT}" \
+  '{
+    "@timestamp": $ts,
+    "project_id": "proj-healthy",
+    "updated_at": $upd,
+    "last_status": {"last_status": "ok"},
+    "api_key_type": {"api_key_type": "hub_key"},
+    "synthetics_status": {"synthetics_status": "ok"},
+    "latest_currency": {
+      "project_name": "Healthy Renamed ES",
+      "project_type": "elasticsearch",
+      "optimized_for": "general_purpose",
+      "es_url": "https://example.es.io",
+      "conf_chargeable_unit_rate": 1.0,
+      "conf_chargeable_unit_rate_unit": "USD",
+      "conf_currency_symbol": "$"
+    }
+  }' | es_curl -X POST "${ES_HOST}/serverless_project_status_lookup-1/_doc?refresh=true&pipeline=${USAGE_PIPELINE}" \
+  -H 'Content-Type: application/json' -d @- >/dev/null
+
+jq -n \
+  --arg ts "${STALE_DAY}" \
+  --arg upd "${STALE_UPDATED_AT}" \
+  '{
+    "@timestamp": $ts,
+    "project_id": "proj-stale-unbilled",
+    "updated_at": $upd,
+    "last_status": {"last_status": "ok"},
+    "api_key_type": {"api_key_type": "remote_key"},
+    "synthetics_status": {"synthetics_status": "ok"},
+    "latest_currency": {
+      "project_name": "Stale Unbilled Obs",
+      "project_type": "observability",
+      "optimized_for": "general_purpose",
+      "es_url": "https://obs.example.es.io",
+      "conf_chargeable_unit_rate": 1.0,
+      "conf_chargeable_unit_rate_unit": "USD",
+      "conf_currency_symbol": "$"
+    }
+  }' | es_curl -X POST "${ES_HOST}/serverless_project_status_lookup-1/_doc?refresh=true&pipeline=${USAGE_PIPELINE}" \
+  -H 'Content-Type: application/json' -d @- >/dev/null
+
+jq -n \
+  --arg ts "${STALE_DAY}" \
+  --arg upd "${STALE_UPDATED_AT}" \
+  '{
+    "@timestamp": $ts,
+    "project_id": "proj-inactive",
+    "updated_at": $upd,
+    "last_status": {"last_status": "inactive"},
+    "api_key_type": {"api_key_type": "cloud_billing_only"},
+    "synthetics_status": {"synthetics_status": "inactive"},
+    "latest_currency": {
+      "project_name": "Decommissioned Sec",
+      "project_type": "security",
+      "optimized_for": "decommissioned",
+      "es_url": "",
+      "conf_chargeable_unit_rate": 1.0,
+      "conf_chargeable_unit_rate_unit": "USD",
+      "conf_currency_symbol": "$"
+    }
+  }' | es_curl -X POST "${ES_HOST}/serverless_project_status_lookup-1/_doc?refresh=true&pipeline=${USAGE_PIPELINE}" \
+  -H 'Content-Type: application/json' -d @- >/dev/null
+
+es_curl -X GET "${ES_HOST}/serverless_billing_cost_lookup/_search?q=project_id:proj-healthy&size=1" > billing_lookup_doc.json
+
+RULE_FILE="${DATA_STREAM_ROOT}/../../kibana/alerting_rule_template/chargeback_serverless-alert-data-trust-health.json"
+jq '{query: .attributes.params.esqlQuery.esql}' "${RULE_FILE}" | \
+  es_curl -X POST "${ES_HOST}/_query?format=json" -H 'Content-Type: application/json' -d @- > raw_query_resp.json
+
+jq '
+  .columns as $cols |
+  [ .values[] | [ range(0; ($cols | length)) as $i | { ($cols[$i].name): .[$i] } ] | add ]
+' raw_query_resp.json > alert_rows.json

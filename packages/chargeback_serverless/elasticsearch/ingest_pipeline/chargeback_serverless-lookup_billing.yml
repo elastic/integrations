@@ -50,6 +50,12 @@ processors:
           if (snap.top instanceof List && snap.top.size() > 0 && snap.top[0] instanceof Map && snap.top[0].metrics instanceof Map) {
             snap = snap.top[0].metrics;
           }
+          if (snap.project_name != null && snap.project_name.toString() != '') {
+            ctx.project_name = snap.project_name.toString();
+          }
+          if (snap.project_type != null && snap.project_type.toString() != '') {
+            ctx.project_type = snap.project_type.toString();
+          }
           if (snap.total_ecu instanceof Number) {
             ctx.total_ecu = ((Number)snap.total_ecu).doubleValue();
           }
@@ -96,6 +102,9 @@ processors:
         }
         if (ctx.project_name == null || ctx.project_name == '') {
           ctx.project_name = ctx.project_id;
+        }
+        if (ctx.project_type == null || ctx.project_type == '') {
+          ctx.project_type = 'elasticsearch';
         }
         if (ctx.total_ecu instanceof Number) {
           ctx.total_chargeable_units = ((Number)ctx.total_ecu).doubleValue();
