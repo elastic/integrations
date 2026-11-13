@@ -1,0 +1,299 @@
+---
+description: Parse Bitdefender GravityZone account inventory entities.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.5.0'
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes fields added by Agentless as metadata when they would collide
+        with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: Error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: >-
+        Renames the original message field to event.original. The field is not
+        touched when an upstream processor has already populated event.original.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The message field is redundant after event.original is populated.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: bitdefender.account
+      tag: parse_account_json
+      if: ctx.event?.original != null
+  - fail:
+      tag: validate_account_object
+      if: ctx.bitdefender?.account == null || !(ctx.bitdefender.account instanceof Map)
+      message: The account inventory event must be a JSON object.
+  - fail:
+      tag: validate_account_id
+      if: ctx.bitdefender.account.id == null || ctx.bitdefender.account.id == ''
+      message: The account inventory event must contain a stable account ID.
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: asset
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: iam
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type
+      value:
+        - user
+        - info
+      allow_duplicates: false
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Bitdefender
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: GravityZone
+  - set:
+      field: user.id
+      tag: set_user_id
+      copy_from: bitdefender.account.id
+      ignore_empty_value: true
+      if: ctx.bitdefender.account.id != null
+  - set:
+      field: user.email
+      tag: set_user_email
+      copy_from: bitdefender.account.email
+      ignore_empty_value: true
+      if: ctx.bitdefender.account.email != null
+  - set:
+      field: user.name
+      tag: set_user_name_from_email
+      copy_from: bitdefender.account.email
+      ignore_empty_value: true
+      if: ctx.bitdefender.account.email != null
+  - set:
+      field: user.name
+      tag: set_user_name_from_username
+      copy_from: bitdefender.account.userName
+      ignore_empty_value: true
+      if: ctx.user?.name == null && ctx.bitdefender.account.userName != null
+  - set:
+      field: user.full_name
+      tag: set_user_full_name
+      copy_from: bitdefender.account.profile.fullName
+      ignore_empty_value: true
+      if: ctx.bitdefender.account.profile?.fullName != null
+  - set:
+      field: entity.id
+      tag: set_entity_id
+      copy_from: user.id
+      ignore_empty_value: true
+      if: ctx.user?.id != null
+  - set:
+      field: entity.name
+      tag: set_entity_name
+      copy_from: user.name
+      ignore_empty_value: true
+      if: ctx.user?.name != null
+  - set:
+      field: entity.source
+      tag: set_entity_source
+      value: Bitdefender GravityZone
+  - set:
+      field: entity.type
+      tag: set_entity_type
+      value:
+        - user
+  - set:
+      field: entity.last_seen_timestamp
+      tag: set_entity_last_seen_timestamp
+      copy_from: '@timestamp'
+      ignore_empty_value: true
+      if: ctx['@timestamp'] != null
+  - set:
+      field: user.entity.id
+      tag: set_user_entity_id
+      copy_from: user.id
+      ignore_empty_value: true
+      if: ctx.user?.id != null
+  - set:
+      field: user.entity.name
+      tag: set_user_entity_name
+      copy_from: user.name
+      ignore_empty_value: true
+      if: ctx.user?.name != null
+  - set:
+      field: user.entity.source
+      tag: set_user_entity_source
+      value: Bitdefender GravityZone
+  - set:
+      field: user.entity.type
+      tag: set_user_entity_type
+      value:
+        - user
+  - set:
+      field: user.entity.last_seen_timestamp
+      tag: set_user_entity_last_seen_timestamp
+      copy_from: '@timestamp'
+      ignore_empty_value: true
+      if: ctx['@timestamp'] != null
+  - set:
+      field: user.entity.attributes.mfa_enabled
+      tag: set_user_entity_mfa_enabled
+      copy_from: bitdefender.account.twoFactorAuthenticationStatus
+      ignore_empty_value: true
+      if: ctx.bitdefender.account.twoFactorAuthenticationStatus != null
+  - script:
+      lang: painless
+      tag: normalize_account_role
+      description: Map the numeric GravityZone role code to a normalized ECS user role.
+      if: ctx.bitdefender?.account?.role != null
+      params:
+        role_names:
+          '1': company_administrator
+          '2': network_administrator
+          '3': reporter
+          '4': partner
+          '5': custom
+          '6': partner_company_administrator
+      source: |-
+        def roleName = params.role_names.get(ctx.bitdefender.account.role.toString());
+        if (roleName != null) {
+          ctx.user = ctx.user != null ? ctx.user : new HashMap();
+          ctx.user.roles = [roleName];
+        }
+  - script:
+      lang: painless
+      tag: derive_account_permissions
+      description: Normalize the documented inventory-right typo and derive enabled ECS permissions.
+      if: ctx.bitdefender?.account?.rights instanceof Map
+      params:
+        inventory_key: manageInventory
+        inventory_key_with_trailing_space: 'manageInventory '
+        permission_names:
+          - source: companyManager
+            normalized: company_manager
+          - source: manageCompanies
+            normalized: manage_companies
+          - source: manageNetworks
+            normalized: manage_networks
+          - source: manageInventory
+            normalized: manage_inventory
+          - source: managePoliciesRead
+            normalized: manage_policies_read
+          - source: managePoliciesWrite
+            normalized: manage_policies_write
+          - source: manageReports
+            normalized: manage_reports
+          - source: manageUsers
+            normalized: manage_users
+          - source: manageRemoteShell
+            normalized: manage_remote_shell
+          - source: manageMspTrialFeatures
+            normalized: manage_msp_trial_features
+          - source: manageServiceAccounts
+            normalized: manage_service_accounts
+      source: |-
+        def rights = ctx.bitdefender.account.rights;
+        if (rights.containsKey(params.inventory_key_with_trailing_space)) {
+          if (!rights.containsKey(params.inventory_key)) {
+            rights.put(params.inventory_key, rights.get(params.inventory_key_with_trailing_space));
+          }
+          rights.remove(params.inventory_key_with_trailing_space);
+        }
+        def enabled = new ArrayList();
+        for (def permission : params.permission_names) {
+          if (rights.get(permission.source) == true) {
+            enabled.add(permission.normalized);
+          }
+        }
+        if (!enabled.isEmpty()) {
+          ctx.user = ctx.user != null ? ctx.user : new HashMap();
+          ctx.user.entity = ctx.user.entity != null ? ctx.user.entity : new HashMap();
+          ctx.user.entity.attributes = ctx.user.entity.attributes != null ? ctx.user.entity.attributes : new HashMap();
+          ctx.user.entity.attributes.permissions = enabled;
+        }
+  - set:
+      field: organization.id
+      tag: set_organization_id
+      copy_from: bitdefender.account.companyId
+      ignore_empty_value: true
+      if: ctx.bitdefender.account.companyId != null
+  - set:
+      field: organization.name
+      tag: set_organization_name
+      copy_from: bitdefender.account.companyName
+      ignore_empty_value: true
+      if: ctx.bitdefender.account.companyName != null
+  - append:
+      field: related.user
+      tag: append_user_id_to_related
+      value: '{{{user.id}}}'
+      allow_duplicates: false
+      if: ctx.user?.id != null
+  - append:
+      field: related.user
+      tag: append_user_name_to_related
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.user
+      tag: append_user_email_to_related
+      value: '{{{user.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.email != null
+  - append:
+      field: related.user
+      tag: append_user_full_name_to_related
+      value: '{{{user.full_name}}}'
+      allow_duplicates: false
+      if: ctx.user?.full_name != null
+  - append:
+      field: related.user
+      tag: append_vendor_username_to_related
+      value: '{{{bitdefender.account.userName}}}'
+      allow_duplicates: false
+      if: ctx.bitdefender.account.userName != null
+  - append:
+      field: tags
+      tag: preserve_original_event_on_collector_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: preserve_original_event_on_pipeline_error
+      value: preserve_original_event
+      allow_duplicates: false

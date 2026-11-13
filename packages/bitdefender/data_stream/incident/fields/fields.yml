@@ -1,0 +1,76 @@
+- name: bitdefender
+  type: group
+  description: Fields for BitDefender GravityZone related events.
+  fields:
+    - name: incident
+      type: group
+      description: Fields returned by the GravityZone Incidents API.
+      fields:
+        - name: id
+          type: keyword
+          description: Stable GravityZone incident identifier.
+        - name: incidentId
+          type: keyword
+          description: Stable GravityZone incident identifier.
+        - name: incidentNumber
+          type: long
+          description: Incident number displayed in GravityZone Control Center.
+        - name: incidentType
+          type: keyword
+          description: Incident scope, such as incident or extendedIncident.
+        - name: status
+          type: keyword
+        - name: mainAction
+          type: keyword
+        - name: created
+          type: date
+        - name: lastUpdated
+          type: date
+        - name: lastProcessed
+          type: date
+        - name: lastIncidentChange
+          type: date
+        - name: severityScore
+          type: long
+        - name: priority
+          type: keyword
+        - name: incidentLink
+          type: keyword
+          ignore_above: 4096
+        - name: attackTypes
+          type: keyword
+        - name: company
+          type: group
+          fields:
+            - name: id
+              type: keyword
+            - name: name
+              type: keyword
+        - name: assignee
+          type: group
+          fields:
+            - name: userId
+              type: keyword
+            - name: userName
+              type: keyword
+            - name: companyId
+              type: keyword
+            - name: companyName
+              type: keyword
+        - name: notes
+          type: group
+          fields:
+            - name: id
+              type: keyword
+            - name: userId
+              type: keyword
+            - name: userName
+              type: keyword
+            - name: text
+              type: match_only_text
+            - name: created
+              type: date
+        - name: details
+          type: flattened
+          description: >-
+            Full polymorphic endpoint EDR or organization XDR incident details, including alerts, graph nodes, resources, MITRE ATT&CK metadata, counters, narrative, and reasoning.

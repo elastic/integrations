@@ -1,0 +1,140 @@
+rules:
+  # JSON-RPC application error returned with HTTP 200.
+  - path: /v1.1/jsonrpc/network
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-api-key"
+    request_body: /.*"method":"getNetworkInventoryItems".*"parentId":"eeeeeeeeeeeeeeeeeeeeeeee".*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"endpoint-inventory-initial","jsonrpc":"2.0","error":{"code":-32001,"message":"Authorization error","data":{"details":"Synthetic application error"}}}'
+  # HTTP 429 handling.
+  - path: /v1.1/jsonrpc/network
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-api-key"
+    request_body: /.*"method":"getNetworkInventoryItems".*"parentId":"ffffffffffffffffffffffff".*/
+    responses:
+      - status_code: 429
+        headers:
+          Content-Type:
+            - "application/json"
+          Retry-After:
+            - "1"
+        body: '{"id":"endpoint-inventory-initial","jsonrpc":"2.0","error":{"code":-32003,"message":"Too many requests","data":{"details":"Synthetic rate limit"}}}'
+  # Personal API key authentication coverage.
+  - path: /v1.1/jsonrpc/network
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Authorization:
+        - "Basic dGVzdC1hcGkta2V5Og=="
+      Content-Type:
+        - "application/json"
+    request_body: /.*"method":"getNetworkInventoryItems".*"page":1.*"parentId":"bbbbbbbbbbbbbbbbbbbbbbbb".*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"endpoint-inventory-initial","jsonrpc":"2.0","result":{"total":1,"page":1,"perPage":500,"pagesCount":1,"hasMoreRecords":false,"items":[{"id":"65b0000000000000000000b1","name":"example-basic-host","type":5,"parentId":"bbbbbbbbbbbbbbbbbbbbbbbb","companyId":"bbbbbbbbbbbbbbbbbbbbbbbb","details":{"fqdn":"example-basic-host.example.local","isManaged":true,"machineType":1,"operatingSystemVersion":"Windows 11 Enterprise","firstSeen":"2026-10-01T08:00:00","isIsolated":false,"ip":"192.0.2.31","publicIp":"198.51.100.31","macs":["00:00:5E:00:53:31"],"managedWithBest":true,"productOutdated":false}}]}}'
+  # Second polling cycle. The first resumed request returns one changed snapshot
+  # entity; later cycles return an empty terminal page.
+  - path: /v1.1/jsonrpc/network
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-api-key"
+    request_body: /.*"id":"endpoint-inventory-resume".*"method":"getNetworkInventoryItems".*"page":1.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ if eq .req_num 1 }}
+          {"id":"endpoint-inventory-resume","jsonrpc":"2.0","result":{"total":1,"page":1,"perPage":500,"pagesCount":1,"hasMoreRecords":false,"items":[{"id":"65b0000000000000000000005","name":"example-host-resumed","type":5,"parentId":"5e4d3c2b1a0987654321fedc","companyId":"5e4d3c2b1a0987654321fedc","details":{"label":"resumed snapshot","fqdn":"example-host-resumed.example.local","groupId":"65b00000000000000000a001","isManaged":true,"machineType":1,"operatingSystemVersion":"Windows 11 Enterprise","firstSeen":"2026-10-05T10:00:00","isIsolated":false,"ip":"192.0.2.25","publicIp":"198.51.100.25","macs":["00:00:5E:00:53:25"],"ssid":"S-1-5-21-000000000-000000000-000000000-1005","managedWithBest":true,"policy":{"id":"65b00000000000000000c001","name":"Example endpoint policy","applied":true},"modules":{"advancedThreatControl":true,"antimalware":true,"contentControl":true,"deviceControl":false,"firewall":true,"edrSensor":true,"networkAttackDefense":true,"patchManagement":true},"productOutdated":false,"riskScore":{"value":"18%","impact":"Low","misconfigurations":"10%","appVulnerabilities":"8%","humanRisks":"0%"}},"lastSuccessfulScan":{"name":"Scheduled scan","date":"2026-11-02T08:00:00+00:00"}}]}}
+          {{ else }}
+          {"id":"endpoint-inventory-resume","jsonrpc":"2.0","result":{"page":1,"perPage":500,"hasMoreRecords":false,"items":[]}}
+          {{ end }}
+  # Round 1, terminal page. v1.1 intentionally omits total/pagesCount after
+  # page 1. Includes the EC2 entity deferred across the empty middle page, a
+  # container entity, and a container-group record that the collector must
+  # not emit.
+  - path: /v1.1/jsonrpc/network
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-api-key"
+    request_body: /.*"id":"endpoint-inventory-initial".*"method":"getNetworkInventoryItems".*"page":3.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"endpoint-inventory-initial","jsonrpc":"2.0","result":{"page":3,"perPage":500,"hasMoreRecords":false,"items":[{"id":"65b000000000000000000003","name":"example-ec2-01","type":7,"parentId":"65b00000000000000000a002","companyId":"5e4d3c2b1a0987654321fedc","details":{"label":"Example EC2 workload","fqdn":"example-ec2-01.example.internal","groupId":"65b00000000000000000a002","isManaged":true,"machineType":3,"operatingSystemVersion":"Amazon Linux 2023","firstSeen":"2026-10-03T10:00:00","isIsolated":false,"ip":"192.0.2.23","publicIp":"198.51.100.23","macs":["00:00:5E:00:53:23"],"managedWithBest":true,"policy":{"id":"65b00000000000000000c001","name":"Example endpoint policy","applied":true},"modules":{"advancedThreatControl":true,"antimalware":true,"firewall":true,"edrSensor":true,"networkAttackDefense":true},"productOutdated":false,"riskScore":{"value":"25%","impact":"Medium","misconfigurations":"15%","appVulnerabilities":"10%","humanRisks":"0%"}},"lastSuccessfulScan":{"name":"Scheduled scan","date":"2026-11-01T08:00:00+00:00"}},{"id":"65b000000000000000000004","name":"example-container-01","type":16,"parentId":"65b00000000000000000a003","companyId":"5e4d3c2b1a0987654321fedc","details":{"label":"Example workload container","fqdn":"example-container-01.example.local","groupId":"65b00000000000000000a003","isManaged":true,"machineType":0,"operatingSystemVersion":"Linux Container","firstSeen":"2026-10-04T10:00:00","isIsolated":false,"ip":"192.0.2.24","publicIp":"198.51.100.24","macs":["00:00:5E:00:53:24"],"managedWithBest":true,"modules":{"antimalware":true,"containerProtection":true},"productOutdated":false,"riskScore":{"value":"12%","impact":"Low","misconfigurations":"7%","appVulnerabilities":"5%","humanRisks":"0%"}}},{"id":"65b00000000000000000f014","name":"Containers","type":14,"parentId":"5e4d3c2b1a0987654321fedc","companyId":"5e4d3c2b1a0987654321fedc"}]}}'
+  # Round 1, empty middle page. hasMoreRecords remains authoritative.
+  - path: /v1.1/jsonrpc/network
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-api-key"
+    request_body: /.*"id":"endpoint-inventory-initial".*"method":"getNetworkInventoryItems".*"page":2.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"endpoint-inventory-initial","jsonrpc":"2.0","result":{"page":2,"perPage":500,"hasMoreRecords":true,"items":[]}}'
+  # Round 1, page 1. Vendor documentation does not define a `containers`
+  # request filter, so the request uses the documented endpoint type filters
+  # and the collector accepts type 16 if the recursive response includes it.
+  # A repeated initial-page request is a regression guard and returns two
+  # additional entities so the expected hit count is exceeded.
+  - path: /v1.1/jsonrpc/network
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-api-key"
+    request_body: /.*"id":"endpoint-inventory-initial".*"method":"getNetworkInventoryItems".*"page":1.*"parentId":"5e4d3c2b1a0987654321fedc".*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ if eq .req_num 1 }}
+          {"id":"endpoint-inventory-initial","jsonrpc":"2.0","result":{"total":6,"page":1,"perPage":500,"pagesCount":3,"hasMoreRecords":true,"items":[{"id":"65b000000000000000000001","name":"example-host-01","type":5,"parentId":"65b00000000000000000a001","companyId":"5e4d3c2b1a0987654321fedc","details":{"label":"Example Windows host","fqdn":"example-host-01.example.local","groupId":"65b00000000000000000a001","isManaged":true,"machineType":1,"operatingSystemVersion":"Windows 11 Enterprise","firstSeen":"2026-10-01T10:00:00","isIsolated":false,"ip":"192.0.2.21","publicIp":"198.51.100.21","macs":["00:00:5E:00:53:21"],"ssid":"S-1-5-21-000000000-000000000-000000000-1001","managedWithBest":true,"policy":{"id":"65b00000000000000000c001","name":"Example endpoint policy","applied":true},"modules":{"advancedThreatControl":true,"antimalware":true,"contentControl":true,"deviceControl":true,"firewall":true,"edrSensor":true,"hyperDetect":true,"networkAttackDefense":true,"patchManagement":true},"productOutdated":false,"riskScore":{"value":"20%","impact":"Low","misconfigurations":"10%","appVulnerabilities":"8%","humanRisks":"2%"}},"lastSuccessfulScan":{"name":"Scheduled scan","date":"2026-11-01T06:00:00+00:00"}},{"id":"65b000000000000000000002","name":"example-vm-01","type":6,"parentId":"65b00000000000000000a001","companyId":"5e4d3c2b1a0987654321fedc","details":{"label":"Example Linux VM","fqdn":"example-vm-01.example.local","groupId":"65b00000000000000000a001","isManaged":true,"machineType":2,"operatingSystemVersion":"Ubuntu 24.04 LTS","firstSeen":"2026-10-02T10:00:00","isIsolated":true,"ip":"192.0.2.22","publicIp":"198.51.100.22","macs":["00:00:5E:00:53:22"],"managedWithBest":true,"policy":{"id":"65b00000000000000000c002","name":"Example server policy","applied":true},"modules":{"advancedThreatControl":true,"antimalware":true,"contentControl":false,"deviceControl":false,"firewall":false,"edrSensor":true,"networkAttackDefense":true},"productOutdated":true,"riskScore":{"value":"42%","impact":"Medium","misconfigurations":"20%","appVulnerabilities":"17%","humanRisks":"5%"}},"lastSuccessfulScan":{"name":"Full scan","date":"2026-10-31T06:00:00+00:00"}},{"id":"65b00000000000000000f004","name":"Example endpoint group","type":4,"parentId":"5e4d3c2b1a0987654321fedc","companyId":"5e4d3c2b1a0987654321fedc"}]}}
+          {{ else }}
+          {"id":"endpoint-inventory-initial","jsonrpc":"2.0","result":{"total":2,"page":1,"perPage":500,"pagesCount":1,"hasMoreRecords":false,"items":[{"id":"65b0000000000000000000f1","name":"regression-guard-01","type":5,"parentId":"5e4d3c2b1a0987654321fedc","companyId":"5e4d3c2b1a0987654321fedc","details":{"fqdn":"regression-guard-01.example.local","isManaged":true,"machineType":1,"operatingSystemVersion":"Windows 11 Enterprise","ip":"192.0.2.241"}},{"id":"65b0000000000000000000f2","name":"regression-guard-02","type":5,"parentId":"5e4d3c2b1a0987654321fedc","companyId":"5e4d3c2b1a0987654321fedc","details":{"fqdn":"regression-guard-02.example.local","isManaged":true,"machineType":1,"operatingSystemVersion":"Windows 11 Enterprise","ip":"198.51.100.242"}}]}}
+          {{ end }}

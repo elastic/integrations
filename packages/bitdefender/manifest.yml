@@ -1,10 +1,10 @@
 format_version: "3.3.2"
 name: bitdefender
 title: "BitDefender"
-version: "2.14.0"
+version: "2.16.0"
 source:
   license: "Elastic-2.0"
-description: "Ingest BitDefender GravityZone logs and data"
+description: "Ingest BitDefender GravityZone events, incidents, and entity inventories"
 type: integration
 categories:
   - security
@@ -32,7 +32,7 @@ icons:
 policy_templates:
   - name: bitdefender_gravityzone
     title: BitDefender GravityZone
-    description: Collect push notification events and related data from BitDefender GravityZone
+    description: Collect push notification events and Public API data from BitDefender GravityZone
     deployment_modes:
       default:
         enabled: true
@@ -80,20 +80,33 @@ policy_templates:
             show_user: true
             required: true
             default: https://cloud.gravityzone.bitdefender.com/api/v1.0/jsonrpc/push
+          - name: public_api_url
+            type: text
+            title: BitDefender GravityZone Public API Access URL
+            description: Exact tenant-specific Control Center API Access URL ending in /api, copied from the account menu under Control Center API.
+            show_user: true
+            required: true
+            default: https://cloud.gravityzone.bitdefender.com/api
           - name: api_key
             type: password
             title: BitDefender GravityZone API Key
+            description: Personal API key or Service API key. Push data streams require a Personal API key.
             show_user: true
             required: true
             secret: true
-          - name: enable_request_tracer
-            type: bool
-            default: false
-            title: Enable request tracing
-            multi: false
+          - name: auth_type
+            type: text
+            title: Public API Authentication Type
+            description: Use x_api_key for a Service API key or basic for a Personal API key.
+            show_user: true
+            required: true
+            default: x_api_key
+          - name: company_id
+            type: text
+            title: Company ID
+            description: Optional managed company ID for partner or MSP Public API collection.
+            show_user: true
             required: false
-            show_user: false
-            description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
 owner:
   github: elastic/security-service-integrations
   type: elastic

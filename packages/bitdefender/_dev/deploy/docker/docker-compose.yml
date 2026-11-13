@@ -44,3 +44,42 @@ services:
       - http-server
       - --addr=:8585
       - --config=/config.yml
+  bitdefender-incident-mock:
+    image: docker.elastic.co/observability/stream:v0.22.0
+    hostname: bitdefender_incident_mock
+    ports:
+      - 8090
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: "8090"
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/files/config-incident.yml
+  bitdefender-endpoint-mock:
+    image: docker.elastic.co/observability/stream:v0.22.0
+    hostname: bitdefender_endpoint_mock
+    ports:
+      - 8090
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: "8090"
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/files/config-endpoint.yml
+  bitdefender-account-mock:
+    image: docker.elastic.co/observability/stream:v0.22.0
+    hostname: bitdefender_account_mock
+    ports:
+      - 8090
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: "8090"
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/files/config-account.yml

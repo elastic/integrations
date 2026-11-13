@@ -1,0 +1,242 @@
+rules:
+  # JSON-RPC application error returned with HTTP 200.
+  - path: /v1.0/jsonrpc/accounts
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-service-key"
+    request_body: /.*"method":"getAccountsList".*"companyId":"eeeeeeeeeeeeeeeeeeeeeeee".*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"accounts-list-initial","jsonrpc":"2.0","error":{"code":-32001,"message":"Authorization error","data":{"details":"Synthetic application error"}}}'
+  # HTTP server error handling.
+  - path: /v1.0/jsonrpc/accounts
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-service-key"
+    request_body: /.*"method":"getAccountsList".*"companyId":"dddddddddddddddddddddddd".*/
+    responses:
+      - status_code: 500
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"error":"Synthetic server error"}'
+  # HTTP 429 handling.
+  - path: /v1.0/jsonrpc/accounts
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-service-key"
+    request_body: /.*"method":"getAccountsList".*"companyId":"ffffffffffffffffffffffff".*/
+    responses:
+      - status_code: 429
+        headers:
+          Content-Type:
+            - "application/json"
+          Retry-After:
+            - "1"
+        body: '{"id":"accounts-list-initial","jsonrpc":"2.0","error":{"code":-32003,"message":"Too many requests","data":{"details":"Synthetic rate limit"}}}'
+  # Service-key round 2. The list is complete and no self-detail call is valid.
+  # Later interval cycles return an empty terminal snapshot.
+  - path: /v1.0/jsonrpc/accounts
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-service-key"
+    request_body: /.*"id":"accounts-list-resume".*"method":"getAccountsList".*"companyId":"5e4d3c2b1a0987654321fedc".*"page":1.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ if eq .req_num 1 }}
+          {"id":"accounts-list-resume","jsonrpc":"2.0","result":{"total":1,"page":1,"perPage":2,"pagesCount":1,"items":[{"id":"65c000000000000000000004","email":"updated.user@example.net","profile":{"fullName":"Dana Rivera","language":"en_US","timezone":"UTC","landingPage":"dashboardV2"},"role":3,"rights":{"companyManager":false,"manageCompanies":false,"manageNetworks":false,"manageInventory":false,"managePoliciesRead":true,"managePoliciesWrite":false,"manageReports":true,"manageUsers":false,"manageRemoteShell":false,"manageServiceAccounts":false},"passwordLifetime":90,"accountLockdown":false,"twoFactorAuthenticationStatus":true,"companyName":"Example Corp","companyId":"5e4d3c2b1a0987654321fedc","authenticationMethod":1}]}}
+          {{ else }}
+          {"id":"accounts-list-resume","jsonrpc":"2.0","result":{"total":0,"page":1,"perPage":2,"pagesCount":1,"items":[]}}
+          {{ end }}
+  # Service-key round 1 terminal page.
+  - path: /v1.0/jsonrpc/accounts
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-service-key"
+    request_body: /.*"id":"accounts-list-initial".*"method":"getAccountsList".*"companyId":"5e4d3c2b1a0987654321fedc".*"page":2.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"accounts-list-initial","jsonrpc":"2.0","result":{"total":3,"page":2,"perPage":2,"pagesCount":2,"items":[{"id":"65c000000000000000000003","email":"carol.lee@example.org","profile":{"fullName":"Carol Lee","language":"en_US","timezone":"America/New_York"},"role":2,"rights":{"companyManager":false,"manageCompanies":false,"manageNetworks":true,"manageInventory":true,"managePoliciesRead":true,"managePoliciesWrite":true,"manageReports":true,"manageUsers":false,"manageRemoteShell":true,"manageServiceAccounts":false},"passwordLifetime":0,"accountLockdown":false,"twoFactorAuthenticationStatus":true,"companyName":"Example Corp","companyId":"5e4d3c2b1a0987654321fedc","authenticationMethod":2}]}}'
+  # Service-key round 1 page 1. A repeated initial request is a regression
+  # guard that emits extra records and makes the exact hit_count fail.
+  - path: /v1.0/jsonrpc/accounts
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-service-key"
+    request_body: /.*"id":"accounts-list-initial".*"method":"getAccountsList".*"companyId":"5e4d3c2b1a0987654321fedc".*"page":1.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ if eq .req_num 1 }}
+          {"id":"accounts-list-initial","jsonrpc":"2.0","result":{"total":3,"page":1,"perPage":2,"pagesCount":2,"items":[{"id":"65c000000000000000000001","email":"alice.johnson@example.com","profile":{"fullName":"Alice Johnson","language":"en_US","timezone":"UTC","landingPage":"dashboardV2"},"role":1,"rights":{"companyManager":true,"manageCompanies":false,"manageNetworks":true,"manageInventory ":true,"managePoliciesRead":true,"managePoliciesWrite":true,"manageReports":true,"manageUsers":true,"manageRemoteShell":true,"manageServiceAccounts":true},"passwordLifetime":90,"accountLockdown":true,"twoFactorAuthenticationStatus":true,"companyName":"Example Corp","companyId":"5e4d3c2b1a0987654321fedc","authenticationMethod":0},{"id":"65c000000000000000000002","email":"bob.smith@example.com","profile":{"fullName":"Bob Smith","language":"en_GB","timezone":"Europe/London","landingPage":"dashboard"},"role":5,"rights":{"companyManager":false,"manageCompanies":false,"manageNetworks":true,"manageInventory":true,"managePoliciesRead":true,"managePoliciesWrite":false,"manageReports":true,"manageUsers":false,"manageRemoteShell":false,"manageServiceAccounts":false},"passwordLifetime":0,"accountLockdown":false,"twoFactorAuthenticationStatus":false,"companyName":"Example Corp","companyId":"5e4d3c2b1a0987654321fedc","authenticationMethod":1}]}}
+          {{ else }}
+          {"id":"accounts-list-initial","jsonrpc":"2.0","result":{"total":2,"page":1,"perPage":2,"pagesCount":1,"items":[{"id":"65c0000000000000000000f1","email":"regression.one@example.net","profile":{"fullName":"Regression One","language":"en_US","timezone":"UTC"},"role":3,"rights":{"manageReports":true},"companyName":"Example Corp","companyId":"5e4d3c2b1a0987654321fedc","authenticationMethod":0},{"id":"65c0000000000000000000f2","email":"regression.two@example.net","profile":{"fullName":"Regression Two","language":"en_US","timezone":"UTC"},"role":3,"rights":{"manageReports":true},"companyName":"Example Corp","companyId":"5e4d3c2b1a0987654321fedc","authenticationMethod":0}]}}
+          {{ end }}
+  # Solo personal-key tenant: getAccountsList returns empty items, but
+  # getAccountDetails still collects the key owner's account snapshot.
+  - path: /v1.0/jsonrpc/accounts
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Authorization:
+        - "Basic c29sby1wZXJzb25hbC1rZXk6"
+      Content-Type:
+        - "application/json"
+    request_body: /.*"method":"getAccountDetails".*"params":\{\}.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"account-self-initial","jsonrpc":"2.0","result":{"id":"65c0000000000000000000b0","email":"solo.owner@example.com","profile":{"fullName":"Solo Owner","language":"en_US","timezone":"UTC","landingPage":"dashboard"},"role":1,"rights":{"manageCompanies":false,"manageInventory":true,"managePoliciesRead":true,"managePoliciesWrite":true,"manageUsers":true,"manageReports":true,"companyManager":true,"manageRemoteShell":true,"manageMspTrialFeatures":false,"manageServiceAccounts":true},"passwordLifetime":90,"accountLockdown":true,"twoFactorAuthenticationStatus":true,"companyName":"Solo Example Corp","companyId":"111111111111111111111111","authenticationMethod":0,"hasOwnCompanyInTargets":true}}'
+  - path: /v1.0/jsonrpc/accounts
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Authorization:
+        - "Basic c29sby1wZXJzb25hbC1rZXk6"
+      Content-Type:
+        - "application/json"
+    request_body: /.*"method":"getAccountsList".*"companyId":"111111111111111111111111".*"page":1.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"accounts-list-initial","jsonrpc":"2.0","result":{"total":0,"page":1,"perPage":2,"pagesCount":0,"items":[]}}'
+  # Personal-key round 2 self detail. Exactly one request follows completion
+  # of the list pages.
+  - path: /v1.0/jsonrpc/accounts
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Authorization:
+        - "Basic cGVyc29uYWwtYXBpLWtleTo="
+      Content-Type:
+        - "application/json"
+    request_body: /.*"id":"account-self-resume".*"method":"getAccountDetails".*"params":\{\}.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"account-self-resume","jsonrpc":"2.0","result":{"id":"65c0000000000000000000a0","email":"api.owner@example.com","profile":{"fullName":"API Owner","language":"en_US","timezone":"UTC","landingPage":"dashboard"},"phoneNumber":{"countryCode":null,"subscriberNumber":null},"role":1,"rights":{"manageCompanies":false,"manageInventory":true,"managePoliciesRead":true,"managePoliciesWrite":true,"manageUsers":true,"manageReports":true,"companyManager":true,"manageRemoteShell":true,"manageMspTrialFeatures":false,"manageServiceAccounts":true},"passwordLifetime":90,"accountLockdown":true,"twoFactorAuthenticationStatus":true,"companyName":"Example Corp","companyId":"5e4d3c2b1a0987654321fedc","authenticationMethod":0,"hasOwnCompanyInTargets":true}}'
+  # Personal-key round 2 list snapshot.
+  - path: /v1.0/jsonrpc/accounts
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Authorization:
+        - "Basic cGVyc29uYWwtYXBpLWtleTo="
+      Content-Type:
+        - "application/json"
+    request_body: /.*"id":"accounts-list-resume".*"method":"getAccountsList".*"companyId":"5e4d3c2b1a0987654321fedc".*"page":1.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ if eq .req_num 1 }}
+          {"id":"accounts-list-resume","jsonrpc":"2.0","result":{"total":1,"page":1,"perPage":2,"pagesCount":1,"items":[{"id":"65c000000000000000000014","email":"personal.updated@example.net","profile":{"fullName":"Erin Patel","language":"en_US","timezone":"UTC"},"role":3,"rights":{"companyManager":false,"manageCompanies":false,"manageNetworks":false,"manageInventory":false,"managePoliciesRead":true,"managePoliciesWrite":false,"manageReports":true,"manageUsers":false,"manageRemoteShell":false,"manageServiceAccounts":false},"passwordLifetime":90,"accountLockdown":false,"twoFactorAuthenticationStatus":true,"companyName":"Example Corp","companyId":"5e4d3c2b1a0987654321fedc","authenticationMethod":1}]}}
+          {{ else }}
+          {"id":"accounts-list-resume","jsonrpc":"2.0","result":{"total":0,"page":1,"perPage":2,"pagesCount":1,"items":[]}}
+          {{ end }}
+  # Personal-key round 1 self detail.
+  - path: /v1.0/jsonrpc/accounts
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Authorization:
+        - "Basic cGVyc29uYWwtYXBpLWtleTo="
+      Content-Type:
+        - "application/json"
+    request_body: /.*"id":"account-self-initial".*"method":"getAccountDetails".*"params":\{\}.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"account-self-initial","jsonrpc":"2.0","result":{"id":"65c0000000000000000000a0","email":"api.owner@example.com","profile":{"fullName":"API Owner","language":"en_US","timezone":"UTC","landingPage":"dashboard"},"phoneNumber":{"countryCode":null,"subscriberNumber":null},"role":1,"rights":{"manageCompanies":false,"manageInventory":true,"managePoliciesRead":true,"managePoliciesWrite":true,"manageUsers":true,"manageReports":true,"companyManager":true,"manageRemoteShell":true,"manageMspTrialFeatures":false,"manageServiceAccounts":true},"passwordLifetime":90,"accountLockdown":true,"twoFactorAuthenticationStatus":true,"companyName":"Example Corp","companyId":"5e4d3c2b1a0987654321fedc","authenticationMethod":0,"hasOwnCompanyInTargets":true}}'
+  # Personal-key round 1 terminal list page.
+  - path: /v1.0/jsonrpc/accounts
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Authorization:
+        - "Basic cGVyc29uYWwtYXBpLWtleTo="
+      Content-Type:
+        - "application/json"
+    request_body: /.*"id":"accounts-list-initial".*"method":"getAccountsList".*"companyId":"5e4d3c2b1a0987654321fedc".*"page":2.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"accounts-list-initial","jsonrpc":"2.0","result":{"total":3,"page":2,"perPage":2,"pagesCount":2,"items":[{"id":"65c000000000000000000013","email":"viewer@example.org","profile":{"fullName":"Victor Nguyen","language":"en_US","timezone":"America/Chicago"},"role":3,"rights":{"companyManager":false,"manageCompanies":false,"manageNetworks":false,"manageInventory":false,"managePoliciesRead":true,"managePoliciesWrite":false,"manageReports":true,"manageUsers":false,"manageRemoteShell":false,"manageServiceAccounts":false},"passwordLifetime":0,"accountLockdown":false,"twoFactorAuthenticationStatus":true,"companyName":"Example Corp","companyId":"5e4d3c2b1a0987654321fedc","authenticationMethod":2}]}}'
+  # Personal-key round 1 page 1. The key owner is intentionally absent.
+  - path: /v1.0/jsonrpc/accounts
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Authorization:
+        - "Basic cGVyc29uYWwtYXBpLWtleTo="
+      Content-Type:
+        - "application/json"
+    request_body: /.*"id":"accounts-list-initial".*"method":"getAccountsList".*"companyId":"5e4d3c2b1a0987654321fedc".*"page":1.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"accounts-list-initial","jsonrpc":"2.0","result":{"total":3,"page":1,"perPage":2,"pagesCount":2,"items":[{"id":"65c000000000000000000011","email":"analyst@example.com","profile":{"fullName":"Alex Morgan","language":"en_US","timezone":"UTC","landingPage":"dashboardV2"},"role":2,"rights":{"companyManager":false,"manageCompanies":false,"manageNetworks":true,"manageInventory ":true,"managePoliciesRead":true,"managePoliciesWrite":true,"manageReports":true,"manageUsers":false,"manageRemoteShell":true,"manageServiceAccounts":false},"passwordLifetime":90,"accountLockdown":false,"twoFactorAuthenticationStatus":true,"companyName":"Example Corp","companyId":"5e4d3c2b1a0987654321fedc","authenticationMethod":0},{"id":"65c000000000000000000012","email":"reporter@example.com","profile":{"fullName":"Riley Chen","language":"en_GB","timezone":"Europe/London"},"role":3,"rights":{"companyManager":false,"manageCompanies":false,"manageNetworks":false,"manageInventory":false,"managePoliciesRead":true,"managePoliciesWrite":false,"manageReports":true,"manageUsers":false,"manageRemoteShell":false,"manageServiceAccounts":false},"passwordLifetime":0,"accountLockdown":false,"twoFactorAuthenticationStatus":false,"companyName":"Example Corp","companyId":"5e4d3c2b1a0987654321fedc","authenticationMethod":1}]}}'
