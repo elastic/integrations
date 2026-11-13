@@ -1,0 +1,381 @@
+---
+description: Pipeline for parsing Cloudflare MCP Portal logs.
+processors:
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: '9.3.0'
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      tag: json_event_original_to_json
+      field: event.original
+      target_field: json
+      if: ctx.event?.original != null
+  - append:
+      tag: append_event_category_api
+      field: event.category
+      value: api
+      allow_duplicates: false
+  - append:
+      tag: append_event_type_access
+      field: event.type
+      value: access
+      allow_duplicates: false
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+  ## AWS S3 input does _id Based Deduplication and generates "_id" by default.
+  ## When "Data Deduplication" is not enabled, this field must be removed.
+  ## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
+  - remove:
+      field: _id
+      tag: remove_id_based_deduplication
+      description: >
+        When data deduplication is disabled, the _id field (used for _id Based Deduplication)
+        must be removed.
+      if: ctx._conf?.enable_deduplication == false && ctx.input?.type == 'aws-s3'
+      ignore_missing: true
+
+  # @timestamp
+  - convert:
+      tag: convert_json_Datetime_to_long
+      field: json.Datetime
+      type: long
+      if: ctx.json?.Datetime != null && ctx.json.Datetime != ''
+      ignore_failure: true
+  - script:
+      lang: painless
+      tag: script_datetime_to_milli
+      description: Normalizes a numeric Datetime in seconds or nanoseconds to milliseconds.
+      if: ctx.json?.Datetime != null && ctx.json.Datetime instanceof Number
+      source: |
+        long t = (long)(ctx.json.Datetime);
+        if (t > (long)(1e18)) {
+          ctx.json.Datetime = t/(long)(1e6)
+        } else if (t < (long)(1e10))  {
+          ctx.json.Datetime = t*(long)(1e3)
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_datetime_script
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_json_Datetime
+      field: json.Datetime
+      target_field: '@timestamp'
+      if: ctx.json?.Datetime != null && ctx.json.Datetime != ''
+      formats:
+        - UNIX_MS
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ssZ
+      timezone: UTC
+      on_failure:
+        - remove:
+            tag: remove_json_Datetime
+            field: json.Datetime
+            ignore_missing: true
+        - append:
+            tag: append_error_message_datetime
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # event.action (JSON-RPC method)
+  - rename:
+      tag: rename_json_Method_to_event_action
+      field: json.Method
+      target_field: event.action
+      ignore_missing: true
+
+  # event.outcome
+  - convert:
+      tag: convert_json_Success_to_boolean
+      field: json.Success
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_json_Success
+            field: json.Success
+            ignore_missing: true
+        - append:
+            tag: append_error_message_success
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_event_outcome_success
+      field: event.outcome
+      value: success
+      if: ctx.json?.Success == true
+  - set:
+      tag: set_event_outcome_failure
+      field: event.outcome
+      value: failure
+      if: ctx.json?.Success == false
+
+  # event.duration
+  - convert:
+      tag: convert_json_ServerResponseDurationMs_to_long
+      field: json.ServerResponseDurationMs
+      type: long
+      ignore_missing: true
+      if: ctx.json?.ServerResponseDurationMs != ''
+      on_failure:
+        - remove:
+            tag: remove_json_ServerResponseDurationMs
+            field: json.ServerResponseDurationMs
+            ignore_missing: true
+        - append:
+            tag: append_error_message_server_response_duration
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      tag: script_event_duration_from_server_response_duration_ms
+      description: Converts ServerResponseDurationMs from milliseconds to nanoseconds for event.duration.
+      if: ctx.json?.ServerResponseDurationMs instanceof Number
+      source: |
+        if (ctx.event == null) {
+          ctx.event = new HashMap();
+        }
+        ctx.event.duration = ((Number) ctx.json.ServerResponseDurationMs).longValue() * 1000000L;
+      on_failure:
+        - append:
+            tag: append_error_message_event_duration
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # source.*
+  - convert:
+      tag: convert_json_ClientIP_to_source_ip
+      field: json.ClientIP
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.ClientIP != null && ctx.json.ClientIP != ''
+      on_failure:
+        - append:
+            tag: append_error_message_client_ip
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - uppercase:
+      tag: uppercase_json_ClientCountry_to_source_geo_country_iso_code
+      field: json.ClientCountry
+      target_field: source.geo.country_iso_code
+      ignore_missing: true
+      if: ctx.json?.ClientCountry != null && ctx.json.ClientCountry != ''
+  - geoip:
+      tag: geoip_source_ip_to_source_geo
+      description: >-
+        Falls back to a GeoIP lookup only when Cloudflare did not report the client country,
+        so that the GeoIP result cannot contradict the Cloudflare country code.
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+      if: ctx.source?.ip != null && ctx.source?.geo == null
+  - geoip:
+      tag: geoip_source_ip_to_source_as
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+      if: ctx.source?.ip != null
+  - rename:
+      tag: rename_source_as_asn_to_source_as_number
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+
+  # url.* and destination.* (upstream MCP server)
+  - rename:
+      tag: rename_json_ServerURL_to_url_original
+      field: json.ServerURL
+      target_field: url.original
+      ignore_missing: true
+  - uri_parts:
+      tag: uri_parts_url_original
+      field: url.original
+      target_field: url
+      keep_original: true
+      if: ctx.url?.original != null && ctx.url.original != ''
+      on_failure:
+        - append:
+            tag: append_error_message_uri_parts
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_destination_domain_from_url_domain
+      field: destination.domain
+      copy_from: url.domain
+      ignore_empty_value: true
+
+  # gen_ai.*
+  - rename:
+      tag: rename_json_ToolCallName_to_gen_ai_tool_name
+      field: json.ToolCallName
+      target_field: gen_ai.tool.name
+      ignore_missing: true
+
+  # user.*
+  - rename:
+      tag: rename_json_UserEmail_to_user_email
+      field: json.UserEmail
+      target_field: user.email
+      ignore_missing: true
+  - rename:
+      tag: rename_json_UserID_to_user_id
+      field: json.UserID
+      target_field: user.id
+      ignore_missing: true
+
+  # cloudflare_logpush.mcp_portal_logs.*
+  - rename:
+      tag: rename_json_ColoCode_to_colo_code
+      field: json.ColoCode
+      target_field: cloudflare_logpush.mcp_portal_logs.colo.code
+      ignore_missing: true
+  - rename:
+      tag: rename_json_Error_to_error
+      field: json.Error
+      target_field: cloudflare_logpush.mcp_portal_logs.error
+      ignore_missing: true
+  - rename:
+      tag: rename_json_PortalAUD_to_portal_aud
+      field: json.PortalAUD
+      target_field: cloudflare_logpush.mcp_portal_logs.portal.aud
+      ignore_missing: true
+  - rename:
+      tag: rename_json_PortalID_to_portal_id
+      field: json.PortalID
+      target_field: cloudflare_logpush.mcp_portal_logs.portal.id
+      ignore_missing: true
+  - rename:
+      tag: rename_json_PromptGetName_to_prompt_get_name
+      field: json.PromptGetName
+      target_field: cloudflare_logpush.mcp_portal_logs.prompt_get_name
+      ignore_missing: true
+  - rename:
+      tag: rename_json_ResourceReadURI_to_resource_read_uri
+      field: json.ResourceReadURI
+      target_field: cloudflare_logpush.mcp_portal_logs.resource_read_uri
+      ignore_missing: true
+  - rename:
+      tag: rename_json_ServerAUD_to_server_aud
+      field: json.ServerAUD
+      target_field: cloudflare_logpush.mcp_portal_logs.server.aud
+      ignore_missing: true
+  - rename:
+      tag: rename_json_ServerID_to_server_id
+      field: json.ServerID
+      target_field: cloudflare_logpush.mcp_portal_logs.server.id
+      ignore_missing: true
+  - rename:
+      tag: rename_json_SessionID_to_session_id
+      field: json.SessionID
+      target_field: cloudflare_logpush.mcp_portal_logs.session.id
+      ignore_missing: true
+
+  # related.*
+  - append:
+      tag: append_source_ip_into_related_ip
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+  - append:
+      tag: append_url_domain_into_related_hosts
+      field: related.hosts
+      value: '{{{url.domain}}}'
+      if: ctx.url?.domain != null
+      allow_duplicates: false
+  - append:
+      tag: append_user_id_into_related_user
+      field: related.user
+      value: '{{{user.id}}}'
+      if: ctx.user?.id != null
+      allow_duplicates: false
+  - append:
+      tag: append_user_email_into_related_user
+      field: related.user
+      value: '{{{user.email}}}'
+      if: ctx.user?.email != null
+      allow_duplicates: false
+
+  - remove:
+      tag: remove_json_conf
+      field:
+        - json
+        - _conf
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || v == 'N/A' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      tag: append_preserve_original_event_tag
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      tag: append_pipeline_error_message
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event_tag_on_failure
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

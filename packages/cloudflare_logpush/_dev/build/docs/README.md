@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, Audit Logs v2, CASB, Device Posture, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, WARP Config Changes, WARP Toggle Changes, Zero Trust Network Session, and Workers Trace Events logs.
+The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, Audit Logs v2, CASB, Device Posture, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, Magic Network Monitoring Flow, MCP Portal, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, WARP Config Changes, WARP Toggle Changes, Zero Trust Network Session, and Workers Trace Events logs.
 
 Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
 
@@ -44,6 +44,7 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 - `gateway_dns`: DNS queries inspected by Cloudflare Gateway. See [Gateway DNS schema](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_dns/).
 - `gateway_http`: HTTP requests inspected by Cloudflare Gateway. See [Gateway HTTP schema](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_http/).
 - `gateway_network`: Network packets inspected by Cloudflare Gateway. See [Gateway Network schema](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_network/).
+- `mcp_portal_logs`: MCP (Model Context Protocol) requests proxied through Cloudflare MCP Server Portals to upstream MCP servers, including the user, JSON-RPC method, tool, prompt or resource requested, and outcome. See [MCP Portal Logs schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/mcp_portal_logs/).
 - `network_session`: Network session logs for traffic proxied by Cloudflare Gateway. See [Zero Trust Network Session schema](https://developers.cloudflare.com/logs/reference/log-fields/account/zero_trust_network_sessions/).
 - `warp_config_changes`: WARP configuration switch events from the Cloudflare One Client (WARP), recording the account and configuration a device switched from and to. See [WARP Config Changes schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/warp_config_changes/).
 - `warp_toggle_changes`: WARP on/off toggle events from the Cloudflare One Client (WARP) per device. See [WARP Toggle Changes schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/warp_toggle_changes/).
@@ -58,6 +59,7 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 - `firewall_event`: Zone-level Firewall events for requests mitigated by Cloudflare security products (WAF, Rate Limiting, Firewall Rules, etc.). See [Firewall Events schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/firewall_events/).
 - `http_request`: HTTP/HTTPS request logs served at the Cloudflare edge. See [HTTP Requests schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/http_requests/).
 - `magic_ids`: Magic Network Monitoring IDS detection logs. See [Magic IDS Detections schema](https://developers.cloudflare.com/logs/reference/log-fields/account/magic_ids_detections/).
+- `mnm_flow_logs`: Magic Network Monitoring flow logs (NetFlow, sFlow, IPFIX and AWS VPC flow samples) from routers, switches and cloud VPCs, including source and destination addresses, ports, AS numbers, protocol, traffic volume and matching rule IDs. See [Magic Network Monitoring Flow Logs schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/mnm_flow_logs/).
 - `nel_report`: Network Error Logging (NEL) reports collected from end-user browsers. See [NEL Reports schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/nel_reports/).
 - `network_analytics`: Network Analytics (Magic Transit / Magic WAN packet-sampled flow) logs. See [Network Analytics Logs schema](https://developers.cloudflare.com/logs/reference/log-fields/account/network_analytics_logs/).
 - `page_shield_events`: Page Shield events reporting changes to scripts and connections observed on protected zones. See [Page Shield Events schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/page_shield_events/).
@@ -70,7 +72,8 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 Integrating Cloudflare Logpush with Elastic provides centralized visibility across Cloudflare's edge, Zero Trust, and network-layer products. Common use cases include:
 
 - Investigating traffic, WAF, and DDoS-mitigation events from the Cloudflare edge (`http_request`, `firewall_event`, `network_analytics`).
-- Monitoring Zero Trust user activity, policy decisions, and device posture (`gateway_http`, `gateway_dns`, `gateway_network`, `access_request`, `device_posture`, `network_session`, `warp_config_changes`, `warp_toggle_changes`).
+- Monitoring Zero Trust user activity, policy decisions, and device posture (`gateway_http`, `gateway_dns`, `gateway_network`, `access_request`, `device_posture`, `network_session`, `warp_config_changes`, `warp_toggle_changes`, `mcp_portal_logs`).
+- Monitoring network traffic flows from on-premises routers, switches and cloud VPCs (`mnm_flow_logs`).
 - Detecting data exfiltration and SaaS misconfigurations (`dlp_forensic_copies`, `casb`, `email_security_alerts`).
 - Auditing administrative activity on the Cloudflare account (`audit`, `audit_logs_v2`).
 - Troubleshooting DNS and client-side performance issues (`dns`, `dns_firewall`, `nel_report`, `workers_trace`).
@@ -90,7 +93,7 @@ To use this integration, you must be able to create and manage [Cloudflare Logpu
 Creating and managing Logpush jobs requires an API token or user role with the `Logs Write` permission (or a role that includes it, such as **Super Administrator**, **Administrator**, or **Log Share** with edit permissions). Refer to [Cloudflare Logpush permissions](https://developers.cloudflare.com/logs/logpush/permissions/) for details.
 
 - **Zone-scoped datasets** (for example, `http_requests`, `firewall_events`, `dns_logs`, `spectrum_events`, `nel_reports`, `page_shield_events`) require a **zone-scoped token**.
-- **Account-scoped datasets** (for example, `audit_logs`, `audit_logs_v2`, `access_requests`, `casb_findings`, `device_posture_results`, `dlp_forensic_copies`, `email_security_alerts`, `gateway_*`, `dns_firewall_logs`, `magic_ids_detections`, `network_analytics_logs`, `sinkhole_http_logs`, `workers_trace_events`, `zero_trust_network_sessions`) require an **account-scoped token**.
+- **Account-scoped datasets** (for example, `audit_logs`, `audit_logs_v2`, `access_requests`, `casb_findings`, `device_posture_results`, `dlp_forensic_copies`, `email_security_alerts`, `gateway_*`, `dns_firewall_logs`, `magic_ids_detections`, `mcp_portal_logs`, `mnm_flow_logs`, `network_analytics_logs`, `sinkhole_http_logs`, `workers_trace_events`, `zero_trust_network_sessions`) require an **account-scoped token**.
 - Zero Trust datasets (Access, Gateway, DEX) additionally require `Zero Trust: PII Read`.
 
 **Destination-specific credentials**
@@ -136,6 +139,8 @@ Configure one of the following delivery pipelines before enabling the integratio
   | Gateway Network            | gateway_network        |
   | HTTP Request               | http_request           |
   | Magic IDS                  | magic_ids              |
+  | MCP Portal Logs            | mcp_portal_logs        |
+  | MNM Flow Logs              | mnm_flow_logs          |
   | NEL Report                 | nel_report             |
   | Network Analytics          | network_analytics_logs |
   | Page Shield Events         | page_shield_events     |
@@ -438,6 +443,26 @@ This is the `magic_ids` dataset.
 {{event "magic_ids"}}
 
 {{fields "magic_ids"}}
+
+#### mcp_portal_logs
+
+This is the `mcp_portal_logs` dataset.
+
+##### Example
+
+{{event "mcp_portal_logs"}}
+
+{{fields "mcp_portal_logs"}}
+
+#### mnm_flow_logs
+
+This is the `mnm_flow_logs` dataset.
+
+##### Example
+
+{{event "mnm_flow_logs"}}
+
+{{fields "mnm_flow_logs"}}
 
 #### nel_report
 
