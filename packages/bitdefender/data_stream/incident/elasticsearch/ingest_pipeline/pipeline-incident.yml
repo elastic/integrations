@@ -52,11 +52,67 @@ processors:
       tag: set_event_action
       copy_from: bitdefender.incident.mainAction
       if: ctx.bitdefender.incident.mainAction != null
+  - convert:
+      field: bitdefender.incident.severityScore
+      target_field: _temp.incident_severity_score
+      type: double
+      ignore_missing: true
+      tag: convert_incident_severity_score
+      if: ctx.bitdefender.incident.severityScore != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_convert_incident_severity_score
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        - remove:
+            field: bitdefender.incident.severityScore
+            tag: remove_invalid_incident_severity_score
+            ignore_missing: true
+  - set:
+      field: event.risk_score
+      tag: set_event_risk_score
+      copy_from: _temp.incident_severity_score
+      if: >-
+        ctx._temp?.incident_severity_score != null &&
+        ctx._temp.incident_severity_score >= 0 &&
+        ctx._temp.incident_severity_score <= 100
   - set:
       field: event.severity
-      tag: set_event_severity
-      copy_from: bitdefender.incident.severityScore
-      if: ctx.bitdefender.incident.severityScore != null
+      tag: set_low_event_severity
+      value: 21
+      if: >-
+        ctx.event?.risk_score != null &&
+        ctx.event.risk_score <= 25
+  - set:
+      field: event.severity
+      tag: set_medium_event_severity
+      value: 47
+      if: >-
+        ctx.event?.risk_score != null &&
+        ctx.event.risk_score > 25 &&
+        ctx.event.risk_score <= 50
+  - set:
+      field: event.severity
+      tag: set_high_event_severity
+      value: 73
+      if: >-
+        ctx.event?.risk_score != null &&
+        ctx.event.risk_score > 50 &&
+        ctx.event.risk_score <= 75
+  - set:
+      field: event.severity
+      tag: set_critical_event_severity
+      value: 99
+      if: >-
+        ctx.event?.risk_score != null &&
+        ctx.event.risk_score > 75
+  - remove:
+      field: _temp
+      ignore_missing: true
+      tag: remove_temporary_fields
   - set:
       field: event.reference
       tag: set_event_reference
@@ -556,6 +612,10 @@ processors:
           }
         }
 on_failure:
+  - remove:
+      field: _temp
+      ignore_missing: true
+      tag: remove_temp_on_pipeline_error
   - append:
       field: error.message
       tag: append_pipeline_error_message

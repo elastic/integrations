@@ -141,16 +141,27 @@ program: |-
                 }
               :
                 {
-                  "items": (type(body.result) == list) ?
-                    body.result
+                  "items_opt": (size(run.pending) != 0) ?
+                    (
+                      (type(body.result) == list) ?
+                        optional.of(body.result)
+                      : (type(body.result) == map) ?
+                        ([
+                          body.result.?items.orValue(null),
+                          body.result.?incidents.orValue(null),
+                          body.result.?data.orValue(null),
+                        ].filter(candidate, type(candidate) == list)[?0])
+                      :
+                        optional.none()
+                    )
                   : (type(body.result) == map) ?
-                    [
+                    ([
                       body.result.?items.orValue(null),
                       body.result.?incidents.orValue(null),
                       body.result.?data.orValue(null),
-                    ].filter(candidate, type(candidate) == list)[?0].orValue([])
+                    ].filter(candidate, type(candidate) == list)[?0])
                   :
-                    [],
+                    optional.none(),
                   "pages_count": (
                     (type(body.result) == map) ?
                       [
@@ -161,13 +172,24 @@ program: |-
                     :
                       []
                   ).map(count,
-                    type(count) in [double, int] && int(count) > 0,
+                    type(count) in [double, int] && int(count) >= 0,
                     int(count)
                   )[?0].orValue(run.page),
                 }.as(result,
-                  (size(run.pending) != 0) ?
+                  !result.items_opt.hasValue() ?
                     {
-                      "events": result.items.map(incident,
+                      "events": {
+                        "error": {
+                          "code": "invalid_json_rpc_response",
+                          "id": "invalid_result",
+                          "message": "POST /v1.2/jsonrpc/incidents: result did not contain a valid incident list",
+                        },
+                      },
+                      "want_more": false,
+                    }
+                  : (size(run.pending) != 0) ?
+                    {
+                      "events": result.items_opt.orValue([]).map(incident,
                         [{"message": incident.encode_json()}] + incident.?details.alerts.orValue([]).map(alert,
                           type(alert) == map,
                           {
@@ -219,7 +241,7 @@ program: |-
                       "want_more": size(tail(run.pending, 10)) != 0 || run.page < run.pages_count,
                     }
                   :
-                    result.items.map(incident,
+                    result.items_opt.orValue([]).map(incident,
                       type(incident) == map,
                       [
                         incident.?id.orValue(null),

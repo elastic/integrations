@@ -767,6 +767,7 @@ The same poll emits each object in an incident's `details.alerts` array as a sep
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
@@ -776,6 +777,7 @@ The same poll emits each object in an incident's `details.alerts` array as a sep
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.reference | Reference URL linking to additional information about this event. This URL links to a static definition of this event. Alert events, indicated by `event.kind:alert`, are a common use case for this field. | keyword |
+| event.risk_score | Risk score or priority of the event (e.g. security solutions). Use your system's original value here. | float |
 | event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
@@ -796,6 +798,7 @@ The same poll emits each object in an incident's `details.alerts` array as a sep
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 | threat.group.name | The name of the group for a set of related intrusion activity that are tracked by a common name in the security community. While not required, you can use a MITRE ATT&CK® group name. | keyword |
 | threat.tactic.name | Name of the type of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/) | keyword |
 | threat.technique.id | The id of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
@@ -816,9 +819,9 @@ An example event for `incident` looks as following:
 {
     "@timestamp": "2026-11-01T01:01:00.000Z",
     "agent": {
-        "ephemeral_id": "5f5fed11-0103-4548-ba84-41d411a6e855",
-        "id": "c57badca-e4c4-46a8-8adf-57bb47ea99f6",
-        "name": "elastic-agent-82967",
+        "ephemeral_id": "854bbbe5-f862-46f9-ae3e-de4d9fafd6d7",
+        "id": "521127d5-3940-4007-a706-e3e7218aa1ad",
+        "name": "elastic-agent-60839",
         "type": "filebeat",
         "version": "9.5.5"
     },
@@ -843,14 +846,14 @@ An example event for `incident` looks as following:
     },
     "data_stream": {
         "dataset": "bitdefender.incident",
-        "namespace": "52015",
+        "namespace": "22933",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "c57badca-e4c4-46a8-8adf-57bb47ea99f6",
+        "id": "521127d5-3940-4007-a706-e3e7218aa1ad",
         "snapshot": false,
         "version": "9.5.5"
     },
@@ -863,11 +866,12 @@ An example event for `incident` looks as following:
         ],
         "dataset": "bitdefender.incident",
         "id": "65f04c2e1234567890abc001",
-        "ingested": "2026-11-03T13:08:39Z",
+        "ingested": "2026-11-13T18:46:36Z",
         "kind": "alert",
         "module": "bitdefender",
         "original": "{\"company\":{\"id\":\"5e4d3c2b1a0987654321fedc\",\"name\":\"Example Corp\"},\"details\":{\"alerts\":[],\"detectionName\":\"Synthetic incident 1\",\"nodes\":[]},\"incidentId\":\"65f04c2e1234567890abc001\",\"incidentNumber\":101,\"incidentType\":\"incident\",\"lastIncidentChange\":\"2026-11-01T01:01:00Z\",\"notes\":[],\"priority\":\"low\",\"severityScore\":31,\"status\":\"open\"}",
-        "severity": 31,
+        "risk_score": 31,
+        "severity": 47,
         "type": [
             "indicator",
             "info"
