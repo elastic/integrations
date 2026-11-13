@@ -1,0 +1,85 @@
+[
+  {
+    "skills": ["columnar-readiness"],
+    "query": "Is nginx columnar-ready?",
+    "files": ["packages/nginx"],
+    "expected_behavior": [
+      "Runs scripts/audit.py on packages/nginx instead of reading the files by hand",
+      "Reports the access and error streams as READY with the default sort (host.name asc, @timestamp desc) because the input is host-local",
+      "Reports stubstatus as out of scope (metrics stream)",
+      "States that READY means no mapping blocker was found, not that the stream is validated",
+      "Mentions that declaring readiness raises the package's minimum stack to 9.6 and needs a backport line",
+      "Does not propose index_mode: logsdb_columnar"
+    ]
+  },
+  {
+    "skills": ["columnar-readiness"],
+    "query": "Migrate the anthropic audit data stream to columnar.",
+    "files": ["packages/anthropic"],
+    "expected_behavior": [
+      "Runs a baseline elastic-package lint before changing anything, then bumps only format_version to 3.7.0 and lints again",
+      "Fixes doc_values_false_ecs by adding columnar: {doc_values: true} next to the external: ecs reference to event.original in fields/ecs.yml, not a bare doc_values: true",
+      "Adds elasticsearch.columnar.supported: true and the proposed sort organization.id asc, @timestamp desc in a single elasticsearch: block of data_stream/audit/manifest.yml",
+      "Replaces the whole conditions.kibana.version range with ^9.6.0 and bumps the major version",
+      "Adds a changelog entry with a breaking-change item first and an enhancement item, with placeholder links",
+      "Does not add index_mode: logsdb_columnar and does not add any index: true",
+      "Runs lint, build, test pipeline (without -g) and test static, and re-runs the audit"
+    ]
+  },
+  {
+    "skills": ["columnar-readiness"],
+    "query": "Why is o365 blocked for columnar, and what are our options?",
+    "files": ["packages/o365"],
+    "expected_behavior": [
+      "Names both nested-inside-nested pairs of the audit stream: ExchangeAggregatedFolders -> FolderItems and ExchangeAggregatedMessages -> MessageItems, with the fields file",
+      "Explains that columnar supports only one level of nesting, so the index template PUT fails",
+      "Recommends checking that no dashboard or detection rule runs a nested query on the inner path, then changing the inner level to type: group (values kept, per-inner-element matching lost)",
+      "Mentions flattened, or denormalizing in the ingest pipeline, as alternatives, and that the change applies at the next rollover",
+      "Shows the exact fields.yml change for each inner field (type: nested -> type: group, children unchanged)",
+      "Notes that the opt-in is per data stream, so the rest of the package is not held back"
+    ]
+  },
+  {
+    "skills": ["columnar-readiness"],
+    "query": "Is tanium columnar-ready?",
+    "files": ["packages/tanium"],
+    "expected_behavior": [
+      "Reports threat_response as BLOCKED by nested inside nested, declared as dotted-name sibling entries (whats -> whats.intel_intra_ids, whats.artifact_activity.relevant_actions)",
+      "Reports the other streams separately (endpoint_config needs review for a single-level nested field; the rest are READY)",
+      "Does not treat the whole package as blocked"
+    ]
+  },
+  {
+    "skills": ["columnar-readiness"],
+    "query": "Can we declare network_traffic sip columnar-ready?",
+    "files": ["packages/network_traffic", "packages/security_detection_engine"],
+    "expected_behavior": [
+      "Reports the sip stream as NEEDS_REVIEW because shipped detection rules read its _source with JSON_EXTRACT (Potential SIP Extension Enumeration, Potential SIP REGISTER Brute Force)",
+      "Explains that columnar _source has dotted keys, so JSON_EXTRACT(_source, \"sip.method\") returns null and the rules silently stop matching",
+      "Recommends holding the stream back until the rules read the mapped fields as columns, with SET unmapped_fields = \"nullify\" where a field may be missing",
+      "Says the fix belongs in elastic/detection-rules"
+    ]
+  },
+  {
+    "skills": ["columnar-readiness"],
+    "query": "What happens to CrowdStrike's lookup indices if the fdr stream goes columnar?",
+    "files": ["packages/crowdstrike"],
+    "expected_behavior": [
+      "Identifies the latest_aidmaster and latest_userinfo latest transforms reading logs-crowdstrike.fdr-*",
+      "Explains that a latest transform copies the rebuilt, flat _source, so the destination documents get dotted keys",
+      "Explains that the destination pipelines' rename processors skip silently on dotted keys, so fields never reach crowdstrike.info.host.*",
+      "Recommends a leading dot_expander with field: \"*\" (or field_access_pattern: flexible) and testing the pipeline with _ingest/pipeline/_simulate",
+      "Gives the exact processor for elasticsearch/ingest_pipeline/aidmaster_lookup_namespaced.yml and userinfo_lookup_namespaced.yml, as the first entry under processors:, tagged columnar_*, inline rather than in a separate pipeline file"
+    ]
+  },
+  {
+    "skills": ["columnar-readiness"],
+    "query": "Should the claude_code events stream go columnar?",
+    "files": ["packages/claude_code"],
+    "expected_behavior": [
+      "Reports the stream as out of scope because it is fed by an OpenTelemetry input (otelcol)",
+      "Explains that OTel log streams wait for derived fields (clustering by resource attributes) per the rollout strategy",
+      "Does not propose a sort or a migration"
+    ]
+  }
+]
