@@ -1,0 +1,1803 @@
+{
+    "attributes": {
+        "title": "[Metrics vLLM] Overview",
+        "description": "vLLM inference servers: load and queueing, KV cache and prefix cache, token throughput, finished requests and latency.",
+        "panelsJSON": [
+            {
+                "panelIndex": "3deb99da-a3f9-b0b9-e2fd-d62320f21c83",
+                "gridData": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 16,
+                    "h": 10,
+                    "i": "3deb99da-a3f9-b0b9-e2fd-d62320f21c83"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## [Metrics vLLM] Overview\n\nMetrics scraped from the vLLM `/metrics` endpoint.\n\n- **Load**: requests running and waiting, KV cache usage, preemptions\n- **Throughput**: prompt and generation tokens per second\n- **Latency**: time to first token, inter-token latency, end to end and queue time\n\nA growing waiting queue together with a full KV cache and preemptions means the server needs more KV cache or more replicas.\n"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "1fa21a4a-a3c4-e2ba-21ea-cc0cd806f1c6",
+                "gridData": {
+                    "x": 16,
+                    "y": 0,
+                    "w": 8,
+                    "h": 5,
+                    "i": "1fa21a4a-a3c4-e2ba-21ea-cc0cd806f1c6"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Requests waiting",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "4103d389-c03e-6764-3ba4-87c4534af2a4",
+                                "layerType": "data",
+                                "metricAccessor": "9e1554bb-32ae-04e9-337f-dfdf534a784e",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-vllm.metrics-*\n| WHERE data_stream.dataset == \"vllm.metrics\"\n| STATS waiting = SUM(LAST_OVER_TIME(vllm.requests.waiting))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "4103d389-c03e-6764-3ba4-87c4534af2a4": {
+                                            "query": {
+                                                "esql": "TS metrics-vllm.metrics-*\n| WHERE data_stream.dataset == \"vllm.metrics\"\n| STATS waiting = SUM(LAST_OVER_TIME(vllm.requests.waiting))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "waiting",
+                                                    "columnId": "9e1554bb-32ae-04e9-337f-dfdf534a784e",
+                                                    "label": "Waiting",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "waiting",
+                                                    "columnId": "9e1554bb-32ae-04e9-337f-dfdf534a784e",
+                                                    "label": "Waiting",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "6a3de4d0-1a6c-2b98-24fe-9813742ebc50",
+                "gridData": {
+                    "x": 24,
+                    "y": 0,
+                    "w": 8,
+                    "h": 5,
+                    "i": "6a3de4d0-1a6c-2b98-24fe-9813742ebc50"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Max KV cache usage",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "f8981dba-c4bb-06b6-f4e5-3ac5f19831aa",
+                                "layerType": "data",
+                                "metricAccessor": "71889532-8a39-2096-0d26-340112c85971",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-vllm.metrics-*\n| WHERE data_stream.dataset == \"vllm.metrics\"\n| STATS kv = MAX(LAST_OVER_TIME(vllm.kv_cache.usage.pct))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "f8981dba-c4bb-06b6-f4e5-3ac5f19831aa": {
+                                            "query": {
+                                                "esql": "TS metrics-vllm.metrics-*\n| WHERE data_stream.dataset == \"vllm.metrics\"\n| STATS kv = MAX(LAST_OVER_TIME(vllm.kv_cache.usage.pct))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "kv",
+                                                    "columnId": "71889532-8a39-2096-0d26-340112c85971",
+                                                    "label": "KV cache",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "kv",
+                                                    "columnId": "71889532-8a39-2096-0d26-340112c85971",
+                                                    "label": "KV cache",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "d45977cf-60fa-f8ac-3397-166b844d4dc6",
+                "gridData": {
+                    "x": 32,
+                    "y": 0,
+                    "w": 8,
+                    "h": 5,
+                    "i": "d45977cf-60fa-f8ac-3397-166b844d4dc6"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Generation tokens/s",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "f94f2c64-8d0c-4124-77ef-7cb1eb6dce24",
+                                "layerType": "data",
+                                "metricAccessor": "26a44049-3150-f915-ba31-c7a4ee2e7014",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-vllm.metrics-*\n| WHERE data_stream.dataset == \"vllm.metrics\"\n| STATS tps = SUM(RATE(vllm.tokens.generation.count))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "f94f2c64-8d0c-4124-77ef-7cb1eb6dce24": {
+                                            "query": {
+                                                "esql": "TS metrics-vllm.metrics-*\n| WHERE data_stream.dataset == \"vllm.metrics\"\n| STATS tps = SUM(RATE(vllm.tokens.generation.count))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "tps",
+                                                    "columnId": "26a44049-3150-f915-ba31-c7a4ee2e7014",
+                                                    "label": "Tokens/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "tps",
+                                                    "columnId": "26a44049-3150-f915-ba31-c7a4ee2e7014",
+                                                    "label": "Tokens/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "2fb91295-bc4b-5175-dfee-8cd94ad6796a",
+                "gridData": {
+                    "x": 40,
+                    "y": 0,
+                    "w": 8,
+                    "h": 5,
+                    "i": "2fb91295-bc4b-5175-dfee-8cd94ad6796a"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Prefix cache hit rate",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "0f8b9757-ada5-a47d-63ea-d54177d63384",
+                                "layerType": "data",
+                                "metricAccessor": "beae03cf-1f89-bc2a-d349-d17e5a53d8a8",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-vllm.metrics-*\n| WHERE data_stream.dataset == \"vllm.metrics\"\n| STATS hits = SUM(RATE(vllm.prefix_cache.hits.count)), queries = SUM(RATE(vllm.prefix_cache.queries.count))\n| EVAL hit_rate = CASE(queries > 0, hits / queries, 0.0)\n| KEEP hit_rate"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "0f8b9757-ada5-a47d-63ea-d54177d63384": {
+                                            "query": {
+                                                "esql": "TS metrics-vllm.metrics-*\n| WHERE data_stream.dataset == \"vllm.metrics\"\n| STATS hits = SUM(RATE(vllm.prefix_cache.hits.count)), queries = SUM(RATE(vllm.prefix_cache.queries.count))\n| EVAL hit_rate = CASE(queries > 0, hits / queries, 0.0)\n| KEEP hit_rate"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "hit_rate",
+                                                    "columnId": "beae03cf-1f89-bc2a-d349-d17e5a53d8a8",
+                                                    "label": "Hit rate",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "hit_rate",
+                                                    "columnId": "beae03cf-1f89-bc2a-d349-d17e5a53d8a8",
+                                                    "label": "Hit rate",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "b9eb2fc9-0819-4525-a54c-8aa8f56c8e34",
+                "gridData": {
+                    "x": 16,
+                    "y": 5,
+                    "w": 16,
+                    "h": 10,
+                    "i": "b9eb2fc9-0819-4525-a54c-8aa8f56c8e34"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Preemptions",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "96775734-6187-b4cd-ccc7-8edcd908db68",
+                                        "accessors": [
+                                            "55a11614-ea83-3bd4-5653-02d9f8b0d308"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "xAccessor": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "6c7a85f3-5576-289f-cfb4-a18aa54cee92",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "bar_stacked",
+                                "legend": {
+                                    "position": "bottom"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-vllm.metrics-*\n| WHERE data_stream.dataset == \"vllm.metrics\"\n| STATS preemptions = SUM(RATE(vllm.preemptions.count)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), vllm.labels.model_name\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "96775734-6187-b4cd-ccc7-8edcd908db68": {
+                                            "query": {
+                                                "esql": "TS metrics-vllm.metrics-*\n| WHERE data_stream.dataset == \"vllm.metrics\"\n| STATS preemptions = SUM(RATE(vllm.preemptions.count)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), vllm.labels.model_name\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "preemptions",
+                                                    "columnId": "55a11614-ea83-3bd4-5653-02d9f8b0d308",
+                                                    "label": "Preemptions/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                                    "label": "Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "vllm.labels.model_name",
+                                                    "columnId": "6c7a85f3-5576-289f-cfb4-a18aa54cee92",
+                                                    "label": "vllm.labels.model_name",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "preemptions",
+                                                    "columnId": "55a11614-ea83-3bd4-5653-02d9f8b0d308",
+                                                    "label": "Preemptions/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                                    "label": "Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "vllm.labels.model_name",
+                                                    "columnId": "6c7a85f3-5576-289f-cfb4-a18aa54cee92",
+                                                    "label": "vllm.labels.model_name",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "d53ac8c8-41d2-3ca8-de6d-6fa184eb2187",
+                "gridData": {
+                    "x": 32,
+                    "y": 5,
+                    "w": 16,
+                    "h": 10,
+                    "i": "d53ac8c8-41d2-3ca8-de6d-6fa184eb2187"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Requests running and waiting",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "0f3bd6d1-2769-0daf-2e0e-58864c33ff9c",
+                                        "accessors": [
+                                            "54986768-0f0a-f01e-62c3-552a58fe8400",
+                                            "0c7c0340-3b86-c407-f098-7f791bc37e5a"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "position": "bottom"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-vllm.metrics-*\n| WHERE data_stream.dataset == \"vllm.metrics\"\n| STATS running = SUM(AVG_OVER_TIME(vllm.requests.running)), waiting = SUM(AVG_OVER_TIME(vllm.requests.waiting)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "0f3bd6d1-2769-0daf-2e0e-58864c33ff9c": {
+                                            "query": {
+                                                "esql": "TS metrics-vllm.metrics-*\n| WHERE data_stream.dataset == \"vllm.metrics\"\n| STATS running = SUM(AVG_OVER_TIME(vllm.requests.running)), waiting = SUM(AVG_OVER_TIME(vllm.requests.waiting)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "running",
+                                                    "columnId": "54986768-0f0a-f01e-62c3-552a58fe8400",
+                                                    "label": "running",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "waiting",
+                                                    "columnId": "0c7c0340-3b86-c407-f098-7f791bc37e5a",
+                                                    "label": "waiting",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                                    "label": "Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "running",
+                                                    "columnId": "54986768-0f0a-f01e-62c3-552a58fe8400",
+                                                    "label": "running",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "waiting",
+                                                    "columnId": "0c7c0340-3b86-c407-f098-7f791bc37e5a",
+                                                    "label": "waiting",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                                    "label": "Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "84215d7d-b784-cf84-87c1-1dd2d32c9b3a",
+                "gridData": {
+                    "x": 0,
+                    "y": 10,
+                    "w": 16,
+                    "h": 10,
+                    "i": "84215d7d-b784-cf84-87c1-1dd2d32c9b3a"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "KV cache usage by model",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "5af7230b-8770-39d6-9754-3de662ba883d",
+                                        "accessors": [
+                                            "487c5557-0959-3c0d-1ee8-34e530dba4fe"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "6c7a85f3-5576-289f-cfb4-a18aa54cee92",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "position": "bottom"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-vllm.metrics-*\n| WHERE data_stream.dataset == \"vllm.metrics\"\n| STATS kv_cache = MAX(MAX_OVER_TIME(vllm.kv_cache.usage.pct)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), vllm.labels.model_name\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "5af7230b-8770-39d6-9754-3de662ba883d": {
+                                            "query": {
+                                                "esql": "TS metrics-vllm.metrics-*\n| WHERE data_stream.dataset == \"vllm.metrics\"\n| STATS kv_cache = MAX(MAX_OVER_TIME(vllm.kv_cache.usage.pct)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), vllm.labels.model_name\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "kv_cache",
+                                                    "columnId": "487c5557-0959-3c0d-1ee8-34e530dba4fe",
+                                                    "label": "kv_cache",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                                    "label": "Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "vllm.labels.model_name",
+                                                    "columnId": "6c7a85f3-5576-289f-cfb4-a18aa54cee92",
+                                                    "label": "vllm.labels.model_name",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "kv_cache",
+                                                    "columnId": "487c5557-0959-3c0d-1ee8-34e530dba4fe",
+                                                    "label": "kv_cache",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                                    "label": "Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "vllm.labels.model_name",
+                                                    "columnId": "6c7a85f3-5576-289f-cfb4-a18aa54cee92",
+                                                    "label": "vllm.labels.model_name",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "87bab17e-c0e2-862f-8b3e-23b04137c983",
+                "gridData": {
+                    "x": 16,
+                    "y": 15,
+                    "w": 16,
+                    "h": 10,
+                    "i": "87bab17e-c0e2-862f-8b3e-23b04137c983"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Token throughput",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "c4738919-e0d8-9f3e-fb74-bdfbc778e0f9",
+                                        "accessors": [
+                                            "36766f38-07bf-a1f7-762a-eeae6b1ee024",
+                                            "32d2ad04-352d-30f8-4c33-d9e86703dfc2"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "position": "bottom"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-vllm.metrics-*\n| WHERE data_stream.dataset == \"vllm.metrics\"\n| STATS prompt = SUM(RATE(vllm.tokens.prompt.count)), generation = SUM(RATE(vllm.tokens.generation.count)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "c4738919-e0d8-9f3e-fb74-bdfbc778e0f9": {
+                                            "query": {
+                                                "esql": "TS metrics-vllm.metrics-*\n| WHERE data_stream.dataset == \"vllm.metrics\"\n| STATS prompt = SUM(RATE(vllm.tokens.prompt.count)), generation = SUM(RATE(vllm.tokens.generation.count)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "prompt",
+                                                    "columnId": "36766f38-07bf-a1f7-762a-eeae6b1ee024",
+                                                    "label": "Prompt tokens/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "generation",
+                                                    "columnId": "32d2ad04-352d-30f8-4c33-d9e86703dfc2",
+                                                    "label": "Generation tokens/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                                    "label": "Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "prompt",
+                                                    "columnId": "36766f38-07bf-a1f7-762a-eeae6b1ee024",
+                                                    "label": "Prompt tokens/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "generation",
+                                                    "columnId": "32d2ad04-352d-30f8-4c33-d9e86703dfc2",
+                                                    "label": "Generation tokens/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                                    "label": "Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "6d4a6033-70d8-0397-3cd6-8d5a6457aaf3",
+                "gridData": {
+                    "x": 32,
+                    "y": 15,
+                    "w": 16,
+                    "h": 10,
+                    "i": "6d4a6033-70d8-0397-3cd6-8d5a6457aaf3"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Finished requests by reason",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "fd06b3f0-b9af-1283-96f7-cbfcac6adaeb",
+                                        "accessors": [
+                                            "c0a2a2d7-2f37-dcd8-f463-2c0abdb29ee5"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "xAccessor": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "a9868e47-46fc-a9ab-bfe5-0a0bf601e760",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "bar_stacked",
+                                "legend": {
+                                    "position": "bottom"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-vllm.metrics-*\n| WHERE data_stream.dataset == \"vllm.metrics\" AND vllm.labels.finished_reason IS NOT NULL\n| STATS finished = SUM(RATE(vllm.requests.finished.count)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), vllm.labels.finished_reason\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "fd06b3f0-b9af-1283-96f7-cbfcac6adaeb": {
+                                            "query": {
+                                                "esql": "TS metrics-vllm.metrics-*\n| WHERE data_stream.dataset == \"vllm.metrics\" AND vllm.labels.finished_reason IS NOT NULL\n| STATS finished = SUM(RATE(vllm.requests.finished.count)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), vllm.labels.finished_reason\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "finished",
+                                                    "columnId": "c0a2a2d7-2f37-dcd8-f463-2c0abdb29ee5",
+                                                    "label": "Requests/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                                    "label": "Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "vllm.labels.finished_reason",
+                                                    "columnId": "a9868e47-46fc-a9ab-bfe5-0a0bf601e760",
+                                                    "label": "vllm.labels.finished_reason",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "finished",
+                                                    "columnId": "c0a2a2d7-2f37-dcd8-f463-2c0abdb29ee5",
+                                                    "label": "Requests/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                                    "label": "Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "vllm.labels.finished_reason",
+                                                    "columnId": "a9868e47-46fc-a9ab-bfe5-0a0bf601e760",
+                                                    "label": "vllm.labels.finished_reason",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "3339520b-739e-478e-8689-cc49a9a38118",
+                "gridData": {
+                    "x": 0,
+                    "y": 20,
+                    "w": 16,
+                    "h": 10,
+                    "i": "3339520b-739e-478e-8689-cc49a9a38118"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Time to first token",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [
+                            {
+                                "type": "index-pattern",
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-9413fb21-fef1-b6d5-3463-b64445f62645"
+                            }
+                        ],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "9413fb21-fef1-b6d5-3463-b64445f62645",
+                                        "accessors": [
+                                            "f799cd62-a209-6b41-66ed-c4a873e85fd3",
+                                            "60049cc7-ae59-aef7-d25e-91796ec8648c"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "d08489ac-fbda-405c-71b5-f0a4618e5599",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "position": "bottom"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "query": "",
+                                "language": "kuery"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "9413fb21-fef1-b6d5-3463-b64445f62645": {
+                                            "columns": {
+                                                "d08489ac-fbda-405c-71b5-f0a4618e5599": {
+                                                    "label": "Time",
+                                                    "dataType": "date",
+                                                    "customLabel": true,
+                                                    "operationType": "date_histogram",
+                                                    "isBucketed": true,
+                                                    "scale": "interval",
+                                                    "params": {
+                                                        "interval": "auto",
+                                                        "includeEmptyRows": true,
+                                                        "dropPartials": false
+                                                    },
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "f799cd62-a209-6b41-66ed-c4a873e85fd3": {
+                                                    "label": "p50 (s)",
+                                                    "dataType": "number",
+                                                    "customLabel": true,
+                                                    "operationType": "percentile",
+                                                    "isBucketed": false,
+                                                    "scale": "ratio",
+                                                    "sourceField": "vllm.latency.time_to_first_token.histogram",
+                                                    "params": {
+                                                        "percentile": 50
+                                                    }
+                                                },
+                                                "60049cc7-ae59-aef7-d25e-91796ec8648c": {
+                                                    "label": "p95 (s)",
+                                                    "dataType": "number",
+                                                    "customLabel": true,
+                                                    "operationType": "percentile",
+                                                    "isBucketed": false,
+                                                    "scale": "ratio",
+                                                    "sourceField": "vllm.latency.time_to_first_token.histogram",
+                                                    "params": {
+                                                        "percentile": 95
+                                                    }
+                                                }
+                                            },
+                                            "columnOrder": [
+                                                "d08489ac-fbda-405c-71b5-f0a4618e5599",
+                                                "f799cd62-a209-6b41-66ed-c4a873e85fd3",
+                                                "60049cc7-ae59-aef7-d25e-91796ec8648c"
+                                            ],
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "961b5299-6276-6ce4-8307-fa77157c51d8",
+                "gridData": {
+                    "x": 16,
+                    "y": 25,
+                    "w": 16,
+                    "h": 10,
+                    "i": "961b5299-6276-6ce4-8307-fa77157c51d8"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Inter-token latency",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [
+                            {
+                                "type": "index-pattern",
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-d149cc6a-d3e4-470f-fcbb-c96530db7bbe"
+                            }
+                        ],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "d149cc6a-d3e4-470f-fcbb-c96530db7bbe",
+                                        "accessors": [
+                                            "40b2ca51-82d6-c5d9-faee-7cdacf29f4c4",
+                                            "2ab43e52-68c3-bff1-6493-56ee5e184b69"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "d08489ac-fbda-405c-71b5-f0a4618e5599",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "position": "bottom"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "query": "",
+                                "language": "kuery"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "d149cc6a-d3e4-470f-fcbb-c96530db7bbe": {
+                                            "columns": {
+                                                "d08489ac-fbda-405c-71b5-f0a4618e5599": {
+                                                    "label": "Time",
+                                                    "dataType": "date",
+                                                    "customLabel": true,
+                                                    "operationType": "date_histogram",
+                                                    "isBucketed": true,
+                                                    "scale": "interval",
+                                                    "params": {
+                                                        "interval": "auto",
+                                                        "includeEmptyRows": true,
+                                                        "dropPartials": false
+                                                    },
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "40b2ca51-82d6-c5d9-faee-7cdacf29f4c4": {
+                                                    "label": "p50 (s)",
+                                                    "dataType": "number",
+                                                    "customLabel": true,
+                                                    "operationType": "percentile",
+                                                    "isBucketed": false,
+                                                    "scale": "ratio",
+                                                    "sourceField": "vllm.latency.inter_token.histogram",
+                                                    "params": {
+                                                        "percentile": 50
+                                                    }
+                                                },
+                                                "2ab43e52-68c3-bff1-6493-56ee5e184b69": {
+                                                    "label": "p95 (s)",
+                                                    "dataType": "number",
+                                                    "customLabel": true,
+                                                    "operationType": "percentile",
+                                                    "isBucketed": false,
+                                                    "scale": "ratio",
+                                                    "sourceField": "vllm.latency.inter_token.histogram",
+                                                    "params": {
+                                                        "percentile": 95
+                                                    }
+                                                }
+                                            },
+                                            "columnOrder": [
+                                                "d08489ac-fbda-405c-71b5-f0a4618e5599",
+                                                "40b2ca51-82d6-c5d9-faee-7cdacf29f4c4",
+                                                "2ab43e52-68c3-bff1-6493-56ee5e184b69"
+                                            ],
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "b0b6c9ac-9c5b-8fe3-1939-e7d67685cf0e",
+                "gridData": {
+                    "x": 32,
+                    "y": 25,
+                    "w": 16,
+                    "h": 10,
+                    "i": "b0b6c9ac-9c5b-8fe3-1939-e7d67685cf0e"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "End to end and queue time (p95)",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [
+                            {
+                                "type": "index-pattern",
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-3ee83655-d85f-5a2d-8cb9-f84d443fce1e"
+                            }
+                        ],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "3ee83655-d85f-5a2d-8cb9-f84d443fce1e",
+                                        "accessors": [
+                                            "90a7a230-f90c-2a4c-3dde-e61535e33c09",
+                                            "9db104cc-5e21-c7d6-19af-0fec55b99c4f"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "d08489ac-fbda-405c-71b5-f0a4618e5599",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "position": "bottom"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "query": "",
+                                "language": "kuery"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "3ee83655-d85f-5a2d-8cb9-f84d443fce1e": {
+                                            "columns": {
+                                                "d08489ac-fbda-405c-71b5-f0a4618e5599": {
+                                                    "label": "Time",
+                                                    "dataType": "date",
+                                                    "customLabel": true,
+                                                    "operationType": "date_histogram",
+                                                    "isBucketed": true,
+                                                    "scale": "interval",
+                                                    "params": {
+                                                        "interval": "auto",
+                                                        "includeEmptyRows": true,
+                                                        "dropPartials": false
+                                                    },
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "90a7a230-f90c-2a4c-3dde-e61535e33c09": {
+                                                    "label": "End to end p95 (s)",
+                                                    "dataType": "number",
+                                                    "customLabel": true,
+                                                    "operationType": "percentile",
+                                                    "isBucketed": false,
+                                                    "scale": "ratio",
+                                                    "sourceField": "vllm.latency.e2e.histogram",
+                                                    "params": {
+                                                        "percentile": 95
+                                                    }
+                                                },
+                                                "9db104cc-5e21-c7d6-19af-0fec55b99c4f": {
+                                                    "label": "Queue time p95 (s)",
+                                                    "dataType": "number",
+                                                    "customLabel": true,
+                                                    "operationType": "percentile",
+                                                    "isBucketed": false,
+                                                    "scale": "ratio",
+                                                    "sourceField": "vllm.latency.queue.histogram",
+                                                    "params": {
+                                                        "percentile": 95
+                                                    }
+                                                }
+                                            },
+                                            "columnOrder": [
+                                                "d08489ac-fbda-405c-71b5-f0a4618e5599",
+                                                "90a7a230-f90c-2a4c-3dde-e61535e33c09",
+                                                "9db104cc-5e21-c7d6-19af-0fec55b99c4f"
+                                            ],
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            }
+        ],
+        "optionsJSON": {
+            "useMargins": true,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "hidePanelTitles": false
+        },
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "disabled": false,
+                            "negate": false,
+                            "alias": null,
+                            "type": "phrase",
+                            "key": "data_stream.dataset",
+                            "field": "data_stream.dataset",
+                            "params": {
+                                "query": "vllm.metrics"
+                            }
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "vllm.metrics"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "query": "",
+                    "language": "kuery"
+                }
+            }
+        },
+        "timeRestore": true,
+        "timeFrom": "now-1h",
+        "timeTo": "now",
+        "version": 1,
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "1c7cf75b-bbe9-7ce8-efcd-db4aa652a54f": {
+                    "grow": false,
+                    "order": 0,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "1c7cf75b-bbe9-7ce8-efcd-db4aa652a54f",
+                        "dataViewId": "metrics-*",
+                        "fieldName": "vllm.labels.model_name",
+                        "title": "Model",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                },
+                "297e1db2-ce75-3baa-f1bd-cdf5a831b27c": {
+                    "grow": false,
+                    "order": 1,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "297e1db2-ce75-3baa-f1bd-cdf5a831b27c",
+                        "dataViewId": "metrics-*",
+                        "fieldName": "service.address",
+                        "title": "Server",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                }
+            },
+            "showApplySelections": false
+        }
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-10-01T00:00:00Z",
+    "created_by": "admin",
+    "id": "vllm-overview",
+    "managed": false,
+    "references": [
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "3339520b-739e-478e-8689-cc49a9a38118:indexpattern-datasource-layer-9413fb21-fef1-b6d5-3463-b64445f62645"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "961b5299-6276-6ce4-8307-fa77157c51d8:indexpattern-datasource-layer-d149cc6a-d3e4-470f-fcbb-c96530db7bbe"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "b0b6c9ac-9c5b-8fe3-1939-e7d67685cf0e:indexpattern-datasource-layer-3ee83655-d85f-5a2d-8cb9-f84d443fce1e"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "controlGroup_1c7cf75b-bbe9-7ce8-efcd-db4aa652a54f:optionsListDataView"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "controlGroup_297e1db2-ce75-3baa-f1bd-cdf5a831b27c:optionsListDataView"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.2.0",
+    "updated_at": "2023-10-01T00:00:00Z",
+    "updated_by": "admin",
+    "version": "1"
+}
