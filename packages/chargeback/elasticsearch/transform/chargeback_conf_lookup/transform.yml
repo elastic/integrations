@@ -24,26 +24,35 @@ source:
       type: keyword
       script:
         source: "emit('chargeback_config')"
-    cb_conf_sync_time:
+    event.ingested:
       type: date
       script:
         source: |
-          if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
-            emit(doc['event.ingested'].value.toInstant().toEpochMilli());
-            return;
-          }
-          def rawIngested = params._source?.event?.ingested;
-          if (rawIngested != null) {
-            if (rawIngested instanceof Number) {
-              emit(((Number)rawIngested).longValue());
-              return;
-            }
-            String s = rawIngested.toString().trim();
-            if (s != '') {
+          for (String k : ['ingested', 'created']) {
+            if (k == 'created') {
               try {
-                emit(ZonedDateTime.parse(s).toInstant().toEpochMilli());
-                return;
+                if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+                  emit(doc['event.created'].value.toInstant().toEpochMilli());
+                  return;
+                }
               } catch (Exception e) {}
+            }
+            def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get(k) : null;
+            if (rawVal == null && params._source != null) {
+              rawVal = params._source.get('event.' + k);
+            }
+            if (rawVal != null) {
+              if (rawVal instanceof Number) {
+                emit(((Number)rawVal).longValue());
+                return;
+              }
+              String s = rawVal.toString().trim();
+              if (s != '') {
+                try {
+                  emit(ZonedDateTime.parse(s).toInstant().toEpochMilli());
+                  return;
+                } catch (Exception e) {}
+              }
             }
           }
           if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
@@ -55,7 +64,7 @@ dest:
 frequency: 5m
 sync:
   time:
-    field: cb_conf_sync_time
+    field: event.ingested
     delay: 60s
 pivot:
   group_by:

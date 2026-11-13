@@ -13,7 +13,7 @@ resource.ssl: {{ssl}}
 {{#if http_client_timeout}}
 resource.timeout: {{http_client_timeout}}
 {{/if}}
-resource.url: "{{cloud_api_base}}/api/v1/deployments/_search"
+resource.url: "{{cloud_api_base}}/api/v1/deployments/_search?show_metadata=true"
 state:
   api_key: !!str {{escape_string cloud_api_key}}
   organization_id: !!str {{escape_string organization_id}}
@@ -96,7 +96,7 @@ program: |-
     ((has_cloud && dep_from >= 0) ?
       request(
         "POST",
-        state.cloud_api_base + "/api/v1/deployments/_search"
+        state.cloud_api_base + "/api/v1/deployments/_search?show_metadata=true"
       ).with(
         {
           "Header": {
@@ -135,16 +135,15 @@ program: |-
               }
             )
           )
-        :
-          {
+        : (dep_resp.StatusCode == 404 ? { "ok": true, "err": dyn({}), "items": [], "next_from": -1 } : {
             "ok": false,
             "err": dyn({ "error": { "code": string(dep_resp.StatusCode), "id": string(dep_resp.Status), "message": "POST " + dep_resp.Request.URL + ": " + ((size(dep_resp.Body) != 0) ? string(dep_resp.Body) : string(dep_resp.Status)) } }),
             "items": [],
             "next_from": -1,
-          }
+          })
       )
     : { "ok": true, "err": dyn({}), "items": [], "next_from": -1 }).as(dep_page,
-    ((has_cloud && dep_page.ok && es_next != "") ?
+    ((has_cloud && es_next != "") ?
       get_request(
         state.cloud_api_base + "/api/v1/serverless/projects/elasticsearch?" + (es_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [es_next] }).format_query()
       ).with({ "Header": { "Authorization": ["ApiKey " + state.api_key] } }).do_request().as(r,
@@ -174,7 +173,7 @@ program: |-
           })
       )
     : { "ok": true, "err": dyn({}), "items": [], "next": "" }).as(es_page,
-    ((has_cloud && dep_page.ok && es_page.ok && obs_next != "") ?
+    ((has_cloud && obs_next != "") ?
       get_request(
         state.cloud_api_base + "/api/v1/serverless/projects/observability?" + (obs_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [obs_next] }).format_query()
       ).with({ "Header": { "Authorization": ["ApiKey " + state.api_key] } }).do_request().as(r,
@@ -204,7 +203,7 @@ program: |-
           })
       )
     : { "ok": true, "err": dyn({}), "items": [], "next": "" }).as(obs_page,
-    ((has_cloud && dep_page.ok && es_page.ok && obs_page.ok && sec_next != "") ?
+    ((has_cloud && sec_next != "") ?
       get_request(
         state.cloud_api_base + "/api/v1/serverless/projects/security?" + (sec_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [sec_next] }).format_query()
       ).with({ "Header": { "Authorization": ["ApiKey " + state.api_key] } }).do_request().as(r,
@@ -241,9 +240,9 @@ program: |-
         (!sec_page.ok ? [sec_page.err] : [])
       ).as(cloud_disc_errs,
         (acc_targets + dep_page.items + es_page.items + obs_page.items + sec_page.items).as(cloud_targets,
-          (size(cloud_disc_errs) == 0 && (dep_page.next_from >= 0 || es_page.next != "" || obs_page.next != "" || sec_page.next != "")) ?
+          (dep_page.next_from >= 0 || es_page.next != "" || obs_page.next != "" || sec_page.next != "") ?
             {
-              "events": size(conf_evts) > 0 ? conf_evts : [dyn({ "fake": true })],
+              "events": size(conf_evts + cloud_disc_errs) > 0 ? (conf_evts + cloud_disc_errs) : [dyn({ "fake": true })],
               "cursor": {
                 "conf_sig": conf_sig,
                 "idx_baselines": base_map,
@@ -363,35 +362,52 @@ program: |-
                                     }
                                   :
                                     bytes(set_resp.Body).decode_json().as(settings_map,
-                                      ((has(harvest.body.indices) && harvest.body.indices != null) ? harvest.body.indices : dyn({})).as(indices_obj,
-                                        {
-                                          "ok": true,
-                                          "err": dyn({}),
-                                          "rows": indices_obj.keys().map(raw_idx,
-                                            string(raw_idx).as(rname,
-                                            (rname.contains(":") ? rname.substring(size(rname.split(":")[0]) + 1, size(rname)) : rname).as(iname,
-                                            indices_obj[raw_idx].as(istats,
-                                            ((iname in settings_map && settings_map[iname] != null && has(settings_map[iname].settings) && settings_map[iname].settings != null) ? settings_map[iname].settings : dyn({})).as(iset,
-                                            ((has(istats.primaries) && istats.primaries != null && has(istats.primaries.store) && istats.primaries.store != null) ? (
-                                              (has(istats.primaries.store.total_data_set_size_in_bytes) && istats.primaries.store.total_data_set_size_in_bytes != null) ? int(istats.primaries.store.total_data_set_size_in_bytes) : (
-                                                (has(istats.primaries.store.size_in_bytes) && istats.primaries.store.size_in_bytes != null) ? int(istats.primaries.store.size_in_bytes) : 0
-                                              )
-                                            ) : 0).as(dset_b,
-                                              dyn({
-                                                "raw_idx": rname,
-                                                "idx_name": iname,
-                                                "tier_pref": (("index.routing.allocation.include._tier_preference" in iset) && iset["index.routing.allocation.include._tier_preference"] != null && string(iset["index.routing.allocation.include._tier_preference"]) != "") ? string(iset["index.routing.allocation.include._tier_preference"]) : "data_hot,data_content",
-                                                "created_ms": (("index.creation_date" in iset && iset["index.creation_date"] != null && string(iset["index.creation_date"]).matches("^[0-9]+$")) ? int(iset["index.creation_date"]) : 0),
-                                                "docs": ((has(istats.primaries) && istats.primaries != null && has(istats.primaries.docs) && istats.primaries.docs != null && has(istats.primaries.docs.count) && istats.primaries.docs.count != null) ? int(istats.primaries.docs.count) : 0),
-                                                "dset": dset_b,
-                                                "tot": ((has(istats.total) && istats.total != null && has(istats.total.store) && istats.total.store != null && has(istats.total.store.size_in_bytes) && istats.total.store.size_in_bytes != null) ? int(istats.total.store.size_in_bytes) : dset_b),
-                                                "idx_ms": ((has(istats.total) && istats.total != null && has(istats.total.indexing) && istats.total.indexing != null && has(istats.total.indexing.index_time_in_millis) && istats.total.indexing.index_time_in_millis != null) ? int(istats.total.indexing.index_time_in_millis) : 0),
-                                                "qry_ms": ((has(istats.total) && istats.total != null && has(istats.total.search) && istats.total.search != null && has(istats.total.search.query_time_in_millis) && istats.total.search.query_time_in_millis != null) ? int(istats.total.search.query_time_in_millis) : 0),
-                                                "qry_cnt": ((has(istats.total) && istats.total != null && has(istats.total.search) && istats.total.search != null && has(istats.total.search.query_total) && istats.total.search.query_total != null) ? int(istats.total.search.query_total) : 0),
-                                              })
-                                            )))))
-                                          ),
-                                        }
+                                      (es_base + "/_cluster/state/routing_table,nodes/*,.ds-*?local=true&expand_wildcards=open,hidden&ignore_unavailable=true&allow_no_indices=true&filter_path=nodes.*.roles,routing_table.indices.*.shards.*.state,routing_table.indices.*.shards.*.node").as(cs_url,
+                                        get_request(cs_url).with({ "Header": { "Authorization": ["ApiKey " + harvest.key] } }).do_request().as(cs_resp,
+                                          (cs_resp.StatusCode == 200 ? bytes(cs_resp.Body).decode_json() : dyn({})).as(cs_body,
+                                            ((has(cs_body.nodes) && cs_body.nodes != null) ? cs_body.nodes : dyn({})).as(cs_nodes,
+                                            ((has(cs_body.routing_table) && cs_body.routing_table != null && has(cs_body.routing_table.indices) && cs_body.routing_table.indices != null) ? cs_body.routing_table.indices : dyn({})).as(cs_rt,
+                                            ((has(harvest.body.indices) && harvest.body.indices != null) ? harvest.body.indices : dyn({})).as(indices_obj,
+                                              {
+                                                "ok": true,
+                                                "err": dyn({}),
+                                                "rows": indices_obj.keys().map(raw_idx,
+                                                  string(raw_idx).as(rname,
+                                                  (rname.contains(":") ? rname.substring(size(rname.split(":")[0]) + 1, size(rname)) : rname).as(iname,
+                                                  indices_obj[raw_idx].as(istats,
+                                                  ((iname in settings_map && settings_map[iname] != null && has(settings_map[iname].settings) && settings_map[iname].settings != null) ? settings_map[iname].settings : dyn({})).as(iset,
+                                                  ((has(istats.primaries) && istats.primaries != null && has(istats.primaries.store) && istats.primaries.store != null) ? (
+                                                    (has(istats.primaries.store.total_data_set_size_in_bytes) && istats.primaries.store.total_data_set_size_in_bytes != null) ? int(istats.primaries.store.total_data_set_size_in_bytes) : (
+                                                      (has(istats.primaries.store.size_in_bytes) && istats.primaries.store.size_in_bytes != null) ? int(istats.primaries.store.size_in_bytes) : 0
+                                                    )
+                                                  ) : 0).as(dset_b,
+                                                    dyn({
+                                                      "raw_idx": rname,
+                                                      "idx_name": iname,
+                                                      "tier_pref": (("index.routing.allocation.include._tier_preference" in iset) && iset["index.routing.allocation.include._tier_preference"] != null) ? string(iset["index.routing.allocation.include._tier_preference"]) : "",
+                                                      "alloc_roles": ((iname in cs_rt && cs_rt[iname] != null && has(cs_rt[iname].shards) && cs_rt[iname].shards != null) ?
+                                                        cs_rt[iname].shards.keys().map(sk,
+                                                          cs_rt[iname].shards[sk].filter(sr,
+                                                            has(sr.state) && (string(sr.state) == "STARTED" || string(sr.state) == "RELOCATING") &&
+                                                            has(sr.node) && sr.node != null && string(sr.node) in cs_nodes &&
+                                                            cs_nodes[string(sr.node)] != null && has(cs_nodes[string(sr.node)].roles) && cs_nodes[string(sr.node)].roles != null
+                                                          ).map(sr, cs_nodes[string(sr.node)].roles.map(rl, string(rl)).join(","))
+                                                        ).flatten()
+                                                      : []),
+                                                      "created_ms": (("index.creation_date" in iset && iset["index.creation_date"] != null && string(iset["index.creation_date"]).matches("^[0-9]+$")) ? int(iset["index.creation_date"]) : 0),
+                                                      "docs": ((has(istats.primaries) && istats.primaries != null && has(istats.primaries.docs) && istats.primaries.docs != null && has(istats.primaries.docs.count) && istats.primaries.docs.count != null) ? int(istats.primaries.docs.count) : 0),
+                                                      "dset": dset_b,
+                                                      "tot": ((has(istats.total) && istats.total != null && has(istats.total.store) && istats.total.store != null && has(istats.total.store.size_in_bytes) && istats.total.store.size_in_bytes != null) ? int(istats.total.store.size_in_bytes) : dset_b),
+                                                      "idx_ms": ((has(istats.total) && istats.total != null && has(istats.total.indexing) && istats.total.indexing != null && has(istats.total.indexing.index_time_in_millis) && istats.total.indexing.index_time_in_millis != null) ? int(istats.total.indexing.index_time_in_millis) : 0),
+                                                      "qry_ms": ((has(istats.total) && istats.total != null && has(istats.total.search) && istats.total.search != null && has(istats.total.search.query_time_in_millis) && istats.total.search.query_time_in_millis != null) ? int(istats.total.search.query_time_in_millis) : 0),
+                                                      "qry_cnt": ((has(istats.total) && istats.total != null && has(istats.total.search) && istats.total.search != null && has(istats.total.search.query_total) && istats.total.search.query_total != null) ? int(istats.total.search.query_total) : 0),
+                                                    })
+                                                  )))))
+                                                ),
+                                              }
+                                            )))
+                                          )
+                                        )
                                       )
                                     )
                                 )
@@ -408,6 +424,7 @@ program: |-
                                       "raw_idx": rname,
                                       "idx_name": iname,
                                       "tier_pref": "data_hot,data_content",
+                                      "alloc_roles": [],
                                       "created_ms": (("creation.date" in cr && cr["creation.date"] != null && string(cr["creation.date"]).matches("^[0-9]+$")) ? int(cr["creation.date"]) : 0),
                                       "docs": (("docs.count" in cr && cr["docs.count"] != null && string(cr["docs.count"]).matches("^[0-9]+$")) ? int(cr["docs.count"]) : 0),
                                       "dset": dset_b,
@@ -443,8 +460,12 @@ program: |-
                                 ).map(row,
                                   string(row.idx_name).as(idx_name,
                                   string(row.tier_pref).as(tier_pref,
+                                  row.alloc_roles.as(alloc_roles,
                                   int(row.created_ms).as(created_ms,
                                   (created_ms / 1000).as(created_sec,
+                                  (created_ms > 0 ? { "creation_date": timestamp(created_ms / 1000).format(time_layout.RFC3339) } : {}).with(
+                                    size(alloc_roles) > 0 ? { "allocated_node_roles": alloc_roles } : {}
+                                  ).as(idx_extra,
                                   int(row.docs).as(cur_docs,
                                   int(row.dset).as(cur_dset,
                                   int(row.tot).as(cur_tot,
@@ -471,13 +492,14 @@ program: |-
                                   (is_valid_interval ? ((cur_qry_cnt >= int(prev_b.m[2])) ? (cur_qry_cnt - int(prev_b.m[2])) : cur_qry_cnt) : (is_new_intraday ? cur_qry_cnt : 0)).as(raw_qcnt,
                                   (is_valid_interval ? (cur_docs - int(prev_b.m[3])) : cur_docs).as(raw_docs,
                                   (is_valid_interval ? (cur_dset - int(prev_b.m[4])) : cur_dset).as(raw_dset,
-                                    (is_valid_interval && prev_t < (today_start_sec - 600)) ?
+                                    (is_valid_interval && prev_t < today_start_sec) ?
                                       (double(today_start_sec - prev_t) / double(now_sec - prev_t)).as(prev_ratio,
                                       int(double(raw_idx) * prev_ratio).as(p_idx,
                                       int(double(raw_qry) * prev_ratio).as(p_qry,
                                       int(double(raw_qcnt) * prev_ratio).as(p_qcnt,
                                       int(double(raw_docs) * prev_ratio).as(p_docs,
                                       int(double(raw_dset) * prev_ratio).as(p_dset,
+                                      (now_sec > today_start_sec).as(has_cur_day,
                                         {
                                           "gap_sec": 0,
                                           "evts": [
@@ -491,6 +513,11 @@ program: |-
                                                 "index": ({
                                                   "name": idx_name,
                                                   "tier_preference": tier_pref,
+                                                  "interval": {
+                                                    "start": timestamp(prev_t).format(time_layout.RFC3339),
+                                                    "end": today_start.format(time_layout.RFC3339),
+                                                    "duration_ms": (today_start_sec - prev_t) * 1000,
+                                                  },
                                                   "primaries": {
                                                     "docs": {
                                                       "count": max(0, int(prev_b.m[3]) + p_docs),
@@ -514,7 +541,7 @@ program: |-
                                                       "query_total_delta": p_qcnt,
                                                     },
                                                   },
-                                                }).with(created_ms > 0 ? { "creation_date": timestamp(created_ms / 1000).format(time_layout.RFC3339) } : {}),
+                                                }).with(idx_extra),
                                               },
                                             }),
                                             dyn({
@@ -528,29 +555,35 @@ program: |-
                                                   "name": idx_name,
                                                   "tier_preference": tier_pref,
                                                   "primaries": {
-                                                    "docs": {
+                                                    "docs": has_cur_day ? {
                                                       "count": cur_docs,
                                                       "count_delta": raw_docs - p_docs,
-                                                    },
-                                                    "store": {
+                                                    } : { "count": cur_docs },
+                                                    "store": has_cur_day ? {
                                                       "total_data_set_size_in_bytes": cur_dset,
                                                       "total_data_set_size_in_bytes_delta": raw_dset - p_dset,
-                                                    },
+                                                    } : { "total_data_set_size_in_bytes": cur_dset },
                                                   },
                                                   "total": {
                                                     "store": { "size_in_bytes": cur_tot },
-                                                    "indexing": {
+                                                    "indexing": has_cur_day ? {
                                                       "index_time_in_millis": raw_idx - p_idx,
                                                       "index_time_in_millis_delta": raw_idx - p_idx,
-                                                    },
-                                                    "search": {
+                                                    } : { "index_time_in_millis": 0 },
+                                                    "search": has_cur_day ? {
                                                       "query_time_in_millis": raw_qry - p_qry,
                                                       "query_time_in_millis_delta": raw_qry - p_qry,
                                                       "query_total": raw_qcnt - p_qcnt,
                                                       "query_total_delta": raw_qcnt - p_qcnt,
-                                                    },
+                                                    } : { "query_time_in_millis": 0, "query_total": 0 },
                                                   },
-                                                }).with(created_ms > 0 ? { "creation_date": timestamp(created_ms / 1000).format(time_layout.RFC3339) } : {}),
+                                                }).with(idx_extra).with(has_cur_day ? {
+                                                  "interval": {
+                                                    "start": today_start.format(time_layout.RFC3339),
+                                                    "end": timestamp(now_sec).format(time_layout.RFC3339),
+                                                    "duration_ms": (now_sec - today_start_sec) * 1000,
+                                                  },
+                                                } : {}),
                                               },
                                             }),
                                           ],
@@ -561,9 +594,10 @@ program: |-
                                             "m": [cur_idx_ms, cur_qry_ms, cur_qry_cnt, cur_docs, cur_dset],
                                           }),
                                         }
-                                      ))))))
+                                      )))))))
                                     :
                                       (is_valid_interval || is_new_intraday).as(emit_delta,
+                                      (is_valid_interval ? prev_t : created_sec).as(int_start_sec,
                                         {
                                           "gap_sec": is_gap ? (now_sec - prev_t) : 0,
                                           "evts": [
@@ -609,7 +643,13 @@ program: |-
                                                       "query_total": 0,
                                                     },
                                                   },
-                                                }).with(created_ms > 0 ? { "creation_date": timestamp(created_ms / 1000).format(time_layout.RFC3339) } : {}),
+                                                }).with(idx_extra).with(emit_delta ? {
+                                                  "interval": {
+                                                    "start": timestamp(int_start_sec).format(time_layout.RFC3339),
+                                                    "end": timestamp(now_sec).format(time_layout.RFC3339),
+                                                    "duration_ms": max(1, now_sec - int_start_sec) * 1000,
+                                                  },
+                                                } : {}),
                                               },
                                             }),
                                           ],
@@ -620,8 +660,8 @@ program: |-
                                             "m": [cur_idx_ms, cur_qry_ms, cur_qry_cnt, cur_docs, cur_dset],
                                           }),
                                         }
-                                      )
-                                  )))))))))))))))))))))))
+                                      ))
+                                  )))))))))))))))))))))))))
                                 ).as(idx_items,
                                   idx_items.filter(x, int(x.gap_sec) > 0).as(gap_items,
                                     {

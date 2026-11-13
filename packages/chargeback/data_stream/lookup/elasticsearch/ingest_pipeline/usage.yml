@@ -11,22 +11,54 @@ processors:
 
         if (ctx.rollup instanceof Map) {
           Map r = (Map)ctx.rollup;
-          ctx.usage_source = r.usage_source != null ? r.usage_source.toString() : 'legacy';
-          for (String m : ['sum_indexing_time', 'sum_query_time', 'sum_store_size', 'sum_data_set_store_size']) {
-            def sv = r.get('selected_' + m);
-            ctx[pfx + '_' + m] = (sv instanceof Number) ? ((Number)sv).longValue() : 0L;
-            if (pfx != 'deployment') {
-              def nv = r.get('native_' + m);
+          String[] metrics = new String[] { 'sum_indexing_time', 'sum_query_time', 'sum_store_size', 'sum_data_set_store_size' };
+          if (ctx.tier != null && r.sel_by_tier instanceof Map) {
+            String tKey = ctx.tier.toString();
+            long legCnt = (r.leg_cnt instanceof Number) ? ((Number)r.leg_cnt).longValue() : 0L;
+            Map natCntMap = (r.nat_cnt_by_tier instanceof Map) ? (Map)r.nat_cnt_by_tier : null;
+            long natTierCnt = (natCntMap != null && natCntMap.get(tKey) instanceof Number)
+              ? ((Number)natCntMap.get(tKey)).longValue()
+              : 0L;
+            if (legCnt == 0L && natTierCnt == 0L) {
+              ctx._drop_shadow_bucket = true;
+              return;
+            }
+            List selT = (((Map)r.sel_by_tier).get(tKey) instanceof List) ? (List)((Map)r.sel_by_tier).get(tKey) : [0L, 0L, 0L, 0L];
+            List natT = (r.raw_nat_by_tier instanceof Map && ((Map)r.raw_nat_by_tier).get(tKey) instanceof List)
+              ? (List)((Map)r.raw_nat_by_tier).get(tKey)
+              : [0L, 0L, 0L, 0L];
+            String tierSrc = (r.sel_src_by_tier instanceof Map && ((Map)r.sel_src_by_tier).get(tKey) != null)
+              ? ((Map)r.sel_src_by_tier).get(tKey).toString()
+              : (r.usage_source != null ? r.usage_source.toString() : 'legacy');
+            ctx.usage_source = tierSrc;
+            for (int i = 0; i < 4; i++) {
+              String m = metrics[i];
+              ctx[pfx + '_' + m] = ((Number)selT.get(i)).longValue();
+              ctx['native_' + m] = ((Number)natT.get(i)).longValue();
               def lv = r.get('legacy_' + m);
-              ctx['native_' + m] = (nv instanceof Number) ? ((Number)nv).longValue() : 0L;
               ctx['legacy_' + m] = (lv instanceof Number) ? ((Number)lv).longValue() : 0L;
             }
-          }
-          if (pfx != 'deployment') {
-            ctx.has_native_usage = Boolean.TRUE.equals(r.has_native_usage)
-              || (r.has_native_usage != null && r.has_native_usage.toString().equalsIgnoreCase('true'));
-            ctx.has_legacy_usage = Boolean.TRUE.equals(r.has_legacy_usage)
-              || (r.has_legacy_usage != null && r.has_legacy_usage.toString().equalsIgnoreCase('true'));
+            ctx.has_native_usage = (natTierCnt > 0L);
+            ctx.has_legacy_usage = (legCnt > 0L);
+          } else {
+            ctx.usage_source = r.usage_source != null ? r.usage_source.toString() : 'legacy';
+            for (int i = 0; i < 4; i++) {
+              String m = metrics[i];
+              def sv = r.get('selected_' + m);
+              ctx[pfx + '_' + m] = (sv instanceof Number) ? ((Number)sv).longValue() : 0L;
+              if (pfx != 'deployment') {
+                def nv = r.get('native_' + m);
+                def lv = r.get('legacy_' + m);
+                ctx['native_' + m] = (nv instanceof Number) ? ((Number)nv).longValue() : 0L;
+                ctx['legacy_' + m] = (lv instanceof Number) ? ((Number)lv).longValue() : 0L;
+              }
+            }
+            if (pfx != 'deployment') {
+              ctx.has_native_usage = Boolean.TRUE.equals(r.has_native_usage)
+                || (r.has_native_usage != null && r.has_native_usage.toString().equalsIgnoreCase('true'));
+              ctx.has_legacy_usage = Boolean.TRUE.equals(r.has_legacy_usage)
+                || (r.has_legacy_usage != null && r.has_legacy_usage.toString().equalsIgnoreCase('true'));
+            }
           }
           ctx.remove('rollup');
         } else {
@@ -113,6 +145,9 @@ processors:
             ctx.ds_namespace = 'other';
           }
         }
+  - drop:
+      if: "ctx._drop_shadow_bucket == true"
+      tag: drop_shadow_tier_bucket
   - set:
       field: event.ingested
       value: "{{{_ingest.timestamp}}}"
