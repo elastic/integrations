@@ -1,0 +1,71 @@
+connectors:
+    forward/componentid-0: {}
+exporters:
+    elasticsearch/componentid-0:
+        endpoints:
+            - https://elasticsearch:9200
+inputs: []
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - metrics-gcp.cloudrun.otel-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+processors:
+    resourcedetection/componentid-0:
+        detectors:
+            - system
+    transform/componentid-1:
+        metric_statements:
+            - context: datapoint
+              statements:
+                - set(attributes["data_stream.type"], "metrics")
+                - set(attributes["data_stream.dataset"], "gcp.cloudrun")
+                - set(attributes["data_stream.namespace"], "ep")
+receivers:
+    googlecloudmonitoring/componentid-0:
+        collection_interval: 120s
+        endpoint: monitoring.example-universe.com:443
+        initial_delay: 5s
+        metrics_list:
+            - metric_name: run.googleapis.com/request_count
+            - metric_name: run.googleapis.com/request_latencies
+            - metric_name: run.googleapis.com/container/startup_latencies
+            - metric_name: run.googleapis.com/container/instance_count
+            - metric_name: run.googleapis.com/container/cpu/utilizations
+            - metric_name: run.googleapis.com/container/memory/utilizations
+            - metric_name: run.googleapis.com/container/max_request_concurrencies
+            - metric_name: run.googleapis.com/container/billable_instance_time
+            - metric_name: run.googleapis.com/container/cpu/allocation_time
+            - metric_name: run.googleapis.com/container/memory/allocation_time
+            - metric_name: run.googleapis.com/container/network/received_bytes_count
+            - metric_name: run.googleapis.com/container/network/sent_bytes_count
+            - metric_name: run.googleapis.com/job/completed_execution_count
+            - metric_name: run.googleapis.com/job/running_executions
+        project_id: my-gcp-project
+        timeout: 30s
+        universe_domain: example-universe.com
+secret_references: []
+service:
+    pipelines:
+        metrics/componentid-0:
+            exporters:
+                - elasticsearch/componentid-0
+            receivers:
+                - forward/componentid-0
+        metrics/componentid-1:
+            exporters:
+                - forward/componentid-0
+            processors:
+                - resourcedetection/componentid-0
+                - transform/componentid-1
+            receivers:
+                - googlecloudmonitoring/componentid-0
