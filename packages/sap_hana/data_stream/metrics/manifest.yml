@@ -1,0 +1,64 @@
+title: SAP HANA metrics
+type: metrics
+streams:
+  - input: prometheus/metrics
+    title: SAP HANA metrics
+    description: Collect hanadb_* metrics from SUSE hanadb_exporter.
+    vars:
+      - name: hosts
+        type: text
+        title: Hosts
+        description: hanadb_exporter endpoints as host:port (default scrape port 9668).
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - localhost:9668
+      - name: metrics_path
+        type: text
+        title: Metrics Path
+        multi: false
+        required: true
+        show_user: false
+        default: /metrics
+      - name: period
+        type: text
+        title: Period
+        multi: false
+        required: true
+        show_user: true
+        default: 30s
+      - name: metrics_filters.include
+        type: text
+        title: Metrics Filters Include
+        description: Regular expressions of metric names to collect. Metrics not mapped by this integration are dropped by the ingest pipeline.
+        multi: true
+        required: false
+        show_user: false
+        default:
+          - ^hanadb_
+      - name: bearer_token_file
+        type: text
+        title: Bearer Token File
+        description: File with a bearer token sent in the Authorization header.
+        multi: false
+        required: false
+        show_user: false
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: SSL options for HTTPS endpoints, in YAML format.
+        multi: false
+        required: false
+        show_user: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the events are shipped. See [Processors](https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html) for details.
+
+elasticsearch:
+  index_mode: time_series

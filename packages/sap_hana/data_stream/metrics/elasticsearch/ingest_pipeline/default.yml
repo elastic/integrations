@@ -1,0 +1,543 @@
+---
+description: Pipeline for processing SAP HANA Prometheus metrics from hanadb_exporter.
+processors:
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: sap_hana
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: 8.17.0
+  - set:
+      tag: set_service_type
+      field: service.type
+      value: sap_hana
+  - rename:
+      tag: rename_hanadb_column_tables_used_memory_mb
+      field: prometheus.hanadb_column_tables_used_memory_mb.value
+      target_field: sap_hana.memory.column_tables_used_memory
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_schema_used_memory_mb
+      field: prometheus.hanadb_schema_used_memory_mb.value
+      target_field: sap_hana.memory.schema_used_memory
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_cpu_user_percent
+      field: prometheus.hanadb_cpu_user_percent.value
+      target_field: sap_hana.cpu.user
+      ignore_missing: true
+  - script:
+      tag: scale_rename_hanadb_cpu_user_percent
+      lang: painless
+      description: Normalize percent metrics from 0-100 to 0-1.
+      if: ctx.sap_hana?.cpu?.user != null
+      source: >
+        def fam = ctx.sap_hana.cpu;
+        def k = "user";
+        if (fam[k] instanceof Number && fam[k] > 1.0) {
+          fam[k] = fam[k] / 100.0;
+        }
+      ignore_failure: true
+  - rename:
+      tag: rename_hanadb_cpu_system_percent
+      field: prometheus.hanadb_cpu_system_percent.value
+      target_field: sap_hana.cpu.system
+      ignore_missing: true
+  - script:
+      tag: scale_rename_hanadb_cpu_system_percent
+      lang: painless
+      description: Normalize percent metrics from 0-100 to 0-1.
+      if: ctx.sap_hana?.cpu?.system != null
+      source: >
+        def fam = ctx.sap_hana.cpu;
+        def k = "system";
+        if (fam[k] instanceof Number && fam[k] > 1.0) {
+          fam[k] = fam[k] / 100.0;
+        }
+      ignore_failure: true
+  - rename:
+      tag: rename_hanadb_cpu_waitio_percent
+      field: prometheus.hanadb_cpu_waitio_percent.value
+      target_field: sap_hana.cpu.waitio
+      ignore_missing: true
+  - script:
+      tag: scale_rename_hanadb_cpu_waitio_percent
+      lang: painless
+      description: Normalize percent metrics from 0-100 to 0-1.
+      if: ctx.sap_hana?.cpu?.waitio != null
+      source: >
+        def fam = ctx.sap_hana.cpu;
+        def k = "waitio";
+        if (fam[k] instanceof Number && fam[k] > 1.0) {
+          fam[k] = fam[k] / 100.0;
+        }
+      ignore_failure: true
+  - rename:
+      tag: rename_hanadb_cpu_busy_percent
+      field: prometheus.hanadb_cpu_busy_percent.value
+      target_field: sap_hana.cpu.busy
+      ignore_missing: true
+  - script:
+      tag: scale_rename_hanadb_cpu_busy_percent
+      lang: painless
+      description: Normalize percent metrics from 0-100 to 0-1.
+      if: ctx.sap_hana?.cpu?.busy != null
+      source: >
+        def fam = ctx.sap_hana.cpu;
+        def k = "busy";
+        if (fam[k] instanceof Number && fam[k] > 1.0) {
+          fam[k] = fam[k] / 100.0;
+        }
+      ignore_failure: true
+  - rename:
+      tag: rename_hanadb_cpu_idle_percent
+      field: prometheus.hanadb_cpu_idle_percent.value
+      target_field: sap_hana.cpu.idle
+      ignore_missing: true
+  - script:
+      tag: scale_rename_hanadb_cpu_idle_percent
+      lang: painless
+      description: Normalize percent metrics from 0-100 to 0-1.
+      if: ctx.sap_hana?.cpu?.idle != null
+      source: >
+        def fam = ctx.sap_hana.cpu;
+        def k = "idle";
+        if (fam[k] instanceof Number && fam[k] > 1.0) {
+          fam[k] = fam[k] / 100.0;
+        }
+      ignore_failure: true
+  - rename:
+      tag: rename_hanadb_network_collisions_per_seconds
+      field: prometheus.hanadb_network_collisions_per_seconds.value
+      target_field: sap_hana.network.collisions_per
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_network_receive_rate_kb_per_seconds
+      field: prometheus.hanadb_network_receive_rate_kb_per_seconds.value
+      target_field: sap_hana.network.receive_rate_kb_per
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_network_transmission_rate_kb_per_seconds
+      field: prometheus.hanadb_network_transmission_rate_kb_per_seconds.value
+      target_field: sap_hana.network.transmission_rate_kb_per
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_network_receive_requests_per_seconds
+      field: prometheus.hanadb_network_receive_requests_per_seconds.value
+      target_field: sap_hana.network.receive_requests_per
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_network_transmission_rate_requests_per_seconds
+      field: prometheus.hanadb_network_transmission_rate_requests_per_seconds.value
+      target_field: sap_hana.network.transmission_rate_requests_per
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_network_receive_rate_errors_per_seconds
+      field: prometheus.hanadb_network_receive_rate_errors_per_seconds.value
+      target_field: sap_hana.network.receive_rate_errors_per
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_network_transmission_rate_errors_per_seconds
+      field: prometheus.hanadb_network_transmission_rate_errors_per_seconds.value
+      target_field: sap_hana.network.transmission_rate_errors_per
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_disk_data_files_used_size_mb
+      field: prometheus.hanadb_disk_data_files_used_size_mb.value
+      target_field: sap_hana.disk.data_files_used_size
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_disk_data_files_total_size_mb
+      field: prometheus.hanadb_disk_data_files_total_size_mb.value
+      target_field: sap_hana.disk.data_files_total_size
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_disk_data_files_available_size_mb
+      field: prometheus.hanadb_disk_data_files_available_size_mb.value
+      target_field: sap_hana.disk.data_files_available_size
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_disk_data_files_fragmentation_percent
+      field: prometheus.hanadb_disk_data_files_fragmentation_percent.value
+      target_field: sap_hana.disk.data_files_fragmentation
+      ignore_missing: true
+  - script:
+      tag: scale_rename_hanadb_disk_data_files_fragmentation_percent
+      lang: painless
+      description: Normalize percent metrics from 0-100 to 0-1.
+      if: ctx.sap_hana?.disk?.data_files_fragmentation != null
+      source: >
+        def fam = ctx.sap_hana.disk;
+        def k = "data_files_fragmentation";
+        if (fam[k] instanceof Number && fam[k] > 1.0) {
+          fam[k] = fam[k] / 100.0;
+        }
+      ignore_failure: true
+  - rename:
+      tag: rename_hanadb_disk_total_device_size_mb
+      field: prometheus.hanadb_disk_total_device_size_mb.value
+      target_field: sap_hana.disk.total_device_size
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_disk_total_size_mb
+      field: prometheus.hanadb_disk_total_size_mb.value
+      target_field: sap_hana.disk.total_size
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_disk_total_used_size_mb
+      field: prometheus.hanadb_disk_total_used_size_mb.value
+      target_field: sap_hana.disk.total_used_size
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_disk_used_size_mb
+      field: prometheus.hanadb_disk_used_size_mb.value
+      target_field: sap_hana.disk.used_size
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_disk_io_queue_length_requests
+      field: prometheus.hanadb_disk_io_queue_length_requests.value
+      target_field: sap_hana.disk.io_queue_length
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_disk_io_latency_ms
+      field: prometheus.hanadb_disk_io_latency_ms.value
+      target_field: sap_hana.disk.io_latency
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_disk_io_service_time_ms
+      field: prometheus.hanadb_disk_io_service_time_ms.value
+      target_field: sap_hana.disk.io_service_time
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_disk_io_wait_time_ms
+      field: prometheus.hanadb_disk_io_wait_time_ms.value
+      target_field: sap_hana.disk.io_wait_time
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_disk_io_requests_per_second
+      field: prometheus.hanadb_disk_io_requests_per_second.value
+      target_field: sap_hana.disk.io_requests_per
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_disk_io_throughput_kb_second
+      field: prometheus.hanadb_disk_io_throughput_kb_second.value
+      target_field: sap_hana.disk.io_throughput
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_memory_service_shared_allocated_mb
+      field: prometheus.hanadb_memory_service_shared_allocated_mb.value
+      target_field: sap_hana.memory.service_shared_allocated
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_memory_service_shared_used_mb
+      field: prometheus.hanadb_memory_service_shared_used_mb.value
+      target_field: sap_hana.memory.service_shared_used
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_memory_service_shared_used_percent
+      field: prometheus.hanadb_memory_service_shared_used_percent.value
+      target_field: sap_hana.memory.service_shared_used_percent
+      ignore_missing: true
+  - script:
+      tag: scale_rename_hanadb_memory_service_shared_used_percent
+      lang: painless
+      description: Normalize percent metrics from 0-100 to 0-1.
+      if: ctx.sap_hana?.memory?.service_shared_used_percent != null
+      source: >
+        def fam = ctx.sap_hana.memory;
+        def k = "service_shared_used_percent";
+        if (fam[k] instanceof Number && fam[k] > 1.0) {
+          fam[k] = fam[k] / 100.0;
+        }
+      ignore_failure: true
+  - rename:
+      tag: rename_hanadb_memory_service_heap_allocated_mb
+      field: prometheus.hanadb_memory_service_heap_allocated_mb.value
+      target_field: sap_hana.memory.service_heap_allocated
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_memory_service_heap_used_mb
+      field: prometheus.hanadb_memory_service_heap_used_mb.value
+      target_field: sap_hana.memory.service_heap_used
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_memory_service_heap_used_percent
+      field: prometheus.hanadb_memory_service_heap_used_percent.value
+      target_field: sap_hana.memory.service_heap_used_percent
+      ignore_missing: true
+  - script:
+      tag: scale_rename_hanadb_memory_service_heap_used_percent
+      lang: painless
+      description: Normalize percent metrics from 0-100 to 0-1.
+      if: ctx.sap_hana?.memory?.service_heap_used_percent != null
+      source: >
+        def fam = ctx.sap_hana.memory;
+        def k = "service_heap_used_percent";
+        if (fam[k] instanceof Number && fam[k] > 1.0) {
+          fam[k] = fam[k] / 100.0;
+        }
+      ignore_failure: true
+  - rename:
+      tag: rename_hanadb_memory_service_total_used_mb
+      field: prometheus.hanadb_memory_service_total_used_mb.value
+      target_field: sap_hana.memory.service_total_used
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_memory_service_physical_total_mb
+      field: prometheus.hanadb_memory_service_physical_total_mb.value
+      target_field: sap_hana.memory.service_physical_total
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_memory_service_virtual_total_mb
+      field: prometheus.hanadb_memory_service_virtual_total_mb.value
+      target_field: sap_hana.memory.service_virtual_total
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_memory_service_code_size_mb
+      field: prometheus.hanadb_memory_service_code_size_mb.value
+      target_field: sap_hana.memory.service_code_size
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_memory_service_stack_size_mb
+      field: prometheus.hanadb_memory_service_stack_size_mb.value
+      target_field: sap_hana.memory.service_stack_size
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_memory_service_compactors_freeable_size_mb
+      field: prometheus.hanadb_memory_service_compactors_freeable_size_mb.value
+      target_field: sap_hana.memory.service_compactors_freeable_size
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_memory_service_compactors_allocated_size_mb
+      field: prometheus.hanadb_memory_service_compactors_allocated_size_mb.value
+      target_field: sap_hana.memory.service_compactors_allocated_size
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_memory_service_alloc_limit_mb
+      field: prometheus.hanadb_memory_service_alloc_limit_mb.value
+      target_field: sap_hana.memory.service_alloc_limit
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_memory_service_effective_alloc_limit_mb
+      field: prometheus.hanadb_memory_service_effective_alloc_limit_mb.value
+      target_field: sap_hana.memory.service_effective_alloc_limit
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_host_memory_physical_total_mb
+      field: prometheus.hanadb_host_memory_physical_total_mb.value
+      target_field: sap_hana.memory.host_memory_physical_total
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_host_memory_resident_mb
+      field: prometheus.hanadb_host_memory_resident_mb.value
+      target_field: sap_hana.memory.host_memory_resident
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_host_memory_physical_free_mb
+      field: prometheus.hanadb_host_memory_physical_free_mb.value
+      target_field: sap_hana.memory.host_memory_physical_free
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_host_memory_swap_free_mb
+      field: prometheus.hanadb_host_memory_swap_free_mb.value
+      target_field: sap_hana.memory.host_memory_swap_free
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_host_memory_swap_used_mb
+      field: prometheus.hanadb_host_memory_swap_used_mb.value
+      target_field: sap_hana.memory.host_memory_swap_used
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_host_memory_alloc_limit_mb
+      field: prometheus.hanadb_host_memory_alloc_limit_mb.value
+      target_field: sap_hana.memory.host_memory_alloc_limit
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_host_memory_used_total_mb
+      field: prometheus.hanadb_host_memory_used_total_mb.value
+      target_field: sap_hana.memory.host_memory_used_total
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_host_memory_used_peak_mb
+      field: prometheus.hanadb_host_memory_used_peak_mb.value
+      target_field: sap_hana.memory.host_memory_used_peak
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_host_memory_pool_size_mb
+      field: prometheus.hanadb_host_memory_pool_size_mb.value
+      target_field: sap_hana.memory.host_memory_pool_size
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_host_memory_code_size_mb
+      field: prometheus.hanadb_host_memory_code_size_mb.value
+      target_field: sap_hana.memory.host_memory_code_size
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_host_memory_shared_alloc_mb
+      field: prometheus.hanadb_host_memory_shared_alloc_mb.value
+      target_field: sap_hana.memory.host_memory_shared_alloc
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_sql_service_executions_count
+      field: prometheus.hanadb_sql_service_executions_count.value
+      target_field: sap_hana.sql.service_executions
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_sql_service_elapsed_time_ms
+      field: prometheus.hanadb_sql_service_elapsed_time_ms.value
+      target_field: sap_hana.sql.service_elapsed_time
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_sql_service_elap_per_exec_avg_ms
+      field: prometheus.hanadb_sql_service_elap_per_exec_avg_ms.value
+      target_field: sap_hana.sql.service_elap_per_exec_avg
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_sql_service_lock_per_exec_ms
+      field: prometheus.hanadb_sql_service_lock_per_exec_ms.value
+      target_field: sap_hana.sql.service_lock_per_exec
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_sql_service_max_ela_time_ms
+      field: prometheus.hanadb_sql_service_max_ela_time_ms.value
+      target_field: sap_hana.sql.service_max_ela_time
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_sql_top_time_consumers_mu
+      field: prometheus.hanadb_sql_top_time_consumers_mu.value
+      target_field: sap_hana.sql.top_time_consumers
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_sql_top_time_consumers_count
+      field: prometheus.hanadb_sql_top_time_consumers_count.value
+      target_field: sap_hana.sql.top_time_consumers_count
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_sql_top_mem_consumers_byte
+      field: prometheus.hanadb_sql_top_mem_consumers_byte.value
+      target_field: sap_hana.memory.sql_top_mem_consumers
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_sql_top_mem_consumers_count
+      field: prometheus.hanadb_sql_top_mem_consumers_count.value
+      target_field: sap_hana.memory.sql_top_mem_consumers_count
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_connections_total_count
+      field: prometheus.hanadb_connections_total_count.value
+      target_field: sap_hana.connections.total
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_table_cs_top_mem_total_mb
+      field: prometheus.hanadb_table_cs_top_mem_total_mb.value
+      target_field: sap_hana.memory.table_cs_top_mem_total
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_table_cs_top_mem_estimated_max_mb
+      field: prometheus.hanadb_table_cs_top_mem_estimated_max_mb.value
+      target_field: sap_hana.memory.table_cs_top_mem_estimated_max
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_table_cs_top_mem_record_count
+      field: prometheus.hanadb_table_cs_top_mem_record_count.value
+      target_field: sap_hana.memory.table_cs_top_mem_record
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_table_cs_top_mem_disk_size_mb
+      field: prometheus.hanadb_table_cs_top_mem_disk_size_mb.value
+      target_field: sap_hana.memory.table_cs_top_mem_disk_size
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_sr_ship_delay_seconds
+      field: prometheus.hanadb_sr_ship_delay_seconds.value
+      target_field: sap_hana.other.sr_ship_delay
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_sr_async_used_shipping_buffer_mb
+      field: prometheus.hanadb_sr_async_used_shipping_buffer_mb.value
+      target_field: sap_hana.other.sr_async_used_shipping_buffer
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_sr_secondary_active_status
+      field: prometheus.hanadb_sr_secondary_active_status.value
+      target_field: sap_hana.other.sr_secondary_active
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_sr_replication_status
+      field: prometheus.hanadb_sr_replication_status.value
+      target_field: sap_hana.replication.sr_replication
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_sr_secondary_reconnect_count
+      field: prometheus.hanadb_sr_secondary_reconnect_count.value
+      target_field: sap_hana.other.sr_secondary_reconnect
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_sr_secondary_failover_count
+      field: prometheus.hanadb_sr_secondary_failover_count.value
+      target_field: sap_hana.other.sr_secondary_failover
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_sr_takeover_replication_status
+      field: prometheus.hanadb_sr_takeover_replication_status.value
+      target_field: sap_hana.replication.sr_takeover_replication
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_sr_takeover_duration_time_seconds
+      field: prometheus.hanadb_sr_takeover_duration_time_seconds.value
+      target_field: sap_hana.replication.sr_takeover_duration_time
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_sr_takeover_log_position_bigint
+      field: prometheus.hanadb_sr_takeover_log_position_bigint.value
+      target_field: sap_hana.replication.sr_takeover_log_position
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_sr_takeover_shipped_log_position_bigint
+      field: prometheus.hanadb_sr_takeover_shipped_log_position_bigint.value
+      target_field: sap_hana.replication.sr_takeover_shipped_log_position
+      ignore_missing: true
+  - rename:
+      tag: rename_hanadb_alerts_current_rating
+      field: prometheus.hanadb_alerts_current_rating.value
+      target_field: sap_hana.alerts.current
+      ignore_missing: true
+  - rename:
+      tag: rename_labels
+      field: prometheus.labels
+      target_field: sap_hana.labels
+      ignore_missing: true
+  - remove:
+      tag: remove_labels_instance_job
+      field:
+        - sap_hana.labels.instance
+        - sap_hana.labels.job
+      ignore_missing: true
+  - fingerprint:
+      tag: fingerprint_labels
+      fields:
+        - sap_hana.labels
+      target_field: sap_hana.labels_fingerprint
+      ignore_missing: true
+  - remove:
+      tag: remove_prometheus
+      field: prometheus
+      ignore_missing: true
+  - drop:
+      tag: drop_unmapped_events
+      description: Drop events that carry no metric mapped by this integration.
+      if: ctx.sap_hana == null || ctx.sap_hana.keySet().stream().allMatch(k -> k == 'labels' || k == 'labels_fingerprint')
+on_failure:
+  - append:
+      tag: append_pipeline_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error
