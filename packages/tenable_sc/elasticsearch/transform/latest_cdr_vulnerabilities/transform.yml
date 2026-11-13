@@ -3,13 +3,18 @@ source:
     - "logs-tenable_sc.vulnerability-*"
   query:
     bool:
-      must:
+      filter:
         - range:
             "@timestamp":
               gte: "now-90d"
-      must_not:
         - exists:
-            field: error.message
+            field: event.id
+        - exists:
+            field: resource.id
+      must_not:
+        # Informational findings stay searchable in the source indices only.
+        - term:
+            tenable_sc.vulnerability.severity.id: "0"
         - terms:
             _tier:
               - data_frozen
