@@ -128,21 +128,22 @@ Where:
 
 ## Data and Transforms
 
-The integration creates eight transforms to aggregate cost and usage data:
+The integration creates nine transforms to aggregate cost and usage data:
 
 **Billing transforms:**
 1. **`billing_cluster_cost`**: aggregates daily chargeable units (ECU/ERU) per deployment and SKU into `chargeback_lookup.dest_billing_cluster_cost-1` (aliased as `chargeback_lookup.billing_cluster_cost`), adding `cost_type`, `cost_category`, `is_allocatable`, and ESS Billing compatibility fields.
 2. **`billing_realized_pool`**: aggregates daily allocatable data-tier capacity per deployment across ECH data tiers, Serverless workload and retained storage SKUs, and On-Premises nodes into `chargeback_lookup.dest_billing_realized_pool-1` (aliased as `chargeback_lookup.billing_realized_pool`).
-3. **`chargeback_conf_lookup`**: syncs `config_snapshot` events into `chargeback_conf_lookup` (`_id: config`) while preserving manual configuration rows when Fleet sync is inactive.
+3. **`billing_credits`**: aggregates daily organization credit commitment snapshots into `chargeback_lookup.dest_billing_credits-1` (aliased as `chargeback_lookup.billing_credits`) for the opt-in stock **[Metrics ESS Billing] Credits dashboard** compatibility alias.
+4. **`chargeback_conf_lookup`**: syncs `config_snapshot` events into `chargeback_conf_lookup` (`_id: config`) while preserving manual configuration rows when Fleet sync is inactive.
 
 **Utilization transforms:**
-4. **`cluster_capacity_utilization`**: computes p95 heap and disk utilization across data-role nodes per deployment/day from `node_stats`.
+5. **`cluster_capacity_utilization`**: computes p95 heap and disk utilization across data-role nodes per deployment/day from `node_stats`.
 
 **Usage transforms** (from `metrics-chargeback.usage-*` and `monitoring-indices*`):
-5. **`cluster_deployment_contribution`**: indexing, querying, and storage metrics per deployment/day into `chargeback_lookup.dest_cluster_deployment_contribution-1` (aliased as `chargeback_lookup.cluster_deployment_contribution`).
-6. **`cluster_datastream_contribution`**: same metrics split by data stream into `chargeback_lookup.dest_cluster_datastream_contribution-1` (aliased as `chargeback_lookup.cluster_datastream_contribution`). The usage ingest pipeline also sets `ds_type` (first `-` segment) and `ds_namespace` (last `-` segment) from the data stream name, or `other` when the name is non-conforming.
-7. **`cluster_tier_contribution`**: same metrics split by data tier into `chargeback_lookup.dest_cluster_tier_contribution-1` (aliased as `chargeback_lookup.cluster_tier_contribution`).
-8. **`cluster_tier_and_ds_contribution`**: same metrics split by both tier and data stream into `chargeback_lookup.dest_cluster_tier_and_datastream_contribution-1` (aliased as `chargeback_lookup.cluster_tier_and_datastream_contribution`), including `ds_type` and `ds_namespace`.
+6. **`cluster_deployment_contribution`**: indexing, querying, and storage metrics per deployment/day into `chargeback_lookup.dest_cluster_deployment_contribution-1` (aliased as `chargeback_lookup.cluster_deployment_contribution`).
+7. **`cluster_datastream_contribution`**: same metrics split by data stream into `chargeback_lookup.dest_cluster_datastream_contribution-1` (aliased as `chargeback_lookup.cluster_datastream_contribution`). The usage ingest pipeline also sets `ds_type` (first `-` segment) and `ds_namespace` (last `-` segment) from the data stream name, or `other` when the name is non-conforming.
+8. **`cluster_tier_contribution`**: same metrics split by data tier into `chargeback_lookup.dest_cluster_tier_contribution-1` (aliased as `chargeback_lookup.cluster_tier_contribution`).
+9. **`cluster_tier_and_ds_contribution`**: same metrics split by both tier and data stream into `chargeback_lookup.dest_cluster_tier_and_datastream_contribution-1` (aliased as `chargeback_lookup.cluster_tier_and_datastream_contribution`), including `ds_type` and `ds_namespace`.
 
 All transform destination documents include ECS `event.ingested` (when the lookup row was written).
 
@@ -242,3 +243,64 @@ Three alert rule templates are included and can be installed from the integratio
 **[Chargeback] Transform health monitoring:** monitors all Chargeback transforms and alerts when they encounter failures or fall behind on processing. Requires all transforms to be running before activation.
 
 For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
+
+## Upgrade Notes
+
+### Upgrading to 0.6.0
+
+1. Upgrade the Fleet package to **0.6.0**. Kibana requirement remains `^9.2.0`.
+2. `billing_cluster_cost`, `billing_realized_pool`, `billing_credits`, `cluster_deployment_contribution`, `cluster_tier_contribution`, `cluster_datastream_contribution`, and `cluster_tier_and_ds_contribution` now write to versioned lookup indices (`chargeback_lookup.dest_*-1` aliased as `chargeback_lookup.billing_cluster_cost`, `chargeback_lookup.billing_realized_pool`, `chargeback_lookup.billing_credits`, `chargeback_lookup.cluster_deployment_contribution`, `chargeback_lookup.cluster_tier_contribution`, `chargeback_lookup.cluster_datastream_contribution`, and `chargeback_lookup.cluster_tier_and_datastream_contribution`) so in-place upgrades do not collide with concrete `0.5.0` lookup mappings or retain stale `group_by` document IDs. All seven transforms backfill retained history from `metrics-ess_billing.billing-*`, `metrics-ess_billing.credits-*`, `monitoring-indices*`, and `metrics-chargeback.*` automatically. If raw billing or monitoring streams use shorter ILM retention than your `0.5.0` `*_lookup` indices, reindex older daily rows (before the earliest retained source timestamp) from the `0.5.0` lookup indices into `chargeback_lookup.dest_*-1` (setting `usage_source` to `"legacy"` on migrated usage rows).
+3. Existing manual rates and historical effective-date windows in `chargeback_conf_lookup` remain untouched on package upgrade until a **Chargeback** Fleet policy with `sync_fleet_config: true` emits `config_snapshot` events. Before enabling `sync_fleet_config: true` on an installation with customized rates or historical rate periods, copy your active rate and weights into the Fleet policy UI and set **Configuration Effective Start Date** (`config_effective_from`) to the start timestamp of your current open-ended period so earlier closed historical rows do not overlap, or set `sync_fleet_config: false` to continue managing `chargeback_conf_lookup` manually.
+4. Existing **ESS Billing**, **On-Premises Billing**, and **Elasticsearch** monitoring inputs continue to work alongside native `chargeback.*` CEL streams. When both native and legacy sources exist for the same deployment and UTC day, usage transforms select between native and legacy per contributing index and interval so totals are neither double-counted nor truncated during mid-day cutover.
+
+### Upgrading to 0.4.5
+
+1. Upgrade the Fleet package to **0.4.5**. Kibana requirement remains `^9.2.0`.
+2. This release bumps the affected transform asset versions so package upgrade deletes, reinstalls, and restarts the lookup transforms whose `composite_key` mapping changed from `text` to `keyword`.
+3. No manual lookup-index deletion or transform reset is required for that mapping fix on upgrade to 0.4.5.
+
+### Upgrading to 0.4.4
+
+1. Upgrade the Fleet package to **0.4.4**. Kibana requirement remains `^9.2.0`.
+2. The bootstrap transform now writes the default configuration document with `_id` `config`, so `POST chargeback_conf_lookup/_update/config` works as documented.
+3. **If you upgraded from 0.2.10-0.4.3** and already have a hashed-ID bootstrap row: after the package upgrade creates the new `_id` `config` document, copy any customized field values onto it with `POST chargeback_conf_lookup/_update/config`, then delete the hashed-ID document so LOOKUP JOIN does not match two overlapping date windows. Do not index a partial document to ID `config` with the index API (`_doc`); that replaces the whole document and can drop required bootstrap fields such as `config_join_key`. Fresh 0.4.4 installs need no cleanup.
+
+### Upgrading to 0.4.3
+
+1. Upgrade the Fleet package to **0.4.3**. Kibana requirement remains `^9.2.0`.
+2. Re-import or replace Chargeback dashboard saved objects if Kibana did not refresh them on upgrade.
+3. Delete Chargeback `*_lookup` destination indices, then reset and start the Chargeback transforms so `composite_key` is remapped with a keyword multifield. In-place upgrades that leave dynamically mapped `text` `composite_key` fields cause LOOKUP JOIN errors (`JOIN with right field [composite_key] of type [TEXT] is not supported`).
+4. If `chargeback_conf_lookup` documents still contain `@timestamp`, delete that index and reset the conf transform as well. LOOKUP JOIN would otherwise overwrite billing `@timestamp` and create null time buckets on Billing Components Overview.
+
+### Upgrading to 0.4.2
+
+1. Upgrade the Fleet package to **0.4.2**. Kibana requirement remains `^9.2.0`.
+2. This release updates managed dashboard ES|QL only. Re-import or replace Chargeback dashboard saved objects if Kibana did not refresh them on upgrade.
+3. No transform reset is required for these dashboard fixes.
+
+### Upgrading to 0.4.1
+
+1. Upgrade the Fleet package to **0.4.1**. Kibana requirement remains `^9.2.0`.
+2. Usage transforms rewrite lookup documents through the updated `usage` pipeline so new rows include `ds_type`, `ds_namespace`, and `event.ingested`. Reset usage transforms (or wait for incremental runs) if you need historical rows enriched.
+3. Confirm ESS Billing (or On-Premises Billing) has produced backing indices before relying on `chargeback_conf_lookup` after a fresh install.
+
+### Upgrading to 0.4.0
+
+1. Upgrade the Fleet package to **0.4.0**.
+2. The two new transforms (`billing_realized_pool`, `cluster_capacity_utilization`) are created and auto-started.
+3. Reset the `billing_cluster_cost` transform to backfill `cost_type`, `cost_category`, and `is_allocatable` into existing lookup documents. Until backfill completes, the Component statistics panels will show no data.
+4. Ensure the Elasticsearch integration collects **`node_stats`** from data nodes. Without this, utilization defaults to 100%.
+5. The old `[Chargeback] Cost and Consumption breakdown` dashboard is replaced by three new dashboards. Delete the old dashboard from **Stack Management -> Saved Objects** if it is not removed automatically.
+
+### Upgrading from 0.3.1 to 0.3.2
+
+Lookup mappings were updated to include legacy ECU field aliases (`total_ecu`, `conf_ecu_rate`, `conf_ecu_rate_unit`) pointing to chargeable-unit fields. Existing 0.3.1 lookup indices retain old mappings. After upgrading:
+
+1. Delete each affected lookup index (`billing_cluster_cost_lookup`, `chargeback_conf_lookup`) and reset the corresponding transform so the index is recreated with 0.3.2 mappings.
+2. Start or schedule the `billing_cluster_cost` and `chargeback_conf_lookup` transforms.
+
+If the dashboard was not replaced on upgrade, re-import the Chargeback dashboard saved objects.
+
+### Upgrading from 0.2.x to 0.3.0
+
+Field names changed from ECU to chargeable units: `total_ecu` to `total_chargeable_units`, `conf_ecu_rate` to `conf_chargeable_unit_rate`, `conf_ecu_rate_unit` to `conf_chargeable_unit_rate_unit`. Dashboard ES|QL uses the chargeable-unit field names (`total_chargeable_units`, `conf_chargeable_unit_rate`). ES|QL does not resolve mapping aliases, so panels must not reference the legacy names even inside `COALESCE`.

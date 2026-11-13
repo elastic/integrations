@@ -84,7 +84,7 @@ source:
           emit('_default_');
 dest:
   index: cluster_capacity_utilization_lookup
-  pipeline: logs-chargeback.lookup-0.1.0-capacity_utilization
+  pipeline: logs-chargeback.lookup-0.6.0-capacity_utilization
 frequency: 60m
 sync:
   time:
@@ -108,6 +108,13 @@ pivot:
         map_script: |
           if (!doc.containsKey('@timestamp') || doc['@timestamp'].empty) { return; }
           long ts = doc['@timestamp'].value.toInstant().toEpochMilli();
+          long rem = ts % 86400000L;
+          if (rem < 0L) { rem += 86400000L; }
+          int b = (int)(rem / 900000L);
+          if (b < 0) { b = 0; }
+          if (b > 95) { b = 95; }
+          int w = b >> 6;
+          long bit = 1L << (b & 63);
           String nid = (doc.containsKey('cb_node_id') && !doc['cb_node_id'].empty)
             ? doc['cb_node_id'].value.toString()
             : '_default_';
@@ -116,44 +123,31 @@ pivot:
           Map target = isNat ? state.nat : state.leg;
           List cur = (List)target.get(nid);
           if (cur == null) {
-            target.put(nid, [ts, ts, 1L]);
-          } else {
-            long minTs = ((Number)cur.get(0)).longValue();
-            long maxTs = ((Number)cur.get(1)).longValue();
-            long cnt = ((Number)cur.get(2)).longValue();
-            if (ts < minTs) { cur.set(0, ts); }
-            if (ts > maxTs) { cur.set(1, ts); }
-            cur.set(2, cnt + 1L);
+            cur = [0L, 0L];
+            target.put(nid, cur);
           }
+          cur.set(w, ((Number)cur.get(w)).longValue() | bit);
         combine_script: "return state;"
         reduce_script: |
           Map mergedNat = new HashMap();
           Map mergedLeg = new HashMap();
-          long totalNat = 0L;
-          long totalLeg = 0L;
-          long natMin = Long.MAX_VALUE;
-          long natMax = Long.MIN_VALUE;
-          long legMin = Long.MAX_VALUE;
-          long legMax = Long.MIN_VALUE;
+          List anyNat = [0L, 0L];
           for (def st : states) {
             if (st == null) { continue; }
             if (st.nat instanceof Map) {
               for (def e : ((Map)st.nat).entrySet()) {
                 String k = e.getKey().toString();
                 List v = (List)e.getValue();
-                long vMin = ((Number)v.get(0)).longValue();
-                long vMax = ((Number)v.get(1)).longValue();
-                long vCnt = ((Number)v.get(2)).longValue();
-                totalNat += vCnt;
-                if (vMin < natMin) { natMin = vMin; }
-                if (vMax > natMax) { natMax = vMax; }
+                long v0 = ((Number)v.get(0)).longValue();
+                long v1 = ((Number)v.get(1)).longValue();
+                anyNat.set(0, ((Number)anyNat.get(0)).longValue() | v0);
+                anyNat.set(1, ((Number)anyNat.get(1)).longValue() | v1);
                 List acc = (List)mergedNat.get(k);
                 if (acc == null) {
-                  mergedNat.put(k, [vMin, vMax, vCnt]);
+                  mergedNat.put(k, [v0, v1]);
                 } else {
-                  if (vMin < ((Number)acc.get(0)).longValue()) { acc.set(0, vMin); }
-                  if (vMax > ((Number)acc.get(1)).longValue()) { acc.set(1, vMax); }
-                  acc.set(2, ((Number)acc.get(2)).longValue() + vCnt);
+                  acc.set(0, ((Number)acc.get(0)).longValue() | v0);
+                  acc.set(1, ((Number)acc.get(1)).longValue() | v1);
                 }
               }
             }
@@ -161,54 +155,53 @@ pivot:
               for (def e : ((Map)st.leg).entrySet()) {
                 String k = e.getKey().toString();
                 List v = (List)e.getValue();
-                long vMin = ((Number)v.get(0)).longValue();
-                long vMax = ((Number)v.get(1)).longValue();
-                long vCnt = ((Number)v.get(2)).longValue();
-                totalLeg += vCnt;
-                if (vMin < legMin) { legMin = vMin; }
-                if (vMax > legMax) { legMax = vMax; }
+                long v0 = ((Number)v.get(0)).longValue();
+                long v1 = ((Number)v.get(1)).longValue();
                 List acc = (List)mergedLeg.get(k);
                 if (acc == null) {
-                  mergedLeg.put(k, [vMin, vMax, vCnt]);
+                  mergedLeg.put(k, [v0, v1]);
                 } else {
-                  if (vMin < ((Number)acc.get(0)).longValue()) { acc.set(0, vMin); }
-                  if (vMax > ((Number)acc.get(1)).longValue()) { acc.set(1, vMax); }
-                  acc.set(2, ((Number)acc.get(2)).longValue() + vCnt);
+                  acc.set(0, ((Number)acc.get(0)).longValue() | v0);
+                  acc.set(1, ((Number)acc.get(1)).longValue() | v1);
                 }
               }
             }
           }
-          long tolMs = 960000L;
           boolean coversDay = false;
-          if (totalNat > 0L && totalLeg <= 0L) {
+          if (mergedLeg.isEmpty()) {
+            coversDay = !mergedNat.isEmpty();
+          } else if (!mergedNat.isEmpty()) {
             coversDay = true;
-          } else if (totalNat > 0L && totalLeg > 0L) {
-            if (mergedNat.size() >= mergedLeg.size()
-                && natMin <= (legMin + tolMs)
-                && natMax >= (legMax - tolMs)
-                && (totalLeg <= 1L || totalNat >= 2L)) {
-              coversDay = true;
-              for (def le : mergedLeg.entrySet()) {
-                String nid = le.getKey().toString();
-                List ls = (List)le.getValue();
-                long lMin = ((Number)ls.get(0)).longValue();
-                long lMax = ((Number)ls.get(1)).longValue();
-                long lCnt = ((Number)ls.get(2)).longValue();
-                if (nid != '_default_') {
-                  List ns = (List)mergedNat.get(nid);
-                  if (ns == null) {
-                    coversDay = false;
-                    break;
-                  }
-                  long nMin = ((Number)ns.get(0)).longValue();
-                  long nMax = ((Number)ns.get(1)).longValue();
-                  long nCnt = ((Number)ns.get(2)).longValue();
-                  if (nMin > (lMin + tolMs) || nMax < (lMax - tolMs) || (lCnt > 1L && nCnt < 2L)) {
-                    coversDay = false;
-                    break;
+            for (def le : mergedLeg.entrySet()) {
+              String nid = le.getKey().toString();
+              List legM = (List)le.getValue();
+              List natM = (nid == '_default_') ? anyNat : (List)mergedNat.get(nid);
+              if (natM == null) {
+                coversDay = false;
+                break;
+              }
+              for (int b = 0; b < 96; b++) {
+                int w = b >> 6;
+                long bit = 1L << (b & 63);
+                if ((((Number)legM.get(w)).longValue() & bit) == 0L) { continue; }
+                boolean exact = ((((Number)natM.get(w)).longValue() & bit) != 0L);
+                boolean straddle = false;
+                if (!exact && b > 0 && (b + 1) < 96) {
+                  int pw = (b - 1) >> 6;
+                  long pbit = 1L << ((b - 1) & 63);
+                  int nw = (b + 1) >> 6;
+                  long nbit = 1L << ((b + 1) & 63);
+                  if (((((Number)natM.get(pw)).longValue() & pbit) != 0L)
+                      && ((((Number)natM.get(nw)).longValue() & nbit) != 0L)) {
+                    straddle = true;
                   }
                 }
+                if (!exact && !straddle) {
+                  coversDay = false;
+                  break;
+                }
               }
+              if (!coversDay) { break; }
             }
           }
           Map res = new HashMap();
@@ -260,4 +253,4 @@ settings:
 _meta:
   managed: true
   run_as_kibana_system: false
-  fleet_transform_version: 0.1.0
+  fleet_transform_version: 0.6.0

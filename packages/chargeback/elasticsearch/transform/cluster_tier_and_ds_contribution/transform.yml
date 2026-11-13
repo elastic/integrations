@@ -13,6 +13,8 @@ source:
       must_not:
         - term:
             doc_type: config_snapshot
+        - term:
+            cb_excluded_index: true
   runtime_mappings:
     cb_cluster_name:
       type: keyword
@@ -47,53 +49,140 @@ source:
               emit(iname.toString());
             }
           } catch (Exception e) {}
-    cb_index_datastream:
+    cb_excluded_index:
+      type: boolean
+      script:
+        source: |
+          String name = '';
+          String kw = 'elasticsearch.index.name.keyword';
+          if (doc.containsKey(kw) && !doc[kw].empty) {
+            name = doc[kw].value.toString();
+          } else {
+            try {
+              if (doc.containsKey('elasticsearch.index.name') && !doc['elasticsearch.index.name'].empty) {
+                name = doc['elasticsearch.index.name'].value.toString();
+              }
+            } catch (Exception e) {}
+            if (name == '') {
+              try {
+                def iname = params._source?.elasticsearch?.index?.name;
+                if (iname != null) { name = iname.toString(); }
+              } catch (Exception e) {}
+            }
+          }
+          if (name != '') {
+            boolean isCbLookup = (
+              name.startsWith('chargeback_lookup.') ||
+              name == 'monitoring-indices' ||
+              name == 'monitoring-indices-chargeback' ||
+              /^(?:billing_cluster_cost_lookup|billing_realized_pool_lookup|chargeback_conf_lookup|cluster_capacity_utilization_lookup|cluster_deployment_contribution_lookup|cluster_tier_contribution_lookup|cluster_datastream_contribution_lookup|cluster_tier_and_datastream_contribution_lookup)(?:-\d+)?$/.matcher(name).matches()
+            );
+            if ((name.startsWith('.') && !name.startsWith('.ds-'))
+                || name.startsWith('.ds-.')
+                || name.startsWith('.ds-ilm-history')
+                || isCbLookup
+                || name.contains('metrics-chargeback.')
+                || name.contains('logs-chargeback.')) {
+              emit(true);
+              return;
+            }
+            emit(false);
+            return;
+          }
+          String ds = '';
+          for (String df : ['elasticsearch.index.datastream.keyword', 'elasticsearch.index.datastream']) {
+            try {
+              if (doc.containsKey(df) && !doc[df].empty) {
+                ds = doc[df].value.toString();
+                if (ds != '') { break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (ds != '' && (ds.startsWith('.') || ds.startsWith('ilm-history') || ds.startsWith('metrics-chargeback.') || ds.startsWith('logs-chargeback.') || ds.startsWith('chargeback_lookup.'))) {
+            emit(true);
+            return;
+          }
+          emit(false);
+    cb_resolved_tier:
       type: keyword
       script:
         source: |
-          String kw = 'elasticsearch.index.datastream.keyword';
-          if (doc.containsKey(kw)) {
-            if (!doc[kw].empty) { emit(doc[kw].value.toString()); }
-            return;
+          for (String f : ['elasticsearch.index.tier.keyword', 'elasticsearch.index.tier']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                String t = doc[f].value.toString();
+                if (t != '' && t != 'unknown') { emit(t); return; }
+              }
+            } catch (Exception e) {}
           }
-          if (doc.containsKey('elasticsearch.index.datastream') && !doc['elasticsearch.index.datastream'].empty) {
-            emit(doc['elasticsearch.index.datastream'].value.toString());
+          String pref = null;
+          for (String pf : ['elasticsearch.index.tier_preference.keyword', 'elasticsearch.index.tier_preference']) {
+            try {
+              if (doc.containsKey(pf) && !doc[pf].empty) {
+                pref = doc[pf].value.toString();
+                if (pref != '') { break; }
+              }
+            } catch (Exception e) {}
           }
-    cb_index_tier:
+          if (pref == null || pref == '') {
+            try {
+              def sp = params._source?.elasticsearch?.index?.tier_preference;
+              if (sp != null) { pref = sp.toString(); }
+            } catch (Exception e) {}
+          }
+          if (pref == null || pref == '') { emit('unknown'); return; }
+          if (pref.contains('data_frozen')) { emit('frozen'); return; }
+          if (pref.contains('data_cold')) { emit('cold'); return; }
+          if (pref.contains('data_warm')) { emit('warm'); return; }
+          if (pref.contains('data_hot') || pref.contains('data_content')) { emit('hot/content'); return; }
+          emit('unknown');
+    cb_resolved_datastream:
       type: keyword
       script:
         source: |
-          String kw = 'elasticsearch.index.tier.keyword';
-          if (doc.containsKey(kw)) {
-            if (!doc[kw].empty) { emit(doc[kw].value.toString()); }
+          for (String f : ['elasticsearch.index.datastream.keyword', 'elasticsearch.index.datastream']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                String ds = doc[f].value.toString();
+                if (ds != '') { emit(ds); return; }
+              }
+            } catch (Exception e) {}
+          }
+          String name = '';
+          String kw = 'elasticsearch.index.name.keyword';
+          if (doc.containsKey(kw) && !doc[kw].empty) {
+            name = doc[kw].value.toString();
+          } else {
+            try {
+              if (doc.containsKey('elasticsearch.index.name') && !doc['elasticsearch.index.name'].empty) {
+                name = doc['elasticsearch.index.name'].value.toString();
+              }
+            } catch (Exception e) {}
+            if (name == '') {
+              try {
+                def iname = params._source?.elasticsearch?.index?.name;
+                if (iname != null) { name = iname.toString(); }
+              } catch (Exception e) {}
+            }
+          }
+          if (name == '') { emit('unknown'); return; }
+          def m = /^(?:partial-)?(?:restored-)?(?:shrink-.{4}-)?(?:\.ds-)?([a-zA-Z_0-9\-.]+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d+)?$/.matcher(name);
+          if (m.matches() && !m.group(1).startsWith('.')) {
+            emit(m.group(1));
             return;
           }
-          if (doc.containsKey('elasticsearch.index.tier') && !doc['elasticsearch.index.tier'].empty) {
-            emit(doc['elasticsearch.index.tier'].value.toString());
-          }
-    cb_index_tier_preference:
-      type: keyword
-      script:
-        source: |
-          String kw = 'elasticsearch.index.tier_preference.keyword';
-          if (doc.containsKey(kw)) {
-            if (!doc[kw].empty) { emit(doc[kw].value.toString()); }
-            return;
-          }
-          if (doc.containsKey('elasticsearch.index.tier_preference') && !doc['elasticsearch.index.tier_preference'].empty) {
-            emit(doc['elasticsearch.index.tier_preference'].value.toString());
-          }
+          emit(name.startsWith('.') ? 'system' : name);
 dest:
   index: chargeback_lookup.dest_cluster_tier_and_datastream_contribution-1
   aliases:
     - alias: chargeback_lookup.cluster_tier_and_datastream_contribution
       move_on_creation: true
-  pipeline: logs-chargeback.lookup-0.1.0-usage
+  pipeline: logs-chargeback.lookup-0.6.0-usage
 frequency: 60m
 sync:
   time:
-    field: event.ingested
-    delay: 60s
+    field: "@timestamp"
+    delay: 1h
 pivot:
   group_by:
     "@timestamp":
@@ -105,47 +194,19 @@ pivot:
         field: cb_cluster_name
     tier:
       terms:
-        script:
-          lang: painless
-          # Use | not >: folded > turns newlines into spaces so // comments eat the preference checks.
-          source: |
-            if (doc.containsKey('cb_index_tier') && !doc['cb_index_tier'].empty) {
-              def tier = doc['cb_index_tier'].value;
-              if (tier != null && tier != 'unknown') return tier;
-            }
-            def pref = doc.containsKey('cb_index_tier_preference') && !doc['cb_index_tier_preference'].empty ? doc['cb_index_tier_preference'].value : null;
-            if (pref == null) return 'unknown';
-            /* Match monitoring_indices.yml: frozen -> cold -> warm -> hot/content
-               (preference lists like data_cold,data_warm,data_hot must not resolve to hot) */
-            if (pref.contains('data_frozen')) return 'frozen';
-            if (pref.contains('data_cold')) return 'cold';
-            if (pref.contains('data_warm')) return 'warm';
-            if (pref.contains('data_hot') || pref.contains('data_content')) return 'hot/content';
-            return 'unknown';
+        field: cb_resolved_tier
     datastream:
       terms:
-        script:
-          lang: painless
-          source: |
-            if (doc.containsKey('cb_index_datastream') && !doc['cb_index_datastream'].empty) {
-              return doc['cb_index_datastream'].value;
-            }
-            def name = doc.containsKey('cb_index_name') && !doc['cb_index_name'].empty
-              ? doc['cb_index_name'].value
-              : null;
-            if (name == null) return 'unknown';
-            def matcher = /^(?:partial-)?(?:restored-)?(?:shrink-.{4}-)?(?:\.ds-)?([a-z_0-9\-.]+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d+)?$/.matcher(name);
-            if (matcher.matches()) {
-              return matcher.group(1);
-            }
-            return 'unknown';
+        field: cb_resolved_datastream
   aggregations:
-    coverage:
+    rollup:
       scripted_metric:
         init_script: |
-          state.nat = new HashMap();
-          state.leg = new HashMap();
-          state.nat_delta_docs = 0L;
+          state.units = new HashMap();
+          state.raw_nat = [0L, 0L, 0L, 0L];
+          state.raw_leg = [0L, 0L, 0L, 0L];
+          state.nat_cnt = 0L;
+          state.leg_cnt = 0L;
         map_script: |
           if (!doc.containsKey('@timestamp') || doc['@timestamp'].empty) { return; }
           long ts = doc['@timestamp'].value.toInstant().toEpochMilli();
@@ -156,192 +217,266 @@ pivot:
           if (b > 143) { b = 143; }
           int w = b >> 6;
           long bit = 1L << (b & 63);
-          String idx = '_default_';
-          if (doc.containsKey('cb_index_name') && !doc['cb_index_name'].empty) {
-            idx = doc['cb_index_name'].value.toString();
-          } else if (params._source?.elasticsearch?.index?.datastream != null && params._source.elasticsearch.index.datastream.toString() != '') {
-            idx = 'ds:' + params._source.elasticsearch.index.datastream.toString();
+          String sk = Integer.toString(b);
+          String idx = (doc.containsKey('cb_index_name') && !doc['cb_index_name'].empty)
+            ? doc['cb_index_name'].value.toString()
+            : '_default_';
+          String tier = (doc.containsKey('cb_resolved_tier') && !doc['cb_resolved_tier'].empty)
+            ? doc['cb_resolved_tier'].value.toString()
+            : 'unknown';
+          String ds = (doc.containsKey('cb_resolved_datastream') && !doc['cb_resolved_datastream'].empty)
+            ? doc['cb_resolved_datastream'].value.toString()
+            : 'unknown';
+          if (idx == '_default_' && ds != 'unknown') { idx = 'ds:' + ds; }
+          String ukey = idx + '|' + tier + '|' + ds;
+          boolean isNat = doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty
+            && doc['data_stream.dataset'].value == 'chargeback.usage';
+          String idxField = isNat ? 'elasticsearch.index.total.indexing.index_time_in_millis' : 'elasticsearch.index.total.indexing.index_time_in_millis_delta';
+          String qryField = isNat ? 'elasticsearch.index.total.search.query_time_in_millis' : 'elasticsearch.index.total.search.query_time_in_millis_delta';
+          long idxMs = 0L;
+          long qryMs = 0L;
+          long storeB = 0L;
+          long dsetB = 0L;
+          try {
+            if (doc.containsKey(idxField) && !doc[idxField].empty) { idxMs = ((Number)doc[idxField].value).longValue(); }
+            else if (params._source?.elasticsearch?.index?.total?.indexing != null) {
+              def v = isNat ? params._source.elasticsearch.index.total.indexing.index_time_in_millis : params._source.elasticsearch.index.total.indexing.index_time_in_millis_delta;
+              if (v instanceof Number) { idxMs = ((Number)v).longValue(); }
+            }
+          } catch (Exception e) {}
+          try {
+            if (doc.containsKey(qryField) && !doc[qryField].empty) { qryMs = ((Number)doc[qryField].value).longValue(); }
+            else if (params._source?.elasticsearch?.index?.total?.search != null) {
+              def v = isNat ? params._source.elasticsearch.index.total.search.query_time_in_millis : params._source.elasticsearch.index.total.search.query_time_in_millis_delta;
+              if (v instanceof Number) { qryMs = ((Number)v).longValue(); }
+            }
+          } catch (Exception e) {}
+          try {
+            if (doc.containsKey('elasticsearch.index.total.store.size_in_bytes') && !doc['elasticsearch.index.total.store.size_in_bytes'].empty) {
+              storeB = ((Number)doc['elasticsearch.index.total.store.size_in_bytes'].value).longValue();
+            } else if (params._source?.elasticsearch?.index?.total?.store?.size_in_bytes instanceof Number) {
+              storeB = ((Number)params._source.elasticsearch.index.total.store.size_in_bytes).longValue();
+            }
+          } catch (Exception e) {}
+          try {
+            if (doc.containsKey('elasticsearch.index.primaries.store.total_data_set_size_in_bytes') && !doc['elasticsearch.index.primaries.store.total_data_set_size_in_bytes'].empty) {
+              dsetB = ((Number)doc['elasticsearch.index.primaries.store.total_data_set_size_in_bytes'].value).longValue();
+            } else if (params._source?.elasticsearch?.index?.primaries?.store?.total_data_set_size_in_bytes instanceof Number) {
+              dsetB = ((Number)params._source.elasticsearch.index.primaries.store.total_data_set_size_in_bytes).longValue();
+            }
+          } catch (Exception e) {}
+          Map u = (Map)state.units.get(ukey);
+          if (u == null) {
+            u = new HashMap();
+            u.put('m', [0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L]);
+            u.put('ns', new HashMap());
+            u.put('ls', new HashMap());
+            state.units.put(ukey, u);
           }
-          boolean isNat = doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty && doc['data_stream.dataset'].value == 'chargeback.usage';
+          List m = (List)u.get('m');
           if (isNat) {
+            state.nat_cnt = ((Number)state.nat_cnt).longValue() + 1L;
+            List rn = (List)state.raw_nat;
+            rn.set(0, ((Number)rn.get(0)).longValue() + idxMs);
+            rn.set(1, ((Number)rn.get(1)).longValue() + qryMs);
+            rn.set(2, ((Number)rn.get(2)).longValue() + storeB);
+            rn.set(3, ((Number)rn.get(3)).longValue() + dsetB);
             boolean hasDelta = false;
             try {
-              if (doc.containsKey('elasticsearch.index.primaries.docs.count_delta') && !doc['elasticsearch.index.primaries.docs.count_delta'].empty) {
-                hasDelta = true;
-              }
+              if (doc.containsKey('elasticsearch.index.primaries.docs.count_delta') && !doc['elasticsearch.index.primaries.docs.count_delta'].empty) { hasDelta = true; }
             } catch (Exception e) {}
             if (!hasDelta) {
               try {
-                if (params._source?.elasticsearch?.index?.primaries?.docs?.count_delta != null) {
-                  hasDelta = true;
-                }
+                if (params._source?.elasticsearch?.index?.primaries?.docs?.count_delta != null) { hasDelta = true; }
               } catch (Exception e) {}
             }
-            List m = (List)state.nat.get(idx);
-            if (m == null) {
-              m = [0L, 0L, 0L, 0L, 0L, 0L];
-              state.nat.put(idx, m);
-            }
-            if (hasDelta) {
-              m.set(w, ((Number)m.get(w)).longValue() | bit);
-              state.nat_delta_docs = ((Number)state.nat_delta_docs).longValue() + 1L;
-            } else {
-              m.set(3 + w, ((Number)m.get(3 + w)).longValue() | bit);
+            int off = hasDelta ? w : (3 + w);
+            m.set(off, ((Number)m.get(off)).longValue() | bit);
+            Map ns = (Map)u.get('ns');
+            List sv = (List)ns.get(sk);
+            if (sv == null) { ns.put(sk, [idxMs, qryMs, storeB, dsetB]); }
+            else {
+              sv.set(0, ((Number)sv.get(0)).longValue() + idxMs);
+              sv.set(1, ((Number)sv.get(1)).longValue() + qryMs);
+              sv.set(2, ((Number)sv.get(2)).longValue() + storeB);
+              sv.set(3, ((Number)sv.get(3)).longValue() + dsetB);
             }
           } else {
-            List m = (List)state.leg.get(idx);
-            if (m == null) {
-              m = [0L, 0L, 0L];
-              state.leg.put(idx, m);
+            state.leg_cnt = ((Number)state.leg_cnt).longValue() + 1L;
+            List rl = (List)state.raw_leg;
+            rl.set(0, ((Number)rl.get(0)).longValue() + idxMs);
+            rl.set(1, ((Number)rl.get(1)).longValue() + qryMs);
+            rl.set(2, ((Number)rl.get(2)).longValue() + storeB);
+            rl.set(3, ((Number)rl.get(3)).longValue() + dsetB);
+            m.set(6 + w, ((Number)m.get(6 + w)).longValue() | bit);
+            Map ls = (Map)u.get('ls');
+            List sv = (List)ls.get(sk);
+            if (sv == null) { ls.put(sk, [idxMs, qryMs, storeB, dsetB]); }
+            else {
+              sv.set(0, ((Number)sv.get(0)).longValue() + idxMs);
+              sv.set(1, ((Number)sv.get(1)).longValue() + qryMs);
+              sv.set(2, ((Number)sv.get(2)).longValue() + storeB);
+              sv.set(3, ((Number)sv.get(3)).longValue() + dsetB);
             }
-            m.set(w, ((Number)m.get(w)).longValue() | bit);
           }
         combine_script: "return state;"
         reduce_script: |
-          Map mergedNat = new HashMap();
-          Map mergedLeg = new HashMap();
-          long totalNatDelta = 0L;
+          Map merged = new HashMap();
+          List rawNat = [0L, 0L, 0L, 0L];
+          List rawLeg = [0L, 0L, 0L, 0L];
+          long natCnt = 0L;
+          long legCnt = 0L;
           for (def st : states) {
             if (st == null) { continue; }
-            if (st.nat_delta_docs instanceof Number) {
-              totalNatDelta += ((Number)st.nat_delta_docs).longValue();
+            if (st.nat_cnt instanceof Number) { natCnt += ((Number)st.nat_cnt).longValue(); }
+            if (st.leg_cnt instanceof Number) { legCnt += ((Number)st.leg_cnt).longValue(); }
+            if (st.raw_nat instanceof List) {
+              for (int i = 0; i < 4; i++) { rawNat.set(i, ((Number)rawNat.get(i)).longValue() + ((Number)((List)st.raw_nat).get(i)).longValue()); }
             }
-            if (st.nat instanceof Map) {
-              for (def e : ((Map)st.nat).entrySet()) {
-                String k = e.getKey().toString();
-                List v = (List)e.getValue();
-                List acc = (List)mergedNat.get(k);
-                if (acc == null) {
-                  acc = [0L, 0L, 0L, 0L, 0L, 0L];
-                  mergedNat.put(k, acc);
-                }
-                for (int i = 0; i < 6; i++) {
-                  acc.set(i, ((Number)acc.get(i)).longValue() | ((Number)v.get(i)).longValue());
-                }
-              }
+            if (st.raw_leg instanceof List) {
+              for (int i = 0; i < 4; i++) { rawLeg.set(i, ((Number)rawLeg.get(i)).longValue() + ((Number)((List)st.raw_leg).get(i)).longValue()); }
             }
-            if (st.leg instanceof Map) {
-              for (def e : ((Map)st.leg).entrySet()) {
-                String k = e.getKey().toString();
-                List v = (List)e.getValue();
-                List acc = (List)mergedLeg.get(k);
+            if (st.units instanceof Map) {
+              for (def ue : ((Map)st.units).entrySet()) {
+                String uk = ue.getKey().toString();
+                Map uv = (Map)ue.getValue();
+                Map acc = (Map)merged.get(uk);
                 if (acc == null) {
-                  acc = [0L, 0L, 0L];
-                  mergedLeg.put(k, acc);
+                  acc = new HashMap();
+                  acc.put('m', [0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L]);
+                  acc.put('ns', new HashMap());
+                  acc.put('ls', new HashMap());
+                  merged.put(uk, acc);
                 }
-                for (int i = 0; i < 3; i++) {
-                  acc.set(i, ((Number)acc.get(i)).longValue() | ((Number)v.get(i)).longValue());
+                List am = (List)acc.get('m');
+                List um = (List)uv.get('m');
+                for (int i = 0; i < 9; i++) { am.set(i, ((Number)am.get(i)).longValue() | ((Number)um.get(i)).longValue()); }
+                for (String mapName : ['ns', 'ls']) {
+                  Map dstM = (Map)acc.get(mapName);
+                  Map srcM = (Map)uv.get(mapName);
+                  for (def se : srcM.entrySet()) {
+                    String sk = se.getKey().toString();
+                    List sv = (List)se.getValue();
+                    List dv = (List)dstM.get(sk);
+                    if (dv == null) {
+                      dstM.put(sk, [((Number)sv.get(0)).longValue(), ((Number)sv.get(1)).longValue(), ((Number)sv.get(2)).longValue(), ((Number)sv.get(3)).longValue()]);
+                    } else {
+                      for (int i = 0; i < 4; i++) { dv.set(i, ((Number)dv.get(i)).longValue() + ((Number)sv.get(i)).longValue()); }
+                    }
+                  }
                 }
               }
             }
           }
-          boolean coversAll = false;
-          if (mergedLeg.isEmpty()) {
-            coversAll = !mergedNat.isEmpty();
-          } else if (totalNatDelta > 0L && !mergedNat.isEmpty()) {
-            coversAll = true;
-            for (def le : mergedLeg.entrySet()) {
-              String idx = le.getKey().toString();
-              List legM = (List)le.getValue();
-              List natM = (List)mergedNat.get(idx);
-              if (natM == null) {
-                coversAll = false;
-                break;
+          List sel = [0L, 0L, 0L, 0L];
+          boolean usedNat = false;
+          boolean usedLeg = false;
+          for (def ue : merged.entrySet()) {
+            Map u = (Map)ue.getValue();
+            List m = (List)u.get('m');
+            Map ns = (Map)u.get('ns');
+            Map ls = (Map)u.get('ls');
+            if (ls.isEmpty()) {
+              if (!ns.isEmpty()) {
+                usedNat = true;
+                for (def sv : ns.values()) {
+                  List v = (List)sv;
+                  for (int i = 0; i < 4; i++) { sel.set(i, ((Number)sel.get(i)).longValue() + ((Number)v.get(i)).longValue()); }
+                }
               }
-              int firstDelta = -1;
-              int firstBase = -1;
+              continue;
+            }
+            if (ns.isEmpty()) {
+              usedLeg = true;
+              for (def sv : ls.values()) {
+                List v = (List)sv;
+                for (int i = 0; i < 4; i++) { sel.set(i, ((Number)sel.get(i)).longValue() + ((Number)v.get(i)).longValue()); }
+              }
+              continue;
+            }
+            int firstDelta = -1;
+            int firstBase = -1;
+            int lastLeg = -1;
+            for (int b = 0; b < 144; b++) {
+              int w = b >> 6;
+              long bit = 1L << (b & 63);
+              if (firstDelta < 0 && (((Number)m.get(w)).longValue() & bit) != 0L) { firstDelta = b; }
+              if (firstBase < 0 && (((Number)m.get(3 + w)).longValue() & bit) != 0L) { firstBase = b; }
+              if ((((Number)m.get(6 + w)).longValue() & bit) != 0L) { lastLeg = b; }
+            }
+            boolean unitNatCovers = (firstDelta >= 0);
+            if (unitNatCovers) {
               for (int b = 0; b < 144; b++) {
                 int w = b >> 6;
                 long bit = 1L << (b & 63);
-                if (firstDelta < 0 && (((Number)natM.get(w)).longValue() & bit) != 0L) { firstDelta = b; }
-                if (firstBase < 0 && (((Number)natM.get(3 + w)).longValue() & bit) != 0L) { firstBase = b; }
-              }
-              if (firstDelta < 0) {
-                coversAll = false;
-                break;
-              }
-              for (int b = 0; b < 144; b++) {
-                int w = b >> 6;
-                long bit = 1L << (b & 63);
-                if ((((Number)legM.get(w)).longValue() & bit) == 0L) { continue; }
-                if ((((Number)natM.get(3 + w)).longValue() & bit) != 0L) {
-                  coversAll = false;
-                  break;
-                }
-                if (firstBase >= 0 && firstBase <= firstDelta && b <= firstBase) {
-                  coversAll = false;
-                  break;
-                }
-                boolean exactMatch = ((((Number)natM.get(w)).longValue() & bit) != 0L);
+                if ((((Number)m.get(6 + w)).longValue() & bit) == 0L) { continue; }
+                if ((((Number)m.get(3 + w)).longValue() & bit) != 0L) { unitNatCovers = false; break; }
+                if (firstBase >= 0 && firstBase <= firstDelta && b <= firstBase) { unitNatCovers = false; break; }
+                boolean exactMatch = ((((Number)m.get(w)).longValue() & bit) != 0L);
                 boolean nextMatch = false;
                 if (!exactMatch && (b + 1) < 144) {
                   int nw = (b + 1) >> 6;
                   long nbit = 1L << ((b + 1) & 63);
-                  if ((((Number)natM.get(nw)).longValue() & nbit) != 0L
-                      && (((Number)natM.get(3 + nw)).longValue() & nbit) == 0L
+                  if ((((Number)m.get(nw)).longValue() & nbit) != 0L
+                      && (((Number)m.get(3 + nw)).longValue() & nbit) == 0L
                       && (b > firstDelta || (b == 0 && firstBase < 0))) {
                     nextMatch = true;
                   }
                 }
-                if (!exactMatch && !nextMatch) {
-                  coversAll = false;
-                  break;
+                if (!exactMatch && !nextMatch) { unitNatCovers = false; break; }
+              }
+            }
+            if (unitNatCovers) {
+              usedNat = true;
+              for (def sv : ns.values()) {
+                List v = (List)sv;
+                for (int i = 0; i < 4; i++) { sel.set(i, ((Number)sel.get(i)).longValue() + ((Number)v.get(i)).longValue()); }
+              }
+            } else {
+              usedLeg = true;
+              for (def sv : ls.values()) {
+                List v = (List)sv;
+                for (int i = 0; i < 4; i++) { sel.set(i, ((Number)sel.get(i)).longValue() + ((Number)v.get(i)).longValue()); }
+              }
+              if (lastLeg >= 0 && lastLeg < 143) {
+                int lw = lastLeg >> 6;
+                long lbit = 1L << (lastLeg & 63);
+                boolean natAtLastLeg = ((((Number)m.get(lw)).longValue() & lbit) != 0L)
+                  || ((((Number)m.get(3 + lw)).longValue() & lbit) != 0L);
+                for (def ne : ns.entrySet()) {
+                  int nb = Integer.parseInt(ne.getKey().toString());
+                  if (nb > lastLeg + 1 || (nb == lastLeg + 1 && (firstBase > lastLeg || natAtLastLeg))) {
+                    usedNat = true;
+                    List v = (List)ne.getValue();
+                    for (int i = 0; i < 4; i++) { sel.set(i, ((Number)sel.get(i)).longValue() + ((Number)v.get(i)).longValue()); }
+                  }
                 }
               }
-              if (!coversAll) { break; }
             }
           }
+          String src = (usedNat && usedLeg) ? 'mixed' : (usedNat ? 'native' : 'legacy');
           Map res = new HashMap();
-          res.put('native_covers_all', coversAll);
-          res.put('native_index_cnt', mergedNat.size());
-          res.put('legacy_index_cnt', mergedLeg.size());
+          res.put('usage_source', src);
+          res.put('has_native_usage', natCnt > 0L);
+          res.put('has_legacy_usage', legCnt > 0L);
+          res.put('selected_sum_indexing_time', sel.get(0));
+          res.put('selected_sum_query_time', sel.get(1));
+          res.put('selected_sum_store_size', sel.get(2));
+          res.put('selected_sum_data_set_store_size', sel.get(3));
+          res.put('native_sum_indexing_time', rawNat.get(0));
+          res.put('native_sum_query_time', rawNat.get(1));
+          res.put('native_sum_store_size', rawNat.get(2));
+          res.put('native_sum_data_set_store_size', rawNat.get(3));
+          res.put('legacy_sum_indexing_time', rawLeg.get(0));
+          res.put('legacy_sum_query_time', rawLeg.get(1));
+          res.put('legacy_sum_store_size', rawLeg.get(2));
+          res.put('legacy_sum_data_set_store_size', rawLeg.get(3));
           return res;
-    native:
-      filter:
-        term:
-          data_stream.dataset: chargeback.usage
-      aggs:
-        doc_cnt:
-          value_count:
-            field: "@timestamp"
-        tier_and_datastream_sum_indexing_time:
-          sum:
-            field: elasticsearch.index.total.indexing.index_time_in_millis
-        tier_and_datastream_sum_query_time:
-          sum:
-            field: elasticsearch.index.total.search.query_time_in_millis
-        tier_and_datastream_sum_store_size:
-          sum:
-            field: elasticsearch.index.total.store.size_in_bytes
-        tier_and_datastream_sum_data_set_store_size:
-          sum:
-            field: elasticsearch.index.primaries.store.total_data_set_size_in_bytes
-    legacy:
-      filter:
-        bool:
-          must_not:
-            - term:
-                data_stream.dataset: chargeback.usage
-      aggs:
-        doc_cnt:
-          value_count:
-            field: "@timestamp"
-        tier_and_datastream_sum_indexing_time:
-          sum:
-            field: elasticsearch.index.total.indexing.index_time_in_millis_delta
-        tier_and_datastream_sum_query_time:
-          sum:
-            field: elasticsearch.index.total.search.query_time_in_millis_delta
-        tier_and_datastream_sum_store_size:
-          sum:
-            field: elasticsearch.index.total.store.size_in_bytes
-        tier_and_datastream_sum_data_set_store_size:
-          sum:
-            field: elasticsearch.index.primaries.store.total_data_set_size_in_bytes
 settings:
+  align_checkpoints: false
   deduce_mappings: false
   unattended: true
 _meta:
   managed: true
   run_as_kibana_system: false
-  fleet_transform_version: 0.1.0
+  fleet_transform_version: 0.6.0
