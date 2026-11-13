@@ -21,6 +21,14 @@ The operating system features that power this feature are as follows:
 - **macOS (Darwin)** - Uses the FSEvents API, present since macOS 10.5. This API coalesces multiple changes to a file into a single event. Auditbeat translates this coalesced changes into a meaningful sequence of actions. However, in rare situations the reported events may have a different ordering than what actually happened.
 - **Windows** - ReadDirectoryChangesW is used.
 
+## Hash algorithms
+
+The `hash_types` setting controls which hashes are computed for each file. If it is not set, the default depends on the Elastic Agent build: `sha1` for standard builds and `sha256` for FIPS builds. FIPS builds do not support the `md5`, `sha1` and `blake2b_*` hash types, and the input fails to start if one of them is configured.
+
+Policies created before version 1.19.0 store `sha1` in the `hash_types` setting and keep it when the integration is upgraded. On FIPS builds, edit those policies and replace `sha1` with an approved algorithm such as `sha256`.
+
+Hashes are reported in the `file.hash.<algorithm>` fields, so events collected after changing the algorithm have a different hash field from older events. Changing the algorithms of an existing policy also makes the integration report each monitored file once, with the `config_change` action.
+
 An example event for `event` looks as following:
 
 ```json
@@ -152,6 +160,7 @@ An example event for `event` looks as following:
 | file.gid | Primary group ID (GID) of the file. | keyword |
 | file.group | Primary group name of the file. | keyword |
 | file.hash.sha1 | SHA1 hash. | keyword |
+| file.hash.sha256 | SHA256 hash. | keyword |
 | file.inode | Inode representing the file in the filesystem. | keyword |
 | file.mime_type | MIME type should identify the format of the file or stream of bytes using IANA official types: https://www.iana.org/assignments/media-types/media-types.xhtml, where possible. When more than one type is applicable, the most specific type should be used. | keyword |
 | file.mode | Mode of the file in octal representation. | keyword |
