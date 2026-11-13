@@ -3,17 +3,27 @@ description: Pipeline for parsing Nginx access logs. Requires the geoip and user
   plugins.
 processors:
   - set:
+      tag: set_event_ingested_80086712
       field: event.ingested
       value: '{{_ingest.timestamp}}'
   - set:
+      tag: set_ecs_version_717f558b
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_c8584fb7
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_6d932515
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: The `message` field is no longer needed once the document has an `event.original` field.
   - grok:
+      tag: grok_event_original_6718bc1c
       field: event.original
       patterns:
       - (%{NGINX_HOST} )?"?(?:%{NGINX_ADDRESS_LIST:nginx.access.remote_ip_list}|%{NOTSPACE:source.address})
@@ -26,36 +36,44 @@ processors:
         NGINX_ADDRESS_LIST: (?:%{IP}|%{WORD})("?,?\s*(?:%{IP}|%{WORD}))*
       ignore_missing: true
   - grok:
+      tag: grok_nginx_access_info_e749c608
       field: nginx.access.info
       patterns:
       - '%{WORD:http.request.method} %{DATA:_tmp.url_orig} HTTP/%{NUMBER:http.version}'
       - ""
       ignore_missing: true
   - uri_parts:
+      tag: uri_parts_tmp_url_orig_5ad687db
       field: _tmp.url_orig
       ignore_failure: true
   - set:
+      tag: set_url_domain_b2265ae7
       field: url.domain
       value: "{{destination.domain}}"
       if: ctx.url?.domain == null && ctx.destination?.domain != null
   - remove:
+      tag: remove_nginx_access_info_98a11959
       field:
         - nginx.access.info
         - _tmp.url_orig
       ignore_missing: true
   - split:
+      tag: split_nginx_access_remote_ip_list_1acd7bb3
       field: nginx.access.remote_ip_list
       separator: '"?,?\s+'
       ignore_missing: true
   - split:
+      tag: split_nginx_access_origin_dddbec6a
       field: nginx.access.origin
       separator: '"?,?\s+'
       ignore_missing: true
   - set:
+      tag: set_source_address_a4c6a201
       field: source.address
       if: ctx.source?.address == null
       value: ""
   - script:
+      tag: script_ff720578
       if: ctx.nginx?.access?.remote_ip_list != null && ctx.nginx.access.remote_ip_list.length > 0
       lang: painless
       source: >-
@@ -105,43 +123,54 @@ processors:
       params:
         dot: .
   - remove:
+      tag: remove_source_address_f9887faf
       field: source.address
       if: ctx.source.address == null
   - grok:
+      tag: grok_source_address_eec099ba
       field: source.address
       patterns:
       - ^%{IP:source.ip}$
       ignore_failure: true
   - remove:
+      tag: remove_event_created_e9113ad4
       field: event.created
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_timestamp_c560a167
       field: '@timestamp'
       target_field: event.created
   - convert:
+      tag: convert_destination_port_845c3a45
       field: destination.port
       type: long
       if: ctx.destination?.port != null
   - date:
+      tag: date_nginx_access_time_33f210cc
       field: nginx.access.time
       target_field: '@timestamp'
       formats:
       - dd/MMM/yyyy:H:m:s Z
       on_failure:
       - append:
+          tag: append_error_message_4faeb127
           field: error.message
           value: '{{ _ingest.on_failure_message }}'
   - remove:
+      tag: remove_nginx_access_time_f480e760
       field: nginx.access.time
   - user_agent:
+      tag: user_agent_user_agent_original_e0e8feee
       field: user_agent.original
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_c5774641
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_7f2b8947
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -150,39 +179,49 @@ processors:
       - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_67634ae9
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_1a04b534
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - set:
+      tag: set_event_kind_324b7a78
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_6012ef81
       field: event.category
       value: web
   - append:
+      tag: append_event_type_fd724f26
       field: event.type
       value: access
   - set:
+      tag: set_event_outcome_d20b1bdb
       field: event.outcome
       value: success
       if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code < 400"
   - set:
+      tag: set_event_outcome_d20338d0
       field: event.outcome
       value: failure
       if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code >= 400"      
   - append:
+      tag: append_related_ip_99d7f1b8
       field: related.ip
       value: "{{source.ip}}"
       if: "ctx?.source?.ip != null"
   - append:
+      tag: append_related_ip_6c1c4df9
       field: related.ip
       value: "{{destination.ip}}"
       if: "ctx?.destination?.ip != null"
   - append:
+      tag: append_related_user_a3b85a63
       field: related.user
       value: "{{user.name}}"
       if: "ctx?.user?.name != null"
@@ -192,12 +231,14 @@ processors:
       type: double
       ignore_missing: true
   - script: 
+      tag: script_5aa2b544
       lang: painless
       description: This script multiplies the second value of response_time * 1000 to convert to milliseconds.
       source: |
         ctx.nginx.access.response_time = (long) (ctx.nginx.access.response_time * 1000)
       if: ctx.nginx?.access?.response_time != null
   - script:
+      tag: script_4c3544c3
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -223,5 +264,14 @@ processors:
         handleMap(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_446ec4fa
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_c29bb130
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
