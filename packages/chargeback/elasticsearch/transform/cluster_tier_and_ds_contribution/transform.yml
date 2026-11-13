@@ -199,52 +199,11 @@ source:
               if (st != null && st.toString() != '' && st.toString() != 'unknown') { resolved = st.toString(); }
             } catch (Exception e) {}
           }
-          String pref = null;
-          for (String pf : ['elasticsearch.index.tier_preference.keyword', 'elasticsearch.index.tier_preference']) {
-            try {
-              if (doc.containsKey(pf) && !doc[pf].empty) {
-                pref = doc[pf].value.toString();
-                if (pref != '') { break; }
-              }
-            } catch (Exception e) {}
+          for (String ct : ['hot/content', 'warm', 'cold', 'frozen', 'unknown']) {
+            emit(ct);
           }
-          if (pref == null || pref == '') {
-            try {
-              def sp = params._source?.elasticsearch?.index?.tier_preference;
-              if (sp != null) { pref = sp.toString(); }
-            } catch (Exception e) {}
-          }
-          if (resolved == null) {
-            resolved = 'unknown';
-            if (pref != null && pref != '') {
-              for (String part : pref.splitOnToken(',')) {
-                String tp = part.trim();
-                if (tp == 'data_frozen') { resolved = 'frozen'; break; }
-                if (tp == 'data_cold') { resolved = 'cold'; break; }
-                if (tp == 'data_warm') { resolved = 'warm'; break; }
-                if (tp == 'data_hot' || tp == 'data_content') { resolved = 'hot/content'; break; }
-              }
-            }
-          }
-          emit(resolved);
-          boolean isNat = doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty
-            && doc['data_stream.dataset'].value == 'chargeback.usage';
-          if (isNat) {
-            Set extra = new HashSet();
-            extra.add('unknown');
-            if (pref != null && pref != '') {
-              for (String part : pref.splitOnToken(',')) {
-                String tp = part.trim();
-                if (tp == 'data_frozen') { extra.add('frozen'); }
-                else if (tp == 'data_cold') { extra.add('cold'); }
-                else if (tp == 'data_warm') { extra.add('warm'); }
-                else if (tp == 'data_hot' || tp == 'data_content') { extra.add('hot/content'); }
-              }
-            }
-            for (def et : extra) {
-              String ets = et.toString();
-              if (!ets.equals(resolved)) { emit(ets); }
-            }
+          if (resolved != null && resolved != 'hot/content' && resolved != 'warm' && resolved != 'cold' && resolved != 'frozen' && resolved != 'unknown') {
+            emit(resolved);
           }
     cb_resolved_datastream:
       type: keyword
@@ -320,6 +279,8 @@ pivot:
           state.raw_leg = [0L, 0L, 0L, 0L];
           state.raw_nat_by_tier = new HashMap();
           state.nat_cnt_by_tier = new HashMap();
+          state.raw_leg_by_tier = new HashMap();
+          state.leg_cnt_by_tier = new HashMap();
           state.nat_cnt = 0L;
           state.leg_cnt = 0L;
         map_script: |
@@ -495,11 +456,22 @@ pivot:
             }
           } else {
             state.leg_cnt = ((Number)state.leg_cnt).longValue() + 1L;
+            long ltcPrev = state.leg_cnt_by_tier.containsKey(tier) ? ((Number)state.leg_cnt_by_tier.get(tier)).longValue() : 0L;
+            state.leg_cnt_by_tier.put(tier, ltcPrev + 1L);
             List rl = (List)state.raw_leg;
             rl.set(0, ((Number)rl.get(0)).longValue() + idxMs);
             rl.set(1, ((Number)rl.get(1)).longValue() + qryMs);
             rl.set(2, ((Number)rl.get(2)).longValue() + storeB);
             rl.set(3, ((Number)rl.get(3)).longValue() + dsetB);
+            List rlt = (List)state.raw_leg_by_tier.get(tier);
+            if (rlt == null) {
+              state.raw_leg_by_tier.put(tier, [idxMs, qryMs, storeB, dsetB]);
+            } else {
+              rlt.set(0, ((Number)rlt.get(0)).longValue() + idxMs);
+              rlt.set(1, ((Number)rlt.get(1)).longValue() + qryMs);
+              rlt.set(2, ((Number)rlt.get(2)).longValue() + storeB);
+              rlt.set(3, ((Number)rlt.get(3)).longValue() + dsetB);
+            }
             List lm = (List)u.get('lm');
             lm.set(w, ((Number)lm.get(w)).longValue() | bit);
             List lt = (List)u.get('lt');
@@ -517,6 +489,8 @@ pivot:
           List rawLeg = [0L, 0L, 0L, 0L];
           Map rawNatByTier = new HashMap();
           Map natCntByTier = new HashMap();
+          Map rawLegByTier = new HashMap();
+          Map legCntByTier = new HashMap();
           long natCnt = 0L;
           long legCnt = 0L;
           for (def st : states) {
@@ -544,6 +518,26 @@ pivot:
                 List dv = (List)rawNatByTier.get(tk);
                 if (dv == null) {
                   rawNatByTier.put(tk, [((Number)sv.get(0)).longValue(), ((Number)sv.get(1)).longValue(), ((Number)sv.get(2)).longValue(), ((Number)sv.get(3)).longValue()]);
+                } else {
+                  for (int i = 0; i < 4; i++) { dv.set(i, ((Number)dv.get(i)).longValue() + ((Number)sv.get(i)).longValue()); }
+                }
+              }
+            }
+            if (st.leg_cnt_by_tier instanceof Map) {
+              for (def te : ((Map)st.leg_cnt_by_tier).entrySet()) {
+                String tk = te.getKey().toString();
+                long tv = ((Number)te.getValue()).longValue();
+                long prev = legCntByTier.containsKey(tk) ? ((Number)legCntByTier.get(tk)).longValue() : 0L;
+                legCntByTier.put(tk, prev + tv);
+              }
+            }
+            if (st.raw_leg_by_tier instanceof Map) {
+              for (def te : ((Map)st.raw_leg_by_tier).entrySet()) {
+                String tk = te.getKey().toString();
+                List sv = (List)te.getValue();
+                List dv = (List)rawLegByTier.get(tk);
+                if (dv == null) {
+                  rawLegByTier.put(tk, [((Number)sv.get(0)).longValue(), ((Number)sv.get(1)).longValue(), ((Number)sv.get(2)).longValue(), ((Number)sv.get(3)).longValue()]);
                 } else {
                   for (int i = 0; i < 4; i++) { dv.set(i, ((Number)dv.get(i)).longValue() + ((Number)sv.get(i)).longValue()); }
                 }
@@ -881,9 +875,11 @@ pivot:
           res.put('has_native_usage', natCnt > 0L);
           res.put('has_legacy_usage', legCnt > 0L);
           res.put('leg_cnt', legCnt);
+          res.put('leg_cnt_by_tier', legCntByTier);
           res.put('nat_cnt_by_tier', natCntByTier);
           res.put('sel_by_tier', selByTier);
           res.put('raw_nat_by_tier', rawNatByTier);
+          res.put('raw_leg_by_tier', rawLegByTier);
           res.put('sel_src_by_tier', selSrcByTier);
           res.put('selected_sum_indexing_time', sel.get(0));
           res.put('selected_sum_query_time', sel.get(1));

@@ -14,19 +14,26 @@ processors:
           String[] metrics = new String[] { 'sum_indexing_time', 'sum_query_time', 'sum_store_size', 'sum_data_set_store_size' };
           if (ctx.tier != null && r.sel_by_tier instanceof Map) {
             String tKey = ctx.tier.toString();
-            long legCnt = (r.leg_cnt instanceof Number) ? ((Number)r.leg_cnt).longValue() : 0L;
+            boolean hasSelTier = ((Map)r.sel_by_tier).get(tKey) instanceof List;
             Map natCntMap = (r.nat_cnt_by_tier instanceof Map) ? (Map)r.nat_cnt_by_tier : null;
             long natTierCnt = (natCntMap != null && natCntMap.get(tKey) instanceof Number)
               ? ((Number)natCntMap.get(tKey)).longValue()
               : 0L;
-            if (legCnt == 0L && natTierCnt == 0L) {
+            Map legCntMap = (r.leg_cnt_by_tier instanceof Map) ? (Map)r.leg_cnt_by_tier : null;
+            long legTierCnt = (legCntMap != null && legCntMap.get(tKey) instanceof Number)
+              ? ((Number)legCntMap.get(tKey)).longValue()
+              : ((r.leg_cnt_by_tier == null && r.leg_cnt instanceof Number) ? ((Number)r.leg_cnt).longValue() : 0L);
+            if (!hasSelTier && legTierCnt == 0L && natTierCnt == 0L) {
               ctx._drop_shadow_bucket = true;
               return;
             }
-            List selT = (((Map)r.sel_by_tier).get(tKey) instanceof List) ? (List)((Map)r.sel_by_tier).get(tKey) : [0L, 0L, 0L, 0L];
+            List selT = hasSelTier ? (List)((Map)r.sel_by_tier).get(tKey) : [0L, 0L, 0L, 0L];
             List natT = (r.raw_nat_by_tier instanceof Map && ((Map)r.raw_nat_by_tier).get(tKey) instanceof List)
               ? (List)((Map)r.raw_nat_by_tier).get(tKey)
               : [0L, 0L, 0L, 0L];
+            List legT = (r.raw_leg_by_tier instanceof Map && ((Map)r.raw_leg_by_tier).get(tKey) instanceof List)
+              ? (List)((Map)r.raw_leg_by_tier).get(tKey)
+              : null;
             String tierSrc = (r.sel_src_by_tier instanceof Map && ((Map)r.sel_src_by_tier).get(tKey) != null)
               ? ((Map)r.sel_src_by_tier).get(tKey).toString()
               : (r.usage_source != null ? r.usage_source.toString() : 'legacy');
@@ -35,11 +42,17 @@ processors:
               String m = metrics[i];
               ctx[pfx + '_' + m] = ((Number)selT.get(i)).longValue();
               ctx['native_' + m] = ((Number)natT.get(i)).longValue();
-              def lv = r.get('legacy_' + m);
-              ctx['legacy_' + m] = (lv instanceof Number) ? ((Number)lv).longValue() : 0L;
+              if (legT != null) {
+                ctx['legacy_' + m] = ((Number)legT.get(i)).longValue();
+              } else if (r.raw_leg_by_tier instanceof Map) {
+                ctx['legacy_' + m] = 0L;
+              } else {
+                def lv = r.get('legacy_' + m);
+                ctx['legacy_' + m] = (lv instanceof Number) ? ((Number)lv).longValue() : 0L;
+              }
             }
             ctx.has_native_usage = (natTierCnt > 0L);
-            ctx.has_legacy_usage = (legCnt > 0L);
+            ctx.has_legacy_usage = (legTierCnt > 0L);
           } else {
             ctx.usage_source = r.usage_source != null ? r.usage_source.toString() : 'legacy';
             for (int i = 0; i < 4; i++) {

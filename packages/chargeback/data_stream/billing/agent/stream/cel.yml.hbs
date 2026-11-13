@@ -161,6 +161,10 @@ program: |-
             :
               state.?cursor.disc_ech.orValue([]).as(acc_ech,
               state.?cursor.disc_sls.orValue([]).as(acc_sls,
+              bool(state.?cursor.disc_dep_failed.orValue(false)).as(prev_dep_failed,
+              bool(state.?cursor.disc_es_failed.orValue(false)).as(prev_es_failed,
+              bool(state.?cursor.disc_obs_failed.orValue(false)).as(prev_obs_failed,
+              bool(state.?cursor.disc_sec_failed.orValue(false)).as(prev_sec_failed,
               ((dep_from >= 0) ?
                 request(
                   "POST",
@@ -179,6 +183,7 @@ program: |-
                       ((has(dep_body.deployments) && dep_body.deployments != null) ? dep_body.deployments : []).as(raw_deps,
                         {
                           "ok": true,
+                          "retryable": false,
                           "err": dyn({}),
                           "items": raw_deps.filter(d,
                             has(d.resources) && d.resources != null && has(d.resources.elasticsearch) && d.resources.elasticsearch != null && size(d.resources.elasticsearch) > 0
@@ -198,14 +203,15 @@ program: |-
                         }
                       )
                     )
-                  : (dep_resp.StatusCode == 404 ? { "ok": true, "err": dyn({}), "items": [], "next_from": -1 } : {
+                  : (dep_resp.StatusCode == 404 ? { "ok": true, "retryable": false, "err": dyn({}), "items": [], "next_from": -1 } : {
                       "ok": false,
+                      "retryable": (dep_resp.StatusCode != 401 && dep_resp.StatusCode != 403) || dep_from > 0,
                       "err": dyn({ "error": { "code": string(dep_resp.StatusCode), "id": string(dep_resp.Status), "message": "POST " + dep_resp.Request.URL + ": " + ((size(dep_resp.Body) != 0) ? string(dep_resp.Body) : string(dep_resp.Status)) } }),
                       "items": [],
                       "next_from": -1,
                     })
                 )
-              : { "ok": true, "err": dyn({}), "items": [], "next_from": -1 }).as(dep_page,
+              : { "ok": true, "retryable": false, "err": dyn({}), "items": [], "next_from": -1 }).as(dep_page,
               ((es_next != "") ?
                 get_request(
                   state.cloud_api_base + "/api/v1/serverless/projects/elasticsearch?" + (es_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [es_next] }).format_query()
@@ -214,6 +220,7 @@ program: |-
                     bytes(r.Body).decode_json().as(b,
                       {
                         "ok": true,
+                        "retryable": false,
                         "err": dyn({}),
                         "items": (has(b.items) && b.items != null) ? b.items.map(p, dyn({
                           "id": string(p.id),
@@ -224,14 +231,15 @@ program: |-
                         "next": (has(b.next_page) && b.next_page != null && string(b.next_page) != "") ? string(b.next_page) : "",
                       }
                     )
-                  : (r.StatusCode == 404 ? { "ok": true, "err": dyn({}), "items": [], "next": "" } : {
+                  : (r.StatusCode == 404 ? { "ok": true, "retryable": false, "err": dyn({}), "items": [], "next": "" } : {
                       "ok": false,
+                      "retryable": (r.StatusCode != 401 && r.StatusCode != 403) || es_next != "START",
                       "err": dyn({ "error": { "code": string(r.StatusCode), "id": string(r.Status), "message": "GET " + r.Request.URL + ": " + ((size(r.Body) != 0) ? string(r.Body) : string(r.Status)) } }),
                       "items": [],
                       "next": "",
                     })
                 )
-              : { "ok": true, "err": dyn({}), "items": [], "next": "" }).as(es_page,
+              : { "ok": true, "retryable": false, "err": dyn({}), "items": [], "next": "" }).as(es_page,
               ((obs_next != "") ?
                 get_request(
                   state.cloud_api_base + "/api/v1/serverless/projects/observability?" + (obs_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [obs_next] }).format_query()
@@ -240,6 +248,7 @@ program: |-
                     bytes(r.Body).decode_json().as(b,
                       {
                         "ok": true,
+                        "retryable": false,
                         "err": dyn({}),
                         "items": (has(b.items) && b.items != null) ? b.items.map(p, dyn({
                           "id": string(p.id),
@@ -250,14 +259,15 @@ program: |-
                         "next": (has(b.next_page) && b.next_page != null && string(b.next_page) != "") ? string(b.next_page) : "",
                       }
                     )
-                  : (r.StatusCode == 404 ? { "ok": true, "err": dyn({}), "items": [], "next": "" } : {
+                  : (r.StatusCode == 404 ? { "ok": true, "retryable": false, "err": dyn({}), "items": [], "next": "" } : {
                       "ok": false,
+                      "retryable": (r.StatusCode != 401 && r.StatusCode != 403) || obs_next != "START",
                       "err": dyn({ "error": { "code": string(r.StatusCode), "id": string(r.Status), "message": "GET " + r.Request.URL + ": " + ((size(r.Body) != 0) ? string(r.Body) : string(r.Status)) } }),
                       "items": [],
                       "next": "",
                     })
                 )
-              : { "ok": true, "err": dyn({}), "items": [], "next": "" }).as(obs_page,
+              : { "ok": true, "retryable": false, "err": dyn({}), "items": [], "next": "" }).as(obs_page,
               ((sec_next != "") ?
                 get_request(
                   state.cloud_api_base + "/api/v1/serverless/projects/security?" + (sec_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [sec_next] }).format_query()
@@ -266,6 +276,7 @@ program: |-
                     bytes(r.Body).decode_json().as(b,
                       {
                         "ok": true,
+                        "retryable": false,
                         "err": dyn({}),
                         "items": (has(b.items) && b.items != null) ? b.items.map(p, dyn({
                           "id": string(p.id),
@@ -276,14 +287,15 @@ program: |-
                         "next": (has(b.next_page) && b.next_page != null && string(b.next_page) != "") ? string(b.next_page) : "",
                       }
                     )
-                  : (r.StatusCode == 404 ? { "ok": true, "err": dyn({}), "items": [], "next": "" } : {
+                  : (r.StatusCode == 404 ? { "ok": true, "retryable": false, "err": dyn({}), "items": [], "next": "" } : {
                       "ok": false,
+                      "retryable": (r.StatusCode != 401 && r.StatusCode != 403) || sec_next != "START",
                       "err": dyn({ "error": { "code": string(r.StatusCode), "id": string(r.Status), "message": "GET " + r.Request.URL + ": " + ((size(r.Body) != 0) ? string(r.Body) : string(r.Status)) } }),
                       "items": [],
                       "next": "",
                     })
                 )
-              : { "ok": true, "err": dyn({}), "items": [], "next": "" }).as(sec_page,
+              : { "ok": true, "retryable": false, "err": dyn({}), "items": [], "next": "" }).as(sec_page,
                 (
                   (!dep_page.ok ? [dep_page.err] : []) +
                   (!es_page.ok ? [es_page.err] : []) +
@@ -292,7 +304,24 @@ program: |-
                 ).as(disc_errs,
                   (acc_ech + dep_page.items).as(ech_deps,
                   (acc_sls + es_page.items + obs_page.items + sec_page.items).as(sls_projs,
-                    (dep_page.next_from >= 0 || es_page.next != "" || obs_page.next != "" || sec_page.next != "") ?
+                  (prev_dep_failed || !dep_page.ok).as(dep_failed,
+                  (prev_es_failed || !es_page.ok).as(es_failed,
+                  (prev_obs_failed || !obs_page.ok).as(obs_failed,
+                  (prev_sec_failed || !sec_page.ok).as(sec_failed,
+                  (dep_page.retryable || es_page.retryable || obs_page.retryable || sec_page.retryable).as(disc_retryable,
+                    disc_retryable ?
+                      (meta_evts + disc_errs).as(retry_evts,
+                        {
+                          "events": size(retry_evts) > 0 ? retry_evts : [dyn({ "fake": true })],
+                          "cursor": {
+                            "last_to": req.from.format(time_layout.RFC3339),
+                            "conf_sig": conf_sig,
+                            "last_credit_day": cred_res.credit_day,
+                          },
+                          "want_more": false,
+                        }
+                      )
+                    : (dep_page.next_from >= 0 || es_page.next != "" || obs_page.next != "" || sec_page.next != "") ?
                       (meta_evts + disc_errs).as(page_evts,
                         {
                           "events": size(page_evts) > 0 ? page_evts : [dyn({ "fake": true })],
@@ -306,6 +335,10 @@ program: |-
                             "disc_sec_next": sec_page.next,
                             "disc_ech": ech_deps,
                             "disc_sls": sls_projs,
+                            "disc_dep_failed": dep_failed,
+                            "disc_es_failed": es_failed,
+                            "disc_obs_failed": obs_failed,
+                            "disc_sec_failed": sec_failed,
                           },
                           "want_more": true,
                         }
@@ -321,86 +354,126 @@ program: |-
                         { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
                       ).do_request().as(resp, (resp.StatusCode == 200) ?
                         bytes(resp.Body).decode_json().as(body,
-                          ((has(body.instances) && body.instances != null) ?
-                            body.instances.map(instance,
-                              ((has(instance.id) && instance.id != null && string(instance.id) != "") ? string(instance.id) : "unassociated").as(inst_id,
-                                ech_deps.filter(d, string(d.id) == inst_id || string(d.dep_id) == inst_id).as(matched_ech,
-                                  sls_projs.filter(p, has(p.id) && string(p.id) == inst_id).as(matched_sls,
-                                    ((size(matched_ech) > 0) ? string(matched_ech[0].id) : inst_id).as(resolved_id,
-                                      ((size(matched_ech) > 0) ? string(matched_ech[0].name) : (
-                                        (size(matched_sls) > 0 && has(matched_sls[0].name) && matched_sls[0].name != null && string(matched_sls[0].name) != "") ? string(matched_sls[0].name) : (
-                                          (has(instance.name) && instance.name != null && string(instance.name) != "") ? string(instance.name) : resolved_id
-                                        )
-                                      )).as(resolved_name,
-                                        ((size(matched_ech) > 0) ? "deployment" : (
-                                          (size(matched_sls) > 0 && has(matched_sls[0].project_type)) ? string(matched_sls[0].project_type) : (
-                                            (has(instance.type) && instance.type != null && string(instance.type) != "") ? string(instance.type) : "deployment"
-                                          )
-                                        )).as(resolved_type,
-                                          ((size(matched_ech) > 0) ? matched_ech[0].tags : []).as(resolved_tags,
-                                            ((size(matched_ech) > 0 && string(matched_ech[0].region) != "") ? string(matched_ech[0].region) : (
-                                              (size(matched_sls) > 0 && has(matched_sls[0].region_id) && matched_sls[0].region_id != null) ? string(matched_sls[0].region_id) : ""
-                                            )).as(resolved_region,
-                                              (has(instance.product_line_items) && instance.product_line_items != null) ?
-                                                instance.product_line_items.filter(li, has(li.sku) && li.sku != null && string(li.sku) != "").map(li,
-                                                  dyn({
-                                                    "doc_type": "billing_line_item",
-                                                    "cloud": resolved_region != "" ? { "region": resolved_region } : {},
-                                                    "ess": {
-                                                      "billing": {
-                                                        "organization_id": state.organization_id,
-                                                        "deployment_id": resolved_id,
-                                                        "deployment_name": resolved_name,
-                                                        "deployment_type": resolved_type,
-                                                        "deployment_tags": resolved_tags,
-                                                        "sku": string(li.sku),
-                                                        "type": (has(li.type) && li.type != null) ? string(li.type) : "",
-                                                        "kind": (has(li.kind) && li.kind != null) ? string(li.kind) : "",
-                                                        "total_ecu": (has(li.total_ecu) && li.total_ecu != null) ? double(li.total_ecu) : 0.0,
-                                                        "quantity": {
-                                                          "value": (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null) ? double(li.quantity.value) : 0.0,
+                          ((has(body.instances) && body.instances != null) ? body.instances : []).as(raw_instances,
+                            raw_instances.exists(instance,
+                              ((has(instance.id) && instance.id != null && string(instance.id) != "") ? string(instance.id) : "unassociated").as(iid,
+                                iid != "unassociated" &&
+                                has(instance.product_line_items) && instance.product_line_items != null &&
+                                instance.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku) != "" && (!has(li.total_ecu) || li.total_ecu == null || double(li.total_ecu) >= 0.0)) &&
+                                !ech_deps.exists(d, string(d.id) == iid || string(d.dep_id) == iid) &&
+                                !sls_projs.exists(p, has(p.id) && string(p.id) == iid) &&
+                                ((has(instance.type) && instance.type != null) ? string(instance.type) : "").as(itype,
+                                  itype == "elasticsearch" ? es_failed : (
+                                    itype == "observability" ? obs_failed : (
+                                      itype == "security" ? sec_failed : (
+                                        itype == "" ? (dep_failed || es_failed || obs_failed || sec_failed) : dep_failed
+                                      )
+                                    )
+                                  )
+                                )
+                              )
+                            ).as(disc_blocks_billing,
+                              disc_blocks_billing ?
+                                (meta_evts + disc_errs + (size(disc_errs) > 0 ? [] : [dyn({
+                                  "error": {
+                                    "code": "discovery_incomplete",
+                                    "id": "unattributed_billing_instances",
+                                    "message": "Skipping billing ingestion for " + req.from.format(time_layout.DateOnly) + " because deployment or project discovery failed for billed instances",
+                                  },
+                                })])).as(block_evts,
+                                  {
+                                    "events": block_evts,
+                                    "cursor": {
+                                      "last_to": req.from.format(time_layout.RFC3339),
+                                      "conf_sig": conf_sig,
+                                      "last_credit_day": cred_res.credit_day,
+                                    },
+                                    "want_more": false,
+                                  }
+                                )
+                              :
+                                raw_instances.map(instance,
+                                  ((has(instance.id) && instance.id != null && string(instance.id) != "") ? string(instance.id) : "unassociated").as(inst_id,
+                                    ech_deps.filter(d, string(d.id) == inst_id || string(d.dep_id) == inst_id).as(matched_ech,
+                                      sls_projs.filter(p, has(p.id) && string(p.id) == inst_id).as(matched_sls,
+                                        ((size(matched_ech) > 0) ? string(matched_ech[0].id) : inst_id).as(resolved_id,
+                                          ((size(matched_ech) > 0) ? string(matched_ech[0].name) : (
+                                            (size(matched_sls) > 0 && has(matched_sls[0].name) && matched_sls[0].name != null && string(matched_sls[0].name) != "") ? string(matched_sls[0].name) : (
+                                              (has(instance.name) && instance.name != null && string(instance.name) != "") ? string(instance.name) : resolved_id
+                                            )
+                                          )).as(resolved_name,
+                                            ((size(matched_ech) > 0) ? "deployment" : (
+                                              (size(matched_sls) > 0 && has(matched_sls[0].project_type)) ? string(matched_sls[0].project_type) : (
+                                                (has(instance.type) && instance.type != null && string(instance.type) != "") ? string(instance.type) : "deployment"
+                                              )
+                                            )).as(resolved_type,
+                                              ((size(matched_ech) > 0) ? matched_ech[0].tags : []).as(resolved_tags,
+                                                ((size(matched_ech) > 0 && string(matched_ech[0].region) != "") ? string(matched_ech[0].region) : (
+                                                  (size(matched_sls) > 0 && has(matched_sls[0].region_id) && matched_sls[0].region_id != null) ? string(matched_sls[0].region_id) : ""
+                                                )).as(resolved_region,
+                                                  (has(instance.product_line_items) && instance.product_line_items != null) ?
+                                                    instance.product_line_items.filter(li, has(li.sku) && li.sku != null && string(li.sku) != "").map(li,
+                                                      dyn({
+                                                        "doc_type": "billing_line_item",
+                                                        "cloud": resolved_region != "" ? { "region": resolved_region } : {},
+                                                        "ess": {
+                                                          "billing": {
+                                                            "organization_id": state.organization_id,
+                                                            "deployment_id": resolved_id,
+                                                            "deployment_name": resolved_name,
+                                                            "deployment_type": resolved_type,
+                                                            "deployment_tags": resolved_tags,
+                                                            "sku": string(li.sku),
+                                                            "type": (has(li.type) && li.type != null) ? string(li.type) : "",
+                                                            "kind": (has(li.kind) && li.kind != null) ? string(li.kind) : "",
+                                                            "total_ecu": (has(li.total_ecu) && li.total_ecu != null) ? double(li.total_ecu) : 0.0,
+                                                            "quantity": {
+                                                              "value": (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null) ? double(li.quantity.value) : 0.0,
+                                                            },
+                                                            "from": req.from.format(time_layout.RFC3339),
+                                                            "to": req.to.format(time_layout.RFC3339),
+                                                          },
                                                         },
-                                                        "from": req.from.format(time_layout.RFC3339),
-                                                        "to": req.to.format(time_layout.RFC3339),
-                                                      },
-                                                    },
-                                                  })
+                                                      })
+                                                    )
+                                                  : []
                                                 )
-                                              : []
+                                              )
                                             )
                                           )
                                         )
                                       )
                                     )
                                   )
+                                ).flatten().as(raw_evts,
+                                  raw_evts.filter(e, double(e.ess.billing.total_ecu) >= 0.0).as(pos_evts,
+                                    (meta_evts + disc_errs + pos_evts).as(final_evts,
+                                      (dep_failed || es_failed || obs_failed || sec_failed).as(disc_had_err,
+                                        (req.to + duration("26h") <= now).as(has_more_days,
+                                          {
+                                            "events": size(final_evts) > 0 ? final_evts : [dyn({ "fake": true })],
+                                            "cursor": (has_more_days && !disc_had_err) ? {
+                                              "last_to": req.to.format(time_layout.RFC3339),
+                                              "conf_sig": conf_sig,
+                                              "last_credit_day": cred_res.credit_day,
+                                              "disc_dep_from": -1,
+                                              "disc_es_next": "",
+                                              "disc_obs_next": "",
+                                              "disc_sec_next": "",
+                                              "disc_ech": ech_deps,
+                                              "disc_sls": sls_projs,
+                                            } : {
+                                              "last_to": req.to.format(time_layout.RFC3339),
+                                              "conf_sig": conf_sig,
+                                              "last_credit_day": cred_res.credit_day,
+                                            },
+                                            "want_more": has_more_days,
+                                          }
+                                        )
+                                      )
+                                    )
+                                  )
                                 )
-                              )
-                            ).flatten()
-                          : []).as(raw_evts,
-                            raw_evts.filter(e, double(e.ess.billing.total_ecu) >= 0.0).as(pos_evts,
-                              (meta_evts + disc_errs + pos_evts).as(final_evts,
-                                (req.to + duration("26h") <= now).as(has_more_days,
-                                  {
-                                    "events": size(final_evts) > 0 ? final_evts : [dyn({ "fake": true })],
-                                    "cursor": has_more_days ? {
-                                      "last_to": req.to.format(time_layout.RFC3339),
-                                      "conf_sig": conf_sig,
-                                      "last_credit_day": cred_res.credit_day,
-                                      "disc_dep_from": -1,
-                                      "disc_es_next": "",
-                                      "disc_obs_next": "",
-                                      "disc_sec_next": "",
-                                      "disc_ech": ech_deps,
-                                      "disc_sls": sls_projs,
-                                    } : {
-                                      "last_to": req.to.format(time_layout.RFC3339),
-                                      "conf_sig": conf_sig,
-                                      "last_credit_day": cred_res.credit_day,
-                                    },
-                                    "want_more": has_more_days,
-                                  }
-                                )
-                              )
                             )
                           )
                         )
@@ -415,8 +488,8 @@ program: |-
                           "want_more": false,
                         }
                       )
-                  )))
-              ))))))
+                  ))))))))
+              ))))))))))
           )
         )
         )

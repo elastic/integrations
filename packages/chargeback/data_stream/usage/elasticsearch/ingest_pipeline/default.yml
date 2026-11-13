@@ -86,7 +86,7 @@ processors:
               if (roleSet.isEmpty()) continue;
               String shardTier = null;
               for (String p : prefParts) {
-                if (roleSet.contains(p)) {
+                if (roleSet.contains(p) || roleSet.contains('data')) {
                   if (p == 'data_frozen') shardTier = 'frozen';
                   else if (p == 'data_cold') shardTier = 'cold';
                   else if (p == 'data_warm') shardTier = 'warm';
@@ -95,10 +95,10 @@ processors:
                 }
               }
               if (shardTier == null) {
-                if (roleSet.contains('data_frozen')) shardTier = 'frozen';
-                else if (roleSet.contains('data_cold')) shardTier = 'cold';
+                if (roleSet.contains('data') || roleSet.contains('data_hot') || roleSet.contains('data_content')) shardTier = 'hot/content';
                 else if (roleSet.contains('data_warm')) shardTier = 'warm';
-                else if (roleSet.contains('data_hot') || roleSet.contains('data_content') || roleSet.contains('data')) shardTier = 'hot/content';
+                else if (roleSet.contains('data_cold')) shardTier = 'cold';
+                else if (roleSet.contains('data_frozen')) shardTier = 'frozen';
               }
               if (shardTier != null) {
                 int cnt = tierCounts.containsKey(shardTier) ? ((Number)tierCounts.get(shardTier)).intValue() + 1 : 1;
