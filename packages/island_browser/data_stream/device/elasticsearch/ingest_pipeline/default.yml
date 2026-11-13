@@ -269,21 +269,33 @@ processors:
   - gsub:
       field: island_browser.device.internal_ip
       target_field: _temp1
-      tag: gsub_strip_internal_ip_adapters_06a78c26
-      pattern: '\s*\|\s*[^/]*'
-      replacement: ''
+      tag: gsub_normalize_internal_ip_separators_06a78c26
+      pattern: '\s*\|\s*'
+      replacement: '/'
       ignore_missing: true
       description: >-
-        The Island API can return internalIpAddress as a "/"-separated list of
-        "<ip> | <adapter>" pairs (one per NIC). Strip the adapter labels so only
-        the IP addresses remain.
+        The Island API can return internalIpAddress as a list of IP addresses
+        and adapter labels (one per NIC) separated by "|" and "/", for example
+        "<ip> | <adapter>/<ip>" or "<adapter>/<ip> | <adapter>/<ip>". Use "/"
+        as the only separator so the value can be split into tokens.
   - split:
       field: _temp1
       target_field: island_browser.device.internal_ip_address
       tag: split_internal_ip_address_5d9e1991
       separator: '\s*/\s*'
       ignore_missing: true
-      description: Split the cleaned "/"-separated list into individual IP addresses.
+      description: Split the normalized "/"-separated value into IP addresses and adapter labels.
+  - script:
+      lang: painless
+      tag: script_drop_internal_ip_adapter_labels_2e6b1c47
+      description: >-
+        Drop adapter labels (such as adapter GUIDs or names like "en0") so only
+        IP addresses remain. Tokens are kept if they look like an IPv4 or IPv6
+        address, so malformed IP addresses are still reported by the convert
+        processor below.
+      if: ctx.island_browser?.device?.internal_ip_address instanceof List
+      source: >-
+        ctx.island_browser.device.internal_ip_address.removeIf(v -> !(v instanceof String) || !(v.contains(':') || v =~ /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/));
   - convert:
       field: island_browser.device.internal_ip_address
       tag: convert_internal_ip_address_to_ip_b7109d2d
