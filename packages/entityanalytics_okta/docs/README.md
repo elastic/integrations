@@ -59,7 +59,7 @@ When using an Elastic Managed integration, the **JWK file** authentication optio
 
 ### OAuth2
 **In this type of authentication, the following information is required:**
-1. Your Okta domain URL. [ Example: https://dev-123456.okta.com ]
+1. Your Okta domain, without `https://`. [ Example: dev-123456.okta.com ]
 2. Your Okta service app Client ID.
 3. Your Okta service app JWK Private Key.
 4. The Okta scopes that are required for OAuth2. By default they are set to `okta.users.read` and `okta.devices.read` which are the ones required to read user and device logs.
