@@ -173,58 +173,63 @@ pivot:
       terms:
         field: ess.billing.deployment_id
   aggregations:
-    native:
-      filter:
-        term:
-          data_stream.dataset: chargeback.billing
+    by_sku:
+      terms:
+        field: ess.billing.sku
+        size: 1000
       aggs:
-        doc_cnt:
-          value_count:
-            field: "@timestamp"
-        data_tier_capacity_ecu:
-          sum:
-            field: ess.billing.total_ecu
-        data_tier_capacity_hours:
-          max:
-            field: ess.billing.quantity.value
-        data_tier_ram_per_zone_mb:
-          max:
-            field: ess.billing.ram_per_zone
-        deployment_group:
-          terms:
-            field: deployment_group
-            size: 1
-        deployment_name:
-          terms:
-            field: ess.billing.deployment_name
-            size: 1
-    legacy:
-      filter:
-        bool:
-          must_not:
-            - term:
-                data_stream.dataset: chargeback.billing
-      aggs:
-        doc_cnt:
-          value_count:
-            field: "@timestamp"
-        data_tier_capacity_ecu:
-          sum:
-            field: ess.billing.total_ecu
-        data_tier_capacity_hours:
-          max:
-            field: ess.billing.quantity.value
-        data_tier_ram_per_zone_mb:
-          max:
-            field: ess.billing.ram_per_zone
-        deployment_group:
-          terms:
-            field: deployment_group
-            size: 1
-        deployment_name:
-          terms:
-            field: ess.billing.deployment_name
-            size: 1
+        native:
+          filter:
+            term:
+              data_stream.dataset: chargeback.billing
+          aggs:
+            doc_cnt:
+              value_count:
+                field: "@timestamp"
+            data_tier_capacity_ecu:
+              sum:
+                field: ess.billing.total_ecu
+            data_tier_capacity_hours:
+              max:
+                field: ess.billing.quantity.value
+            data_tier_ram_per_zone_mb:
+              max:
+                field: ess.billing.ram_per_zone
+            deployment_group:
+              terms:
+                field: deployment_group
+                size: 1
+            deployment_name:
+              terms:
+                field: ess.billing.deployment_name
+                size: 1
+        legacy:
+          filter:
+            bool:
+              must_not:
+                - term:
+                    data_stream.dataset: chargeback.billing
+          aggs:
+            doc_cnt:
+              value_count:
+                field: "@timestamp"
+            data_tier_capacity_ecu:
+              sum:
+                field: ess.billing.total_ecu
+            data_tier_capacity_hours:
+              max:
+                field: ess.billing.quantity.value
+            data_tier_ram_per_zone_mb:
+              max:
+                field: ess.billing.ram_per_zone
+            deployment_group:
+              terms:
+                field: deployment_group
+                size: 1
+            deployment_name:
+              terms:
+                field: ess.billing.deployment_name
+                size: 1
 settings:
   deduce_mappings: false
   unattended: true

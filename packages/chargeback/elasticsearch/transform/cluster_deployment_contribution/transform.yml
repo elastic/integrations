@@ -5,9 +5,9 @@ source:
     - monitoring-indices*
     - "*:monitoring-indices*"
     - -monitoring-indices-chargeback
-    - "-*:monitoring-indices-chargeback"
+    - "*:-monitoring-indices-chargeback"
     - -chargeback_lookup.*
-    - "-*:chargeback_lookup.*"
+    - "*:-chargeback_lookup.*"
   query:
     bool:
       must_not:
@@ -55,6 +55,20 @@ pivot:
         doc_cnt:
           value_count:
             field: "@timestamp"
+        has_delta:
+          filter:
+            exists:
+              field: elasticsearch.index.primaries.docs.count_delta
+          aggs:
+            cnt:
+              value_count:
+                field: "@timestamp"
+            min_ts:
+              min:
+                field: "@timestamp"
+            max_ts:
+              max:
+                field: "@timestamp"
         deployment_sum_indexing_time:
           sum:
             field: elasticsearch.index.total.indexing.index_time_in_millis
@@ -76,6 +90,12 @@ pivot:
       aggs:
         doc_cnt:
           value_count:
+            field: "@timestamp"
+        min_ts:
+          min:
+            field: "@timestamp"
+        max_ts:
+          max:
             field: "@timestamp"
         deployment_sum_indexing_time:
           sum:

@@ -36,7 +36,19 @@ program: |-
     state.conf_unit_rate.trim_space().as(clean_rate,
     clean_rate.matches("^[0-9]+(\\.[0-9]+)?$").as(rate_valid,
     state.conf_effective_from.trim_space().as(clean_eff_from,
-    (clean_eff_from == "" || clean_eff_from.matches("^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])(T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](\\.[0-9]+)?(Z|[+-]([01][0-9]|2[0-3]):[0-5][0-9]))?$")).as(eff_valid,
+    (clean_eff_from == "" ? true : (
+      !clean_eff_from.matches("^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])(T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](\\.[0-9]+)?(Z|[+-]([01][0-9]|2[0-3]):[0-5][0-9]))?$") ? false : (
+        int(clean_eff_from.substring(0, 4)).as(eff_y,
+        int(clean_eff_from.substring(5, 7)).as(eff_m,
+        int(clean_eff_from.substring(8, 10)).as(eff_d,
+        ((eff_y % 4 == 0 && eff_y % 100 != 0) || (eff_y % 400 == 0)).as(eff_leap,
+        ((eff_m == 4 || eff_m == 6 || eff_m == 9 || eff_m == 11) ? 30 : ((eff_m == 2) ? (eff_leap ? 29 : 28) : 31)).as(eff_max_d,
+          eff_y >= 1970 && eff_d <= eff_max_d && (
+            timestamp(clean_eff_from.contains("T") ? clean_eff_from : (clean_eff_from + "T00:00:00Z")) < timestamp("2046-12-31T23:59:59.999Z")
+          )
+        )))))
+      )
+    )).as(eff_valid,
     (!state.sync_fleet_config ? "disabled" : (
       (rate_valid && eff_valid) ? (clean_rate + "|" + state.conf_currency_unit + "|" + clean_eff_from + "|" + today_utc) : state.?cursor.conf_sig.orValue("")
     )).as(conf_sig,
@@ -53,7 +65,7 @@ program: |-
         "error": {
           "code": "invalid_config",
           "id": "config_effective_from",
-          "message": "Invalid config_effective_from '" + state.conf_effective_from + "': expected empty string or ISO-8601 date/timestamp (for example 2026-01-01T00:00:00Z)",
+          "message": "Invalid config_effective_from '" + state.conf_effective_from + "': expected empty string or valid ISO-8601 calendar date/timestamp between 1970-01-01 and 2046-12-31 (for example 2026-01-01T00:00:00Z)",
         },
       })]
     : ((state.sync_fleet_config && state.?cursor.conf_sig.orValue("") != conf_sig) ?
@@ -65,7 +77,7 @@ program: |-
         "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
         "conf_effective_from": clean_eff_from,
       })]
-    : ((!state.sync_fleet_config && state.?cursor.conf_sig.orValue("disabled") != "disabled") ?
+    : ((!state.sync_fleet_config && state.?cursor.conf_sig.orValue("") != "disabled") ?
       [dyn({
         "@timestamp": now.format(time_layout.RFC3339),
         "doc_type": "config_snapshot",
@@ -199,7 +211,7 @@ program: |-
                     }
                 )
               : { "ok": true, "err": dyn({}), "items": [], "next_from": -1 }).as(dep_page,
-              ((es_next != "") ?
+              ((dep_page.ok && es_next != "") ?
                 get_request(
                   state.cloud_api_base + "/api/v1/serverless/projects/elasticsearch?" + (es_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [es_next] }).format_query()
                 ).with({ "Header": { "Authorization": ["ApiKey " + state.api_key] } }).do_request().as(r,
@@ -225,7 +237,7 @@ program: |-
                     })
                 )
               : { "ok": true, "err": dyn({}), "items": [], "next": "" }).as(es_page,
-              ((obs_next != "") ?
+              ((dep_page.ok && es_page.ok && obs_next != "") ?
                 get_request(
                   state.cloud_api_base + "/api/v1/serverless/projects/observability?" + (obs_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [obs_next] }).format_query()
                 ).with({ "Header": { "Authorization": ["ApiKey " + state.api_key] } }).do_request().as(r,
@@ -251,7 +263,7 @@ program: |-
                     })
                 )
               : { "ok": true, "err": dyn({}), "items": [], "next": "" }).as(obs_page,
-              ((sec_next != "") ?
+              ((dep_page.ok && es_page.ok && obs_page.ok && sec_next != "") ?
                 get_request(
                   state.cloud_api_base + "/api/v1/serverless/projects/security?" + (sec_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [sec_next] }).format_query()
                 ).with({ "Header": { "Authorization": ["ApiKey " + state.api_key] } }).do_request().as(r,
@@ -382,17 +394,29 @@ program: |-
                               )
                             ).flatten()
                           : []).as(raw_evts,
-                            raw_evts.filter(e, double(e.ess.billing.total_ecu) > 0.0).as(pos_evts,
+                            raw_evts.filter(e, double(e.ess.billing.total_ecu) >= 0.0).as(pos_evts,
                               (meta_evts + pos_evts).as(final_evts,
-                                {
-                                  "events": size(final_evts) > 0 ? final_evts : [dyn({ "fake": true })],
-                                  "cursor": {
-                                    "last_to": req.to.format(time_layout.RFC3339),
-                                    "conf_sig": conf_sig,
-                                    "last_credit_day": cred_res.credit_day,
-                                  },
-                                  "want_more": req.to + duration("26h") <= now,
-                                }
+                                (req.to + duration("26h") <= now).as(has_more_days,
+                                  {
+                                    "events": size(final_evts) > 0 ? final_evts : [dyn({ "fake": true })],
+                                    "cursor": has_more_days ? {
+                                      "last_to": req.to.format(time_layout.RFC3339),
+                                      "conf_sig": conf_sig,
+                                      "last_credit_day": cred_res.credit_day,
+                                      "disc_dep_from": -1,
+                                      "disc_es_next": "",
+                                      "disc_obs_next": "",
+                                      "disc_sec_next": "",
+                                      "disc_ech": ech_deps,
+                                      "disc_sls": sls_projs,
+                                    } : {
+                                      "last_to": req.to.format(time_layout.RFC3339),
+                                      "conf_sig": conf_sig,
+                                      "last_credit_day": cred_res.credit_day,
+                                    },
+                                    "want_more": has_more_days,
+                                  }
+                                )
                               )
                             )
                           )
