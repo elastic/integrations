@@ -231,7 +231,7 @@ The incident alerts dataset contains one document for each endpoint EDR or organ
 
 ### Log stream quarantine
 
-The quarantine dataset collects quarantined files from the GravityZone computers quarantine service across all pages in each polling window. Exchange quarantine is not included. Quarantine documents use a state-aware document ID derived from the quarantine item ID and `actionStatus` so boundary overlaps deduplicate while action status changes are retained. GravityZone returns `quarantinedOn` without a timezone, so the integration preserves it as a source string and uses the collection time for `@timestamp`.
+The quarantine dataset collects quarantined files from the GravityZone computers quarantine service across all pages in each polling window and reconciles active quarantined items on subsequent polls so later `actionStatus` transitions (such as pending or failed restore and removal actions) are emitted without re-indexing unchanged items. Exchange quarantine is not included. GravityZone returns `quarantinedOn` without a timezone, so the integration preserves it as a source string and uses the collection time for `@timestamp`.
 
 {{fields "quarantine"}}
 
