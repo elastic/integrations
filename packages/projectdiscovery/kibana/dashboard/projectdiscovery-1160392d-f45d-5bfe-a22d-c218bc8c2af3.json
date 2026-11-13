@@ -87,7 +87,7 @@
             },
             {
                 "embeddableConfig": {
-                    "content": "Triage findings in **[Security › Findings › Vulnerabilities](security/cloud_security_posture/findings/vulnerabilities)**.",
+                    "content": "Triage findings in **[Security › Findings › Vulnerabilities](security/cloud_security_posture/findings/vulnerabilities)**. Panels show open findings unless you select a status in the **Status** control.",
                     "hidePanelTitles": true
                 },
                 "gridData": {
@@ -103,7 +103,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Current findings, excluding fixed, false positive, duplicate and accepted risk.",
+                        "description": "Current open findings. Select a status in the Status control to see other statuses.",
                         "references": [],
                         "state": {
                             "adHocDataViews": {
@@ -153,7 +153,7 @@
                                             ],
                                             "index": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
                                             "query": {
-                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*)"
+                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE (?status IS NULL AND projectdiscovery.vulnerability.vuln_status == \"open\") OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -169,7 +169,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*)"
+                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE (?status IS NULL AND projectdiscovery.vulnerability.vuln_status == \"open\") OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*)"
                             },
                             "visualization": {
                                 "layerId": "c8d00cb9-0ac4-50c1-ab64-5772d6dccab3",
@@ -252,7 +252,7 @@
                                             ],
                                             "index": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
                                             "query": {
-                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| WHERE vulnerability.severity == \"Critical\"\n| STATS findings = COUNT(*)"
+                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE (?status IS NULL AND projectdiscovery.vulnerability.vuln_status == \"open\") OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| WHERE vulnerability.severity == \"Critical\"\n| STATS findings = COUNT(*)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -268,7 +268,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| WHERE vulnerability.severity == \"Critical\"\n| STATS findings = COUNT(*)"
+                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE (?status IS NULL AND projectdiscovery.vulnerability.vuln_status == \"open\") OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| WHERE vulnerability.severity == \"Critical\"\n| STATS findings = COUNT(*)"
                             },
                             "visualization": {
                                 "color": "#E7664C",
@@ -352,7 +352,7 @@
                                             ],
                                             "index": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
                                             "query": {
-                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| WHERE vulnerability.severity == \"High\"\n| STATS findings = COUNT(*)"
+                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE (?status IS NULL AND projectdiscovery.vulnerability.vuln_status == \"open\") OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| WHERE vulnerability.severity == \"High\"\n| STATS findings = COUNT(*)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -368,7 +368,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| WHERE vulnerability.severity == \"High\"\n| STATS findings = COUNT(*)"
+                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE (?status IS NULL AND projectdiscovery.vulnerability.vuln_status == \"open\") OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| WHERE vulnerability.severity == \"High\"\n| STATS findings = COUNT(*)"
                             },
                             "visualization": {
                                 "color": "#DA8B45",
@@ -452,7 +452,7 @@
                                             ],
                                             "index": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
                                             "query": {
-                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS hosts = COUNT_DISTINCT(host.name)"
+                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE (?status IS NULL AND projectdiscovery.vulnerability.vuln_status == \"open\") OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS hosts = COUNT_DISTINCT(host.name)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -468,7 +468,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS hosts = COUNT_DISTINCT(host.name)"
+                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE (?status IS NULL AND projectdiscovery.vulnerability.vuln_status == \"open\") OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS hosts = COUNT_DISTINCT(host.name)"
                             },
                             "visualization": {
                                 "layerId": "bb7afd53-bef3-5950-b984-92cbe6f332d8",
@@ -551,7 +551,7 @@
                                             ],
                                             "index": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
                                             "query": {
-                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS templates = COUNT_DISTINCT(projectdiscovery.vulnerability.template_id)"
+                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE (?status IS NULL AND projectdiscovery.vulnerability.vuln_status == \"open\") OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS templates = COUNT_DISTINCT(projectdiscovery.vulnerability.template_id)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -567,7 +567,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS templates = COUNT_DISTINCT(projectdiscovery.vulnerability.template_id)"
+                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE (?status IS NULL AND projectdiscovery.vulnerability.vuln_status == \"open\") OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS templates = COUNT_DISTINCT(projectdiscovery.vulnerability.template_id)"
                             },
                             "visualization": {
                                 "layerId": "b6c83426-cba4-523a-86be-9d201bcd0dd9",
@@ -690,7 +690,7 @@
                                             ],
                                             "index": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
                                             "query": {
-                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*) BY vulnerability.severity\n| EVAL rank = CASE(vulnerability.severity == \"Critical\", 0, vulnerability.severity == \"High\", 1, vulnerability.severity == \"Medium\", 2, vulnerability.severity == \"Low\", 3, 4)\n| SORT rank ASC\n| DROP rank\n| EVAL vulnerability.severity_color = vulnerability.severity"
+                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE (?status IS NULL AND projectdiscovery.vulnerability.vuln_status == \"open\") OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*) BY vulnerability.severity\n| EVAL rank = CASE(vulnerability.severity == \"Critical\", 0, vulnerability.severity == \"High\", 1, vulnerability.severity == \"Medium\", 2, vulnerability.severity == \"Low\", 3, 4)\n| SORT rank ASC\n| DROP rank\n| EVAL vulnerability.severity_color = vulnerability.severity"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -706,7 +706,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*) BY vulnerability.severity\n| EVAL rank = CASE(vulnerability.severity == \"Critical\", 0, vulnerability.severity == \"High\", 1, vulnerability.severity == \"Medium\", 2, vulnerability.severity == \"Low\", 3, 4)\n| SORT rank ASC\n| DROP rank\n| EVAL vulnerability.severity_color = vulnerability.severity"
+                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE (?status IS NULL AND projectdiscovery.vulnerability.vuln_status == \"open\") OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*) BY vulnerability.severity\n| EVAL rank = CASE(vulnerability.severity == \"Critical\", 0, vulnerability.severity == \"High\", 1, vulnerability.severity == \"Medium\", 2, vulnerability.severity == \"Low\", 3, 4)\n| SORT rank ASC\n| DROP rank\n| EVAL vulnerability.severity_color = vulnerability.severity"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1841,7 +1841,7 @@
                                             ],
                                             "index": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
                                             "query": {
-                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*) BY host.name, vulnerability.severity\n| INLINE STATS group_total = SUM(findings) BY host.name\n| EVAL rank_key = CONCAT(TO_STRING(1000000000 + group_total), host.name)\n| INLINE STATS rank_keys = TOP(rank_key, 50, \"desc\")\n| WHERE MV_CONTAINS(MV_SLICE(MV_SORT(MV_DEDUPE(rank_keys), \"DESC\"), 0, 9), rank_key)\n| SORT group_total DESC, host.name ASC\n| KEEP host.name, vulnerability.severity, findings"
+                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE (?status IS NULL AND projectdiscovery.vulnerability.vuln_status == \"open\") OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*) BY host.name, vulnerability.severity\n| INLINE STATS group_total = SUM(findings) BY host.name\n| EVAL rank_key = CONCAT(TO_STRING(1000000000 + group_total), host.name)\n| INLINE STATS rank_keys = TOP(rank_key, 50, \"desc\")\n| WHERE MV_CONTAINS(MV_SLICE(MV_SORT(MV_DEDUPE(rank_keys), \"DESC\"), 0, 9), rank_key)\n| SORT group_total DESC, host.name ASC\n| KEEP host.name, vulnerability.severity, findings"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1857,7 +1857,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*) BY host.name, vulnerability.severity\n| INLINE STATS group_total = SUM(findings) BY host.name\n| EVAL rank_key = CONCAT(TO_STRING(1000000000 + group_total), host.name)\n| INLINE STATS rank_keys = TOP(rank_key, 50, \"desc\")\n| WHERE MV_CONTAINS(MV_SLICE(MV_SORT(MV_DEDUPE(rank_keys), \"DESC\"), 0, 9), rank_key)\n| SORT group_total DESC, host.name ASC\n| KEEP host.name, vulnerability.severity, findings"
+                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE (?status IS NULL AND projectdiscovery.vulnerability.vuln_status == \"open\") OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*) BY host.name, vulnerability.severity\n| INLINE STATS group_total = SUM(findings) BY host.name\n| EVAL rank_key = CONCAT(TO_STRING(1000000000 + group_total), host.name)\n| INLINE STATS rank_keys = TOP(rank_key, 50, \"desc\")\n| WHERE MV_CONTAINS(MV_SLICE(MV_SORT(MV_DEDUPE(rank_keys), \"DESC\"), 0, 9), rank_key)\n| SORT group_total DESC, host.name ASC\n| KEEP host.name, vulnerability.severity, findings"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2131,7 +2131,7 @@
                                             ],
                                             "index": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
                                             "query": {
-                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*), hosts = COUNT_DISTINCT(host.name) BY vulnerability.title, projectdiscovery.vulnerability.template_id, vulnerability.severity\n| SORT findings DESC, hosts DESC\n| LIMIT 100"
+                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE (?status IS NULL AND projectdiscovery.vulnerability.vuln_status == \"open\") OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*), hosts = COUNT_DISTINCT(host.name) BY vulnerability.title, projectdiscovery.vulnerability.template_id, vulnerability.severity\n| SORT findings DESC, hosts DESC\n| LIMIT 100"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2147,7 +2147,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*), hosts = COUNT_DISTINCT(host.name) BY vulnerability.title, projectdiscovery.vulnerability.template_id, vulnerability.severity\n| SORT findings DESC, hosts DESC\n| LIMIT 100"
+                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE (?status IS NULL AND projectdiscovery.vulnerability.vuln_status == \"open\") OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*), hosts = COUNT_DISTINCT(host.name) BY vulnerability.title, projectdiscovery.vulnerability.template_id, vulnerability.severity\n| SORT findings DESC, hosts DESC\n| LIMIT 100"
                             },
                             "visualization": {
                                 "columns": [
@@ -2275,7 +2275,7 @@
                                             ],
                                             "index": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
                                             "query": {
-                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| WHERE vulnerability.category IS NOT NULL\n| STATS findings = COUNT(*) BY vulnerability.category\n| SORT findings DESC\n| LIMIT 10"
+                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE (?status IS NULL AND projectdiscovery.vulnerability.vuln_status == \"open\") OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| WHERE vulnerability.category IS NOT NULL\n| STATS findings = COUNT(*) BY vulnerability.category\n| SORT findings DESC\n| LIMIT 10"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2291,7 +2291,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| WHERE vulnerability.category IS NOT NULL\n| STATS findings = COUNT(*) BY vulnerability.category\n| SORT findings DESC\n| LIMIT 10"
+                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE (?status IS NULL AND projectdiscovery.vulnerability.vuln_status == \"open\") OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| WHERE vulnerability.category IS NOT NULL\n| STATS findings = COUNT(*) BY vulnerability.category\n| SORT findings DESC\n| LIMIT 10"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2434,7 +2434,7 @@
                                             ],
                                             "index": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
                                             "query": {
-                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*) BY projectdiscovery.vulnerability.event.type\n| SORT findings DESC"
+                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE (?status IS NULL AND projectdiscovery.vulnerability.vuln_status == \"open\") OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*) BY projectdiscovery.vulnerability.event.type\n| SORT findings DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2450,7 +2450,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*) BY projectdiscovery.vulnerability.event.type\n| SORT findings DESC"
+                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE (?status IS NULL AND projectdiscovery.vulnerability.vuln_status == \"open\") OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| STATS findings = COUNT(*) BY projectdiscovery.vulnerability.event.type\n| SORT findings DESC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2699,7 +2699,7 @@
                                             ],
                                             "index": "53788023-a5b9-591c-ab9c-1f2ca96d8e30",
                                             "query": {
-                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| WHERE vulnerability.id IS NOT NULL\n| STATS cvss = MAX(vulnerability.score.base), epss = MAX(projectdiscovery.vulnerability.event.info.classification.epss_score), title = VALUES(vulnerability.title), severity = VALUES(vulnerability.severity), hosts = COUNT_DISTINCT(host.name), findings = COUNT(*) BY vulnerability.id\n| SORT epss DESC NULLS LAST, cvss DESC NULLS LAST"
+                                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE (?status IS NULL AND projectdiscovery.vulnerability.vuln_status == \"open\") OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| WHERE vulnerability.id IS NOT NULL\n| STATS cvss = MAX(vulnerability.score.base), epss = MAX(projectdiscovery.vulnerability.event.info.classification.epss_score), title = VALUES(vulnerability.title), severity = VALUES(vulnerability.severity), hosts = COUNT_DISTINCT(host.name), findings = COUNT(*) BY vulnerability.id\n| SORT epss DESC NULLS LAST, cvss DESC NULLS LAST"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2715,7 +2715,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| WHERE vulnerability.id IS NOT NULL\n| STATS cvss = MAX(vulnerability.score.base), epss = MAX(projectdiscovery.vulnerability.event.info.classification.epss_score), title = VALUES(vulnerability.title), severity = VALUES(vulnerability.severity), hosts = COUNT_DISTINCT(host.name), findings = COUNT(*) BY vulnerability.id\n| SORT epss DESC NULLS LAST, cvss DESC NULLS LAST"
+                                "esql": "FROM security_solution-projectdiscovery.vulnerability_latest\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE (?status IS NULL AND projectdiscovery.vulnerability.vuln_status == \"open\") OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| WHERE vulnerability.id IS NOT NULL\n| STATS cvss = MAX(vulnerability.score.base), epss = MAX(projectdiscovery.vulnerability.event.info.classification.epss_score), title = VALUES(vulnerability.title), severity = VALUES(vulnerability.severity), hosts = COUNT_DISTINCT(host.name), findings = COUNT(*) BY vulnerability.id\n| SORT epss DESC NULLS LAST, cvss DESC NULLS LAST"
                             },
                             "visualization": {
                                 "columns": [

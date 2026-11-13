@@ -13,13 +13,6 @@ source:
             field: error.message
         - term:
             event.kind: pipeline_error
-        # Resolved or dismissed findings are not kept in the latest index.
-        - terms:
-            projectdiscovery.vulnerability.vuln_status:
-              - fixed
-              - false_positive
-              - duplicate
-              - accepted_risk
         - terms:
             _tier:
               - data_frozen
@@ -29,7 +22,7 @@ source:
 # You must also bump the fleet_transform_version for any change to this
 # transform configuration to take effect.
 dest:
-  index: "security_solution-projectdiscovery.vulnerability_latest-v1"
+  index: "security_solution-projectdiscovery.vulnerability_latest-v2"
   aliases:
     - alias: "security_solution-projectdiscovery.vulnerability_latest"
       move_on_creation: true
@@ -39,7 +32,7 @@ latest:
     - data_stream.namespace
   sort: "@timestamp"
 description: >-
-  Latest ProjectDiscovery vulnerability findings. As findings are rescanned or triaged, this transform keeps only the latest state of each finding in a lookup index. Fixed, false positive, duplicate and accepted risk findings are excluded.
+  Latest ProjectDiscovery vulnerability findings. As findings are rescanned or triaged, this transform keeps only the latest state of each finding in a lookup index.
 frequency: 5m
 settings:
   # This is required to prevent the transform from clobbering the Fleet-managed mappings.
@@ -59,5 +52,5 @@ _meta:
   managed: true
   # Bump this version to delete, reinstall, and restart the transform during
   # package installation.
-  fleet_transform_version: 0.1.0
+  fleet_transform_version: 0.2.0
   run_as_kibana_system: false

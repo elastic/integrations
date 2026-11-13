@@ -177,6 +177,13 @@ processors:
       description: Records with a port or a URL describe a network or web service.
       if: ctx.entity?.type == null
   - set:
+      field: host.id
+      tag: set_host_id_from_entity_id
+      copy_from: entity.id
+      ignore_empty_value: true
+      description: For DNS-only records the asset is the host, so its record id identifies the host.
+      if: ctx.entity?.type instanceof List && ctx.entity.type.contains('host')
+  - set:
       field: entity.source
       tag: set_entity_source
       value: projectdiscovery
@@ -305,6 +312,27 @@ processors:
   - rename:
       field: json.asn.as_name
       tag: rename_as_name
+      target_field: server.as.organization.name
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: host.ip
+      tag: geoip_host_ip_asn
+      target_field: server.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+      description: Fills the autonomous system of the asset from the host IP when the API did not return one.
+      if: ctx.host?.ip != null && ctx.server?.as?.number == null && ctx.server?.as?.organization?.name == null
+  - rename:
+      field: server.as.asn
+      tag: rename_server_as_asn
+      target_field: server.as.number
+      ignore_missing: true
+  - rename:
+      field: server.as.organization_name
+      tag: rename_server_as_organization_name
       target_field: server.as.organization.name
       ignore_missing: true
 

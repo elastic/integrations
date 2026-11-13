@@ -8,7 +8,7 @@ The ProjectDiscovery integration for Elastic collects vulnerability findings and
 
 ### Compatibility
 
-This integration supports the ProjectDiscovery Cloud Platform REST API (`https://api.projectdiscovery.io`, `v1` endpoints). It requires Kibana 9.5.0 or later.
+This integration supports the ProjectDiscovery Cloud Platform REST API (`https://api.projectdiscovery.io`, `v1` endpoints). It requires Kibana 9.4.0 or later.
 
 ### How it works
 
@@ -19,7 +19,7 @@ The integration uses the [CEL input](https://www.elastic.co/docs/reference/beats
 
 Each data stream saves its cursor only after a full pass has finished. If a pass is interrupted, it starts again from the previous cursor, so no data is lost, but some events can be duplicated.
 
-Two transforms keep the latest state of each finding and each asset in lookup mode indices. Fixed, false positive, duplicate and accepted risk findings are excluded from the latest vulnerability index. You can enrich findings with asset context by using an ES|QL `LOOKUP JOIN`.
+Two transforms keep the latest state of each finding and each asset in lookup mode indices. The latest vulnerability index keeps findings of every status, so a finding that changes from `open` to `fixed` is updated in place. Filter on `projectdiscovery.vulnerability.vuln_status` to select current open findings. You can enrich findings with asset context by using an ES|QL `LOOKUP JOIN`.
 
 ## What data does this integration collect?
 
@@ -33,7 +33,7 @@ The ProjectDiscovery integration collects the following types of data:
 - Track exposed vulnerabilities in your external attack surface alongside your other security data.
 - Find vulnerabilities in the Elastic Security Findings page by using the `security_solution-projectdiscovery.vulnerability_latest` index. The **Data source** field of the findings flyout links to the Nuclei template that detected the finding (`vulnerability.data_source.*`).
 - Enrich findings with asset context (host, IP, technologies, TLS, cloud provider) by using ES|QL `LOOKUP JOIN`.
-- Monitor remediation progress through the ProjectDiscovery vulnerability status (`open`, `fixed`, `false_positive`, and others) in `logs-projectdiscovery.vulnerability-*`. The latest vulnerability index excludes resolved and dismissed findings.
+- Monitor remediation progress through the ProjectDiscovery vulnerability status (`open`, `fixed`, `false_positive`, and others) in `logs-projectdiscovery.vulnerability-*`. The latest vulnerability index keeps the latest status of every finding, so filter on `projectdiscovery.vulnerability.vuln_status: open` to list current open findings.
 - Group findings and assets by root domain with `server.registered_domain`. For example, `codebox.example.co.uk` results in `example.co.uk`.
 - Group findings and assets by network owner with `server.as.number` and `server.as.organization.name`.
 
@@ -41,7 +41,7 @@ The ProjectDiscovery integration collects the following types of data:
 
 The integration includes two dashboards. Both are built with ES|QL and share dashboard controls that filter every panel, including the raw data panel:
 
-- **[Logs ProjectDiscovery] Vulnerabilities**: Current open findings by severity, status, host, category, and protocol type; trends of findings seen, newly discovered, and fixed; CVE details with CVSS and EPSS scores; and the raw findings. Controls filter on severity, status, protocol type, and host.
+- **[Logs ProjectDiscovery] Vulnerabilities**: Current open findings by severity, status, host, category, and protocol type; trends of findings seen, newly discovered, and fixed; CVE details with CVSS and EPSS scores; and the raw findings. Controls filter on severity, status, protocol type, and host. Panels that read the latest vulnerability index show open findings unless you select another status in the **Status** control.
 - **[Logs ProjectDiscovery] Assets**: The asset inventory by source type, asset group, and registered domain; discovery trends; exposed services (ports, HTTP status codes, web servers, technologies, CDNs, and labels); TLS hygiene; the riskiest assets; and the raw assets. Controls filter on asset group, source type, registered domain, port, and technology.
 
 ![ProjectDiscovery vulnerabilities dashboard](../img/projectdiscovery-vulnerabilities.png)
@@ -68,9 +68,9 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 Elastic Agent is required to poll the ProjectDiscovery API and ship the data to Elastic, where the events are processed by the integration's ingest pipelines.
 
-### Agentless deployment
+### Elastic Managed deployment
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. Agentless deployments provide a means to ingest data while avoiding the orchestration, management, and maintenance needs associated with standard ingest infrastructure. Using an agentless deployment makes manual agent deployment unnecessary, allowing you to focus on your data instead of the agent that collects it.
+Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments. Elastic Managed deployments provide a means to ingest data while avoiding the orchestration, management, and maintenance needs associated with standard ingest infrastructure. Using an Elastic Managed deployment makes manual agent deployment unnecessary, allowing you to focus on your data instead of the agent that collects it.
 
 For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
@@ -115,8 +115,8 @@ API keys have no scopes. A key acts with the team role of the user who owns it.
 
 - No data is collected on the first run: The default `720h` initial interval only covers findings and assets updated in the last 30 days. Increase **Initial Interval** if your last scan is older.
 - Empty **Package** column in the Findings page: The integration sets `package.name` from the template metadata product or the CPE product. Most Nuclei findings (misconfiguration, TLS and header checks) have neither.
-- A finding is missing from the latest index or the Findings page: The `latest_cdr_vulnerabilities` transform excludes findings whose `projectdiscovery.vulnerability.vuln_status` is `fixed`, `false_positive`, `duplicate` or `accepted_risk`. All statuses are still available in `logs-projectdiscovery.vulnerability-*`.
-- A fixed finding is still shown as open in the latest index: Because resolved findings are excluded from the transform source, the previous state of a finding that changes from `open` to `fixed` is not replaced. It is removed when it is older than the 90 day retention period (based on `@timestamp`).
+- A finding is missing from the latest index or the Findings page: The `latest_cdr_vulnerabilities` transform only reads documents from the last 90 days and removes findings that have no new document for 90 days (based on `@timestamp`). Check that the finding is present in `logs-projectdiscovery.vulnerability-*` and that its `projectdiscovery.vulnerability.vuln_status` is not what you filter out.
+- Fixed or dismissed findings appear in the latest index or the Findings page: The latest index keeps the latest state of every finding, including `fixed`, `false_positive`, `duplicate` and `accepted_risk`. Filter on `projectdiscovery.vulnerability.vuln_status: open` to see only current open findings.
 - The Findings flyout has an empty **Vulnerability Score** section: This section only displays CVSS vectors attributed to NVD, Red Hat or GHSA (`vulnerability.cvss.*`). Nuclei templates don't state the source of their CVSS data, so the integration doesn't populate these fields. The **CVSS** badge in the flyout header shows the template score from `vulnerability.score.base` and `vulnerability.score.version`.
 - Assets disappear from the latest index: The `latest_asset` transform removes assets that have not been seen for 3 days (based on `entity.last_seen_timestamp`). This matches the asset expiry rules of ProjectDiscovery.
 - HTTP 401 or 403 errors: Check the API key, and check that its user is a member of the team in **Team ID**.
@@ -181,7 +181,7 @@ The integration installs two transforms:
 
 | Transform | Destination alias | Unique key | Retention |
 |---|---|---|---|
-| `latest_cdr_vulnerabilities` | `security_solution-projectdiscovery.vulnerability_latest` | `event.id`, `data_stream.namespace` | 90 days on `@timestamp`. Fixed, false positive, duplicate and accepted risk findings are excluded. |
+| `latest_cdr_vulnerabilities` | `security_solution-projectdiscovery.vulnerability_latest` | `event.id`, `data_stream.namespace` | 90 days on `@timestamp`. Findings of every status are kept. |
 | `latest_asset` | `logs-projectdiscovery_latest.asset` | `event.dataset`, `entity.id` | 3 days on `entity.last_seen_timestamp` |
 
 Both destination indices use lookup mode, so you can join them in ES|QL. Findings reference their asset through `projectdiscovery.vulnerability.asset_metadata.id`, which matches `entity.id` in the asset index.
@@ -577,6 +577,7 @@ The `asset` data stream provides the asset inventory discovered by ProjectDiscov
 | host.geo.location | Longitude and latitude. | geo_point |
 | host.geo.region_iso_code | Region ISO code. | keyword |
 | host.geo.region_name | Region name. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
@@ -790,7 +791,7 @@ An example event for `asset` looks as following:
 #### latest_asset
 * Description: Latest ProjectDiscovery assets. As assets are re-enumerated, this transform keeps only the latest state of each asset in a lookup index. Assets not seen for 3 days are removed.
 * Source Index: logs-projectdiscovery.asset-\*
-* Destination Index: logs-projectdiscovery_latest.dest_asset-1
+* Destination Index: logs-projectdiscovery_latest.dest_asset-2
 
 **Exported fields**
 
@@ -799,7 +800,7 @@ An example event for `asset` looks as following:
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
-| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | entity.id | A unique identifier for the entity. When multiple identifiers exist, this should be the most stable and commonly used identifier that: 1) persists across the entity's lifecycle, 2) ensures uniqueness within its scope, 3) is commonly used for queries and correlation, and 4) is readily available in most observations (logs/events). For entities with dedicated field sets (for example, host, user), this value should match the corresponding \*.id field. Alternative identifiers (for example, ARNs values in AWS, URLs) can be preserved in the raw field. | keyword |
@@ -826,6 +827,7 @@ An example event for `asset` looks as following:
 | host.geo.location | Longitude and latitude. | geo_point |
 | host.geo.region_iso_code | Region ISO code. | keyword |
 | host.geo.region_name | Region name. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
@@ -908,9 +910,9 @@ An example event for `asset` looks as following:
 | url.username | Username of the request. | keyword |
 
 #### latest_cdr_vulnerabilities
-* Description: Latest ProjectDiscovery vulnerability findings. As findings are rescanned or triaged, this transform keeps only the latest state of each finding in a lookup index. Fixed, false positive, duplicate and accepted risk findings are excluded.
+* Description: Latest ProjectDiscovery vulnerability findings. As findings are rescanned or triaged, this transform keeps only the latest state of each finding in a lookup index.
 * Source Index: logs-projectdiscovery.vulnerability-\*
-* Destination Index: security_solution-projectdiscovery.vulnerability_latest-v1
+* Destination Index: security_solution-projectdiscovery.vulnerability_latest-v2
 
 **Exported fields**
 
@@ -919,7 +921,7 @@ An example event for `asset` looks as following:
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
-| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
