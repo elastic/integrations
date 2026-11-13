@@ -1,0 +1,84 @@
+source:
+  index:
+    - "metrics-azure.billing-*"
+  # The rows of the Cost Management forecast API that hold a forecast. Its rows
+  # with an actual cost are left out: the dashboard takes actual costs from the
+  # usage details. A `latest` transform uses `missing_bucket: true` for every
+  # unique key field, so documents without the key would all collapse into one
+  # shared "missing" bucket; the filters below keep them out.
+  #
+  # Only rows that carry the queried scope (Elastic Agent 9.6 and later) are read.
+  # Older agents stamp forecasts with the configured subscription ID even for a
+  # department or billing account scope, so after an agent upgrade their last
+  # forecast would sit next to the new one under another key and be summed with it.
+  # A forecast is only meaningful while it is refreshed, so nothing is lost by
+  # leaving the old rows out.
+  query:
+    bool:
+      filter:
+        - exists:
+            field: azure.billing.usage_date
+        - exists:
+            field: azure.billing.scope
+        - exists:
+            field: azure.billing.forecast_cost
+latest:
+  # Forecast rows have no per-record ID, so the natural key is the scope the
+  # forecast was queried for, the day, and the currency. The subscription ID and
+  # the Fleet namespace are left out
+  # on purpose: forecast rows carry the configured subscription ID even when the
+  # policy queries a department or billing account, and two policies that query
+  # the same scope fetch the same forecast.
+  unique_key:
+    - azure.billing.scope
+    - azure.billing.usage_date
+    - azure.billing.currency
+  # Azure keeps revising cost rows for up to ~72h, so the most recently collected
+  # copy of a row is the authoritative one.
+  sort: "@timestamp"
+dest:
+  # The destination index must not match `metrics-*`: transform documents keep
+  # their original `data_stream.dataset`, so a `metrics-*` data view would count
+  # both the raw and the deduplicated documents.
+  index: "azure_billing.forecast-v1"
+  aliases:
+    - alias: "azure_billing.forecast_latest"
+      move_on_creation: true
+description: >-
+  Deduplicated Azure billing forecast. The Azure billing metricset re-fetches recent days on every run, which creates duplicate documents in the metrics-azure.billing-* data stream. This transform keeps only the most recently collected forecast row per queried scope, usage date, and currency.
+# Same interval as `usage_fetches`, for the same reasons.
+frequency: 5m
+settings:
+  # This is required to prevent the transform from clobbering the Fleet-managed
+  # mappings.
+  deduce_mappings: false
+  unattended: true
+sync:
+  time:
+    # Ingest time, stamped by Fleet's final pipeline on every raw document, so
+    # rows that arrive late or are backfilled with an older event time are still
+    # picked up.
+    field: "event.ingested"
+    # 120s instead of the default 60s because of the index refresh delay in
+    # Serverless.
+    delay: 120s
+# A forecast is only meaningful while it is being refreshed: the metricset
+# re-issues the whole forecast window on every fetch. Documents that stop being
+# refreshed are dropped after three days. That removes the forecast of a scope
+# that is no longer collected and keeps this index to the current window. Past
+# days are shown from the usage transforms, not from here.
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 3d
+_meta:
+  # Bump this version to delete, reinstall, and restart the transform during
+  # package installation. Fleet keeps the destination index, and the new
+  # transform re-reads the whole source into it: the source has no `@timestamp`
+  # range filter on purpose, as it would drop that history. When the output
+  # changes shape, also rename the destination index (`-v2`), so that old and
+  # new documents do not mix.
+  fleet_transform_version: 0.1.0
+  # Independent of the usage transforms; installed last.
+  order: 2
+  run_as_kibana_system: false
