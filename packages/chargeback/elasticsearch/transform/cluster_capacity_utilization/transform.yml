@@ -100,7 +100,7 @@ pivot:
       terms:
         field: cb_cluster_name
   aggregations:
-    coverage:
+    utilization:
       scripted_metric:
         init_script: |
           state.nat = new HashMap();
@@ -113,140 +113,197 @@ pivot:
           int b = (int)(rem / 900000L);
           if (b < 0) { b = 0; }
           if (b > 95) { b = 95; }
-          int w = b >> 6;
-          long bit = 1L << (b & 63);
+
+          boolean hasHeap = false;
+          double heapVal = 0.0;
+          String hf = 'elasticsearch.node.stats.jvm.mem.heap.used.pct';
+          try {
+            if (doc.containsKey(hf) && !doc[hf].empty) {
+              heapVal = ((Number)doc[hf].value).doubleValue();
+              hasHeap = true;
+            }
+          } catch (Exception e) {}
+          if (!hasHeap) {
+            try {
+              def hv = params._source?.elasticsearch?.node?.stats?.jvm?.mem?.heap?.used?.pct;
+              if (hv instanceof Number) {
+                heapVal = ((Number)hv).doubleValue();
+                hasHeap = true;
+              }
+            } catch (Exception e) {}
+          }
+
+          boolean hasDisk = false;
+          double diskVal = 0.0;
+          try {
+            if (doc.containsKey('node_disk_used_pct') && !doc['node_disk_used_pct'].empty) {
+              diskVal = ((Number)doc['node_disk_used_pct'].value).doubleValue();
+              hasDisk = true;
+            }
+          } catch (Exception e) {}
+          if (!hasDisk) {
+            try {
+              def total = params._source?.elasticsearch?.node?.stats?.fs?.total?.total_in_bytes;
+              def avail = params._source?.elasticsearch?.node?.stats?.fs?.total?.available_in_bytes;
+              if (total instanceof Number && avail instanceof Number && ((Number)total).doubleValue() > 0.0) {
+                double totD = ((Number)total).doubleValue();
+                double avD = ((Number)avail).doubleValue();
+                diskVal = (totD - avD) * 100.0 / totD;
+                hasDisk = true;
+              }
+            } catch (Exception e) {}
+          }
+          if (!hasHeap && !hasDisk) { return; }
+
           String nid = (doc.containsKey('cb_node_id') && !doc['cb_node_id'].empty)
             ? doc['cb_node_id'].value.toString()
             : '_default_';
           boolean isNat = doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty
             && doc['data_stream.dataset'].value == 'chargeback.node_stats';
           Map target = isNat ? state.nat : state.leg;
-          List cur = (List)target.get(nid);
-          if (cur == null) {
-            cur = [0L, 0L];
-            target.put(nid, cur);
+          Map nodeSlots = (Map)target.get(nid);
+          if (nodeSlots == null) {
+            nodeSlots = new HashMap();
+            target.put(nid, nodeSlots);
           }
-          cur.set(w, ((Number)cur.get(w)).longValue() | bit);
+          String sk = Integer.toString(b);
+          List slotAcc = (List)nodeSlots.get(sk);
+          if (slotAcc == null) {
+            slotAcc = [0.0, 0L, 0.0, 0L];
+            nodeSlots.put(sk, slotAcc);
+          }
+          if (hasHeap) {
+            slotAcc.set(0, ((Number)slotAcc.get(0)).doubleValue() + heapVal);
+            slotAcc.set(1, ((Number)slotAcc.get(1)).longValue() + 1L);
+          }
+          if (hasDisk) {
+            slotAcc.set(2, ((Number)slotAcc.get(2)).doubleValue() + diskVal);
+            slotAcc.set(3, ((Number)slotAcc.get(3)).longValue() + 1L);
+          }
         combine_script: "return state;"
         reduce_script: |
           Map mergedNat = new HashMap();
           Map mergedLeg = new HashMap();
-          List anyNat = [0L, 0L];
+          Set anyNatSlots = new HashSet();
           for (def st : states) {
             if (st == null) { continue; }
             if (st.nat instanceof Map) {
-              for (def e : ((Map)st.nat).entrySet()) {
-                String k = e.getKey().toString();
-                List v = (List)e.getValue();
-                long v0 = ((Number)v.get(0)).longValue();
-                long v1 = ((Number)v.get(1)).longValue();
-                anyNat.set(0, ((Number)anyNat.get(0)).longValue() | v0);
-                anyNat.set(1, ((Number)anyNat.get(1)).longValue() | v1);
-                List acc = (List)mergedNat.get(k);
-                if (acc == null) {
-                  mergedNat.put(k, [v0, v1]);
-                } else {
-                  acc.set(0, ((Number)acc.get(0)).longValue() | v0);
-                  acc.set(1, ((Number)acc.get(1)).longValue() | v1);
+              for (def ne : ((Map)st.nat).entrySet()) {
+                String nid = ne.getKey().toString();
+                Map srcSlots = (Map)ne.getValue();
+                if (srcSlots == null) { continue; }
+                Map dstSlots = (Map)mergedNat.get(nid);
+                if (dstSlots == null) {
+                  dstSlots = new HashMap();
+                  mergedNat.put(nid, dstSlots);
+                }
+                for (def se : srcSlots.entrySet()) {
+                  String sk = se.getKey().toString();
+                  anyNatSlots.add(sk);
+                  List sv = (List)se.getValue();
+                  List dv = (List)dstSlots.get(sk);
+                  if (dv == null) {
+                    dstSlots.put(sk, [
+                      ((Number)sv.get(0)).doubleValue(),
+                      ((Number)sv.get(1)).longValue(),
+                      ((Number)sv.get(2)).doubleValue(),
+                      ((Number)sv.get(3)).longValue()
+                    ]);
+                  } else {
+                    dv.set(0, ((Number)dv.get(0)).doubleValue() + ((Number)sv.get(0)).doubleValue());
+                    dv.set(1, ((Number)dv.get(1)).longValue() + ((Number)sv.get(1)).longValue());
+                    dv.set(2, ((Number)dv.get(2)).doubleValue() + ((Number)sv.get(2)).doubleValue());
+                    dv.set(3, ((Number)dv.get(3)).longValue() + ((Number)sv.get(3)).longValue());
+                  }
                 }
               }
             }
             if (st.leg instanceof Map) {
-              for (def e : ((Map)st.leg).entrySet()) {
-                String k = e.getKey().toString();
-                List v = (List)e.getValue();
-                long v0 = ((Number)v.get(0)).longValue();
-                long v1 = ((Number)v.get(1)).longValue();
-                List acc = (List)mergedLeg.get(k);
-                if (acc == null) {
-                  mergedLeg.put(k, [v0, v1]);
-                } else {
-                  acc.set(0, ((Number)acc.get(0)).longValue() | v0);
-                  acc.set(1, ((Number)acc.get(1)).longValue() | v1);
+              for (def ne : ((Map)st.leg).entrySet()) {
+                String nid = ne.getKey().toString();
+                Map srcSlots = (Map)ne.getValue();
+                if (srcSlots == null) { continue; }
+                Map dstSlots = (Map)mergedLeg.get(nid);
+                if (dstSlots == null) {
+                  dstSlots = new HashMap();
+                  mergedLeg.put(nid, dstSlots);
                 }
-              }
-            }
-          }
-          boolean coversDay = false;
-          if (mergedLeg.isEmpty()) {
-            coversDay = !mergedNat.isEmpty();
-          } else if (!mergedNat.isEmpty()) {
-            coversDay = true;
-            for (def le : mergedLeg.entrySet()) {
-              String nid = le.getKey().toString();
-              List legM = (List)le.getValue();
-              List natM = (nid == '_default_') ? anyNat : (List)mergedNat.get(nid);
-              if (natM == null) {
-                coversDay = false;
-                break;
-              }
-              for (int b = 0; b < 96; b++) {
-                int w = b >> 6;
-                long bit = 1L << (b & 63);
-                if ((((Number)legM.get(w)).longValue() & bit) == 0L) { continue; }
-                boolean exact = ((((Number)natM.get(w)).longValue() & bit) != 0L);
-                boolean straddle = false;
-                if (!exact && b > 0 && (b + 1) < 96) {
-                  int pw = (b - 1) >> 6;
-                  long pbit = 1L << ((b - 1) & 63);
-                  int nw = (b + 1) >> 6;
-                  long nbit = 1L << ((b + 1) & 63);
-                  if (((((Number)natM.get(pw)).longValue() & pbit) != 0L)
-                      && ((((Number)natM.get(nw)).longValue() & nbit) != 0L)) {
-                    straddle = true;
+                for (def se : srcSlots.entrySet()) {
+                  String sk = se.getKey().toString();
+                  List sv = (List)se.getValue();
+                  List dv = (List)dstSlots.get(sk);
+                  if (dv == null) {
+                    dstSlots.put(sk, [
+                      ((Number)sv.get(0)).doubleValue(),
+                      ((Number)sv.get(1)).longValue(),
+                      ((Number)sv.get(2)).doubleValue(),
+                      ((Number)sv.get(3)).longValue()
+                    ]);
+                  } else {
+                    dv.set(0, ((Number)dv.get(0)).doubleValue() + ((Number)sv.get(0)).doubleValue());
+                    dv.set(1, ((Number)dv.get(1)).longValue() + ((Number)sv.get(1)).longValue());
+                    dv.set(2, ((Number)dv.get(2)).doubleValue() + ((Number)sv.get(2)).doubleValue());
+                    dv.set(3, ((Number)dv.get(3)).longValue() + ((Number)sv.get(3)).longValue());
                   }
                 }
-                if (!exact && !straddle) {
-                  coversDay = false;
-                  break;
-                }
               }
-              if (!coversDay) { break; }
             }
           }
+
+          Set allNodes = new HashSet();
+          allNodes.addAll(mergedNat.keySet());
+          allNodes.addAll(mergedLeg.keySet());
+          List heapVals = new ArrayList();
+          List diskVals = new ArrayList();
+          for (def nObj : allNodes) {
+            String nid = nObj.toString();
+            Map natSlots = (Map)mergedNat.get(nid);
+            Map legSlots = (Map)mergedLeg.get(nid);
+            for (int b = 0; b < 96; b++) {
+              String sk = Integer.toString(b);
+              List chosen = null;
+              if (natSlots != null && natSlots.containsKey(sk)) {
+                chosen = (List)natSlots.get(sk);
+              } else if (legSlots != null && legSlots.containsKey(sk)) {
+                if (nid != '_default_' || !anyNatSlots.contains(sk)) {
+                  chosen = (List)legSlots.get(sk);
+                }
+              }
+              if (chosen != null) {
+                long hCnt = ((Number)chosen.get(1)).longValue();
+                if (hCnt > 0L) {
+                  heapVals.add(((Number)chosen.get(0)).doubleValue() / (double)hCnt);
+                }
+                long dCnt = ((Number)chosen.get(3)).longValue();
+                if (dCnt > 0L) {
+                  diskVals.add(((Number)chosen.get(2)).doubleValue() / (double)dCnt);
+                }
+              }
+            }
+          }
+
           Map res = new HashMap();
-          res.put('native_covers_day', coversDay);
-          res.put('native_node_cnt', mergedNat.size());
-          res.put('legacy_node_cnt', mergedLeg.size());
+          if (!heapVals.isEmpty()) {
+            Collections.sort(heapVals);
+            double pos = 0.95 * (heapVals.size() - 1);
+            int lo = (int)Math.floor(pos);
+            int hi = (int)Math.ceil(pos);
+            double frac = pos - lo;
+            double hp95 = ((Number)heapVals.get(lo)).doubleValue() * (1.0 - frac)
+                        + ((Number)heapVals.get(hi)).doubleValue() * frac;
+            res.put('heap_used_pct_p95', hp95);
+          }
+          if (!diskVals.isEmpty()) {
+            Collections.sort(diskVals);
+            double pos = 0.95 * (diskVals.size() - 1);
+            int lo = (int)Math.floor(pos);
+            int hi = (int)Math.ceil(pos);
+            double frac = pos - lo;
+            double dp95 = ((Number)diskVals.get(lo)).doubleValue() * (1.0 - frac)
+                        + ((Number)diskVals.get(hi)).doubleValue() * frac;
+            res.put('disk_used_pct_p95', dp95);
+          }
           return res;
-    native:
-      filter:
-        term:
-          data_stream.dataset: chargeback.node_stats
-      aggs:
-        doc_cnt:
-          value_count:
-            field: "@timestamp"
-        heap_used_pct_p95:
-          percentiles:
-            field: elasticsearch.node.stats.jvm.mem.heap.used.pct
-            percents:
-              - 95
-        disk_used_pct_p95:
-          percentiles:
-            field: node_disk_used_pct
-            percents:
-              - 95
-    legacy:
-      filter:
-        bool:
-          must_not:
-            - term:
-                data_stream.dataset: chargeback.node_stats
-      aggs:
-        doc_cnt:
-          value_count:
-            field: "@timestamp"
-        heap_used_pct_p95:
-          percentiles:
-            field: elasticsearch.node.stats.jvm.mem.heap.used.pct
-            percents:
-              - 95
-        disk_used_pct_p95:
-          percentiles:
-            field: node_disk_used_pct
-            percents:
-              - 95
 settings:
   deduce_mappings: false
   unattended: true

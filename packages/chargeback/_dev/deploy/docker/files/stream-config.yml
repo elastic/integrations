@@ -4,6 +4,8 @@ rules:
     request_headers:
       Authorization:
         - "ApiKey cloud-key"
+    query_params:
+      show_metadata: "true"
     responses:
       - status_code: 200
         headers:
@@ -305,8 +307,46 @@ rules:
             {
               ".ds-logs-nginx.access-prod-2026.03.10-000001": {
                 "settings": {
-                  "index.routing.allocation.include._tier_preference": "data_warm,data_hot",
+                  "index.routing.allocation.include._tier_preference": "data_cold,data_warm,data_hot",
                   "index.creation_date": "1773100800000"
+                }
+              }
+            }
+          `}}
+
+  - path: /ech1/_cluster/state/routing_table,nodes/{indices}
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey ech-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+            {
+              "nodes": {
+                "node-ech-1": {
+                  "roles": ["data_hot", "data_content"]
+                },
+                "node-ech-2": {
+                  "roles": ["data_warm"]
+                }
+              },
+              "routing_table": {
+                "indices": {
+                  ".ds-logs-nginx.access-prod-2026.03.10-000001": {
+                    "shards": {
+                      "0": [
+                        {
+                          "state": "STARTED",
+                          "node": "node-ech-2"
+                        }
+                      ]
+                    }
+                  }
                 }
               }
             }
@@ -436,6 +476,41 @@ rules:
                 "settings": {
                   "index.routing.allocation.include._tier_preference": "data_cold",
                   "index.creation_date": "1772323200000"
+                }
+              }
+            }
+          `}}
+
+  - path: /hub/_cluster/state/routing_table,nodes/{indices}
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey hub-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+            {
+              "nodes": {
+                "node-hub-1": {
+                  "roles": ["data_hot"]
+                }
+              },
+              "routing_table": {
+                "indices": {
+                  "app-orders-2026.03": {
+                    "shards": {
+                      "0": [
+                        {
+                          "state": "STARTED",
+                          "node": "node-hub-1"
+                        }
+                      ]
+                    }
+                  }
                 }
               }
             }

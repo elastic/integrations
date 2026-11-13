@@ -13,7 +13,7 @@ resource.ssl: {{ssl}}
 {{#if http_client_timeout}}
 resource.timeout: {{http_client_timeout}}
 {{/if}}
-resource.url: "{{cloud_api_base}}/api/v1/deployments/_search"
+resource.url: "{{cloud_api_base}}/api/v1/deployments/_search?show_metadata=true"
 state:
   api_key: !!str {{escape_string cloud_api_key}}
   organization_id: !!str {{escape_string organization_id}}
@@ -84,7 +84,7 @@ program: |-
     ((has_cloud && dep_from >= 0) ?
       request(
         "POST",
-        state.cloud_api_base + "/api/v1/deployments/_search"
+        state.cloud_api_base + "/api/v1/deployments/_search?show_metadata=true"
       ).with(
         {
           "Header": {

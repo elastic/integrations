@@ -164,7 +164,7 @@ program: |-
               ((dep_from >= 0) ?
                 request(
                   "POST",
-                  state.cloud_api_base + "/api/v1/deployments/_search"
+                  state.cloud_api_base + "/api/v1/deployments/_search?show_metadata=true"
                 ).with(
                   {
                     "Header": {
@@ -198,16 +198,15 @@ program: |-
                         }
                       )
                     )
-                  :
-                    {
+                  : (dep_resp.StatusCode == 404 ? { "ok": true, "err": dyn({}), "items": [], "next_from": -1 } : {
                       "ok": false,
                       "err": dyn({ "error": { "code": string(dep_resp.StatusCode), "id": string(dep_resp.Status), "message": "POST " + dep_resp.Request.URL + ": " + ((size(dep_resp.Body) != 0) ? string(dep_resp.Body) : string(dep_resp.Status)) } }),
                       "items": [],
                       "next_from": -1,
-                    }
+                    })
                 )
               : { "ok": true, "err": dyn({}), "items": [], "next_from": -1 }).as(dep_page,
-              ((dep_page.ok && es_next != "") ?
+              ((es_next != "") ?
                 get_request(
                   state.cloud_api_base + "/api/v1/serverless/projects/elasticsearch?" + (es_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [es_next] }).format_query()
                 ).with({ "Header": { "Authorization": ["ApiKey " + state.api_key] } }).do_request().as(r,
@@ -233,7 +232,7 @@ program: |-
                     })
                 )
               : { "ok": true, "err": dyn({}), "items": [], "next": "" }).as(es_page,
-              ((dep_page.ok && es_page.ok && obs_next != "") ?
+              ((obs_next != "") ?
                 get_request(
                   state.cloud_api_base + "/api/v1/serverless/projects/observability?" + (obs_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [obs_next] }).format_query()
                 ).with({ "Header": { "Authorization": ["ApiKey " + state.api_key] } }).do_request().as(r,
@@ -259,7 +258,7 @@ program: |-
                     })
                 )
               : { "ok": true, "err": dyn({}), "items": [], "next": "" }).as(obs_page,
-              ((dep_page.ok && es_page.ok && obs_page.ok && sec_next != "") ?
+              ((sec_next != "") ?
                 get_request(
                   state.cloud_api_base + "/api/v1/serverless/projects/security?" + (sec_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [sec_next] }).format_query()
                 ).with({ "Header": { "Authorization": ["ApiKey " + state.api_key] } }).do_request().as(r,
@@ -285,43 +284,32 @@ program: |-
                     })
                 )
               : { "ok": true, "err": dyn({}), "items": [], "next": "" }).as(sec_page,
-                (!dep_page.ok || !es_page.ok || !obs_page.ok || !sec_page.ok) ?
-                  (
-                    meta_evts +
-                    (!dep_page.ok ? [dep_page.err] : []) +
-                    (!es_page.ok ? [es_page.err] : []) +
-                    (!obs_page.ok ? [obs_page.err] : []) +
-                    (!sec_page.ok ? [sec_page.err] : [])
-                  ).as(err_evts,
-                    {
-                      "events": err_evts,
-                      "cursor": {
-                        "last_to": req.from.format(time_layout.RFC3339),
-                        "conf_sig": conf_sig,
-                        "last_credit_day": cred_res.credit_day,
-                      },
-                      "want_more": false,
-                    }
-                  )
-                :
+                (
+                  (!dep_page.ok ? [dep_page.err] : []) +
+                  (!es_page.ok ? [es_page.err] : []) +
+                  (!obs_page.ok ? [obs_page.err] : []) +
+                  (!sec_page.ok ? [sec_page.err] : [])
+                ).as(disc_errs,
                   (acc_ech + dep_page.items).as(ech_deps,
                   (acc_sls + es_page.items + obs_page.items + sec_page.items).as(sls_projs,
                     (dep_page.next_from >= 0 || es_page.next != "" || obs_page.next != "" || sec_page.next != "") ?
-                      {
-                        "events": size(meta_evts) > 0 ? meta_evts : [dyn({ "fake": true })],
-                        "cursor": {
-                          "last_to": req.from.format(time_layout.RFC3339),
-                          "conf_sig": conf_sig,
-                          "last_credit_day": cred_res.credit_day,
-                          "disc_dep_from": dep_page.next_from,
-                          "disc_es_next": es_page.next,
-                          "disc_obs_next": obs_page.next,
-                          "disc_sec_next": sec_page.next,
-                          "disc_ech": ech_deps,
-                          "disc_sls": sls_projs,
-                        },
-                        "want_more": true,
-                      }
+                      (meta_evts + disc_errs).as(page_evts,
+                        {
+                          "events": size(page_evts) > 0 ? page_evts : [dyn({ "fake": true })],
+                          "cursor": {
+                            "last_to": req.from.format(time_layout.RFC3339),
+                            "conf_sig": conf_sig,
+                            "last_credit_day": cred_res.credit_day,
+                            "disc_dep_from": dep_page.next_from,
+                            "disc_es_next": es_page.next,
+                            "disc_obs_next": obs_page.next,
+                            "disc_sec_next": sec_page.next,
+                            "disc_ech": ech_deps,
+                            "disc_sls": sls_projs,
+                          },
+                          "want_more": true,
+                        }
+                      )
                     :
                       get_request(
                         state.billing_api_base + "/api/v2/billing/organizations/" + state.organization_id + "/costs/instances?" + {
@@ -390,7 +378,7 @@ program: |-
                             ).flatten()
                           : []).as(raw_evts,
                             raw_evts.filter(e, double(e.ess.billing.total_ecu) >= 0.0).as(pos_evts,
-                              (meta_evts + pos_evts).as(final_evts,
+                              (meta_evts + disc_errs + pos_evts).as(final_evts,
                                 (req.to + duration("26h") <= now).as(has_more_days,
                                   {
                                     "events": size(final_evts) > 0 ? final_evts : [dyn({ "fake": true })],
@@ -418,7 +406,7 @@ program: |-
                         )
                       :
                         {
-                          "events": meta_evts + [dyn({ "error": { "code": string(resp.StatusCode), "id": string(resp.Status), "message": "GET " + resp.Request.URL + ": " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)) } })],
+                          "events": meta_evts + disc_errs + [dyn({ "error": { "code": string(resp.StatusCode), "id": string(resp.Status), "message": "GET " + resp.Request.URL + ": " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)) } })],
                           "cursor": {
                             "last_to": req.from.format(time_layout.RFC3339),
                             "conf_sig": conf_sig,
@@ -427,7 +415,7 @@ program: |-
                           "want_more": false,
                         }
                       )
-                  ))
+                  )))
               ))))))
           )
         )
