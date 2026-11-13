@@ -1365,13 +1365,13 @@ An example event for `dex_application_tests` looks as following:
 | cloudflare_logpush.dex_application_tests.traceroute.hops.ip.asn | Autonomous system number of the hop IP. | long |  |  |
 | cloudflare_logpush.dex_application_tests.traceroute.hops.ip.aso | Autonomous system organization of the hop IP. | keyword |  |  |
 | cloudflare_logpush.dex_application_tests.traceroute.hops.ip.location.city | City associated with the hop IP. | keyword |  |  |
-| cloudflare_logpush.dex_application_tests.traceroute.hops.ip.location.countryISO | Country ISO code associated with the hop IP. | keyword |  |  |
-| cloudflare_logpush.dex_application_tests.traceroute.hops.ip.location.stateISO | State or region ISO code associated with the hop IP. | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.traceroute.hops.ip.location.country_iso | Country ISO code associated with the hop IP. | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.traceroute.hops.ip.location.state_iso | State or region ISO code associated with the hop IP. | keyword |  |  |
 | cloudflare_logpush.dex_application_tests.traceroute.hops.ip.location.zip | Postal code associated with the hop IP. | keyword |  |  |
 | cloudflare_logpush.dex_application_tests.traceroute.hops.ip.netmask | Netmask of the hop IP. | keyword |  |  |
 | cloudflare_logpush.dex_application_tests.traceroute.hops.ip.version | IP version of the hop IP. | keyword |  |  |
 | cloudflare_logpush.dex_application_tests.traceroute.hops.name | Hostname of the hop, if resolved. | keyword |  |  |
-| cloudflare_logpush.dex_application_tests.traceroute.hops.pathID | Identifier of the path the hop belongs to. | long |  |  |
+| cloudflare_logpush.dex_application_tests.traceroute.hops.path_id | Identifier of the path the hop belongs to. | long |  |  |
 | cloudflare_logpush.dex_application_tests.traceroute.hops.received | Number of probe responses received from the hop. | long |  |  |
 | cloudflare_logpush.dex_application_tests.traceroute.hops.rtts | Round-trip times measured for the hop, in milliseconds. | long | ms |  |
 | cloudflare_logpush.dex_application_tests.traceroute.hops.sent | Number of probe packets sent to the hop. | long |  |  |
@@ -1393,7 +1393,7 @@ An example event for `dex_application_tests` looks as following:
 | gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |  |  |
 | gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |  |  |
 | gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |  |  |
-| gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |  |  |
+| gcs.storage.object.name | The name of the Google Cloud Storage object. | keyword |  |  |
 | input.type | Input type | keyword |  |  |
 | log.offset | Log offset | long |  |  |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |  |  |
@@ -1674,7 +1674,7 @@ An example event for `dex_device_state_events` looks as following:
 | gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |  |  |
 | gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |  |  |
 | gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |  |  |
-| gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |  |  |
+| gcs.storage.object.name | The name of the Google Cloud Storage object. | keyword |  |  |
 | input.type | Input type | keyword |  |  |
 | log.offset | Log offset | long |  |  |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |  |  |

@@ -114,7 +114,7 @@ processors:
       tag: script_map_host_os_type
       lang: painless
       description: Dynamically set host.os.type from the client platform. host.os.type only accepts a fixed set of ECS values, so the client platform string is matched against them.
-      if: ctx.host?.os?.name != null
+      if: ctx.host?.os?.name instanceof String && ctx.host.os.name.trim() != ''
       params:
         os_type:
           - linux
@@ -133,6 +133,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_script_map_host_os_type
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -213,6 +214,7 @@ processors:
       if: ctx.json?.HTTPClientIPAddress != null && ctx.json.HTTPClientIPAddress != ''
       on_failure:
         - append:
+            tag: append_error_message_convert_json_HTTPClientIPAddress_to_source_ip
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -223,6 +225,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_convert_json_HTTPClientIPASN_to_source_as_number
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -273,6 +276,7 @@ processors:
       if: ctx.json?.HTTPServerIPAddress != null && ctx.json.HTTPServerIPAddress != ''
       on_failure:
         - append:
+            tag: append_error_message_convert_json_HTTPServerIPAddress_to_destination_ip
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -283,6 +287,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_convert_json_HTTPServerIPASN_to_destination_as_number
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -337,6 +342,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_convert_json_HTTPStatusCode_to_http_response_status_code
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -352,6 +358,7 @@ processors:
       if: ctx.url?.full != null
       on_failure:
         - append:
+            tag: append_error_message_uri_parts_url_full
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -372,6 +379,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_convert_json_HTTPResponseBodyBytes_to_http_response_body_bytes
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -382,6 +390,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_convert_json_HTTPResponseHeaderBytes_to_response_header_bytes
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -399,6 +408,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_convert_json_HTTPConnectStartMs
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -409,6 +419,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_convert_json_HTTPConnectEndMs
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -419,6 +430,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_convert_json_HTTPDomainLookupStartMs
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -429,6 +441,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_convert_json_HTTPDomainLookupEndMs
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -439,6 +452,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_convert_json_HTTPRedirectStartMs
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -449,6 +463,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_convert_json_HTTPRedirectEndMs
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -459,6 +474,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_convert_json_HTTPRequestStartMs
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -469,6 +485,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_convert_json_HTTPResponseStartMs
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -479,6 +496,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_convert_json_HTTPResponseEndMs
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -489,6 +507,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_convert_json_HTTPSecureConnectionStartMs
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -507,6 +526,7 @@ processors:
       if: ctx.json?.TracerouteDestinationIPAddress != null && ctx.json.TracerouteDestinationIPAddress != ''
       on_failure:
         - append:
+            tag: append_error_message_convert_json_TracerouteDestinationIPAddress_to_destination_ip
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -517,6 +537,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_convert_json_TracerouteDestinationIPASN_to_destination_as_number
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -567,6 +588,7 @@ processors:
       if: ctx.json?.TracerouteSourceIPAddress != null && ctx.json.TracerouteSourceIPAddress != ''
       on_failure:
         - append:
+            tag: append_error_message_convert_json_TracerouteSourceIPAddress_to_source_ip
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -577,6 +599,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_convert_json_TracerouteSourceIPASN_to_source_as_number
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -631,6 +654,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_convert_json_TracerouteDurationMs
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -638,6 +662,36 @@ processors:
       field: json.TracerouteHops
       target_field: cloudflare_logpush.dex_application_tests.traceroute.hops
       ignore_missing: true
+  - foreach:
+      tag: foreach_traceroute_hops_rename_pathID
+      field: cloudflare_logpush.dex_application_tests.traceroute.hops
+      if: ctx.cloudflare_logpush?.dex_application_tests?.traceroute?.hops instanceof List
+      processor:
+        rename:
+          tag: rename_traceroute_hops_pathID_to_path_id
+          field: _ingest._value.pathID
+          target_field: _ingest._value.path_id
+          ignore_missing: true
+  - foreach:
+      tag: foreach_traceroute_hops_rename_countryISO
+      field: cloudflare_logpush.dex_application_tests.traceroute.hops
+      if: ctx.cloudflare_logpush?.dex_application_tests?.traceroute?.hops instanceof List
+      processor:
+        rename:
+          tag: rename_traceroute_hops_ip_location_countryISO_to_country_iso
+          field: _ingest._value.ip.location.countryISO
+          target_field: _ingest._value.ip.location.country_iso
+          ignore_missing: true
+  - foreach:
+      tag: foreach_traceroute_hops_rename_stateISO
+      field: cloudflare_logpush.dex_application_tests.traceroute.hops
+      if: ctx.cloudflare_logpush?.dex_application_tests?.traceroute?.hops instanceof List
+      processor:
+        rename:
+          tag: rename_traceroute_hops_ip_location_stateISO_to_state_iso
+          field: _ingest._value.ip.location.stateISO
+          target_field: _ingest._value.ip.location.state_iso
+          ignore_missing: true
   - convert:
       tag: convert_json_TracerouteMaxTTL
       field: json.TracerouteMaxTTL
@@ -646,6 +700,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_convert_json_TracerouteMaxTTL
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -656,6 +711,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_convert_json_TracerouteSize
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -684,6 +740,7 @@ processors:
       timezone: UTC
       on_failure:
         - append:
+            tag: append_error_message_date_traceroute_time_end
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 

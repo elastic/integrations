@@ -55,6 +55,7 @@ processors:
   - script:
       lang: painless
       tag: script_timestamp_to_milli
+      description: Normalises the epoch Timestamp value (seconds/micros/nanos) to milliseconds so the date processor can parse it consistently.
       if: ctx.json?.Timestamp != null && ctx.json.Timestamp instanceof Number
       source: |
         long t = (long)(ctx.json.Timestamp);
@@ -106,7 +107,7 @@ processors:
       tag: script_map_host_os_type
       lang: painless
       description: Dynamically set host.os.type from the client platform. host.os.type only accepts a fixed set of ECS values, so the client platform string is matched against them.
-      if: ctx.host?.os?.name != null
+      if: ctx.host?.os?.name instanceof String && ctx.host.os.name.trim() != ''
       params:
         os_type:
           - linux
@@ -125,6 +126,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_script_map_host_os_type
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -171,9 +173,11 @@ processors:
       if: ctx.json?.DeviceIPv4Address != null && ctx.json.DeviceIPv4Address != ''
       on_failure:
         - remove:
+            tag: remove_json_DeviceIPv4Address
             field: json.DeviceIPv4Address
             ignore_missing: true
         - append:
+            tag: append_error_message_convert_json_DeviceIPv4Address_to_ip
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -190,9 +194,11 @@ processors:
       if: ctx.json?.DeviceIPv6Address != null && ctx.json.DeviceIPv6Address != ''
       on_failure:
         - remove:
+            tag: remove_json_DeviceIPv6Address
             field: json.DeviceIPv6Address
             ignore_missing: true
         - append:
+            tag: append_error_message_convert_json_DeviceIPv6Address_to_ip
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -224,6 +230,7 @@ processors:
       if: ctx.json?.GatewayIPv4Address != null && ctx.json.GatewayIPv4Address != ''
       on_failure:
         - append:
+            tag: append_error_message_convert_json_GatewayIPv4Address_to_ip
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -241,6 +248,7 @@ processors:
       if: ctx.json?.GatewayIPv6Address != null && ctx.json.GatewayIPv6Address != ''
       on_failure:
         - append:
+            tag: append_error_message_convert_json_GatewayIPv6Address_to_ip
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -263,9 +271,11 @@ processors:
       if: ctx.json?.ISPIPv4Address != null && ctx.json.ISPIPv4Address != ''
       on_failure:
         - remove:
+            tag: remove_json_ISPIPv4Address
             field: json.ISPIPv4Address
             ignore_missing: true
         - append:
+            tag: append_error_message_convert_json_ISPIPv4Address_to_ip
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -282,6 +292,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_convert_json_ISPIPv4ASN_to_source_as_number
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -325,9 +336,11 @@ processors:
       if: ctx.json?.ISPIPv6Address != null && ctx.json.ISPIPv6Address != ''
       on_failure:
         - remove:
+            tag: remove_json_ISPIPv6Address
             field: json.ISPIPv6Address
             ignore_missing: true
         - append:
+            tag: append_error_message_convert_json_ISPIPv6Address_to_ip
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -344,6 +357,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_convert_json_ISPIPv6ASN
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -397,6 +411,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_convert_json_NetworkReceivedBPS
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -407,6 +422,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_convert_json_NetworkSentBPS
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -444,6 +460,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_convert_json_HandshakeLatencyMs
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -454,6 +471,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_convert_json_WiFiStrengthDBM
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -467,6 +485,7 @@ processors:
       if: ctx.json?.AlwaysOn != null && ctx.json.AlwaysOn != ''
       on_failure:
         - append:
+            tag: append_error_message_convert_json_AlwaysOn
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -478,6 +497,7 @@ processors:
       if: ctx.json?.AppFirewallEnabled != null && ctx.json.AppFirewallEnabled != ''
       on_failure:
         - append:
+            tag: append_error_message_convert_json_AppFirewallEnabled
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -489,6 +509,7 @@ processors:
       if: ctx.json?.FirewallEnabled != null && ctx.json.FirewallEnabled != ''
       on_failure:
         - append:
+            tag: append_error_message_convert_json_FirewallEnabled
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -500,6 +521,7 @@ processors:
       if: ctx.json?.SwitchLocked != null && ctx.json.SwitchLocked != ''
       on_failure:
         - append:
+            tag: append_error_message_convert_json_SwitchLocked
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -513,6 +535,7 @@ processors:
       if: ctx.json?.BatteryCharging != null && ctx.json.BatteryCharging != ''
       on_failure:
         - append:
+            tag: append_error_message_convert_json_BatteryCharging
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -523,6 +546,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_convert_json_BatteryCycles
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -534,6 +558,7 @@ processors:
       if: ctx.json?.BatteryPercentage != null && ctx.json.BatteryPercentage != ''
       on_failure:
         - append:
+            tag: append_error_message_convert_json_BatteryPercentage
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -547,6 +572,7 @@ processors:
       if: ctx.json?.CPUPercentage != null && ctx.json.CPUPercentage != ''
       on_failure:
         - append:
+            tag: append_error_message_convert_json_CPUPercentage
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   # Cloudflare reports CPUPercentage as a fraction from 0 to 1, which matches the
@@ -571,6 +597,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_convert_json_DiskReadBPS
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -581,6 +608,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_convert_json_DiskWriteBPS
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -592,6 +620,7 @@ processors:
       if: ctx.json?.DiskUsagePercentage != null && ctx.json.DiskUsagePercentage != ''
       on_failure:
         - append:
+            tag: append_error_message_convert_json_DiskUsagePercentage
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -604,6 +633,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_convert_json_RAMAvailableKB
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -615,6 +645,7 @@ processors:
       if: ctx.json?.RAMUsedPercentage != null && ctx.json.RAMUsedPercentage != ''
       on_failure:
         - append:
+            tag: append_error_message_convert_json_RAMUsedPercentage
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -656,6 +687,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_source_ip_value_into_related_ip
           field: related.ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -665,6 +697,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_host_ip_value_into_related_ip
           field: related.ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
