@@ -1,0 +1,95 @@
+---
+description: "Ingest pipeline for Chargeback Serverless usage data stream."
+processors:
+  - set:
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+      if: ctx.event?.ingested == null
+      tag: set_event_ingested
+  - date:
+      field: period_start
+      target_field: "@timestamp"
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.period_start != null
+      ignore_failure: true
+      tag: restore_period_start_timestamp
+  - remove:
+      field:
+        - period_start
+        - _raw_inference_count
+        - _raw_time_ms
+        - _raw_nodes
+        - _raw_baselines
+      ignore_missing: true
+      tag: remove_transient_usage_fields
+  - script:
+      lang: painless
+      tag: normalize_usage_fields
+      source: |
+        if (ctx.project_name == null || ctx.project_name == '') {
+          ctx.project_name = ctx.project_id;
+        }
+        if (ctx['@timestamp'] != null && ctx.project_id != null) {
+          def ts = ctx['@timestamp'];
+          def date = (ts instanceof Number)
+            ? Instant.ofEpochMilli(((Number) ts).longValue()).atZone(ZoneOffset.UTC).toLocalDate().toString()
+            : ZonedDateTime.parse(ts.toString()).toLocalDate().toString();
+          ctx.composite_key = date + '_' + ctx.project_id;
+        }
+        if (ctx.doc_type == 'datastream' && ctx.datastream != null && ctx.datastream != '') {
+          if (ctx.backing_index == null || ctx.backing_index == '') {
+            ctx.backing_index = ctx.datastream;
+          }
+          def dsPattern = /^(?:partial-)?(?:restored-)?(?:shrink-.{4}-)?(?:downsample-[^-]+-)?\.ds-(.+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d+)?$/;
+          def m = dsPattern.matcher(ctx.datastream);
+          def isBackingIndex = m.matches();
+          if (isBackingIndex) {
+            ctx.datastream = m.group(1);
+          } else if (ctx.backing_index instanceof String && dsPattern.matcher(ctx.backing_index).matches()) {
+            isBackingIndex = true;
+          }
+          if (ctx.datastream.startsWith('.') || ctx.datastream == 'system' || (ctx.datastream.startsWith('serverless_') && (ctx.datastream.endsWith('_lookup') || ctx.datastream.contains('_lookup-')))) {
+            ctx.datastream = 'system';
+            ctx.ds_type = 'system';
+            ctx.ds_namespace = 'system';
+            ctx.ds_dataset = 'system';
+          } else {
+            def hasExplicitStreamType = (ctx.ds_type == 'logs' || ctx.ds_type == 'metrics' || ctx.ds_type == 'traces' || ctx.ds_type == 'synthetics' || ctx.ds_type == 'profiling');
+            def parts = ctx.datastream.splitOnToken('-');
+            if ((isBackingIndex || hasExplicitStreamType) && (parts[0] == 'logs' || parts[0] == 'metrics' || parts[0] == 'traces' || parts[0] == 'synthetics' || parts[0] == 'profiling') && parts.length >= 3) {
+              ctx.ds_type = parts[0];
+              ctx.ds_dataset = parts[1];
+              def nsParts = new ArrayList();
+              for (int i = 2; i < parts.length; i++) {
+                nsParts.add(parts[i]);
+              }
+              ctx.ds_namespace = String.join('-', nsParts);
+            } else if (hasExplicitStreamType) {
+              if (ctx.ds_dataset == null || ctx.ds_dataset == '') {
+                ctx.ds_dataset = ctx.datastream;
+              }
+              if (ctx.ds_namespace == null || ctx.ds_namespace == '') {
+                ctx.ds_namespace = 'default';
+              }
+            } else {
+              ctx.ds_type = 'index';
+              ctx.ds_dataset = ctx.datastream;
+              ctx.ds_namespace = 'default';
+            }
+          }
+        }
+on_failure:
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: "pipeline_error"
+  - append:
+      tag: append_pipeline_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'

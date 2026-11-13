@@ -1,0 +1,64 @@
+description: Aggregates daily AI/ML model inference metrics per Serverless project and model into a single daily figure.
+source:
+  index:
+    - metrics-chargeback_serverless.usage-*
+  query:
+    term:
+      doc_type: "ai_model"
+dest:
+  index: serverless_ai_model_contribution_lookup-1
+  aliases:
+    - alias: serverless_ai_model_contribution_lookup
+      move_on_creation: true
+  pipeline: '{{ ingestPipelineName "chargeback_serverless-lookup_usage" }}'
+frequency: 5m
+sync:
+  time:
+    field: event.ingested
+    delay: 120s
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 365d
+pivot:
+  group_by:
+    "@timestamp":
+      date_histogram:
+        field: "@timestamp"
+        calendar_interval: 1d
+    project_id:
+      terms:
+        field: project_id
+    model_id:
+      terms:
+        field: model_id
+    task_type:
+      terms:
+        field: task_type
+  aggregations:
+    inference_count:
+      max:
+        field: inference_count
+    average_inference_time_ms:
+      max:
+        field: average_inference_time_ms
+    total_inference_time_ms:
+      max:
+        field: total_inference_time_ms
+    latest_currency:
+      top_metrics:
+        metrics:
+          - field: project_name
+          - field: project_type
+          - field: conf_chargeable_unit_rate
+          - field: conf_chargeable_unit_rate_unit
+          - field: conf_currency_symbol
+        sort:
+          event.ingested: desc
+settings:
+  deduce_mappings: false
+  unattended: true
+_meta:
+  managed: true
+  run_as_kibana_system: false
+  fleet_transform_version: 0.1.0

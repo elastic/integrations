@@ -1,0 +1,175 @@
+format_version: 3.7.0
+name: chargeback_serverless
+title: "Chargeback Serverless"
+version: 0.1.0
+description: "Allocate Elastic Cloud Serverless billing to projects, data streams, and AI models on a Serverless hub. Native Fleet integration: daily collection at 02:00 UTC via Elastic Agent CEL streams with Elasticsearch Transforms and lookup indices."
+type: integration
+categories:
+  - cloud
+  - custom
+# Package-level conditions.agent.version is disallowed in package-spec 3.7.0+ (SVR00012).
+conditions:
+  kibana:
+    version: "^9.6.0"
+  elastic:
+    subscription: "basic"
+screenshots:
+  - src: /img/chargeback-serverless-billing-overview.png
+    title: Billing Components Overview
+    size: 1581x1150
+    type: image/png
+  - src: /img/chargeback-serverless-usage-allocation.png
+    title: Usage & Cost Allocation
+    size: 1581x1150
+    type: image/png
+  - src: /img/chargeback-serverless-ai-ml.png
+    title: AI & Machine Learning FinOps
+    size: 1581x1150
+    type: image/png
+  - src: /img/chargeback-serverless-synthetics.png
+    title: Synthetics FinOps
+    size: 1581x1150
+    type: image/png
+  - src: /img/chargeback-serverless-configuration.png
+    title: Configuration & Workload Registry
+    size: 1581x1150
+    type: image/png
+icons:
+  - src: /img/elastic-logo.svg
+    title: Elastic logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: chargeback_serverless
+    title: Chargeback Serverless
+    description: >-
+      Collect Elastic Cloud Serverless billing and project usage metrics on a schedule. All credentials, project harvesting keys, and currency conversions are configured here. Secrets are encrypted and never stored in Elasticsearch indices.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: false
+    inputs:
+      - type: cel
+        title: Elastic Cloud Configuration
+        description: >-
+          Configure your Elastic Cloud organization ID, unified Elastic Cloud API key, and currency rates.
+        vars:
+          - name: organization_id
+            type: text
+            title: Organization ID
+            description: >-
+              Elastic Cloud organization ID (found on Cloud Console → Organization).
+            multi: false
+            required: true
+            show_user: true
+            secret: false
+          - name: cloud_api_key
+            type: password
+            title: Elastic Cloud API Key
+            description: >-
+              Unified Elastic Cloud API key created in Cloud Console → Organization → API keys with Organization role set to Billing Admin (required to include deleted projects), Cloud resource access enabled, and Project Roles / API Access granted for each project type (Elasticsearch, Observability, Security).
+            multi: false
+            required: true
+            show_user: true
+            secret: true
+          - name: currency_unit
+            type: text
+            title: Currency Unit
+            description: >-
+              Target display currency unit code (for example, USD, EUR, ZAR, GBP, ECU).
+            multi: false
+            required: false
+            show_user: true
+            default: "USD"
+          - name: currency_symbol
+            type: text
+            title: Currency Symbol
+            description: >-
+              Target display currency symbol (for example, $, €, R, £, ECU).
+            multi: false
+            required: false
+            show_user: true
+            default: "$"
+          - name: unit_rate
+            type: text
+            title: Chargeable Unit Rate
+            description: >-
+              Multiplier from chargeable units (ECU) to target currency (for example, 1.0, 18.5).
+            multi: false
+            required: true
+            show_user: true
+            default: "1.0"
+          - name: billing_api_base
+            type: text
+            title: Billing API Base URL
+            description: Base URL of the Elastic Cloud Billing API.
+            required: false
+            show_user: false
+            default: "https://billing.elastic-cloud.com"
+          - name: cloud_api_base
+            type: text
+            title: Cloud Control Plane API Base URL
+            description: Base URL of the Elastic Cloud Serverless API.
+            required: false
+            show_user: false
+            default: "https://api.elastic-cloud.com"
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            description: >-
+              URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Ensure your username and password are in URL encoded format.
+            multi: false
+            required: false
+            show_user: false
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: >-
+              SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/metricbeat/current/configuration-ssl.html#ssl-client-config) for details.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities:
+              #  - |
+              #    -----BEGIN CERTIFICATE-----
+              #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+              #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+              #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+              #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+              #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+              #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+              #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+              #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+              #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+              #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+              #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+              #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+              #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+              #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+              #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+              #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+              #    sxSmbIUfc2SGJGCJD4I=
+              #    -----END CERTIFICATE-----
+          - name: http_client_timeout
+            type: text
+            title: HTTP Client Timeout
+            description: >-
+              Duration before declaring that the HTTP client connection has timed out. Supported time units are ns, us, ms, s, m, h.
+            multi: false
+            required: false
+            show_user: false
+            default: "30s"
+          - name: enable_request_tracer
+            type: bool
+            title: Enable request tracing
+            description: >-
+              The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename) for details.
+            multi: false
+            required: false
+            show_user: false
+            default: false
+owner:
+  github: elastic/customer-architects
+  type: elastic

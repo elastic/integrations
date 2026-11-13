@@ -1,0 +1,72 @@
+description: Aggregates daily Synthetics monitor check execution metrics per Serverless project, monitor, and synthetic type into a single daily figure.
+source:
+  index:
+    - metrics-chargeback_serverless.usage-*
+  query:
+    term:
+      doc_type: "synthetics_monitor"
+dest:
+  index: serverless_synthetics_monitor_contribution_lookup-1
+  aliases:
+    - alias: serverless_synthetics_monitor_contribution_lookup
+      move_on_creation: true
+  pipeline: '{{ ingestPipelineName "chargeback_serverless-lookup_usage" }}'
+frequency: 5m
+sync:
+  time:
+    field: event.ingested
+    delay: 120s
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 365d
+pivot:
+  group_by:
+    "@timestamp":
+      date_histogram:
+        field: "@timestamp"
+        calendar_interval: 1d
+    project_id:
+      terms:
+        field: project_id
+    monitor_id:
+      terms:
+        field: monitor_id
+    monitor_type:
+      terms:
+        field: monitor_type
+  aggregations:
+    check_count:
+      max:
+        field: check_count
+    up_count:
+      max:
+        field: up_count
+    down_count:
+      max:
+        field: down_count
+    locations_count:
+      max:
+        field: locations_count
+    average_duration_ms:
+      max:
+        field: average_duration_ms
+    latest_currency:
+      top_metrics:
+        metrics:
+          - field: project_name
+          - field: project_type
+          - field: monitor_name
+          - field: monitor_namespace
+          - field: conf_chargeable_unit_rate
+          - field: conf_chargeable_unit_rate_unit
+          - field: conf_currency_symbol
+        sort:
+          event.ingested: desc
+settings:
+  deduce_mappings: false
+  unattended: true
+_meta:
+  managed: true
+  run_as_kibana_system: false
+  fleet_transform_version: 0.1.0

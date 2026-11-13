@@ -1,0 +1,113 @@
+description: Aggregates daily allocatable ECU pools (indexing, query, storage, AI) per Serverless project into a single daily figure for LOOKUP JOIN attribution.
+source:
+  index:
+    - serverless_billing_cost_lookup
+dest:
+  index: serverless_billing_realized_pool_lookup-1
+  aliases:
+    - alias: serverless_billing_realized_pool_lookup
+      move_on_creation: true
+  pipeline: '{{ ingestPipelineName "chargeback_serverless-lookup_realized_pool" }}'
+frequency: 5m
+sync:
+  time:
+    field: event.ingested
+    delay: 120s
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 365d
+pivot:
+  group_by:
+    "@timestamp":
+      date_histogram:
+        field: "@timestamp"
+        calendar_interval: 1d
+    project_id:
+      terms:
+        field: project_id
+  aggregations:
+    indexing_ecu:
+      filter:
+        term:
+          allocation_driver: "indexing"
+      aggs:
+        val:
+          sum:
+            field: total_ecu
+    query_ecu:
+      filter:
+        term:
+          allocation_driver: "query"
+      aggs:
+        val:
+          sum:
+            field: total_ecu
+    storage_ecu:
+      filter:
+        term:
+          allocation_driver: "storage"
+      aggs:
+        val:
+          sum:
+            field: total_ecu
+    ai_ecu:
+      filter:
+        terms:
+          cost_type:
+            - "ml-vcu"
+            - "inference"
+            - "agent-builder"
+      aggs:
+        val:
+          sum:
+            field: total_ecu
+    synthetics_ecu:
+      filter:
+        term:
+          allocation_driver: "synthetics"
+      aggs:
+        val:
+          sum:
+            field: total_ecu
+    synthetics_pings_ecu:
+      filter:
+        wildcard:
+          sku: "*synthetic*ping*"
+      aggs:
+        val:
+          sum:
+            field: total_ecu
+    synthetics_executions_ecu:
+      filter:
+        bool:
+          should:
+            - wildcard:
+                sku: "*synthetic*execution*"
+            - wildcard:
+                sku: "*synthetic*browser*"
+            - wildcard:
+                sku: "*synthetic*test*"
+          minimum_should_match: 1
+      aggs:
+        val:
+          sum:
+            field: total_ecu
+    all_sku_ecu:
+      sum:
+        field: total_ecu
+    latest_currency:
+      top_metrics:
+        metrics:
+          - field: conf_chargeable_unit_rate
+          - field: conf_chargeable_unit_rate_unit
+          - field: conf_currency_symbol
+        sort:
+          event.ingested: desc
+settings:
+  deduce_mappings: false
+  unattended: true
+_meta:
+  managed: true
+  run_as_kibana_system: false
+  fleet_transform_version: 0.1.0

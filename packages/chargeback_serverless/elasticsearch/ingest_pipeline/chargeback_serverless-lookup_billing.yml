@@ -1,0 +1,300 @@
+---
+description: >-
+  Chargeback Serverless: build composite_key, classify Serverless SKUs, and set
+  allocation_driver (indexing | query | storage | ai | synthetics | none) on billing lookup rows.
+processors:
+  - script:
+      lang: painless
+      tag: set_composite_key
+      source: |
+        if (ctx.project_name instanceof Map) {
+          def picked = null;
+          def buckets = ctx.project_name.buckets;
+          if (buckets instanceof List && buckets.size() > 0) {
+            for (def b : buckets) {
+              if (b.key != null && b.key != '' && b.key != ctx.project_id) {
+                picked = b.key;
+                break;
+              }
+            }
+            if (picked == null && buckets[0].key != null) {
+              picked = buckets[0].key;
+            }
+          } else {
+            for (def k : ctx.project_name.keySet()) {
+              if (k != null && k != '' && k != ctx.project_id) {
+                picked = k;
+                break;
+              }
+            }
+            if (picked == null) {
+              def keys = new ArrayList(ctx.project_name.keySet());
+              if (keys.size() > 0) {
+                picked = keys[0];
+              }
+            }
+          }
+          ctx.project_name = picked != null ? picked : ctx.project_id;
+        }
+        if (ctx.project_type instanceof Map) {
+          def buckets = ctx.project_type.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.project_type = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.project_type.keySet());
+            ctx.project_type = keys.size() > 0 ? keys[0] : 'elasticsearch';
+          }
+        }
+        if (ctx.latest_snapshot instanceof Map) {
+          def snap = ctx.latest_snapshot;
+          if (snap.top instanceof List && snap.top.size() > 0 && snap.top[0] instanceof Map && snap.top[0].metrics instanceof Map) {
+            snap = snap.top[0].metrics;
+          }
+          if (snap.project_name != null && snap.project_name.toString() != '') {
+            ctx.project_name = snap.project_name.toString();
+          }
+          if (snap.project_type != null && snap.project_type.toString() != '') {
+            ctx.project_type = snap.project_type.toString();
+          }
+          if (snap.total_ecu instanceof Number) {
+            ctx.total_ecu = ((Number)snap.total_ecu).doubleValue();
+          } else if (snap.total_ecu != null && snap.total_ecu.toString() != '') {
+            ctx.total_ecu = Double.parseDouble(snap.total_ecu.toString());
+          }
+          if (snap.quantity_value instanceof Number) {
+            ctx.quantity_value = ((Number)snap.quantity_value).doubleValue();
+          } else if (snap.quantity_value != null && snap.quantity_value.toString() != '') {
+            ctx.quantity_value = Double.parseDouble(snap.quantity_value.toString());
+          }
+          if (snap.conf_chargeable_unit_rate instanceof Number) {
+            ctx.conf_chargeable_unit_rate = ((Number)snap.conf_chargeable_unit_rate).doubleValue();
+          } else if (snap.conf_chargeable_unit_rate != null && snap.conf_chargeable_unit_rate.toString() != '') {
+            ctx.conf_chargeable_unit_rate = Double.parseDouble(snap.conf_chargeable_unit_rate.toString());
+          }
+          if (snap.conf_chargeable_unit_rate_unit != null) {
+            ctx.conf_chargeable_unit_rate_unit = snap.conf_chargeable_unit_rate_unit.toString();
+          }
+          if (snap.conf_currency_symbol != null) {
+            ctx.conf_currency_symbol = snap.conf_currency_symbol.toString();
+          }
+          ctx.remove('latest_snapshot');
+        }
+        if (ctx.conf_chargeable_unit_rate_unit instanceof Map) {
+          def buckets = ctx.conf_chargeable_unit_rate_unit.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.conf_chargeable_unit_rate_unit = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.conf_chargeable_unit_rate_unit.keySet());
+            ctx.conf_chargeable_unit_rate_unit = keys.size() > 0 ? keys[0] : 'USD';
+          }
+        }
+        if (ctx.conf_currency_symbol instanceof Map) {
+          def buckets = ctx.conf_currency_symbol.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.conf_currency_symbol = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.conf_currency_symbol.keySet());
+            ctx.conf_currency_symbol = keys.size() > 0 ? keys[0] : '$';
+          }
+        }
+        if (ctx.conf_chargeable_unit_rate == null) {
+          ctx.conf_chargeable_unit_rate = 1.0;
+        }
+        if (ctx.conf_chargeable_unit_rate_unit == null || ctx.conf_chargeable_unit_rate_unit == '') {
+          ctx.conf_chargeable_unit_rate_unit = 'USD';
+        }
+        if (ctx.conf_currency_symbol == null || ctx.conf_currency_symbol == '') {
+          ctx.conf_currency_symbol = '$';
+        }
+        if (ctx.project_name == null || ctx.project_name == '') {
+          ctx.project_name = ctx.project_id;
+        }
+        if (ctx.project_type == null || ctx.project_type == '') {
+          ctx.project_type = 'elasticsearch';
+        }
+        if (ctx.total_ecu instanceof Number) {
+          ctx.total_chargeable_units = ((Number)ctx.total_ecu).doubleValue();
+        }
+        if (ctx['@timestamp'] != null && ctx.project_id != null) {
+          def ts = ctx['@timestamp'];
+          def date = (ts instanceof Number)
+            ? Instant.ofEpochMilli(((Number) ts).longValue()).atZone(ZoneOffset.UTC).toLocalDate().toString()
+            : ZonedDateTime.parse(ts.toString()).toLocalDate().toString();
+          ctx.composite_key = date + '_' + ctx.project_id;
+        }
+  - set:
+      field: cost_type
+      value: 'data-transfer'
+      if: ctx.sku != null && ctx.sku =~ /^(aws|gcp|azure)\.(data-transfer|data-out).*/
+      tag: set_cost_type_data_transfer
+  - set:
+      field: cost_type
+      value: 'snapshots'
+      if: ctx.sku != null && ctx.sku =~ /^(aws|gcp|azure)\.snapshot-storage.*/
+      tag: set_cost_type_snapshots
+  - set:
+      field: cost_type
+      value: 'inference'
+      if: ctx.sku == 'global.inference-chat-input'
+      tag: set_cost_type_inference
+  - script:
+      lang: painless
+      tag: classify_serverless_sku
+      description: >-
+        Serverless-only classification. Sets cost_type, cost_category, is_allocatable,
+        and allocation_driver. Drivers: indexing (ingest VCU / Observability-Security
+        ingest GB), query (search VCU), storage (retained), ai (inference / ML VCU /
+        Agent Builder), synthetics (synthetic pings & executions), none (unallocated).
+      source: |
+        def sku = ctx.sku;
+        if (sku == null || sku == '' || sku == 'none') {
+          ctx.cost_type = 'other';
+          ctx.cost_category = 'other';
+          ctx.is_allocatable = false;
+          ctx.allocation_driver = 'none';
+          return;
+        }
+
+        // Elastic Cloud Billing SKUs follow regional/tier patterns (<csp>.<product>-<metric>_<region>,
+        // serverless.<product>.<metric>, or global.<metric>). Any unrecognized future SKU falls through
+        // to the default 'other' / 'none' bucket at the end of this script so total invoice spend is preserved.
+        // Synthetics (singular 'synthetic-' or plural 'synthetics')
+        if (sku.contains('synthetic')) {
+          ctx.cost_type = 'synthetics';
+          ctx.cost_category = 'platform';
+          ctx.is_allocatable = true;
+          ctx.allocation_driver = 'synthetics';
+          return;
+        }
+
+        // Agent Builder executions
+        if (sku.contains('agent-builder')) {
+          ctx.cost_type = 'agent-builder';
+          ctx.cost_category = 'platform';
+          ctx.is_allocatable = true;
+          ctx.allocation_driver = 'ai';
+          return;
+        }
+
+        // Ingest / indexing VCU (any project type, current or future)
+        if (sku.contains('-ingest-vcu_') || sku.contains('ingest-vcu') || sku.contains('-ingest-vcu') || sku.contains('ingest.ecu') || sku.contains('ingest_ecu') || sku.contains('ingest.vcu')) {
+          ctx.cost_type = 'ingest-vcu';
+          ctx.cost_category = 'data_tier';
+          ctx.is_allocatable = true;
+          ctx.allocation_driver = 'indexing';
+          return;
+        }
+
+        // Search / query VCU (any project type, current or future)
+        if (sku.contains('-search-vcu_') || sku.contains('search-vcu') || sku.contains('-search-vcu') || sku.contains('search.ecu') || sku.contains('search_ecu') || sku.contains('search.vcu')) {
+          ctx.cost_type = 'search-vcu';
+          ctx.cost_category = 'data_tier';
+          ctx.is_allocatable = true;
+          ctx.allocation_driver = 'query';
+          return;
+        }
+
+        // ML / AI VCU (any project type, current or future)
+        if (sku.contains('-ml-vcu_') || sku.contains('ml-vcu') || sku.contains('-ml-vcu') || sku.contains('ml.ecu') || sku.contains('ml_ecu') || sku.contains('ml.vcu') || sku.contains('ml_inference') || sku.contains('.eis.') || sku.endsWith('.eis')) {
+          ctx.cost_type = 'ml-vcu';
+          ctx.cost_category = 'platform';
+          ctx.is_allocatable = true;
+          ctx.allocation_driver = 'ai';
+          return;
+        }
+
+        // Retained storage (any project type, current or future; exclude snapshot-storage SKUs)
+        if ((sku.contains('retained') || sku.contains('storage') || sku.contains('retention')) && !sku.contains('snapshot') && ctx.cost_type != 'snapshots') {
+          ctx.cost_type = 'retained';
+          ctx.cost_category = 'data_tier';
+          ctx.is_allocatable = true;
+          ctx.allocation_driver = 'storage';
+          return;
+        }
+
+        // Solution-specific ingest/data tier (Observability, Security, Search, etc.)
+        if (sku.contains('ingest') || sku.contains('logs') || sku.contains('metrics')
+            || sku.contains('traces') || sku.contains('apm') || sku.contains('siem')) {
+          ctx.cost_type = 'ingest';
+          ctx.cost_category = 'data_tier';
+          ctx.is_allocatable = true;
+          ctx.allocation_driver = 'indexing';
+          return;
+        }
+
+        if (sku.startsWith('serverless.support-')) {
+          ctx.cost_type = 'serverless_premium_support';
+          ctx.cost_category = 'support';
+          ctx.is_allocatable = false;
+          ctx.allocation_driver = 'none';
+          return;
+        }
+
+        if (ctx.cost_type == 'data-transfer' || sku.contains('data-transfer')
+            || sku.contains('data-out') || sku.contains('egress')) {
+          ctx.cost_type = 'data-transfer';
+          ctx.cost_category = 'transfer';
+          ctx.is_allocatable = false;
+          ctx.allocation_driver = 'none';
+          return;
+        }
+        if (ctx.cost_type == 'snapshots' || sku.contains('snapshot')) {
+          ctx.cost_type = 'snapshots';
+          ctx.cost_category = 'snapshot';
+          ctx.is_allocatable = false;
+          ctx.allocation_driver = 'none';
+          return;
+        }
+        if (ctx.cost_type == 'inference' || sku.contains('inference') || sku.contains('llm')) {
+          ctx.cost_type = 'inference';
+          ctx.cost_category = 'platform';
+          ctx.is_allocatable = true;
+          ctx.allocation_driver = 'ai';
+          return;
+        }
+        if (sku.contains('workflow')) {
+          ctx.cost_type = 'workflows';
+          ctx.cost_category = 'platform';
+          ctx.is_allocatable = false;
+          ctx.allocation_driver = 'none';
+          return;
+        }
+        if (sku.contains('cross-project') || sku.contains('cps')) {
+          ctx.cost_type = 'cross-project-search';
+          ctx.cost_category = 'platform';
+          ctx.is_allocatable = false;
+          ctx.allocation_driver = 'none';
+          return;
+        }
+
+        ctx.cost_category = 'other';
+        ctx.is_allocatable = false;
+        ctx.allocation_driver = 'none';
+  - grok:
+      field: sku
+      ignore_failure: true
+      tag: grok_fallback_cost_type
+      patterns:
+        - "%{WORD}.es.%{WORD:cost_type}.%{GREEDYDATA}"
+        - "%{WORD}.%{DATA:cost_type}-vcu_%{GREEDYDATA}"
+        - "%{WORD}.%{WORD:cost_type}.%{GREEDYDATA}"
+        - "%{WORD}.%{DATA:cost_type}_%{GREEDYDATA}"
+      description: Derive a readable fallback cost_type from unknown SKUs
+      if: ctx.cost_type == null && ctx.sku != null
+  - set:
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+      tag: set_event_ingested
+on_failure:
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: "pipeline_error"
+  - append:
+      tag: append_pipeline_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'

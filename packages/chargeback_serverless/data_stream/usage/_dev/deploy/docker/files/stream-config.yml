@@ -1,0 +1,341 @@
+rules:
+  - path: /api/v1/serverless/projects/elasticsearch
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "ApiKey test-cloud-api-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+            {
+              "items": [
+                {
+                  "id": "proj-es-1",
+                  "name": "Search Production",
+                  "optimized_for": "vector",
+                  "endpoints": {
+                    "elasticsearch": "http://svc-usage_mock:8080/es-hub"
+                  }
+                }
+              ]
+            }
+          `}}
+
+  - path: /api/v1/serverless/projects/observability
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "ApiKey test-cloud-api-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+            {
+              "items": [
+                {
+                  "id": "proj-obs-1",
+                  "name": "Observability Production",
+                  "endpoints": {
+                    "elasticsearch": "http://svc-usage_mock:8080/obs-remote"
+                  }
+                }
+              ]
+            }
+          `}}
+
+  - path: /api/v1/serverless/projects/security
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "ApiKey test-cloud-api-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"items":[]}'
+
+  - path: /api/v1/serverless/projects/vectordb
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "ApiKey test-cloud-api-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"items":[]}'
+
+  - path: /api/v2/billing/organizations/1111/costs/instances
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "ApiKey test-cloud-api-key"
+    query_params:
+      from: "{from:.+}"
+      to: "{to:.+}"
+      include_names: "true"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+            {
+              "instances": [
+                {
+                  "id": "proj-es-1",
+                  "name": "Search Production",
+                  "type": "elasticsearch",
+                  "product_line_items": [
+                    {
+                      "sku": "es.search-vcu",
+                      "total_ecu": 28.0,
+                      "quantity": { "value": 28.0 }
+                    }
+                  ]
+                },
+                {
+                  "id": "proj-obs-1",
+                  "name": "Observability Production",
+                  "type": "observability",
+                  "product_line_items": [
+                    {
+                      "sku": "observability.synthetic-pings",
+                      "total_ecu": 1.5,
+                      "quantity": { "value": 1440.0 }
+                    },
+                    {
+                      "sku": "observability.synthetic-executions",
+                      "total_ecu": 2.4,
+                      "quantity": { "value": 48.0 }
+                    }
+                  ]
+                },
+                {
+                  "id": "proj-sec-old",
+                  "name": "Decommissioned Security",
+                  "type": "security",
+                  "product_line_items": [
+                    {
+                      "sku": "security.retained_gb",
+                      "total_ecu": 4.0,
+                      "quantity": { "value": 240.0, "unit": "GB-hours" }
+                    }
+                  ]
+                }
+              ]
+            }
+          `}}
+
+  - path: /es-hub/_cat/indices
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "ApiKey test-hub-es-api-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+            [
+              {
+                "index": ".ds-logs-app-default-2026.11.11-000001",
+                "dataset.size": "1073741824",
+                "indexing.index_time": "5000",
+                "search.query_time": "1200"
+              },
+              {
+                "index": "products-v1",
+                "dataset.size": "536870912",
+                "indexing.index_time": "1500",
+                "search.query_time": "3400"
+              },
+              {
+                "index": ".ds-.kibana-event-log-2026.11.11-000001",
+                "dataset.size": "10485760",
+                "indexing.index_time": "100",
+                "search.query_time": "50"
+              }
+            ]
+          `}}
+
+  - path: /es-hub/_ml/trained_models/_stats
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "ApiKey test-hub-es-api-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+            {
+              "trained_model_stats": [
+                {
+                  "model_id": ".elser_model_2_linux-x86_64",
+                  "pipeline_count": 1,
+                  "deployment_stats": {
+                    "deployment_id": ".elser_model_2_linux-x86_64",
+                    "state": "started",
+                    "nodes": [
+                      {
+                        "node": {
+                          "id": "ml-node-1",
+                          "ephemeral_id": "eph-1"
+                        },
+                        "inference_count": 250,
+                        "average_inference_time_ms": 12.5
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          `}}
+
+  - path: /es-hub/_inference
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "ApiKey test-hub-es-api-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+            {
+              "endpoints": [
+                {
+                  "inference_id": "openai-embeddings",
+                  "task_type": "text_embedding"
+                },
+                {
+                  "inference_id": ".builtin-connector",
+                  "task_type": "completion"
+                }
+              ]
+            }
+          `}}
+
+  - path: /es-hub/.ds-synthetics-*-*,synthetics-*/_search
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "ApiKey test-hub-es-api-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"aggregations":{"by_type":{"buckets":[]}}}'
+
+  - path: /obs-remote/_cat/indices
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "ApiKey test-obs-es-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+            [
+              {
+                "index": ".ds-metrics-host-prod-eu-2026.11.11-000001",
+                "dataset.size": "2147483648",
+                "indexing.index_time": "8000",
+                "search.query_time": "900"
+              }
+            ]
+          `}}
+
+  - path: /obs-remote/_ml/trained_models/_stats
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "ApiKey test-obs-es-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"trained_model_stats":[]}'
+
+  - path: /obs-remote/_inference
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "ApiKey test-obs-es-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"endpoints":[]}'
+
+  - path: /obs-remote/.ds-synthetics-*-*,synthetics-*/_search
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "ApiKey test-obs-es-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+            {
+              "aggregations": {
+                "by_type": {
+                  "buckets": [
+                    {
+                      "key": "http",
+                      "doc_count": 1440,
+                      "monitors": {
+                        "sum_other_doc_count": 0,
+                        "buckets": [
+                          {
+                            "key": "mon-api-health",
+                            "doc_count": 1440,
+                            "monitor_name": {
+                              "buckets": [
+                                { "key": "API Health Check", "doc_count": 1440 }
+                              ]
+                            },
+                            "monitor_namespace": {
+                              "buckets": [
+                                { "key": "prod", "doc_count": 1440 }
+                              ]
+                            },
+                            "up_checks": { "doc_count": 1438 },
+                            "down_checks": { "doc_count": 2 },
+                            "locations": { "value": 3 },
+                            "avg_duration_us": { "value": 125000.0 }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          `}}

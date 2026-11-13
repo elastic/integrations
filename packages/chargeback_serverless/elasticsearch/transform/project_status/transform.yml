@@ -1,0 +1,84 @@
+description: Aggregates daily Serverless project harvest status into a single daily figure per project.
+source:
+  index:
+    - metrics-chargeback_serverless.usage-*
+  query:
+    term:
+      doc_type: "project_status"
+dest:
+  index: serverless_project_status_lookup-1
+  aliases:
+    - alias: serverless_project_status_lookup
+      move_on_creation: true
+  pipeline: '{{ ingestPipelineName "chargeback_serverless-lookup_usage" }}'
+frequency: 5m
+sync:
+  time:
+    field: event.ingested
+    delay: 120s
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 365d
+pivot:
+  group_by:
+    "@timestamp":
+      date_histogram:
+        field: "@timestamp"
+        calendar_interval: 1d
+    project_id:
+      terms:
+        field: project_id
+  aggregations:
+    index_count:
+      max:
+        field: index_count
+    datastream_count:
+      max:
+        field: datastream_count
+    ai_model_count:
+      max:
+        field: ai_model_count
+    synthetics_monitor_count:
+      max:
+        field: synthetics_monitor_count
+    updated_at:
+      max:
+        field: updated_at
+    last_status:
+      top_metrics:
+        metrics:
+          - field: last_status
+        sort:
+          updated_at: desc
+    api_key_type:
+      top_metrics:
+        metrics:
+          - field: api_key_type
+        sort:
+          updated_at: desc
+    synthetics_status:
+      top_metrics:
+        metrics:
+          - field: synthetics_status
+        sort:
+          updated_at: desc
+    latest_currency:
+      top_metrics:
+        metrics:
+          - field: project_name
+          - field: project_type
+          - field: optimized_for
+          - field: es_url
+          - field: conf_chargeable_unit_rate
+          - field: conf_chargeable_unit_rate_unit
+          - field: conf_currency_symbol
+        sort:
+          event.ingested: desc
+settings:
+  deduce_mappings: false
+  unattended: true
+_meta:
+  managed: true
+  run_as_kibana_system: false
+  fleet_transform_version: 0.1.0

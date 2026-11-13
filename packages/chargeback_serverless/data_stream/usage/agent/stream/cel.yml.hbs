@@ -1,0 +1,1124 @@
+config_version: 2
+interval: {{#if interval}}{{interval}}{{else}}1h{{/if}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl:
+  {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: "{{cloud_api_base}}/api/v1/serverless/projects/elasticsearch"
+state:
+  api_key: !!str {{cloud_api_key}}
+  organization_id: !!str {{organization_id}}
+  cloud_api_base: !!str {{cloud_api_base}}
+  billing_api_base: !!str {{billing_api_base}}
+  hub_es_api_key: !!str {{hub_es_api_key}}
+  conf_unit_rate: !!str {{escape_string unit_rate}}
+  conf_currency_unit: !!str {{escape_string currency_unit}}
+  conf_currency_symbol: !!str {{escape_string currency_symbol}}
+  project_keys: !!str {{project_api_keys}}
+redact:
+  fields:
+    - api_key
+    - cloud_api_key
+    - hub_es_api_key
+    - project_keys
+    - project_api_keys
+program: |-
+  state.with(
+    (now - duration("2h")).format(time_layout.DateOnly).parse_time(time_layout.DateOnly).as(latest_day_end,
+    (latest_day_end - duration("24h")).as(latest_day_start,
+    ((state.?cursor.pending_day.orValue("") != "" && state.?cursor.pending_day.orValue("") != state.?cursor.last_day.orValue("") && timestamp(state.?cursor.pending_day.orValue("")) <= latest_day_start) ?
+      timestamp(state.?cursor.pending_day.orValue(""))
+      :
+      ((state.?cursor.last_day.orValue("") != "" && (timestamp(state.?cursor.last_day.orValue("")) + duration("24h")) <= latest_day_start) ?
+        (timestamp(state.?cursor.last_day.orValue("")) + duration("24h"))
+        :
+        latest_day_start
+      )
+    ).as(day_start,
+    (day_start + duration("24h")).as(day_end,
+    day_start.format(time_layout.RFC3339).as(day_ts,
+    (day_start == latest_day_start || (state.?cursor.pending_day.orValue("") == day_ts && state.?cursor.pending_day.orValue("") != state.?cursor.last_day.orValue("") && (latest_day_start - day_start) <= duration("24h"))).as(is_live_day,
+    (
+      !has(state.project_keys) || state.project_keys == null ? [] :
+      (type(dyn(state.project_keys)) == type("") ?
+        string(dyn(state.project_keys)).split(",") :
+        (type(dyn(state.project_keys)) == type([]) ?
+          dyn(state.project_keys).map(k, string(k)) :
+          []
+        )
+      )
+    ).map(k, k.trim_space()).filter(k, k != "" && k != "null" && !k.startsWith("$co.elastic.secret")).as(all_pkeys,
+    state.?cursor.ml_baselines.orValue([]).as(prev_ml_baselines,
+    (state.?cursor.pending_day.orValue("") == day_ts ? state.?cursor.completed_projects.orValue([]) : []).as(prev_completed_pids,
+    (state.?cursor.last_day.orValue("") == day_ts) ?
+    {
+      "events": [],
+      "cursor": { "last_day": day_ts, "pending_day": day_ts, "pending_retries": 0, "completed_projects": prev_completed_pids, "ml_baselines": prev_ml_baselines },
+      "want_more": false,
+    }
+    :
+    get_request(
+      state.cloud_api_base + "/api/v1/serverless/projects/elasticsearch"
+    ).with(
+      { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
+    ).do_request().as(es_resp,
+    get_request(
+      state.cloud_api_base + "/api/v1/serverless/projects/observability"
+    ).with(
+      { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
+    ).do_request().as(obs_resp,
+    get_request(
+      state.cloud_api_base + "/api/v1/serverless/projects/security"
+    ).with(
+      { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
+    ).do_request().as(sec_resp,
+    get_request(
+      state.cloud_api_base + "/api/v1/serverless/projects/vectordb"
+    ).with(
+      { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
+    ).do_request().as(vdb_resp,
+    get_request(
+      state.billing_api_base + "/api/v2/billing/organizations/" + state.organization_id + "/costs/instances?" + {
+        "from": [day_start.format(time_layout.RFC3339)],
+        "to": [day_end.format(time_layout.RFC3339)],
+        "include_names": ["true"],
+      }.format_query()
+    ).with(
+      { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
+    ).do_request().as(bill_resp,
+    (es_resp.StatusCode == 200 && obs_resp.StatusCode == 200 && sec_resp.StatusCode == 200 && (vdb_resp.StatusCode == 200 || vdb_resp.StatusCode == 404)).as(discovery_ok,
+    (bill_resp.StatusCode == 200 && discovery_ok) ?
+    bytes(es_resp.Body).decode_json().as(es_body,
+    bytes(obs_resp.Body).decode_json().as(obs_body,
+    bytes(sec_resp.Body).decode_json().as(sec_body,
+    ((vdb_resp.StatusCode == 200) ? bytes(vdb_resp.Body).decode_json() : { "items": [] }).as(vdb_body,
+    bytes(bill_resp.Body).decode_json().as(bill_body,
+    ((has(es_body.items) && es_body.items != null ? es_body.items.map(p, dyn(p.with({ "project_type": "elasticsearch" }))) : []) +
+      (has(obs_body.items) && obs_body.items != null ? obs_body.items.map(p, dyn(p.with({ "project_type": "observability" }))) : []) +
+      (has(sec_body.items) && sec_body.items != null ? sec_body.items.map(p, dyn(p.with({ "project_type": "security" }))) : []) +
+      (has(vdb_body.items) && vdb_body.items != null ? vdb_body.items.map(p, dyn(p.with({ "project_type": "vectordb" }))) : [])
+    ).as(projects,
+    (
+      projects.filter(p, !prev_completed_pids.exists(cid, cid == string(p.id))).map(p,
+        all_pkeys.filter(k,
+          k.startsWith(p.id + ":") || (has(p.name) && p.name != null && p.name != "" && k.startsWith(p.name + ":"))
+        ).as(pkeys,
+        (
+          pkeys.map(k,
+            k.startsWith(p.id + ":") ?
+            { "key": k.substring(size(p.id) + 1, size(k)), "ktype": "remote_key" } :
+            { "key": k.substring(size(p.name) + 1, size(k)), "ktype": "remote_key" }
+          ) +
+          (state.hub_es_api_key != "" ?
+            [{ "key": state.hub_es_api_key, "ktype": "hub_key" }, { "key": state.api_key, "ktype": "cloud_key" }] :
+            [{ "key": state.api_key, "ktype": "cloud_key" }]
+          ) +
+          all_pkeys.filter(k, !k.contains(":")).map(k, { "key": k, "ktype": "remote_key" })
+        ).as(candidate_keys,
+        candidate_keys[0].as(primary_cand,
+        string(dyn(p.endpoints).elasticsearch).as(_raw_es_url,
+        (_raw_es_url.endsWith("/") ? _raw_es_url.substring(0, size(_raw_es_url) - 1) : _raw_es_url).as(es_base_url,
+        (es_base_url + "/_cat/indices?h=index,dataset.size,indexing.index_time,search.query_time&format=json&bytes=b&time=ms&expand_wildcards=open,hidden").as(cat_url,
+        get_request(cat_url).with({ "Header": { "Authorization": ["ApiKey " + primary_cand.key] } }).do_request().as(resp0,
+        (resp0.StatusCode == 200) ?
+        { "resp": resp0, "key": primary_cand.key, "ktype": primary_cand.ktype }
+        : (size(candidate_keys) > 1 ?
+          get_request(cat_url).with({ "Header": { "Authorization": ["ApiKey " + candidate_keys[1].key] } }).do_request().as(resp1,
+          (resp1.StatusCode == 200) ?
+          { "resp": resp1, "key": candidate_keys[1].key, "ktype": candidate_keys[1].ktype }
+          : (size(candidate_keys) > 2 ?
+            get_request(cat_url).with({ "Header": { "Authorization": ["ApiKey " + candidate_keys[2].key] } }).do_request().as(resp2,
+            (resp2.StatusCode == 200) ?
+            { "resp": resp2, "key": candidate_keys[2].key, "ktype": candidate_keys[2].ktype }
+            : (size(candidate_keys) > 3 ?
+              get_request(cat_url).with({ "Header": { "Authorization": ["ApiKey " + candidate_keys[3].key] } }).do_request().as(resp3,
+              (resp3.StatusCode == 200) ?
+              { "resp": resp3, "key": candidate_keys[3].key, "ktype": candidate_keys[3].ktype }
+              : (size(candidate_keys) > 4 ?
+                get_request(cat_url).with({ "Header": { "Authorization": ["ApiKey " + candidate_keys[4].key] } }).do_request().as(resp4,
+                (resp4.StatusCode == 200) ?
+                { "resp": resp4, "key": candidate_keys[4].key, "ktype": candidate_keys[4].ktype }
+                : { "resp": resp0, "key": primary_cand.key, "ktype": (resp0.StatusCode == 429 || resp0.StatusCode >= 500 || resp1.StatusCode == 429 || resp1.StatusCode >= 500 || resp2.StatusCode == 429 || resp2.StatusCode >= 500 || resp3.StatusCode == 429 || resp3.StatusCode >= 500 || resp4.StatusCode == 429 || resp4.StatusCode >= 500) ? "transient_error" : "missing_key" }
+                )
+                : { "resp": resp0, "key": primary_cand.key, "ktype": (resp0.StatusCode == 429 || resp0.StatusCode >= 500 || resp1.StatusCode == 429 || resp1.StatusCode >= 500 || resp2.StatusCode == 429 || resp2.StatusCode >= 500 || resp3.StatusCode == 429 || resp3.StatusCode >= 500) ? "transient_error" : "missing_key" })
+              )
+              : { "resp": resp0, "key": primary_cand.key, "ktype": (resp0.StatusCode == 429 || resp0.StatusCode >= 500 || resp1.StatusCode == 429 || resp1.StatusCode >= 500 || resp2.StatusCode == 429 || resp2.StatusCode >= 500) ? "transient_error" : "missing_key" })
+            )
+            : { "resp": resp0, "key": primary_cand.key, "ktype": (resp0.StatusCode == 429 || resp0.StatusCode >= 500 || resp1.StatusCode == 429 || resp1.StatusCode >= 500) ? "transient_error" : "missing_key" })
+          )
+          : { "resp": resp0, "key": primary_cand.key, "ktype": (resp0.StatusCode == 429 || resp0.StatusCode >= 500) ? "transient_error" : "missing_key" })
+        ).as(cat_attempt,
+        cat_attempt.resp.as(cat_resp,
+        cat_attempt.key.as(target_key,
+        cat_attempt.ktype.as(resolved_ktype,
+        (cat_resp.StatusCode == 200) ?
+        bytes(cat_resp.Body).decode_json().as(rows,
+        get_request(
+          es_base_url + "/_ml/trained_models/_stats?size=10000"
+        ).with(
+          { "Header": { "Authorization": ["ApiKey " + target_key] } }
+        ).do_request().as(ml_resp,
+        ((ml_resp.StatusCode == 200) ? bytes(ml_resp.Body).decode_json() : { "trained_model_stats": [] }).as(ml_body,
+        get_request(
+          es_base_url + "/_inference"
+        ).with(
+          { "Header": { "Authorization": ["ApiKey " + target_key] } }
+        ).do_request().as(inf_resp,
+        ((inf_resp.StatusCode == 200) ? bytes(inf_resp.Body).decode_json() : { "endpoints": [] }).as(inf_body,
+        get_request(
+          es_base_url + "/.ds-synthetics-*-*,synthetics-*/_search?" + {
+            "ignore_unavailable": ["true"],
+            "expand_wildcards": ["open,hidden"],
+            "size": ["0"],
+            "source_content_type": ["application/json"],
+            "source": [
+              {
+                "size": 0,
+                "query": {
+                  "bool": {
+                    "filter": [
+                      { "exists": { "field": "monitor.id" } },
+                      { "exists": { "field": "monitor.status" } },
+                      { "range": { "@timestamp": { "gte": day_start.format(time_layout.RFC3339), "lt": day_end.format(time_layout.RFC3339) } } }
+                    ],
+                    "must_not": [
+                      { "terms": { "event.dataset": ["browser.network", "browser.screenshot", "browser.step"] } },
+                      { "exists": { "field": "synthetics.step" } }
+                    ]
+                  }
+                },
+                "aggs": {
+                  "by_type": {
+                    "terms": { "field": "monitor.type", "size": 10, "missing": "http" },
+                    "aggs": {
+                      "monitors": {
+                        "terms": { "field": "monitor.id", "size": 10000 },
+                        "aggs": {
+                          "monitor_name": { "terms": { "field": "monitor.name", "size": 1 } },
+                          "monitor_namespace": { "terms": { "field": "data_stream.namespace", "size": 1 } },
+                          "up_checks": { "filter": { "term": { "monitor.status": "up" } } },
+                          "down_checks": { "filter": { "term": { "monitor.status": "down" } } },
+                          "locations": { "cardinality": { "field": "observer.geo.name" } },
+                          "avg_duration_us": { "avg": { "field": "monitor.duration.us" } }
+                        }
+                      }
+                    }
+                  }
+                }
+              }.encode_json()
+            ]
+          }.format_query()
+        ).with(
+          { "Header": { "Authorization": ["ApiKey " + target_key] } }
+        ).do_request().as(syn_resp,
+        ((syn_resp.StatusCode == 200) ? bytes(syn_resp.Body).decode_json() : { "aggregations": { "by_type": { "buckets": [] } } }).as(syn_body,
+        ((!(has(syn_body.timed_out) && syn_body.timed_out == true) && !(has(syn_body._shards) && syn_body._shards != null && has(syn_body._shards.failed) && syn_body._shards.failed != null && int(syn_body._shards.failed) > 0) && has(syn_body.aggregations) && syn_body.aggregations != null && has(syn_body.aggregations.by_type) && has(syn_body.aggregations.by_type.buckets) && syn_body.aggregations.by_type.buckets != null) ?
+          syn_body.aggregations.by_type.buckets.map(tb,
+            ((has(tb.key) && tb.key != null && string(tb.key) != "") ? string(tb.key) : "http").as(mtype,
+            ((has(tb.monitors) && has(tb.monitors.buckets) && tb.monitors.buckets != null) ?
+              tb.monitors.buckets.map(b,
+                {
+                  "@timestamp": day_ts,
+                  "period_start": day_ts,
+                  "doc_type": "synthetics_monitor",
+                  "project_id": p.id,
+                  "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                  "project_type": p.project_type,
+                  "monitor_id": string(b.key),
+                  "monitor_name": (has(b.monitor_name) && has(b.monitor_name.buckets) && size(b.monitor_name.buckets) > 0 && has(b.monitor_name.buckets[0].key)) ? string(b.monitor_name.buckets[0].key) : string(b.key),
+                  "monitor_type": mtype,
+                  "monitor_namespace": (has(b.monitor_namespace) && has(b.monitor_namespace.buckets) && size(b.monitor_namespace.buckets) > 0 && has(b.monitor_namespace.buckets[0].key)) ? string(b.monitor_namespace.buckets[0].key) : "default",
+                  "check_count": has(b.doc_count) ? int(b.doc_count) : 0,
+                  "up_count": (has(b.up_checks) && has(b.up_checks.doc_count)) ? int(b.up_checks.doc_count) : 0,
+                  "down_count": (has(b.down_checks) && has(b.down_checks.doc_count)) ? int(b.down_checks.doc_count) : 0,
+                  "locations_count": (has(b.locations) && has(b.locations.value) && b.locations.value != null) ? int(b.locations.value) : 1,
+                  "average_duration_ms": (has(b.avg_duration_us) && has(b.avg_duration_us.value) && b.avg_duration_us.value != null) ? (double(b.avg_duration_us.value) / 1000.0) : 0.0,
+                  "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                  "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                  "conf_currency_symbol": state.conf_currency_symbol,
+                }
+              )
+              : []) +
+            ((has(tb.monitors) && has(tb.monitors.sum_other_doc_count) && tb.monitors.sum_other_doc_count != null && int(tb.monitors.sum_other_doc_count) > 0) ?
+              [
+                {
+                  "@timestamp": day_ts,
+                  "period_start": day_ts,
+                  "doc_type": "synthetics_monitor",
+                  "project_id": p.id,
+                  "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                  "project_type": p.project_type,
+                  "monitor_id": "other-monitors-overflow-" + mtype,
+                  "monitor_name": "Other Monitors (Aggregation Overflow - " + mtype + ")",
+                  "monitor_type": mtype,
+                  "monitor_namespace": "default",
+                  "check_count": int(tb.monitors.sum_other_doc_count),
+                  "up_count": 0,
+                  "down_count": 0,
+                  "locations_count": 1,
+                  "average_duration_ms": 0.0,
+                  "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                  "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                  "conf_currency_symbol": state.conf_currency_symbol,
+                }
+              ]
+              : [])
+            )
+          ).flatten()
+          : []).as(harvested_syn_evts,
+        ((has(bill_body.instances) && bill_body.instances != null) ?
+          bill_body.instances.filter(inst, has(inst.id) && inst.id != null && string(inst.id) == string(p.id))
+          : []).as(proj_bill_insts,
+        proj_bill_insts.map(inst,
+          (has(inst.product_line_items) && inst.product_line_items != null) ?
+          inst.product_line_items.filter(li,
+            has(li.sku) && li.sku != null &&
+            string(li.sku).to_lower().contains("synthetic") &&
+            string(li.sku).to_lower().contains("ping") &&
+            (!has(li.total_ecu) || li.total_ecu == null || double(li.total_ecu) > 0.0 || (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null && double(li.quantity.value) > 0.0))
+          ).map(li, (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null) ? double(li.quantity.value) : 0.0)
+          : []
+        ).flatten().as(ping_qtys,
+        proj_bill_insts.map(inst,
+          (has(inst.product_line_items) && inst.product_line_items != null) ?
+          inst.product_line_items.filter(li,
+            has(li.sku) && li.sku != null &&
+            string(li.sku).to_lower().contains("synthetic") &&
+            !string(li.sku).to_lower().contains("ping") &&
+            (!has(li.total_ecu) || li.total_ecu == null || double(li.total_ecu) > 0.0 || (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null && double(li.quantity.value) > 0.0))
+          ).map(li, (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null) ? double(li.quantity.value) : 0.0)
+          : []
+        ).flatten().as(browser_qtys,
+        (size(ping_qtys) > 0).as(has_ping_sku,
+        (size(browser_qtys) > 0).as(has_browser_sku,
+        (size(ping_qtys) == 0 ? 0.0 : ping_qtys.sum()).as(ping_billed_qty,
+        (size(browser_qtys) == 0 ? 0.0 : browser_qtys.sum()).as(browser_billed_qty,
+        (
+          harvested_syn_evts +
+          ((has_ping_sku && !harvested_syn_evts.exists(m, m.monitor_type != "browser")) ?
+            [
+              {
+                "@timestamp": day_ts,
+                "period_start": day_ts,
+                "doc_type": "synthetics_monitor",
+                "project_id": p.id,
+                "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                "project_type": p.project_type,
+                "monitor_id": "billing-derived-lightweight",
+                "monitor_name": "Lightweight Monitors (Billing SKU)",
+                "monitor_type": "http",
+                "monitor_namespace": "default",
+                "check_count": ping_billed_qty > 0.0 ? int(ping_billed_qty) : 1,
+                "up_count": 0,
+                "down_count": 0,
+                "locations_count": 1,
+                "average_duration_ms": 0.0,
+                "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                "conf_currency_symbol": state.conf_currency_symbol,
+              }
+            ]
+            : []) +
+          ((has_browser_sku && !harvested_syn_evts.exists(m, m.monitor_type == "browser")) ?
+            [
+              {
+                "@timestamp": day_ts,
+                "period_start": day_ts,
+                "doc_type": "synthetics_monitor",
+                "project_id": p.id,
+                "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                "project_type": p.project_type,
+                "monitor_id": "billing-derived-browser",
+                "monitor_name": "Browser Monitors (Billing SKU)",
+                "monitor_type": "browser",
+                "monitor_namespace": "default",
+                "check_count": browser_billed_qty > 0.0 ? int(browser_billed_qty) : 1,
+                "up_count": 0,
+                "down_count": 0,
+                "locations_count": 1,
+                "average_duration_ms": 0.0,
+                "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                "conf_currency_symbol": state.conf_currency_symbol,
+              }
+            ]
+            : [])
+        ).as(all_syn_evts,
+        ((is_live_day && has(ml_body.trained_model_stats) && ml_body.trained_model_stats != null) ?
+          ml_body.trained_model_stats.filter(m,
+            has(m.model_id) && m.model_id != null && string(m.model_id) != "" && (
+              (has(m.deployment_stats) && m.deployment_stats != null && (
+                  (has(m.deployment_stats.deployment_id) && m.deployment_stats.deployment_id != null && string(m.deployment_stats.deployment_id) != "") ||
+                  (has(m.deployment_stats.nodes) && m.deployment_stats.nodes != null && size(m.deployment_stats.nodes) > 0) ||
+                  (has(m.deployment_stats.state) && m.deployment_stats.state != null && string(m.deployment_stats.state) != "")
+              )) ||
+              (has(m.pipeline_count) && m.pipeline_count != null && int(m.pipeline_count) > 0) ||
+              (has(m.inference_stats) && m.inference_stats != null && has(m.inference_stats.inference_count) && m.inference_stats.inference_count != null && int(m.inference_stats.inference_count) > 0)
+            )
+          ) : []).as(active_ml_stats,
+        ((size(active_ml_stats) > 0 ?
+            active_ml_stats.map(m,
+              ((has(m.deployment_stats) && m.deployment_stats != null && has(m.deployment_stats.deployment_id) && m.deployment_stats.deployment_id != null && string(m.deployment_stats.deployment_id) != "") ? string(m.deployment_stats.deployment_id) : "").as(dep_id,
+              (string(p.id) + ":" + string(m.model_id)).as(legacy_mkey,
+              (dep_id != "" ? (legacy_mkey + ":" + dep_id) : legacy_mkey).as(mkey,
+              (has(m.inference_stats) && has(m.inference_stats.inference_count) ? int(m.inference_stats.inference_count) : 0).as(ingest_inf_count,
+              prev_ml_baselines.filter(b, has(b.k) && b.k == mkey).as(exact_base,
+              (size(exact_base) > 0 ? exact_base : (size(active_ml_stats.filter(tm, has(tm.model_id) && string(tm.model_id) == string(m.model_id))) == 1 ? prev_ml_baselines.filter(b, has(b.k) && b.k == legacy_mkey) : [])).as(matched_base,
+              (size(matched_base) > 0 && has(matched_base[0].ts) && matched_base[0].ts != null && string(matched_base[0].ts) != "" && (day_start - timestamp(string(matched_base[0].ts))) == duration("24h")).as(has_contiguous_baseline,
+              ((size(matched_base) > 0 && has(matched_base[0].nodes) && matched_base[0].nodes != null) ? matched_base[0].nodes : []).as(prev_nodes,
+              ((has(m.deployment_stats) && has(m.deployment_stats.nodes) && m.deployment_stats.nodes != null) ?
+                m.deployment_stats.nodes.map(n,
+                  ((has(n.node) && n.node != null && has(n.node.id) && n.node.id != null && string(n.node.id) != "") ? string(n.node.id) : ((has(n.node) && n.node != null && has(n.node.name) && n.node.name != null && string(n.node.name) != "") ? string(n.node.name) : "")).as(nid,
+                  ((has(n.node) && n.node != null && has(n.node.ephemeral_id) && n.node.ephemeral_id != null && string(n.node.ephemeral_id) != "") ? string(n.node.ephemeral_id) : (has(n.start_time) && n.start_time != null ? string(n.start_time) : "")).as(ninc,
+                  (nid != "" ? (ninc != "" ? (nid + ":" + ninc) : nid) : ninc).as(nk,
+                  ((has(n.inference_count) && n.inference_count != null) ? int(n.inference_count) : 0).as(n_inf,
+                  (int(double(n_inf) * ((has(n.average_inference_time_ms) && n.average_inference_time_ms != null) ? double(n.average_inference_time_ms) : 0.0))).as(n_time_ms,
+                  prev_nodes.filter(pn, has(pn.k) && pn.k != "" && pn.k == nk).as(matched_node,
+                  (size(matched_node) > 0 && has(matched_node[0].v) ? (n_inf >= int(matched_node[0].v) ? n_inf - int(matched_node[0].v) : n_inf) : n_inf).as(n_delta_inf,
+                  (size(matched_node) > 0 && has(matched_node[0].t) ? (n_inf >= int(matched_node[0].v) && n_time_ms >= int(matched_node[0].t) ? n_time_ms - int(matched_node[0].t) : n_time_ms) : n_time_ms).as(n_delta_time,
+                  { "k": nk, "v": n_inf, "t": n_time_ms, "dv": n_delta_inf, "dt": n_delta_time }
+                  )
+                  )
+                  )
+                  )
+                  )
+                  )
+                  )
+                  )
+                )
+                : []).as(node_entries,
+              node_entries.map(ne, { "k": ne.k, "v": ne.v, "t": ne.t }).as(cur_nodes,
+              (size(node_entries) == 0 ? 0 : node_entries.map(ne, ne.v).sum()).as(deploy_inf_count,
+              (size(node_entries) == 0 ? 0.0 : double(node_entries.map(ne, ne.t).sum())).as(deploy_time_ms,
+              (size(node_entries) > 0 ? deploy_inf_count : ingest_inf_count).as(raw_inf_count,
+              (size(node_entries) > 0 ? int(deploy_time_ms) : 0).as(raw_time_ms,
+              (!has_contiguous_baseline ? 0 : ((size(node_entries) > 0 && size(prev_nodes) > 0) ? node_entries.map(ne, ne.dv).sum() : (has(matched_base[0].v) ? (raw_inf_count >= int(matched_base[0].v) ? raw_inf_count - int(matched_base[0].v) : raw_inf_count) : 0))).as(delta_inf_count,
+              (!has_contiguous_baseline ? 0 : ((size(node_entries) > 0 && size(prev_nodes) > 0) ? node_entries.map(ne, ne.dt).sum() : (has(matched_base[0].t) ? (raw_inf_count >= int(matched_base[0].v) && raw_time_ms >= int(matched_base[0].t) ? raw_time_ms - int(matched_base[0].t) : raw_time_ms) : 0))).as(delta_time_ms,
+              {
+                "bkey": mkey,
+                "model_id": string(m.model_id),
+                "task_type": has(m.pipeline_count) && int(m.pipeline_count) > 0 ? "ingest_inference" : "query_inference",
+                "delta_inf": delta_inf_count,
+                "delta_time": delta_time_ms,
+                "deploy_inf": deploy_inf_count,
+                "deploy_time": deploy_time_ms,
+                "baseline": { "k": mkey, "v": raw_inf_count, "t": raw_time_ms, "ts": day_ts, "nodes": cur_nodes },
+              }
+              )
+              )
+              )
+              )
+              )
+              )
+              )
+              )
+              )
+              )
+              )
+              )
+              )
+              )
+              )
+              )
+            ).as(raw_ml_entries,
+            raw_ml_entries.filter(d,
+              raw_ml_entries.filter(y, y.model_id == d.model_id && y.task_type == d.task_type)[0].bkey == d.bkey
+            ).map(d,
+              raw_ml_entries.filter(y, y.model_id == d.model_id && y.task_type == d.task_type).as(grp,
+              grp.map(y, y.delta_inf).sum().as(comb_delta_inf,
+              grp.map(y, y.delta_time).sum().as(comb_delta_time,
+              grp.map(y, y.deploy_inf).sum().as(comb_deploy_inf,
+              grp.map(y, y.deploy_time).sum().as(comb_deploy_time,
+              (comb_delta_inf > 0 ? double(comb_delta_time) / double(comb_delta_inf) : 0.0).as(avg_inf_ms,
+              {
+                "@timestamp": day_ts,
+                "period_start": day_ts,
+                "doc_type": "ai_model",
+                "project_id": p.id,
+                "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                "project_type": p.project_type,
+                "model_id": d.model_id,
+                "task_type": d.task_type,
+                "inference_count": comb_delta_inf,
+                "_raw_baselines": grp.map(y, y.baseline),
+                "average_inference_time_ms": avg_inf_ms,
+                "total_inference_time_ms": comb_delta_time,
+                "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                "conf_currency_symbol": state.conf_currency_symbol,
+              }
+              )
+              )
+              )
+              )
+              )
+              )
+            )
+            ) : []) +
+          (is_live_day && has(inf_body.endpoints) && inf_body.endpoints != null ?
+            inf_body.endpoints.filter(ep,
+              has(ep.inference_id) && ep.inference_id != null &&
+              !string(ep.inference_id).startsWith(".") &&
+              !(size(active_ml_stats) > 0 &&
+                active_ml_stats.exists(tm,
+                  (has(tm.model_id) && string(tm.model_id) == string(ep.inference_id)) ||
+                  (has(ep.service_settings) && ep.service_settings != null && has(ep.service_settings.model_id) && ep.service_settings.model_id != null && string(tm.model_id) == string(ep.service_settings.model_id))
+                )
+              )
+            ).map(ep,
+              {
+                "@timestamp": day_ts,
+                "period_start": day_ts,
+                "doc_type": "ai_model",
+                "project_id": p.id,
+                "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                "project_type": p.project_type,
+                "model_id": string(ep.inference_id),
+                "task_type": (has(ep.task_type) && ep.task_type != null && string(ep.task_type) != "") ? string(ep.task_type) : "inference",
+                "inference_count": 0,
+                "average_inference_time_ms": 0.0,
+                "total_inference_time_ms": 0,
+                "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                "conf_currency_symbol": state.conf_currency_symbol,
+              }
+            ) : [])
+        )).as(harvested_ai_evts,
+        proj_bill_insts.exists(inst,
+          has(inst.product_line_items) && inst.product_line_items != null &&
+          inst.product_line_items.exists(li,
+            has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s,
+            (s.contains("-ml-vcu") || s.contains("ml-vcu") || s.contains("ml.ecu") || s.contains("ml_ecu") || s.contains("ml.vcu") || s.contains("ml_inference") || s.contains(".eis") || s.contains("inference") || s.contains("llm") || s.contains("agent-builder")) &&
+            (!has(li.total_ecu) || li.total_ecu == null || double(li.total_ecu) > 0.0 || (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null && double(li.quantity.value) > 0.0))
+            )
+          )
+        ).as(has_ai_sku,
+        (
+          harvested_ai_evts +
+          ((size(harvested_ai_evts) == 0 && has_ai_sku) ?
+            [
+              {
+                "@timestamp": day_ts,
+                "period_start": day_ts,
+                "doc_type": "ai_model",
+                "project_id": p.id,
+                "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                "project_type": p.project_type,
+                "model_id": "billing-derived-ai",
+                "task_type": "billing_derived",
+                "inference_count": 0,
+                "average_inference_time_ms": 0.0,
+                "total_inference_time_ms": 0,
+                "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                "conf_currency_symbol": state.conf_currency_symbol,
+              }
+            ]
+            : [])
+        ).as(all_ai_evts,
+        ((ml_resp.StatusCode == 429 || ml_resp.StatusCode >= 500) || (inf_resp.StatusCode == 429 || inf_resp.StatusCode >= 500) || (syn_resp.StatusCode == 429 || syn_resp.StatusCode >= 500) || (syn_resp.StatusCode == 200 && ((has(syn_body.timed_out) && syn_body.timed_out == true) || (has(syn_body._shards) && syn_body._shards != null && has(syn_body._shards.failed) && syn_body._shards.failed != null && int(syn_body._shards.failed) > 0)))).as(sub_transient_err,
+        (sub_transient_err && !(state.?cursor.pending_day.orValue("") == day_ts && (int(state.?cursor.pending_retries.orValue(0)) >= 2 || (int(state.?cursor.pending_retries.orValue(0)) >= 1 && day_start < latest_day_start)))) ?
+        []
+        : ((is_live_day && ((ml_resp.StatusCode != 200 && ml_resp.StatusCode != 404) || (inf_resp.StatusCode != 200 && inf_resp.StatusCode != 404))).as(ai_auth_err,
+          (is_live_day ?
+            rows.filter(row,
+              !row.index.startsWith(".") || row.index.startsWith(".ds-")
+            ).map(row,
+              string(row.index).as(raw_idx,
+              (raw_idx.startsWith("partial-") ? raw_idx.substring(8, size(raw_idx)) : raw_idx).as(s1,
+              (s1.startsWith("restored-") ? s1.substring(9, size(s1)) : s1).as(s2,
+              ((s2.startsWith("shrink-") && size(s2) > 12 && s2.substring(11, 12) == "-") ? s2.substring(12, size(s2)) : s2).as(s2b,
+              ((s2b.startsWith("downsample-") && s2b.contains("-.ds-") && size(s2b.split("-.ds-")[0]) > 11 && !s2b.split("-.ds-")[0].substring(11, size(s2b.split("-.ds-")[0])).contains("-")) ? s2b.substring(size(s2b.split("-.ds-")[0]) + 1, size(s2b)) : s2b).as(s3,
+              s3.startsWith(".ds-").as(from_ds,
+              (from_ds ?
+                s3.substring(4, size(s3)).as(s4,
+                s4.last_index("-").as(li1,
+                ((li1 > 0 && s4.substring(li1 + 1, size(s4)).matches("^[0-9]+$")) ? s4.substring(0, li1) : s4).as(s5,
+                s5.last_index("-").as(li2,
+                (li2 > 0 && s5.substring(li2 + 1, size(s5)).matches("^[0-9]{4}\\.[0-9]{2}(\\.[0-9]{2})?$")) ? s5.substring(0, li2) : s5
+                )
+                )
+                )
+                )
+                : raw_idx).as(base_ds,
+              ((base_ds.startsWith(".") || base_ds == "system" || (base_ds.startsWith("serverless_") && (base_ds.endsWith("_lookup") || base_ds.contains("_lookup-")))) ? "system" : base_ds).as(norm_ds,
+              {
+                "ds": norm_ds,
+                "representative_index": norm_ds == "system" ? "system" : raw_idx,
+                "idx_time": ("indexing.index_time" in row && row["indexing.index_time"] != null && row["indexing.index_time"] != "") ? int(row["indexing.index_time"]) : 0,
+                "qry_time": ("search.query_time" in row && row["search.query_time"] != null && row["search.query_time"] != "") ? int(row["search.query_time"]) : 0,
+                "store_bytes": ("dataset.size" in row && row["dataset.size"] != null && row["dataset.size"] != "") ? int(row["dataset.size"]) : 0,
+              }
+              )
+              )
+              )
+              )
+              )
+              )
+              )
+              )
+            )
+            : []).as(norm_rows,
+          (size(norm_rows) == 0 ? [] : zip(norm_rows.map(r, r.ds), norm_rows.map(r, r.ds)).keys()).as(distinct_ds_names,
+          proj_bill_insts.map(inst,
+            (has(inst.product_line_items) && inst.product_line_items != null) ?
+            inst.product_line_items.filter(li,
+              has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s,
+              (s.contains("retained") || s.contains("storage") || s.contains("retention")) && !s.contains("snapshot")
+              )
+            ).map(li,
+              ((has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null) ? double(li.quantity.value) : 0.0).as(qval,
+              (((has(li.quantity) && li.quantity != null && has(li.quantity.unit) && li.quantity.unit != null) ? string(li.quantity.unit) : (has(li.unit) && li.unit != null ? string(li.unit) : "")).to_lower()).as(qunit,
+              ((double((day_end - day_start).getSeconds()) / 3600.0) > 0.0 ? (double((day_end - day_start).getSeconds()) / 3600.0) : 24.0).as(win_hours,
+              ((qunit == "" || qunit.contains("hour") || qunit.contains("hr") || qunit.endsWith("-h") || qunit.endsWith("_h") || qunit.endsWith("gbh")) ? (qval / win_hours) : qval).as(norm_qval,
+              (qunit.contains("tb") || qunit.contains("tib") || qunit.contains("terabyte") ? 1099511627776.0 : (qunit.contains("mb") || qunit.contains("mib") || qunit.contains("megabyte") ? 1048576.0 : (qunit.contains("kb") || qunit.contains("kib") || qunit.contains("kilobyte") ? 1024.0 : (qunit.contains("byte") ? 1.0 : 1073741824.0)))).as(unit_bytes,
+              norm_qval * unit_bytes
+              )
+              )
+              )
+              )
+              )
+            )
+            : []
+          ).flatten().as(hist_store_qtys,
+          (size(hist_store_qtys) == 0 ? 0.0 : hist_store_qtys.sum()).as(hist_store_bytes,
+          (is_live_day ?
+            distinct_ds_names.map(ds_name,
+              norm_rows.filter(r, r.ds == ds_name).as(ds_grp,
+              {
+                "@timestamp": day_ts,
+                "period_start": day_ts,
+                "doc_type": "datastream",
+                "project_id": p.id,
+                "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                "project_type": p.project_type,
+                "datastream": ds_grp[0].representative_index,
+                "backing_index": ds_name,
+                "datastream_sum_indexing_time": ds_grp.map(r, r.idx_time).sum(),
+                "datastream_sum_query_time": ds_grp.map(r, r.qry_time).sum(),
+                "datastream_sum_data_set_store_size": ds_grp.map(r, r.store_bytes).sum(),
+                "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                "conf_currency_symbol": state.conf_currency_symbol,
+              }
+              )
+            )
+            :
+            (size(proj_bill_insts) > 0 ?
+              [
+                {
+                  "@timestamp": day_ts,
+                  "period_start": day_ts,
+                  "doc_type": "datastream",
+                  "project_id": p.id,
+                  "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                  "project_type": p.project_type,
+                  "datastream": "billing-derived-retention",
+                  "backing_index": "billing-derived-retention",
+                  "datastream_sum_indexing_time": 1,
+                  "datastream_sum_query_time": 1,
+                  "datastream_sum_data_set_store_size": hist_store_bytes >= 1.0 ? int(hist_store_bytes) : 1,
+                  "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                  "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                  "conf_currency_symbol": state.conf_currency_symbol,
+                }
+              ]
+              : [])
+          ).as(ds_evts,
+          ds_evts +
+          all_ai_evts +
+          all_syn_evts +
+          [
+            {
+              "@timestamp": day_ts,
+              "period_start": day_ts,
+              "doc_type": "project_status",
+              "project_id": p.id,
+              "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+              "project_type": p.project_type,
+              "optimized_for": has(p.optimized_for) ? p.optimized_for : "general_purpose",
+              "es_url": es_base_url,
+              "last_status": sub_transient_err ? "transient_error" : (ai_auth_err ? "empty_or_unauthorized" : "ok"),
+              "api_key_type": resolved_ktype,
+              "synthetics_status": (syn_resp.StatusCode == 429 || syn_resp.StatusCode >= 500 || (syn_resp.StatusCode == 200 && ((has(syn_body.timed_out) && syn_body.timed_out == true) || (has(syn_body._shards) && syn_body._shards != null && has(syn_body._shards.failed) && syn_body._shards.failed != null && int(syn_body._shards.failed) > 0)))) ? "transient_error" : ((syn_resp.StatusCode != 200 && syn_resp.StatusCode != 404) ? "unauthorized" : ((size(harvested_syn_evts) == 0 && size(all_syn_evts) > 0) ? "billing_derived" : "ok")),
+              "index_count": is_live_day ? size(rows) : size(ds_evts),
+              "datastream_count": size(ds_evts),
+              "ai_model_count": size(all_ai_evts),
+              "synthetics_monitor_count": size(all_syn_evts),
+              "updated_at": now.format(time_layout.RFC3339),
+              "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+              "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+              "conf_currency_symbol": state.conf_currency_symbol,
+            }
+          ]
+          )
+          )
+          )
+          )
+          )
+        ))
+        )
+        )
+        )
+        )
+        )
+        )
+        )
+        )
+        )
+        )
+        )
+        )
+        )
+        )
+        )
+        )
+        )
+        )
+        )
+        )
+        :
+        ((resolved_ktype == "transient_error" && !(state.?cursor.pending_day.orValue("") == day_ts && (int(state.?cursor.pending_retries.orValue(0)) >= 2 || (int(state.?cursor.pending_retries.orValue(0)) >= 1 && day_start < latest_day_start)))) ?
+          []
+          :
+          ((has(bill_body.instances) && bill_body.instances != null) ?
+            bill_body.instances.filter(inst, has(inst.id) && inst.id != null && string(inst.id) == string(p.id))
+            : []).as(unauth_bill_insts,
+          unauth_bill_insts.map(inst,
+            (has(inst.product_line_items) && inst.product_line_items != null) ?
+            inst.product_line_items.filter(li,
+              has(li.sku) && li.sku != null &&
+              string(li.sku).to_lower().contains("synthetic") &&
+              string(li.sku).to_lower().contains("ping") &&
+              (!has(li.total_ecu) || li.total_ecu == null || double(li.total_ecu) > 0.0 || (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null && double(li.quantity.value) > 0.0))
+            ).map(li, (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null) ? double(li.quantity.value) : 0.0)
+            : []
+          ).flatten().as(u_ping_qtys,
+          unauth_bill_insts.map(inst,
+            (has(inst.product_line_items) && inst.product_line_items != null) ?
+            inst.product_line_items.filter(li,
+              has(li.sku) && li.sku != null &&
+              string(li.sku).to_lower().contains("synthetic") &&
+              !string(li.sku).to_lower().contains("ping") &&
+              (!has(li.total_ecu) || li.total_ecu == null || double(li.total_ecu) > 0.0 || (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null && double(li.quantity.value) > 0.0))
+            ).map(li, (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null) ? double(li.quantity.value) : 0.0)
+            : []
+          ).flatten().as(u_browser_qtys,
+          (size(u_ping_qtys) == 0 ? 0.0 : u_ping_qtys.sum()).as(u_ping_qty,
+          (size(u_browser_qtys) == 0 ? 0.0 : u_browser_qtys.sum()).as(u_browser_qty,
+          unauth_bill_insts.exists(inst,
+            has(inst.product_line_items) && inst.product_line_items != null &&
+            inst.product_line_items.exists(li,
+              has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s,
+              (s.contains("-ml-vcu") || s.contains("ml-vcu") || s.contains("ml.ecu") || s.contains("ml_ecu") || s.contains("ml.vcu") || s.contains("ml_inference") || s.contains(".eis") || s.contains("inference") || s.contains("llm") || s.contains("agent-builder")) &&
+              (!has(li.total_ecu) || li.total_ecu == null || double(li.total_ecu) > 0.0 || (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null && double(li.quantity.value) > 0.0))
+              )
+            )
+          ).as(u_has_ai,
+          (
+            (size(u_ping_qtys) > 0 ?
+              [
+                {
+                  "@timestamp": day_ts,
+                  "period_start": day_ts,
+                  "doc_type": "synthetics_monitor",
+                  "project_id": p.id,
+                  "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                  "project_type": p.project_type,
+                  "monitor_id": "billing-derived-lightweight",
+                  "monitor_name": "Lightweight Monitors (Billing SKU)",
+                  "monitor_type": "http",
+                  "monitor_namespace": "default",
+                  "check_count": u_ping_qty > 0.0 ? int(u_ping_qty) : 1,
+                  "up_count": 0,
+                  "down_count": 0,
+                  "locations_count": 1,
+                  "average_duration_ms": 0.0,
+                  "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                  "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                  "conf_currency_symbol": state.conf_currency_symbol,
+                }
+              ]
+              : []) +
+            (size(u_browser_qtys) > 0 ?
+              [
+                {
+                  "@timestamp": day_ts,
+                  "period_start": day_ts,
+                  "doc_type": "synthetics_monitor",
+                  "project_id": p.id,
+                  "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                  "project_type": p.project_type,
+                  "monitor_id": "billing-derived-browser",
+                  "monitor_name": "Browser Monitors (Billing SKU)",
+                  "monitor_type": "browser",
+                  "monitor_namespace": "default",
+                  "check_count": u_browser_qty > 0.0 ? int(u_browser_qty) : 1,
+                  "up_count": 0,
+                  "down_count": 0,
+                  "locations_count": 1,
+                  "average_duration_ms": 0.0,
+                  "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                  "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                  "conf_currency_symbol": state.conf_currency_symbol,
+                }
+              ]
+              : [])
+          ).as(u_syn_evts,
+          (u_has_ai ?
+            [
+              {
+                "@timestamp": day_ts,
+                "period_start": day_ts,
+                "doc_type": "ai_model",
+                "project_id": p.id,
+                "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                "project_type": p.project_type,
+                "model_id": "billing-derived-ai",
+                "task_type": "billing_derived",
+                "inference_count": 0,
+                "average_inference_time_ms": 0.0,
+                "total_inference_time_ms": 0,
+                "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                "conf_currency_symbol": state.conf_currency_symbol,
+              }
+            ]
+            : []).as(u_ai_evts,
+          u_ai_evts +
+          u_syn_evts +
+          [
+            {
+              "@timestamp": day_ts,
+              "period_start": day_ts,
+              "doc_type": "project_status",
+              "project_id": p.id,
+              "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+              "project_type": p.project_type,
+              "optimized_for": has(p.optimized_for) ? p.optimized_for : "general_purpose",
+              "es_url": es_base_url,
+              "last_status": resolved_ktype == "transient_error" ? "transient_error" : "empty_or_unauthorized",
+              "api_key_type": resolved_ktype,
+              "synthetics_status": resolved_ktype == "transient_error" ? "transient_error" : "unauthorized",
+              "index_count": 0,
+              "datastream_count": 0,
+              "ai_model_count": size(u_ai_evts),
+              "synthetics_monitor_count": size(u_syn_evts),
+              "updated_at": now.format(time_layout.RFC3339),
+              "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+              "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+              "conf_currency_symbol": state.conf_currency_symbol,
+            }
+          ]
+          )
+          )
+          )
+          )
+          )
+          )
+          )
+          )
+        )
+        )
+        )
+        )
+        )
+        )
+        )
+        )
+        )
+        )
+        )
+      ).flatten() +
+      ((has(bill_body.instances) && bill_body.instances != null) ?
+        bill_body.instances.filter(inst,
+          has(inst.id) && inst.id != null && string(inst.id) != "" &&
+          (!has(inst.type) || inst.type == null || string(inst.type).to_lower() != "deployment") &&
+          !prev_completed_pids.exists(cid, cid == string(inst.id)) &&
+          size(projects.filter(p, p.id == inst.id)) == 0 &&
+          has(inst.product_line_items) && inst.product_line_items != null &&
+          !inst.product_line_items.exists(li,
+            has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s,
+            !s.contains("serverless") && (s.contains("cloud-enterprise") || s.contains("cloud-platinum") || s.contains("cloud-standard") || s.contains("cloud-gold") || s.contains(".es.data") || s.contains(".es.ml") || s.contains(".es.master") || s.contains(".es.coordinating") || s.contains(".kibana.") || s.contains(".apm.") || s.contains(".enterprise_search.") || s.contains(".integrations_server."))
+            )
+          ) &&
+          (
+            (has(inst.type) && inst.type != null && string(inst.type).to_lower().as(it,
+              it == "serverless" || it.contains("serverless") ||
+              it == "observability" || it == "oblt" || it.contains("observability") || it.contains("oblt") ||
+              it == "security" || it == "sec" || it.contains("security") ||
+              it == "elasticsearch" || it == "es" || it.contains("elasticsearch") ||
+              it == "vectordb" || it == "vector" || it.contains("vectordb") || it.contains("vector") ||
+              it == "search" || it == "enterprise_search" || it.contains("search")
+            ) && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku) != "")) ||
+            inst.product_line_items.exists(li,
+              has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s,
+              s.contains("serverless") || s.contains("-vcu") || s.contains(".ecu") || s.contains("retained") || s.contains("synthetic") || s.contains("agent-builder") || s.contains("inference") || s.contains("llm") || s.contains("workflow") || s.contains("cross-project") || s.contains(".eis") || s.contains("observability.") || s.contains("security.") || s.contains("vectordb.") || s.contains("search.")
+              )
+            )
+          )
+        ).map(inst,
+          ((has(inst.name) && inst.name != null && string(inst.name) != "") ? string(inst.name) : string(inst.id)).as(del_pname,
+          ((has(inst.type) && inst.type != null) ? string(inst.type).to_lower() : "").as(raw_del_type,
+          ((raw_del_type == "observability" || raw_del_type == "oblt" || raw_del_type.contains("observability") || raw_del_type.contains("oblt")) ? "observability" : ((raw_del_type == "security" || raw_del_type == "sec" || raw_del_type.contains("security")) ? "security" : ((raw_del_type == "vectordb" || raw_del_type == "vector" || raw_del_type.contains("vectordb") || raw_del_type.contains("vector")) ? "vectordb" : ((raw_del_type == "elasticsearch" || raw_del_type == "es" || raw_del_type.contains("elasticsearch")) ? "elasticsearch" : ((raw_del_type == "search" || raw_del_type == "enterprise_search" || raw_del_type.contains("search")) ? "search" : ((has(inst.product_line_items) && inst.product_line_items != null && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s, s.startsWith("observability.") || s.startsWith("oblt.") || s.startsWith("serverless.observability.") || s.startsWith("serverless.oblt.") || s.contains("synthetic")))) ? "observability" : ((has(inst.product_line_items) && inst.product_line_items != null && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s, s.startsWith("security.") || s.startsWith("sec.") || s.startsWith("serverless.security.") || s.startsWith("serverless.sec.")))) ? "security" : ((has(inst.product_line_items) && inst.product_line_items != null && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s, s.startsWith("vectordb.") || s.startsWith("serverless.vectordb.") || s.contains(".vectordb.")))) ? "vectordb" : ((has(inst.product_line_items) && inst.product_line_items != null && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s, s.startsWith("elasticsearch.") || s.startsWith("es.") || s.startsWith("serverless.elasticsearch.") || s.startsWith("serverless.es.")))) ? "elasticsearch" : ((has(inst.product_line_items) && inst.product_line_items != null && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s, s.startsWith("search.") || s.startsWith("serverless.search.")))) ? "search" : "elasticsearch")))))))))).as(del_ptype,
+          inst.product_line_items.filter(li,
+            has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s,
+            (s.contains("retained") || s.contains("storage") || s.contains("retention")) && !s.contains("snapshot")
+            )
+          ).map(li,
+            ((has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null) ? double(li.quantity.value) : 0.0).as(qval,
+            (((has(li.quantity) && li.quantity != null && has(li.quantity.unit) && li.quantity.unit != null) ? string(li.quantity.unit) : (has(li.unit) && li.unit != null ? string(li.unit) : "")).to_lower()).as(qunit,
+            ((double((day_end - day_start).getSeconds()) / 3600.0) > 0.0 ? (double((day_end - day_start).getSeconds()) / 3600.0) : 24.0).as(win_hours,
+            ((qunit == "" || qunit.contains("hour") || qunit.contains("hr") || qunit.endsWith("-h") || qunit.endsWith("_h") || qunit.endsWith("gbh")) ? (qval / win_hours) : qval).as(norm_qval,
+            (qunit.contains("tb") || qunit.contains("tib") || qunit.contains("terabyte") ? 1099511627776.0 : (qunit.contains("mb") || qunit.contains("mib") || qunit.contains("megabyte") ? 1048576.0 : (qunit.contains("kb") || qunit.contains("kib") || qunit.contains("kilobyte") ? 1024.0 : (qunit.contains("byte") ? 1.0 : 1073741824.0)))).as(unit_bytes,
+            norm_qval * unit_bytes
+            )
+            )
+            )
+            )
+            )
+          ).as(del_store_qtys,
+          inst.product_line_items.filter(li,
+            has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s,
+            s.contains("synthetic") && s.contains("ping") && (!has(li.total_ecu) || li.total_ecu == null || double(li.total_ecu) > 0.0 || (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null && double(li.quantity.value) > 0.0))
+            )
+          ).map(li, (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null) ? double(li.quantity.value) : 0.0).as(del_ping_qtys,
+          inst.product_line_items.filter(li,
+            has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s,
+            s.contains("synthetic") && !s.contains("ping") && (!has(li.total_ecu) || li.total_ecu == null || double(li.total_ecu) > 0.0 || (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null && double(li.quantity.value) > 0.0))
+            )
+          ).map(li, (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null) ? double(li.quantity.value) : 0.0).as(del_browser_qtys,
+          (size(del_store_qtys) == 0 ? 0.0 : del_store_qtys.sum()).as(del_store_bytes,
+          (size(del_ping_qtys) == 0 ? 0.0 : del_ping_qtys.sum()).as(del_ping_qty,
+          (size(del_browser_qtys) == 0 ? 0.0 : del_browser_qtys.sum()).as(del_browser_qty,
+          (
+            (size(del_ping_qtys) > 0 ?
+              [
+                {
+                  "@timestamp": day_ts,
+                  "period_start": day_ts,
+                  "doc_type": "synthetics_monitor",
+                  "project_id": string(inst.id),
+                  "project_name": del_pname,
+                  "project_type": del_ptype,
+                  "monitor_id": "billing-derived-lightweight",
+                  "monitor_name": "Lightweight Monitors (Billing SKU)",
+                  "monitor_type": "http",
+                  "monitor_namespace": "default",
+                  "check_count": del_ping_qty > 0.0 ? int(del_ping_qty) : 1,
+                  "up_count": 0,
+                  "down_count": 0,
+                  "locations_count": 1,
+                  "average_duration_ms": 0.0,
+                  "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                  "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                  "conf_currency_symbol": state.conf_currency_symbol,
+                }
+              ]
+              : []) +
+            (size(del_browser_qtys) > 0 ?
+              [
+                {
+                  "@timestamp": day_ts,
+                  "period_start": day_ts,
+                  "doc_type": "synthetics_monitor",
+                  "project_id": string(inst.id),
+                  "project_name": del_pname,
+                  "project_type": del_ptype,
+                  "monitor_id": "billing-derived-browser",
+                  "monitor_name": "Browser Monitors (Billing SKU)",
+                  "monitor_type": "browser",
+                  "monitor_namespace": "default",
+                  "check_count": del_browser_qty > 0.0 ? int(del_browser_qty) : 1,
+                  "up_count": 0,
+                  "down_count": 0,
+                  "locations_count": 1,
+                  "average_duration_ms": 0.0,
+                  "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                  "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                  "conf_currency_symbol": state.conf_currency_symbol,
+                }
+              ]
+              : [])
+          ).as(del_syn_evts,
+          inst.product_line_items.filter(li,
+            has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s,
+            (s.contains("-ml-vcu") || s.contains("ml-vcu") || s.contains("ml.ecu") || s.contains("ml_ecu") || s.contains("ml.vcu") || s.contains("ml_inference") || s.contains(".eis") || s.contains("inference") || s.contains("llm") || s.contains("agent-builder")) &&
+            (!has(li.total_ecu) || li.total_ecu == null || double(li.total_ecu) > 0.0 || (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null && double(li.quantity.value) > 0.0))
+            )
+          ).as(del_ai_items,
+          (size(del_ai_items) > 0 ?
+            [
+              {
+                "@timestamp": day_ts,
+                "period_start": day_ts,
+                "doc_type": "ai_model",
+                "project_id": string(inst.id),
+                "project_name": del_pname,
+                "project_type": del_ptype,
+                "model_id": "billing-derived-ai",
+                "task_type": "billing_derived",
+                "inference_count": 0,
+                "average_inference_time_ms": 0.0,
+                "total_inference_time_ms": 0,
+                "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                "conf_currency_symbol": state.conf_currency_symbol,
+              }
+            ]
+            : []).as(del_ai_evts,
+          [
+            {
+              "@timestamp": day_ts,
+              "period_start": day_ts,
+              "doc_type": "datastream",
+              "project_id": string(inst.id),
+              "project_name": del_pname,
+              "project_type": del_ptype,
+              "datastream": "billing-derived-retention",
+              "backing_index": "billing-derived-retention",
+              "datastream_sum_indexing_time": 1,
+              "datastream_sum_query_time": 1,
+              "datastream_sum_data_set_store_size": del_store_bytes >= 1.0 ? int(del_store_bytes) : 1,
+              "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+              "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+              "conf_currency_symbol": state.conf_currency_symbol,
+            }
+          ] +
+          del_ai_evts +
+          del_syn_evts +
+          [
+            {
+              "@timestamp": day_ts,
+              "period_start": day_ts,
+              "doc_type": "project_status",
+              "project_id": string(inst.id),
+              "project_name": del_pname,
+              "project_type": del_ptype,
+              "optimized_for": "decommissioned",
+              "es_url": "",
+              "last_status": "inactive",
+              "api_key_type": "cloud_billing_only",
+              "synthetics_status": size(del_syn_evts) > 0 ? "billing_derived" : "inactive",
+              "index_count": 1,
+              "datastream_count": 1,
+              "ai_model_count": size(del_ai_evts),
+              "synthetics_monitor_count": size(del_syn_evts),
+              "updated_at": now.format(time_layout.RFC3339),
+              "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+              "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+              "conf_currency_symbol": state.conf_currency_symbol,
+            }
+          ]
+          )
+          )
+          )
+          )
+          )
+          )
+          )
+          )
+          )
+          )
+          )
+          )
+        ).flatten()
+        : [])
+    ).as(usage_evts,
+    usage_evts.filter(e, has(e.doc_type) && e.doc_type == "project_status").map(e, string(e.project_id)).as(newly_completed_pids,
+    (prev_completed_pids + newly_completed_pids).as(all_completed_pids,
+    (!projects.exists(p, !all_completed_pids.exists(cid, cid == string(p.id)))).as(all_projs_done,
+    usage_evts.filter(e, has(e.doc_type) && e.doc_type == "ai_model" && has(e._raw_baselines) && e._raw_baselines != null).map(e, e._raw_baselines).flatten().as(cur_ml_baselines,
+    (is_live_day ?
+      (
+        cur_ml_baselines +
+        prev_ml_baselines.filter(b,
+          has(b.k) && has(b.ts) && b.ts != null && string(b.ts) != "" &&
+          !cur_ml_baselines.exists(c, c.k == b.k || c.k.startsWith(b.k + ":")) &&
+          (
+            string(b.ts) == day_ts ||
+            (
+              (day_start - timestamp(string(b.ts))) == duration("24h") &&
+              !newly_completed_pids.exists(pid, string(b.k) == pid || string(b.k).startsWith(pid + ":"))
+            )
+          )
+        )
+      )
+      : prev_ml_baselines.filter(b,
+        has(b.k) && has(b.ts) && b.ts != null && string(b.ts) != "" &&
+        (day_start - timestamp(string(b.ts))) <= duration("24h")
+      )).as(merged_ml_baselines,
+    {
+      "events": usage_evts,
+      "cursor": {
+        "last_day": all_projs_done ? day_ts : state.?cursor.last_day.orValue(""),
+        "pending_day": day_ts,
+        "pending_retries": all_projs_done ? 0 : (state.?cursor.pending_day.orValue("") == day_ts ? int(state.?cursor.pending_retries.orValue(0)) + 1 : 1),
+        "completed_projects": all_completed_pids,
+        "ml_baselines": merged_ml_baselines,
+      },
+      "want_more": all_projs_done && day_start < latest_day_start,
+    }
+    )
+    )
+    )
+    )
+    )
+    )
+    )
+    )
+    )
+    )
+    )
+    )
+    :
+    {
+      "events": {
+        "error": {
+          "code": string(
+            bill_resp.StatusCode != 200 ? bill_resp.StatusCode :
+            (es_resp.StatusCode != 200 ? es_resp.StatusCode :
+              (obs_resp.StatusCode != 200 ? obs_resp.StatusCode :
+                (sec_resp.StatusCode != 200 ? sec_resp.StatusCode : vdb_resp.StatusCode)
+              )
+            )
+          ),
+          "id": "discovery_or_billing_failed",
+          "message": "Required project discovery or billing lookup request failed (billing=" + string(bill_resp.StatusCode) + ", elasticsearch=" + string(es_resp.StatusCode) + ", observability=" + string(obs_resp.StatusCode) + ", security=" + string(sec_resp.StatusCode) + ", vectordb=" + string(vdb_resp.StatusCode) + "); preserving day for retry",
+        }
+      },
+      "cursor": {
+        "last_day": state.?cursor.last_day.orValue(""),
+        "pending_day": day_ts,
+        "pending_retries": state.?cursor.pending_day.orValue("") == day_ts ? int(state.?cursor.pending_retries.orValue(0)) : 0,
+        "completed_projects": prev_completed_pids,
+        "ml_baselines": prev_ml_baselines,
+      },
+      "want_more": false,
+    }
+    )
+    )
+    )
+    )
+    )
+    )
+    )
+    )
+    )
+    )
+    )
+    )
+    )
+    )
+    )
+  )

@@ -1,0 +1,181 @@
+---
+description: >-
+  Chargeback Serverless: realized pool lookup — set composite_key and compute
+  daily allocatable ECU pools (indexing_ecu, query_ecu, storage_ecu, ai_ecu).
+processors:
+  - script:
+      lang: painless
+      tag: set_realized_pool_fields
+      source: |
+        if (ctx['@timestamp'] != null && ctx.project_id != null) {
+          def ts = ctx['@timestamp'];
+          def date = (ts instanceof Number)
+            ? Instant.ofEpochMilli(((Number) ts).longValue()).atZone(ZoneOffset.UTC).toLocalDate().toString()
+            : ZonedDateTime.parse(ts.toString()).toLocalDate().toString();
+          ctx.composite_key = date + '_' + ctx.project_id;
+        }
+        double idx = 0.0;
+        if (ctx.indexing_ecu instanceof Map) {
+          def v = ctx.indexing_ecu.val;
+          if (v instanceof Map && v.value != null) {
+            idx = ((Number)v.value).doubleValue();
+          } else if (v instanceof Number) {
+            idx = ((Number)v).doubleValue();
+          }
+        } else if (ctx.indexing_ecu instanceof Number) {
+          idx = ((Number)ctx.indexing_ecu).doubleValue();
+        }
+        double qry = 0.0;
+        if (ctx.query_ecu instanceof Map) {
+          def v = ctx.query_ecu.val;
+          if (v instanceof Map && v.value != null) {
+            qry = ((Number)v.value).doubleValue();
+          } else if (v instanceof Number) {
+            qry = ((Number)v).doubleValue();
+          }
+        } else if (ctx.query_ecu instanceof Number) {
+          qry = ((Number)ctx.query_ecu).doubleValue();
+        }
+        double stg = 0.0;
+        if (ctx.storage_ecu instanceof Map) {
+          def v = ctx.storage_ecu.val;
+          if (v instanceof Map && v.value != null) {
+            stg = ((Number)v.value).doubleValue();
+          } else if (v instanceof Number) {
+            stg = ((Number)v).doubleValue();
+          }
+        } else if (ctx.storage_ecu instanceof Number) {
+          stg = ((Number)ctx.storage_ecu).doubleValue();
+        }
+        double ai = 0.0;
+        if (ctx.ai_ecu instanceof Map) {
+          def v = ctx.ai_ecu.val;
+          if (v instanceof Map && v.value != null) {
+            ai = ((Number)v.value).doubleValue();
+          } else if (v instanceof Number) {
+            ai = ((Number)v).doubleValue();
+          }
+        } else if (ctx.ai_ecu instanceof Number) {
+          ai = ((Number)ctx.ai_ecu).doubleValue();
+        }
+        double syn = 0.0;
+        if (ctx.synthetics_ecu instanceof Map) {
+          def v = ctx.synthetics_ecu.val;
+          if (v instanceof Map && v.value != null) {
+            syn = ((Number)v.value).doubleValue();
+          } else if (v instanceof Number) {
+            syn = ((Number)v).doubleValue();
+          }
+        } else if (ctx.synthetics_ecu instanceof Number) {
+          syn = ((Number)ctx.synthetics_ecu).doubleValue();
+        }
+        double syn_pings = 0.0;
+        if (ctx.synthetics_pings_ecu instanceof Map) {
+          def v = ctx.synthetics_pings_ecu.val;
+          if (v instanceof Map && v.value != null) {
+            syn_pings = ((Number)v.value).doubleValue();
+          } else if (v instanceof Number) {
+            syn_pings = ((Number)v).doubleValue();
+          }
+        } else if (ctx.synthetics_pings_ecu instanceof Number) {
+          syn_pings = ((Number)ctx.synthetics_pings_ecu).doubleValue();
+        }
+        double syn_exec = 0.0;
+        if (ctx.synthetics_executions_ecu instanceof Map) {
+          def v = ctx.synthetics_executions_ecu.val;
+          if (v instanceof Map && v.value != null) {
+            syn_exec = ((Number)v.value).doubleValue();
+          } else if (v instanceof Number) {
+            syn_exec = ((Number)v).doubleValue();
+          }
+        } else if (ctx.synthetics_executions_ecu instanceof Number) {
+          syn_exec = ((Number)ctx.synthetics_executions_ecu).doubleValue();
+        }
+        ctx.indexing_ecu = idx;
+        ctx.query_ecu = qry;
+        ctx.storage_ecu = stg;
+        ctx.ai_ecu = ai;
+        ctx.synthetics_ecu = syn;
+        ctx.synthetics_pings_ecu = syn_pings;
+        ctx.synthetics_executions_ecu = syn_exec;
+        double cap = idx + qry + stg;
+        ctx.data_tier_capacity_ecu = cap;
+        ctx.realized_chargeable_units = cap;
+        ctx.total_chargeable_units = cap + ai + syn;
+        ctx.total_ecu = cap + ai + syn;
+        double all_ecu = cap + ai + syn;
+        if (ctx.all_sku_ecu instanceof Map) {
+          def v = ctx.all_sku_ecu.value;
+          if (v instanceof Number) {
+            all_ecu = ((Number)v).doubleValue();
+          }
+        } else if (ctx.all_sku_ecu instanceof Number) {
+          all_ecu = ((Number)ctx.all_sku_ecu).doubleValue();
+        }
+        ctx.all_sku_ecu = all_ecu;
+        if (ctx.latest_currency instanceof Map) {
+          def curr = ctx.latest_currency;
+          if (curr.top instanceof List && curr.top.size() > 0 && curr.top[0] instanceof Map && curr.top[0].metrics instanceof Map) {
+            curr = curr.top[0].metrics;
+          }
+          if (curr.conf_chargeable_unit_rate instanceof Number) {
+            ctx.conf_chargeable_unit_rate = ((Number)curr.conf_chargeable_unit_rate).doubleValue();
+          } else if (curr.conf_chargeable_unit_rate != null && curr.conf_chargeable_unit_rate.toString() != '') {
+            ctx.conf_chargeable_unit_rate = Double.parseDouble(curr.conf_chargeable_unit_rate.toString());
+          }
+          if (curr.conf_chargeable_unit_rate_unit != null) {
+            ctx.conf_chargeable_unit_rate_unit = curr.conf_chargeable_unit_rate_unit.toString();
+          }
+          if (curr.conf_currency_symbol != null) {
+            ctx.conf_currency_symbol = curr.conf_currency_symbol.toString();
+          }
+          ctx.remove('latest_currency');
+        }
+        if (ctx.conf_chargeable_unit_rate_unit instanceof Map) {
+          def buckets = ctx.conf_chargeable_unit_rate_unit.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.conf_chargeable_unit_rate_unit = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.conf_chargeable_unit_rate_unit.keySet());
+            ctx.conf_chargeable_unit_rate_unit = keys.size() > 0 ? keys[0] : null;
+          }
+        }
+        if (ctx.conf_currency_symbol instanceof Map) {
+          def buckets = ctx.conf_currency_symbol.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.conf_currency_symbol = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.conf_currency_symbol.keySet());
+            ctx.conf_currency_symbol = keys.size() > 0 ? keys[0] : null;
+          }
+        }
+        if (ctx.conf_chargeable_unit_rate instanceof Map) {
+          def v = ctx.conf_chargeable_unit_rate.value;
+          ctx.conf_chargeable_unit_rate = v != null ? ((Number)v).doubleValue() : 1.0;
+        }
+        if (ctx.conf_chargeable_unit_rate == null) {
+          ctx.conf_chargeable_unit_rate = 1.0;
+        }
+        if (ctx.conf_chargeable_unit_rate_unit == null || ctx.conf_chargeable_unit_rate_unit == '') {
+          ctx.conf_chargeable_unit_rate_unit = 'USD';
+        }
+        if (ctx.conf_currency_symbol == null || ctx.conf_currency_symbol == '') {
+          ctx.conf_currency_symbol = '$';
+        }
+  - set:
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+      tag: set_event_ingested
+on_failure:
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: "pipeline_error"
+  - append:
+      tag: append_pipeline_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
