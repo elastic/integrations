@@ -41,14 +41,28 @@ You can find more details in the [Metrics reference](#metrics-reference).
 
 ## What do I need to use this integration?
 
-Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
-
 Before using any AWS integration you will need:
 
 * **AWS Credentials** to connect with your AWS account.
 * **AWS Permissions** to make sure the user you're using to connect has permission to share the relevant data.
 
 For more details, refer to the [AWS integration documentation](https://docs.elastic.co/integrations/aws#requirements).
+
+## How do I deploy this integration?
+
+### Agent-based deployment
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/docs/reference/fleet/install-elastic-agents). You can install only one Elastic Agent per host.
+
+Elastic Agent is required to collect data from AWS and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+
+### Elastic Managed deployment
+
+Elastic Managed integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations).
+
+Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+> **Note:** Collecting API Gateway logs from S3 is not available with Elastic Managed deployment and requires Elastic Agent. Metrics and CloudWatch logs can be collected with either deployment.
 
 ## Setup
 
