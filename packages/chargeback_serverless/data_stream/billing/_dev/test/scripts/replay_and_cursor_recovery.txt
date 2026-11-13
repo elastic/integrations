@@ -1,6 +1,6 @@
 # Verify CEL billing collector behavior across:
 # 1. Failed-day HTTP 400 response: emits error event without advancing cursor past the failed day.
-# 2. Retry & initial 1-day backfill: collects project charges plus residual unassociated charges and
+# 2. Retry & initial single-day backfill: collects project charges plus residual unassociated charges and
 #    persists recent_day_keys in the stream cursor.
 # 3. Subsequent replay pass with preserved stream cursor: updates reattributed project charges and
 #    emits zero-valued replacement snapshots (total_ecu == 0.0) for both cleared residuals and
@@ -8,6 +8,15 @@
 
 [!external_stack] skip 'Skipping external stack test.'
 [!exec:jq] skip 'Skipping test requiring absent jq command'
+[!exec:sh] skip 'Skipping test requiring absent sh command'
+
+# Select a single ready closed UTC billing day regardless of wall-clock UTC hour:
+# - If within 2 minutes of 00:00 UTC or 02:00 UTC, wait past the boundary so
+#   initial_from and latest_ready_to do not shift mid-test.
+# - Before 02:00 UTC, yesterday's window is gated by `req.to + 2h > now`, so
+#   `lookbehind: 2` selects `[today - 2d, today - 1d)` (1 ready day).
+# - From 02:00 UTC onward, `lookbehind: 1` selects `[today - 1d, today)` (1 ready day).
+exec sh -c 'wait_sec=$(jq -nr "now | gmtime | if (.[3] == 1 or .[3] == 23) and .[4] >= 58 then ((60 - .[4]) * 60 - (.[5] | floor) + 1) else 0 end"); if [ "$wait_sec" -gt 0 ]; then sleep "$wait_sec"; fi; lb=$(jq -nr "now | gmtime | if .[3] < 2 then 2 else 1 end"); jq -Rr --arg lb "$lb" "gsub(\"__LOOKBEHIND__\"; \$lb)" test_config.tmpl.yaml > test_config.yaml'
 
 use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
 install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
@@ -54,7 +63,7 @@ remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
 uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
 docker_down billing-mock
 
--- test_config.yaml --
+-- test_config.tmpl.yaml --
 input: cel
 vars:
   organization_id: "12345"
@@ -66,7 +75,7 @@ vars:
   cloud_api_base: "http://billing-mock:8080"
 data_stream:
   vars:
-    lookbehind: 1
+    lookbehind: __LOOKBEHIND__
     interval: 5s
 
 -- billing-mock/docker-compose.yml --
