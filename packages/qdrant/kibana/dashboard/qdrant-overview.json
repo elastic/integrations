@@ -1,0 +1,2167 @@
+{
+    "attributes": {
+        "title": "[Metrics Qdrant] Overview",
+        "description": "Qdrant vector database: REST traffic, errors and response time, collection size, optimizations and update queue, replicas, shard transfers, snapshots and memory.",
+        "panelsJSON": [
+            {
+                "panelIndex": "3deb99da-a3f9-b0b9-e2fd-d62320f21c83",
+                "gridData": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 16,
+                    "h": 10,
+                    "i": "3deb99da-a3f9-b0b9-e2fd-d62320f21c83"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## [Metrics Qdrant] Overview\n\nMetrics scraped from the Qdrant `/metrics` endpoint.\n\n- **REST API**: requests by endpoint and status, server errors, response time\n- **Collections**: points per collection, running optimizations, update queue\n- **Cluster**: dead replicas, shard transfers, snapshots, memory\n\nAn update queue that keeps growing means indexing does not keep up with writes. Dead replicas or failed shard transfers need attention before the next node failure.\n"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "fd7c693b-545b-5fa8-4e79-49243e48a3f5",
+                "gridData": {
+                    "x": 16,
+                    "y": 0,
+                    "w": 8,
+                    "h": 5,
+                    "i": "fd7c693b-545b-5fa8-4e79-49243e48a3f5"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Points",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "fe770972-822c-5f45-ac33-011c0966b1d2",
+                                "layerType": "data",
+                                "metricAccessor": "bea4a6f7-43f6-4755-9210-49f431f96978",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-qdrant.metrics-*\n| WHERE data_stream.dataset == \"qdrant.metrics\"\n| STATS points = SUM(LAST_OVER_TIME(qdrant.collection.points))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "fe770972-822c-5f45-ac33-011c0966b1d2": {
+                                            "query": {
+                                                "esql": "TS metrics-qdrant.metrics-*\n| WHERE data_stream.dataset == \"qdrant.metrics\"\n| STATS points = SUM(LAST_OVER_TIME(qdrant.collection.points))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "points",
+                                                    "columnId": "bea4a6f7-43f6-4755-9210-49f431f96978",
+                                                    "label": "Total points",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "points",
+                                                    "columnId": "bea4a6f7-43f6-4755-9210-49f431f96978",
+                                                    "label": "Total points",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "5a1f2cdc-9aa4-7722-e0c9-baa8cae67c34",
+                "gridData": {
+                    "x": 24,
+                    "y": 0,
+                    "w": 8,
+                    "h": 5,
+                    "i": "5a1f2cdc-9aa4-7722-e0c9-baa8cae67c34"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "REST requests/s",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "1072b121-116a-f250-6dc0-6aedfe02d6a6",
+                                "layerType": "data",
+                                "metricAccessor": "0bec8b73-1a78-3e13-b40c-fe3ffdc2dfd7",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-qdrant.metrics-*\n| WHERE data_stream.dataset == \"qdrant.metrics\"\n| STATS rps = SUM(RATE(qdrant.rest.responses.count))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "1072b121-116a-f250-6dc0-6aedfe02d6a6": {
+                                            "query": {
+                                                "esql": "TS metrics-qdrant.metrics-*\n| WHERE data_stream.dataset == \"qdrant.metrics\"\n| STATS rps = SUM(RATE(qdrant.rest.responses.count))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "rps",
+                                                    "columnId": "0bec8b73-1a78-3e13-b40c-fe3ffdc2dfd7",
+                                                    "label": "Requests/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "rps",
+                                                    "columnId": "0bec8b73-1a78-3e13-b40c-fe3ffdc2dfd7",
+                                                    "label": "Requests/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "06bc1883-80ea-892d-649b-347a62dbe6e7",
+                "gridData": {
+                    "x": 32,
+                    "y": 0,
+                    "w": 8,
+                    "h": 5,
+                    "i": "06bc1883-80ea-892d-649b-347a62dbe6e7"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "REST 5xx ratio",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "c9e5a26d-6991-8639-ec17-6b7f1cdf84aa",
+                                "layerType": "data",
+                                "metricAccessor": "57b82d52-982f-1e46-5775-b14651a1bf09",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-qdrant.metrics-*\n| WHERE data_stream.dataset == \"qdrant.metrics\"\n| STATS rps = SUM(RATE(qdrant.rest.responses.count)) BY qdrant.labels.status\n| EVAL is_5xx = CASE(STARTS_WITH(qdrant.labels.status, \"5\"), rps, 0.0)\n| STATS errors = SUM(is_5xx), total = SUM(rps)\n| EVAL ratio = CASE(total > 0, errors / total, 0.0)\n| KEEP ratio"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "c9e5a26d-6991-8639-ec17-6b7f1cdf84aa": {
+                                            "query": {
+                                                "esql": "TS metrics-qdrant.metrics-*\n| WHERE data_stream.dataset == \"qdrant.metrics\"\n| STATS rps = SUM(RATE(qdrant.rest.responses.count)) BY qdrant.labels.status\n| EVAL is_5xx = CASE(STARTS_WITH(qdrant.labels.status, \"5\"), rps, 0.0)\n| STATS errors = SUM(is_5xx), total = SUM(rps)\n| EVAL ratio = CASE(total > 0, errors / total, 0.0)\n| KEEP ratio"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "ratio",
+                                                    "columnId": "57b82d52-982f-1e46-5775-b14651a1bf09",
+                                                    "label": "5xx ratio",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "ratio",
+                                                    "columnId": "57b82d52-982f-1e46-5775-b14651a1bf09",
+                                                    "label": "5xx ratio",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "23e4051f-9c61-64b8-58af-038aac1724fd",
+                "gridData": {
+                    "x": 40,
+                    "y": 0,
+                    "w": 8,
+                    "h": 5,
+                    "i": "23e4051f-9c61-64b8-58af-038aac1724fd"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Dead replicas",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "640627e9-bd01-5f6f-6d93-7677182a04a5",
+                                "layerType": "data",
+                                "metricAccessor": "f16d5366-7566-9b70-81f3-e0f814a9205b",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-qdrant.metrics-*\n| WHERE data_stream.dataset == \"qdrant.metrics\"\n| STATS dead = MAX(LAST_OVER_TIME(qdrant.replicas.dead))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "640627e9-bd01-5f6f-6d93-7677182a04a5": {
+                                            "query": {
+                                                "esql": "TS metrics-qdrant.metrics-*\n| WHERE data_stream.dataset == \"qdrant.metrics\"\n| STATS dead = MAX(LAST_OVER_TIME(qdrant.replicas.dead))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "dead",
+                                                    "columnId": "f16d5366-7566-9b70-81f3-e0f814a9205b",
+                                                    "label": "Max dead",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "dead",
+                                                    "columnId": "f16d5366-7566-9b70-81f3-e0f814a9205b",
+                                                    "label": "Max dead",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "a6d3edd8-11f7-f296-dcad-5092cfffed4a",
+                "gridData": {
+                    "x": 16,
+                    "y": 5,
+                    "w": 16,
+                    "h": 10,
+                    "i": "a6d3edd8-11f7-f296-dcad-5092cfffed4a"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Requests by status",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "62efb4d4-55d5-9daf-4eb5-fcef3826ea2b",
+                                        "accessors": [
+                                            "fe07ec09-2c02-2c44-da98-91604ccc7473"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "xAccessor": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "3fab8c92-ffd0-4962-7674-fc62cef2dbc1",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "bar_stacked",
+                                "legend": {
+                                    "position": "bottom"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-qdrant.metrics-*\n| WHERE data_stream.dataset == \"qdrant.metrics\"\n| STATS rps = SUM(RATE(qdrant.rest.responses.count)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), qdrant.labels.status\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "62efb4d4-55d5-9daf-4eb5-fcef3826ea2b": {
+                                            "query": {
+                                                "esql": "TS metrics-qdrant.metrics-*\n| WHERE data_stream.dataset == \"qdrant.metrics\"\n| STATS rps = SUM(RATE(qdrant.rest.responses.count)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), qdrant.labels.status\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "rps",
+                                                    "columnId": "fe07ec09-2c02-2c44-da98-91604ccc7473",
+                                                    "label": "Requests/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                                    "label": "Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "qdrant.labels.status",
+                                                    "columnId": "3fab8c92-ffd0-4962-7674-fc62cef2dbc1",
+                                                    "label": "qdrant.labels.status",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "rps",
+                                                    "columnId": "fe07ec09-2c02-2c44-da98-91604ccc7473",
+                                                    "label": "Requests/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                                    "label": "Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "qdrant.labels.status",
+                                                    "columnId": "3fab8c92-ffd0-4962-7674-fc62cef2dbc1",
+                                                    "label": "qdrant.labels.status",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "4393e6c6-8dbe-811b-b6b9-1b5aae7c7849",
+                "gridData": {
+                    "x": 32,
+                    "y": 5,
+                    "w": 16,
+                    "h": 10,
+                    "i": "4393e6c6-8dbe-811b-b6b9-1b5aae7c7849"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Requests by endpoint",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "4bc8b954-742b-817b-bdac-d367049a020c",
+                                        "accessors": [
+                                            "fe07ec09-2c02-2c44-da98-91604ccc7473"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "5a9d9d98-b4b0-c9db-7e69-9b4da967aac6",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "position": "bottom"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-qdrant.metrics-*\n| WHERE data_stream.dataset == \"qdrant.metrics\"\n| STATS rps = SUM(RATE(qdrant.rest.responses.count)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), qdrant.labels.endpoint\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "4bc8b954-742b-817b-bdac-d367049a020c": {
+                                            "query": {
+                                                "esql": "TS metrics-qdrant.metrics-*\n| WHERE data_stream.dataset == \"qdrant.metrics\"\n| STATS rps = SUM(RATE(qdrant.rest.responses.count)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), qdrant.labels.endpoint\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "rps",
+                                                    "columnId": "fe07ec09-2c02-2c44-da98-91604ccc7473",
+                                                    "label": "Requests/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                                    "label": "Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "qdrant.labels.endpoint",
+                                                    "columnId": "5a9d9d98-b4b0-c9db-7e69-9b4da967aac6",
+                                                    "label": "qdrant.labels.endpoint",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "rps",
+                                                    "columnId": "fe07ec09-2c02-2c44-da98-91604ccc7473",
+                                                    "label": "Requests/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                                    "label": "Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "qdrant.labels.endpoint",
+                                                    "columnId": "5a9d9d98-b4b0-c9db-7e69-9b4da967aac6",
+                                                    "label": "qdrant.labels.endpoint",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "abe43347-4c31-64c2-c62d-81e472ec00eb",
+                "gridData": {
+                    "x": 0,
+                    "y": 10,
+                    "w": 16,
+                    "h": 10,
+                    "i": "abe43347-4c31-64c2-c62d-81e472ec00eb"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "REST response time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [
+                            {
+                                "type": "index-pattern",
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-310dc0d0-54cb-8533-ee59-f280d016fca3"
+                            }
+                        ],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "310dc0d0-54cb-8533-ee59-f280d016fca3",
+                                        "accessors": [
+                                            "98bb3e2f-a892-52df-cfc4-35f1b0744f15",
+                                            "514fded8-aa77-31e7-86b4-faad98d96717"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "d08489ac-fbda-405c-71b5-f0a4618e5599",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "position": "bottom"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "query": "",
+                                "language": "kuery"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "310dc0d0-54cb-8533-ee59-f280d016fca3": {
+                                            "columns": {
+                                                "d08489ac-fbda-405c-71b5-f0a4618e5599": {
+                                                    "label": "Time",
+                                                    "dataType": "date",
+                                                    "customLabel": true,
+                                                    "operationType": "date_histogram",
+                                                    "isBucketed": true,
+                                                    "scale": "interval",
+                                                    "params": {
+                                                        "interval": "auto",
+                                                        "includeEmptyRows": true,
+                                                        "dropPartials": false
+                                                    },
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "98bb3e2f-a892-52df-cfc4-35f1b0744f15": {
+                                                    "label": "p50 (s)",
+                                                    "dataType": "number",
+                                                    "customLabel": true,
+                                                    "operationType": "percentile",
+                                                    "isBucketed": false,
+                                                    "scale": "ratio",
+                                                    "sourceField": "qdrant.rest.duration.histogram",
+                                                    "params": {
+                                                        "percentile": 50
+                                                    }
+                                                },
+                                                "514fded8-aa77-31e7-86b4-faad98d96717": {
+                                                    "label": "p95 (s)",
+                                                    "dataType": "number",
+                                                    "customLabel": true,
+                                                    "operationType": "percentile",
+                                                    "isBucketed": false,
+                                                    "scale": "ratio",
+                                                    "sourceField": "qdrant.rest.duration.histogram",
+                                                    "params": {
+                                                        "percentile": 95
+                                                    }
+                                                }
+                                            },
+                                            "columnOrder": [
+                                                "d08489ac-fbda-405c-71b5-f0a4618e5599",
+                                                "98bb3e2f-a892-52df-cfc4-35f1b0744f15",
+                                                "514fded8-aa77-31e7-86b4-faad98d96717"
+                                            ],
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "1ce6b613-6162-30bd-6888-cccc83ceb5a7",
+                "gridData": {
+                    "x": 16,
+                    "y": 15,
+                    "w": 16,
+                    "h": 10,
+                    "i": "1ce6b613-6162-30bd-6888-cccc83ceb5a7"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Longest response time by endpoint",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "a21d6b33-af98-6b5a-8a76-bed283badddd",
+                                        "accessors": [
+                                            "392b2a96-15e0-8509-4919-eab14bae5c09"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "5a9d9d98-b4b0-c9db-7e69-9b4da967aac6",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "position": "bottom"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-qdrant.metrics-*\n| WHERE data_stream.dataset == \"qdrant.metrics\"\n| STATS max_duration = MAX(MAX_OVER_TIME(qdrant.rest.duration.max.sec)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), qdrant.labels.endpoint\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "a21d6b33-af98-6b5a-8a76-bed283badddd": {
+                                            "query": {
+                                                "esql": "TS metrics-qdrant.metrics-*\n| WHERE data_stream.dataset == \"qdrant.metrics\"\n| STATS max_duration = MAX(MAX_OVER_TIME(qdrant.rest.duration.max.sec)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), qdrant.labels.endpoint\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "max_duration",
+                                                    "columnId": "392b2a96-15e0-8509-4919-eab14bae5c09",
+                                                    "label": "Max (s)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                                    "label": "Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "qdrant.labels.endpoint",
+                                                    "columnId": "5a9d9d98-b4b0-c9db-7e69-9b4da967aac6",
+                                                    "label": "qdrant.labels.endpoint",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "max_duration",
+                                                    "columnId": "392b2a96-15e0-8509-4919-eab14bae5c09",
+                                                    "label": "Max (s)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                                    "label": "Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "qdrant.labels.endpoint",
+                                                    "columnId": "5a9d9d98-b4b0-c9db-7e69-9b4da967aac6",
+                                                    "label": "qdrant.labels.endpoint",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "6f5d2971-03b7-6a52-9b88-2cdb07520f2f",
+                "gridData": {
+                    "x": 32,
+                    "y": 15,
+                    "w": 16,
+                    "h": 10,
+                    "i": "6f5d2971-03b7-6a52-9b88-2cdb07520f2f"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Points per collection",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "67854370-6b11-fbb1-24db-570215d997ac",
+                                        "accessors": [
+                                            "374511af-fd08-0cf5-f8fd-86c280dca826"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "5666ec17-8f3f-58b9-23f3-7dca6101a3ab",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "position": "bottom"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-qdrant.metrics-*\n| WHERE data_stream.dataset == \"qdrant.metrics\" AND qdrant.labels.id IS NOT NULL\n| STATS points = SUM(LAST_OVER_TIME(qdrant.collection.points)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), qdrant.labels.id\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "67854370-6b11-fbb1-24db-570215d997ac": {
+                                            "query": {
+                                                "esql": "TS metrics-qdrant.metrics-*\n| WHERE data_stream.dataset == \"qdrant.metrics\" AND qdrant.labels.id IS NOT NULL\n| STATS points = SUM(LAST_OVER_TIME(qdrant.collection.points)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), qdrant.labels.id\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "points",
+                                                    "columnId": "374511af-fd08-0cf5-f8fd-86c280dca826",
+                                                    "label": "Total points",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                                    "label": "Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "qdrant.labels.id",
+                                                    "columnId": "5666ec17-8f3f-58b9-23f3-7dca6101a3ab",
+                                                    "label": "qdrant.labels.id",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "points",
+                                                    "columnId": "374511af-fd08-0cf5-f8fd-86c280dca826",
+                                                    "label": "Total points",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                                    "label": "Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "qdrant.labels.id",
+                                                    "columnId": "5666ec17-8f3f-58b9-23f3-7dca6101a3ab",
+                                                    "label": "qdrant.labels.id",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "8168d25a-0b78-7c88-57be-75281d165b7e",
+                "gridData": {
+                    "x": 0,
+                    "y": 20,
+                    "w": 16,
+                    "h": 10,
+                    "i": "8168d25a-0b78-7c88-57be-75281d165b7e"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Update queue",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "756394ae-294e-b902-ce23-11e68aa449c7",
+                                        "accessors": [
+                                            "00424546-8038-97b7-3645-4de7b9d14520",
+                                            "ad1ff0a0-3e54-f8cb-f99d-bb6603812c6e"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "position": "bottom"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-qdrant.metrics-*\n| WHERE data_stream.dataset == \"qdrant.metrics\"\n| STATS queue = SUM(AVG_OVER_TIME(qdrant.collection.update_queue.length)), deferred = SUM(AVG_OVER_TIME(qdrant.collection.update_queue.deferred_points)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "756394ae-294e-b902-ce23-11e68aa449c7": {
+                                            "query": {
+                                                "esql": "TS metrics-qdrant.metrics-*\n| WHERE data_stream.dataset == \"qdrant.metrics\"\n| STATS queue = SUM(AVG_OVER_TIME(qdrant.collection.update_queue.length)), deferred = SUM(AVG_OVER_TIME(qdrant.collection.update_queue.deferred_points)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "queue",
+                                                    "columnId": "00424546-8038-97b7-3645-4de7b9d14520",
+                                                    "label": "Queued updates",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "deferred",
+                                                    "columnId": "ad1ff0a0-3e54-f8cb-f99d-bb6603812c6e",
+                                                    "label": "Deferred points",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                                    "label": "Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "queue",
+                                                    "columnId": "00424546-8038-97b7-3645-4de7b9d14520",
+                                                    "label": "Queued updates",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "deferred",
+                                                    "columnId": "ad1ff0a0-3e54-f8cb-f99d-bb6603812c6e",
+                                                    "label": "Deferred points",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                                    "label": "Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "3a684066-3961-e5ec-1708-8dcfd20bb7f9",
+                "gridData": {
+                    "x": 16,
+                    "y": 25,
+                    "w": 16,
+                    "h": 10,
+                    "i": "3a684066-3961-e5ec-1708-8dcfd20bb7f9"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Replicas",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "7cb70a14-631c-28bf-f9aa-75365ada5541",
+                                        "accessors": [
+                                            "39113248-dbef-2f5a-44fc-33a9a3214ec6",
+                                            "628627a8-2af0-1fdc-eef2-b0b5008415f8"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "position": "bottom"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-qdrant.metrics-*\n| WHERE data_stream.dataset == \"qdrant.metrics\"\n| STATS active_min = MIN(MIN_OVER_TIME(qdrant.replicas.active.min)), dead = MAX(MAX_OVER_TIME(qdrant.replicas.dead)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "7cb70a14-631c-28bf-f9aa-75365ada5541": {
+                                            "query": {
+                                                "esql": "TS metrics-qdrant.metrics-*\n| WHERE data_stream.dataset == \"qdrant.metrics\"\n| STATS active_min = MIN(MIN_OVER_TIME(qdrant.replicas.active.min)), dead = MAX(MAX_OVER_TIME(qdrant.replicas.dead)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "active_min",
+                                                    "columnId": "39113248-dbef-2f5a-44fc-33a9a3214ec6",
+                                                    "label": "Active replicas (min)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "dead",
+                                                    "columnId": "628627a8-2af0-1fdc-eef2-b0b5008415f8",
+                                                    "label": "Max dead",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                                    "label": "Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "active_min",
+                                                    "columnId": "39113248-dbef-2f5a-44fc-33a9a3214ec6",
+                                                    "label": "Active replicas (min)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "dead",
+                                                    "columnId": "628627a8-2af0-1fdc-eef2-b0b5008415f8",
+                                                    "label": "Max dead",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                                    "label": "Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "f289316d-5549-8927-42d9-116ecffdee25",
+                "gridData": {
+                    "x": 32,
+                    "y": 25,
+                    "w": 16,
+                    "h": 10,
+                    "i": "f289316d-5549-8927-42d9-116ecffdee25"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Shard transfers",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "ceee7b27-5d34-8126-34c3-9ca6d9a67b7d",
+                                        "accessors": [
+                                            "a5a18b48-59e3-542d-c4e7-c62fa6902c6c",
+                                            "46582318-3f38-a269-4920-61eb29100a63",
+                                            "310a3688-4b20-8bb5-21d7-0d2bd9386a70"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "position": "bottom"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-qdrant.metrics-*\n| WHERE data_stream.dataset == \"qdrant.metrics\"\n| STATS incoming = SUM(AVG_OVER_TIME(qdrant.shard_transfers.incoming)), outgoing = SUM(AVG_OVER_TIME(qdrant.shard_transfers.outgoing)), failed = SUM(MAX_OVER_TIME(qdrant.shard_transfers.failed)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "ceee7b27-5d34-8126-34c3-9ca6d9a67b7d": {
+                                            "query": {
+                                                "esql": "TS metrics-qdrant.metrics-*\n| WHERE data_stream.dataset == \"qdrant.metrics\"\n| STATS incoming = SUM(AVG_OVER_TIME(qdrant.shard_transfers.incoming)), outgoing = SUM(AVG_OVER_TIME(qdrant.shard_transfers.outgoing)), failed = SUM(MAX_OVER_TIME(qdrant.shard_transfers.failed)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "incoming",
+                                                    "columnId": "a5a18b48-59e3-542d-c4e7-c62fa6902c6c",
+                                                    "label": "Incoming",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "outgoing",
+                                                    "columnId": "46582318-3f38-a269-4920-61eb29100a63",
+                                                    "label": "Outgoing",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "failed",
+                                                    "columnId": "310a3688-4b20-8bb5-21d7-0d2bd9386a70",
+                                                    "label": "Failed",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                                    "label": "Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "incoming",
+                                                    "columnId": "a5a18b48-59e3-542d-c4e7-c62fa6902c6c",
+                                                    "label": "Incoming",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "outgoing",
+                                                    "columnId": "46582318-3f38-a269-4920-61eb29100a63",
+                                                    "label": "Outgoing",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "failed",
+                                                    "columnId": "310a3688-4b20-8bb5-21d7-0d2bd9386a70",
+                                                    "label": "Failed",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                                    "label": "Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "e9517430-ab74-afaa-3503-c6e1f03fdd6b",
+                "gridData": {
+                    "x": 0,
+                    "y": 30,
+                    "w": 16,
+                    "h": 10,
+                    "i": "e9517430-ab74-afaa-3503-c6e1f03fdd6b"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Snapshots created",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "bc56dd0f-1717-f325-c19a-5fbe7535c205",
+                                        "accessors": [
+                                            "2330ca3a-183c-6bd0-f798-cb24caa043e2"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "xAccessor": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "5666ec17-8f3f-58b9-23f3-7dca6101a3ab",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "bar_stacked",
+                                "legend": {
+                                    "position": "bottom"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-qdrant.metrics-*\n| WHERE data_stream.dataset == \"qdrant.metrics\" AND qdrant.labels.id IS NOT NULL\n| STATS created = SUM(RATE(qdrant.snapshots.created.count)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), qdrant.labels.id\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "bc56dd0f-1717-f325-c19a-5fbe7535c205": {
+                                            "query": {
+                                                "esql": "TS metrics-qdrant.metrics-*\n| WHERE data_stream.dataset == \"qdrant.metrics\" AND qdrant.labels.id IS NOT NULL\n| STATS created = SUM(RATE(qdrant.snapshots.created.count)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), qdrant.labels.id\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "created",
+                                                    "columnId": "2330ca3a-183c-6bd0-f798-cb24caa043e2",
+                                                    "label": "Snapshots/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                                    "label": "Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "qdrant.labels.id",
+                                                    "columnId": "5666ec17-8f3f-58b9-23f3-7dca6101a3ab",
+                                                    "label": "qdrant.labels.id",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "created",
+                                                    "columnId": "2330ca3a-183c-6bd0-f798-cb24caa043e2",
+                                                    "label": "Snapshots/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                                    "label": "Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "qdrant.labels.id",
+                                                    "columnId": "5666ec17-8f3f-58b9-23f3-7dca6101a3ab",
+                                                    "label": "qdrant.labels.id",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "dc6b21bd-4000-5562-4077-39a0a3bb2617",
+                "gridData": {
+                    "x": 16,
+                    "y": 35,
+                    "w": 16,
+                    "h": 10,
+                    "i": "dc6b21bd-4000-5562-4077-39a0a3bb2617"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Memory",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "f3f433b1-94b6-eb84-9240-08692cad989e",
+                                        "accessors": [
+                                            "a9196228-cb12-2446-a82b-c7b42942f61e",
+                                            "6dd4d08f-f49d-37ca-679b-29a3e871f7bb"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "49667d83-87f9-c3eb-e2bd-d892afc08bcb",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "position": "bottom"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-qdrant.metrics-*\n| WHERE data_stream.dataset == \"qdrant.metrics\"\n| STATS resident = MAX(AVG_OVER_TIME(qdrant.memory.resident.bytes)), allocated = MAX(AVG_OVER_TIME(qdrant.memory.allocated.bytes)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), service.address\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "f3f433b1-94b6-eb84-9240-08692cad989e": {
+                                            "query": {
+                                                "esql": "TS metrics-qdrant.metrics-*\n| WHERE data_stream.dataset == \"qdrant.metrics\"\n| STATS resident = MAX(AVG_OVER_TIME(qdrant.memory.resident.bytes)), allocated = MAX(AVG_OVER_TIME(qdrant.memory.allocated.bytes)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), service.address\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "resident",
+                                                    "columnId": "a9196228-cb12-2446-a82b-c7b42942f61e",
+                                                    "label": "Resident",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "allocated",
+                                                    "columnId": "6dd4d08f-f49d-37ca-679b-29a3e871f7bb",
+                                                    "label": "Allocated",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                                    "label": "Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "service.address",
+                                                    "columnId": "49667d83-87f9-c3eb-e2bd-d892afc08bcb",
+                                                    "label": "service.address",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "resident",
+                                                    "columnId": "a9196228-cb12-2446-a82b-c7b42942f61e",
+                                                    "label": "Resident",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "allocated",
+                                                    "columnId": "6dd4d08f-f49d-37ca-679b-29a3e871f7bb",
+                                                    "label": "Allocated",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "df177ea9-5843-5979-3eb7-326180aaf9c1",
+                                                    "label": "Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "service.address",
+                                                    "columnId": "49667d83-87f9-c3eb-e2bd-d892afc08bcb",
+                                                    "label": "service.address",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            }
+        ],
+        "optionsJSON": {
+            "useMargins": true,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "hidePanelTitles": false
+        },
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "disabled": false,
+                            "negate": false,
+                            "alias": null,
+                            "type": "phrase",
+                            "key": "data_stream.dataset",
+                            "field": "data_stream.dataset",
+                            "params": {
+                                "query": "qdrant.metrics"
+                            }
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "qdrant.metrics"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "query": "",
+                    "language": "kuery"
+                }
+            }
+        },
+        "timeRestore": true,
+        "timeFrom": "now-1h",
+        "timeTo": "now",
+        "version": 1,
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "89189864-1d98-3a4a-9446-b57099cc266a": {
+                    "grow": false,
+                    "order": 0,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "89189864-1d98-3a4a-9446-b57099cc266a",
+                        "dataViewId": "metrics-*",
+                        "fieldName": "qdrant.labels.id",
+                        "title": "Collection",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                },
+                "0b919e4d-2081-59e9-ddf9-3b4b885954e2": {
+                    "grow": false,
+                    "order": 1,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "0b919e4d-2081-59e9-ddf9-3b4b885954e2",
+                        "dataViewId": "metrics-*",
+                        "fieldName": "service.address",
+                        "title": "Node",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                }
+            },
+            "showApplySelections": false
+        }
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-10-01T00:00:00Z",
+    "created_by": "admin",
+    "id": "qdrant-overview",
+    "managed": false,
+    "references": [
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "abe43347-4c31-64c2-c62d-81e472ec00eb:indexpattern-datasource-layer-310dc0d0-54cb-8533-ee59-f280d016fca3"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "controlGroup_89189864-1d98-3a4a-9446-b57099cc266a:optionsListDataView"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "controlGroup_0b919e4d-2081-59e9-ddf9-3b4b885954e2:optionsListDataView"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.2.0",
+    "updated_at": "2023-10-01T00:00:00Z",
+    "updated_by": "admin",
+    "version": "1"
+}
