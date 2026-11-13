@@ -186,8 +186,7 @@ program: |-
                     all_dkeys.filter(k, k.startsWith(tid + ":") || k.startsWith(string(t.alt_id) + ":") || k.startsWith(string(t.name) + ":")).map(k,
                       k.substring(size(k.split(":")[0]) + 1, size(k))
                     ) +
-                    (bool(t.is_hub) && has_hub ? [state.hub_es_api_key] : []) +
-                    all_dkeys.filter(k, !k.contains(":"))
+                    (bool(t.is_hub) && has_hub ? [state.hub_es_api_key] : [])
                   ).as(cand_keys,
                     (size(cand_keys) == 0) ? [] :
                       (es_base + "/_nodes/_all/stats/jvm,fs?filter_path=nodes.*.name,nodes.*.roles,nodes.*.jvm.mem.heap_used_percent,nodes.*.fs.total").as(stats_url,

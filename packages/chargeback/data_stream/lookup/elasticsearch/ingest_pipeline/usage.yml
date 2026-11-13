@@ -1,58 +1,83 @@
 ---
-description: 'Chargeback: Set correlation keys, full-day source selection tags, and blended calculation labels.'
+description: 'Chargeback: Set correlation keys, per-index/interval source selection tags, and blended calculation labels.'
 processors:
   - script:
       ignore_failure: true
       lang: painless
       source: |
-        // Select "native" vs "legacy" for the day, retaining legacy when both exist on a partial
-        // cutover day until native delta-bearing samples cover every contributing index and interval.
-        Map nat = ctx.native instanceof Map ? (Map)ctx.native : null;
-        Map leg = ctx.legacy instanceof Map ? (Map)ctx.legacy : null;
-        long natCnt = (nat != null && nat.doc_cnt instanceof Number) ? ((Number)nat.doc_cnt).longValue() : 0L;
-        long legCnt = (leg != null && leg.doc_cnt instanceof Number) ? ((Number)leg.doc_cnt).longValue() : 0L;
-        boolean nativeCoversAll = (ctx.coverage instanceof Map && ctx.coverage.native_covers_all != null)
-          && ctx.coverage.native_covers_all.toString().equalsIgnoreCase('true');
+        String pfx = (ctx.tier != null && ctx.datastream != null)
+          ? 'tier_and_datastream'
+          : (ctx.tier != null ? 'tier' : (ctx.datastream != null ? 'datastream' : 'deployment'));
 
-        for (String pfx : ['tier', 'datastream', 'tier_and_datastream']) {
-          if ((nat != null && nat.containsKey(pfx + '_sum_store_size')) || (leg != null && leg.containsKey(pfx + '_sum_store_size'))) {
-            ctx.has_native_usage = natCnt > 0L;
-            ctx.has_legacy_usage = legCnt > 0L;
-            for (String m : ['sum_indexing_time', 'sum_query_time', 'sum_store_size', 'sum_data_set_store_size']) {
-              def nv = (nat != null) ? nat.get(pfx + '_' + m) : null;
-              def lv = (leg != null) ? leg.get(pfx + '_' + m) : null;
+        if (ctx.rollup instanceof Map) {
+          Map r = (Map)ctx.rollup;
+          ctx.usage_source = r.usage_source != null ? r.usage_source.toString() : 'legacy';
+          for (String m : ['sum_indexing_time', 'sum_query_time', 'sum_store_size', 'sum_data_set_store_size']) {
+            def sv = r.get('selected_' + m);
+            ctx[pfx + '_' + m] = (sv instanceof Number) ? ((Number)sv).longValue() : 0L;
+            if (pfx != 'deployment') {
+              def nv = r.get('native_' + m);
+              def lv = r.get('legacy_' + m);
               ctx['native_' + m] = (nv instanceof Number) ? ((Number)nv).longValue() : 0L;
               ctx['legacy_' + m] = (lv instanceof Number) ? ((Number)lv).longValue() : 0L;
             }
           }
-        }
+          if (pfx != 'deployment') {
+            ctx.has_native_usage = Boolean.TRUE.equals(r.has_native_usage)
+              || (r.has_native_usage != null && r.has_native_usage.toString().equalsIgnoreCase('true'));
+            ctx.has_legacy_usage = Boolean.TRUE.equals(r.has_legacy_usage)
+              || (r.has_legacy_usage != null && r.has_legacy_usage.toString().equalsIgnoreCase('true'));
+          }
+          ctx.remove('rollup');
+        } else {
+          // Fallback for pre-0.6.0 transform documents emitting ctx.native / ctx.legacy / ctx.coverage.
+          Map nat = ctx.native instanceof Map ? (Map)ctx.native : null;
+          Map leg = ctx.legacy instanceof Map ? (Map)ctx.legacy : null;
+          long natCnt = (nat != null && nat.doc_cnt instanceof Number) ? ((Number)nat.doc_cnt).longValue() : 0L;
+          long legCnt = (leg != null && leg.doc_cnt instanceof Number) ? ((Number)leg.doc_cnt).longValue() : 0L;
+          boolean nativeCoversAll = (ctx.coverage instanceof Map && ctx.coverage.native_covers_all != null)
+            && ctx.coverage.native_covers_all.toString().equalsIgnoreCase('true');
 
-        boolean chooseNative = (natCnt > 0L) && (legCnt <= 0L || nativeCoversAll);
-
-        Map chosen = ctx;
-        if (chooseNative && nat != null) {
-          chosen = nat;
-          ctx.usage_source = 'native';
-        } else if (leg != null && legCnt > 0L) {
-          chosen = leg;
-          ctx.usage_source = 'legacy';
-        } else if (nat != null && natCnt > 0L) {
-          chosen = nat;
-          ctx.usage_source = 'native';
-        } else if (ctx.usage_source == null) {
-          ctx.usage_source = 'legacy';
-        }
-        if (chosen != ctx) {
-          for (def entry : chosen.entrySet()) {
-            String k = entry.getKey().toString();
-            if (k != 'doc_cnt' && k != 'has_delta' && k != 'min_ts' && k != 'max_ts') {
-              ctx[k] = entry.getValue();
+          for (String cpfx : ['tier', 'datastream', 'tier_and_datastream']) {
+            if ((nat != null && nat.containsKey(cpfx + '_sum_store_size')) || (leg != null && leg.containsKey(cpfx + '_sum_store_size'))) {
+              ctx.has_native_usage = natCnt > 0L;
+              ctx.has_legacy_usage = legCnt > 0L;
+              for (String m : ['sum_indexing_time', 'sum_query_time', 'sum_store_size', 'sum_data_set_store_size']) {
+                def nv = (nat != null) ? nat.get(cpfx + '_' + m) : null;
+                def lv = (leg != null) ? leg.get(cpfx + '_' + m) : null;
+                ctx['native_' + m] = (nv instanceof Number) ? ((Number)nv).longValue() : 0L;
+                ctx['legacy_' + m] = (lv instanceof Number) ? ((Number)lv).longValue() : 0L;
+              }
             }
           }
+
+          boolean chooseNative = (natCnt > 0L) && (legCnt <= 0L || nativeCoversAll);
+
+          Map chosen = ctx;
+          if (chooseNative && nat != null) {
+            chosen = nat;
+            ctx.usage_source = 'native';
+          } else if (leg != null && legCnt > 0L) {
+            chosen = leg;
+            ctx.usage_source = 'legacy';
+          } else if (nat != null && natCnt > 0L) {
+            chosen = nat;
+            ctx.usage_source = 'native';
+          } else if (ctx.usage_source == null) {
+            ctx.usage_source = 'legacy';
+          }
+          if (chosen != ctx) {
+            for (def entry : chosen.entrySet()) {
+              String k = entry.getKey().toString();
+              if (k != 'doc_cnt' && k != 'has_delta' && k != 'min_ts' && k != 'max_ts') {
+                ctx[k] = entry.getValue();
+              }
+            }
+          }
+          ctx.remove('native');
+          ctx.remove('legacy');
+          ctx.remove('coverage');
         }
-        ctx.remove('native');
-        ctx.remove('legacy');
-        ctx.remove('coverage');
 
         if (ctx.cluster_name != null) {
           ctx.deployment_id = ctx.cluster_name;

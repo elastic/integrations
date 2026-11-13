@@ -303,8 +303,7 @@ program: |-
                       k.substring(size(k.split(":")[0]) + 1, size(k))
                     ) +
                     (bool(t.is_hub) && has_hub ? [state.hub_es_api_key] : []) +
-                    (!bool(t.is_ech) && has_cloud ? [state.api_key] : []) +
-                    all_dkeys.filter(k, !k.contains(":"))
+                    (!bool(t.is_ech) && has_cloud ? [state.api_key] : [])
                   ).as(cand_keys,
                     (size(cand_keys) == 0) ?
                       { "ok": true, "skipped": true, "id": tid, "evts": [], "baselines": [], "err": dyn({}) }
@@ -435,9 +434,12 @@ program: |-
                                   string(row.raw_idx) != "" &&
                                   !(string(row.raw_idx).startsWith(".") && !string(row.raw_idx).startsWith(".ds-")) &&
                                   !string(row.raw_idx).startsWith(".ds-.") &&
+                                  !string(row.raw_idx).startsWith(".ds-ilm-history") &&
                                   !string(row.raw_idx).contains("metrics-chargeback.") &&
                                   !string(row.raw_idx).contains("logs-chargeback.") &&
-                                  !string(row.raw_idx).startsWith("chargeback_lookup.")
+                                  !string(row.raw_idx).startsWith("chargeback_lookup.") &&
+                                  string(row.raw_idx) != "monitoring-indices" &&
+                                  string(row.raw_idx) != "monitoring-indices-chargeback"
                                 ).map(row,
                                   string(row.idx_name).as(idx_name,
                                   string(row.tier_pref).as(tier_pref,
