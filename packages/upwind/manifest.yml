@@ -1,0 +1,97 @@
+format_version: "3.4.2"
+name: upwind
+title: Upwind
+version: "0.1.0"
+source:
+  license: "Elastic-2.0"
+description: Collect threat detections, vulnerability findings, and configuration findings from Upwind with Elastic Agent.
+type: integration
+categories:
+  - security
+  # Added cloudsecurity_cdr as Upwind provides cloud detection and response findings across runtime threats, vulnerabilities, and configuration posture.
+  - cloudsecurity_cdr
+conditions:
+  kibana:
+    version: "9.4.0"
+  elastic:
+    subscription: basic
+screenshots:
+  - src: /img/upwind-threat-detections-overview.png
+    title: Upwind Threat Detections Overview
+    size: 600x600
+    type: image/png
+  - src: /img/upwind-posture-and-vulnerability-overview.png
+    title: Upwind Posture and Vulnerability Overview
+    size: 600x600
+    type: image/png
+icons:
+  - src: /img/upwind-logo.svg
+    title: Upwind logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: upwind
+    title: Upwind
+    description: Collect threat detections, vulnerability findings, and configuration findings from the Upwind Management API.
+    inputs:
+      - type: cel
+        title: Collect Upwind findings via API
+        description: Collect Upwind threat detections, vulnerability findings, and configuration findings using OAuth2 client credentials.
+        vars:
+          - name: url
+            type: url
+            title: API URL
+            description: >-
+              Regional Upwind Management API base URL, including scheme and without a trailing path. US: https://api.upwind.io. EU: https://api.eu.upwind.io. ME: https://api.me.upwind.io. The OAuth token audience is this same URL.
+            multi: false
+            required: true
+            show_user: true
+            default: https://api.upwind.io
+          - name: token_url
+            type: url
+            title: Token URL
+            description: OAuth2 token endpoint for the client credentials grant.
+            multi: false
+            required: true
+            show_user: true
+            default: https://auth.upwind.io/oauth/token
+          - name: client_id
+            type: text
+            title: Client ID
+            description: OAuth2 client ID from Upwind Settings → Credentials (API credential).
+            multi: false
+            required: true
+            show_user: true
+          - name: client_secret
+            type: password
+            title: Client Secret
+            secret: true
+            description: OAuth2 client secret from Upwind Settings → Credentials. The secret is shown only once when the credential is created.
+            multi: false
+            required: true
+            show_user: true
+          - name: organization_id
+            type: text
+            title: Organization ID
+            description: Upwind organization ID used as the path parameter on Management API list endpoints.
+            multi: false
+            required: true
+            show_user: true
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            description: >-
+              URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+            multi: false
+            required: false
+            show_user: false
+          - name: ssl
+            type: yaml
+            title: SSL
+            multi: false
+            required: false
+            show_user: false
+            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+owner:
+  github: elastic/security-service-integrations
+  type: elastic

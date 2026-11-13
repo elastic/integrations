@@ -1,0 +1,41 @@
+version: '2.3'
+services:
+  upwind-threat-detections-mock:
+    image: docker.elastic.co/observability/stream:v0.22.0
+    hostname: upwind-threat-detections-mock
+    ports:
+      - 8090
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: '8090'
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/files/config-threat_detections.yml
+  upwind-vulnerability-findings-mock:
+    image: docker.elastic.co/observability/stream:v0.22.0
+    hostname: upwind-vulnerability-findings-mock
+    ports:
+      - 8090
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: '8090'
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/files/config-vulnerability_findings.yml
+  upwind-configuration-findings-mock:
+    image: docker.elastic.co/observability/stream:v0.22.0
+    hostname: upwind-configuration-findings-mock
+    ports:
+      - 8090
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: '8090'
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/files/config-configuration_findings.yml
