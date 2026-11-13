@@ -2,6 +2,38 @@
 description: Pipeline for processing business applications logs.
 processors:
   - set:
+      field: event.kind
+      tag: set_event_kind_asset_6cfcd532
+      value: asset
+  - set:
+      field: service.name
+      tag: set_service_name_from_application_name_29f4dc13
+      copy_from: axonius.application.name
+      if: ctx.axonius?.application?.name instanceof String && ctx.axonius.application.name.trim() != ''
+  # internal_axon_id is the only identifier shared by every adapter record of an Axonius application asset.
+  - set:
+      field: service.id
+      tag: set_service_id_from_application_internal_axon_id_fb7b94a6
+      copy_from: axonius.application.internal_axon_id
+      ignore_empty_value: true
+  - set:
+      field: service.entity.id
+      tag: set_service_entity_id_from_application_internal_axon_id_a59867a8
+      copy_from: axonius.application.internal_axon_id
+      ignore_empty_value: true
+  - append:
+      field: service.entity.type
+      tag: append_service_entity_type_583906dc
+      value:
+        - service
+        - application
+      allow_duplicates: false
+  - set:
+      field: service.state
+      tag: set_service_state_from_application_operational_status_44e7155f
+      copy_from: axonius.application.operational_status
+      ignore_empty_value: true
+  - set:
       field: service.type
       tag: set_service_type_from_application_application_type_089d7a48
       copy_from: axonius.application.application_type
