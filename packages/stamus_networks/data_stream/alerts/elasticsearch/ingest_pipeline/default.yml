@@ -195,6 +195,22 @@ processors:
       target_field: stamus_networks.alerts.direction
       tag: rename_direction
       ignore_missing: true
+  - set:
+      field: network.direction
+      tag: set_network_direction_inbound
+      value: inbound
+      if: ctx.stamus_networks?.alerts?.direction == 'to_client'
+  - set:
+      field: network.direction
+      tag: set_network_direction_outbound
+      value: outbound
+      if: ctx.stamus_networks?.alerts?.direction == 'to_server'
+  - remove:
+      field: stamus_networks.alerts.direction
+      tag: remove_mapped_suricata_direction
+      ignore_missing: true
+      if: ctx.network?.direction != null
+      description: Preserve unrecognized Suricata direction values in the vendor field.
   - rename:
       field: json.capture_file
       target_field: stamus_networks.alerts.capture_file
@@ -409,7 +425,14 @@ processors:
         - append:
             field: error.message
             tag: append_error_parse_flow_start
-            value: '{{{_ingest.on_failure_message}}}'
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        - remove:
+            field: json.flow.start
+            tag: remove_invalid_flow_start
+            ignore_missing: true
 
   ###
   # Sightings sensor identity
@@ -566,6 +589,18 @@ processors:
       tag: convert_vulnerability_score_base_to_float
       ignore_missing: true
       description: Suricata rule metadata delivers CVSS scores as strings (for example "9.8").
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_convert_vulnerability_score_base
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        - remove:
+            field: vulnerability.score.base
+            tag: remove_invalid_vulnerability_score_base
+            ignore_missing: true
 
   ###
   # ECS categorization (Pattern B — fewer than 5 mappings)
@@ -671,6 +706,42 @@ processors:
       ignore_missing: true
 
   ###
+  # File and HTTP ECS mappings
+  ###
+  - foreach:
+      field: stamus_networks.alerts.files
+      tag: append_file_sha256_to_ecs
+      if: ctx.stamus_networks?.alerts?.files instanceof List
+      processor:
+        append:
+          field: file.hash.sha256
+          tag: append_file_sha256
+          value: '{{{_ingest._value.sha256}}}'
+          allow_duplicates: false
+          ignore_empty_values: true
+  - foreach:
+      field: stamus_networks.alerts.files
+      tag: append_file_sha256_to_related_hash
+      if: ctx.stamus_networks?.alerts?.files instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_related_hash_file_sha256
+          value: '{{{_ingest._value.sha256}}}'
+          allow_duplicates: false
+          ignore_empty_values: true
+  - rename:
+      field: json.http.hostname
+      target_field: destination.domain
+      tag: rename_http_hostname_to_destination_domain
+      ignore_missing: true
+  - set:
+      field: url.domain
+      tag: set_url_domain_from_destination_domain
+      copy_from: destination.domain
+      if: ctx.network?.protocol == 'http' && ctx.destination?.domain != null
+
+  ###
   # related.* enrichment
   ###
   - append:
@@ -685,6 +756,12 @@ processors:
       value: '{{{destination.ip}}}'
       allow_duplicates: false
       if: ctx.destination?.ip != null
+  - append:
+      field: related.hosts
+      tag: append_related_hosts_destination_domain
+      value: '{{{destination.domain}}}'
+      allow_duplicates: false
+      if: ctx.destination?.domain != null
   - append:
       field: related.hosts
       tag: append_related_hosts_hostname_info

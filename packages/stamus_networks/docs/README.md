@@ -158,7 +158,7 @@ See the [REST API documentation](https://docs.stamus-networks.com/42.2.0/develop
 
 The package ships one dashboard:
 
-- **[Logs Stamus Networks] IDS and Declarations** covers signature alerts and Declaration of Compromise or Policy Violation records: categories, severity, affected products, attack targets, malware families, Stamus classification, kill chain, threat families, assets, and sightings.
+- **[Logs Stamus Networks] Alerts** covers Suricata IDS/IPS signature alerts and Stamus rule metadata.
 
 ### Data streams
 
@@ -180,6 +180,7 @@ Sightings, Outlier Alert, and File Identification classification tags.
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
@@ -196,11 +197,14 @@ Sightings, Outlier Alert, and File Identification classification tags.
 | event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
 | event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| file.hash.sha256 | SHA256 hash. | keyword |
 | input.type | Type of Elastic Agent input. | keyword |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
+| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
@@ -243,7 +247,7 @@ Sightings, Outlier Alert, and File Identification classification tags.
 | stamus_networks.alerts.beaconing_statistics.assets | Asset(s) associated with the beaconing statistics. | keyword |
 | stamus_networks.alerts.beaconing_statistics.tech_info | Technical beaconing metrics (for example, interval/jitter statistics). Internal shape is not confirmed against a live example; stored as flattened until a populated sample is available. | flattened |
 | stamus_networks.alerts.capture_file | Full path to a per-alert pcap capture, only present when multi-mode pcap logging is enabled. | keyword |
-| stamus_networks.alerts.direction | Packet direction relative to the flow ("to_client" or "to_server"). Not mapped to ECS `network.direction` because that field's allowed values (inbound/outbound/internal/external) do not match Suricata's client/server semantics. | keyword |
+| stamus_networks.alerts.direction | Unrecognized packet direction relative to the flow. Known Suricata values are mapped to `network.direction`. | keyword |
 | stamus_networks.alerts.discovery.asset | Asset (IP/hostname) the sighting was observed on. | keyword |
 | stamus_networks.alerts.discovery.asset_net |  | keyword |
 | stamus_networks.alerts.discovery.key | Dotted field path that was newly observed, for example, "http.http_user_agent." | keyword |
@@ -310,6 +314,7 @@ Sightings, Outlier Alert, and File Identification classification tags.
 | threat.technique.id | The id of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
 | threat.technique.name | The name of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
 | threat.technique.name.text | Multi-field of `threat.technique.name`. | match_only_text |
+| url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |

@@ -132,7 +132,7 @@ See the [REST API documentation](https://docs.stamus-networks.com/42.2.0/develop
 
 The package ships one dashboard:
 
-- **[Logs Stamus Networks] IDS and Declarations** covers signature alerts and Declaration of Compromise or Policy Violation records: categories, severity, affected products, attack targets, malware families, Stamus classification, kill chain, threat families, assets, and sightings.
+- **[Logs Stamus Networks] Alerts** covers Suricata IDS/IPS signature alerts and Stamus rule metadata.
 
 ### Data streams
 

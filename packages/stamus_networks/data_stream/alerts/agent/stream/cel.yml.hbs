@@ -57,12 +57,15 @@ program: |-
         ).do_request().as(resp,
           is_error(resp) ?
             {
-              "code": "transport_error",
-              "id": "transport_error",
-              "message": "GET /rest/rules/es/events_tail/: transport-level failure (timeout, connection reset, DNS failure, TLS handshake failure, etc.) before an HTTP response was received: " + try(resp, "error").error,
-            }.as(err,
-              {"events": [{"error": err}], "cursor": cur, "want_more": false}
-            )
+              "events": {
+                "error": {
+                  "code": "transport_error",
+                  "id": "transport_error",
+                  "message": "GET /rest/rules/es/events_tail/: transport-level failure (timeout, connection reset, DNS failure, TLS handshake failure, etc.) before an HTTP response was received: " + try(resp, "error").error,
+                },
+              },
+              "want_more": false,
+            }
           : (resp.StatusCode == 200) ?
             // Preserve large numeric identifiers exactly until the ingest
             // pipeline converts them to keyword fields.
@@ -74,7 +77,7 @@ program: |-
                   // suggests more data may follow; a short/empty page means stop.
                   size(mapped) != 0 && (
                     body.?next.hasValue() ?
-                      (body.?next.orValue(null) != null)
+                      (body.next != null)
                     :
                       size(mapped) >= int(state.page_size)
                   )
@@ -107,31 +110,27 @@ program: |-
           :
             {
               "code": string(resp.StatusCode),
-              "id": string(resp.Status),
+              "id": resp.Status,
               "message": "GET /rest/rules/es/events_tail/: " + (
                 (size(resp.Body) != 0) ?
                   string(resp.Body)
                 :
-                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                  resp.Status + " (" + string(resp.StatusCode) + ")"
               ),
             }.as(err,
-              // Skip an unavailable licensed declaration phase, but preserve the
-              // cursor for primary alert failures and all retryable responses.
-              [400, 401, 403, 404, 422].exists(c, c == int(resp.StatusCode)) ?
-                (
-                  (cur.phase == "stamus") ?
-                    {
-                      "events": [{"error": err}],
-                      "cursor": {"phase": "alert", "from_date": cur.to_date},
-                      "want_more": false,
-                    }
-                  :
-                    {"events": [{"error": err}], "cursor": cur, "want_more": false}
-                )
+              (
+                // Skip an unavailable licensed declaration phase. All failures
+                // that do not advance the cursor use Agent-logged retry errors.
+                [400, 401, 403, 404, 422].exists(c, c == int(resp.StatusCode)) &&
+                cur.phase == "stamus"
+              ) ?
+                {
+                  "events": [{"error": err}],
+                  "cursor": {"phase": "alert", "from_date": cur.to_date},
+                  "want_more": false,
+                }
               :
-                // Transient (429, 5xx, connection-level, etc.) on either phase:
-                // retry the exact same phase/page/window on the next evaluation.
-                {"events": [{"error": err}], "cursor": cur, "want_more": false}
+                {"events": {"error": err}, "want_more": false}
             )
         )
       )
