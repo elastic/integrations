@@ -70,16 +70,15 @@ processors:
       type: long
       ignore_failure: true
       ignore_missing: true
-  - rename:
-      tag: rename_fortinet_firewall_recipient_to_email_to_address_e1ed6c6b
-      field: fortinet.firewall.recipient
-      target_field: email.to.address
-      ignore_missing: true
   - append:
       tag: append_email_to_address_78c2982a
       field: email.to.address
       value: "{{{fortinet.firewall.recipient}}}"
       if: ctx.fortinet?.firewall?.recipient != null
+  - remove:
+      tag: remove_fortinet_firewall_recipient
+      field: fortinet.firewall.recipient
+      ignore_missing: true
   - rename:
       tag: rename_fortinet_firewall_group_to_source_user_group_name_8ef934c4
       field: fortinet.firewall.group
@@ -420,10 +419,10 @@ processors:
       field: tls.client.x509.issuer.common_name
       value: "{{{tls.client.issuer}}}"
       if: ctx.tls?.client?.issuer != null
-  - rename:
-      tag: rename_fortinet_firewall_sender_to_tls_server_issuer_53552963
+  - remove:
+      tag: remove_fortinet_firewall_sender
+      description: The email sender was already copied to email.sender.address; it is not a TLS certificate issuer.
       field: fortinet.firewall.sender
-      target_field: tls.server.issuer
       ignore_missing: true
   - rename:
       tag: rename_fortinet_firewall_issuer_to_tls_server_issuer_81110cbf
