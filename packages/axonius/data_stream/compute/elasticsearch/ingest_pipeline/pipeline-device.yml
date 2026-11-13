@@ -2,6 +2,21 @@
 description: Pipeline for processing compute device logs.
 processors:
   - set:
+      field: event.kind
+      tag: set_event_kind_asset_e4a19c07
+      value: asset
+  - append:
+      field: host.entity.type
+      tag: append_host_entity_type_9f2d6b31
+      value: host
+      allow_duplicates: false
+  # internal_axon_id is the only identifier shared by every adapter record of an Axonius device asset.
+  - set:
+      field: host.id
+      tag: set_host_id_from_compute_internal_axon_id_c58e0a7d
+      copy_from: axonius.compute.internal_axon_id
+      ignore_empty_value: true
+  - set:
       field: event.action
       tag: set_event_action_from_compute_event_action_if_exists_bbf21f3f
       copy_from: axonius.compute.event.action_if_exists
@@ -611,6 +626,18 @@ processors:
       tag: set_host_name_from_compute_fqdn_1d5c4a76
       copy_from: axonius.compute.fqdn
       ignore_empty_value: true
+  - set:
+      field: host.name
+      tag: set_host_name_from_compute_hostname_2a91f6d4
+      copy_from: axonius.compute.hostname
+      ignore_empty_value: true
+      override: false
+  - set:
+      field: host.name
+      tag: set_host_name_from_compute_name_7e3c05b8
+      copy_from: axonius.compute.name
+      ignore_empty_value: true
+      override: false
   - lowercase:
       field: host.name
       tag: lowercase_host_name_676c5247
@@ -865,6 +892,11 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       if: ctx.axonius?.compute?.is_managed != ''
+  - set:
+      field: host.entity.attributes.managed
+      tag: set_host_entity_attributes_managed_from_compute_is_managed_0b8d3e6f
+      copy_from: axonius.compute.is_managed
+      if: ctx.axonius?.compute?.is_managed instanceof Boolean
   - convert:
       field: axonius.compute.is_network_infra_device
       tag: convert_is_network_infra_device_to_boolean_b5c54bc6
@@ -998,6 +1030,12 @@ processors:
             tag: append_error_message_29d37893
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # last_seen is not used: on scanner, CMDB and enrichment records it is not an action by the device.
+  - set:
+      field: host.entity.lifecycle.last_activity
+      tag: set_host_entity_lifecycle_last_activity_from_compute_last_contact_time_4c7a2e90
+      copy_from: axonius.compute.last_contact_time
+      ignore_empty_value: true
   - date:
       field: axonius.compute.last_enrolled_date_utc
       tag: date_last_enrolled_date_utc_90ee9c3c
@@ -1070,6 +1108,12 @@ processors:
             tag: append_error_message_0527d8af
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: host.entity.lifecycle.last_activity
+      tag: set_host_entity_lifecycle_last_activity_from_compute_last_seen_agents_b16f9d25
+      copy_from: axonius.compute.last_seen_agents
+      ignore_empty_value: true
+      override: false
   - date:
       field: axonius.compute.last_unauth_run
       tag: date_last_unauth_run_ccb554db
@@ -1399,6 +1443,62 @@ processors:
           field: _ingest._value.mac
           tag: uppercase_network_interfaces_mac_10b5700e
           ignore_missing: true
+  - script:
+      tag: script_build_host_network_and_agent_fields_47c1a9e2
+      lang: painless
+      description: >-
+        Builds host.ip from network_interfaces ips and ips_v4, host.mac from the normalised
+        network_interfaces mac, and host.entity.relationships.depends_on.service.name from
+        agent_versions adapter_name, with deduplication.
+      if: ctx.axonius?.compute != null
+      source: |-
+        void addValue(Map container, String field, def value) {
+          if (value == null) return;
+          if (value instanceof List) {
+            for (def v : value) addValue(container, field, v);
+            return;
+          }
+          String s = value.toString();
+          if (s.isEmpty()) return;
+          def current = container[field];
+          if (current == null) {
+            container[field] = [s];
+          } else if (!current.contains(s)) {
+            current.add(s);
+          }
+        }
+        def src = ctx.axonius.compute;
+
+        Map addresses = [:];
+        if (src.network_interfaces instanceof List) {
+          for (def nic : src.network_interfaces) {
+            if (!(nic instanceof Map)) continue;
+            addValue(addresses, 'ip', nic.ips);
+            addValue(addresses, 'ip', nic.ips_v4);
+            addValue(addresses, 'mac', nic.mac);
+          }
+        }
+
+        Map agents = [:];
+        if (src.agent_versions instanceof List) {
+          for (def agent : src.agent_versions) {
+            if (agent instanceof Map) addValue(agents, 'name', agent.adapter_name);
+          }
+        }
+
+        if (addresses.isEmpty() && agents.isEmpty()) return;
+        if (!(ctx.host instanceof Map)) ctx.host = [:];
+        if (addresses.ip != null) ctx.host.ip = addresses.ip;
+        if (addresses.mac != null) ctx.host.mac = addresses.mac;
+        if (!agents.isEmpty()) {
+          if (!(ctx.host.entity instanceof Map)) ctx.host.entity = [:];
+          ctx.host.entity.relationships = ['depends_on': ['service': agents]];
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_e930d5b7
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.compute.normalization_reasons
       tag: foreach_normalization_reasons_calculated_time_a31e1264
@@ -1445,6 +1545,11 @@ processors:
       field: host.os.family
       tag: lowercase_host_os_family_8fdfcf7a
       ignore_missing: true
+  - set:
+      field: host.os.name
+      tag: set_host_os_name_from_compute_os_distribution_name_a7e2c4f1
+      copy_from: axonius.compute.os.distribution_name
+      ignore_empty_value: true
   - date:
       field: axonius.compute.os.end_of_life
       tag: date_os_end_of_life_f9f1ce9b
@@ -1547,8 +1652,8 @@ processors:
       if: ctx.axonius?.compute?.os?.is_windows_server != ''
   - set:
       field: host.os.version
-      tag: set_host_os_version_from_compute_os_latest_os_version_38d352c4
-      copy_from: axonius.compute.os.latest_os_version
+      tag: set_host_os_version_from_compute_os_os_dotted_92f4b6e8
+      copy_from: axonius.compute.os.os_dotted
       ignore_empty_value: true
   - convert:
       field: axonius.compute.os.major
@@ -1587,6 +1692,21 @@ processors:
       tag: set_host_os_full_from_compute_os_type_distribution_68176630
       copy_from: axonius.compute.os.type_distribution
       ignore_empty_value: true
+  - grok:
+      field: axonius.compute.os.os_str
+      tag: grok_host_os_platform_from_compute_os_os_str_1d6f8a3c
+      patterns:
+        - '^\s*%{NOTSPACE:host.os.platform}'
+      if: ctx.axonius?.compute?.os?.os_str instanceof String && ctx.axonius.compute.os.os_str.trim() != ''
+      on_failure:
+        - append:
+            tag: append_error_message_c3e95b07
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - lowercase:
+      field: host.os.platform
+      tag: lowercase_host_os_platform_5e8b2d47
+      ignore_missing: true
   - foreach:
       field: axonius.compute.os_ext_attributes
       tag: foreach_os_ext_attributes_is_enabled_9785c1c6
@@ -2612,11 +2732,6 @@ processors:
       field: event.url
       tag: set_event_url_from_compute_uri_ceb36a7e
       copy_from: axonius.compute.uri
-      ignore_empty_value: true
-  - set:
-      field: host.id
-      tag: set_host_id_from_compute_uuid_bdac7e56
-      copy_from: axonius.compute.uuid
       ignore_empty_value: true
   - append:
       field: related.hosts
