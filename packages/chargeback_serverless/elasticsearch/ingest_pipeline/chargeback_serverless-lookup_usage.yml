@@ -152,10 +152,13 @@ processors:
           ctx.project_type = 'elasticsearch';
         }
         if (ctx.datastream != null && ctx.datastream != '') {
-          def m = /^(?:partial-)?(?:restored-)?(?:shrink-.{4}-)?(?:downsample-[^-]+-)?\.ds-(.+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d+)?$/.matcher(ctx.datastream);
+          def dsPattern = /^(?:partial-)?(?:restored-)?(?:shrink-.{4}-)?(?:downsample-[^-]+-)?\.ds-(.+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d+)?$/;
+          def m = dsPattern.matcher(ctx.datastream);
           def isBackingIndex = m.matches();
           if (isBackingIndex) {
             ctx.datastream = m.group(1);
+          } else if (ctx.backing_index instanceof String && dsPattern.matcher(ctx.backing_index).matches()) {
+            isBackingIndex = true;
           }
           if (ctx.datastream.startsWith('.') || ctx.datastream == 'system' || (ctx.datastream.startsWith('serverless_') && (ctx.datastream.endsWith('_lookup') || ctx.datastream.contains('_lookup-')))) {
             ctx.datastream = 'system';
@@ -163,8 +166,10 @@ processors:
             ctx.ds_namespace = 'system';
             ctx.ds_dataset = 'system';
           } else {
+            def hasExplicitIndex = (ctx.ds_type == 'index' && !isBackingIndex);
+            def hasExplicitStreamType = (ctx.ds_type == 'logs' || ctx.ds_type == 'metrics' || ctx.ds_type == 'traces' || ctx.ds_type == 'synthetics' || ctx.ds_type == 'profiling');
             def parts = ctx.datastream.splitOnToken('-');
-            def isCanonicalStream = parts.length >= 3 && (
+            def isCanonicalStream = !hasExplicitIndex && parts.length >= 3 && (
               ((parts[0] == 'logs' || parts[0] == 'metrics' || parts[0] == 'traces') && parts[1].contains('.')) ||
               parts[0] == 'synthetics' ||
               parts[0] == 'profiling' ||
@@ -172,15 +177,33 @@ processors:
               ctx.datastream.startsWith('metrics-generic-') ||
               ctx.datastream.startsWith('traces-apm-')
             );
-            if (ctx.ds_type == null || ctx.ds_type == '' || ctx.ds_dataset == null || ctx.ds_dataset == '' || ctx.ds_namespace == null || ctx.ds_namespace == '' || (ctx.ds_type == 'index' && (isBackingIndex || isCanonicalStream))) {
-              if ((isBackingIndex || isCanonicalStream) && (parts[0] == 'logs' || parts[0] == 'metrics' || parts[0] == 'traces' || parts[0] == 'synthetics' || parts[0] == 'profiling') && parts.length >= 3) {
+            if (hasExplicitIndex) {
+              if (ctx.ds_dataset == null || ctx.ds_dataset == '') {
+                ctx.ds_dataset = ctx.datastream;
+              }
+              if (ctx.ds_namespace == null || ctx.ds_namespace == '') {
+                ctx.ds_namespace = 'default';
+              }
+            } else if (ctx.ds_type == null || ctx.ds_type == '' || ctx.ds_dataset == null || ctx.ds_dataset == '' || ctx.ds_namespace == null || ctx.ds_namespace == '' || (ctx.ds_type == 'index' && isBackingIndex)) {
+              if ((isBackingIndex || hasExplicitStreamType || isCanonicalStream) && (parts[0] == 'logs' || parts[0] == 'metrics' || parts[0] == 'traces' || parts[0] == 'synthetics' || parts[0] == 'profiling') && parts.length >= 3) {
                 ctx.ds_type = parts[0];
-                ctx.ds_dataset = parts[1];
-                def nsParts = new ArrayList();
-                for (int i = 2; i < parts.length; i++) {
-                  nsParts.add(parts[i]);
+                if (isBackingIndex || ctx.ds_dataset == null || ctx.ds_dataset == '') {
+                  ctx.ds_dataset = parts[1];
                 }
-                ctx.ds_namespace = String.join('-', nsParts);
+                if (isBackingIndex || ctx.ds_namespace == null || ctx.ds_namespace == '') {
+                  def nsParts = new ArrayList();
+                  for (int i = 2; i < parts.length; i++) {
+                    nsParts.add(parts[i]);
+                  }
+                  ctx.ds_namespace = String.join('-', nsParts);
+                }
+              } else if (hasExplicitStreamType) {
+                if (ctx.ds_dataset == null || ctx.ds_dataset == '') {
+                  ctx.ds_dataset = ctx.datastream;
+                }
+                if (ctx.ds_namespace == null || ctx.ds_namespace == '') {
+                  ctx.ds_namespace = 'default';
+                }
               } else {
                 ctx.ds_type = 'index';
                 ctx.ds_dataset = ctx.datastream;

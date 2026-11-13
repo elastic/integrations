@@ -38,6 +38,15 @@ stdout '^stale_or_unauthorized_harvest$'
 exec jq -r '.[0].unit' alert_rows.json
 stdout '^ECU$'
 
+exec jq -r '.docs[0].doc._source | "\(.ds_type)|\(.ds_dataset)|\(.ds_namespace)"' lookup_usage_sim.json
+stdout '^index\|logs-nginx\.access-prod-eu-west\|default$'
+
+exec jq -r '.docs[1].doc._source | "\(.ds_type)|\(.ds_dataset)|\(.ds_namespace)"' lookup_usage_sim.json
+stdout '^logs\|nginx\.access\|prod-eu-west$'
+
+exec jq -r '.docs[2].doc._source | "\(.datastream)|\(.ds_type)|\(.ds_dataset)|\(.ds_namespace)"' lookup_usage_sim.json
+stdout '^metrics-system\.process-default\|metrics\|system\.process\|default$'
+
 -- run_regression.sh --
 #!/bin/sh
 set -eu
@@ -180,3 +189,45 @@ jq '
   .columns as $cols |
   [ .values[] | [ range(0; ($cols | length)) as $i | { ($cols[$i].name): .[$i] } ] | add ]
 ' raw_query_resp.json > alert_rows.json
+
+jq -n \
+  --arg ts "${BILL_DAY}" \
+  '{
+    "docs": [
+      {
+        "_source": {
+          "@timestamp": $ts,
+          "project_id": "proj-healthy",
+          "datastream": "logs-nginx.access-prod-eu-west",
+          "latest_currency": {
+            "ds_type": "index",
+            "ds_dataset": "logs-nginx.access-prod-eu-west",
+            "ds_namespace": "default"
+          }
+        }
+      },
+      {
+        "_source": {
+          "@timestamp": $ts,
+          "project_id": "proj-healthy",
+          "datastream": "logs-nginx.access-prod-eu-west",
+          "latest_currency": {
+            "project_name": "Healthy Renamed ES"
+          }
+        }
+      },
+      {
+        "_source": {
+          "@timestamp": $ts,
+          "project_id": "proj-healthy",
+          "datastream": "downsample-10m-.ds-metrics-system.process-default-2026.11.10-000001",
+          "latest_currency": {
+            "ds_type": "index",
+            "ds_dataset": "downsample-10m-.ds-metrics-system.process-default-2026.11.10-000001",
+            "ds_namespace": "default"
+          }
+        }
+      }
+    ]
+  }' | es_curl -X POST "${ES_HOST}/_ingest/pipeline/${USAGE_PIPELINE}/_simulate" \
+  -H 'Content-Type: application/json' -d @- > lookup_usage_sim.json
