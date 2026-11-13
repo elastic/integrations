@@ -1,0 +1,109 @@
+# Verify end-to-end delivery of both parent incidents and routed child alerts
+# in bitdefender.incident_alert within the configured namespace.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} bitdefender-incident-script-mock
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# Verify both parent incidents land in the policy's bitdefender.incident stream with normalized risk_score and severity.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 10s -timeout 3m ${DATA_STREAM_NAME}
+cp stdout parent_docs.json
+exec jq -r '[.hits.hits[]._source["event.id"]] | sort | join(",")' parent_docs.json
+stdout '^65f04c2e1234567890abc00c,65f04c2e1234567890abc00e$'
+exec jq -r '[.hits.hits[]._source | {id: .["event.id"], risk: .["event.risk_score"], sev: .["event.severity"]}] | sort_by(.id) | map("\(.id):\(.risk):\(.sev)") | join(",")' parent_docs.json
+stdout '^65f04c2e1234567890abc00c:55(\.0)?:73,65f04c2e1234567890abc00e:90(\.0)?:99$'
+exec jq '[.hits.hits[]._source | to_entries[] | select(.key | startswith("bitdefender.incident_alert") or startswith("routing"))] | length' parent_docs.json
+stdout '^0$'
+exec jq -r '.hits.hits[0]._source["data_stream.namespace"]' parent_docs.json
+cp stdout expected_ns.txt
+
+# Verify both embedded child alerts are routed to bitdefender.incident_alert in the exact same namespace.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 10s -timeout 3m logs-bitdefender.incident_alert-*
+cp stdout alert_docs.json
+exec jq -r --rawfile ns expected_ns.txt '($ns | sub("\n$"; "")) as $target_ns | [.hits.hits[]._source | select(.["data_stream.namespace"] == $target_ns) | .["event.id"]] | sort | join(",")' alert_docs.json
+stdout '^75a1b2c3d4e5f67890abc001,75a1b2c3d4e5f67890abc002$'
+exec jq -r --rawfile ns expected_ns.txt '($ns | sub("\n$"; "")) as $target_ns | [.hits.hits[]._source | select(.["data_stream.namespace"] == $target_ns) | {id: .["event.id"], parent: .["bitdefender.incident_alert.incident.incidentId"], ds: .["data_stream.dataset"], risk: .["event.risk_score"], sev: .["event.severity"]}] | sort_by(.id) | map("\(.id):\(.parent):\(.ds):\(.risk):\(.sev)") | join(",")' alert_docs.json
+stdout '^75a1b2c3d4e5f67890abc001:65f04c2e1234567890abc00c:bitdefender.incident_alert:55(\.0)?:73,75a1b2c3d4e5f67890abc002:65f04c2e1234567890abc00e:bitdefender.incident_alert:90(\.0)?:99$'
+exec jq -r --rawfile ns expected_ns.txt '($ns | sub("\n$"; "")) as $target_ns | .hits.hits[]._source | select(.["data_stream.namespace"] == $target_ns and .["event.id"] == "75a1b2c3d4e5f67890abc001") | "\(.["rule.name"])|\(.["process.name"])|\(.["registry.path"])"' alert_docs.json
+stdout '^Synthetic Process Detection\|example.exe\|HKLM\\Software\\Example$'
+exec jq -r --rawfile ns expected_ns.txt '($ns | sub("\n$"; "")) as $target_ns | .hits.hits[]._source | select(.["data_stream.namespace"] == $target_ns and .["event.id"] == "75a1b2c3d4e5f67890abc002") | "\(.["rule.name"])|\(.["threat.tactic.id"][0])"' alert_docs.json
+stdout '^SyntheticCloudActivity\|TA0002$'
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down bitdefender-incident-script-mock
+
+-- test_config.yaml --
+input: cel
+vars:
+  public_api_url: http://bitdefender-incident-script-mock:8080
+  api_key: test-api-key
+  auth_type: x_api_key
+  company_id: 5e4d3c2b1a0987654321fedc
+data_stream:
+  vars:
+    interval: 30s
+    initial_interval: 1h
+    collection_delay: 0s
+    page_size: 100
+    http_client_timeout: 30s
+    preserve_original_event: true
+-- bitdefender-incident-script-mock/docker-compose.yml --
+services:
+  bitdefender-incident-script-mock:
+    image: docker.elastic.co/observability/stream:v0.22.0
+    hostname: bitdefender-incident-script-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+-- bitdefender-incident-script-mock/config.yml --
+rules:
+  - path: /v1.2/jsonrpc/incidents
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-api-key"
+    request_body: /.*"method":"getIncidentsByIds".*"ids":\["65f04c2e1234567890abc00c","65f04c2e1234567890abc00e"\].*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"incident-details","jsonrpc":"2.0","result":[{"incidentId":"65f04c2e1234567890abc00c","incidentNumber":112,"status":"open","mainAction":"reported","created":"2026-11-01T12:00:00Z","lastUpdated":"2026-11-01T12:01:00Z","lastProcessed":"2026-11-01T12:02:00Z","lastIncidentChange":"2026-11-01T12:03:00Z","severityScore":55,"incidentLink":"https://console.example.com/incidents/65f04c2e1234567890abc00c","priority":"medium","attackTypes":["Persistence"],"company":{"id":"5e4d3c2b1a0987654321fedc","name":"Example Corp"},"incidentType":"incident","details":{"detectionName":"Synthetic persistence activity","computerId":"5d4c3b2a190876543210fe0c","computerName":"example-host-12","computerFqdn":"example-host-12.example.local","computerIp":"192.0.2.12","computerMacAddresses":["00:00:5E:00:53:12"],"alerts":[{"id":"75a1b2c3d4e5f67890abc001","name":"Synthetic Process Detection","date":"2026-11-01T11:59:00Z","detectedBy":{"name":"Behavior Analyzer","class":"endpoint_detection"},"resources":[{"type":"process","details":{"pid":4242,"processPath":"C:\\Windows\\System32\\example.exe","parentPid":1024,"parentProcessPath":"C:\\Windows\\System32\\services.exe","processIntegrityLevel":"medium"}},{"type":"registry","details":{"registryKey":"HKLM\\Software\\Example","registryValue":"SyntheticValue","registryData":"enabled","registryType":"REG_SZ","registryAccessType":"WRITE"}}],"extra":[{"key":"classification","value":"synthetic"}]}],"nodes":[]},"notes":[]},{"incidentId":"65f04c2e1234567890abc00e","incidentNumber":114,"status":"closed","mainAction":"blocked","created":"2026-11-01T14:00:00Z","lastUpdated":"2026-11-01T14:01:00Z","lastProcessed":"2026-11-01T14:02:00Z","lastIncidentChange":"2026-11-01T14:03:00Z","severityScore":90,"incidentLink":"https://console.example.com/incidents/65f04c2e1234567890abc00e","priority":"critical","attackTypes":["Malware"],"company":{"id":"5e4d3c2b1a0987654321fedc","name":"Example Corp"},"incidentType":"extendedIncident","details":{"killChainPhases":["execution"],"lastKillChainPhase":"execution","alerts":[{"id":"75a1b2c3d4e5f67890abc002","name":"SyntheticCloudActivity","date":"2026-11-01T13:59:00Z","sensors":["azure","XDR"],"tactic":"execution","transitions":[{"from":"85a1b2c3d4e5f67890abc001","to":"85a1b2c3d4e5f67890abc002","resources":[{"name":"Synthetic automation policy","type":"policy","details":{"id":"95a1b2c3d4e5f67890abc001","name":"Example Policy","resourcePolicyType":"automation"}}]}]}],"nodes":[],"narrative":[["Synthetic organization incident"]],"reasoning":[["Synthetic test reasoning"]]},"notes":[]}]}'
+  - path: /v1.2/jsonrpc/incidents
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-api-key"
+    request_body: /.*"method":"getIncidentsList".*"page":1,.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ if eq .req_num 1 }}
+          {"id":"incident-list","jsonrpc":"2.0","result":{"total":2,"page":1,"perPage":100,"pagesCount":1,"items":[{"incidentId":"65f04c2e1234567890abc00c","lastIncidentChange":"2026-11-01T12:03:00Z"},{"incidentId":"65f04c2e1234567890abc00e","lastIncidentChange":"2026-11-01T14:03:00Z"}]}}
+          {{ else }}
+          {"id":"incident-list","jsonrpc":"2.0","result":{"total":0,"page":1,"perPage":100,"pagesCount":1,"items":[]}}
+          {{ end }}
