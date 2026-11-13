@@ -1,53 +1,136 @@
-# Syslog Router Integration
+# Syslog Router Integration for Elastic
 
-The Syslog Router integration can be used on a stream of syslog events to
-identify which integrations they belong to and forward to the appropriate
-data stream.
+## Overview
 
-## Data streams
+The Syslog router integration for Elastic enables you to route incoming syslog events to the correct Elastic integration data stream using regex pattern matching on the `message` field. It acts as a centralized traffic controller for syslog messages, allowing a single Elastic Agent to receive a mixed stream of logs from multiple network devices and forward each event to its appropriate integration-specific data stream for parsing.
 
-Syslog events will be routed to the data stream provided in the pattern
-definition. In the event a match cannot be made, an event will be placed
-into the `log` data stream. See the **Setup** section in this document for
-further explanation on how to configure data streams.
+### Compatibility
 
-## Requirements
+This integration is compatible with Elastic Stack version 8.14.3 or later.
 
-Elasticsearch for storing and searching your data and Kibana for visualizing
-and managing it. We recommend using our hosted Elasticsearch Service on
-Elastic Cloud, or self-manage the Elastic Stack on your own hardware.
-Additionally, to route events to other data streams, the corresponding
-Elastic Integration assets will need to be installed.
+This integration supports routing events to the following 22 pre-configured integrations out of the box. They're listed here alphabetically, but the reroute configuration evaluates them in a different order.
 
-## Setup
+| Integration                     | Target dataset                   | Regex pattern summary                                   |
+| ------------------------------- | -------------------------------- | ------------------------------------------------------- |
+| Arista NG Firewall              | `arista_ngfw.log`                | `class com\.untangle\.`                                 |
+| Check Point                     | `checkpoint.firewall`            | `CheckPoint [0-9]+ -` (with surrounding spaces)         |
+| Cisco ASA                       | `cisco_asa.log`                  | `%ASA-`                                                 |
+| Cisco FTD                       | `cisco_ftd.log`                  | `%FTD-`                                                 |
+| Cisco IOS                       | `cisco_ios.log`                  | `%\S+-\d-\S+\s?:`                                       |
+| Cisco ISE                       | `cisco_ise.log`                  | `CISE_+`                                                |
+| Cisco Secure Email Gateway      | `cisco_secure_email_gateway.log` | `(?:(?:amp\|antispam\|...):\s+(?:CEF\|Critical\|...):)` |
+| Citrix WAF (CEF only)           | `citrix_waf.log`                 | `CEF:0\|Citrix\|NetScaler`                              |
+| Fortinet FortiEDR               | `fortinet_fortiedr.log`          | `enSilo` (with surrounding spaces)                      |
+| Fortinet FortiGate              | `fortinet_fortigate.log`         | `devid="?FG`                                            |
+| Fortinet FortiMail              | `fortinet_fortimail.log`         | `device_id="?FE`                                        |
+| Fortinet FortiManager           | `fortinet_fortimanager.log`      | `device_id="?FMG`                                       |
+| Fortinet FortiProxy             | `fortinet_fortiproxy.log`        | `devid="?FPX`                                           |
+| Imperva SecureSphere (CEF only) | `imperva.securesphere`           | `CEF:0\|Imperva Inc.\|SecureSphere`                     |
+| Iptables                        | `iptables.log`                   | `IN=`                                                   |
+| Juniper SRX                     | `juniper_srx.log`                | `RT_UTM -` or `RT_FLOW -`                               |
+| Palo Alto Next-Gen Firewall     | `panw.panos`                     | `1,[0-9]{4}/[0-9]{2}/[0-9]{2}`                          |
+| QNAP NAS                        | `qnap_nas.log`                   | `qulogd\[[0-9]+\]:`                                     |
+| Snort                           | `snort.log`                      | `\[[0-9]:[0-9]+:[0-9]\]`                                |
+| Sonicwall Firewall              | `sonicwall_firewall.log`         | `<[0-9]+>  id=firewall sn=[0-9a-zA-Z]+`                 |
+| Sophos XG                       | `sophos.xg`                      | `device="SFW"`                                          |
+| Stormshield                     | `stormshield.log`                | `id=firewall time="`                                    |
 
-Install the relevant integration assets in Kibana.
+Due to subtle differences in how devices emit syslog events, the default patterns might not work in all cases. Some integrations that support syslog are not listed here because their patterns would be too complex or could overlap with other integrations, which might cause false matches. You might need to create custom patterns for those cases.
 
-1. In order for the forwarded event to be properly handled, the target integration's assets (data stream, ingest pipeline, index template, etc.) need to be installed. In Kibana, navigate to **Management** > **Integrations** in the sidebar.
+### How it works
 
-2. Find the relevant integration(s) by searching or browsing the catalog. For example, the Cisco ASA integration. 
+The integration receives syslog events through TCP, UDP, or filestream inputs. You deploy Elastic Agent on a host that is configured as a syslog receiver or has access to the log files. The integration evaluates each incoming event against an ordered list of regex patterns defined in the reroute configuration. When a pattern matches the `message` field, the integration sets the `_conf.dataset` field to the target integration's data stream name (for example, `cisco_asa.log`). The integration's routing rules then reroute the event to that target data stream, where the target integration's ingest pipeline handles the actual parsing.
 
-![Cisco ASA Integration](../img/catalog-cisco-asa.png)
+Events that do not match any pattern remain in the `syslog_router.log` data stream. We recommend you create a custom integration (for example, with [Automatic Import](https://www.elastic.co/docs/solutions/security/get-started/automatic-import)) and route to it if you need to handle unmatched events in production.
 
-3. Navigate to the **Settings** tab and click **Install Cisco ASA assets**. Confirm by clicking **Install Cisco ASA** in the popup.
+## What data does this integration collect?
 
-![Install Cisco ASA assets](../img/install-assets.png)
+The Syslog Router integration collects log messages of the following types:
 
-## Configuration
+- Syslog events (TCP): You can listen for incoming TCP syslog connections on a configurable address and port (default: `localhost:9514`).
+- Syslog events (UDP): You can listen for incoming UDP syslog packets on a configurable address and port (default: `localhost:9514`).
+- Syslog events (Filestream): You can monitor local log files (default: `/var/log/syslog.log`). This input is turned off by default.
 
-### Overview
+This integration acts as a transit layer that collects raw syslog events and routes them to other Elastic integrations for parsing. Events that are not matched and rerouted are processed by a minimal ingest pipeline that sets `ecs.version` and handles errors. The actual parsing of routed events is performed by the target integration's ingest pipeline.
 
-The integration comes preconfigured with a number of pattern definitions. The
-pattern definitions are used in the order given. Care must be taken to ensure
-the patterns are executed in the correct order. Regular expressions which are
-more relaxed and could potentially match against multiple integrations should be
-run last and stricter patterns should be run first. The next priority should be
-given to integrations which will see the most traffic.
+The **Preserve original event** setting only adds the `preserve_original_event` tag to each event. The target integration's ingest pipeline then stores the raw message in `event.original`. Events that remain in `syslog_router.log` don't get `event.original`.
 
-Pattern definitions may be reordered by moving the entire `if/then` block up or
-down in the list. For example, moving **Imperva SecureSphere** above **Cisco ASA**:
+The routing mechanism works as follows:
 
-**Before:**
+1. Each event is matched against ordered regex patterns on the `message` field.
+2. When a match is found, the `_conf.dataset` field is set to the target integration's data stream (for example, `cisco_asa.log` or `fortinet_fortigate.log`).
+3. The `routing_rules.yml` configuration then reroutes the event to the target data stream defined in `_conf.dataset`.
+
+Based on your routing configuration, data is directed toward specialized integrations including:
+
+- Network security logs: Firewall traffic and security policy events (for example, `cisco_asa.log`, `panw.panos`, `fortinet_fortigate.log`, or `arista_ngfw.log`).
+- Web application security logs: Web application firewall events (for example, `citrix_waf.log`).
+- Authentication and identity logs: Identity services and access logs (for example, `cisco_ise.log`).
+- Intrusion detection alerts: IDS/IPS signatures (for example, `snort.log`).
+
+### Supported use cases
+
+You can use this integration for the following use cases:
+
+- Centralized syslog ingestion: Receive syslog from many different network devices on a single port and automatically route each event to its corresponding integration for parsing.
+- Multi-vendor firewall environments: Consolidate syslog collection through a single Elastic Agent policy rather than deploying separate inputs per vendor.
+- Rapid onboarding of syslog sources: Add support for new device types by adding a single `if/then` block with a regex pattern, without needing to deploy additional agents or inputs.
+
+## What do I need to use this integration?
+
+The Syslog Router is an Elastic-built tool and not a third-party vendor product, so you don't have vendor-side prerequisites. To use this integration, you'll need the following:
+
+- An Elastic Agent installed and enrolled in a Fleet policy on a host that can receive syslog traffic from network devices.
+- Target integration assets for each specific data stream installed in Kibana so that events parse correctly (for example, you'll need to install the Cisco ASA integration assets before routing Cisco ASA syslog events).
+- Network connectivity that allows syslog-sending devices to reach the Elastic Agent host on the configured listen port, which defaults to `9514` for TCP and UDP.
+
+## How do I deploy this integration?
+
+### Agent-based deployment
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html). You can install only one Elastic Agent per host.
+
+Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed using the integration's ingest pipelines.
+
+### Set up steps in Syslog Router
+
+This integration acts as a central hub. You first need to prepare the target integrations and then configure your network devices to point to the host running the Elastic Agent.
+
+#### Install target integration assets
+
+Before you add the Syslog Router, you need to install the assets for each integration you want to route data to:
+
+1. In Kibana, navigate to **Management → Integrations**.
+2. Find the relevant integration by searching or browsing the catalog. For example, search for "Cisco ASA".
+   ![Cisco ASA Integration](../img/catalog-cisco-asa.png)
+3. Select the integration, navigate to the **Settings** tab, and click **Install \<Integration Name\> assets**. Confirm the installation in the popup.
+   ![Install Cisco ASA assets](../img/install-assets.png)
+4. Repeat these steps for every integration whose syslog events you expect to receive and route.
+
+#### Configure syslog on network devices
+
+Configure each network device to forward its syslog stream to the Elastic Agent host on the port you plan to use (default is `9514`). Refer to each vendor's documentation for detailed syslog forwarding instructions.
+
+### Set up steps in Kibana
+
+After your devices are ready to send data, you can set up the integration in Kibana:
+
+1. In Kibana, navigate to **Management → Integrations**.
+2. Search for **Syslog Router** and select it.
+3. Click **Add Syslog Router**.
+4. Enable and configure the inputs you need:
+    - **TCP input**: Set the **Listen Address** and **Listen Port**. The default `localhost:9514` only accepts connections from the agent host, so use the address of the interface that receives syslog from your devices, or `0.0.0.0` to listen on all interfaces. Anyone who can reach the port can send events, so restrict it to your devices, for example with a host firewall. You can also configure SSL settings if your devices support encrypted syslog.
+    - **UDP input**: Set the **Listen Address** and **Listen Port**. The same `localhost:9514` default applies.
+    - **Filestream input**: Specify the **Paths** to the syslog files on the host if the agent is reading from local logs.
+5. Review the **Reroute configuration** section. You'll find a list of patterns used to match incoming logs to specific integrations. You can modify these YAML patterns to match the specific log formats in your environment. The Sophos XG block contains example values for the firewall host name (`_conf.default`) and the serial number to host name mappings (`_conf.mappings`). Replace them with your own devices or remove them.
+6. Select the **Elastic Agent policy** where you want to deploy the integration.
+7. Click **Save and continue**.
+
+### Configuring routing patterns
+
+#### Pattern definition
+
+The integration uses [Beats conditionals and processors](https://www.elastic.co/guide/en/beats/filebeat/current/defining-processors.html) to match incoming syslog messages to target data streams. Pattern definitions are evaluated in the order they appear. Each pattern is an `if/then` block:
 
 ```yaml
 - if:
@@ -56,55 +139,23 @@ down in the list. For example, moving **Imperva SecureSphere** above **Cisco ASA
       - regexp.message: "%ASA-"
   then:
     - add_fields:
-        target: ''
+        target: ""
         fields:
           _conf.dataset: "cisco_asa.log"
           _conf.tz_offset: "UTC"
-          _temp_.internal_zones: ['trust']
-          _temp_.external_zones: ['untrust']
-- if:
-    and:
-      - not.has_fields: _conf.dataset
-      - regexp.message: "CEF:0\\|Imperva Inc.\\|SecureSphere"
-  then:
-    - add_fields:
-        target: ''
-        fields:
-          _conf.dataset: "imperva.securesphere"
-    - decode_cef:
-        field: message
+          _temp_.internal_zones: ["trust"]
+          _temp_.external_zones: ["untrust"]
 ```
 
-**After:**
+The `not.has_fields: _conf.dataset` condition ensures only the first matching pattern sets the routing target.
 
-```yaml
-- if:
-    and:
-      - not.has_fields: _conf.dataset
-      - regexp.message: "CEF:0\\|Imperva Inc.\\|SecureSphere"
-  then:
-    - add_fields:
-        target: ''
-        fields:
-          _conf.dataset: "imperva.securesphere"
-    - decode_cef:
-        field: message
-- if:
-    and:
-      - not.has_fields: _conf.dataset
-      - regexp.message: "%ASA-"
-  then:
-    - add_fields:
-        target: ''
-        fields:
-          _conf.dataset: "cisco_asa.log"
-          _conf.tz_offset: "UTC"
-          _temp_.internal_zones: ['trust']
-          _temp_.external_zones: ['untrust']
-```
+#### Reordering patterns
 
-Individual pattern definitions may be disabled by removing the definition
-entirely or by inserting comment characters (`#`) in front of the appropriate lines:
+Move the entire `if/then` block up or down in the YAML list. Place stricter patterns before more relaxed ones, and high-traffic integrations near the top.
+
+#### Disabling a pattern
+
+Remove the block entirely, or comment it out with `#`:
 
 ```yaml
 # - if:
@@ -121,88 +172,156 @@ entirely or by inserting comment characters (`#`) in front of the appropriate li
 #           _temp_.external_zones: ['untrust']
 ```
 
-### Adding New Patterns
+#### Adding a new pattern
 
-Example configuration:
+At minimum, an `add_fields` processor must set `_conf.dataset` to the target integration's dataset name (`integration.data_stream`):
 
 ```yaml
 - if:
     and:
       - not.has_fields: _conf.dataset
-      - regexp.message: "CEF:0\\|Imperva Inc.\\|SecureSphere"
+      - regexp.message: "MY_PATTERN"
   then:
     - add_fields:
-        target: ''
+        target: ""
         fields:
-          _conf.dataset: "imperva.securesphere"
-    - decode_cef:
-        field: message
+          _conf.dataset: "my_integration.my_data_stream"
 ```
 
-At its core, the Syslog Router integration utilizes the [built-in conditionals and processors](https://www.elastic.co/guide/en/beats/filebeat/current/defining-processors.html)
-provided within Beats. While there are certain requirements that need to be
-maintained, additional conditions and processors may be added, if required.
-
-The top level of each configuration contains an `if`/`else` condition. In the
-`if` statement, an `and` combines two conditions. The first ensures that another
-match has not already occurred, while the second condition is a `regex`, or regular
-expression, which performs the actual match. If the regular expression
-matches the `message` field, then the processors in the `then` statement of the
-configuration will run.
-
-If multiple patterns are required, they may be combined with an `or` condition:
+Multiple regex patterns can be combined with `or`:
 
 ```yaml
 - if:
     and:
       - not.has_fields: _conf.dataset
       - or:
-        - regexp.message: <PATTERN_1>
-        - regexp.message: <PATTERN_2>
+          - regexp.message: <PATTERN_1>
+          - regexp.message: <PATTERN_2>
 ```
 
-In the `then` statement, a list of processors can be given. At minimum, an 
-`add_fields` processor needs to be added with the following fields:
+Additional processors such as `decode_cef` or `syslog` can be added in the `then` block if the target integration requires light pre-processing. However, for any complex processing of custom logs, we recommend creating a separate integration and routing to it.
 
-**Required fields:**
+### Validation
 
-- `_conf.dataset`: The dataset (`integration.data_stream`) to forward to. This field is used by the routing rules in the integration to route documents to the correct pipeline.
+To ensure your deployment is working correctly, follow these steps:
 
-Additional processors, such as `decode_cef` or `syslog`, may be provided if
-additional processing is required.
+1. Verify the agent is receiving data by checking the Elastic Agent logs for the configured input (TCP/UDP) to confirm it is listening. If you have the Cisco ASA integration installed, you can use this test message, sent from the agent host to itself, to confirm the port is open:
 
-## Compatibility
+   ```bash
+   echo 'Oct 10 2018 12:34:56 localhost CiscoASA[999]: %ASA-4-106023: Deny tcp src outside:192.168.19.254/80 dst inside:172.31.98.44/8277 by access-group "inbound" [0x0, 0x0]' | nc localhost 9514
+   ```
 
-Out of the box, the Syslog Router integration supports matching events from a
-number of integrations. Assets from these integrations must still be installed
-for events to be properly indexed (see **Setup** above).
+2. In Kibana, navigate to **Analytics → Discover**.
+3. Select the `logs-*` data view. If you used the sample message, set the time range to include October 10, 2018, the date in that message.
+4. Search for routed events using KQL. For example, to check for routed Cisco ASA logs, use: `data_stream.dataset : "cisco_asa.log"`.
+5. Verify that the events are correctly parsed and that fields from the target integration are present.
+6. To find events that didn't match any routing pattern, search for: `data_stream.dataset : "syslog_router.log"`.
+7. Examine the `message` field of these unmatched events to determine if you need to add or adjust your reroute patterns.
 
-**DISCLAIMER**: Due to subtle differences in how devices can emit syslog events,
-the patterns provided by default with the Syslog Router integration may not work
-in all cases. Some integrations may not be listed here, even though they support
-syslog events. In these cases, patterns would either be too complex or could
-overlap with patterns from other integrations, resulting in negative impacts on
-performance or accuracy in matching events to integrations. Custom patterns will
-need to be created for these cases.
+## Troubleshooting
 
-- Arista NG Firewall
-- Check Point
-- Cisco ASA
-- Cisco FTD
-- Cisco ISE
-- Cisco Secure Email Gateway
-- Citrix WAF (CEF format only)
-- Fortinet FortiEDR
-- Fortinet FortiGate
-- Fortinet FortiMail
-- Fortinet FortiManager
-- Fortinet FortiProxy
-- Imperva SecureSphere (CEF format only)
-- Iptables
-- Juniper SRX
-- Palo Alto Next-Gen Firewall
-- QNAP NAS
-- Snort
-- Sonicwall Firewall
-- Sophos XG
-- Stormshield
+For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
+
+### Common configuration issues
+
+**Issue**: The Elastic Agent fails to start the listener
+
+- **Solution**: Verify the configured port, for example `9514`, isn't already in use by another syslog service. On Linux, use `ss -tulpn | grep <port>` (replace `<port>` with your actual port) to identify conflicts.
+
+**Issue**: Events are not being routed to the correct integration
+
+- **Solution**: Verify that the regex pattern matches the syslog message format from your device. Test the regex against a sample message. Ensure the pattern block is not below a more relaxed pattern that matches first.
+
+**Issue**: Events appear in `syslog_router.log` instead of the target data stream
+
+- **Solution**: The event did not match any pattern. Check the `message` field against the configured regex patterns. You might need to add a custom pattern for your device's syslog format.
+
+**Issue**: Routed events are not parsed correctly
+
+- **Solution**: Ensure the target integration's assets are installed in Kibana. The Syslog Router only routes events; it does not parse them. The target integration's ingest pipeline handles parsing.
+
+### Ingestion errors
+
+**Issue**: `error.message` is set on routed events
+
+- **Solution**: The target integration's ingest pipeline encountered a parsing error. Check that the syslog format matches what the target integration expects. Some integrations require specific syslog formats (for example, Citrix WAF requires CEF format).
+
+**Issue**: High volume of unmatched events
+
+- **Solution**: Review the unmatched events to identify their source. Add custom routing patterns for device types not covered by the default patterns.
+
+## Performance and scaling
+
+For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
+
+To optimize the performance and scaling of the Syslog Router, follow these best practices:
+
+- Pattern ordering: Place stricter and more specific patterns before broader ones to avoid false matches. You'll also get better performance if you place your highest-traffic integrations at the top of your configuration to reduce the number of regex evaluations performed for each event.
+- Regex complexity: Keep your patterns as straightforward as possible. Avoid using broad patterns like `.*` because they can cause excessive backtracking and increase CPU usage on the Elastic Agent host.
+- Transport selection: Use UDP for higher throughput with lower overhead, and TCP when you need more reliable delivery. When you use TCP, you can tune advanced settings like `max_connections` and `max_message_size` in the custom TCP options to match your environment's requirements.
+- Agent scaling: For high-throughput environments, you can deploy multiple Elastic Agents behind a network load balancer to distribute the ingestion load across multiple instances.
+- Routing efficiency: This integration routes all events through the `syslog_router.log` data stream. Because the rerouting rules happen at the Elasticsearch level rather than the agent level, you won't experience data duplication at rest, which keeps your storage and processing usage efficient.
+- Input buffers: When you use the UDP input in high-traffic environments, you can increase the `read_buffer` size in the custom UDP options to help prevent packet loss during bursts of network traffic.
+
+## Reference
+
+### Input settings
+
+Each input has the following settings. Fleet shows them when you add the integration.
+
+#### TCP input
+
+| Setting                     | Variable                  | Default                        | Description                                                                                                                                      |
+| --------------------------- | ------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Listen Address**          | `listen_address`          | `localhost`                    | Bind address for TCP connections. Set to `0.0.0.0` for all interfaces.                                                                           |
+| **Listen Port**             | `listen_port`             | `9514`                         | TCP port number to listen on.                                                                                                                    |
+| **Preserve original event** | `preserve_original_event` | `false`                        | Adds the `preserve_original_event` tag; the target integration stores `event.original`.                                                          |
+| **Reroute configuration**   | `reroute_config`          | _(22 pre-configured patterns)_ | YAML list of `if/then` blocks for pattern matching.                                                                                              |
+| **SSL Configuration**       | `ssl`                     | _(turned off)_                 | SSL/TLS settings. Refer to [SSL documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config). Enter the options without the `ssl.` prefix, for example `certificate: "/path/to/cert.pem"`. |
+| **Custom TCP Options**      | `tcp_options`             | _(commented out)_              | Additional TCP input options. Check [TCP input docs](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-tcp.html).              |
+| **Tags**                    | `tags`                    | `['forwarded']`                | Custom tags for filtering.                                                                                                                       |
+
+#### UDP input
+
+| Setting                     | Variable                  | Default                        | Description                                                                                                                         |
+| --------------------------- | ------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **Listen Address**          | `listen_host`             | `localhost`                    | Bind address for UDP connections. Set to `0.0.0.0` for all interfaces.                                                              |
+| **Listen Port**             | `listen_port`             | `9514`                         | UDP port number to listen on.                                                                                                       |
+| **Preserve original event** | `preserve_original_event` | `false`                        | Adds the `preserve_original_event` tag; the target integration stores `event.original`.                                             |
+| **Reroute configuration**   | `reroute_config`          | _(22 pre-configured patterns)_ | YAML list of `if/then` blocks for pattern matching.                                                                                 |
+| **Custom UDP Options**      | `udp_options`             | _(commented out)_              | Additional UDP input options. Check [UDP input docs](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-udp.html). |
+| **Tags**                    | `tags`                    | `['forwarded']`                | Custom tags for filtering.                                                                                                          |
+
+#### Filestream input (turned off by default)
+
+| Setting                       | Variable                  | Default                        | Description                                                                                                                                        |
+| ----------------------------- | ------------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Paths**                     | `paths`                   | `['/var/log/syslog.log']`      | File paths to monitor.                                                                                                                             |
+| **Preserve original event**   | `preserve_original_event` | `false`                        | Adds the `preserve_original_event` tag; the target integration stores `event.original`.                                                            |
+| **Reroute configuration**     | `reroute_config`          | _(22 pre-configured patterns)_ | YAML list of `if/then` blocks for pattern matching.                                                                                                |
+| **Custom Filestream Options** | `filestream_options`      | —                              | Additional filestream options. Check [filestream input docs](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream.html). |
+| **Tags**                      | `tags`                    | `['forwarded']`                | Custom tags for filtering.                                                                                                                         |
+
+### Inputs used
+
+{{ inputDocs }}
+
+### Vendor documentation links
+
+The following documentation provides information on the configuration options for the inputs and processors used by this integration:
+
+- [Beats Processors and Conditionals](https://www.elastic.co/guide/en/beats/filebeat/current/defining-processors.html)
+- [TCP input configuration](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-tcp.html)
+- [UDP input configuration](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-udp.html)
+- [Filestream input configuration](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream.html)
+- [SSL configuration](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config)
+
+### Data streams
+
+#### log
+
+The `log` data stream provides events from syslog of the following types: system logs, application logs, and other syslog-formatted messages. It's the transit data stream for all syslog events collected by the integration. You use pattern matching configuration to route these events from this data stream to their target integration data stream.
+
+##### log fields
+
+{{ fields "log" }}
