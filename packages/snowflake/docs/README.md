@@ -10,11 +10,6 @@ The Snowflake integration for Elastic collects security telemetry from [Snowflak
 
 This integration queries Snowflake `ACCOUNT_USAGE` historical views and the account event table through SQL API v2 (`/api/v2/statements`). Those views retain about one year of data and are delayed (about 45 minutes to 3 hours depending on the view). It is compatible with Snowflake accounts on AWS, Azure, and Google Cloud, including PrivateLink hosts. China region hosts (`.snowflakecomputing.cn`) are supported when the account URL is set accordingly. The `access_history` data stream requires Snowflake Enterprise Edition or later.
 
-### How it works
-
-Elastic Agent submits SQL statements to `POST /api/v2/statements` and pages result partitions. If Snowflake returns HTTP 202, the agent polls the statement handle until results are ready. Each data stream queries one `ACCOUNT_USAGE` view or event table and advances a timestamp watermark with lookback to cover view latency. When a statement returns a full `batch_size` page, the next request continues from the last returned `ORDER BY` key without the lag overlap until the backlog is drained.
-Grants keep separate watermarks for `CREATED_ON` and `DELETED_ON`.
-
 ## What data does this integration collect?
 
 The Snowflake integration collects the following logs:
@@ -42,24 +37,89 @@ Use this integration to audit SQL activity and handler log messages, detect unex
 
 ## How do I deploy this integration?
 
-### Agent-based deployment
+This integration supports both Elastic Managed and Agent-based installations.
 
-Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html). You can install only one Elastic Agent per host.
+### Elastic Managed enabled integration
 
-Elastic Agent is required to stream data from the SQL API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it.
+
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
+
+### Agent-based installation
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
 ### Set up steps in Snowflake
 
-1. Create a role and a `TYPE=SERVICE` user, and grant the role to the user.
-2. Grant `USAGE` on a warehouse that can auto-resume.
-3. Grant the SNOWFLAKE database roles and application roles the data streams need (or `IMPORTED PRIVILEGES ON DATABASE SNOWFLAKE`):
-   * `SNOWFLAKE.GOVERNANCE_VIEWER` for `query_history`, `access_history`, and `external_access_history` (the external access collector joins `QUERY_HISTORY`)
-   * `SNOWFLAKE.USAGE_VIEWER` for `external_access_history` and `data_transfer_history`
-   * `SNOWFLAKE.OBJECT_VIEWER` for `stages`
-   * `SNOWFLAKE.SECURITY_VIEWER` (or imported privileges) for `login_history`, `sessions`, and `grants_to_users`
-   * Application role `SNOWFLAKE.EVENTS_VIEWER` for the default `SNOWFLAKE.TELEMETRY.EVENTS_VIEW`. For a custom event table, grant `USAGE` on its database and schema and `SELECT` on the table.
-4. Create a programmatic access token for the service user.
-5. If a network policy is enabled, allow the Elastic Agent egress IP (or PrivateLink endpoint).
+Run the statements in a Snowflake worksheet as `ACCOUNTADMIN`. Replace `ELASTIC_AGENT_ROLE` and `ELASTIC_WH` with an existing role and a warehouse. Use those same names for **Role** and **Warehouse** in Kibana.
+
+#### 1. Grant the privileges
+
+The integration role needs `USAGE` on a warehouse, plus the SNOWFLAKE database roles for the data streams you enable. Only `ACCOUNTADMIN` can grant those database roles.
+
+| Privilege | Data streams |
+| --- | --- |
+| `USAGE` on the warehouse | All |
+| `SNOWFLAKE.GOVERNANCE_VIEWER` | `query_history`, `access_history`, and `external_access_history` (the external access collector joins `QUERY_HISTORY`) |
+| `SNOWFLAKE.USAGE_VIEWER` | `external_access_history` and `data_transfer_history` |
+| `SNOWFLAKE.OBJECT_VIEWER` | `stages` |
+| `SNOWFLAKE.SECURITY_VIEWER` | `login_history`, `sessions`, and `grants_to_users` |
+| `SNOWFLAKE.EVENTS_VIEWER` | `events`, for the default `SNOWFLAKE.TELEMETRY.EVENTS_VIEW` |
+
+```sql
+USE ROLE ACCOUNTADMIN;
+
+GRANT USAGE ON WAREHOUSE ELASTIC_WH TO ROLE ELASTIC_AGENT_ROLE;
+
+GRANT DATABASE ROLE SNOWFLAKE.GOVERNANCE_VIEWER TO ROLE ELASTIC_AGENT_ROLE;
+GRANT DATABASE ROLE SNOWFLAKE.USAGE_VIEWER TO ROLE ELASTIC_AGENT_ROLE;
+GRANT DATABASE ROLE SNOWFLAKE.OBJECT_VIEWER TO ROLE ELASTIC_AGENT_ROLE;
+GRANT DATABASE ROLE SNOWFLAKE.SECURITY_VIEWER TO ROLE ELASTIC_AGENT_ROLE;
+
+GRANT APPLICATION ROLE SNOWFLAKE.EVENTS_VIEWER TO ROLE ELASTIC_AGENT_ROLE;
+```
+
+Each poll consumes credits on that warehouse. Skip `EVENTS_VIEWER` when you will not collect `events`. For a custom event table, grant `USAGE` on its database and schema and `SELECT` on the table instead of `EVENTS_VIEWER`.
+
+#### 2. Create the token
+
+The role must be granted to the user before `ROLE_RESTRICTION` is set. Copy `token_secret` from the result. Snowflake shows it only once. Paste that value into the Kibana **Token** field, without a `Bearer ` prefix.
+
+Snowflake rejects the token statement when the service user has no network policy that contains a network rule. That is a programmatic access token requirement, not a general Snowflake login requirement. The statements are in Troubleshooting.
+
+```sql
+CREATE USER IF NOT EXISTS ELASTIC_AGENT_USER
+  TYPE = SERVICE
+  DEFAULT_ROLE = ELASTIC_AGENT_ROLE
+  DEFAULT_WAREHOUSE = ELASTIC_WH
+  COMMENT = 'Service user for the Elastic Snowflake integration';
+
+GRANT ROLE ELASTIC_AGENT_ROLE TO USER ELASTIC_AGENT_USER;
+
+ALTER USER IF EXISTS ELASTIC_AGENT_USER
+  ADD PROGRAMMATIC ACCESS TOKEN elastic_agent_token
+  ROLE_RESTRICTION = 'ELASTIC_AGENT_ROLE'
+  DAYS_TO_EXPIRY = 90
+  COMMENT = 'Elastic Agent SQL API token';
+```
+
+The result looks like this. The Kibana **Token** is the `token_secret` cell.
+
+```text
++----------------------+-------------------------------+
+| token_name           | token_secret                  |
++----------------------+-------------------------------+
+| ELASTIC_AGENT_TOKEN  | <copy this entire cell>       |
++----------------------+-------------------------------+
+```
+
+`DAYS_TO_EXPIRY` cannot exceed the account maximum. If you closed the result before copying the secret, run the following statement and copy the new `token_secret`. The previous secret stops working immediately.
+
+```sql
+ALTER USER IF EXISTS ELASTIC_AGENT_USER
+  ROTATE PROGRAMMATIC ACCESS TOKEN elastic_agent_token
+  EXPIRE_ROTATED_TOKEN_AFTER_HOURS = 0;
+```
 
 #### Vendor resources
 
@@ -74,8 +134,8 @@ Elastic Agent is required to stream data from the SQL API and ship the data to E
 
 1. In Kibana go to **Management → Integrations**.
 2. Search for **Snowflake** and add the integration.
-3. Set the account URL, role, and warehouse.
-4. Provide the programmatic access token for the service user. OAuth access tokens and key-pair JWT are not supported.
+3. Set the account URL (for example `https://myorg-myaccount.snowflakecomputing.com`), the role, and the warehouse from the grant statements.
+4. Paste the `token_secret` value into **Token**. Username/password, OAuth access tokens, and key-pair JWT are not accepted.
 5. Enable the data streams you want and save the policy.
 
 ### Validation
@@ -87,7 +147,22 @@ In Discover, filter on `event.dataset: snowflake.query_history`, `event.dataset:
 - No data is being collected: Confirm the warehouse can auto-resume, the role has the required SNOWFLAKE database or application roles (or imported privileges), and the account URL is reachable on HTTPS 443. ACCOUNT_USAGE latency means new rows can take up to 45 minutes to 3 hours to appear.
 - `access_history` returns an error: The `ACCESS_HISTORY` view exists only on Enterprise Edition or later. Turn off the data stream on lower editions.
 - Authentication failures: Service users cannot use passwords. Provide a programmatic access token. The integration always sends `X-Snowflake-Authorization-Token-Type: PROGRAMMATIC_ACCESS_TOKEN`.
-- Network policy blocks the SQL API: Add the agent egress IP, or use a PrivateLink hostname from `SYSTEM$GET_PRIVATELINK_CONFIG()`.
+- Token creation fails, or the SQL API is blocked by a network policy: A service user must be subject to a network policy that contains at least one network rule before Snowflake will create or accept a programmatic access token. Allow the Elastic Agent egress address on the existing policy, or create one and attach it, then run the token statement again. For an Elastic Managed deployment, use the static egress addresses for your Elastic Cloud region from [Elastic Cloud traffic filtering](https://www.elastic.co/guide/en/cloud/current/ec-traffic-filtering-ip.html). For PrivateLink, allow the endpoint from `SYSTEM$GET_PRIVATELINK_CONFIG()` instead of a public CIDR.
+
+  ```sql
+  CREATE DATABASE IF NOT EXISTS ELASTIC_AGENT_DB;
+  CREATE SCHEMA IF NOT EXISTS ELASTIC_AGENT_DB.SECURITY;
+
+  CREATE NETWORK RULE IF NOT EXISTS ELASTIC_AGENT_DB.SECURITY.ELASTIC_AGENT_INGRESS
+    MODE = INGRESS
+    TYPE = IPV4
+    VALUE_LIST = ('<elastic_agent_egress_cidr>');
+
+  CREATE NETWORK POLICY IF NOT EXISTS ELASTIC_AGENT_POLICY
+    ALLOWED_NETWORK_RULE_LIST = ('ELASTIC_AGENT_DB.SECURITY.ELASTIC_AGENT_INGRESS');
+
+  ALTER USER IF EXISTS ELASTIC_AGENT_USER SET NETWORK_POLICY = ELASTIC_AGENT_POLICY;
+  ```
 - HTTP 429 (`390505`): Reduce poll frequency. There is no documented `Retry-After` contract on the SQL API.
 - QUERY_TEXT can contain secrets: Collecting `query_history` stores statement text, which can include literals or tokens.
 - External access rows have no native timestamp: The stream joins `QUERY_HISTORY` on `QUERY_ID` and watermarks on `END_TIME`.
@@ -100,6 +175,11 @@ Each poll runs SQL on the configured warehouse and consumes Snowflake credits. `
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
 ## Reference
+
+### How it works
+
+Elastic Agent submits SQL statements to `POST /api/v2/statements` and pages result partitions. If Snowflake returns HTTP 202, the agent polls the statement handle until results are ready. Each data stream queries one `ACCOUNT_USAGE` view or event table and advances a timestamp watermark with lookback to cover view latency. When a statement returns a full `batch_size` page, the next request continues from the last returned `ORDER BY` key without the lag overlap until the backlog is drained.
+Grants keep separate watermarks for `CREATED_ON` and `DELETED_ON`.
 
 ### Inputs used
 
@@ -196,15 +276,15 @@ An example event for `query_history` looks as following:
 {
     "@timestamp": "2020-06-15T08:00:00.123Z",
     "agent": {
-        "ephemeral_id": "9e998031-a3dd-425c-a268-c5b42feeb66b",
-        "id": "24f2bc86-42bb-4e3d-93d4-08b82799e884",
-        "name": "elastic-agent-96428",
+        "ephemeral_id": "03c2da81-dd9c-45f8-95b4-ddee0b2c7535",
+        "id": "7f70331b-fe0c-4911-bea7-8308432e19a9",
+        "name": "elastic-agent-95535",
         "type": "filebeat",
         "version": "9.4.0"
     },
     "data_stream": {
         "dataset": "snowflake.query_history",
-        "namespace": "14118",
+        "namespace": "24431",
         "type": "logs"
     },
     "destination": {
@@ -214,7 +294,7 @@ An example event for `query_history` looks as following:
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "24f2bc86-42bb-4e3d-93d4-08b82799e884",
+        "id": "7f70331b-fe0c-4911-bea7-8308432e19a9",
         "snapshot": false,
         "version": "9.4.0"
     },
@@ -228,7 +308,7 @@ An example event for `query_history` looks as following:
         "duration": 1250000000,
         "end": "2020-06-15T08:00:00.123Z",
         "id": "01b2c3d4-e5f6-7890-abcd-ef1234567890",
-        "ingested": "2026-10-23T11:49:18Z",
+        "ingested": "2026-10-29T13:19:49Z",
         "kind": "event",
         "module": "snowflake",
         "original": "{\"AGENT_TYPE\":null,\"AUTHN_EVENT_ID\":\"1234567890001\",\"BYTES_SCANNED\":\"65536\",\"DATABASE_NAME\":\"EXAMPLE_DB\",\"END_TIME\":\"2020-06-15 08:00:00.123 +0000\",\"ERROR_CODE\":null,\"ERROR_MESSAGE\":null,\"EXECUTION_STATUS\":\"success\",\"INBOUND_DATA_TRANSFER_BYTES\":\"0\",\"OUTBOUND_DATA_TRANSFER_BYTES\":\"0\",\"QUERY_HASH\":\"abcdef0123456789abcdef0123456789\",\"QUERY_ID\":\"01b2c3d4-e5f6-7890-abcd-ef1234567890\",\"QUERY_TEXT\":\"SELECT id, email FROM example_db.public.customers WHERE created_on \\u003e '2026-01-01' LIMIT 100\",\"QUERY_TYPE\":\"SELECT\",\"ROLE_NAME\":\"ANALYST\",\"ROWS_UNLOADED\":\"0\",\"SCHEMA_NAME\":\"PUBLIC\",\"SESSION_ID\":\"9876543210001\",\"START_TIME\":\"2020-06-15 07:59:58.873 +0000\",\"TOTAL_ELAPSED_TIME\":\"1250\",\"USER_NAME\":\"alice.johnson\",\"USER_TYPE\":\"PERSON\",\"WAREHOUSE_NAME\":\"EXAMPLE_WH\"}",
@@ -399,24 +479,24 @@ An example event for `events` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-07-01T08:00:00.000Z",
+    "@timestamp": "2020-07-01T16:00:00.123Z",
     "agent": {
-        "ephemeral_id": "c1763dfd-125c-4858-8976-7ebb87156425",
-        "id": "e8858486-268f-4c65-929c-90fb70a79da1",
-        "name": "elastic-agent-40334",
+        "ephemeral_id": "017d473e-a733-4f81-a2ef-a67266652a48",
+        "id": "db6d98a6-2d36-4bf5-87c8-303c0c3c0000",
+        "name": "elastic-agent-89757",
         "type": "filebeat",
         "version": "9.4.0"
     },
     "data_stream": {
         "dataset": "snowflake.events",
-        "namespace": "28806",
+        "namespace": "73240",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "e8858486-268f-4c65-929c-90fb70a79da1",
+        "id": "db6d98a6-2d36-4bf5-87c8-303c0c3c0000",
         "snapshot": false,
         "version": "9.4.0"
     },
@@ -426,12 +506,12 @@ An example event for `events` looks as following:
         "category": [
             "process"
         ],
-        "created": "2020-07-01T08:00:00.000Z",
+        "created": "2020-07-01T16:00:00.123Z",
         "dataset": "snowflake.events",
-        "ingested": "2026-10-28T05:57:55Z",
+        "ingested": "2026-10-29T13:11:59Z",
         "kind": "event",
         "module": "snowflake",
-        "original": "{\"OBSERVED_TIMESTAMP\":\"2020-07-01 08:00:00.000 +0000\",\"RECORD\":\"{\\\"severity_text\\\":\\\"INFO\\\"}\",\"RECORD_ATTRIBUTES\":\"{\\\"code.filepath\\\":\\\"main.py\\\",\\\"code.function\\\":\\\"handler\\\",\\\"code.lineno\\\":42,\\\"code.namespace\\\":\\\"example.module\\\",\\\"thread.id\\\":1,\\\"thread.name\\\":\\\"main\\\"}\",\"RECORD_TYPE\":\"LOG\",\"RESOURCE_ATTRIBUTES\":\"{\\\"db.user\\\":\\\"alice.johnson\\\",\\\"snow.database.id\\\":13,\\\"snow.database.name\\\":\\\"EXAMPLE_DB\\\",\\\"snow.executable.id\\\":197,\\\"snow.executable.name\\\":\\\"EXAMPLE_HANDLER\\\",\\\"snow.executable.type\\\":\\\"FUNCTION\\\",\\\"snow.owner.id\\\":2,\\\"snow.owner.name\\\":\\\"EXAMPLE_ROLE\\\",\\\"snow.query.id\\\":\\\"01ab0f07-0000-15c8-0000-0129000592c2\\\",\\\"snow.schema.id\\\":16,\\\"snow.schema.name\\\":\\\"PUBLIC\\\",\\\"snow.session.id\\\":1275605667850,\\\"snow.session.role.primary.id\\\":2,\\\"snow.session.role.primary.name\\\":\\\"EXAMPLE_ROLE\\\",\\\"snow.user.id\\\":25,\\\"snow.warehouse.id\\\":5,\\\"snow.warehouse.name\\\":\\\"EXAMPLE_WH\\\",\\\"telemetry.sdk.language\\\":\\\"python\\\"}\",\"SCOPE\":\"{\\\"name\\\":\\\"com.sample.MyClass\\\"}\",\"START_TIMESTAMP\":null,\"TIMESTAMP\":\"2020-07-01 08:00:00.000 +0000\",\"TRACE\":null,\"VALUE\":\"Example handler log message\"}",
+        "original": "{\"OBSERVED_TIMESTAMP\":\"2020-07-01 16:00:00.123001000 +0000\",\"RECORD\":\"{\\\"severity_text\\\":\\\"INFO\\\"}\",\"RECORD_ATTRIBUTES\":\"{\\\"code.function\\\":\\\"handler\\\"}\",\"RECORD_TYPE\":\"LOG\",\"RESOURCE_ATTRIBUTES\":\"{\\\"db.user\\\":\\\"alice.johnson\\\",\\\"snow.query.id\\\":\\\"01ab0f07-0000-15c8-0000-0129000592d1\\\",\\\"snow.session.id\\\":1275605667861}\",\"ROW_KEY\":\"aaa111aaa111aaa111aaa111aaa111aa\",\"SCOPE\":\"{\\\"name\\\":\\\"com.sample.MyClass\\\"}\",\"START_TIMESTAMP\":null,\"TIMESTAMP\":\"2020-07-01 16:00:00.123001000 +0000\",\"TRACE\":null,\"VALUE\":\"tied handler log\"}",
         "type": [
             "info"
         ]
@@ -443,75 +523,24 @@ An example event for `events` looks as following:
         "level": "info",
         "logger": "com.sample.MyClass",
         "origin": {
-            "file": {
-                "line": 42,
-                "name": "main.py"
-            },
             "function": "handler"
         }
     },
-    "message": "Example handler log message",
+    "message": "tied handler log",
     "observer": {
         "product": "Snowflake",
         "vendor": "Snowflake"
     },
     "related": {
         "user": [
-            "alice.johnson",
-            "25"
+            "alice.johnson"
         ]
     },
     "snowflake": {
         "events": {
-            "query_id": "01ab0f07-0000-15c8-0000-0129000592c2",
-            "record_attributes": {
-                "code": {
-                    "namespace": "example.module"
-                },
-                "thread": {
-                    "id": 1,
-                    "name": "main"
-                }
-            },
+            "query_id": "01ab0f07-0000-15c8-0000-0129000592d1",
             "record_type": "LOG",
-            "resource_attributes": {
-                "snow": {
-                    "database": {
-                        "id": 13,
-                        "name": "EXAMPLE_DB"
-                    },
-                    "executable": {
-                        "id": 197,
-                        "name": "EXAMPLE_HANDLER",
-                        "type": "FUNCTION"
-                    },
-                    "owner": {
-                        "id": 2,
-                        "name": "EXAMPLE_ROLE"
-                    },
-                    "schema": {
-                        "id": 16,
-                        "name": "PUBLIC"
-                    },
-                    "session": {
-                        "role": {
-                            "primary": {
-                                "id": 2
-                            }
-                        }
-                    },
-                    "warehouse": {
-                        "id": 5,
-                        "name": "EXAMPLE_WH"
-                    }
-                },
-                "telemetry": {
-                    "sdk": {
-                        "language": "python"
-                    }
-                }
-            },
-            "session_id": "1275605667850"
+            "session_id": "1275605667861"
         }
     },
     "tags": [
@@ -520,11 +549,7 @@ An example event for `events` looks as following:
         "snowflake-events"
     ],
     "user": {
-        "id": "25",
-        "name": "alice.johnson",
-        "roles": [
-            "EXAMPLE_ROLE"
-        ]
+        "name": "alice.johnson"
     }
 }
 ```
@@ -568,9 +593,9 @@ An example event for `external_access_history` looks as following:
 {
     "@timestamp": "2020-08-01T08:00:00.000Z",
     "agent": {
-        "ephemeral_id": "82fa2a6e-f0ef-4d40-b699-70a2ce5c44b0",
-        "id": "9ada382d-811c-4a4f-84e0-ef6280e269e9",
-        "name": "elastic-agent-39109",
+        "ephemeral_id": "feb55f9b-ae91-4c3a-a9a6-c3b134d903f6",
+        "id": "ec5e8b3d-1415-45a8-b4f8-2712d84c01a2",
+        "name": "elastic-agent-63807",
         "type": "filebeat",
         "version": "9.4.0"
     },
@@ -582,7 +607,7 @@ An example event for `external_access_history` looks as following:
     },
     "data_stream": {
         "dataset": "snowflake.external_access_history",
-        "namespace": "20784",
+        "namespace": "74435",
         "type": "logs"
     },
     "destination": {
@@ -612,7 +637,7 @@ An example event for `external_access_history` looks as following:
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "9ada382d-811c-4a4f-84e0-ef6280e269e9",
+        "id": "ec5e8b3d-1415-45a8-b4f8-2712d84c01a2",
         "snapshot": false,
         "version": "9.4.0"
     },
@@ -624,7 +649,7 @@ An example event for `external_access_history` looks as following:
         "dataset": "snowflake.external_access_history",
         "end": "2020-08-01T08:00:00.000Z",
         "id": "01b2c3d4-e5f6-7890-abcd-ef1234567ea0",
-        "ingested": "2026-10-23T11:51:17Z",
+        "ingested": "2026-10-30T05:59:49Z",
         "kind": "event",
         "module": "snowflake",
         "original": "{\"END_TIME\":\"2020-08-01 08:00:00.000 +0000\",\"HOSTNAMES\":\"api.example.com\",\"IP\":\"198.51.100.42\",\"QUERY_ID\":\"01b2c3d4-e5f6-7890-abcd-ef1234567ea0\",\"RECEIVED_BYTES\":\"8192\",\"SENT_BYTES\":\"2048\",\"SOURCE_CLOUD\":\"aws\",\"SOURCE_REGION\":\"us-west-2\",\"START_TIME\":\"2020-08-01 07:59:58.000 +0000\",\"STATUS\":\"Success\",\"TARGET_CLOUD\":\"internet\",\"TARGET_REGION\":\"internet\",\"USER_NAME\":\"alice.johnson\"}",
@@ -722,24 +747,24 @@ An example event for `access_history` looks as following:
 {
     "@timestamp": "2020-06-15T08:00:00.123Z",
     "agent": {
-        "ephemeral_id": "cf02fdc4-df7a-4f1b-a6ff-7d763d19695e",
-        "id": "cb2cd5d9-c75e-4d1d-ac01-946cfd5aa107",
-        "name": "elastic-agent-79554",
+        "ephemeral_id": "f1de0981-bc2d-4c69-81d6-ebf48ef9b8e9",
+        "id": "5fac081c-5c70-4e5c-b1e0-c67bbaff0a7a",
+        "name": "elastic-agent-56648",
         "type": "filebeat",
-        "version": "8.19.0"
+        "version": "9.4.0"
     },
     "data_stream": {
         "dataset": "snowflake.access_history",
-        "namespace": "75267",
+        "namespace": "89349",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "cb2cd5d9-c75e-4d1d-ac01-946cfd5aa107",
+        "id": "5fac081c-5c70-4e5c-b1e0-c67bbaff0a7a",
         "snapshot": false,
-        "version": "8.19.0"
+        "version": "9.4.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -748,8 +773,9 @@ An example event for `access_history` looks as following:
         ],
         "dataset": "snowflake.access_history",
         "id": "01b5a1c2-0000-1a2b-0000-000100000001",
-        "ingested": "2026-10-08T05:56:42Z",
+        "ingested": "2026-10-29T13:07:48Z",
         "kind": "event",
+        "module": "snowflake",
         "original": "{\"ADDITIONAL_PROPERTIES\":null,\"AGENTS_INFO\":null,\"BASE_OBJECTS_ACCESSED\":\"[\\n  {\\n    \\\"columns\\\": [\\n      {\\n        \\\"columnId\\\": 68610,\\n        \\\"columnName\\\": \\\"CONTENT\\\"\\n      },\\n      {\\n        \\\"columnId\\\": 68611,\\n        \\\"columnName\\\": \\\"CREATED_AT\\\"\\n      }\\n    ],\\n    \\\"objectDomain\\\": \\\"Table\\\",\\n    \\\"objectId\\\": 66564,\\n    \\\"objectName\\\": \\\"EXAMPLE_DB.PUBLIC.ORDERS\\\"\\n  }\\n]\",\"DIRECT_OBJECTS_ACCESSED\":\"[\\n  {\\n    \\\"argumentSignature\\\": \\\"(NUM1 NUMBER, NUM2 NUMBER)\\\",\\n    \\\"dataType\\\": \\\"NUMBER(38,0)\\\",\\n    \\\"objectDomain\\\": \\\"Function\\\",\\n    \\\"objectId\\\": 2,\\n    \\\"objectName\\\": \\\"EXAMPLE_DB.FUNCTIONS.RETURN_SUM\\\"\\n  },\\n  {\\n    \\\"columns\\\": [\\n      {\\n        \\\"columnId\\\": 68610,\\n        \\\"columnName\\\": \\\"CONTENT\\\"\\n      },\\n      {\\n        \\\"columnId\\\": 68611,\\n        \\\"columnName\\\": \\\"CREATED_AT\\\"\\n      }\\n    ],\\n    \\\"objectDomain\\\": \\\"Table\\\",\\n    \\\"objectId\\\": 66564,\\n    \\\"objectName\\\": \\\"EXAMPLE_DB.PUBLIC.ORDERS\\\"\\n  }\\n]\",\"EVENT_SOURCE\":\"snowflake_sql\",\"INVOKER_IDENTITY\":null,\"OBJECTS_MODIFIED\":\"[]\",\"OBJECT_MODIFIED_BY_DDL\":null,\"PARENT_QUERY_ID\":null,\"POLICIES_REFERENCED\":\"[]\",\"QUERY_ID\":\"01b5a1c2-0000-1a2b-0000-000100000001\",\"QUERY_START_TIME\":\"2020-06-15 08:00:00.123 +0000\",\"ROOT_QUERY_ID\":null,\"USER_NAME\":\"alice.johnson\"}",
         "provider": "snowflake_sql",
         "start": "2020-06-15T08:00:00.123Z",
@@ -771,30 +797,26 @@ An example event for `access_history` looks as following:
     },
     "snowflake": {
         "access_history": {
-            "base_objects_accessed": [
-                {
-                    "columns": [
-                        {
-                            "columnId": 68610,
-                            "columnName": "CONTENT"
-                        },
-                        {
-                            "columnId": 68611,
-                            "columnName": "CREATED_AT"
-                        }
-                    ],
-                    "objectDomain": "Table",
-                    "objectId": 66564,
-                    "objectName": "EXAMPLE_DB.PUBLIC.ORDERS"
-                }
-            ],
+            "base_objects_accessed": {
+                "columns": [
+                    {
+                        "columnId": 68610,
+                        "columnName": "CONTENT"
+                    },
+                    {
+                        "columnId": 68611,
+                        "columnName": "CREATED_AT"
+                    }
+                ],
+                "objectDomain": "Table",
+                "objectId": 66564,
+                "objectName": "EXAMPLE_DB.PUBLIC.ORDERS"
+            },
             "base_objects_accessed_columns": [
                 "CONTENT",
                 "CREATED_AT"
             ],
-            "base_objects_accessed_names": [
-                "EXAMPLE_DB.PUBLIC.ORDERS"
-            ],
+            "base_objects_accessed_names": "EXAMPLE_DB.PUBLIC.ORDERS",
             "direct_objects_accessed": [
                 {
                     "argumentSignature": "(NUM1 NUMBER, NUM2 NUMBER)",
@@ -878,16 +900,11 @@ An example event for `data_transfer_history` looks as following:
 {
     "@timestamp": "2020-06-15T08:00:00.000Z",
     "agent": {
-        "ephemeral_id": "2ad5e7e1-0f12-4b84-bac8-6f6674be71fd",
-        "id": "b522240b-9d02-4649-9b4f-69f97f1e8603",
-        "name": "elastic-agent-35610",
+        "ephemeral_id": "434893ef-6490-46e4-a7e7-e7503dd86387",
+        "id": "fb7b5d70-4c8e-44d8-a931-7faae691689f",
+        "name": "elastic-agent-68537",
         "type": "filebeat",
-        "version": "8.19.0"
-    },
-    "data_stream": {
-        "dataset": "snowflake.data_transfer_history",
-        "namespace": "67685",
-        "type": "logs"
+        "version": "9.4.0"
     },
     "cloud": {
         "origin": {
@@ -899,13 +916,18 @@ An example event for `data_transfer_history` looks as following:
             "region": "eastus2"
         }
     },
+    "data_stream": {
+        "dataset": "snowflake.data_transfer_history",
+        "namespace": "68894",
+        "type": "logs"
+    },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "b522240b-9d02-4649-9b4f-69f97f1e8603",
+        "id": "fb7b5d70-4c8e-44d8-a931-7faae691689f",
         "snapshot": false,
-        "version": "8.19.0"
+        "version": "9.4.0"
     },
     "event": {
         "action": "copy",
@@ -916,8 +938,9 @@ An example event for `data_transfer_history` looks as following:
         "dataset": "snowflake.data_transfer_history",
         "duration": 3600000000000,
         "end": "2020-06-15T09:00:00.000Z",
-        "ingested": "2026-10-08T06:45:51Z",
+        "ingested": "2026-10-29T13:09:29Z",
         "kind": "event",
+        "module": "snowflake",
         "original": "{\"BYTES_TRANSFERRED\":\"104857600.0\",\"END_TIME\":\"2020-06-15 09:00:00.000 +0000\",\"SOURCE_CLOUD\":\"aws\",\"SOURCE_REGION\":\"us-west-2\",\"START_TIME\":\"2020-06-15 08:00:00.000 +0000\",\"TARGET_CLOUD\":\"azure\",\"TARGET_REGION\":\"eastus2\",\"TRANSFER_TYPE\":\"COPY\"}",
         "start": "2020-06-15T08:00:00.000Z",
         "type": [
@@ -998,28 +1021,28 @@ An example event for `stages` looks as following:
 {
     "@timestamp": "2020-06-15T08:00:00.000Z",
     "agent": {
-        "ephemeral_id": "e012d790-6839-46d0-a271-6eccbd6e63c7",
-        "id": "6e17e3e6-08d3-40e6-a8a5-9f0095ebeef8",
-        "name": "elastic-agent-19781",
+        "ephemeral_id": "f89b4212-7e3b-4c88-a50e-e601d0b75e8c",
+        "id": "5e2a2d42-c110-43a0-a539-1a54a3fcaa65",
+        "name": "elastic-agent-14803",
         "type": "filebeat",
-        "version": "8.19.0"
-    },
-    "data_stream": {
-        "dataset": "snowflake.stages",
-        "namespace": "50435",
-        "type": "logs"
+        "version": "9.4.0"
     },
     "cloud": {
         "provider": "aws",
         "region": "us-west-2"
     },
+    "data_stream": {
+        "dataset": "snowflake.stages",
+        "namespace": "33482",
+        "type": "logs"
+    },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "6e17e3e6-08d3-40e6-a8a5-9f0095ebeef8",
+        "id": "5e2a2d42-c110-43a0-a539-1a54a3fcaa65",
         "snapshot": false,
-        "version": "8.19.0"
+        "version": "9.4.0"
     },
     "event": {
         "action": "create",
@@ -1028,8 +1051,9 @@ An example event for `stages` looks as following:
             "configuration"
         ],
         "dataset": "snowflake.stages",
-        "ingested": "2026-10-08T08:42:23Z",
+        "ingested": "2026-10-29T13:23:29Z",
         "kind": "event",
+        "module": "snowflake",
         "original": "{\"COMMENT\":null,\"CREATED\":\"2020-06-15 08:00:00.000 +0000\",\"DELETED\":null,\"INSTANCE_ID\":null,\"LAST_ALTERED\":\"2020-06-15 08:00:00.000 +0000\",\"OWNER_ROLE_TYPE\":\"ROLE\",\"STAGE_CATALOG\":\"EXAMPLE_DB\",\"STAGE_CATALOG_ID\":\"2002\",\"STAGE_ID\":\"501234\",\"STAGE_NAME\":\"EXAMPLE_EXT_STAGE\",\"STAGE_OWNER\":\"SYSADMIN\",\"STAGE_REGION\":\"us-west-2\",\"STAGE_SCHEMA\":\"PUBLIC\",\"STAGE_SCHEMA_ID\":\"1001\",\"STAGE_TYPE\":\"External Named\",\"STAGE_URL\":\"s3://example-bucket/exports/\",\"STORAGE_INTEGRATION\":\"EXAMPLE_S3_INTEGRATION\"}",
         "start": "2020-06-15T08:00:00.000Z",
         "type": [
@@ -1118,42 +1142,37 @@ An example event for `login_history` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-15T08:00:00.123Z",
+    "@timestamp": "2026-10-29T13:18:07.579Z",
     "agent": {
-        "ephemeral_id": "5516fff1-8ecf-4e14-b756-516f327c5883",
-        "id": "2d0e0768-6742-4799-9f4d-ed051ff65975",
-        "name": "elastic-agent-56427",
+        "ephemeral_id": "33212952-ef99-41a8-92a6-550f998e0b36",
+        "id": "668e68ec-ba14-49d3-bec8-011748ae0b9a",
+        "name": "elastic-agent-81728",
         "type": "filebeat",
-        "version": "8.19.3"
+        "version": "9.4.0"
     },
     "data_stream": {
         "dataset": "snowflake.login_history",
-        "namespace": "44418",
+        "namespace": "71092",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "2d0e0768-6742-4799-9f4d-ed051ff65975",
+        "id": "668e68ec-ba14-49d3-bec8-011748ae0b9a",
         "snapshot": false,
-        "version": "8.19.3"
+        "version": "9.4.0"
+    },
+    "error": {
+        "code": "422",
+        "id": "422 Unprocessable Entity",
+        "message": "POST http://svc-snowflake:8090/api/v2/statements?async=true&requestId=e6eed418-8f0e-4718-9b81-83707a867944: {\"code\":\"002003\",\"sqlState\":\"02000\",\"message\":\"SQL compilation error: Object 'SNOWFLAKE.ACCOUNT_USAGE.LOGIN_HISTORY' does not exist or not authorized.\",\"statementHandle\":\"019c06a4-0000-df4f-0000-0010000659ff\"}"
     },
     "event": {
-        "action": "LOGIN",
         "agent_id_status": "verified",
-        "category": [
-            "authentication"
-        ],
         "dataset": "snowflake.login_history",
-        "id": "1001",
-        "ingested": "2026-09-29T09:48:15Z",
-        "kind": "event",
-        "original": "{\"AUTHORIZING_INTEGRATION_NAME\":null,\"CLIENT_IP\":\"198.51.100.10\",\"CLIENT_PRIVATE_LINK_ID\":null,\"CONNECTION\":null,\"ERROR_CODE\":null,\"ERROR_MESSAGE\":null,\"EVENT_ID\":\"1001\",\"EVENT_TIMESTAMP\":\"2020-06-15 08:00:00.123 +0000\",\"EVENT_TYPE\":\"LOGIN\",\"FIRST_AUTHENTICATION_FACTOR\":\"PASSWORD\",\"IS_SUCCESS\":\"YES\",\"LOGIN_DETAILS\":null,\"REPORTED_CLIENT_TYPE\":\"JDBC_DRIVER\",\"REPORTED_CLIENT_VERSION\":\"3.14.4\",\"SECOND_AUTHENTICATION_FACTOR\":\"MFA_TOKEN\",\"USER_NAME\":\"alice.johnson\"}",
-        "outcome": "success",
-        "type": [
-            "start"
-        ]
+        "ingested": "2026-10-29T13:18:10Z",
+        "module": "snowflake"
     },
     "input": {
         "type": "cel"
@@ -1162,51 +1181,11 @@ An example event for `login_history` looks as following:
         "product": "Snowflake",
         "vendor": "Snowflake"
     },
-    "related": {
-        "ip": [
-            "198.51.100.10"
-        ],
-        "user": [
-            "alice.johnson"
-        ]
-    },
-    "snowflake": {
-        "login_history": {
-            "first_authentication_factor": "PASSWORD",
-            "reported_client_type": "JDBC_DRIVER",
-            "reported_client_version": "3.14.4",
-            "second_authentication_factor": "MFA_TOKEN"
-        }
-    },
-    "source": {
-        "as": {
-            "number": 64501,
-            "organization": {
-                "name": "Documentation ASN"
-            }
-        },
-        "geo": {
-            "city_name": "Amsterdam",
-            "continent_name": "Europe",
-            "country_iso_code": "NL",
-            "country_name": "Netherlands",
-            "location": {
-                "lat": 52.37404,
-                "lon": 4.88969
-            },
-            "region_iso_code": "NL-NH",
-            "region_name": "North Holland"
-        },
-        "ip": "198.51.100.10"
-    },
     "tags": [
         "preserve_original_event",
         "forwarded",
         "snowflake-login_history"
-    ],
-    "user": {
-        "name": "alice.johnson"
-    }
+    ]
 }
 ```
 
@@ -1250,24 +1229,24 @@ An example event for `sessions` looks as following:
 {
     "@timestamp": "2020-06-15T08:00:00.123Z",
     "agent": {
-        "ephemeral_id": "be7fda63-20db-4c59-a13d-ccdb5d4b5087",
-        "id": "9cfb7833-58bc-4efe-b8d2-c0d48761f01d",
-        "name": "elastic-agent-94334",
+        "ephemeral_id": "333e9732-b88d-4518-9956-6c2ef79f3447",
+        "id": "d6e8c2bd-4f48-48d7-89a2-fc68787df23b",
+        "name": "elastic-agent-64599",
         "type": "filebeat",
-        "version": "8.19.3"
+        "version": "9.4.0"
     },
     "data_stream": {
         "dataset": "snowflake.sessions",
-        "namespace": "53326",
+        "namespace": "80536",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "9cfb7833-58bc-4efe-b8d2-c0d48761f01d",
+        "id": "d6e8c2bd-4f48-48d7-89a2-fc68787df23b",
         "snapshot": false,
-        "version": "8.19.3"
+        "version": "9.4.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1276,8 +1255,9 @@ An example event for `sessions` looks as following:
             "authentication"
         ],
         "dataset": "snowflake.sessions",
-        "ingested": "2026-09-30T05:44:24Z",
+        "ingested": "2026-10-29T13:21:39Z",
         "kind": "event",
+        "module": "snowflake",
         "original": "{\"ACCESS_TIME\":\"2020-06-15 08:00:00.123 +0000\",\"AUTHENTICATION_METHOD\":\"PASSWORD\",\"CLIENT_APPLICATION_ID\":\"JDBC 3.14.4\",\"CLIENT_APPLICATION_VERSION\":\"3.14.4\",\"CLIENT_ENVIRONMENT\":\"{\\\"OS\\\":\\\"Linux\\\",\\\"OCSP_MODE\\\":\\\"FAIL_OPEN\\\"}\",\"CLOSED_REASON\":\"LOGOUT\",\"CREATED_ON\":\"2020-06-15 07:50:00.000 +0000\",\"IS_OPEN\":\"false\",\"LOGIN_EVENT_ID\":\"1001\",\"SESSION_ID\":\"3001\",\"USER_NAME\":\"alice.johnson\"}",
         "reason": "LOGOUT",
         "start": "2020-06-15T07:50:00.000Z",
@@ -1353,39 +1333,41 @@ An example event for `grants_to_users` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-15T08:00:00.123Z",
+    "@timestamp": "2020-06-15T09:00:00.000Z",
     "agent": {
-        "ephemeral_id": "65f483fb-e78a-4d8e-8dc7-35c6479b7ad6",
-        "id": "823fb7a6-0e9e-472a-af29-6457a68454a4",
-        "name": "elastic-agent-67476",
+        "ephemeral_id": "74897758-3f6d-439d-95b5-cdb086057711",
+        "id": "d0b5b6ef-8e7e-4d40-858a-02e25c63f71e",
+        "name": "elastic-agent-78720",
         "type": "filebeat",
-        "version": "8.19.3"
+        "version": "9.4.0"
     },
     "data_stream": {
         "dataset": "snowflake.grants_to_users",
-        "namespace": "66625",
+        "namespace": "14900",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "823fb7a6-0e9e-472a-af29-6457a68454a4",
+        "id": "d0b5b6ef-8e7e-4d40-858a-02e25c63f71e",
         "snapshot": false,
-        "version": "8.19.3"
+        "version": "9.4.0"
     },
     "event": {
-        "action": "role_granted",
+        "action": "role_revoked",
         "agent_id_status": "verified",
         "category": [
             "iam"
         ],
         "dataset": "snowflake.grants_to_users",
-        "id": "yEvZ1XzOTI5L8fEHIqJnGZ7jaRI=",
-        "ingested": "2026-09-30T08:50:12Z",
+        "end": "2020-06-15T09:00:00.000Z",
+        "id": "W7Mst8/mB4/Hg7XLiOyzqNLToik=",
+        "ingested": "2026-10-29T13:15:30Z",
         "kind": "event",
-        "original": "{\"CREATED_ON\":\"2020-06-15 08:00:00.123 +0000\",\"DELETED_ON\":null,\"GRANTED_BY\":\"ACCOUNTADMIN\",\"GRANTED_TO\":\"USER\",\"GRANTEE_NAME\":\"alice.johnson\",\"ROLE\":\"SYSADMIN\"}",
-        "start": "2020-06-15T08:00:00.123Z",
+        "module": "snowflake",
+        "original": "{\"CREATED_ON\":\"2020-06-15 08:30:00.000 +0000\",\"DELETED_ON\":\"2020-06-15 09:00:00.000 +0000\",\"GRANTED_BY\":\"ACCOUNTADMIN\",\"GRANTED_TO\":\"USER\",\"GRANTEE_NAME\":\"bob.smith\",\"ROLE\":\"SECURITYADMIN\"}",
+        "start": "2020-06-15T08:30:00.000Z",
         "type": [
             "change",
             "user"
@@ -1400,7 +1382,7 @@ An example event for `grants_to_users` looks as following:
     },
     "related": {
         "user": [
-            "alice.johnson"
+            "bob.smith"
         ]
     },
     "snowflake": {
@@ -1416,9 +1398,9 @@ An example event for `grants_to_users` looks as following:
     ],
     "user": {
         "target": {
-            "name": "alice.johnson",
+            "name": "bob.smith",
             "roles": [
-                "SYSADMIN"
+                "SECURITYADMIN"
             ]
         }
     }
