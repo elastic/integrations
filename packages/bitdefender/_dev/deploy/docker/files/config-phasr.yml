@@ -1,0 +1,156 @@
+rules:
+  # JSON-RPC application error returned with HTTP 200.
+  - path: /v1.0/jsonrpc/phasr
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-service-key"
+    request_body: /.*"method":"getPhasrRecommendations".*"companyId":"eeeeeeeeeeeeeeeeeeeeeeee".*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"phasr-recommendations","jsonrpc":"2.0","error":{"code":-32001,"message":"Authorization error","data":{"details":"Synthetic application error"}}}'
+  # HTTP server error handling.
+  - path: /v1.0/jsonrpc/phasr
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-service-key"
+    request_body: /.*"method":"getPhasrRecommendations".*"companyId":"dddddddddddddddddddddddd".*/
+    responses:
+      - status_code: 500
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"error":"Synthetic server error"}'
+  # HTTP 429 handling. Retry-After mirrors the vendor response contract.
+  - path: /v1.0/jsonrpc/phasr
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-service-key"
+    request_body: /.*"method":"getPhasrRecommendations".*"companyId":"ffffffffffffffffffffffff".*/
+    responses:
+      - status_code: 429
+        headers:
+          Content-Type:
+            - "application/json"
+          Retry-After:
+            - "12"
+        body: '{"id":"phasr-recommendations","jsonrpc":"2.0","error":{"code":-32003,"message":"Too many requests","data":{"details":"Synthetic rate limit"}}}'
+  # Service-key full snapshot: recommendations page 1 of 3.
+  - path: /v1.0/jsonrpc/phasr
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-service-key"
+    request_body: /.*"method":"getPhasrRecommendations".*"companyId":"5e4d3c2b1a0987654321fedc".*"page":1.*"perPage":100.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"phasr-recommendations","jsonrpc":"2.0","result":{"page":1,"pagesCount":3,"perPage":100,"total":3,"items":[{"objectId":"65a000000000000000000001","ruleId":619,"actionTaken":0,"behavioralProfiles":4,"attackSurfaceReduction":0.15,"type":1,"createdOn":"2026-01-15T09:30:00.000Z"},{"objectId":"65a000000000000000000002","ruleId":697,"actionTaken":1,"behavioralProfiles":2,"attackSurfaceReduction":0.08,"type":0,"createdOn":"2026-01-16T10:45:00.000Z"}]}}'
+  # Service-key full snapshot: empty intermediate recommendations page.
+  - path: /v1.0/jsonrpc/phasr
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-service-key"
+    request_body: /.*"method":"getPhasrRecommendations".*"companyId":"5e4d3c2b1a0987654321fedc".*"page":2.*"perPage":100.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"phasr-recommendations","jsonrpc":"2.0","result":{"page":2,"pagesCount":3,"perPage":100,"total":3,"items":[]}}'
+  # Service-key full snapshot: terminal recommendations page.
+  - path: /v1.0/jsonrpc/phasr
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-service-key"
+    request_body: /.*"method":"getPhasrRecommendations".*"companyId":"5e4d3c2b1a0987654321fedc".*"page":3.*"perPage":100.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"phasr-recommendations","jsonrpc":"2.0","result":{"page":3,"pagesCount":3,"perPage":100,"total":3,"items":[{"objectId":"65a000000000000000000003","ruleId":18,"actionTaken":2,"behavioralProfiles":1,"attackSurfaceReduction":0.03,"type":2,"createdOn":"2026-01-17T11:00:00.000Z"}]}}'
+  # Service-key full snapshot: terminal monitored-rules page.
+  - path: /v1.0/jsonrpc/phasr
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-service-key"
+    request_body: /.*"method":"getMonitoredRules".*"companyId":"5e4d3c2b1a0987654321fedc".*"page":1.*"perPage":100.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"phasr-rules","jsonrpc":"2.0","result":{"page":1,"pagesCount":1,"perPage":100,"total":2,"items":[{"ruleId":787,"category":"TamperingTool","name":"ExampleAutomationToolUsage","description":"Synthetic monitored rule for automation tool usage.","lastTriggered":1798790400,"latestUpdate":1798794000,"recommendations":2,"ruleTriggers":5,"profilesUsingSuchTools":4,"profilesNotUsingSuchTools":8,"restrictedProfilesByAutopilot":2,"restrictedProfilesByDirectControl":1},{"ruleId":695,"category":"HackTool","name":"ExampleActivationToolUsage","description":"Synthetic monitored rule for activation tool usage.","lastTriggered":null,"latestUpdate":null,"recommendations":1,"ruleTriggers":0,"profilesUsingSuchTools":3,"profilesNotUsingSuchTools":9,"restrictedProfilesByAutopilot":1,"restrictedProfilesByDirectControl":2}]}}'
+  # Personal-key authentication smoke path: one recommendation page.
+  - path: /v1.0/jsonrpc/phasr
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Authorization:
+        - "Basic cGVyc29uYWwtYXBpLWtleTo="
+      Content-Type:
+        - "application/json"
+    request_body: /.*"method":"getPhasrRecommendations".*"companyId":"bbbbbbbbbbbbbbbbbbbbbbbb".*"page":1.*"perPage":100.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"phasr-recommendations","jsonrpc":"2.0","result":{"page":1,"pagesCount":1,"perPage":100,"total":1,"items":[{"objectId":"65b000000000000000000001","ruleId":619,"actionTaken":0,"behavioralProfiles":1,"attackSurfaceReduction":0.04,"type":1,"createdOn":"2026-02-01T08:00:00.000Z"}]}}'
+  # Personal-key authentication smoke path: monitored-rules page.
+  - path: /v1.0/jsonrpc/phasr
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Authorization:
+        - "Basic cGVyc29uYWwtYXBpLWtleTo="
+      Content-Type:
+        - "application/json"
+    request_body: /.*"method":"getMonitoredRules".*"companyId":"bbbbbbbbbbbbbbbbbbbbbbbb".*"page":1.*"perPage":100.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"phasr-rules","jsonrpc":"2.0","result":{"page":1,"pagesCount":1,"perPage":100,"total":1,"items":[{"ruleId":696,"category":"HackTool","name":"ExampleRuleUsage","description":"Synthetic monitored rule for personal-key authentication.","lastTriggered":1798876800,"latestUpdate":1798880400,"recommendations":1,"ruleTriggers":1,"profilesUsingSuchTools":2,"profilesNotUsingSuchTools":6,"restrictedProfilesByAutopilot":1,"restrictedProfilesByDirectControl":0}]}}'

@@ -9,9 +9,9 @@ This integration additionally provides:
 2. Collection of push notification statistics via API polling, which includes the number of events sent, and counters for errors of different types, which you may wish to use to troubleshoot lost push notification events and for alerting purposes.
 3. Support for multiple instances of the integration, which may be needed for MSP/MSSP scenarios where multiple BitDefender GravityZone tenants exist.
 4. BitDefender company ID to your own company name/description mapping, in order to determine to which tenant the event relates to in a human friendly way. This is very useful for MSP/MSSP environments or for large organisations with multiple sub-organisations.
-5. GravityZone Public API polling for EDR/XDR incidents and individual incident alerts, endpoint quarantine, endpoint and account entity inventories, and EDR blocklist state.
+5. GravityZone Public API polling for EDR/XDR incidents and individual incident alerts, endpoint quarantine, endpoint and account entity inventories, patch posture, PHASR posture, and EDR blocklist state.
 
-This allows you to search, observe and visualize BitDefender GravityZone events, incidents, entities, and containment rules through Elastic, trigger alerts, and monitor the BitDefender GravityZone Push Notification service for state and errors.
+This allows you to search, observe and visualize BitDefender GravityZone events, entities, and posture through Elastic, trigger alerts, and monitor the BitDefender GravityZone Push Notification service for state and errors.
 
 For more information about BitDefender GravityZone, refer to [BitDefender GravityZone](https://www.bitdefender.com/business/products/security-products.html) and refer to the [Public API - Push](https://www.bitdefender.com/business/support/en/77209-135318-push.html) documentation.
 
@@ -31,7 +31,7 @@ The package collects BitDefender GravityZone push notification transported event
 
 The `jsonrpc` format is recommended default, but the ingest pipeline will attempt to detect if `qradar` or `splunk` format events have been received and process them accordingly.
 
-The integration can also collect the push notification configuration and statistics and poll higher-level security incidents and entity inventories from the BitDefender GravityZone Public API.
+The integration can also collect the push notification configuration and statistics and poll higher-level security, inventory, and posture objects from the BitDefender GravityZone Public API.
 
 Public API polling in this integration targets GravityZone Cloud. GravityZone On-Premises has a different API surface, authentication model, and service-specific paths and is not supported by the Public API polling data streams.
 
@@ -79,7 +79,7 @@ Click the clipboard icon to copy the API key to your PC's clipboard.
 The Public API polling data streams support either of these authentication types:
 
 - A Service API key, configured with `x_api_key`, from **Accounts → Service API keys**. Enable only the API areas required by the selected data streams. Service API keys are independent of human accounts, expire after at most one year, and do not support the Event Push Service API.
-- A Personal API key, configured with `basic`, from the account menu under **API keys**. Personal API keys are required for the existing Push API streams.
+- A Personal API key, configured with `basic`, from the account menu under **API keys**. Personal API keys are required for the existing Push API streams. Patch Management might also require a Personal API key because the current Service API key permission list does not document Patch Management.
 
 Copy the exact Control Center API Access URL from the account menu under **Control Center API**. The URL normally ends in `/api`. GravityZone uses multiple regional instances, including `https://cloudgz.gravityzone.bitdefender.com/api`, `https://cloud.gravityzone.bitdefender.com/api`, and `https://cloudap.gravityzone.bitdefender.com/api`. An API key is valid only on the Control Center instance where it was created. If GravityZone reports an invalid API key, verify the Access URL before replacing the key.
 
@@ -93,13 +93,17 @@ The Public API data streams require the corresponding GravityZone API permission
 - Quarantine: **Quarantine API**.
 - Endpoint inventory: **Network API**.
 - Account inventory: **Accounts API** and the required user-management rights.
+- Patch posture: **Patch Management API** and the Patch Management add-on.
+- PHASR posture: **PHASR API**, Network Administrator rights, and the PHASR add-on.
 
-Selecting an API area when creating a key does not grant the corresponding product license or user rights.
+Selecting an API area when creating a key does not grant the corresponding product license or user rights. For example, Patch Management requests are rejected when the user does not have the Patch Management feature, and PHASR requests are rejected when the company does not have PHASR access.
 
 GravityZone rate limits vary by API method and tenant. A throttled request returns HTTP `429` and can include a `Retry-After` header. The integration retries throttled requests. Each polling cycle fetches every paginated response page for the enabled stream:
 
 - Incidents runs paginated `getIncidentsList` requests for the window and then resolves full details with `getIncidentsByIds` in batches of up to 10 incident IDs per request.
-- Endpoint inventory, account inventory, and blocklist append a full snapshot of the active inventory or rules on every polling interval. Size retention and polling intervals according to your tenant's object counts and API rate limits, or split streams across separate API keys when needed.
+- Patch posture runs all pages of `getMissingPatches` followed by all pages of `getInstalledPatches` in each cycle.
+- PHASR posture runs all pages of `getPhasrRecommendations` followed by all pages of `getMonitoredRules` in each cycle (subject to GravityZone's 5 requests per minute PHASR limit).
+- Endpoint inventory, account inventory, patch posture, PHASR posture, and blocklist append a full snapshot of the active inventory or posture on every polling interval. Size retention and polling intervals according to your tenant's object counts and API rate limits, or split streams across separate API keys when needed.
 
 ### Creating the push notification configuration via BitDefender GravityZone API
 
@@ -252,6 +256,22 @@ The account dataset collects Control Center users as entity snapshots across all
 {{fields "account"}}
 
 {{event "account"}}
+
+### Log stream patches
+
+The patch dataset collects full snapshots of missing and installed patch posture (`getMissingPatches` and `getInstalledPatches`) across all pages on each polling interval, including endpoint IDs, package names, CVEs, bulletin references, vendors, and operating-system families.
+
+{{fields "patch"}}
+
+{{event "patch"}}
+
+### Log stream PHASR
+
+The PHASR dataset collects full snapshots of Proactive Hardening and Attack Surface Reduction recommendations (`getPhasrRecommendations`) and monitored-rule posture (`getMonitoredRules`) across all pages on each polling interval.
+
+{{fields "phasr"}}
+
+{{event "phasr"}}
 
 ### Log stream blocklist
 

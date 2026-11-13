@@ -1,0 +1,179 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.rate_limit.limit: 0.083333
+resource.rate_limit.burst: 1
+resource.retry.max_attempts: 5
+resource.retry.wait_min: 12s
+resource.retry.wait_max: 60s
+resource.url: {{public_api_url}}/v1.0/jsonrpc/phasr
+state:
+  api_key: {{api_key}}
+  auth_type: {{auth_type}}
+  company_id: '{{company_id}}'
+  page_size: {{page_size}}
+redact:
+  fields:
+    - api_key
+max_executions: 10000
+program: |-
+  {
+    "record_type": state.?cursor.record_type.orValue("recommendation"),
+    "page": int(state.?cursor.page.orValue(1)),
+  }.as(run,
+    state.with(
+      request("POST", state.url).with(
+        {
+          "Header": {
+            "Accept": ["application/json"],
+            "Content-Type": ["application/json"],
+            ?"Authorization": (state.auth_type == "basic") ?
+              optional.of(["Basic " + bytes(state.api_key + ":").base64()])
+            :
+              optional.none(),
+            ?"X-API-Key": (state.auth_type == "x_api_key") ?
+              optional.of([state.api_key])
+            :
+              optional.none(),
+          },
+          "Body": {
+            "id": (run.record_type == "recommendation") ?
+              "phasr-recommendations"
+            :
+              "phasr-rules",
+            "jsonrpc": "2.0",
+            "method": (run.record_type == "recommendation") ?
+              "getPhasrRecommendations"
+            :
+              "getMonitoredRules",
+            "params": {
+              ?"companyId": (state.company_id != "") ?
+                optional.of(state.company_id)
+              :
+                optional.none(),
+              "page": run.page,
+              "perPage": (int(state.page_size) > 100) ? 100 : int(state.page_size),
+            },
+          }.encode_json(),
+        }
+      ).do_request().as(resp,
+        is_error(resp) ?
+          {
+            "events": {
+              "error": {
+                "code": "transport_error",
+                "id": "transport_error",
+                "message": "POST /v1.0/jsonrpc/phasr: " + try(resp),
+              },
+            },
+            "want_more": false,
+          }
+        : (resp.StatusCode == 200) ?
+          try(resp.Body.decode_json()).as(body,
+            (is_error(body) || type(body) != map) ?
+              {
+                "events": {
+                  "error": {
+                    "code": "invalid_json_rpc_response",
+                    "id": "invalid_response",
+                    "message": "POST /v1.0/jsonrpc/phasr: response was not a JSON object",
+                  },
+                },
+                "want_more": false,
+              }
+            : (body.?error.orValue(null) != null) ?
+              {
+                "events": {
+                  "error": {
+                    "code": "json_rpc_error",
+                    "id": string(body.error.message),
+                    "message": "POST /v1.0/jsonrpc/phasr: " + body.error.encode_json(),
+                  },
+                },
+                "want_more": false,
+              }
+            : (!has(body.result) || type(body.result) != map) ?
+              {
+                "events": {
+                  "error": {
+                    "code": "invalid_json_rpc_response",
+                    "id": "missing_result",
+                    "message": "POST /v1.0/jsonrpc/phasr: response did not contain an object result",
+                  },
+                },
+                "want_more": false,
+              }
+            :
+              {
+                "events": (size(body.result.?items.orValue([])) != 0) ?
+                  dyn(
+                    body.result.items.map(item,
+                      {
+                        "message": item.with({"record_type": run.record_type}).encode_json(),
+                      }
+                    )
+                  )
+                :
+                  dyn([{"retry": true}]),
+                "cursor": (int(body.result.?page.orValue(run.page)) < int(body.result.?pagesCount.orValue(run.page))) ?
+                  {
+                    "record_type": run.record_type,
+                    "page": run.page + 1,
+                  }
+                : (run.record_type == "recommendation") ?
+                  {
+                    "record_type": "monitored_rule",
+                    "page": 1,
+                  }
+                :
+                  {},
+                "want_more": int(body.result.?page.orValue(run.page)) < int(body.result.?pagesCount.orValue(run.page)) ||
+                run.record_type == "recommendation",
+              }
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": resp.Status,
+                "message": "POST /v1.0/jsonrpc/phasr: " + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    resp.Status + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "want_more": false,
+          }
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{escape_string tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+  - drop_event.when.equals.retry: true
+{{#if processors}}
+{{processors}}
+{{/if}}

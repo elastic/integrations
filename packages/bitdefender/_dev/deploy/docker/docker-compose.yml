@@ -57,6 +57,19 @@ services:
       - http-server
       - --addr=:8090
       - --config=/files/config-incident.yml
+  bitdefender-quarantine-mock:
+    image: docker.elastic.co/observability/stream:v0.22.0
+    hostname: bitdefender_quarantine_mock
+    ports:
+      - 8090
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: "8090"
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/files/config-quarantine.yml
   bitdefender-endpoint-mock:
     image: docker.elastic.co/observability/stream:v0.22.0
     hostname: bitdefender_endpoint_mock
@@ -83,9 +96,9 @@ services:
       - http-server
       - --addr=:8090
       - --config=/files/config-account.yml
-  bitdefender-quarantine-mock:
+  bitdefender-patch-mock:
     image: docker.elastic.co/observability/stream:v0.22.0
-    hostname: bitdefender_quarantine_mock
+    hostname: bitdefender_patch_mock
     ports:
       - 8090
     volumes:
@@ -95,7 +108,20 @@ services:
     command:
       - http-server
       - --addr=:8090
-      - --config=/files/config-quarantine.yml
+      - --config=/files/config-patch.yml
+  bitdefender-phasr-mock:
+    image: docker.elastic.co/observability/stream:v0.22.0
+    hostname: bitdefender_phasr_mock
+    ports:
+      - 8090
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: "8090"
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/files/config-phasr.yml
   bitdefender-blocklist-mock:
     image: docker.elastic.co/observability/stream:v0.22.0
     hostname: bitdefender_blocklist_mock

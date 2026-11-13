@@ -1,0 +1,193 @@
+rules:
+  # JSON-RPC application error returned with HTTP 200.
+  - path: /v1.0/jsonrpc/patchManagement
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-api-key"
+    request_body: /.*"method":"getMissingPatches".*"companyId":"eeeeeeeeeeeeeeeeeeeeeeee".*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"missing-patches","jsonrpc":"2.0","error":{"code":-32001,"message":"Authorization error","data":{"details":"Synthetic application error"}}}'
+  # HTTP server error handling.
+  - path: /v1.0/jsonrpc/patchManagement
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-api-key"
+    request_body: /.*"method":"getMissingPatches".*"companyId":"dddddddddddddddddddddddd".*/
+    responses:
+      - status_code: 500
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"error":"Synthetic server error"}'
+  # HTTP 429 handling.
+  - path: /v1.0/jsonrpc/patchManagement
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-api-key"
+    request_body: /.*"method":"getMissingPatches".*"companyId":"ffffffffffffffffffffffff".*/
+    responses:
+      - status_code: 429
+        headers:
+          Content-Type:
+            - "application/json"
+          Retry-After:
+            - "1"
+        body: '{"id":"missing-patches","jsonrpc":"2.0","error":{"code":-32003,"message":"Too many requests","data":{"details":"Synthetic rate limit"}}}'
+  # Personal-key authentication coverage.
+  - path: /v1.0/jsonrpc/patchManagement
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Authorization:
+        - "Basic dGVzdC1hcGkta2V5Og=="
+      Content-Type:
+        - "application/json"
+    request_body: /.*"method":"getMissingPatches".*"companyId":"bbbbbbbbbbbbbbbbbbbbbbbb".*"page":1.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"missing-patches","jsonrpc":"2.0","result":{"total":1,"page":1,"perPage":100,"pagesCount":1,"items":[{"endpointId":"5d4c3b2a190876543210feb1","name":"example-security-update-basic.pkg","releaseDate":"2026-10-01","bulletinUrl":"https://security.example.com/bulletins/EX-2026-001","cves":["CVE-2026-10001"],"kbNumber":"EX10001","vendorNames":["Example Software"],"operatingSystem":3,"type":0}]}}'
+  - path: /v1.0/jsonrpc/patchManagement
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Authorization:
+        - "Basic dGVzdC1hcGkta2V5Og=="
+      Content-Type:
+        - "application/json"
+    request_body: /.*"method":"getInstalledPatches".*"companyId":"bbbbbbbbbbbbbbbbbbbbbbbb".*"page":1.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"installed-patches","jsonrpc":"2.0","result":{"total":1,"page":1,"perPage":100,"pagesCount":1,"items":[{"endpointId":"5d4c3b2a190876543210feb1","name":"example-installed-update-basic.pkg","releaseDate":"2026-09-01","bulletinUrl":"https://security.example.com/bulletins/EX-2026-002","cves":["CVE-2026-10002"],"kbNumber":"EX10002","vendorNames":["Example Software"],"operatingSystem":3,"type":1}]}}'
+  # Service-key round 1 terminal missing-patch page.
+  - path: /v1.0/jsonrpc/patchManagement
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-api-key"
+    request_body: /.*"method":"getMissingPatches".*"companyId":"5e4d3c2b1a0987654321fedc".*"page":3.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"missing-patches","jsonrpc":"2.0","result":{"total":4,"page":3,"perPage":100,"pagesCount":3,"items":[{"endpointId":"5d4c3b2a190876543210fe03","name":"example-security-update-03.msu","releaseDate":"2026-10-03","bulletinUrl":"https://security.example.com/bulletins/EX-2026-103","cves":["CVE-2026-10103"],"kbNumber":"EX10103","vendorNames":["Example Software"],"operatingSystem":1,"type":0},{"endpointId":"5d4c3b2a190876543210fe04","name":"example-kernel-security-update-04.rpm","releaseDate":"2026-10-04","bulletinUrl":"https://security.example.com/bulletins/EX-2026-104","cves":["CVE-2026-10104"],"kbNumber":"EX10104","vendorNames":["Example Linux"],"operatingSystem":2,"type":0}]}}'
+  # Service-key round 1 empty intermediate missing-patch page.
+  - path: /v1.0/jsonrpc/patchManagement
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-api-key"
+    request_body: /.*"method":"getMissingPatches".*"companyId":"5e4d3c2b1a0987654321fedc".*"page":2.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"id":"missing-patches","jsonrpc":"2.0","result":{"total":4,"page":2,"perPage":100,"pagesCount":3,"items":[]}}'
+  # Service-key missing-patch page 1. The first match starts round 1, the
+  # second starts round 2, and later cycles are empty terminal snapshots.
+  - path: /v1.0/jsonrpc/patchManagement
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-api-key"
+    request_body: /.*"method":"getMissingPatches".*"companyId":"5e4d3c2b1a0987654321fedc".*"page":1.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ if eq .req_num 1 }}
+          {"id":"missing-patches","jsonrpc":"2.0","result":{"total":4,"page":1,"perPage":100,"pagesCount":3,"items":[{"endpointId":"5d4c3b2a190876543210fe01","name":"example-security-update-01.msu","releaseDate":null,"bulletinUrl":"https://security.example.com/bulletins/EX-2026-101","cves":["CVE-2026-10101"],"kbNumber":"EX10101","vendorNames":["Example Software"],"operatingSystem":1,"type":0},{"endpointId":"5d4c3b2a190876543210fe02","name":"example-nonsecurity-update-02.msu","releaseDate":"2026-10-02","bulletinUrl":"https://security.example.com/bulletins/EX-2026-102","cves":[],"kbNumber":"EX10102","vendorNames":["Example Software"],"operatingSystem":1,"type":1}]}}
+          {{ else if eq .req_num 2 }}
+          {"id":"missing-patches","jsonrpc":"2.0","result":{"total":1,"page":1,"perPage":100,"pagesCount":1,"items":[{"endpointId":"5d4c3b2a190876543210fe05","name":"example-security-update-round-2.msu","releaseDate":"2026-11-01","bulletinUrl":"https://security.example.com/bulletins/EX-2026-201","cves":["CVE-2026-10201"],"kbNumber":"EX10201","vendorNames":["Example Software"],"operatingSystem":1,"type":0}]}}
+          {{ else }}
+          {"id":"missing-patches","jsonrpc":"2.0","result":{"total":0,"page":1,"perPage":100,"pagesCount":1,"items":[]}}
+          {{ end }}
+  # Service-key round 1 terminal installed-patch page.
+  - path: /v1.0/jsonrpc/patchManagement
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-api-key"
+    request_body: /.*"method":"getInstalledPatches".*"companyId":"5e4d3c2b1a0987654321fedc".*"page":2.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ if eq .req_num 1 }}
+          {"id":"installed-patches","jsonrpc":"2.0","result":{"total":3,"page":2,"perPage":100,"pagesCount":2,"items":[{"endpointId":"5d4c3b2a190876543210fe03","name":"example-installed-update-03.deb","releaseDate":"2026-09-03","bulletinUrl":"https://security.example.com/bulletins/EX-2026-303","cves":["CVE-2026-10303"],"kbNumber":"EX10303","vendorNames":["Example Linux"],"operatingSystem":2,"type":0}]}}
+          {{ else }}
+          {"id":"installed-patches","jsonrpc":"2.0","result":{"total":3,"page":2,"perPage":100,"pagesCount":2,"items":[{"endpointId":"5d4c3b2a190876543210fef1","name":"regression-guard-update-01.msu","releaseDate":"2026-08-01","bulletinUrl":"https://security.example.com/bulletins/EX-2026-901","cves":["CVE-2026-10901"],"kbNumber":"EX10901","vendorNames":["Example Software"],"operatingSystem":1,"type":0},{"endpointId":"5d4c3b2a190876543210fef2","name":"regression-guard-update-02.msu","releaseDate":"2026-08-02","bulletinUrl":"https://security.example.com/bulletins/EX-2026-902","cves":["CVE-2026-10902"],"kbNumber":"EX10902","vendorNames":["Example Software"],"operatingSystem":1,"type":0},{"endpointId":"5d4c3b2a190876543210fef3","name":"regression-guard-update-03.msu","releaseDate":"2026-08-03","bulletinUrl":"https://security.example.com/bulletins/EX-2026-903","cves":["CVE-2026-10903"],"kbNumber":"EX10903","vendorNames":["Example Software"],"operatingSystem":1,"type":0}]}}
+          {{ end }}
+  # Service-key installed-patch page 1. The first match completes round 1,
+  # the second completes round 2, and later cycles are empty.
+  - path: /v1.0/jsonrpc/patchManagement
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      X-Api-Key:
+        - "test-api-key"
+    request_body: /.*"method":"getInstalledPatches".*"companyId":"5e4d3c2b1a0987654321fedc".*"page":1.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ if eq .req_num 1 }}
+          {"id":"installed-patches","jsonrpc":"2.0","result":{"total":3,"page":1,"perPage":100,"pagesCount":2,"items":[{"endpointId":"5d4c3b2a190876543210fe01","name":"example-installed-update-01.msu","releaseDate":"2026-09-01","bulletinUrl":"https://security.example.com/bulletins/EX-2026-301","cves":["CVE-2026-10301"],"kbNumber":"EX10301","vendorNames":["Example Software"],"operatingSystem":1,"type":0},{"endpointId":"5d4c3b2a190876543210fe02","name":"example-installed-update-02.msu","releaseDate":"2026-09-02","bulletinUrl":"https://security.example.com/bulletins/EX-2026-302","cves":[],"kbNumber":"EX10302","vendorNames":["Example Software"],"operatingSystem":1,"type":1}]}}
+          {{ else if eq .req_num 2 }}
+          {"id":"installed-patches","jsonrpc":"2.0","result":{"total":1,"page":1,"perPage":100,"pagesCount":1,"items":[{"endpointId":"5d4c3b2a190876543210fe05","name":"example-installed-update-round-2.msu","releaseDate":"2026-10-31","bulletinUrl":"https://security.example.com/bulletins/EX-2026-401","cves":["CVE-2026-10401"],"kbNumber":"EX10401","vendorNames":["Example Software"],"operatingSystem":1,"type":2}]}}
+          {{ else }}
+          {"id":"installed-patches","jsonrpc":"2.0","result":{"total":0,"page":1,"perPage":100,"pagesCount":1,"items":[]}}
+          {{ end }}

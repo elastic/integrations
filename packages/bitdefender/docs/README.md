@@ -9,9 +9,9 @@ This integration additionally provides:
 2. Collection of push notification statistics via API polling, which includes the number of events sent, and counters for errors of different types, which you may wish to use to troubleshoot lost push notification events and for alerting purposes.
 3. Support for multiple instances of the integration, which may be needed for MSP/MSSP scenarios where multiple BitDefender GravityZone tenants exist.
 4. BitDefender company ID to your own company name/description mapping, in order to determine to which tenant the event relates to in a human friendly way. This is very useful for MSP/MSSP environments or for large organisations with multiple sub-organisations.
-5. GravityZone Public API polling for EDR/XDR incidents and individual incident alerts, endpoint quarantine, endpoint and account entity inventories, and EDR blocklist state.
+5. GravityZone Public API polling for EDR/XDR incidents and individual incident alerts, endpoint quarantine, endpoint and account entity inventories, patch posture, PHASR posture, and EDR blocklist state.
 
-This allows you to search, observe and visualize BitDefender GravityZone events, incidents, entities, and containment rules through Elastic, trigger alerts, and monitor the BitDefender GravityZone Push Notification service for state and errors.
+This allows you to search, observe and visualize BitDefender GravityZone events, entities, and posture through Elastic, trigger alerts, and monitor the BitDefender GravityZone Push Notification service for state and errors.
 
 For more information about BitDefender GravityZone, refer to [BitDefender GravityZone](https://www.bitdefender.com/business/products/security-products.html) and refer to the [Public API - Push](https://www.bitdefender.com/business/support/en/77209-135318-push.html) documentation.
 
@@ -31,7 +31,7 @@ The package collects BitDefender GravityZone push notification transported event
 
 The `jsonrpc` format is recommended default, but the ingest pipeline will attempt to detect if `qradar` or `splunk` format events have been received and process them accordingly.
 
-The integration can also collect the push notification configuration and statistics and poll higher-level security incidents and entity inventories from the BitDefender GravityZone Public API.
+The integration can also collect the push notification configuration and statistics and poll higher-level security, inventory, and posture objects from the BitDefender GravityZone Public API.
 
 Public API polling in this integration targets GravityZone Cloud. GravityZone On-Premises has a different API surface, authentication model, and service-specific paths and is not supported by the Public API polling data streams.
 
@@ -79,7 +79,7 @@ Click the clipboard icon to copy the API key to your PC's clipboard.
 The Public API polling data streams support either of these authentication types:
 
 - A Service API key, configured with `x_api_key`, from **Accounts → Service API keys**. Enable only the API areas required by the selected data streams. Service API keys are independent of human accounts, expire after at most one year, and do not support the Event Push Service API.
-- A Personal API key, configured with `basic`, from the account menu under **API keys**. Personal API keys are required for the existing Push API streams.
+- A Personal API key, configured with `basic`, from the account menu under **API keys**. Personal API keys are required for the existing Push API streams. Patch Management might also require a Personal API key because the current Service API key permission list does not document Patch Management.
 
 Copy the exact Control Center API Access URL from the account menu under **Control Center API**. The URL normally ends in `/api`. GravityZone uses multiple regional instances, including `https://cloudgz.gravityzone.bitdefender.com/api`, `https://cloud.gravityzone.bitdefender.com/api`, and `https://cloudap.gravityzone.bitdefender.com/api`. An API key is valid only on the Control Center instance where it was created. If GravityZone reports an invalid API key, verify the Access URL before replacing the key.
 
@@ -93,13 +93,17 @@ The Public API data streams require the corresponding GravityZone API permission
 - Quarantine: **Quarantine API**.
 - Endpoint inventory: **Network API**.
 - Account inventory: **Accounts API** and the required user-management rights.
+- Patch posture: **Patch Management API** and the Patch Management add-on.
+- PHASR posture: **PHASR API**, Network Administrator rights, and the PHASR add-on.
 
-Selecting an API area when creating a key does not grant the corresponding product license or user rights.
+Selecting an API area when creating a key does not grant the corresponding product license or user rights. For example, Patch Management requests are rejected when the user does not have the Patch Management feature, and PHASR requests are rejected when the company does not have PHASR access.
 
 GravityZone rate limits vary by API method and tenant. A throttled request returns HTTP `429` and can include a `Retry-After` header. The integration retries throttled requests. Each polling cycle fetches every paginated response page for the enabled stream:
 
 - Incidents runs paginated `getIncidentsList` requests for the window and then resolves full details with `getIncidentsByIds` in batches of up to 10 incident IDs per request.
-- Endpoint inventory, account inventory, and blocklist append a full snapshot of the active inventory or rules on every polling interval. Size retention and polling intervals according to your tenant's object counts and API rate limits, or split streams across separate API keys when needed.
+- Patch posture runs all pages of `getMissingPatches` followed by all pages of `getInstalledPatches` in each cycle.
+- PHASR posture runs all pages of `getPhasrRecommendations` followed by all pages of `getMonitoredRules` in each cycle (subject to GravityZone's 5 requests per minute PHASR limit).
+- Endpoint inventory, account inventory, patch posture, PHASR posture, and blocklist append a full snapshot of the active inventory or posture on every polling interval. Size retention and polling intervals according to your tenant's object counts and API rate limits, or split streams across separate API keys when needed.
 
 ### Creating the push notification configuration via BitDefender GravityZone API
 
@@ -1679,6 +1683,249 @@ An example event for `account` looks as following:
             "network_administrator"
         ]
     }
+}
+```
+
+### Log stream patches
+
+The patch dataset collects full snapshots of missing and installed patch posture (`getMissingPatches` and `getInstalledPatches`) across all pages on each polling interval, including endpoint IDs, package names, CVEs, bulletin references, vendors, and operating-system families.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| bitdefender.patch.kbNumber | Vendor knowledge base article identifier. | keyword |
+| bitdefender.patch.operatingSystem | Target operating system code. Values are 1 (Windows), 2 (Linux), and 3 (macOS). | long |
+| bitdefender.patch.releaseDate | Date when the patch was released. | date |
+| bitdefender.patch.status | Collection context identifying the patch as missing or installed. | keyword |
+| bitdefender.patch.type | Patch category code. Values are 0 (security), 1 (non-security), and 2 (manually approved). | long |
+| bitdefender.patch.vendorNames | Software vendors associated with the patch. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| package.name | Package name | keyword |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| vulnerability.id | The identification (ID) is the number portion of a vulnerability entry. It includes a unique identification number for the vulnerability. For example (https://cve.mitre.org/about/faqs.html#what_is_cve_id) | keyword |
+| vulnerability.reference | A resource that provides additional information, context, and mitigations for the identified vulnerability. | keyword |
+
+
+An example event for `patch` looks as following:
+
+```json
+{
+    "@timestamp": "2026-11-02T21:53:01.444Z",
+    "agent": {
+        "ephemeral_id": "3726f851-ed5c-43f3-b704-383c895ecdde",
+        "id": "a1342848-3bca-451d-9ef1-735f59cd0c03",
+        "name": "elastic-agent-63838",
+        "type": "filebeat",
+        "version": "9.5.5"
+    },
+    "bitdefender": {
+        "patch": {
+            "kbNumber": "EX10101",
+            "operatingSystem": 1,
+            "status": "missing",
+            "type": 0,
+            "vendorNames": "Example Software"
+        }
+    },
+    "data_stream": {
+        "dataset": "bitdefender.patch",
+        "namespace": "52422",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.5.0"
+    },
+    "elastic_agent": {
+        "id": "a1342848-3bca-451d-9ef1-735f59cd0c03",
+        "snapshot": false,
+        "version": "9.5.5"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "vulnerability",
+            "package"
+        ],
+        "dataset": "bitdefender.patch",
+        "ingested": "2026-11-02T21:53:05Z",
+        "kind": "state",
+        "module": "bitdefender",
+        "original": "{\"bulletinUrl\":\"https://security.example.com/bulletins/EX-2026-101\",\"cves\":[\"CVE-2026-10101\"],\"endpointId\":\"5d4c3b2a190876543210fe01\",\"kbNumber\":\"EX10101\",\"name\":\"example-security-update-01.msu\",\"operatingSystem\":1,\"releaseDate\":null,\"status\":\"missing\",\"type\":0,\"vendorNames\":[\"Example Software\"]}",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "id": "5d4c3b2a190876543210fe01",
+        "os": {
+            "family": "windows"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "GravityZone",
+        "vendor": "Bitdefender"
+    },
+    "package": {
+        "name": "example-security-update-01.msu"
+    },
+    "related": {
+        "hosts": [
+            "5d4c3b2a190876543210fe01"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded"
+    ],
+    "vulnerability": {
+        "id": "CVE-2026-10101",
+        "reference": "https://security.example.com/bulletins/EX-2026-101"
+    }
+}
+```
+
+### Log stream PHASR
+
+The PHASR dataset collects full snapshots of Proactive Hardening and Attack Surface Reduction recommendations (`getPhasrRecommendations`) and monitored-rule posture (`getMonitoredRules`) across all pages on each polling interval.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| bitdefender.phasr.actionTaken | Recommendation action status code. Values are 0 (action needed), 1 (applied), and 2 (partially applied). | long |
+| bitdefender.phasr.attackSurfaceReduction | Attack surface reduction score for the recommendation. | double |
+| bitdefender.phasr.behavioralProfiles | Number of behavioral profiles to which the recommendation applies. | long |
+| bitdefender.phasr.category | Behavioral category of the monitored rule. | keyword |
+| bitdefender.phasr.createdOn | Time when the recommendation was created. | date |
+| bitdefender.phasr.description | Description of the monitored rule and its trigger conditions. | match_only_text |
+| bitdefender.phasr.lastTriggered | Unix epoch seconds when the monitored rule was last triggered. | long |
+| bitdefender.phasr.last_triggered | Time when the monitored rule was last triggered, converted from the vendor Unix timestamp. | date |
+| bitdefender.phasr.latestUpdate | Unix epoch seconds when the monitored rule was last updated. | long |
+| bitdefender.phasr.latest_update | Time when the monitored rule was last updated, converted from the vendor Unix timestamp. | date |
+| bitdefender.phasr.name | Name of the monitored rule. | keyword |
+| bitdefender.phasr.objectId | Stable GravityZone PHASR recommendation identifier. | keyword |
+| bitdefender.phasr.profilesNotUsingSuchTools | Number of profiles not exhibiting the monitored behavior. | long |
+| bitdefender.phasr.profilesUsingSuchTools | Number of profiles exhibiting the monitored behavior. | long |
+| bitdefender.phasr.recommendations | Number of recommendations generated by the monitored rule. | long |
+| bitdefender.phasr.record_type | Collection context identifying a recommendation or monitored rule. | keyword |
+| bitdefender.phasr.restrictedProfilesByAutopilot | Number of profiles restricted automatically by Autopilot. | long |
+| bitdefender.phasr.restrictedProfilesByDirectControl | Number of profiles restricted manually by Direct Control. | long |
+| bitdefender.phasr.ruleId | Identifier of the PHASR rule. | long |
+| bitdefender.phasr.ruleTriggers | Number of times the monitored rule was triggered. | long |
+| bitdefender.phasr.type | Recommendation type code. Values are 0 (allow access), 1 (restrict access), and 2 (allow access request). | long |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.id | Unique ID to describe the event. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| rule.category | A categorization value keyword used by the entity using the rule for detection of this event. | keyword |
+| rule.description | The description of the rule generating the event. | keyword |
+| rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
+| rule.name | The name of the rule or signature generating the event. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
+
+
+An example event for `phasr` looks as following:
+
+```json
+{
+    "@timestamp": "2026-11-02T21:55:37.858Z",
+    "agent": {
+        "ephemeral_id": "ec97e681-80f1-422d-b174-27184df1dd04",
+        "id": "a3e29646-f153-4ee2-9981-cd61e36cf966",
+        "name": "elastic-agent-89439",
+        "type": "filebeat",
+        "version": "9.5.5"
+    },
+    "bitdefender": {
+        "phasr": {
+            "actionTaken": 0,
+            "attackSurfaceReduction": 0.15,
+            "behavioralProfiles": 4,
+            "createdOn": "2026-01-15T09:30:00.000Z",
+            "objectId": "65a000000000000000000001",
+            "record_type": "recommendation",
+            "ruleId": 619,
+            "type": 1
+        }
+    },
+    "data_stream": {
+        "dataset": "bitdefender.phasr",
+        "namespace": "30949",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.5.0"
+    },
+    "elastic_agent": {
+        "id": "a3e29646-f153-4ee2-9981-cd61e36cf966",
+        "snapshot": false,
+        "version": "9.5.5"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "configuration",
+            "host"
+        ],
+        "created": "2026-01-15T09:30:00.000Z",
+        "dataset": "bitdefender.phasr",
+        "id": "65a000000000000000000001",
+        "ingested": "2026-11-02T21:55:41Z",
+        "kind": "state",
+        "module": "bitdefender",
+        "original": "{\"actionTaken\":0,\"attackSurfaceReduction\":0.15,\"behavioralProfiles\":4,\"createdOn\":\"2026-01-15T09:30:00.000Z\",\"objectId\":\"65a000000000000000000001\",\"record_type\":\"recommendation\",\"ruleId\":619,\"type\":1}",
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "GravityZone",
+        "vendor": "Bitdefender"
+    },
+    "rule": {
+        "id": "619"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded"
+    ]
 }
 ```
 
