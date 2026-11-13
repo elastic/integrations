@@ -8,7 +8,7 @@
   "attributes": {
     "id": "nginx_otel-connections-ml",
     "title": "[Nginx OTel] Connection state anomalies",
-    "description": "Detect Nginx hosts with unusually high active, reading, writing or waiting connections, from the Nginx (OpenTelemetry) stub_status metrics.",
+    "description": "Detect Nginx hosts with unusually high reading, writing or waiting connections, from the Nginx (OpenTelemetry) stub_status metrics.",
     "type": "Web server metrics",
     "logo": {
       "icon": "logoNginx"
@@ -46,12 +46,12 @@
             "nginx",
             "otel"
           ],
-          "description": "Nginx OTel stub_status: unusually high active, reading, writing or waiting connections per host compared with its baseline.",
+          "description": "Nginx OTel stub_status: unusually high reading, writing or waiting connections per host compared with its baseline. Active connections are not modeled separately because they are the sum of the three states.",
           "analysis_config": {
             "bucket_span": "15m",
             "detectors": [
               {
-                "detector_description": "High mean current connections by state per host",
+                "detector_description": "High mean current connections by state (reading, writing, waiting) per host",
                 "function": "high_mean",
                 "field_name": "nginx.connections_current",
                 "by_field_name": "state",
@@ -111,7 +111,6 @@
                 {
                   "terms": {
                     "state": [
-                      "active",
                       "reading",
                       "writing",
                       "waiting"
