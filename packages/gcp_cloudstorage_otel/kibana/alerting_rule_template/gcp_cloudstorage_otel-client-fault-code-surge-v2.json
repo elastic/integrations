@@ -1,0 +1,74 @@
+{
+  "id": "gcp_cloudstorage_otel-client-fault-code-surge-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud Storage OTel] Client-fault response code surge on a bucket",
+        "description": "Fires when any non-authorization client-fault code (NOT_FOUND, FAILED_PRECONDITION, INVALID_ARGUMENT, OUT_OF_RANGE, ALREADY_EXISTS, CANCELLED) steps up at least three-fold against its own 22-hour baseline on a bucket. One alert per bucket and code, because the remediation for each code is completely different.",
+        "tags": [
+          "observability",
+          "gcp_cloudstorage_otel",
+          "otel"
+        ]
+      },
+      "schedule": {
+        "every": "30m",
+        "lookback": "24h"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudstorage.otel-default\n// Scope to Cloud Storage; this data stream carries every GCP service the receiver collects.\n| WHERE resource.attributes.gcp.resource_type == \"gcs_bucket\"\n    AND `metrics.storage.googleapis.com/api/request_count` IS NOT NULL\n// Client-fault codes other than the authorization pair, which has its own, traffic-normalised rule\n// (gcp_cloudstorage_otel-authorization-failure-surge). Anything not listed here is handled by\n// gcp_cloudstorage_otel-service-fault-errors, so the two rules together cover every possible code.\n| WHERE attributes.response_code IN (\n      \"NOT_FOUND\", \"INVALID_ARGUMENT\", \"FAILED_PRECONDITION\",\n      \"OUT_OF_RANGE\", \"ALREADY_EXISTS\", \"CANCELLED\")\n// Split the rule's 24h window into a 2h \"recent\" slice and a 22h baseline. A long baseline is used\n// deliberately so that a normal diurnal peak is not mistaken for a step change.\n| EVAL is_recent = @timestamp >= NOW() - 2 hours\n// request_count is a ~60s delta counter stored as a gauge. SUM_OVER_TIME totals each series and SUM\n// adds the series together: the collector can split one bucket's metric across several series\n// (_metric_names_hash is a dimension), and each sample is still counted once. Never RATE() it.\n| STATS recent_faults    = SUM(SUM_OVER_TIME(`metrics.storage.googleapis.com/api/request_count`)) WHERE is_recent,\n        baseline_faults  = SUM(SUM_OVER_TIME(`metrics.storage.googleapis.com/api/request_count`)) WHERE NOT is_recent,\n        affected_methods = VALUES(attributes.method) WHERE is_recent\n    BY resource.attributes.bucket_name, attributes.response_code\n| EVAL recent_faults = COALESCE(recent_faults, 0), baseline_faults = COALESCE(baseline_faults, 0)",
+        "breach": {
+          "segment": "// Absolute floor first, so a code that was previously absent cannot page on a handful of requests.\nWHERE recent_faults >= 50\n// Cast before dividing: request_count is a long and `a / b` would be integer division.\n// 2.0 and 22.0 are the two slice widths in hours \u2014 keep them in sync with is_recent/timeWindowSize.\n| EVAL recent_faults_per_hour   = ROUND(recent_faults::DOUBLE / 2.0, 2),\n       baseline_faults_per_hour = ROUND(baseline_faults::DOUBLE / 22.0, 2)\n// Step-change test on the unrounded hourly rates. A code with no baseline at all is compared\n// against 1 fault/hour instead, so the ratio stays finite; the volume floor above already makes\n// such a code significant.\n| EVAL step_change_factor = ROUND((recent_faults::DOUBLE / 2.0)\n      / CASE(baseline_faults > 0, baseline_faults::DOUBLE / 22.0, 1.0), 2)\n| WHERE step_change_factor >= 3.0\n| EVAL alert_key = CONCAT(resource.attributes.bucket_name, \" / \", attributes.response_code)\n| SORT step_change_factor DESC\n| LIMIT 50"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.bucket_name",
+          "attributes.response_code"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudstorage_otel-client-fault-code-surge-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Client-fault response code surge on a Cloud Storage bucket\n\nA caller-side status code has stepped up at least three-fold against its own 22-hour baseline for\nthis bucket. These codes are *expected at some baseline rate* in many workloads \u2014 probing for object\nexistence is a legitimate pattern \u2014 so the signal is the change, not the level. Cloud Storage is\nbehaving correctly here; something about the caller, the data model or the configuration changed.\n\n### Triage by code\n\n`attributes.response_code` identifies which code moved, and `affected_methods` narrows it to a path.\n\n- **`NOT_FOUND`** on `ReadObject` or `GetObjectMetadata` \u2014 broken references, a read racing ahead of\n  the write that creates the object, or a lifecycle rule that deleted objects a consumer still\n  expects. Check recent lifecycle policy edits and the ordering guarantees between producer and\n  consumer.\n- **`FAILED_PRECONDITION`** on `WriteObject` or `ReadObject` \u2014 optimistic-concurrency contention.\n  Multiple writers are using `ifGenerationMatch` / `ifMetagenerationMatch` against the same object\n  and losing the race. Look for a scale-up of the writing service, a retry storm, or a new consumer.\n  The remedy is usually to partition the object key space, not to drop the precondition.\n- **`INVALID_ARGUMENT`** appearing where it previously did not \u2014 a client or SDK regression. Check\n  what deployed in the last two hours, including SDK and client-library version bumps.\n- **`OUT_OF_RANGE`** \u2014 ranged reads asking for byte ranges past the end of the object, typically\n  after an object was rewritten smaller.\n- **`ALREADY_EXISTS`** \u2014 create-if-absent semantics colliding, usually a duplicated job run.\n- **`CANCELLED`** \u2014 callers abandoning requests. Often a client timeout budget that is too tight, or\n  upstream load shedding; correlate with the client's own latency.\n\n### Triage steps\n\n1. Confirm the blast radius: is this one bucket, or did several buckets move together? Several at\n   once points at a shared client or deployment rather than a data problem.\n2. Check what deployed in the recent window. Most surges of this shape are a release.\n3. Confirm the bucket is not also saturated \u2014 if `gcp_cloudstorage_otel-request-throttling` is active,\n   deal with the ramp first.\n\n### Tuning\n\n- `step_change_factor >= 3.0` is the sensitivity. Raise it for noisy workloads, lower it to `2.0`\n  where these codes are normally very stable.\n- `recent_faults >= 50` is the absolute floor; raise it for large estates.\n- This rule compares raw rates rather than shares, because the per-bucket total is not available\n  when grouping by response code. A genuine three-fold traffic increase can therefore trip it \u2014\n  check overall request volume before treating the alert as a regression."
+          }
+        },
+        {
+          "id": "gcp_cloudstorage_otel-client-fault-code-surge-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudstorage_otel-ffad2d3a-43f6-482a-a35c-97f6df9e0479"
+          }
+        },
+        {
+          "id": "gcp_cloudstorage_otel-client-fault-code-surge-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudstorage_otel-61c5320c-19f7-4676-a8ae-5d2d889d99a7"
+          }
+        }
+      ]
+    }
+  }
+}
