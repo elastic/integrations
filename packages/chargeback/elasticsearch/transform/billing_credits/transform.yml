@@ -167,8 +167,16 @@ pivot:
               policyId = params._source.conf_policy_id.toString();
             }
           } catch (Exception e) {}
+          String lineId = '';
+          try {
+            if (doc.containsKey('credit_line_id') && !doc['credit_line_id'].empty) {
+              lineId = doc['credit_line_id'].value.toString();
+            } else if (params._source?.credit_line_id != null) {
+              lineId = params._source.credit_line_id.toString();
+            }
+          } catch (Exception e) {}
           String pollOwner = agentId + '|' + dsNs + '|' + policyId;
-          state.docs.add([ts, ingTs, bal, act, qty, isNat, pollOwner]);
+          state.docs.add([ts, ingTs, bal, act, qty, isNat, pollOwner, lineId]);
         combine_script: |
           return state.docs;
         reduce_script: |
@@ -190,8 +198,9 @@ pivot:
               double qty = d.size() > 4 && d[4] instanceof Number ? ((Number)d[4]).doubleValue() : 0.0;
               boolean isNat = d.size() > 5 && Boolean.TRUE.equals(d[5]);
               String owner = d.size() > 6 && d[6] != null ? d[6].toString() : '';
+              String lineId = d.size() > 7 && d[7] != null ? d[7].toString() : '';
               if (isNat) {
-                natDocs.add([ts, ingTs, qty, bal, act, owner]);
+                natDocs.add([ts, ingTs, qty, bal, act, owner, lineId]);
                 if (ts > maxNatTs
                     || (ts == maxNatTs && (ingTs > maxNatIngTs
                         || (ingTs == maxNatIngTs && owner.compareTo(latestNatOwner) > 0)))) {
@@ -212,15 +221,10 @@ pivot:
             }
           }
 
-          boolean hasNat = !natDocs.isEmpty();
-          int natTotalCount = 0;
-          int natActCount = 0;
-          double natActQty = 0.0;
-          double natActBal = 0.0;
-          double natAllQty = 0.0;
-          double natAllBal = 0.0;
+          Map latestNatItems = new LinkedHashMap();
           for (nd in natDocs) {
             long nTs = ((Number)nd[0]).longValue();
+            long nIngTs = ((Number)nd[1]).longValue();
             String nOwner = nd[5] != null ? nd[5].toString() : '';
             boolean inLatestNatPoll = nOwner.equals(latestNatOwner)
               && (maxNatTs - nTs) <= 100L;
@@ -228,7 +232,25 @@ pivot:
             double nQty = ((Number)nd[2]).doubleValue();
             double nBal = ((Number)nd[3]).doubleValue();
             boolean nAct = Boolean.TRUE.equals(nd[4]);
-            natTotalCount += 1;
+            String nLineId = nd.size() > 6 && nd[6] != null ? nd[6].toString().trim() : '';
+            String dedupKey = nLineId != ''
+              ? ('id:' + nLineId)
+              : ('raw:' + Long.toString(nTs) + '|' + Double.toString(nQty) + '|' + Double.toString(nBal) + '|' + Boolean.toString(nAct));
+            List prev = (List)latestNatItems.get(dedupKey);
+            if (prev == null || nIngTs >= ((Number)prev[0]).longValue()) {
+              latestNatItems.put(dedupKey, [nIngTs, nQty, nBal, nAct]);
+            }
+          }
+          boolean hasNat = !latestNatItems.isEmpty();
+          int natActCount = 0;
+          double natActQty = 0.0;
+          double natActBal = 0.0;
+          double natAllQty = 0.0;
+          double natAllBal = 0.0;
+          for (ni in latestNatItems.values()) {
+            double nQty = ((Number)ni[1]).doubleValue();
+            double nBal = ((Number)ni[2]).doubleValue();
+            boolean nAct = Boolean.TRUE.equals(ni[3]);
             natAllQty += nQty;
             natAllBal += nBal;
             if (nAct) {
@@ -238,15 +260,10 @@ pivot:
             }
           }
 
-          boolean hasLeg = !legDocs.isEmpty();
-          int legTotalCount = 0;
-          int legActCount = 0;
-          double legActQty = 0.0;
-          double legActBal = 0.0;
-          double legAllQty = 0.0;
-          double legAllBal = 0.0;
+          Map latestLegItems = new LinkedHashMap();
           for (ld in legDocs) {
             long lTs = ((Number)ld[0]).longValue();
+            long lIngTs = ((Number)ld[1]).longValue();
             String lOwner = ld[5] != null ? ld[5].toString() : '';
             boolean inLatestPoll = lOwner.equals(latestLegOwner)
               && (maxLegTs - lTs) <= 5000L;
@@ -254,7 +271,22 @@ pivot:
             double lQty = ((Number)ld[2]).doubleValue();
             double lBal = ((Number)ld[3]).doubleValue();
             boolean lAct = Boolean.TRUE.equals(ld[4]);
-            legTotalCount += 1;
+            String legKey = Long.toString((long)lQty);
+            List prevLeg = (List)latestLegItems.get(legKey);
+            if (prevLeg == null || lIngTs >= ((Number)prevLeg[0]).longValue()) {
+              latestLegItems.put(legKey, [lIngTs, lQty, lBal, lAct]);
+            }
+          }
+          boolean hasLeg = !latestLegItems.isEmpty();
+          int legActCount = 0;
+          double legActQty = 0.0;
+          double legActBal = 0.0;
+          double legAllQty = 0.0;
+          double legAllBal = 0.0;
+          for (li in latestLegItems.values()) {
+            double lQty = ((Number)li[1]).doubleValue();
+            double lBal = ((Number)li[2]).doubleValue();
+            boolean lAct = Boolean.TRUE.equals(li[3]);
             legAllQty += lQty;
             legAllBal += lBal;
             if (lAct) {
@@ -268,30 +300,16 @@ pivot:
           double finalQty = 0.0;
           double finalBal = 0.0;
           long finalTs = -1L;
-          if (hasNat && (!hasLeg || maxNatTs >= maxLegTs || legTotalCount < natTotalCount)) {
+          if (hasNat) {
             finalAct = natActCount > 0;
             finalQty = finalAct ? natActQty : natAllQty;
             finalBal = finalAct ? natActBal : natAllBal;
             finalTs = maxNatTs;
           } else if (hasLeg) {
             finalAct = legActCount > 0;
+            finalQty = finalAct ? legActQty : legAllQty;
             finalBal = finalAct ? legActBal : legAllBal;
             finalTs = maxLegTs;
-            if (hasNat) {
-              if (finalAct) {
-                if (legActCount == natActCount) {
-                  finalQty = natActQty;
-                } else if (natTotalCount == 1 && legActCount == 1) {
-                  finalQty = natAllQty;
-                } else {
-                  finalQty = legActQty;
-                }
-              } else {
-                finalQty = (legTotalCount == natTotalCount) ? natAllQty : legAllQty;
-              }
-            } else {
-              finalQty = finalAct ? legActQty : legAllQty;
-            }
           }
           return [
             'ecu_quantity': finalQty,
