@@ -79,7 +79,7 @@ source:
               return;
             }
           } catch (Exception e) {}
-          for (String f : ['elasticsearch.node.name.keyword', 'elasticsearch.node.name', 'source_node.name.keyword', 'source_node.name']) {
+          for (String f : ['elasticsearch.node.name.keyword', 'elasticsearch.node.name', 'source_node.name.keyword', 'source_node.name', 'service.node.name.keyword', 'service.node.name', 'node.name.keyword', 'node.name']) {
             try {
               if (doc.containsKey(f) && !doc[f].empty) {
                 String v = doc[f].value.toString();
@@ -90,6 +90,8 @@ source:
           try {
             def n = params._source?.elasticsearch?.node?.name;
             if (n == null || n.toString() == '') { n = params._source?.source_node?.name; }
+            if (n == null || n.toString() == '') { n = params._source?.service?.node?.name; }
+            if (n == null || n.toString() == '') { n = params._source?.node?.name; }
             if (n != null && n.toString() != '') {
               emit('name:' + n.toString());
               return;
@@ -100,7 +102,7 @@ source:
       type: keyword
       script:
         source: |
-          for (String f : ['elasticsearch.node.name.keyword', 'elasticsearch.node.name', 'source_node.name.keyword', 'source_node.name']) {
+          for (String f : ['elasticsearch.node.name.keyword', 'elasticsearch.node.name', 'source_node.name.keyword', 'source_node.name', 'service.node.name.keyword', 'service.node.name', 'node.name.keyword', 'node.name']) {
             try {
               if (doc.containsKey(f) && !doc[f].empty) {
                 String v = doc[f].value.toString();
@@ -111,6 +113,8 @@ source:
           try {
             def n = params._source?.elasticsearch?.node?.name;
             if (n == null || n.toString() == '') { n = params._source?.source_node?.name; }
+            if (n == null || n.toString() == '') { n = params._source?.service?.node?.name; }
+            if (n == null || n.toString() == '') { n = params._source?.node?.name; }
             if (n != null && n.toString() != '') {
               emit(n.toString());
             }
@@ -177,6 +181,7 @@ pivot:
           state.nat = new HashMap();
           state.leg = new HashMap();
           state.id_names = new HashMap();
+          state.slot_expected = new HashMap();
         map_script: |
           if (!doc.containsKey('@timestamp') || doc['@timestamp'].empty) { return; }
           long ts = doc['@timestamp'].value.toInstant().toEpochMilli();
@@ -233,6 +238,22 @@ pivot:
           }
           if (!hasHeap && !hasDisk) { return; }
 
+          String sk = Integer.toString(b);
+          int expNodes = 0;
+          try {
+            if (doc.containsKey('cluster_data_node_count') && !doc['cluster_data_node_count'].empty) {
+              expNodes = (int)((Number)doc['cluster_data_node_count'].value).longValue();
+            } else if (params._source?.cluster_data_node_count instanceof Number) {
+              expNodes = ((Number)params._source.cluster_data_node_count).intValue();
+            }
+          } catch (Exception e) {}
+          if (expNodes > 0) {
+            Integer prevExp = (Integer)state.slot_expected.get(sk);
+            if (prevExp == null || expNodes > prevExp.intValue()) {
+              state.slot_expected.put(sk, Integer.valueOf(expNodes));
+            }
+          }
+
           String nid = (doc.containsKey('cb_node_id') && !doc['cb_node_id'].empty)
             ? doc['cb_node_id'].value.toString()
             : '_default_';
@@ -261,34 +282,42 @@ pivot:
             nodeSlots = new HashMap();
             target.put(nid, nodeSlots);
           }
-          String sk = Integer.toString(b);
           List slotAcc = (List)nodeSlots.get(sk);
           if (slotAcc == null) {
-            slotAcc = [0.0, 0L, 0.0, 0L, -1.0, -1.0];
+            slotAcc = [0.0, 0L, 0.0, 0L];
             nodeSlots.put(sk, slotAcc);
           }
           if (hasHeap) {
             slotAcc.set(0, ((Number)slotAcc.get(0)).doubleValue() + heapVal);
             slotAcc.set(1, ((Number)slotAcc.get(1)).longValue() + 1L);
-            if (heapVal > ((Number)slotAcc.get(4)).doubleValue()) {
-              slotAcc.set(4, heapVal);
-            }
           }
           if (hasDisk) {
             slotAcc.set(2, ((Number)slotAcc.get(2)).doubleValue() + diskVal);
             slotAcc.set(3, ((Number)slotAcc.get(3)).longValue() + 1L);
-            if (diskVal > ((Number)slotAcc.get(5)).doubleValue()) {
-              slotAcc.set(5, diskVal);
-            }
           }
         combine_script: "return state;"
         reduce_script: |
           Map idNames = new HashMap();
+          Map mergedSlotExpected = new HashMap();
+          int maxDayExpected = 0;
           for (def st : states) {
             if (st != null && st.id_names instanceof Map) {
               for (def e : ((Map)st.id_names).entrySet()) {
                 if (e.getKey() != null && e.getValue() != null) {
                   idNames.put(e.getKey().toString(), e.getValue().toString());
+                }
+              }
+            }
+            if (st != null && st.slot_expected instanceof Map) {
+              for (def e : ((Map)st.slot_expected).entrySet()) {
+                if (e.getKey() != null && e.getValue() instanceof Number) {
+                  String sk = e.getKey().toString();
+                  int ev = ((Number)e.getValue()).intValue();
+                  Integer cur = (Integer)mergedSlotExpected.get(sk);
+                  if (cur == null || ev > cur.intValue()) {
+                    mergedSlotExpected.put(sk, Integer.valueOf(ev));
+                  }
+                  if (ev > maxDayExpected) { maxDayExpected = ev; }
                 }
               }
             }
@@ -325,24 +354,20 @@ pivot:
                 for (def se : srcSlots.entrySet()) {
                   String sk = se.getKey().toString();
                   List sv = (List)se.getValue();
-                  if (sv == null || sv.size() < 6) { continue; }
+                  if (sv == null || sv.size() < 4) { continue; }
                   double svHSum = ((Number)sv.get(0)).doubleValue();
                   long svHCnt = ((Number)sv.get(1)).longValue();
                   double svDSum = ((Number)sv.get(2)).doubleValue();
                   long svDCnt = ((Number)sv.get(3)).longValue();
-                  double svHMax = ((Number)sv.get(4)).doubleValue();
-                  double svDMax = ((Number)sv.get(5)).doubleValue();
                   List dv = (List)dstSlots.get(sk);
                   if (dv == null) {
-                    dv = [0.0, 0L, 0.0, 0L, -1.0, -1.0];
+                    dv = [0.0, 0L, 0.0, 0L];
                     dstSlots.put(sk, dv);
                   }
                   dv.set(0, ((Number)dv.get(0)).doubleValue() + svHSum);
                   dv.set(1, ((Number)dv.get(1)).longValue() + svHCnt);
                   dv.set(2, ((Number)dv.get(2)).doubleValue() + svDSum);
                   dv.set(3, ((Number)dv.get(3)).longValue() + svDCnt);
-                  if (svHMax > ((Number)dv.get(4)).doubleValue()) { dv.set(4, svHMax); }
-                  if (svDMax > ((Number)dv.get(5)).doubleValue()) { dv.set(5, svDMax); }
                 }
               }
             }
@@ -360,24 +385,20 @@ pivot:
                 for (def se : srcSlots.entrySet()) {
                   String sk = se.getKey().toString();
                   List sv = (List)se.getValue();
-                  if (sv == null || sv.size() < 6) { continue; }
+                  if (sv == null || sv.size() < 4) { continue; }
                   double svHSum = ((Number)sv.get(0)).doubleValue();
                   long svHCnt = ((Number)sv.get(1)).longValue();
                   double svDSum = ((Number)sv.get(2)).doubleValue();
                   long svDCnt = ((Number)sv.get(3)).longValue();
-                  double svHMax = ((Number)sv.get(4)).doubleValue();
-                  double svDMax = ((Number)sv.get(5)).doubleValue();
                   List dv = (List)dstSlots.get(sk);
                   if (dv == null) {
-                    dv = [0.0, 0L, 0.0, 0L, -1.0, -1.0];
+                    dv = [0.0, 0L, 0.0, 0L];
                     dstSlots.put(sk, dv);
                   }
                   dv.set(0, ((Number)dv.get(0)).doubleValue() + svHSum);
                   dv.set(1, ((Number)dv.get(1)).longValue() + svHCnt);
                   dv.set(2, ((Number)dv.get(2)).doubleValue() + svDSum);
                   dv.set(3, ((Number)dv.get(3)).longValue() + svDCnt);
-                  if (svHMax > ((Number)dv.get(4)).doubleValue()) { dv.set(4, svHMax); }
-                  if (svDMax > ((Number)dv.get(5)).doubleValue()) { dv.set(5, svDMax); }
                 }
               }
             }
@@ -397,61 +418,50 @@ pivot:
           List diskVals = new ArrayList();
           for (int b = 0; b < 96; b++) {
             String sk = Integer.toString(b);
+            Integer slotExpObj = (Integer)mergedSlotExpected.get(sk);
+            int slotExp = slotExpObj != null ? slotExpObj.intValue() : maxDayExpected;
+            int expectedNodes = (totalKnownNodes > slotExp) ? totalKnownNodes : slotExp;
             int natHeapNodes = 0;
             int idLegHeapNodes = 0;
-            double maxNatHeap = -1.0;
             int natDiskNodes = 0;
             int idLegDiskNodes = 0;
-            double maxNatDisk = -1.0;
             for (def nObj : knownNodes) {
               String nid = nObj.toString();
               Map natSlots = (Map)mergedNat.get(nid);
               Map legSlots = (Map)mergedLeg.get(nid);
               List natSlot = (natSlots != null) ? (List)natSlots.get(sk) : null;
               List legSlot = (legSlots != null) ? (List)legSlots.get(sk) : null;
-              long natHCnt = (natSlot != null && natSlot.size() >= 6) ? ((Number)natSlot.get(1)).longValue() : 0L;
-              long natDCnt = (natSlot != null && natSlot.size() >= 6) ? ((Number)natSlot.get(3)).longValue() : 0L;
-              long legHCnt = (legSlot != null && legSlot.size() >= 6) ? ((Number)legSlot.get(1)).longValue() : 0L;
-              long legDCnt = (legSlot != null && legSlot.size() >= 6) ? ((Number)legSlot.get(3)).longValue() : 0L;
+              long natHCnt = (natSlot != null && natSlot.size() >= 4) ? ((Number)natSlot.get(1)).longValue() : 0L;
+              long natDCnt = (natSlot != null && natSlot.size() >= 4) ? ((Number)natSlot.get(3)).longValue() : 0L;
+              long legHCnt = (legSlot != null && legSlot.size() >= 4) ? ((Number)legSlot.get(1)).longValue() : 0L;
+              long legDCnt = (legSlot != null && legSlot.size() >= 4) ? ((Number)legSlot.get(3)).longValue() : 0L;
               if (natHCnt > 0L) {
-                double nh = ((Number)natSlot.get(0)).doubleValue() / (double)natHCnt;
-                heapVals.add(nh);
+                heapVals.add(((Number)natSlot.get(0)).doubleValue() / (double)natHCnt);
                 natHeapNodes++;
-                if (nh > maxNatHeap) { maxNatHeap = nh; }
               } else if (legHCnt > 0L) {
                 heapVals.add(((Number)legSlot.get(0)).doubleValue() / (double)legHCnt);
                 idLegHeapNodes++;
               }
               if (natDCnt > 0L) {
-                double nd = ((Number)natSlot.get(2)).doubleValue() / (double)natDCnt;
-                diskVals.add(nd);
+                diskVals.add(((Number)natSlot.get(2)).doubleValue() / (double)natDCnt);
                 natDiskNodes++;
-                if (nd > maxNatDisk) { maxNatDisk = nd; }
               } else if (legDCnt > 0L) {
                 diskVals.add(((Number)legSlot.get(2)).doubleValue() / (double)legDCnt);
                 idLegDiskNodes++;
               }
             }
             List defSlot = (defLegSlots != null) ? (List)defLegSlots.get(sk) : null;
-            if (defSlot != null && defSlot.size() >= 6) {
+            if (defSlot != null && defSlot.size() >= 4) {
               long defHCnt = ((Number)defSlot.get(1)).longValue();
               if (defHCnt > 0L) {
-                double defHMean = ((Number)defSlot.get(0)).doubleValue() / (double)defHCnt;
-                double defHMax = ((Number)defSlot.get(4)).doubleValue();
-                if (natHeapNodes == 0 || (natHeapNodes + idLegHeapNodes) < totalKnownNodes) {
-                  heapVals.add(defHMean);
-                } else if (defHMax > maxNatHeap + 1.0e-6) {
-                  heapVals.add(defHMax);
+                if ((natHeapNodes == 0 && idLegHeapNodes == 0) || (expectedNodes > 0 && (natHeapNodes + idLegHeapNodes) < expectedNodes)) {
+                  heapVals.add(((Number)defSlot.get(0)).doubleValue() / (double)defHCnt);
                 }
               }
               long defDCnt = ((Number)defSlot.get(3)).longValue();
               if (defDCnt > 0L) {
-                double defDMean = ((Number)defSlot.get(2)).doubleValue() / (double)defDCnt;
-                double defDMax = ((Number)defSlot.get(5)).doubleValue();
-                if (natDiskNodes == 0 || (natDiskNodes + idLegDiskNodes) < totalKnownNodes) {
-                  diskVals.add(defDMean);
-                } else if (defDMax > maxNatDisk + 1.0e-6) {
-                  diskVals.add(defDMax);
+                if ((natDiskNodes == 0 && idLegDiskNodes == 0) || (expectedNodes > 0 && (natDiskNodes + idLegDiskNodes) < expectedNodes)) {
+                  diskVals.add(((Number)defSlot.get(2)).doubleValue() / (double)defDCnt);
                 }
               }
             }

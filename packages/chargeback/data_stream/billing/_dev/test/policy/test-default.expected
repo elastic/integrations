@@ -1,0 +1,729 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: chargeback
+      name: test-default-chargeback
+      streams:
+        - config_version: 2
+          data_stream:
+            dataset: chargeback.billing
+          interval: 1h
+          processors:
+            - drop_event.when.equals.fake: true
+          program: |-
+            state.with(
+              now.format(time_layout.DateOnly).as(today_utc,
+              state.config_owner_id.trim_space().as(clean_owner_id,
+              state.hub_es_url.trim_space().as(trimmed_hub_url,
+              (trimmed_hub_url.endsWith("/") ? trimmed_hub_url.substring(0, size(trimmed_hub_url) - 1) : trimmed_hub_url).as(clean_hub_url,
+              (state.organization_id.trim_space() + "|" + state.cloud_api_base.trim_space() + "|" + clean_hub_url).as(policy_scope,
+              state.conf_unit_rate.trim_space().as(clean_rate,
+              clean_rate.matches("^[0-9]+(\\.[0-9]+)?$").as(rate_valid,
+              state.conf_onprem_unit_rate.trim_space().as(clean_onprem_rate,
+              (clean_onprem_rate == "" || clean_onprem_rate.matches("^[0-9]+(\\.[0-9]+)?$")).as(onprem_rate_valid,
+              state.conf_effective_from.trim_space().as(clean_eff_from,
+              (clean_eff_from == "" ? true : (
+                !clean_eff_from.matches("^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])(T00:00:00(\\.[0]+)?(Z|[+-]00:00))?$") ? false : (
+                  int(clean_eff_from.substring(0, 4)).as(eff_y,
+                  int(clean_eff_from.substring(5, 7)).as(eff_m,
+                  int(clean_eff_from.substring(8, 10)).as(eff_d,
+                  ((eff_y % 4 == 0 && eff_y % 100 != 0) || (eff_y % 400 == 0)).as(eff_leap,
+                  ((eff_m == 4 || eff_m == 6 || eff_m == 9 || eff_m == 11) ? 30 : ((eff_m == 2) ? (eff_leap ? 29 : 28) : 31)).as(eff_max_d,
+                    eff_y >= 1970 && eff_d <= eff_max_d && (
+                      timestamp(clean_eff_from.substring(0, 10) + "T00:00:00Z") < timestamp("2046-12-31T23:59:59.999Z")
+                    )
+                  )))))
+                )
+              )).as(eff_valid,
+              ((clean_eff_from == "" || !eff_valid) ? "" : (clean_eff_from.substring(0, 10) + "T00:00:00Z")).as(norm_eff_from,
+              (!state.sync_fleet_config ? ("disabled|" + clean_owner_id + "|" + policy_scope) : (
+                (rate_valid && onprem_rate_valid && eff_valid) ? (clean_owner_id + "|" + policy_scope + "|" + clean_rate + "|" + clean_onprem_rate + "|" + state.conf_currency_unit + "|" + norm_eff_from + "|" + today_utc) : state.?cursor.conf_sig.orValue("")
+              )).as(conf_sig,
+              ((state.sync_fleet_config && !rate_valid) ?
+                [dyn({
+                  "error": {
+                    "code": "invalid_config",
+                    "id": "unit_rate",
+                    "message": "Invalid unit_rate '" + state.conf_unit_rate + "': expected non-negative decimal using '.' (for example 0.85)",
+                  },
+                })]
+              : ((state.sync_fleet_config && !onprem_rate_valid) ?
+                [dyn({
+                  "error": {
+                    "code": "invalid_config",
+                    "id": "onprem_unit_rate",
+                    "message": "Invalid onprem_unit_rate '" + state.conf_onprem_unit_rate + "': expected empty string or non-negative decimal using '.' (for example 0.00085)",
+                  },
+                })]
+              : ((state.sync_fleet_config && !eff_valid) ?
+                [dyn({
+                  "error": {
+                    "code": "invalid_config",
+                    "id": "config_effective_from",
+                    "message": "Invalid config_effective_from '" + state.conf_effective_from + "': expected empty string or UTC day-boundary date/timestamp between 1970-01-01 and 2046-12-31 (for example 2026-01-01 or 2026-01-01T00:00:00Z)",
+                  },
+                })]
+              : ((state.sync_fleet_config && state.?cursor.conf_sig.orValue("") != conf_sig) ?
+                [dyn({
+                  "doc_type": "config_snapshot",
+                  "conf_sync_enabled": true,
+                  "conf_owner_id": clean_owner_id,
+                  "conf_policy_scope": policy_scope,
+                  "conf_chargeable_unit_rate": double(clean_rate),
+                  "conf_onprem_chargeable_unit_rate": clean_onprem_rate != "" ? double(clean_onprem_rate) : double(clean_rate),
+                  "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                  "conf_effective_from": norm_eff_from,
+                })]
+              : ((!state.sync_fleet_config && state.?cursor.conf_sig.orValue("") != conf_sig) ?
+                [dyn({
+                  "doc_type": "config_snapshot",
+                  "conf_sync_enabled": false,
+                  "conf_owner_id": clean_owner_id,
+                  "conf_policy_scope": policy_scope,
+                })]
+              : []))))).as(conf_evts,
+              (state.organization_id == "" || state.api_key == "" || state.api_key.startsWith("$co.elastic.secret")) ?
+                {
+                  "events": size(conf_evts) > 0 ? conf_evts : [dyn({ "fake": true })],
+                  "cursor": { "conf_sig": conf_sig },
+                  "want_more": false,
+                }
+              :
+                state.?cursor.last_credit_day.orValue("").as(prev_credit_day,
+                int(state.?cursor.disc_dep_from.orValue(0)).as(dep_from,
+                string(state.?cursor.disc_es_next.orValue("START")).as(es_next,
+                string(state.?cursor.disc_obs_next.orValue("START")).as(obs_next,
+                string(state.?cursor.disc_sec_next.orValue("START")).as(sec_next,
+                string(state.?cursor.disc_vdb_next.orValue("START")).as(vdb_next,
+                ((state.collect_ess_credits && prev_credit_day != today_utc && dep_from == 0 && es_next == "START" && obs_next == "START" && sec_next == "START" && vdb_next == "START") ?
+                  (state.billing_api_base + "/api/v1/billing/organization/" + state.organization_id + "/line_items").as(cred_url,
+                    try(
+                      get_request(cred_url).with({ "Header": { "Authorization": ["ApiKey " + state.api_key] } }).do_request(),
+                      "req_err"
+                    ).as(cred_resp,
+                      has(cred_resp.req_err) ?
+                        {
+                          "evts": [dyn({
+                            "error": {
+                              "code": "transport_error",
+                              "id": "credit_line_items",
+                              "message": "GET " + cred_url + ": " + string(cred_resp.req_err),
+                            },
+                          })],
+                          "credit_day": prev_credit_day,
+                        }
+                      : (cred_resp.StatusCode == 200) ?
+                        try(bytes(cred_resp.Body).decode_json(), "json_err").as(cred_items,
+                          (type(cred_items) == map && has(cred_items.json_err)) ?
+                            {
+                              "evts": [dyn({
+                                "error": {
+                                  "code": "decode_error",
+                                  "id": "credit_line_items",
+                                  "message": "GET " + cred_url + ": " + string(cred_items.json_err),
+                                },
+                              })],
+                              "credit_day": prev_credit_day,
+                            }
+                          :
+                            {
+                              "evts": (type(cred_items) == list ? cred_items : []).map(item,
+                                dyn({
+                                  "doc_type": "credit_line_item",
+                                  "ess": {
+                                    "billing": {
+                                      "organization_id": state.organization_id,
+                                      "start": item.start,
+                                      "end": item.end,
+                                      "ecu_quantity": (has(item.ecu_quantity) && item.ecu_quantity != null) ? int(double(item.ecu_quantity)) : 0,
+                                      "ecu_balance": (has(item.ecu_balance) && item.ecu_balance != null) ? int(double(item.ecu_balance)) : 0,
+                                      "active": (has(item.active) && item.active != null) ? bool(item.active) : false,
+                                      "type": (has(item.type) && item.type != null) ? string(item.type) : "",
+                                    },
+                                  },
+                                })
+                              ),
+                              "credit_day": today_utc,
+                            }
+                        )
+                      :
+                        {
+                          "evts": [dyn({
+                            "error": {
+                              "code": string(cred_resp.StatusCode),
+                              "id": string(cred_resp.Status),
+                              "message": "GET " + cred_resp.Request.URL + ": " + ((size(cred_resp.Body) != 0) ? string(cred_resp.Body) : string(cred_resp.Status)),
+                            },
+                          })],
+                          "credit_day": prev_credit_day,
+                        }
+                    )
+                  )
+                : { "evts": [], "credit_day": prev_credit_day }).as(cred_res,
+                  (conf_evts + cred_res.evts).as(meta_evts,
+                  (now - duration("2h")).format(time_layout.DateOnly).parse_time(time_layout.DateOnly).as(ready_day_end,
+                  min(max(int(state.lookbehind), 0), 3650).as(clamped_lookbehind,
+                  (ready_day_end - duration(string(clamped_lookbehind * 24) + "h")).as(default_from,
+                  state.?cursor.last_to.optMap(ts,
+                    ((type(ts) == string) ? timestamp(ts) : ts).as(parsed_ts,
+                      (parsed_ts > ready_day_end) ? default_from : parsed_ts
+                    )
+                  ).orValue(default_from).format(
+                    time_layout.DateOnly
+                  ).parse_time(time_layout.DateOnly).as(raw_from,
+                    max(raw_from, timestamp("2021-01-01T00:00:00Z")).as(from,
+                      {
+                        "from": from,
+                        "to": from + duration("24h"),
+                      }
+                    ).as(req,
+                      (req.to + duration("2h") > now) ?
+                        {
+                          "events": size(meta_evts) > 0 ? meta_evts : [dyn({ "fake": true })],
+                          "cursor": {
+                            "last_to": req.from.format(time_layout.RFC3339),
+                            "conf_sig": conf_sig,
+                            "last_credit_day": cred_res.credit_day,
+                          },
+                          "want_more": false,
+                        }
+                      :
+                        state.?cursor.disc_ech.orValue([]).as(acc_ech,
+                        state.?cursor.disc_sls.orValue([]).as(acc_sls,
+                        bool(state.?cursor.disc_dep_failed.orValue(false)).as(prev_dep_failed,
+                        bool(state.?cursor.disc_es_failed.orValue(false)).as(prev_es_failed,
+                        bool(state.?cursor.disc_obs_failed.orValue(false)).as(prev_obs_failed,
+                        bool(state.?cursor.disc_sec_failed.orValue(false)).as(prev_sec_failed,
+                        bool(state.?cursor.disc_vdb_failed.orValue(false)).as(prev_vdb_failed,
+                        ((dep_from >= 0) ?
+                          (state.cloud_api_base + "/api/v1/deployments/_search?show_metadata=true").as(dep_search_url,
+                            try(
+                              request(
+                                "POST",
+                                dep_search_url
+                              ).with(
+                                {
+                                  "Header": {
+                                    "Authorization": ["ApiKey " + state.api_key],
+                                    "Content-Type": ["application/json"],
+                                  },
+                                  "Body": { "size": 500, "from": dep_from }.encode_json(),
+                                }
+                              ).do_request(),
+                              "req_err"
+                            ).as(dep_resp,
+                              has(dep_resp.req_err) ?
+                                {
+                                  "ok": false,
+                                  "retryable": true,
+                                  "err": dyn({ "error": { "code": "transport_error", "id": "deployments_search", "message": "POST " + dep_search_url + ": " + string(dep_resp.req_err) } }),
+                                  "items": [],
+                                  "next_from": -1,
+                                }
+                              : (dep_resp.StatusCode == 200) ?
+                                try(bytes(dep_resp.Body).decode_json(), "json_err").as(dep_body,
+                                  has(dep_body.json_err) ?
+                                    {
+                                      "ok": false,
+                                      "retryable": true,
+                                      "err": dyn({ "error": { "code": "decode_error", "id": "deployments_search", "message": "POST " + dep_search_url + ": " + string(dep_body.json_err) } }),
+                                      "items": [],
+                                      "next_from": -1,
+                                    }
+                                  :
+                                    ((has(dep_body.deployments) && dep_body.deployments != null) ? dep_body.deployments : []).as(raw_deps,
+                                      {
+                                        "ok": true,
+                                        "retryable": false,
+                                        "err": dyn({}),
+                                        "items": raw_deps.filter(d,
+                                          has(d.id) && d.id != null && string(d.id) != ""
+                                        ).map(d,
+                                          (has(d.resources) && d.resources != null && has(d.resources.elasticsearch) && d.resources.elasticsearch != null && size(d.resources.elasticsearch) > 0).as(has_es_res,
+                                            (has_es_res ? string(d.resources.elasticsearch[0].id) : string(d.id)).as(primary_id,
+                                              dyn({
+                                                "id": primary_id,
+                                                "dep_id": string(d.id),
+                                                "name": (has(d.name) && d.name != null && string(d.name) != "") ? string(d.name) : primary_id,
+                                                "region": (has_es_res && has(d.resources.elasticsearch[0].region) && d.resources.elasticsearch[0].region != null) ? string(d.resources.elasticsearch[0].region) : "",
+                                                "tags": (has(d.metadata) && d.metadata != null && has(d.metadata.tags) && d.metadata.tags != null) ?
+                                                  d.metadata.tags.filter(t, has(t.key) && t.key != null && has(t.value) && t.value != null).map(t, string(t.key) + ":" + string(t.value)) : [],
+                                              })
+                                            )
+                                          )
+                                        ),
+                                        "next_from": (has(dep_body.match_count) && dep_body.match_count != null && size(raw_deps) > 0 && (dep_from + size(raw_deps)) < int(dep_body.match_count)) ? (dep_from + size(raw_deps)) : -1,
+                                      }
+                                    )
+                                )
+                              : (dep_resp.StatusCode == 404 ? { "ok": true, "retryable": false, "err": dyn({}), "items": [], "next_from": -1 } : {
+                                  "ok": false,
+                                  "retryable": (dep_resp.StatusCode != 401 && dep_resp.StatusCode != 403) || dep_from > 0,
+                                  "err": dyn({ "error": { "code": string(dep_resp.StatusCode), "id": string(dep_resp.Status), "message": "POST " + dep_resp.Request.URL + ": " + ((size(dep_resp.Body) != 0) ? string(dep_resp.Body) : string(dep_resp.Status)) } }),
+                                  "items": [],
+                                  "next_from": -1,
+                                })
+                            )
+                          )
+                        : { "ok": true, "retryable": false, "err": dyn({}), "items": [], "next_from": -1 }).as(dep_page,
+                        ((es_next != "") ?
+                          (state.cloud_api_base + "/api/v1/serverless/projects/elasticsearch?" + (es_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [es_next] }).format_query()).as(es_disc_url,
+                            try(
+                              get_request(es_disc_url).with({ "Header": { "Authorization": ["ApiKey " + state.api_key] } }).do_request(),
+                              "req_err"
+                            ).as(r,
+                              has(r.req_err) ?
+                                {
+                                  "ok": false,
+                                  "retryable": true,
+                                  "err": dyn({ "error": { "code": "transport_error", "id": "serverless_elasticsearch", "message": "GET " + es_disc_url + ": " + string(r.req_err) } }),
+                                  "items": [],
+                                  "next": "",
+                                }
+                              : (r.StatusCode == 200) ?
+                                try(bytes(r.Body).decode_json(), "json_err").as(b,
+                                  has(b.json_err) ?
+                                    {
+                                      "ok": false,
+                                      "retryable": true,
+                                      "err": dyn({ "error": { "code": "decode_error", "id": "serverless_elasticsearch", "message": "GET " + es_disc_url + ": " + string(b.json_err) } }),
+                                      "items": [],
+                                      "next": "",
+                                    }
+                                  :
+                                    {
+                                      "ok": true,
+                                      "retryable": false,
+                                      "err": dyn({}),
+                                      "items": (has(b.items) && b.items != null) ? b.items.map(p, dyn({
+                                        "id": string(p.id),
+                                        "name": (has(p.name) && p.name != null) ? string(p.name) : "",
+                                        "region_id": (has(p.region_id) && p.region_id != null) ? string(p.region_id) : "",
+                                        "project_type": "elasticsearch",
+                                      })) : [],
+                                      "next": (has(b.next_page) && b.next_page != null && string(b.next_page) != "") ? string(b.next_page) : "",
+                                    }
+                                )
+                              : (r.StatusCode == 404 ? { "ok": true, "retryable": false, "err": dyn({}), "items": [], "next": "" } : {
+                                  "ok": false,
+                                  "retryable": (r.StatusCode != 401 && r.StatusCode != 403) || es_next != "START",
+                                  "err": dyn({ "error": { "code": string(r.StatusCode), "id": string(r.Status), "message": "GET " + r.Request.URL + ": " + ((size(r.Body) != 0) ? string(r.Body) : string(r.Status)) } }),
+                                  "items": [],
+                                  "next": "",
+                                })
+                            )
+                          )
+                        : { "ok": true, "retryable": false, "err": dyn({}), "items": [], "next": "" }).as(es_page,
+                        ((obs_next != "") ?
+                          (state.cloud_api_base + "/api/v1/serverless/projects/observability?" + (obs_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [obs_next] }).format_query()).as(obs_disc_url,
+                            try(
+                              get_request(obs_disc_url).with({ "Header": { "Authorization": ["ApiKey " + state.api_key] } }).do_request(),
+                              "req_err"
+                            ).as(r,
+                              has(r.req_err) ?
+                                {
+                                  "ok": false,
+                                  "retryable": true,
+                                  "err": dyn({ "error": { "code": "transport_error", "id": "serverless_observability", "message": "GET " + obs_disc_url + ": " + string(r.req_err) } }),
+                                  "items": [],
+                                  "next": "",
+                                }
+                              : (r.StatusCode == 200) ?
+                                try(bytes(r.Body).decode_json(), "json_err").as(b,
+                                  has(b.json_err) ?
+                                    {
+                                      "ok": false,
+                                      "retryable": true,
+                                      "err": dyn({ "error": { "code": "decode_error", "id": "serverless_observability", "message": "GET " + obs_disc_url + ": " + string(b.json_err) } }),
+                                      "items": [],
+                                      "next": "",
+                                    }
+                                  :
+                                    {
+                                      "ok": true,
+                                      "retryable": false,
+                                      "err": dyn({}),
+                                      "items": (has(b.items) && b.items != null) ? b.items.map(p, dyn({
+                                        "id": string(p.id),
+                                        "name": (has(p.name) && p.name != null) ? string(p.name) : "",
+                                        "region_id": (has(p.region_id) && p.region_id != null) ? string(p.region_id) : "",
+                                        "project_type": "observability",
+                                      })) : [],
+                                      "next": (has(b.next_page) && b.next_page != null && string(b.next_page) != "") ? string(b.next_page) : "",
+                                    }
+                                )
+                              : (r.StatusCode == 404 ? { "ok": true, "retryable": false, "err": dyn({}), "items": [], "next": "" } : {
+                                  "ok": false,
+                                  "retryable": (r.StatusCode != 401 && r.StatusCode != 403) || obs_next != "START",
+                                  "err": dyn({ "error": { "code": string(r.StatusCode), "id": string(r.Status), "message": "GET " + r.Request.URL + ": " + ((size(r.Body) != 0) ? string(r.Body) : string(r.Status)) } }),
+                                  "items": [],
+                                  "next": "",
+                                })
+                            )
+                          )
+                        : { "ok": true, "retryable": false, "err": dyn({}), "items": [], "next": "" }).as(obs_page,
+                        ((sec_next != "") ?
+                          (state.cloud_api_base + "/api/v1/serverless/projects/security?" + (sec_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [sec_next] }).format_query()).as(sec_disc_url,
+                            try(
+                              get_request(sec_disc_url).with({ "Header": { "Authorization": ["ApiKey " + state.api_key] } }).do_request(),
+                              "req_err"
+                            ).as(r,
+                              has(r.req_err) ?
+                                {
+                                  "ok": false,
+                                  "retryable": true,
+                                  "err": dyn({ "error": { "code": "transport_error", "id": "serverless_security", "message": "GET " + sec_disc_url + ": " + string(r.req_err) } }),
+                                  "items": [],
+                                  "next": "",
+                                }
+                              : (r.StatusCode == 200) ?
+                                try(bytes(r.Body).decode_json(), "json_err").as(b,
+                                  has(b.json_err) ?
+                                    {
+                                      "ok": false,
+                                      "retryable": true,
+                                      "err": dyn({ "error": { "code": "decode_error", "id": "serverless_security", "message": "GET " + sec_disc_url + ": " + string(b.json_err) } }),
+                                      "items": [],
+                                      "next": "",
+                                    }
+                                  :
+                                    {
+                                      "ok": true,
+                                      "retryable": false,
+                                      "err": dyn({}),
+                                      "items": (has(b.items) && b.items != null) ? b.items.map(p, dyn({
+                                        "id": string(p.id),
+                                        "name": (has(p.name) && p.name != null) ? string(p.name) : "",
+                                        "region_id": (has(p.region_id) && p.region_id != null) ? string(p.region_id) : "",
+                                        "project_type": "security",
+                                      })) : [],
+                                      "next": (has(b.next_page) && b.next_page != null && string(b.next_page) != "") ? string(b.next_page) : "",
+                                    }
+                                )
+                              : (r.StatusCode == 404 ? { "ok": true, "retryable": false, "err": dyn({}), "items": [], "next": "" } : {
+                                  "ok": false,
+                                  "retryable": (r.StatusCode != 401 && r.StatusCode != 403) || sec_next != "START",
+                                  "err": dyn({ "error": { "code": string(r.StatusCode), "id": string(r.Status), "message": "GET " + r.Request.URL + ": " + ((size(r.Body) != 0) ? string(r.Body) : string(r.Status)) } }),
+                                  "items": [],
+                                  "next": "",
+                                })
+                            )
+                          )
+                        : { "ok": true, "retryable": false, "err": dyn({}), "items": [], "next": "" }).as(sec_page,
+                        ((vdb_next != "") ?
+                          (state.cloud_api_base + "/api/v1/serverless/projects/vectordb?" + (vdb_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [vdb_next] }).format_query()).as(vdb_disc_url,
+                            try(
+                              get_request(vdb_disc_url).with({ "Header": { "Authorization": ["ApiKey " + state.api_key] } }).do_request(),
+                              "req_err"
+                            ).as(r,
+                              has(r.req_err) ?
+                                {
+                                  "ok": false,
+                                  "retryable": true,
+                                  "err": dyn({ "error": { "code": "transport_error", "id": "serverless_vectordb", "message": "GET " + vdb_disc_url + ": " + string(r.req_err) } }),
+                                  "items": [],
+                                  "next": "",
+                                }
+                              : (r.StatusCode == 200) ?
+                                try(bytes(r.Body).decode_json(), "json_err").as(b,
+                                  has(b.json_err) ?
+                                    {
+                                      "ok": false,
+                                      "retryable": true,
+                                      "err": dyn({ "error": { "code": "decode_error", "id": "serverless_vectordb", "message": "GET " + vdb_disc_url + ": " + string(b.json_err) } }),
+                                      "items": [],
+                                      "next": "",
+                                    }
+                                  :
+                                    {
+                                      "ok": true,
+                                      "retryable": false,
+                                      "err": dyn({}),
+                                      "items": (has(b.items) && b.items != null) ? b.items.map(p, dyn({
+                                        "id": string(p.id),
+                                        "name": (has(p.name) && p.name != null) ? string(p.name) : "",
+                                        "region_id": (has(p.region_id) && p.region_id != null) ? string(p.region_id) : "",
+                                        "project_type": "vectordb",
+                                      })) : [],
+                                      "next": (has(b.next_page) && b.next_page != null && string(b.next_page) != "") ? string(b.next_page) : "",
+                                    }
+                                )
+                              : (r.StatusCode == 404 ? { "ok": true, "retryable": false, "err": dyn({}), "items": [], "next": "" } : {
+                                  "ok": false,
+                                  "retryable": (r.StatusCode != 401 && r.StatusCode != 403) || vdb_next != "START",
+                                  "err": dyn({ "error": { "code": string(r.StatusCode), "id": string(r.Status), "message": "GET " + r.Request.URL + ": " + ((size(r.Body) != 0) ? string(r.Body) : string(r.Status)) } }),
+                                  "items": [],
+                                  "next": "",
+                                })
+                            )
+                          )
+                        : { "ok": true, "retryable": false, "err": dyn({}), "items": [], "next": "" }).as(vdb_page,
+                          (
+                            (!dep_page.ok ? [dep_page.err] : []) +
+                            (!es_page.ok ? [es_page.err] : []) +
+                            (!obs_page.ok ? [obs_page.err] : []) +
+                            (!sec_page.ok ? [sec_page.err] : []) +
+                            (!vdb_page.ok ? [vdb_page.err] : [])
+                          ).as(disc_errs,
+                            (acc_ech + dep_page.items).as(ech_deps,
+                            (acc_sls + es_page.items + obs_page.items + sec_page.items + vdb_page.items).as(sls_projs,
+                            (prev_dep_failed || !dep_page.ok).as(dep_failed,
+                            (prev_es_failed || !es_page.ok).as(es_failed,
+                            (prev_obs_failed || !obs_page.ok).as(obs_failed,
+                            (prev_sec_failed || !sec_page.ok).as(sec_failed,
+                            (prev_vdb_failed || !vdb_page.ok).as(vdb_failed,
+                            (dep_page.retryable || es_page.retryable || obs_page.retryable || sec_page.retryable || vdb_page.retryable).as(disc_retryable,
+                              disc_retryable ?
+                                (meta_evts + disc_errs).as(retry_evts,
+                                  {
+                                    "events": size(retry_evts) > 0 ? retry_evts : [dyn({ "fake": true })],
+                                    "cursor": {
+                                      "last_to": req.from.format(time_layout.RFC3339),
+                                      "conf_sig": conf_sig,
+                                      "last_credit_day": cred_res.credit_day,
+                                    },
+                                    "want_more": false,
+                                  }
+                                )
+                              : (dep_page.next_from >= 0 || es_page.next != "" || obs_page.next != "" || sec_page.next != "" || vdb_page.next != "") ?
+                                (meta_evts + disc_errs).as(page_evts,
+                                  {
+                                    "events": size(page_evts) > 0 ? page_evts : [dyn({ "fake": true })],
+                                    "cursor": {
+                                      "last_to": req.from.format(time_layout.RFC3339),
+                                      "conf_sig": conf_sig,
+                                      "last_credit_day": cred_res.credit_day,
+                                      "disc_dep_from": dep_page.next_from,
+                                      "disc_es_next": es_page.next,
+                                      "disc_obs_next": obs_page.next,
+                                      "disc_sec_next": sec_page.next,
+                                      "disc_vdb_next": vdb_page.next,
+                                      "disc_ech": ech_deps,
+                                      "disc_sls": sls_projs,
+                                      "disc_dep_failed": dep_failed,
+                                      "disc_es_failed": es_failed,
+                                      "disc_obs_failed": obs_failed,
+                                      "disc_sec_failed": sec_failed,
+                                      "disc_vdb_failed": vdb_failed,
+                                    },
+                                    "want_more": true,
+                                  }
+                                )
+                              :
+                                (state.billing_api_base + "/api/v2/billing/organizations/" + state.organization_id + "/costs/instances?" + {
+                                  "from": [req.from.format(time_layout.RFC3339)],
+                                  "to": [req.to.format(time_layout.RFC3339)],
+                                  "include_names": ["true"],
+                                }.format_query()).as(costs_url,
+                                  try(
+                                    get_request(costs_url).with({ "Header": { "Authorization": ["ApiKey " + state.api_key] } }).do_request(),
+                                    "req_err"
+                                  ).as(resp,
+                                    has(resp.req_err) ?
+                                      {
+                                        "events": meta_evts + disc_errs + [dyn({ "error": { "code": "transport_error", "id": "costs_instances", "message": "GET " + costs_url + ": " + string(resp.req_err) } })],
+                                        "cursor": {
+                                          "last_to": req.from.format(time_layout.RFC3339),
+                                          "conf_sig": conf_sig,
+                                          "last_credit_day": cred_res.credit_day,
+                                        },
+                                        "want_more": false,
+                                      }
+                                    : (resp.StatusCode == 200) ?
+                                      try(bytes(resp.Body).decode_json(), "json_err").as(body,
+                                        has(body.json_err) ?
+                                          {
+                                            "events": meta_evts + disc_errs + [dyn({ "error": { "code": "decode_error", "id": "costs_instances", "message": "GET " + costs_url + ": " + string(body.json_err) } })],
+                                            "cursor": {
+                                              "last_to": req.from.format(time_layout.RFC3339),
+                                              "conf_sig": conf_sig,
+                                              "last_credit_day": cred_res.credit_day,
+                                            },
+                                            "want_more": false,
+                                          }
+                                        :
+                                          ((has(body.instances) && body.instances != null) ? body.instances : []).as(raw_instances,
+                                            (dep_failed && raw_instances.exists(instance,
+                                              ((has(instance.id) && instance.id != null && string(instance.id) != "") ? string(instance.id) : "unassociated").as(iid,
+                                                iid != "unassociated" &&
+                                                has(instance.product_line_items) && instance.product_line_items != null &&
+                                                instance.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku) != "" && (!has(li.total_ecu) || li.total_ecu == null || double(li.total_ecu) >= 0.0)) &&
+                                                !ech_deps.exists(d, string(d.id) == iid || string(d.dep_id) == iid) &&
+                                                !sls_projs.exists(p, has(p.id) && string(p.id) == iid) &&
+                                                ((has(instance.type) && instance.type != null) ? string(instance.type) : "").as(itype,
+                                                  itype != "elasticsearch" && itype != "observability" && itype != "security" && itype != "vectordb"
+                                                )
+                                              )
+                                            )).as(disc_blocks_billing,
+                                              disc_blocks_billing ?
+                                                (meta_evts + disc_errs + (size(disc_errs) > 0 ? [] : [dyn({
+                                                  "error": {
+                                                    "code": "discovery_incomplete",
+                                                    "id": "unattributed_billing_instances",
+                                                    "message": "Skipping billing ingestion for " + req.from.format(time_layout.DateOnly) + " because Elastic Cloud deployment discovery failed for billed deployment instances",
+                                                  },
+                                                })])).as(block_evts,
+                                                  {
+                                                    "events": block_evts,
+                                                    "cursor": {
+                                                      "last_to": req.from.format(time_layout.RFC3339),
+                                                      "conf_sig": conf_sig,
+                                                      "last_credit_day": cred_res.credit_day,
+                                                    },
+                                                    "want_more": false,
+                                                  }
+                                                )
+                                              :
+                                                raw_instances.map(instance,
+                                                  ((has(instance.id) && instance.id != null && string(instance.id) != "") ? string(instance.id) : "unassociated").as(inst_id,
+                                                    ech_deps.filter(d, string(d.id) == inst_id || string(d.dep_id) == inst_id).as(matched_ech,
+                                                      sls_projs.filter(p, has(p.id) && string(p.id) == inst_id).as(matched_sls,
+                                                        ((size(matched_ech) > 0) ? string(matched_ech[0].id) : inst_id).as(resolved_id,
+                                                          ((size(matched_ech) > 0) ? string(matched_ech[0].name) : (
+                                                            (size(matched_sls) > 0 && has(matched_sls[0].name) && matched_sls[0].name != null && string(matched_sls[0].name) != "") ? string(matched_sls[0].name) : (
+                                                              (has(instance.name) && instance.name != null && string(instance.name) != "") ? string(instance.name) : resolved_id
+                                                            )
+                                                          )).as(resolved_name,
+                                                            ((size(matched_ech) > 0) ? "deployment" : (
+                                                              (size(matched_sls) > 0 && has(matched_sls[0].project_type)) ? string(matched_sls[0].project_type) : (
+                                                                (has(instance.type) && instance.type != null && string(instance.type) != "") ? string(instance.type) : "deployment"
+                                                              )
+                                                            )).as(resolved_type,
+                                                              ((size(matched_ech) > 0) ? matched_ech[0].tags : []).as(resolved_tags,
+                                                                ((size(matched_ech) > 0 && string(matched_ech[0].region) != "") ? string(matched_ech[0].region) : (
+                                                                  (size(matched_sls) > 0 && has(matched_sls[0].region_id) && matched_sls[0].region_id != null) ? string(matched_sls[0].region_id) : ""
+                                                                )).as(resolved_region,
+                                                                  (has(instance.product_line_items) && instance.product_line_items != null) ?
+                                                                    instance.product_line_items.filter(li, has(li.sku) && li.sku != null && string(li.sku) != "").map(li,
+                                                                      dyn({
+                                                                        "doc_type": "billing_line_item",
+                                                                        "cloud": resolved_region != "" ? { "region": resolved_region } : {},
+                                                                        "ess": {
+                                                                          "billing": {
+                                                                            "organization_id": state.organization_id,
+                                                                            "deployment_id": resolved_id,
+                                                                            "deployment_name": resolved_name,
+                                                                            "deployment_type": resolved_type,
+                                                                            "deployment_tags": resolved_tags,
+                                                                            "sku": string(li.sku),
+                                                                            "type": (has(li.type) && li.type != null) ? string(li.type) : "",
+                                                                            "kind": (has(li.kind) && li.kind != null) ? string(li.kind) : "",
+                                                                            "total_ecu": (has(li.total_ecu) && li.total_ecu != null) ? double(li.total_ecu) : 0.0,
+                                                                            "quantity": {
+                                                                              "value": (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null) ? double(li.quantity.value) : 0.0,
+                                                                            },
+                                                                            "from": req.from.format(time_layout.RFC3339),
+                                                                            "to": req.to.format(time_layout.RFC3339),
+                                                                          },
+                                                                        },
+                                                                      })
+                                                                    )
+                                                                  : []
+                                                                )
+                                                              )
+                                                            )
+                                                          )
+                                                        )
+                                                      )
+                                                    )
+                                                  )
+                                                ).flatten().as(raw_evts,
+                                                  raw_evts.filter(e, double(e.ess.billing.total_ecu) >= 0.0).as(pos_evts,
+                                                    (meta_evts + disc_errs + pos_evts).as(final_evts,
+                                                      (dep_failed || es_failed || obs_failed || sec_failed || vdb_failed).as(disc_had_err,
+                                                        (req.to + duration("26h") <= now).as(has_more_days,
+                                                          {
+                                                            "events": size(final_evts) > 0 ? final_evts : [dyn({ "fake": true })],
+                                                            "cursor": (has_more_days && !disc_had_err) ? {
+                                                              "last_to": req.to.format(time_layout.RFC3339),
+                                                              "conf_sig": conf_sig,
+                                                              "last_credit_day": cred_res.credit_day,
+                                                              "disc_dep_from": -1,
+                                                              "disc_es_next": "",
+                                                              "disc_obs_next": "",
+                                                              "disc_sec_next": "",
+                                                              "disc_vdb_next": "",
+                                                              "disc_ech": ech_deps,
+                                                              "disc_sls": sls_projs,
+                                                            } : {
+                                                              "last_to": req.to.format(time_layout.RFC3339),
+                                                              "conf_sig": conf_sig,
+                                                              "last_credit_day": cred_res.credit_day,
+                                                            },
+                                                            "want_more": has_more_days,
+                                                          }
+                                                        )
+                                                      )
+                                                    )
+                                                  )
+                                                )
+                                            )
+                                          )
+                                      )
+                                    :
+                                      {
+                                        "events": meta_evts + disc_errs + [dyn({ "error": { "code": string(resp.StatusCode), "id": string(resp.Status), "message": "GET " + resp.Request.URL + ": " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)) } })],
+                                        "cursor": {
+                                          "last_to": req.from.format(time_layout.RFC3339),
+                                          "conf_sig": conf_sig,
+                                          "last_credit_day": cred_res.credit_day,
+                                        },
+                                        "want_more": false,
+                                      }
+                                  )
+                                )
+                            )))))))))
+                        ))))))))))))
+                    )
+                  )
+                  ))))
+                )
+                ))))))
+              ))))))))))))))
+            )
+          publisher_pipeline.disable_host: true
+          redact:
+            fields:
+                - api_key
+                - cloud_api_key
+          resource.ssl: null
+          resource.timeout: 30s
+          resource.url: https://billing.elastic-cloud.com
+          state:
+            api_key: ${SECRET_0}
+            billing_api_base: https://billing.elastic-cloud.com
+            cloud_api_base: https://api.elastic-cloud.com
+            collect_ess_credits: false
+            conf_currency_unit: EUR
+            conf_effective_from: ""
+            conf_onprem_unit_rate: "0.00085"
+            conf_unit_rate: "0.85"
+            config_owner_id: ""
+            hub_es_url: ""
+            lookbehind: 60
+            organization_id: "1111"
+            sync_fleet_config: true
+          tags:
+            - forwarded
+            - chargeback
+            - billing
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - metrics-chargeback.billing-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

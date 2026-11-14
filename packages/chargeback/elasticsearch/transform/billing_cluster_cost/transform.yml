@@ -177,7 +177,12 @@ pivot:
           String nodeStr = '';
           try {
             def nk = params._source?.elasticsearch?.node?.id;
-            if (nk == null || nk.toString() == '') { nk = params._source?.host?.name; }
+            if (nk == null || nk.toString() == '') {
+              String dtCheck = params._source?.ess?.billing?.deployment_type != null ? params._source.ess.billing.deployment_type.toString() : '';
+              if ('onprem_node'.equals(sku) || 'onprem'.equals(dtCheck) || 'ece'.equals(dtCheck) || 'eck'.equals(dtCheck)) {
+                nk = params._source?.host?.name;
+              }
+            }
             if (nk != null) { nodeStr = nk.toString(); }
           } catch (Exception e) {}
 
@@ -413,7 +418,12 @@ pivot:
           String nodeStr = '';
           try {
             def nk = params._source?.elasticsearch?.node?.id;
-            if (nk == null || nk.toString() == '') { nk = params._source?.host?.name; }
+            if (nk == null || nk.toString() == '') {
+              String dtCheck = params._source?.ess?.billing?.deployment_type != null ? params._source.ess.billing.deployment_type.toString() : '';
+              if ('onprem_node'.equals(sku) || 'onprem'.equals(dtCheck) || 'ece'.equals(dtCheck) || 'eck'.equals(dtCheck)) {
+                nk = params._source?.host?.name;
+              }
+            }
             if (nk != null) { nodeStr = nk.toString(); }
           } catch (Exception e) {}
 

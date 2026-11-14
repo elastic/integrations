@@ -83,9 +83,7 @@ pivot:
         latest:
           scripted_metric:
             init_script: |
-              state.newestTs = -1L;
-              state.newestSync = false;
-              state.streams = [:];
+              state.owners = [:];
             map_script: |
               if (params._source == null) {
                 return;
@@ -95,60 +93,154 @@ pivot:
                 : 0L;
               def rawSync = params._source.get('conf_sync_enabled');
               boolean syncEnabled = (rawSync == null) || rawSync.toString().equalsIgnoreCase('true');
-              if (ts > state.newestTs || (ts == state.newestTs && !syncEnabled)) {
-                state.newestTs = ts;
-                state.newestSync = syncEnabled;
+
+              String explicitId = params._source.get('conf_owner_id') != null
+                ? params._source.get('conf_owner_id').toString().trim()
+                : '';
+              boolean isExplicit = explicitId != '';
+              String ownerKey = '';
+              if (isExplicit) {
+                ownerKey = 'explicit:' + explicitId;
+              } else {
+                String ns = (params._source.data_stream instanceof Map && params._source.data_stream.namespace != null)
+                  ? params._source.data_stream.namespace.toString().trim()
+                  : (params._source.get('data_stream.namespace') != null ? params._source.get('data_stream.namespace').toString().trim() : 'default');
+                String scope = params._source.get('conf_policy_scope') != null
+                  ? params._source.get('conf_policy_scope').toString().trim()
+                  : '';
+                String agId = (params._source.agent instanceof Map && params._source.agent.id != null)
+                  ? params._source.agent.id.toString().trim()
+                  : (params._source.get('agent.id') != null ? params._source.get('agent.id').toString().trim() : '');
+                ownerKey = 'implicit:' + ns + '|' + scope + '|' + agId;
               }
+
+              Map owner = (Map)state.owners.get(ownerKey);
+              if (owner == null) {
+                owner = [
+                  'explicit': isExplicit,
+                  'newestTs': -1L,
+                  'newestSync': false,
+                  'streams': [:]
+                ];
+                state.owners.put(ownerKey, owner);
+              }
+              long oTs = ((Number)owner.get('newestTs')).longValue();
+              if (ts > oTs || (ts == oTs && !syncEnabled)) {
+                owner.put('newestTs', ts);
+                owner.put('newestSync', syncEnabled);
+              }
+
               String ds = params._source.data_stream instanceof Map && params._source.data_stream.dataset != null
                 ? params._source.data_stream.dataset.toString()
-                : '';
+                : (params._source.get('data_stream.dataset') != null ? params._source.get('data_stream.dataset').toString() : '');
               if (ds == 'chargeback.billing' || ds == 'chargeback.usage' || ds == 'chargeback.node_stats') {
-                def prev = state.streams.get(ds);
+                Map oStreams = (Map)owner.get('streams');
+                def prev = oStreams.get(ds);
                 long prevTs = (prev instanceof Map && prev.ts instanceof Number) ? ((Number)prev.ts).longValue() : -1L;
                 if (prev == null || ts > prevTs || (ts == prevTs && !syncEnabled)) {
-                  Map snap = ['ts': ts, 'sync': syncEnabled];
+                  Map snap = ['ts': ts, 'sync': syncEnabled, 'conf_owner_key': ownerKey];
                   for (def entry : params._source.entrySet()) {
                     String k = entry.getKey().toString();
                     if (k.startsWith('conf_') && entry.getValue() != null) {
                       snap[k] = entry.getValue();
                     }
                   }
-                  state.streams[ds] = snap;
+                  oStreams.put(ds, snap);
                 }
               }
             combine_script: "return state;"
             reduce_script: |
-              long newestTs = -1L;
-              boolean newestSync = false;
-              Map bestStreams = [:];
+              Map mergedOwners = [:];
               for (def s : states) {
-                if (s instanceof Map) {
-                  long sTs = s.newestTs instanceof Number ? ((Number)s.newestTs).longValue() : -1L;
-                  boolean sSync = s.newestSync instanceof Boolean ? (boolean)s.newestSync : false;
-                  if (sTs >= 0L && (sTs > newestTs || (sTs == newestTs && !sSync))) {
-                    newestTs = sTs;
-                    newestSync = sSync;
-                  }
-                  if (s.streams instanceof Map) {
-                    for (def entry : s.streams.entrySet()) {
-                      String ds = entry.getKey().toString();
-                      def cand = entry.getValue();
-                      if (cand instanceof Map) {
-                        long cTs = cand.ts instanceof Number ? ((Number)cand.ts).longValue() : -1L;
-                        boolean cSync = cand.sync instanceof Boolean ? (boolean)cand.sync : false;
-                        def cur = bestStreams.get(ds);
+                if (s instanceof Map && s.owners instanceof Map) {
+                  for (def oe : ((Map)s.owners).entrySet()) {
+                    String ok = oe.getKey().toString();
+                    def srcObj = oe.getValue();
+                    if (!(srcObj instanceof Map)) { continue; }
+                    Map src = (Map)srcObj;
+                    boolean srcExp = Boolean.TRUE.equals(src.get('explicit'));
+                    long srcTs = src.get('newestTs') instanceof Number ? ((Number)src.get('newestTs')).longValue() : -1L;
+                    boolean srcSync = Boolean.TRUE.equals(src.get('newestSync'));
+                    Map dst = (Map)mergedOwners.get(ok);
+                    if (dst == null) {
+                      dst = [
+                        'explicit': srcExp,
+                        'newestTs': -1L,
+                        'newestSync': false,
+                        'streams': [:]
+                      ];
+                      mergedOwners.put(ok, dst);
+                    }
+                    if (srcExp) { dst.put('explicit', true); }
+                    long dstTs = ((Number)dst.get('newestTs')).longValue();
+                    if (srcTs >= 0L && (srcTs > dstTs || (srcTs == dstTs && !srcSync))) {
+                      dst.put('newestTs', srcTs);
+                      dst.put('newestSync', srcSync);
+                    }
+                    if (src.get('streams') instanceof Map) {
+                      Map dstStreams = (Map)dst.get('streams');
+                      for (def se : ((Map)src.get('streams')).entrySet()) {
+                        String ds = se.getKey().toString();
+                        def candObj = se.getValue();
+                        if (!(candObj instanceof Map)) { continue; }
+                        Map cand = (Map)candObj;
+                        long cTs = cand.get('ts') instanceof Number ? ((Number)cand.get('ts')).longValue() : -1L;
+                        boolean cSync = Boolean.TRUE.equals(cand.get('sync'));
+                        def cur = dstStreams.get(ds);
                         long curTs = (cur instanceof Map && cur.ts instanceof Number) ? ((Number)cur.ts).longValue() : -1L;
                         if (cur == null || cTs > curTs || (cTs == curTs && !cSync)) {
-                          bestStreams[ds] = cand;
+                          dstStreams.put(ds, cand);
                         }
                       }
                     }
                   }
                 }
               }
+
+              if (mergedOwners.isEmpty()) {
+                return [
+                  'has_snapshots': false,
+                  'policy_sync_enabled': false,
+                  'owner_conflict': false,
+                  'streams': [:]
+                ];
+              }
+
+              List explicitKeys = new ArrayList();
+              for (def e : mergedOwners.entrySet()) {
+                Map ov = (Map)e.getValue();
+                if (Boolean.TRUE.equals(ov.get('explicit'))) {
+                  explicitKeys.add(e.getKey().toString());
+                }
+              }
+
+              String selectedOwner = null;
+              boolean ownerConflict = false;
+              if (explicitKeys.size() == 1) {
+                selectedOwner = explicitKeys.get(0).toString();
+              } else if (explicitKeys.size() > 1) {
+                ownerConflict = true;
+              } else if (mergedOwners.size() == 1) {
+                selectedOwner = mergedOwners.keySet().iterator().next().toString();
+              } else {
+                ownerConflict = true;
+              }
+
+              boolean policySyncEnabled = false;
+              Map bestStreams = [:];
+              if (!ownerConflict && selectedOwner != null) {
+                Map sel = (Map)mergedOwners.get(selectedOwner);
+                policySyncEnabled = Boolean.TRUE.equals(sel.get('newestSync'));
+                if (policySyncEnabled && sel.get('streams') instanceof Map) {
+                  bestStreams = (Map)sel.get('streams');
+                }
+              }
+
               return [
-                'has_snapshots': newestTs >= 0L,
-                'policy_sync_enabled': newestSync,
+                'has_snapshots': true,
+                'policy_sync_enabled': policySyncEnabled,
+                'owner_conflict': ownerConflict,
+                'owner_key': selectedOwner != null ? selectedOwner : '',
                 'streams': bestStreams
               ];
 settings:
