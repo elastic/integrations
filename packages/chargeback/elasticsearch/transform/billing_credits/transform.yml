@@ -107,6 +107,12 @@ pivot:
           state.docs = [];
         map_script: |
           long ts = (!doc['@timestamp'].empty) ? doc['@timestamp'].value.toInstant().toEpochMilli() : 0L;
+          long ingTs = ts;
+          try {
+            if (doc.containsKey('cb_sync_ts') && !doc['cb_sync_ts'].empty) {
+              ingTs = doc['cb_sync_ts'].value.toInstant().toEpochMilli();
+            }
+          } catch (Exception e) {}
           boolean isNat = false;
           try {
             if (doc.containsKey('doc_type') && !doc['doc_type'].empty) {
@@ -131,49 +137,153 @@ pivot:
           } else if (params._source?.ess?.billing?.ecu_balance instanceof Number) {
             bal = ((Number)params._source.ess.billing.ecu_balance).doubleValue();
           }
-          boolean act = (doc.containsKey('ess.billing.active') && !doc['ess.billing.active'].empty)
-            && doc['ess.billing.active'].value.toString().equalsIgnoreCase('true');
-          state.docs.add([ts, bal, act, qty, isNat]);
+          boolean act = false;
+          if (doc.containsKey('ess.billing.active') && !doc['ess.billing.active'].empty) {
+            act = doc['ess.billing.active'].value.toString().equalsIgnoreCase('true');
+          } else if (params._source?.ess?.billing?.active != null) {
+            act = params._source.ess.billing.active.toString().equalsIgnoreCase('true');
+          }
+          String agentId = '';
+          try {
+            if (doc.containsKey('agent.id') && !doc['agent.id'].empty) {
+              agentId = doc['agent.id'].value.toString();
+            } else if (params._source?.agent?.id != null) {
+              agentId = params._source.agent.id.toString();
+            }
+          } catch (Exception e) {}
+          String dsNs = 'default';
+          try {
+            if (doc.containsKey('data_stream.namespace') && !doc['data_stream.namespace'].empty) {
+              dsNs = doc['data_stream.namespace'].value.toString();
+            } else if (params._source?.data_stream?.namespace != null) {
+              dsNs = params._source.data_stream.namespace.toString();
+            }
+          } catch (Exception e) {}
+          state.docs.add([ts, ingTs, bal, act, qty, isNat, agentId, dsNs]);
         combine_script: |
           return state.docs;
         reduce_script: |
-          long bestTs = -1L;
-          double bestBal = 0.0;
-          boolean bestAct = false;
-          double bestQty = 0.0;
-          boolean hasNat = false;
-          long bestNatTs = -1L;
-          double bestNatQty = 0.0;
-          double bestNatBal = 0.0;
+          Map natByQty = new HashMap();
+          List legDocs = new ArrayList();
+          long maxLegTs = -1L;
+          long maxLegIngTs = -1L;
+          String latestLegAgent = '';
+          String latestLegNs = 'default';
           for (shardDocs in states) {
             if (shardDocs == null) { continue; }
             for (d in shardDocs) {
               long ts = ((Number)d[0]).longValue();
-              double bal = ((Number)d[1]).doubleValue();
-              boolean act = d[2] != null && d[2].toString().equalsIgnoreCase('true');
-              double qty = d.size() > 3 && d[3] instanceof Number ? ((Number)d[3]).doubleValue() : 0.0;
-              boolean isNat = d.size() > 4 && Boolean.TRUE.equals(d[4]);
-              if (isNat && (!hasNat || ts >= bestNatTs)) {
-                hasNat = true;
-                bestNatTs = ts;
-                bestNatQty = qty;
-                bestNatBal = bal;
-              }
-              if (ts > bestTs || (ts == bestTs && isNat)) {
-                bestTs = ts;
-                bestBal = bal;
-                bestAct = act;
-                bestQty = qty;
+              long ingTs = ((Number)d[1]).longValue();
+              double bal = ((Number)d[2]).doubleValue();
+              boolean act = d[3] != null && d[3].toString().equalsIgnoreCase('true');
+              double qty = d.size() > 4 && d[4] instanceof Number ? ((Number)d[4]).doubleValue() : 0.0;
+              boolean isNat = d.size() > 5 && Boolean.TRUE.equals(d[5]);
+              String agentId = d.size() > 6 && d[6] != null ? d[6].toString() : '';
+              String dsNs = d.size() > 7 && d[7] != null ? d[7].toString() : 'default';
+              if (isNat) {
+                String qKey = Double.toString(qty);
+                def prev = natByQty.get(qKey);
+                if (prev == null || ts > ((Number)prev[0]).longValue()
+                    || (ts == ((Number)prev[0]).longValue() && ingTs >= ((Number)prev[1]).longValue())) {
+                  natByQty.put(qKey, [ts, ingTs, qty, bal, act]);
+                }
+              } else {
+                legDocs.add([ts, ingTs, qty, bal, act, agentId, dsNs]);
+                if (ts > maxLegTs || (ts == maxLegTs && ingTs >= maxLegIngTs)) {
+                  maxLegTs = ts;
+                  maxLegIngTs = ingTs;
+                  latestLegAgent = agentId;
+                  latestLegNs = dsNs;
+                }
               }
             }
           }
-          double finalQty = hasNat ? bestNatQty : bestQty;
-          double finalBal = (hasNat && ((long)bestBal) == ((long)bestNatBal)) ? bestNatBal : bestBal;
+
+          boolean hasNat = !natByQty.isEmpty();
+          long maxNatTs = -1L;
+          int natTotalCount = natByQty.size();
+          int natActCount = 0;
+          double natActQty = 0.0;
+          double natActBal = 0.0;
+          double natAllQty = 0.0;
+          double natAllBal = 0.0;
+          for (entry in natByQty.values()) {
+            long eTs = ((Number)entry[0]).longValue();
+            double eQty = ((Number)entry[2]).doubleValue();
+            double eBal = ((Number)entry[3]).doubleValue();
+            boolean eAct = Boolean.TRUE.equals(entry[4]);
+            if (eTs > maxNatTs) { maxNatTs = eTs; }
+            natAllQty += eQty;
+            natAllBal += eBal;
+            if (eAct) {
+              natActCount += 1;
+              natActQty += eQty;
+              natActBal += eBal;
+            }
+          }
+
+          boolean hasLeg = !legDocs.isEmpty();
+          int legTotalCount = 0;
+          int legActCount = 0;
+          double legActQty = 0.0;
+          double legActBal = 0.0;
+          double legAllQty = 0.0;
+          double legAllBal = 0.0;
+          for (ld in legDocs) {
+            long lTs = ((Number)ld[0]).longValue();
+            String lAgent = ld[5] != null ? ld[5].toString() : '';
+            String lNs = ld[6] != null ? ld[6].toString() : 'default';
+            boolean inLatestPoll = lAgent.equals(latestLegAgent)
+              && lNs.equals(latestLegNs)
+              && (maxLegTs - lTs) <= 5000L;
+            if (!inLatestPoll) { continue; }
+            double lQty = ((Number)ld[2]).doubleValue();
+            double lBal = ((Number)ld[3]).doubleValue();
+            boolean lAct = Boolean.TRUE.equals(ld[4]);
+            legTotalCount += 1;
+            legAllQty += lQty;
+            legAllBal += lBal;
+            if (lAct) {
+              legActCount += 1;
+              legActQty += lQty;
+              legActBal += lBal;
+            }
+          }
+
+          boolean finalAct = false;
+          double finalQty = 0.0;
+          double finalBal = 0.0;
+          long finalTs = -1L;
+          if (hasNat && (!hasLeg || maxNatTs >= maxLegTs || legTotalCount < natTotalCount)) {
+            finalAct = natActCount > 0;
+            finalQty = finalAct ? natActQty : natAllQty;
+            finalBal = finalAct ? natActBal : natAllBal;
+            finalTs = maxNatTs;
+          } else if (hasLeg) {
+            finalAct = legActCount > 0;
+            finalBal = finalAct ? legActBal : legAllBal;
+            finalTs = maxLegTs;
+            if (hasNat) {
+              if (finalAct) {
+                if (legActCount == natActCount) {
+                  finalQty = natActQty;
+                } else if (natTotalCount == 1 && legActCount == 1) {
+                  finalQty = natAllQty;
+                } else {
+                  finalQty = legActQty;
+                }
+              } else {
+                finalQty = (legTotalCount == natTotalCount) ? natAllQty : legAllQty;
+              }
+            } else {
+              finalQty = finalAct ? legActQty : legAllQty;
+            }
+          }
           return [
             'ecu_quantity': finalQty,
             'ecu_balance': finalBal,
-            'active': bestAct,
-            'observed_at': bestTs > 0L ? bestTs : null
+            'active': finalAct,
+            'observed_at': finalTs > 0L ? finalTs : null
           ];
 settings:
   deduce_mappings: false
