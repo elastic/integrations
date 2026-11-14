@@ -21,6 +21,17 @@ processors:
       copy_from: ess.billing.organization_id
       ignore_empty_value: true
       tag: cloud_account_id
+  - date:
+      field: _credit_poll_ts
+      target_field: "@timestamp"
+      formats:
+        - ISO8601
+      if: "ctx.doc_type == 'credit_line_item' && ctx._credit_poll_ts != null"
+      ignore_failure: true
+      tag: set_credit_poll_timestamp
+  - remove:
+      field: _credit_poll_ts
+      ignore_missing: true
   - terminate:
       tag: credit_line_item_complete
       if: "ctx.doc_type == 'credit_line_item'"

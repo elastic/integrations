@@ -20,8 +20,11 @@ inputs:
                 ignore_missing: true
                 when:
                     and:
-                        - equals:
-                            doc_type: config_snapshot
+                        - or:
+                            - equals:
+                                doc_type: config_snapshot
+                            - equals:
+                                doc_type: credit_line_item
                         - not:
                             has_fields:
                                 - conf_policy_id
@@ -136,25 +139,28 @@ inputs:
                               "credit_day": prev_credit_day,
                             }
                           :
-                            {
-                              "evts": (type(cred_items) == list ? cred_items : []).map(item,
-                                dyn({
-                                  "doc_type": "credit_line_item",
-                                  "ess": {
-                                    "billing": {
-                                      "organization_id": state.organization_id,
-                                      "start": item.start,
-                                      "end": item.end,
-                                      "ecu_quantity": (has(item.ecu_quantity) && item.ecu_quantity != null) ? double(item.ecu_quantity) : 0.0,
-                                      "ecu_balance": (has(item.ecu_balance) && item.ecu_balance != null) ? double(item.ecu_balance) : 0.0,
-                                      "active": (has(item.active) && item.active != null) ? bool(item.active) : false,
-                                      "type": (has(item.type) && item.type != null) ? string(item.type) : "",
+                            now.format("2006-01-02T15:04:05.000Z").as(cred_obs_ts,
+                              {
+                                "evts": (type(cred_items) == list ? cred_items : []).map(item,
+                                  dyn({
+                                    "_credit_poll_ts": cred_obs_ts,
+                                    "doc_type": "credit_line_item",
+                                    "ess": {
+                                      "billing": {
+                                        "organization_id": state.organization_id,
+                                        "start": item.start,
+                                        "end": item.end,
+                                        "ecu_quantity": (has(item.ecu_quantity) && item.ecu_quantity != null) ? double(item.ecu_quantity) : 0.0,
+                                        "ecu_balance": (has(item.ecu_balance) && item.ecu_balance != null) ? double(item.ecu_balance) : 0.0,
+                                        "active": (has(item.active) && item.active != null) ? bool(item.active) : false,
+                                        "type": (has(item.type) && item.type != null) ? string(item.type) : "",
+                                      },
                                     },
-                                  },
-                                })
-                              ),
-                              "credit_day": today_utc,
-                            }
+                                  })
+                                ),
+                                "credit_day": today_utc,
+                              }
+                            )
                         )
                       :
                         {
