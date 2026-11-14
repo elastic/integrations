@@ -12,6 +12,22 @@ processors:
       value: "{{{_ingest.timestamp}}}"
       if: ctx.event?.ingested == null
       tag: set_event_ingested
+  - terminate:
+      tag: config_snapshot_complete
+      if: "ctx.doc_type == 'config_snapshot'"
+      description: Configuration snapshot events are complete after stamping event.ingested.
+  - date:
+      field: sample_ts
+      target_field: "@timestamp"
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.sample_ts != null
+      ignore_failure: true
+      tag: restore_node_sample_timestamp
+  - remove:
+      field: sample_ts
+      ignore_missing: true
 on_failure:
   - set:
       field: event.kind

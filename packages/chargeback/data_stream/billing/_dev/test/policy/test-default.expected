@@ -16,9 +16,6 @@ inputs:
             state.with(
               now.format(time_layout.DateOnly).as(today_utc,
               state.config_owner_id.trim_space().as(clean_owner_id,
-              state.hub_es_url.trim_space().as(trimmed_hub_url,
-              (trimmed_hub_url.endsWith("/") ? trimmed_hub_url.substring(0, size(trimmed_hub_url) - 1) : trimmed_hub_url).as(clean_hub_url,
-              (state.organization_id.trim_space() + "|" + state.cloud_api_base.trim_space() + "|" + clean_hub_url).as(policy_scope,
               state.conf_unit_rate.trim_space().as(clean_rate,
               clean_rate.matches("^[0-9]+(\\.[0-9]+)?$").as(rate_valid,
               state.conf_onprem_unit_rate.trim_space().as(clean_onprem_rate,
@@ -38,8 +35,8 @@ inputs:
                 )
               )).as(eff_valid,
               ((clean_eff_from == "" || !eff_valid) ? "" : (clean_eff_from.substring(0, 10) + "T00:00:00Z")).as(norm_eff_from,
-              (!state.sync_fleet_config ? ("disabled|" + clean_owner_id + "|" + policy_scope) : (
-                (rate_valid && onprem_rate_valid && eff_valid) ? (clean_owner_id + "|" + policy_scope + "|" + clean_rate + "|" + clean_onprem_rate + "|" + state.conf_currency_unit + "|" + norm_eff_from + "|" + today_utc) : state.?cursor.conf_sig.orValue("")
+              (!state.sync_fleet_config ? ("disabled|" + clean_owner_id) : (
+                (rate_valid && onprem_rate_valid && eff_valid) ? (clean_owner_id + "|" + clean_rate + "|" + clean_onprem_rate + "|" + state.conf_currency_unit + "|" + norm_eff_from + "|" + today_utc) : state.?cursor.conf_sig.orValue("")
               )).as(conf_sig,
               ((state.sync_fleet_config && !rate_valid) ?
                 [dyn({
@@ -70,7 +67,6 @@ inputs:
                   "doc_type": "config_snapshot",
                   "conf_sync_enabled": true,
                   "conf_owner_id": clean_owner_id,
-                  "conf_policy_scope": policy_scope,
                   "conf_chargeable_unit_rate": double(clean_rate),
                   "conf_onprem_chargeable_unit_rate": clean_onprem_rate != "" ? double(clean_onprem_rate) : double(clean_rate),
                   "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
@@ -81,7 +77,6 @@ inputs:
                   "doc_type": "config_snapshot",
                   "conf_sync_enabled": false,
                   "conf_owner_id": clean_owner_id,
-                  "conf_policy_scope": policy_scope,
                 })]
               : []))))).as(conf_evts,
               (state.organization_id == "" || state.api_key == "" || state.api_key.startsWith("$co.elastic.secret")) ?
@@ -242,7 +237,7 @@ inputs:
                                           has(d.id) && d.id != null && string(d.id) != ""
                                         ).map(d,
                                           (has(d.resources) && d.resources != null && has(d.resources.elasticsearch) && d.resources.elasticsearch != null && size(d.resources.elasticsearch) > 0).as(has_es_res,
-                                            (has_es_res ? string(d.resources.elasticsearch[0].id) : string(d.id)).as(primary_id,
+                                            ((has_es_res && has(d.resources.elasticsearch[0].id) && d.resources.elasticsearch[0].id != null && string(d.resources.elasticsearch[0].id) != "") ? string(d.resources.elasticsearch[0].id) : string(d.id)).as(primary_id,
                                               dyn({
                                                 "id": primary_id,
                                                 "dep_id": string(d.id),
@@ -681,13 +676,14 @@ inputs:
                   ))))
                 )
                 ))))))
-              ))))))))))))))
+              )))))))))))
             )
           publisher_pipeline.disable_host: true
           redact:
             fields:
                 - api_key
                 - cloud_api_key
+                - proxy_url
           resource.ssl: null
           resource.timeout: 30s
           resource.url: https://billing.elastic-cloud.com
@@ -701,7 +697,6 @@ inputs:
             conf_onprem_unit_rate: "0.00085"
             conf_unit_rate: "0.85"
             config_owner_id: ""
-            hub_es_url: ""
             lookbehind: 60
             organization_id: "1111"
             sync_fleet_config: true

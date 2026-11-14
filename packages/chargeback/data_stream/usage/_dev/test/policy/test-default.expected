@@ -18,10 +18,9 @@ inputs:
               state.config_owner_id.trim_space().as(clean_owner_id,
               state.hub_es_url.trim_space().as(trimmed_hub_url,
               (trimmed_hub_url.endsWith("/") ? trimmed_hub_url.substring(0, size(trimmed_hub_url) - 1) : trimmed_hub_url).as(clean_hub_url,
-              (state.organization_id.trim_space() + "|" + state.cloud_api_base.trim_space() + "|" + clean_hub_url).as(policy_scope,
               (int(state.conf_indexing_weight) >= 0 && int(state.conf_query_weight) >= 0 && int(state.conf_storage_weight) >= 0 && (int(state.conf_query_weight) + int(state.conf_storage_weight)) > 0).as(weights_valid,
-              (!state.sync_fleet_config ? ("disabled|" + clean_owner_id + "|" + policy_scope) : (
-                weights_valid ? (clean_owner_id + "|" + policy_scope + "|" + string(state.conf_indexing_weight) + "|" + string(state.conf_query_weight) + "|" + string(state.conf_storage_weight) + "|" + today_utc) : state.?cursor.conf_sig.orValue("")
+              (!state.sync_fleet_config ? ("disabled|" + clean_owner_id) : (
+                weights_valid ? (clean_owner_id + "|" + string(state.conf_indexing_weight) + "|" + string(state.conf_query_weight) + "|" + string(state.conf_storage_weight) + "|" + today_utc) : state.?cursor.conf_sig.orValue("")
               )).as(conf_sig,
               ((state.sync_fleet_config && !weights_valid) ?
                 [dyn({
@@ -36,7 +35,6 @@ inputs:
                   "doc_type": "config_snapshot",
                   "conf_sync_enabled": true,
                   "conf_owner_id": clean_owner_id,
-                  "conf_policy_scope": policy_scope,
                   "conf_indexing_weight": int(state.conf_indexing_weight),
                   "conf_query_weight": int(state.conf_query_weight),
                   "conf_storage_weight": int(state.conf_storage_weight),
@@ -46,7 +44,6 @@ inputs:
                   "doc_type": "config_snapshot",
                   "conf_sync_enabled": false,
                   "conf_owner_id": clean_owner_id,
-                  "conf_policy_scope": policy_scope,
                 })]
               : []))).as(conf_evts,
               int(now).as(now_sec,
@@ -64,6 +61,7 @@ inputs:
                       "k": ("k" in b && b.k != null) ? string(b.k) : (string(b.c) + "::" + string(b.i)),
                       "c": string(b.c),
                       "t": ("t" in b && b.t != null) ? int(b.t) : 0,
+                      "sc": ("sc" in b && b.sc != null) ? int(b.sc) : 0,
                       "m": b.m,
                     }))
                   )
@@ -126,14 +124,16 @@ inputs:
                                 d.resources.elasticsearch[0].as(es_r,
                                   string(es_r.info.metadata.service_url).as(raw_surl,
                                     (raw_surl.endsWith("/") ? raw_surl.substring(0, size(raw_surl) - 1) : raw_surl).as(surl,
-                                      dyn({
-                                        "id": string(es_r.id),
-                                        "alt_id": has(d.id) && d.id != null ? string(d.id) : string(es_r.id),
-                                        "name": (has(d.name) && d.name != null && string(d.name) != "") ? string(d.name) : string(es_r.id),
-                                        "es_url": surl,
-                                        "is_ech": true,
-                                        "is_hub": (has_hub && surl == clean_hub_url),
-                                      })
+                                      ((has(es_r.id) && es_r.id != null && string(es_r.id) != "") ? string(es_r.id) : (has(d.id) && d.id != null ? string(d.id) : surl)).as(es_id,
+                                        dyn({
+                                          "id": es_id,
+                                          "alt_id": has(d.id) && d.id != null ? string(d.id) : es_id,
+                                          "name": (has(d.name) && d.name != null && string(d.name) != "") ? string(d.name) : es_id,
+                                          "es_url": surl,
+                                          "is_ech": true,
+                                          "is_hub": (has_hub && surl == clean_hub_url),
+                                        })
+                                      )
                                     )
                                   )
                                 )
@@ -447,7 +447,7 @@ inputs:
                                 }
                               :
                                 (es_base + (bool(t.is_ech) ?
-                                  "/*,.ds-*/_stats/docs,store,indexing,search?expand_wildcards=open,hidden&ignore_unavailable=true&allow_no_indices=true&filter_path=_shards,indices.*.primaries.docs.count,indices.*.primaries.store.total_data_set_size_in_bytes,indices.*.primaries.store.size_in_bytes,indices.*.total.store.size_in_bytes,indices.*.total.indexing.index_time_in_millis,indices.*.total.search.query_time_in_millis,indices.*.total.search.query_total"
+                                  "/*,.ds-*/_stats/docs,store,indexing,search?level=shards&expand_wildcards=open,hidden&ignore_unavailable=true&allow_no_indices=true&filter_path=_shards,indices.*.primaries.docs.count,indices.*.primaries.store.total_data_set_size_in_bytes,indices.*.primaries.store.size_in_bytes,indices.*.total.store.size_in_bytes,indices.*.total.indexing.index_time_in_millis,indices.*.total.search.query_time_in_millis,indices.*.total.search.query_total,indices.*.shards.*.routing,indices.*.shards.*.docs.count,indices.*.shards.*.store.size_in_bytes,indices.*.shards.*.store.total_data_set_size_in_bytes,indices.*.shards.*.indexing.index_time_in_millis,indices.*.shards.*.search.query_time_in_millis,indices.*.shards.*.search.query_total"
                                 :
                                   "/_cat/indices/*,.ds-*?format=json&bytes=b&time=ms&expand_wildcards=open,hidden&h=index,docs.count,store.size,dataset.size,indexing.index_time,search.query_time,search.query_total,creation.date"
                                 )).as(stats_url,
@@ -600,7 +600,7 @@ inputs:
                                                     "rows": [],
                                                   }
                                                 :
-                                                  (es_base + "/_cluster/state/routing_table,nodes/*,.ds-*?local=true&expand_wildcards=open,hidden&ignore_unavailable=true&allow_no_indices=true&filter_path=nodes.*.roles,routing_table.indices.*.shards.*.state,routing_table.indices.*.shards.*.node").as(cs_url,
+                                                  (es_base + "/_nodes?filter_path=nodes.*.roles").as(cs_url,
                                                     try(
                                                       get_request(cs_url).with({ "Header": { "Authorization": ["ApiKey " + harvest.key] } }).do_request(),
                                                       "req_err"
@@ -609,46 +609,119 @@ inputs:
                                                         try(bytes(cs_resp.Body).decode_json(), "json_err").as(cs_dec, has(cs_dec.json_err) ? dyn({}) : cs_dec)
                                                       : dyn({})).as(cs_body,
                                                         ((has(cs_body.nodes) && cs_body.nodes != null) ? cs_body.nodes : dyn({})).as(cs_nodes,
-                                                        ((has(cs_body.routing_table) && cs_body.routing_table != null && has(cs_body.routing_table.indices) && cs_body.routing_table.indices != null) ? cs_body.routing_table.indices : dyn({})).as(cs_rt,
                                                         ((has(harvest.body.indices) && harvest.body.indices != null) ? harvest.body.indices : dyn({})).as(indices_obj,
                                                           {
                                                             "ok": true,
                                                             "err": dyn({}),
-                                                            "rows": indices_obj.keys().map(raw_idx,
-                                                              string(raw_idx).as(rname,
+                                                            "rows": size(indices_obj.keys()) > 0 ? indices_obj.keys().map(raw_idx,
+                                                              string(dyn(raw_idx)).as(rname,
                                                               (rname.contains(":") ? rname.substring(size(rname.split(":")[0]) + 1, size(rname)) : rname).as(iname,
                                                               indices_obj[raw_idx].as(istats,
                                                               ((iname in settings_map && settings_map[iname] != null && has(settings_map[iname].settings) && settings_map[iname].settings != null) ? settings_map[iname].settings : dyn({})).as(iset,
-                                                              ((has(istats.primaries) && istats.primaries != null && has(istats.primaries.store) && istats.primaries.store != null) ? (
-                                                                (has(istats.primaries.store.total_data_set_size_in_bytes) && istats.primaries.store.total_data_set_size_in_bytes != null) ? int(istats.primaries.store.total_data_set_size_in_bytes) : (
-                                                                  (has(istats.primaries.store.size_in_bytes) && istats.primaries.store.size_in_bytes != null) ? int(istats.primaries.store.size_in_bytes) : 0
+                                                              (("index.routing.allocation.include._tier_preference" in iset) && iset["index.routing.allocation.include._tier_preference"] != null ? string(iset["index.routing.allocation.include._tier_preference"]) : "").as(tpref,
+                                                              tpref.split(",").map(p, p.trim_space().to_lower()).filter(p,
+                                                                p == "data_frozen" || p == "data_cold" || p == "data_warm" || p == "data_hot" || p == "data_content"
+                                                              ).as(valid_prefs,
+                                                              (tpref == "" ? "hot/content" : (
+                                                                size(valid_prefs) == 0 ? "unknown" : (
+                                                                  valid_prefs[0] == "data_frozen" ? "frozen" : (
+                                                                    valid_prefs[0] == "data_cold" ? "cold" : (
+                                                                      valid_prefs[0] == "data_warm" ? "warm" : "hot/content"
+                                                                    )
+                                                                  )
                                                                 )
-                                                              ) : 0).as(dset_b,
-                                                                dyn({
-                                                                  "raw_idx": rname,
-                                                                  "idx_name": iname,
-                                                                  "tier_pref": (("index.routing.allocation.include._tier_preference" in iset) && iset["index.routing.allocation.include._tier_preference"] != null) ? string(iset["index.routing.allocation.include._tier_preference"]) : "",
-                                                                  "alloc_roles": ((iname in cs_rt && cs_rt[iname] != null && has(cs_rt[iname].shards) && cs_rt[iname].shards != null) ?
-                                                                    cs_rt[iname].shards.keys().map(sk,
-                                                                      cs_rt[iname].shards[sk].filter(sr,
-                                                                        has(sr.state) && (string(sr.state) == "STARTED" || string(sr.state) == "RELOCATING") &&
-                                                                        has(sr.node) && sr.node != null && string(sr.node) in cs_nodes &&
-                                                                        cs_nodes[string(sr.node)] != null && has(cs_nodes[string(sr.node)].roles) && cs_nodes[string(sr.node)].roles != null
-                                                                      ).map(sr, cs_nodes[string(sr.node)].roles.map(rl, string(rl)).join(","))
-                                                                    ).flatten()
-                                                                  : []),
-                                                                  "created_ms": (("index.creation_date" in iset && iset["index.creation_date"] != null && string(iset["index.creation_date"]).matches("^[0-9]+$")) ? int(iset["index.creation_date"]) : 0),
-                                                                  "docs": ((has(istats.primaries) && istats.primaries != null && has(istats.primaries.docs) && istats.primaries.docs != null && has(istats.primaries.docs.count) && istats.primaries.docs.count != null) ? int(istats.primaries.docs.count) : 0),
-                                                                  "dset": dset_b,
-                                                                  "tot": ((has(istats.total) && istats.total != null && has(istats.total.store) && istats.total.store != null && has(istats.total.store.size_in_bytes) && istats.total.store.size_in_bytes != null) ? int(istats.total.store.size_in_bytes) : dset_b),
-                                                                  "idx_ms": ((has(istats.total) && istats.total != null && has(istats.total.indexing) && istats.total.indexing != null && has(istats.total.indexing.index_time_in_millis) && istats.total.indexing.index_time_in_millis != null) ? int(istats.total.indexing.index_time_in_millis) : 0),
-                                                                  "qry_ms": ((has(istats.total) && istats.total != null && has(istats.total.search) && istats.total.search != null && has(istats.total.search.query_time_in_millis) && istats.total.search.query_time_in_millis != null) ? int(istats.total.search.query_time_in_millis) : 0),
-                                                                  "qry_cnt": ((has(istats.total) && istats.total != null && has(istats.total.search) && istats.total.search != null && has(istats.total.search.query_total) && istats.total.search.query_total != null) ? int(istats.total.search.query_total) : 0),
-                                                                })
-                                                              )))))
-                                                            ),
+                                                              )).as(fb_tier,
+                                                              (("index.creation_date" in iset && iset["index.creation_date"] != null && string(iset["index.creation_date"]).matches("^[0-9]+$")) ? int(iset["index.creation_date"]) : 0).as(created_ms,
+                                                              ((has(istats.shards) && istats.shards != null && size(istats.shards.keys()) > 0) ?
+                                                                istats.shards.keys().map(sk,
+                                                                  istats.shards[sk].filter(sh,
+                                                                    has(sh.routing) && sh.routing != null && has(sh.routing.state) &&
+                                                                    (string(sh.routing.state) == "STARTED" || string(sh.routing.state) == "RELOCATING")
+                                                                  ).map(sh,
+                                                                    ((has(sh.routing.node) && sh.routing.node != null) ? string(sh.routing.node) : "").as(sh_node,
+                                                                    ((sh_node != "" && sh_node in cs_nodes && cs_nodes[sh_node] != null && has(cs_nodes[sh_node].roles) && cs_nodes[sh_node].roles != null) ?
+                                                                      cs_nodes[sh_node].roles.map(rl, string(rl).trim_space().to_lower())
+                                                                    : []).as(role_list,
+                                                                    valid_prefs.filter(p, p in role_list || "data" in role_list).as(pref_matches,
+                                                                    (size(pref_matches) > 0 ? (
+                                                                      pref_matches[0] == "data_frozen" ? "frozen" : (
+                                                                        pref_matches[0] == "data_cold" ? "cold" : (
+                                                                          pref_matches[0] == "data_warm" ? "warm" : "hot/content"
+                                                                        )
+                                                                      )
+                                                                    ) : (
+                                                                      size(role_list) > 0 ? (
+                                                                        ("data" in role_list || "data_hot" in role_list || "data_content" in role_list) ? "hot/content" : (
+                                                                          "data_warm" in role_list ? "warm" : (
+                                                                            "data_cold" in role_list ? "cold" : (
+                                                                              "data_frozen" in role_list ? "frozen" : fb_tier
+                                                                            )
+                                                                          )
+                                                                        )
+                                                                      ) : fb_tier
+                                                                    )).as(sh_tier,
+                                                                    (has(sh.routing.primary) && sh.routing.primary != null && bool(sh.routing.primary)).as(is_prim,
+                                                                    ((has(sh.store) && sh.store != null && has(sh.store.size_in_bytes) && sh.store.size_in_bytes != null) ? int(sh.store.size_in_bytes) : 0).as(sh_tot,
+                                                                      dyn({
+                                                                        "tier": sh_tier,
+                                                                        "docs": is_prim ? ((has(sh.docs) && sh.docs != null && has(sh.docs.count) && sh.docs.count != null) ? int(sh.docs.count) : 0) : 0,
+                                                                        "dset": is_prim ? ((has(sh.store) && sh.store != null && has(sh.store.total_data_set_size_in_bytes) && sh.store.total_data_set_size_in_bytes != null) ? int(sh.store.total_data_set_size_in_bytes) : sh_tot) : 0,
+                                                                        "tot": sh_tot,
+                                                                        "idx_ms": (has(sh.indexing) && sh.indexing != null && has(sh.indexing.index_time_in_millis) && sh.indexing.index_time_in_millis != null) ? int(sh.indexing.index_time_in_millis) : 0,
+                                                                        "qry_ms": (has(sh.search) && sh.search != null && has(sh.search.query_time_in_millis) && sh.search.query_time_in_millis != null) ? int(sh.search.query_time_in_millis) : 0,
+                                                                        "qry_cnt": (has(sh.search) && sh.search != null && has(sh.search.query_total) && sh.search.query_total != null) ? int(sh.search.query_total) : 0,
+                                                                      })
+                                                                    ))))))
+                                                                  )
+                                                                ).flatten()
+                                                              : []).as(active_shards,
+                                                              ["hot/content", "warm", "cold", "frozen", "unknown"].filter(tr, active_shards.exists(x, string(x.tier) == tr)).as(present_tiers,
+                                                                (size(present_tiers) > 0) ?
+                                                                  present_tiers.map(tr,
+                                                                    active_shards.filter(x, string(x.tier) == tr).as(ts,
+                                                                      dyn({
+                                                                        "raw_idx": rname,
+                                                                        "idx_name": iname,
+                                                                        "tier": tr,
+                                                                        "tier_pref": tpref,
+                                                                        "created_ms": created_ms,
+                                                                        "sc": size(ts),
+                                                                        "tier_cnt": size(present_tiers),
+                                                                        "docs": ts.map(x, int(x.docs)).sum(),
+                                                                        "dset": ts.map(x, int(x.dset)).sum(),
+                                                                        "tot": ts.map(x, int(x.tot)).sum(),
+                                                                        "idx_ms": ts.map(x, int(x.idx_ms)).sum(),
+                                                                        "qry_ms": ts.map(x, int(x.qry_ms)).sum(),
+                                                                        "qry_cnt": ts.map(x, int(x.qry_cnt)).sum(),
+                                                                      })
+                                                                    )
+                                                                  )
+                                                                :
+                                                                  (((has(istats.primaries) && istats.primaries != null && has(istats.primaries.store) && istats.primaries.store != null) ? (
+                                                                    (has(istats.primaries.store.total_data_set_size_in_bytes) && istats.primaries.store.total_data_set_size_in_bytes != null) ? int(istats.primaries.store.total_data_set_size_in_bytes) : (
+                                                                      (has(istats.primaries.store.size_in_bytes) && istats.primaries.store.size_in_bytes != null) ? int(istats.primaries.store.size_in_bytes) : 0
+                                                                    )
+                                                                  ) : 0).as(dset_b,
+                                                                    [dyn({
+                                                                      "raw_idx": rname,
+                                                                      "idx_name": iname,
+                                                                      "tier": fb_tier,
+                                                                      "tier_pref": tpref,
+                                                                      "created_ms": created_ms,
+                                                                      "sc": 0,
+                                                                      "tier_cnt": 1,
+                                                                      "docs": ((has(istats.primaries) && istats.primaries != null && has(istats.primaries.docs) && istats.primaries.docs != null && has(istats.primaries.docs.count) && istats.primaries.docs.count != null) ? int(istats.primaries.docs.count) : 0),
+                                                                      "dset": dset_b,
+                                                                      "tot": ((has(istats.total) && istats.total != null && has(istats.total.store) && istats.total.store != null && has(istats.total.store.size_in_bytes) && istats.total.store.size_in_bytes != null) ? int(istats.total.store.size_in_bytes) : dset_b),
+                                                                      "idx_ms": ((has(istats.total) && istats.total != null && has(istats.total.indexing) && istats.total.indexing != null && has(istats.total.indexing.index_time_in_millis) && istats.total.indexing.index_time_in_millis != null) ? int(istats.total.indexing.index_time_in_millis) : 0),
+                                                                      "qry_ms": ((has(istats.total) && istats.total != null && has(istats.total.search) && istats.total.search != null && has(istats.total.search.query_time_in_millis) && istats.total.search.query_time_in_millis != null) ? int(istats.total.search.query_time_in_millis) : 0),
+                                                                      "qry_cnt": ((has(istats.total) && istats.total != null && has(istats.total.search) && istats.total.search != null && has(istats.total.search.query_total) && istats.total.search.query_total != null) ? int(istats.total.search.query_total) : 0),
+                                                                    })]
+                                                                  ))
+                                                              ))))))))))
+                                                            ).flatten() : [],
                                                           }
-                                                        )))
+                                                        ))
                                                       )
                                                     )
                                                   )
@@ -666,9 +739,11 @@ inputs:
                                               dyn({
                                                 "raw_idx": rname,
                                                 "idx_name": iname,
+                                                "tier": "hot/content",
                                                 "tier_pref": "data_hot,data_content",
-                                                "alloc_roles": [],
                                                 "created_ms": (("creation.date" in cr && cr["creation.date"] != null && string(cr["creation.date"]).matches("^[0-9]+$")) ? int(cr["creation.date"]) : 0),
+                                                "sc": 1,
+                                                "tier_cnt": 1,
                                                 "docs": (("docs.count" in cr && cr["docs.count"] != null && string(cr["docs.count"]).matches("^[0-9]+$")) ? int(cr["docs.count"]) : 0),
                                                 "dset": dset_b,
                                                 "tot": (("store.size" in cr && cr["store.size"] != null && string(cr["store.size"]).matches("^[0-9]+$") && int(cr["store.size"]) > 0) ? int(cr["store.size"]) : dset_b),
@@ -702,39 +777,48 @@ inputs:
                                             string(row.raw_idx) != "monitoring-indices-chargeback"
                                           ).map(row,
                                             string(row.idx_name).as(idx_name,
+                                            string(row.tier).as(row_tier,
                                             string(row.tier_pref).as(tier_pref,
-                                            row.alloc_roles.as(alloc_roles,
+                                            int(row.sc).as(cur_sc,
+                                            int(row.tier_cnt).as(tier_cnt,
                                             int(row.created_ms).as(created_ms,
                                             (created_ms / 1000).as(created_sec,
-                                            (created_ms > 0 ? { "creation_date": timestamp(created_ms / 1000).format(time_layout.RFC3339) } : {}).with(
-                                              size(alloc_roles) > 0 ? { "allocated_node_roles": alloc_roles } : {}
-                                            ).as(idx_extra,
+                                            (created_ms > 0 ? { "creation_date": timestamp(created_ms / 1000).format(time_layout.RFC3339) } : {}).as(idx_extra,
                                             int(row.docs).as(cur_docs,
                                             int(row.dset).as(cur_dset,
                                             int(row.tot).as(cur_tot,
                                             int(row.idx_ms).as(cur_idx_ms,
                                             int(row.qry_ms).as(cur_qry_ms,
                                             int(row.qry_cnt).as(cur_qry_cnt,
-                                            (tid + "::" + idx_name).as(bkey,
-                                            (bkey in base_map).as(has_prev,
-                                            (has_prev ? base_map[bkey] : dyn({})).as(prev_b,
+                                            (tid + "::" + idx_name).as(leg_bkey,
+                                            (leg_bkey + "::" + row_tier).as(bkey,
+                                            ((bkey in base_map) || (tier_cnt == 1 && (leg_bkey in base_map))).as(has_prev,
+                                            ((bkey in base_map) ? base_map[bkey] : (has_prev ? base_map[leg_bkey] : dyn({}))).as(prev_b,
                                             ((has_prev && ("t" in prev_b) && prev_b.t != null) ? int(prev_b.t) : 0).as(prev_t,
+                                            ((has_prev && ("sc" in prev_b) && prev_b.sc != null) ? int(prev_b.sc) : 0).as(prev_sc,
+                                            [leg_bkey, leg_bkey + "::hot/content", leg_bkey + "::warm", leg_bkey + "::cold", leg_bkey + "::frozen", leg_bkey + "::unknown"].filter(ck,
+                                              ck in base_map && ("t" in base_map[ck]) && base_map[ck].t != null && int(base_map[ck].t) > 0 && int(base_map[ck].t) < now_sec &&
+                                              (now_sec - int(base_map[ck].t)) <= 86400 && int(base_map[ck].t) >= (today_start_sec - 86400) && (int(base_map[ck].t) / 600) != (now_sec / 600)
+                                            ).map(ck, int(base_map[ck].t)).as(peer_ts,
+                                            (size(peer_ts) > 0 ? peer_ts[0] : 0).as(idx_prev_t,
                                             (prev_t > 0 && (prev_t / 600) == (now_sec / 600)).as(same_bucket,
                                             same_bucket ?
                                               {
                                                 "gap_sec": 0,
                                                 "evts": [],
-                                                "base": prev_b,
+                                                "base": dyn(prev_b.with({ "k": bkey })),
                                               }
                                             :
                                             (prev_t > 0 && ((now_sec - prev_t) > 86400 || now_sec <= prev_t || prev_t < (today_start_sec - 86400))).as(is_gap,
                                             (prev_t > 0 && !is_gap).as(is_valid_interval,
-                                            (!has_prev && created_sec >= today_start_sec && (now_sec - created_sec) <= 7200).as(is_new_intraday,
-                                            (is_valid_interval ? ((cur_idx_ms >= int(prev_b.m[0])) ? (cur_idx_ms - int(prev_b.m[0])) : cur_idx_ms) : (is_new_intraday ? cur_idx_ms : 0)).as(raw_idx,
-                                            (is_valid_interval ? ((cur_qry_ms >= int(prev_b.m[1])) ? (cur_qry_ms - int(prev_b.m[1])) : cur_qry_ms) : (is_new_intraday ? cur_qry_ms : 0)).as(raw_qry,
-                                            (is_valid_interval ? ((cur_qry_cnt >= int(prev_b.m[2])) ? (cur_qry_cnt - int(prev_b.m[2])) : cur_qry_cnt) : (is_new_intraday ? cur_qry_cnt : 0)).as(raw_qcnt,
-                                            (is_valid_interval ? (cur_docs - int(prev_b.m[3])) : cur_docs).as(raw_docs,
-                                            (is_valid_interval ? (cur_dset - int(prev_b.m[4])) : cur_dset).as(raw_dset,
+                                            (cur_sc > 0 && prev_sc > 0 && cur_sc < prev_sc).as(shard_departed,
+                                            (!has_prev && idx_prev_t == 0 && created_sec >= today_start_sec && (now_sec - created_sec) <= 7200).as(is_new_intraday,
+                                            (!has_prev && idx_prev_t > 0).as(is_tier_arrival,
+                                            (is_valid_interval ? ((cur_idx_ms >= int(prev_b.m[0])) ? (cur_idx_ms - int(prev_b.m[0])) : (shard_departed ? 0 : cur_idx_ms)) : (is_new_intraday ? cur_idx_ms : 0)).as(raw_idx,
+                                            (is_valid_interval ? ((cur_qry_ms >= int(prev_b.m[1])) ? (cur_qry_ms - int(prev_b.m[1])) : (shard_departed ? 0 : cur_qry_ms)) : (is_new_intraday ? cur_qry_ms : 0)).as(raw_qry,
+                                            (is_valid_interval ? ((cur_qry_cnt >= int(prev_b.m[2])) ? (cur_qry_cnt - int(prev_b.m[2])) : (shard_departed ? 0 : cur_qry_cnt)) : (is_new_intraday ? cur_qry_cnt : 0)).as(raw_qcnt,
+                                            (is_valid_interval ? ((shard_departed && cur_docs < int(prev_b.m[3])) ? 0 : (cur_docs - int(prev_b.m[3]))) : (is_new_intraday ? cur_docs : 0)).as(raw_docs,
+                                            (is_valid_interval ? ((shard_departed && cur_dset < int(prev_b.m[4])) ? 0 : (cur_dset - int(prev_b.m[4]))) : (is_new_intraday ? cur_dset : 0)).as(raw_dset,
                                               (is_valid_interval && prev_t < today_start_sec) ?
                                                 (double(today_start_sec - prev_t) / double(now_sec - prev_t)).as(prev_ratio,
                                                 int(double(raw_idx) * prev_ratio).as(p_idx,
@@ -755,6 +839,7 @@ inputs:
                                                           "cluster": { "name": tid },
                                                           "index": ({
                                                             "name": idx_name,
+                                                            "tier": row_tier,
                                                             "tier_preference": tier_pref,
                                                             "interval": {
                                                               "start": timestamp(prev_t).format(time_layout.RFC3339),
@@ -796,6 +881,7 @@ inputs:
                                                           "cluster": { "name": tid },
                                                           "index": ({
                                                             "name": idx_name,
+                                                            "tier": row_tier,
                                                             "tier_preference": tier_pref,
                                                             "primaries": {
                                                               "docs": has_cur_day ? {
@@ -834,13 +920,15 @@ inputs:
                                                       "k": bkey,
                                                       "c": tid,
                                                       "t": now_sec,
+                                                      "sc": cur_sc,
                                                       "m": [cur_idx_ms, cur_qry_ms, cur_qry_cnt, cur_docs, cur_dset],
                                                     }),
                                                   }
                                                 )))))))
                                               :
-                                                (is_valid_interval || is_new_intraday).as(emit_delta,
-                                                (is_valid_interval ? prev_t : created_sec).as(int_start_sec,
+                                                (idx_prev_t < today_start_sec ? today_start_sec : idx_prev_t).as(arr_start_sec,
+                                                (is_valid_interval || is_new_intraday || (is_tier_arrival && now_sec > arr_start_sec)).as(emit_delta,
+                                                (is_valid_interval ? prev_t : (is_tier_arrival ? arr_start_sec : created_sec)).as(int_start_sec,
                                                   {
                                                     "gap_sec": is_gap ? (now_sec - prev_t) : 0,
                                                     "evts": [
@@ -853,6 +941,7 @@ inputs:
                                                           "cluster": { "name": tid },
                                                           "index": ({
                                                             "name": idx_name,
+                                                            "tier": row_tier,
                                                             "tier_preference": tier_pref,
                                                             "primaries": {
                                                               "docs": emit_delta ? {
@@ -900,11 +989,12 @@ inputs:
                                                       "k": bkey,
                                                       "c": tid,
                                                       "t": now_sec,
+                                                      "sc": cur_sc,
                                                       "m": [cur_idx_ms, cur_qry_ms, cur_qry_cnt, cur_docs, cur_dset],
                                                     }),
                                                   }
-                                                ))
-                                            )))))))))))))))))))))))))
+                                                )))
+                                            )))))))))))))))))))))))))))))))))
                                           ).as(idx_items,
                                             idx_items.filter(x, int(x.gap_sec) > 0).as(gap_items,
                                               {
@@ -958,7 +1048,7 @@ inputs:
                     )
                   )
                 )
-              ))))))))))))))))))))))))))))))
+              )))))))))))))))))))))))))))))
             )
           publisher_pipeline.disable_host: true
           redact:
@@ -968,6 +1058,7 @@ inputs:
                 - hub_es_api_key
                 - deployment_keys
                 - deployment_api_keys
+                - proxy_url
           resource.ssl: null
           resource.timeout: 30s
           resource.url: https://api.elastic-cloud.com/api/v1/deployments/_search?show_metadata=true
