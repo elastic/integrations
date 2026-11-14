@@ -51,7 +51,7 @@ program: |-
         )))))
       )
     )).as(eff_valid,
-    (clean_eff_from == "" ? "" : (clean_eff_from.substring(0, 10) + "T00:00:00Z")).as(norm_eff_from,
+    ((clean_eff_from == "" || !eff_valid) ? "" : (clean_eff_from.substring(0, 10) + "T00:00:00Z")).as(norm_eff_from,
     (!state.sync_fleet_config ? "disabled" : (
       (rate_valid && onprem_rate_valid && eff_valid) ? (clean_rate + "|" + clean_onprem_rate + "|" + state.conf_currency_unit + "|" + norm_eff_from + "|" + today_utc) : state.?cursor.conf_sig.orValue("")
     )).as(conf_sig,

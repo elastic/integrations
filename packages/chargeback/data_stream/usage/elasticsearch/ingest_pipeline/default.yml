@@ -49,11 +49,27 @@ processors:
           return;
         }
         if (idx.datastream == null || idx.datastream == '') {
-          def m = /^(?:partial-)?(?:restored-)?(?:shrink-.{4}-)?(?:\.ds-)?([a-zA-Z_0-9\-.]+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d+)?$/.matcher(name);
-          if (m.matches() && !m.group(1).startsWith('.')) {
-            idx.datastream = m.group(1);
+          String stripped = name;
+          if (stripped.startsWith('partial-')) { stripped = stripped.substring(8); }
+          if (stripped.startsWith('restored-')) { stripped = stripped.substring(9); }
+          def sm = /^shrink-.{4}-(.*)$/.matcher(stripped);
+          if (sm.matches()) { stripped = sm.group(1); }
+          String resolvedDs = null;
+          if (stripped.startsWith('.ds-')) {
+            def dm = /^\.ds-([a-zA-Z_0-9\-.]+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d{6,})?$/.matcher(stripped);
+            if (dm.matches() && !dm.group(1).startsWith('.')) {
+              resolvedDs = dm.group(1);
+            }
           } else {
-            idx.datastream = name.startsWith('.') ? 'system' : name;
+            def rm = /^([a-zA-Z_0-9\-.]+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?(?:-\d{6,})?|-\d{6,})$/.matcher(stripped);
+            if (rm.matches() && !rm.group(1).startsWith('.')) {
+              resolvedDs = rm.group(1);
+            }
+          }
+          if (resolvedDs != null) {
+            idx.datastream = resolvedDs;
+          } else {
+            idx.datastream = (name.startsWith('.') || stripped.startsWith('.')) ? 'system' : stripped;
           }
         }
         List shardRolesList = idx.allocated_node_roles instanceof List ? (List)idx.allocated_node_roles : null;

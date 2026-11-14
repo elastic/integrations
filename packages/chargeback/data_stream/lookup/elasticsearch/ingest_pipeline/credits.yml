@@ -28,12 +28,25 @@ processors:
 
         double bal = 0.0;
         boolean act = false;
+        Long observedAtMs = null;
         if (ctx.latest_credit instanceof Map) {
           if (ctx.latest_credit.ecu_balance instanceof Number) {
             bal = ((Number)ctx.latest_credit.ecu_balance).doubleValue();
           }
           if (ctx.latest_credit.active != null) {
             act = ctx.latest_credit.active.toString().equalsIgnoreCase('true');
+          }
+          if (ctx.latest_credit.observed_at instanceof Number && ((Number)ctx.latest_credit.observed_at).longValue() > 0L) {
+            observedAtMs = Long.valueOf(((Number)ctx.latest_credit.observed_at).longValue());
+          }
+        }
+        if (observedAtMs != null) {
+          ctx['@timestamp'] = fmt.format(Instant.ofEpochMilli(observedAtMs.longValue()));
+        } else if (ctx.snapshot_day != null) {
+          if (ctx.snapshot_day instanceof Number) {
+            ctx['@timestamp'] = fmt.format(Instant.ofEpochMilli(((Number)ctx.snapshot_day).longValue()));
+          } else {
+            ctx['@timestamp'] = fmt.format(ZonedDateTime.parse(ctx.snapshot_day.toString()).toInstant());
           }
         }
         double qty = ctx.ecu_quantity instanceof Number ? ((Number)ctx.ecu_quantity).doubleValue() : 0.0;
@@ -60,7 +73,7 @@ processors:
           ctx.ess.billing.end = endIso;
         }
 
-        for (String tmp : ['organization_id', 'credit_start', 'credit_end', 'credit_type', 'ecu_quantity', 'latest_credit']) {
+        for (String tmp : ['snapshot_day', 'organization_id', 'credit_start', 'credit_end', 'credit_type', 'ecu_quantity', 'latest_credit']) {
           ctx.remove(tmp);
         }
   - set:

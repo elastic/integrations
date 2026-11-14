@@ -217,12 +217,25 @@ source:
             }
           }
           if (name != '') {
-            def m = /^(?:partial-)?(?:restored-)?(?:shrink-.{4}-)?(?:\.ds-)?([a-zA-Z_0-9\-.]+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d+)?$/.matcher(name);
-            if (m.matches() && !m.group(1).startsWith('.')) {
-              emit(m.group(1));
-              return;
+            String stripped = name;
+            if (stripped.startsWith('partial-')) { stripped = stripped.substring(8); }
+            if (stripped.startsWith('restored-')) { stripped = stripped.substring(9); }
+            def sm = /^shrink-.{4}-(.*)$/.matcher(stripped);
+            if (sm.matches()) { stripped = sm.group(1); }
+            if (stripped.startsWith('.ds-')) {
+              def dm = /^\.ds-([a-zA-Z_0-9\-.]+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d{6,})?$/.matcher(stripped);
+              if (dm.matches() && !dm.group(1).startsWith('.')) {
+                emit(dm.group(1));
+                return;
+              }
+            } else {
+              def rm = /^([a-zA-Z_0-9\-.]+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?(?:-\d{6,})?|-\d{6,})$/.matcher(stripped);
+              if (rm.matches() && !rm.group(1).startsWith('.')) {
+                emit(rm.group(1));
+                return;
+              }
             }
-            emit(name.startsWith('.') ? 'system' : name);
+            emit((name.startsWith('.') || stripped.startsWith('.')) ? 'system' : stripped);
             return;
           }
           for (String f : ['elasticsearch.index.datastream.keyword', 'elasticsearch.index.datastream']) {
