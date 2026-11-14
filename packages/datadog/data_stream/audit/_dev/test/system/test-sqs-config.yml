@@ -1,0 +1,15 @@
+deployer: tf
+input: aws-s3
+# S3 object creation -> SQS delivery -> aws-s3 poll can take several minutes.
+wait_for_data_timeout: 20m
+vars:
+  collection_mode: sqs
+  queue_url: '{{TF_OUTPUT_queue_url}}'
+  access_key_id: '{{AWS_ACCESS_KEY_ID}}'
+  secret_access_key: '{{AWS_SECRET_ACCESS_KEY}}'
+  session_token: '{{AWS_SESSION_TOKEN}}'
+data_stream:
+  vars:
+    preserve_original_event: true
+assert:
+  hit_count: 4
