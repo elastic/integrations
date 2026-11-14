@@ -80,18 +80,35 @@ source:
             }
           }
           if (name != '') {
+            String stripped = name;
+            for (int i = 0; i < 4; i++) {
+              String prev = stripped;
+              if (stripped.startsWith('partial-')) { stripped = stripped.substring(8); }
+              if (stripped.startsWith('restored-')) { stripped = stripped.substring(9); }
+              def sm = /^shrink-.{4}-(.*)$/.matcher(stripped);
+              if (sm.matches()) { stripped = sm.group(1); }
+              if (stripped.equals(prev)) { break; }
+            }
             boolean isCbLookup = (
               name.startsWith('chargeback_lookup.') ||
+              stripped.startsWith('chargeback_lookup.') ||
               name == 'monitoring-indices' ||
+              stripped == 'monitoring-indices' ||
               name == 'monitoring-indices-chargeback' ||
-              /^(?:billing_cluster_cost_lookup|billing_realized_pool_lookup|chargeback_conf_lookup|cluster_capacity_utilization_lookup|cluster_deployment_contribution_lookup|cluster_tier_contribution_lookup|cluster_datastream_contribution_lookup|cluster_tier_and_datastream_contribution_lookup)(?:-\d+)?$/.matcher(name).matches()
+              stripped == 'monitoring-indices-chargeback' ||
+              /^(?:billing_cluster_cost_lookup|billing_realized_pool_lookup|chargeback_conf_lookup|cluster_capacity_utilization_lookup|cluster_deployment_contribution_lookup|cluster_tier_contribution_lookup|cluster_datastream_contribution_lookup|cluster_tier_and_datastream_contribution_lookup)(?:-\d+)?$/.matcher(stripped).matches()
             );
             if ((name.startsWith('.') && !name.startsWith('.ds-'))
+                || (stripped.startsWith('.') && !stripped.startsWith('.ds-'))
                 || name.startsWith('.ds-.')
+                || stripped.startsWith('.ds-.')
                 || name.startsWith('.ds-ilm-history')
+                || stripped.startsWith('.ds-ilm-history')
                 || isCbLookup
                 || name.contains('metrics-chargeback.')
-                || name.contains('logs-chargeback.')) {
+                || stripped.contains('metrics-chargeback.')
+                || name.contains('logs-chargeback.')
+                || stripped.contains('logs-chargeback.')) {
               emit(true);
               return;
             }
@@ -218,10 +235,14 @@ source:
           }
           if (name != '') {
             String stripped = name;
-            if (stripped.startsWith('partial-')) { stripped = stripped.substring(8); }
-            if (stripped.startsWith('restored-')) { stripped = stripped.substring(9); }
-            def sm = /^shrink-.{4}-(.*)$/.matcher(stripped);
-            if (sm.matches()) { stripped = sm.group(1); }
+            for (int i = 0; i < 4; i++) {
+              String prev = stripped;
+              if (stripped.startsWith('partial-')) { stripped = stripped.substring(8); }
+              if (stripped.startsWith('restored-')) { stripped = stripped.substring(9); }
+              def sm = /^shrink-.{4}-(.*)$/.matcher(stripped);
+              if (sm.matches()) { stripped = sm.group(1); }
+              if (stripped.equals(prev)) { break; }
+            }
             if (stripped.startsWith('.ds-')) {
               def dm = /^\.ds-([^:\s]+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d{6,})?$/.matcher(stripped);
               if (dm.matches() && !dm.group(1).startsWith('.')) {

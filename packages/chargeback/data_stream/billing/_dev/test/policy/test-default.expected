@@ -12,22 +12,23 @@ inputs:
           interval: 1h
           processors:
             - drop_event.when.equals.fake: true
+            - copy_fields:
+                fail_on_error: false
+                fields:
+                    - from: '@metadata.input_id'
+                      to: conf_policy_id
+                ignore_missing: true
+                when:
+                    and:
+                        - equals:
+                            doc_type: config_snapshot
+                        - not:
+                            has_fields:
+                                - conf_policy_id
           program: |-
             state.with(
               now.format(time_layout.DateOnly).as(today_utc,
               state.config_owner_id.trim_space().as(clean_owner_id,
-              string(state.?cursor.conf_policy_id.orValue("")).as(prev_conf_pol_id,
-              (prev_conf_pol_id != "" ? prev_conf_pol_id :
-                state.hub_es_url.trim_space().as(thub,
-                state.billing_api_base.trim_space().as(tbill,
-                state.cloud_api_base.trim_space().as(tcloud,
-                  "pol|" + state.organization_id.trim_space() + "|" +
-                  (thub.endsWith("/") ? thub.substring(0, size(thub) - 1) : thub) + "|" +
-                  (tbill.endsWith("/") ? tbill.substring(0, size(tbill) - 1) : tbill) + "|" +
-                  (tcloud.endsWith("/") ? tcloud.substring(0, size(tcloud) - 1) : tcloud) + "|" +
-                  clean_owner_id + "|" + (state.sync_fleet_config ? "sync" : "nosync")
-                )))
-              ).as(conf_policy_id,
               state.conf_unit_rate.trim_space().as(clean_rate,
               clean_rate.matches("^[0-9]+(\\.[0-9]+)?$").as(rate_valid,
               state.conf_onprem_unit_rate.trim_space().as(clean_onprem_rate,
@@ -79,7 +80,6 @@ inputs:
                   "doc_type": "config_snapshot",
                   "conf_sync_enabled": true,
                   "conf_owner_id": clean_owner_id,
-                  "conf_policy_id": conf_policy_id,
                   "conf_chargeable_unit_rate": double(clean_rate),
                   "conf_onprem_chargeable_unit_rate": clean_onprem_rate != "" ? double(clean_onprem_rate) : double(clean_rate),
                   "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
@@ -90,13 +90,12 @@ inputs:
                   "doc_type": "config_snapshot",
                   "conf_sync_enabled": false,
                   "conf_owner_id": clean_owner_id,
-                  "conf_policy_id": conf_policy_id,
                 })]
               : []))))).as(conf_evts,
               (state.organization_id == "" || state.api_key == "" || state.api_key.startsWith("$co.elastic.secret")) ?
                 {
                   "events": size(conf_evts) > 0 ? conf_evts : [dyn({ "fake": true })],
-                  "cursor": { "conf_sig": conf_sig, "conf_policy_id": conf_policy_id },
+                  "cursor": { "conf_sig": conf_sig },
                   "want_more": false,
                 }
               :
@@ -194,7 +193,6 @@ inputs:
                           "cursor": {
                             "last_to": req.from.format(time_layout.RFC3339),
                             "conf_sig": conf_sig,
-                            "conf_policy_id": conf_policy_id,
                             "last_credit_day": cred_res.credit_day,
                           },
                           "want_more": false,
@@ -492,7 +490,6 @@ inputs:
                                     "cursor": {
                                       "last_to": req.from.format(time_layout.RFC3339),
                                       "conf_sig": conf_sig,
-                                      "conf_policy_id": conf_policy_id,
                                       "last_credit_day": cred_res.credit_day,
                                     },
                                     "want_more": false,
@@ -505,7 +502,6 @@ inputs:
                                     "cursor": {
                                       "last_to": req.from.format(time_layout.RFC3339),
                                       "conf_sig": conf_sig,
-                                      "conf_policy_id": conf_policy_id,
                                       "last_credit_day": cred_res.credit_day,
                                       "disc_dep_from": dep_page.next_from,
                                       "disc_es_next": es_page.next,
@@ -539,7 +535,6 @@ inputs:
                                         "cursor": {
                                           "last_to": req.from.format(time_layout.RFC3339),
                                           "conf_sig": conf_sig,
-                                          "conf_policy_id": conf_policy_id,
                                           "last_credit_day": cred_res.credit_day,
                                         },
                                         "want_more": false,
@@ -552,7 +547,6 @@ inputs:
                                             "cursor": {
                                               "last_to": req.from.format(time_layout.RFC3339),
                                               "conf_sig": conf_sig,
-                                              "conf_policy_id": conf_policy_id,
                                               "last_credit_day": cred_res.credit_day,
                                             },
                                             "want_more": false,
@@ -584,7 +578,6 @@ inputs:
                                                     "cursor": {
                                                       "last_to": req.from.format(time_layout.RFC3339),
                                                       "conf_sig": conf_sig,
-                                                      "conf_policy_id": conf_policy_id,
                                                       "last_credit_day": cred_res.credit_day,
                                                     },
                                                     "want_more": false,
@@ -654,7 +647,6 @@ inputs:
                                                             "cursor": (has_more_days && !disc_had_err) ? {
                                                               "last_to": req.to.format(time_layout.RFC3339),
                                                               "conf_sig": conf_sig,
-                                                              "conf_policy_id": conf_policy_id,
                                                               "last_credit_day": cred_res.credit_day,
                                                               "disc_dep_from": -1,
                                                               "disc_es_next": "",
@@ -666,7 +658,6 @@ inputs:
                                                             } : {
                                                               "last_to": req.to.format(time_layout.RFC3339),
                                                               "conf_sig": conf_sig,
-                                                              "conf_policy_id": conf_policy_id,
                                                               "last_credit_day": cred_res.credit_day,
                                                             },
                                                             "want_more": has_more_days,
@@ -685,7 +676,6 @@ inputs:
                                         "cursor": {
                                           "last_to": req.from.format(time_layout.RFC3339),
                                           "conf_sig": conf_sig,
-                                          "conf_policy_id": conf_policy_id,
                                           "last_credit_day": cred_res.credit_day,
                                         },
                                         "want_more": false,
@@ -699,7 +689,7 @@ inputs:
                   ))))
                 )
                 ))))))
-              )))))))))))))
+              )))))))))))
             )
           publisher_pipeline.disable_host: true
           redact:
@@ -720,7 +710,6 @@ inputs:
             conf_onprem_unit_rate: "0.00085"
             conf_unit_rate: "0.85"
             config_owner_id: ""
-            hub_es_url: ""
             lookbehind: 60
             organization_id: "1111"
             sync_fleet_config: true

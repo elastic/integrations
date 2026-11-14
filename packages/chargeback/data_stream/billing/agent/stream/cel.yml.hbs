@@ -20,7 +20,6 @@ state:
   organization_id: !!str {{escape_string organization_id}}
   billing_api_base: !!str {{escape_string billing_api_base}}
   cloud_api_base: !!str {{escape_string cloud_api_base}}
-  hub_es_url: !!str {{escape_string hub_es_url}}
   lookbehind: !!int {{lookbehind}}
   sync_fleet_config: !!bool {{sync_fleet_config}}
   config_owner_id: !!str {{escape_string config_owner_id}}
@@ -38,18 +37,6 @@ program: |-
   state.with(
     now.format(time_layout.DateOnly).as(today_utc,
     state.config_owner_id.trim_space().as(clean_owner_id,
-    string(state.?cursor.conf_policy_id.orValue("")).as(prev_conf_pol_id,
-    (prev_conf_pol_id != "" ? prev_conf_pol_id :
-      state.hub_es_url.trim_space().as(thub,
-      state.billing_api_base.trim_space().as(tbill,
-      state.cloud_api_base.trim_space().as(tcloud,
-        "pol|" + state.organization_id.trim_space() + "|" +
-        (thub.endsWith("/") ? thub.substring(0, size(thub) - 1) : thub) + "|" +
-        (tbill.endsWith("/") ? tbill.substring(0, size(tbill) - 1) : tbill) + "|" +
-        (tcloud.endsWith("/") ? tcloud.substring(0, size(tcloud) - 1) : tcloud) + "|" +
-        clean_owner_id + "|" + (state.sync_fleet_config ? "sync" : "nosync")
-      )))
-    ).as(conf_policy_id,
     state.conf_unit_rate.trim_space().as(clean_rate,
     clean_rate.matches("^[0-9]+(\\.[0-9]+)?$").as(rate_valid,
     state.conf_onprem_unit_rate.trim_space().as(clean_onprem_rate,
@@ -101,7 +88,6 @@ program: |-
         "doc_type": "config_snapshot",
         "conf_sync_enabled": true,
         "conf_owner_id": clean_owner_id,
-        "conf_policy_id": conf_policy_id,
         "conf_chargeable_unit_rate": double(clean_rate),
         "conf_onprem_chargeable_unit_rate": clean_onprem_rate != "" ? double(clean_onprem_rate) : double(clean_rate),
         "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
@@ -112,13 +98,12 @@ program: |-
         "doc_type": "config_snapshot",
         "conf_sync_enabled": false,
         "conf_owner_id": clean_owner_id,
-        "conf_policy_id": conf_policy_id,
       })]
     : []))))).as(conf_evts,
     (state.organization_id == "" || state.api_key == "" || state.api_key.startsWith("$co.elastic.secret")) ?
       {
         "events": size(conf_evts) > 0 ? conf_evts : [dyn({ "fake": true })],
-        "cursor": { "conf_sig": conf_sig, "conf_policy_id": conf_policy_id },
+        "cursor": { "conf_sig": conf_sig },
         "want_more": false,
       }
     :
@@ -216,7 +201,6 @@ program: |-
                 "cursor": {
                   "last_to": req.from.format(time_layout.RFC3339),
                   "conf_sig": conf_sig,
-                  "conf_policy_id": conf_policy_id,
                   "last_credit_day": cred_res.credit_day,
                 },
                 "want_more": false,
@@ -514,7 +498,6 @@ program: |-
                           "cursor": {
                             "last_to": req.from.format(time_layout.RFC3339),
                             "conf_sig": conf_sig,
-                            "conf_policy_id": conf_policy_id,
                             "last_credit_day": cred_res.credit_day,
                           },
                           "want_more": false,
@@ -527,7 +510,6 @@ program: |-
                           "cursor": {
                             "last_to": req.from.format(time_layout.RFC3339),
                             "conf_sig": conf_sig,
-                            "conf_policy_id": conf_policy_id,
                             "last_credit_day": cred_res.credit_day,
                             "disc_dep_from": dep_page.next_from,
                             "disc_es_next": es_page.next,
@@ -561,7 +543,6 @@ program: |-
                               "cursor": {
                                 "last_to": req.from.format(time_layout.RFC3339),
                                 "conf_sig": conf_sig,
-                                "conf_policy_id": conf_policy_id,
                                 "last_credit_day": cred_res.credit_day,
                               },
                               "want_more": false,
@@ -574,7 +555,6 @@ program: |-
                                   "cursor": {
                                     "last_to": req.from.format(time_layout.RFC3339),
                                     "conf_sig": conf_sig,
-                                    "conf_policy_id": conf_policy_id,
                                     "last_credit_day": cred_res.credit_day,
                                   },
                                   "want_more": false,
@@ -606,7 +586,6 @@ program: |-
                                           "cursor": {
                                             "last_to": req.from.format(time_layout.RFC3339),
                                             "conf_sig": conf_sig,
-                                            "conf_policy_id": conf_policy_id,
                                             "last_credit_day": cred_res.credit_day,
                                           },
                                           "want_more": false,
@@ -676,7 +655,6 @@ program: |-
                                                   "cursor": (has_more_days && !disc_had_err) ? {
                                                     "last_to": req.to.format(time_layout.RFC3339),
                                                     "conf_sig": conf_sig,
-                                                    "conf_policy_id": conf_policy_id,
                                                     "last_credit_day": cred_res.credit_day,
                                                     "disc_dep_from": -1,
                                                     "disc_es_next": "",
@@ -688,7 +666,6 @@ program: |-
                                                   } : {
                                                     "last_to": req.to.format(time_layout.RFC3339),
                                                     "conf_sig": conf_sig,
-                                                    "conf_policy_id": conf_policy_id,
                                                     "last_credit_day": cred_res.credit_day,
                                                   },
                                                   "want_more": has_more_days,
@@ -707,7 +684,6 @@ program: |-
                               "cursor": {
                                 "last_to": req.from.format(time_layout.RFC3339),
                                 "conf_sig": conf_sig,
-                                "conf_policy_id": conf_policy_id,
                                 "last_credit_day": cred_res.credit_day,
                               },
                               "want_more": false,
@@ -721,7 +697,7 @@ program: |-
         ))))
       )
       ))))))
-    )))))))))))))
+    )))))))))))
   )
 {{#if tags.length}}
 tags:
@@ -735,6 +711,19 @@ publisher_pipeline.disable_host: true
 
 processors:
 - drop_event.when.equals.fake: true
+- copy_fields:
+    when:
+      and:
+        - equals:
+            doc_type: config_snapshot
+        - not:
+            has_fields:
+              - conf_policy_id
+    fields:
+      - from: "@metadata.input_id"
+        to: "conf_policy_id"
+    ignore_missing: true
+    fail_on_error: false
 {{#if processors}}
 {{processors}}
 {{/if}}

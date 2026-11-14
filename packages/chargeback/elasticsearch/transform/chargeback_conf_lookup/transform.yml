@@ -101,14 +101,28 @@ pivot:
               if (ns == '') { ns = 'default'; }
 
               String pkgPolId = '';
-              if (params._source.get('conf_policy_id') != null) {
-                pkgPolId = params._source.get('conf_policy_id').toString().trim();
-              } else if (params._source.get('package_policy_id') != null) {
+              if (params._source.get('package_policy_id') != null) {
                 pkgPolId = params._source.get('package_policy_id').toString().trim();
               } else if (params._source.input instanceof Map && params._source.input.package_policy_id != null) {
                 pkgPolId = params._source.input.package_policy_id.toString().trim();
+              } else if (params._source.get('input.package_policy_id') != null) {
+                pkgPolId = params._source.get('input.package_policy_id').toString().trim();
               } else if (params._source.elastic_agent instanceof Map && params._source.elastic_agent.package_policy_id != null) {
                 pkgPolId = params._source.elastic_agent.package_policy_id.toString().trim();
+              } else if (params._source.get('elastic_agent.package_policy_id') != null) {
+                pkgPolId = params._source.get('elastic_agent.package_policy_id').toString().trim();
+              } else if (params._source.get('conf_policy_id') != null) {
+                pkgPolId = params._source.get('conf_policy_id').toString().trim();
+              } else if (params._source.input instanceof Map && params._source.input.id != null) {
+                pkgPolId = params._source.input.id.toString().trim();
+              } else if (params._source.get('input.id') != null) {
+                pkgPolId = params._source.get('input.id').toString().trim();
+              }
+              if (pkgPolId != '') {
+                def pm = /^(?:cel-(?:chargeback-)?)?([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$/.matcher(pkgPolId);
+                if (pm.matches()) {
+                  pkgPolId = pm.group(1).toLowerCase(Locale.ROOT);
+                }
               }
 
               String polId = pkgPolId;

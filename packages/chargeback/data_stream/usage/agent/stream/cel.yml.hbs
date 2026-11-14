@@ -18,7 +18,6 @@ resource.url: "{{cloud_api_base}}/api/v1/deployments/_search?show_metadata=true"
 state:
   api_key: !!str {{escape_string cloud_api_key}}
   organization_id: !!str {{escape_string organization_id}}
-  billing_api_base: !!str {{escape_string billing_api_base}}
   cloud_api_base: !!str {{escape_string cloud_api_base}}
   hub_es_url: !!str {{escape_string hub_es_url}}
   hub_es_api_key: !!str {{escape_string hub_es_api_key}}
@@ -42,17 +41,6 @@ program: |-
     state.config_owner_id.trim_space().as(clean_owner_id,
     state.hub_es_url.trim_space().as(trimmed_hub_url,
     (trimmed_hub_url.endsWith("/") ? trimmed_hub_url.substring(0, size(trimmed_hub_url) - 1) : trimmed_hub_url).as(clean_hub_url,
-    string(state.?cursor.conf_policy_id.orValue("")).as(prev_conf_pol_id,
-    (prev_conf_pol_id != "" ? prev_conf_pol_id :
-      state.billing_api_base.trim_space().as(tbill,
-      state.cloud_api_base.trim_space().as(tcloud,
-        "pol|" + state.organization_id.trim_space() + "|" +
-        clean_hub_url + "|" +
-        (tbill.endsWith("/") ? tbill.substring(0, size(tbill) - 1) : tbill) + "|" +
-        (tcloud.endsWith("/") ? tcloud.substring(0, size(tcloud) - 1) : tcloud) + "|" +
-        clean_owner_id + "|" + (state.sync_fleet_config ? "sync" : "nosync")
-      ))
-    ).as(conf_policy_id,
     (int(state.conf_indexing_weight) >= 0 && int(state.conf_query_weight) >= 0 && int(state.conf_storage_weight) >= 0 && (int(state.conf_query_weight) + int(state.conf_storage_weight)) > 0).as(weights_valid,
     (!state.sync_fleet_config ? ("disabled|" + clean_owner_id) : (
       weights_valid ? (clean_owner_id + "|" + string(state.conf_indexing_weight) + "|" + string(state.conf_query_weight) + "|" + string(state.conf_storage_weight) + "|" + today_utc) : state.?cursor.conf_sig.orValue("")
@@ -70,7 +58,6 @@ program: |-
         "doc_type": "config_snapshot",
         "conf_sync_enabled": true,
         "conf_owner_id": clean_owner_id,
-        "conf_policy_id": conf_policy_id,
         "conf_indexing_weight": int(state.conf_indexing_weight),
         "conf_query_weight": int(state.conf_query_weight),
         "conf_storage_weight": int(state.conf_storage_weight),
@@ -80,7 +67,6 @@ program: |-
         "doc_type": "config_snapshot",
         "conf_sync_enabled": false,
         "conf_owner_id": clean_owner_id,
-        "conf_policy_id": conf_policy_id,
       })]
     : []))).as(conf_evts,
     int(now).as(now_sec,
@@ -393,7 +379,6 @@ program: |-
               "events": size(conf_evts + cloud_disc_errs) > 0 ? (conf_evts + cloud_disc_errs) : [dyn({ "fake": true })],
               "cursor": {
                 "conf_sig": conf_sig,
-                "conf_policy_id": conf_policy_id,
                 "idx_baselines": base_map,
                 "disc_dep_from": dep_page.next_from,
                 "disc_es_next": es_page.next,
@@ -409,7 +394,6 @@ program: |-
               "events": size(conf_evts + cloud_disc_errs) > 0 ? (conf_evts + cloud_disc_errs) : [dyn({ "fake": true })],
               "cursor": {
                 "conf_sig": conf_sig,
-                "conf_policy_id": conf_policy_id,
                 "idx_baselines": base_map,
               },
               "want_more": false,
@@ -805,15 +789,12 @@ program: |-
                                 }
                               :
                                 norm_harvest.rows.filter(row,
-                                  string(row.raw_idx) != "" &&
-                                  !(string(row.raw_idx).startsWith(".") && !string(row.raw_idx).startsWith(".ds-")) &&
-                                  !string(row.raw_idx).startsWith(".ds-.") &&
-                                  !string(row.raw_idx).startsWith(".ds-ilm-history") &&
-                                  !string(row.raw_idx).contains("metrics-chargeback.") &&
-                                  !string(row.raw_idx).contains("logs-chargeback.") &&
-                                  !string(row.raw_idx).startsWith("chargeback_lookup.") &&
-                                  string(row.raw_idx) != "monitoring-indices" &&
-                                  string(row.raw_idx) != "monitoring-indices-chargeback"
+                                  string(row.idx_name) != "" &&
+                                  !(string(row.idx_name).matches("^(?:partial-|restored-|shrink-.{4}-)*\\.") && !string(row.idx_name).matches("^(?:partial-|restored-|shrink-.{4}-)*\\.ds-")) &&
+                                  !string(row.idx_name).matches("^(?:partial-|restored-|shrink-.{4}-)*\\.ds-(?:\\.|ilm-history)") &&
+                                  !string(row.idx_name).contains("metrics-chargeback.") &&
+                                  !string(row.idx_name).contains("logs-chargeback.") &&
+                                  !string(row.idx_name).matches("^(?:partial-|restored-|shrink-.{4}-)*(?:chargeback_lookup\\.|monitoring-indices(?:-chargeback)?$|(?:billing_cluster_cost_lookup|billing_realized_pool_lookup|chargeback_conf_lookup|cluster_capacity_utilization_lookup|cluster_deployment_contribution_lookup|cluster_tier_contribution_lookup|cluster_datastream_contribution_lookup|cluster_tier_and_datastream_contribution_lookup)(?:-[0-9]+)?$)")
                                 ).map(row,
                                   string(row.idx_name).as(idx_name,
                                   string(row.tier).as(row_tier,
@@ -1077,7 +1058,6 @@ program: |-
                     "events": size(out_evts) > 0 ? out_evts : [dyn({ "fake": true })],
                     "cursor": {
                       "conf_sig": conf_sig,
-                      "conf_policy_id": conf_policy_id,
                       "idx_baselines": merged_baselines,
                     },
                     "want_more": false,
@@ -1088,7 +1068,7 @@ program: |-
           )
         )
       )
-    )))))))))))))))))))))))))))))))
+    )))))))))))))))))))))))))))))
   )
 {{#if tags.length}}
 tags:
@@ -1102,6 +1082,19 @@ publisher_pipeline.disable_host: true
 
 processors:
 - drop_event.when.equals.fake: true
+- copy_fields:
+    when:
+      and:
+        - equals:
+            doc_type: config_snapshot
+        - not:
+            has_fields:
+              - conf_policy_id
+    fields:
+      - from: "@metadata.input_id"
+        to: "conf_policy_id"
+    ignore_missing: true
+    fail_on_error: false
 {{#if processors}}
 {{processors}}
 {{/if}}
