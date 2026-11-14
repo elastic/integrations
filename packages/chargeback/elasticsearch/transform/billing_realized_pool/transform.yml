@@ -389,6 +389,7 @@ pivot:
               boolean hasRam = false;
               long maxRam = 0L;
               long bestTs = -1L;
+              long bestGroupTs = -1L;
               String depGroup = '';
               String depName = '';
               boolean anyOnprem = false;
@@ -405,13 +406,18 @@ pivot:
                   if (!hasRam || r > maxRam) { maxRam = r; hasRam = true; }
                 }
                 long rTs = ((Number)rec.get('ing_ts')).longValue();
+                String rGroup = rec.get('dep_group') != null ? rec.get('dep_group').toString() : '';
+                if (rTs > bestGroupTs || (rTs == bestGroupTs && rGroup != '')) {
+                  bestGroupTs = rTs;
+                  depGroup = rGroup;
+                }
                 boolean isNewer = rTs >= bestTs;
                 if (isNewer) { bestTs = rTs; }
-                if (rec.get('dep_group') != '' && (depGroup == '' || isNewer)) { depGroup = rec.get('dep_group').toString(); }
                 if (rec.get('dep_name') != '' && (depName == '' || isNewer)) { depName = rec.get('dep_name').toString(); }
               }
               Map res = [
                 'doc_cnt': (long)merged.size(),
+                'ing_ts': bestTs,
                 'data_tier_capacity_ecu': sumEcu,
                 'deployment_group': depGroup,
                 'deployment_name': depName,
@@ -618,6 +624,7 @@ pivot:
               boolean hasRam = false;
               long maxRam = 0L;
               long bestTs = -1L;
+              long bestGroupTs = -1L;
               String depGroup = '';
               String depName = '';
               boolean anyOnprem = false;
@@ -634,13 +641,18 @@ pivot:
                   if (!hasRam || r > maxRam) { maxRam = r; hasRam = true; }
                 }
                 long rTs = ((Number)rec.get('ing_ts')).longValue();
+                String rGroup = rec.get('dep_group') != null ? rec.get('dep_group').toString() : '';
+                if (rTs > bestGroupTs || (rTs == bestGroupTs && rGroup != '')) {
+                  bestGroupTs = rTs;
+                  depGroup = rGroup;
+                }
                 boolean isNewer = rTs >= bestTs;
                 if (isNewer) { bestTs = rTs; }
-                if (rec.get('dep_group') != '' && (depGroup == '' || isNewer)) { depGroup = rec.get('dep_group').toString(); }
                 if (rec.get('dep_name') != '' && (depName == '' || isNewer)) { depName = rec.get('dep_name').toString(); }
               }
               Map res = [
                 'doc_cnt': (long)merged.size(),
+                'ing_ts': bestTs,
                 'data_tier_capacity_ecu': sumEcu,
                 'deployment_group': depGroup,
                 'deployment_name': depName,

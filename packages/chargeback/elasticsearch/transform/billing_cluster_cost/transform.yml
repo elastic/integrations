@@ -309,6 +309,7 @@ pivot:
           double sumEcu = 0.0;
           double sumQty = 0.0;
           long bestTs = -1L;
+          long bestGroupTs = -1L;
           String depGroup = '';
           String depName = '';
           String orgId = '';
@@ -321,9 +322,13 @@ pivot:
             sumEcu += ((Number)rec.get('ecu')).doubleValue();
             sumQty += ((Number)rec.get('qty')).doubleValue();
             long rTs = ((Number)rec.get('ing_ts')).longValue();
+            String rGroup = rec.get('dep_group') != null ? rec.get('dep_group').toString() : '';
+            if (rTs > bestGroupTs || (rTs == bestGroupTs && rGroup != '')) {
+              bestGroupTs = rTs;
+              depGroup = rGroup;
+            }
             boolean isNewer = rTs >= bestTs;
             if (isNewer) { bestTs = rTs; }
-            if (rec.get('dep_group') != '' && (depGroup == '' || isNewer)) { depGroup = rec.get('dep_group').toString(); }
             if (rec.get('dep_name') != '' && (depName == '' || isNewer)) { depName = rec.get('dep_name').toString(); }
             if (rec.get('org_id') != '' && (orgId == '' || isNewer)) { orgId = rec.get('org_id').toString(); }
             if (rec.get('dep_type') != '' && (depType == '' || isNewer)) { depType = rec.get('dep_type').toString(); }
@@ -550,6 +555,7 @@ pivot:
           double sumEcu = 0.0;
           double sumQty = 0.0;
           long bestTs = -1L;
+          long bestGroupTs = -1L;
           String depGroup = '';
           String depName = '';
           String orgId = '';
@@ -562,9 +568,13 @@ pivot:
             sumEcu += ((Number)rec.get('ecu')).doubleValue();
             sumQty += ((Number)rec.get('qty')).doubleValue();
             long rTs = ((Number)rec.get('ing_ts')).longValue();
+            String rGroup = rec.get('dep_group') != null ? rec.get('dep_group').toString() : '';
+            if (rTs > bestGroupTs || (rTs == bestGroupTs && rGroup != '')) {
+              bestGroupTs = rTs;
+              depGroup = rGroup;
+            }
             boolean isNewer = rTs >= bestTs;
             if (isNewer) { bestTs = rTs; }
-            if (rec.get('dep_group') != '' && (depGroup == '' || isNewer)) { depGroup = rec.get('dep_group').toString(); }
             if (rec.get('dep_name') != '' && (depName == '' || isNewer)) { depName = rec.get('dep_name').toString(); }
             if (rec.get('org_id') != '' && (orgId == '' || isNewer)) { orgId = rec.get('org_id').toString(); }
             if (rec.get('dep_type') != '' && (depType == '' || isNewer)) { depType = rec.get('dep_type').toString(); }

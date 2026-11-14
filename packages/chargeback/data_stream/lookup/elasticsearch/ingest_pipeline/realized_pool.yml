@@ -9,8 +9,15 @@ processors:
           double sumEcu = 0.0;
           Double maxHours = null;
           Long maxRam = null;
-          String bestGroup = null;
-          String bestName = null;
+          boolean hasNativeSku = false;
+          String nativeGroup = '';
+          long nativeGroupTs = -1L;
+          String legacyGroup = '';
+          long legacyGroupTs = -1L;
+          String nativeName = '';
+          long nativeNameTs = -1L;
+          String legacyName = '';
+          long legacyNameTs = -1L;
           boolean anyOnprem = false;
           if (ctx.by_sku.buckets instanceof List) {
             for (def bObj : (List)ctx.by_sku.buckets) {
@@ -39,6 +46,10 @@ processors:
                 chosenSku = (Map)skuObj.legacy;
               }
               if (chosenSku != null) {
+                if (skuIsNative) {
+                  hasNativeSku = true;
+                }
+                long skuIngTs = (chosenSku.ing_ts instanceof Number) ? ((Number)chosenSku.ing_ts).longValue() : -1L;
                 if (Boolean.TRUE.equals(chosenSku.get('is_onprem'))) {
                   anyOnprem = true;
                 }
@@ -65,27 +76,49 @@ processors:
                 }
                 for (String fn : ['deployment_group', 'deployment_name']) {
                   def rawV = chosenSku.get(fn);
-                  String extracted = null;
+                  String extracted = '';
                   if (rawV instanceof Map) {
                     def b = rawV.buckets;
                     if (b instanceof List && b.size() > 0) {
                       def kv = b[0].key_as_string != null ? b[0].key_as_string : b[0].key;
-                      extracted = kv != null ? kv.toString() : null;
-                    } else {
+                      extracted = kv != null ? kv.toString() : '';
+                    } else if (!(b instanceof List)) {
                       def ks = new ArrayList(rawV.keySet());
-                      extracted = ks.size() > 0 && ks[0] != null ? ks[0].toString() : null;
+                      extracted = ks.size() > 0 && ks[0] != null ? ks[0].toString() : '';
                     }
                   } else if (rawV != null) {
                     extracted = rawV.toString();
                   }
-                  if (extracted != null && extracted != '') {
-                    if (fn == 'deployment_group') {
-                      if (bestGroup == null || bestGroup == '' || skuIsNative) {
-                        bestGroup = extracted;
+                  if (fn == 'deployment_group') {
+                    if (skuIsNative) {
+                      if (skuIngTs >= 0L) {
+                        if (skuIngTs > nativeGroupTs || (skuIngTs == nativeGroupTs && extracted != '')) {
+                          nativeGroup = extracted;
+                          nativeGroupTs = skuIngTs;
+                        }
+                      } else if (extracted != '' && nativeGroupTs < 0L) {
+                        nativeGroup = extracted;
                       }
                     } else {
-                      if (bestName == null || bestName == '' || skuIsNative) {
-                        bestName = extracted;
+                      if (skuIngTs >= 0L) {
+                        if (skuIngTs > legacyGroupTs || (skuIngTs == legacyGroupTs && extracted != '')) {
+                          legacyGroup = extracted;
+                          legacyGroupTs = skuIngTs;
+                        }
+                      } else if (extracted != '' && legacyGroupTs < 0L) {
+                        legacyGroup = extracted;
+                      }
+                    }
+                  } else if (extracted != '') {
+                    if (skuIsNative) {
+                      if (nativeName == '' || (skuIngTs >= 0L && skuIngTs >= nativeNameTs)) {
+                        nativeName = extracted;
+                        if (skuIngTs >= 0L) { nativeNameTs = skuIngTs; }
+                      }
+                    } else {
+                      if (legacyName == '' || (skuIngTs >= 0L && skuIngTs >= legacyNameTs)) {
+                        legacyName = extracted;
+                        if (skuIngTs >= 0L) { legacyNameTs = skuIngTs; }
                       }
                     }
                   }
@@ -93,6 +126,8 @@ processors:
               }
             }
           }
+          String bestGroup = hasNativeSku ? nativeGroup : legacyGroup;
+          String bestName = nativeName != '' ? nativeName : legacyName;
           ctx.remove('by_sku');
           ctx.data_tier_capacity_ecu = sumEcu;
           ctx.is_onprem = anyOnprem;
@@ -117,6 +152,8 @@ processors:
             for (String k : ['data_tier_capacity_ecu', 'data_tier_capacity_hours', 'data_tier_ram_per_zone_mb', 'deployment_group', 'deployment_name', 'is_onprem']) {
               if (chosen.containsKey(k)) {
                 ctx[k] = chosen[k];
+              } else if (k == 'deployment_group') {
+                ctx[k] = '';
               }
             }
           }
@@ -130,9 +167,11 @@ processors:
               def b = v.buckets;
               if (b instanceof List && b.size() > 0) {
                 ctx[fn] = b[0].key_as_string != null ? b[0].key_as_string : b[0].key;
-              } else {
+              } else if (!(b instanceof List)) {
                 def ks = new ArrayList(v.keySet());
                 ctx[fn] = ks.size() > 0 ? ks[0] : null;
+              } else {
+                ctx[fn] = null;
               }
             }
           }

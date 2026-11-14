@@ -8,6 +8,9 @@ processors:
         // Pass manual operator documents (without transform 'snapshots' aggregation output) straight through
         // because Fleet configures this pipeline as index.default_pipeline on chargeback_conf_lookup.
         if (!ctx.containsKey('snapshots')) {
+          if (ctx.config_join_key == null || ctx.config_join_key.toString().trim() == '') {
+            ctx.config_join_key = 'chargeback_config';
+          }
           return;
         }
         ctx._from_transform = true;
