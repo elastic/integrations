@@ -18,6 +18,17 @@ inputs:
               state.config_owner_id.trim_space().as(clean_owner_id,
               state.hub_es_url.trim_space().as(trimmed_hub_url,
               (trimmed_hub_url.endsWith("/") ? trimmed_hub_url.substring(0, size(trimmed_hub_url) - 1) : trimmed_hub_url).as(clean_hub_url,
+              string(state.?cursor.conf_policy_id.orValue("")).as(prev_conf_pol_id,
+              (prev_conf_pol_id != "" ? prev_conf_pol_id :
+                state.billing_api_base.trim_space().as(tbill,
+                state.cloud_api_base.trim_space().as(tcloud,
+                  "pol|" + state.organization_id.trim_space() + "|" +
+                  clean_hub_url + "|" +
+                  (tbill.endsWith("/") ? tbill.substring(0, size(tbill) - 1) : tbill) + "|" +
+                  (tcloud.endsWith("/") ? tcloud.substring(0, size(tcloud) - 1) : tcloud) + "|" +
+                  clean_owner_id + "|" + (state.sync_fleet_config ? "sync" : "nosync")
+                ))
+              ).as(conf_policy_id,
               state.conf_utilization_floor.trim_space().as(clean_floor,
               clean_floor.matches("^(0(\\.[0-9]+)?|1(\\.0+)?)$").as(floor_valid,
               (int(state.conf_utilization_memory_weight) >= 0 && int(state.conf_utilization_storage_weight) >= 0 && (int(state.conf_utilization_memory_weight) + int(state.conf_utilization_storage_weight)) > 0).as(weights_valid,
@@ -45,6 +56,7 @@ inputs:
                   "doc_type": "config_snapshot",
                   "conf_sync_enabled": true,
                   "conf_owner_id": clean_owner_id,
+                  "conf_policy_id": conf_policy_id,
                   "conf_utilization_memory_weight": int(state.conf_utilization_memory_weight),
                   "conf_utilization_storage_weight": int(state.conf_utilization_storage_weight),
                   "conf_utilization_floor": double(clean_floor),
@@ -54,6 +66,7 @@ inputs:
                   "doc_type": "config_snapshot",
                   "conf_sync_enabled": false,
                   "conf_owner_id": clean_owner_id,
+                  "conf_policy_id": conf_policy_id,
                 })]
               : [])))).as(conf_evts,
               (state.organization_id != "" && state.api_key != "" && !state.api_key.startsWith("$co.elastic.secret")).as(has_cloud,
@@ -143,6 +156,7 @@ inputs:
                         "events": size(conf_evts) > 0 ? conf_evts : [dyn({ "fake": true })],
                         "cursor": {
                           "conf_sig": conf_sig,
+                          "conf_policy_id": conf_policy_id,
                           "disc_dep_from": dep_page.next_from,
                           "disc_targets": cloud_targets,
                         },
@@ -151,7 +165,7 @@ inputs:
                     : ((!has_hub && size(cloud_targets) == 0) ?
                       {
                         "events": size(conf_evts + cloud_disc_errs) > 0 ? (conf_evts + cloud_disc_errs) : [dyn({ "fake": true })],
-                        "cursor": { "conf_sig": conf_sig },
+                        "cursor": { "conf_sig": conf_sig, "conf_policy_id": conf_policy_id },
                         "want_more": false,
                       }
                     :
@@ -364,7 +378,7 @@ inputs:
                           (conf_evts + cloud_disc_errs + (!hub_disc.ok ? [hub_disc.err] : []) + node_evts).as(evts,
                             {
                               "events": size(evts) > 0 ? evts : [dyn({ "fake": true })],
-                              "cursor": { "conf_sig": conf_sig },
+                              "cursor": { "conf_sig": conf_sig, "conf_policy_id": conf_policy_id },
                               "want_more": false,
                             }
                           )
@@ -373,7 +387,7 @@ inputs:
                     )
                   )
                 )
-              )))))))))))))))
+              )))))))))))))))))
             )
           publisher_pipeline.disable_host: true
           redact:
@@ -395,6 +409,7 @@ inputs:
           resource.url: https://api.example.com/api/v1/deployments/_search?show_metadata=true
           state:
             api_key: ${SECRET_0}
+            billing_api_base: https://billing.example.com
             cloud_api_base: https://api.example.com
             conf_utilization_floor: "0.15"
             conf_utilization_memory_weight: 80

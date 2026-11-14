@@ -23,10 +23,8 @@ processors:
             long legTierCnt = (legCntMap != null && legCntMap.get(tKey) instanceof Number)
               ? ((Number)legCntMap.get(tKey)).longValue()
               : ((r.leg_cnt_by_tier == null && r.leg_cnt instanceof Number) ? ((Number)r.leg_cnt).longValue() : 0L);
-            if (!hasSelTier && legTierCnt == 0L && natTierCnt == 0L) {
-              ctx._drop_shadow_bucket = true;
-              return;
-            }
+            // Retain empty shadow tier buckets as zero-valued rows so continuous transform
+            // checkpoints overwrite previously materialized tier rows after ILM tier moves.
             List selT = hasSelTier ? (List)((Map)r.sel_by_tier).get(tKey) : [0L, 0L, 0L, 0L];
             List natT = (r.raw_nat_by_tier instanceof Map && ((Map)r.raw_nat_by_tier).get(tKey) instanceof List)
               ? (List)((Map)r.raw_nat_by_tier).get(tKey)
@@ -158,9 +156,6 @@ processors:
             ctx.ds_namespace = 'other';
           }
         }
-  - drop:
-      if: "ctx._drop_shadow_bucket == true"
-      tag: drop_shadow_tier_bucket
   - set:
       field: event.ingested
       value: "{{{_ingest.timestamp}}}"
