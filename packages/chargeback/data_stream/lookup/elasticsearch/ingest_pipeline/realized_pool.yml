@@ -11,6 +11,20 @@ processors:
           Long maxRam = null;
           String bestGroup = null;
           String bestName = null;
+          boolean anyOnprem = false;
+          if (ctx.by_sku.buckets instanceof List) {
+            for (def bObj : (List)ctx.by_sku.buckets) {
+              if (bObj instanceof Map && 'onprem_node'.equals(bObj.get('key'))) {
+                anyOnprem = true;
+              }
+            }
+          } else {
+            for (def kObj : ((Map)ctx.by_sku).keySet()) {
+              if ('onprem_node'.equals(kObj != null ? kObj.toString() : '')) {
+                anyOnprem = true;
+              }
+            }
+          }
           Collection skuItems = (ctx.by_sku.buckets instanceof List)
             ? (List)ctx.by_sku.buckets
             : ((Map)ctx.by_sku).values();
@@ -25,6 +39,9 @@ processors:
                 chosenSku = (Map)skuObj.legacy;
               }
               if (chosenSku != null) {
+                if (Boolean.TRUE.equals(chosenSku.get('is_onprem'))) {
+                  anyOnprem = true;
+                }
                 if (chosenSku.data_tier_capacity_ecu instanceof Number) {
                   double ecuVal = ((Number)chosenSku.data_tier_capacity_ecu).doubleValue();
                   if (!Double.isNaN(ecuVal) && !Double.isInfinite(ecuVal)) {
@@ -78,6 +95,7 @@ processors:
           }
           ctx.remove('by_sku');
           ctx.data_tier_capacity_ecu = sumEcu;
+          ctx.is_onprem = anyOnprem;
           if (maxHours != null) {
             ctx.data_tier_capacity_hours = maxHours.doubleValue();
           }
@@ -96,7 +114,7 @@ processors:
             chosen = ctx.legacy;
           }
           if (chosen != ctx) {
-            for (String k : ['data_tier_capacity_ecu', 'data_tier_capacity_hours', 'data_tier_ram_per_zone_mb', 'deployment_group', 'deployment_name']) {
+            for (String k : ['data_tier_capacity_ecu', 'data_tier_capacity_hours', 'data_tier_ram_per_zone_mb', 'deployment_group', 'deployment_name', 'is_onprem']) {
               if (chosen.containsKey(k)) {
                 ctx[k] = chosen[k];
               }
@@ -104,6 +122,7 @@ processors:
           }
           ctx.remove('native');
           ctx.remove('legacy');
+          ctx.is_onprem = Boolean.TRUE.equals(ctx.is_onprem);
 
           for (String fn : ['deployment_group', 'deployment_name']) {
             def v = ctx[fn];

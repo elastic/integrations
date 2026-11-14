@@ -19,19 +19,23 @@ source:
               - config_snapshot
               - credit_line_item
   runtime_mappings:
-    event.ingested:
+    cb_sync_ts:
       type: date
       script:
         source: |
-          for (String k : ['ingested', 'created']) {
-            if (k == 'created') {
-              try {
-                if (doc.containsKey('event.created') && !doc['event.created'].empty) {
-                  emit(doc['event.created'].value.toInstant().toEpochMilli());
-                  return;
-                }
-              } catch (Exception e) {}
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              emit(doc['event.ingested'].value.toInstant().toEpochMilli());
+              return;
             }
+          } catch (Exception e) {}
+          try {
+            if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+              emit(doc['event.created'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          for (String k : ['ingested', 'created']) {
             def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get(k) : null;
             if (rawVal == null && params._source != null) {
               rawVal = params._source.get('event.' + k);
@@ -83,7 +87,7 @@ dest:
 frequency: 60m
 sync:
   time:
-    field: event.ingested
+    field: cb_sync_ts
     delay: 60s
 pivot:
   group_by:
@@ -114,8 +118,8 @@ pivot:
 
           long ingTs = 0L;
           try {
-            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
-              ingTs = doc['event.ingested'].value.toInstant().toEpochMilli();
+            if (doc.containsKey('cb_sync_ts') && !doc['cb_sync_ts'].empty) {
+              ingTs = doc['cb_sync_ts'].value.toInstant().toEpochMilli();
             }
           } catch (Exception e) {}
 
@@ -177,8 +181,6 @@ pivot:
             if (nk != null) { nodeStr = nk.toString(); }
           } catch (Exception e) {}
 
-          String dedupKey = orgId + '|' + depId + '|' + fromKey + '|' + toKey + '|' + sku + (nodeStr != '' ? '|' + nodeStr : '');
-
           double ecu = 0.0;
           try {
             if (doc.containsKey('ess.billing.total_ecu') && !doc['ess.billing.total_ecu'].empty) {
@@ -239,6 +241,8 @@ pivot:
               bKind = params._source.ess.billing.kind.toString();
             }
           } catch (Exception e) {}
+
+          String dedupKey = orgId + '|' + depId + '|' + fromKey + '|' + toKey + '|' + sku + '|' + bType + '|' + bKind + (nodeStr != '' ? '|' + nodeStr : '');
 
           String cRegion = '';
           try {
@@ -350,8 +354,8 @@ pivot:
 
           long ingTs = 0L;
           try {
-            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
-              ingTs = doc['event.ingested'].value.toInstant().toEpochMilli();
+            if (doc.containsKey('cb_sync_ts') && !doc['cb_sync_ts'].empty) {
+              ingTs = doc['cb_sync_ts'].value.toInstant().toEpochMilli();
             }
           } catch (Exception e) {}
 
@@ -413,8 +417,6 @@ pivot:
             if (nk != null) { nodeStr = nk.toString(); }
           } catch (Exception e) {}
 
-          String dedupKey = orgId + '|' + depId + '|' + fromKey + '|' + toKey + '|' + sku + (nodeStr != '' ? '|' + nodeStr : '');
-
           double ecu = 0.0;
           try {
             if (doc.containsKey('ess.billing.total_ecu') && !doc['ess.billing.total_ecu'].empty) {
@@ -475,6 +477,8 @@ pivot:
               bKind = params._source.ess.billing.kind.toString();
             }
           } catch (Exception e) {}
+
+          String dedupKey = orgId + '|' + depId + '|' + fromKey + '|' + toKey + '|' + sku + '|' + bType + '|' + bKind + (nodeStr != '' ? '|' + nodeStr : '');
 
           String cRegion = '';
           try {

@@ -9,13 +9,10 @@ source:
     - .monitoring-es-*
     - metricbeat-*
     - monitoring-indices*
-    - "*:monitoring-indices*"
     - -partial-*
     - -metrics-ess_billing.billing-chargeback
     - -monitoring-indices-chargeback
-    - "*:-monitoring-indices-chargeback"
     - -chargeback_lookup.*
-    - "*:-chargeback_lookup.*"
   query:
     term:
       doc_type: config_snapshot
@@ -23,20 +20,26 @@ source:
     config_join_key:
       type: keyword
       script:
-        source: "emit('chargeback_config')"
-    event.ingested:
+        source: |
+          emit('chargeback_config');
+          emit('chargeback_config_onprem');
+    cb_sync_ts:
       type: date
       script:
         source: |
-          for (String k : ['ingested', 'created']) {
-            if (k == 'created') {
-              try {
-                if (doc.containsKey('event.created') && !doc['event.created'].empty) {
-                  emit(doc['event.created'].value.toInstant().toEpochMilli());
-                  return;
-                }
-              } catch (Exception e) {}
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              emit(doc['event.ingested'].value.toInstant().toEpochMilli());
+              return;
             }
+          } catch (Exception e) {}
+          try {
+            if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+              emit(doc['event.created'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          for (String k : ['ingested', 'created']) {
             def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get(k) : null;
             if (rawVal == null && params._source != null) {
               rawVal = params._source.get('event.' + k);
@@ -64,7 +67,7 @@ dest:
 frequency: 5m
 sync:
   time:
-    field: event.ingested
+    field: cb_sync_ts
     delay: 60s
 pivot:
   group_by:

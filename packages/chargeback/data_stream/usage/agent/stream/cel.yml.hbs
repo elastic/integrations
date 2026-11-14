@@ -297,13 +297,11 @@ program: |-
               hub_disc.targets.map(t,
                 string(t.id).as(tid,
                 (string(t.es_url).endsWith("/") ? string(t.es_url).substring(0, size(string(t.es_url)) - 1) : string(t.es_url)).as(es_base,
-                  (
-                    all_dkeys.filter(k, k.startsWith(tid + ":") || k.startsWith(string(t.alt_id) + ":") || k.startsWith(string(t.name) + ":")).map(k,
-                      k.substring(size(k.split(":")[0]) + 1, size(k))
-                    ) +
-                    (bool(t.is_hub) && has_hub ? [state.hub_es_api_key] : []) +
-                    (!bool(t.is_ech) && has_cloud ? [state.api_key] : [])
-                  ).as(cand_keys,
+                  all_dkeys.filter(k, k.startsWith(tid + ":") || k.startsWith(string(t.alt_id) + ":") || k.startsWith(string(t.name) + ":")).map(k,
+                    k.substring(size(k.split(":")[0]) + 1, size(k))
+                  ).filter(k, k != "").as(d_keys,
+                    (d_keys + ((bool(t.is_hub) && has_hub && !(state.hub_es_api_key in d_keys)) ? [state.hub_es_api_key] : [])).as(dh_keys,
+                    (dh_keys + ((!bool(t.is_ech) && has_cloud && !(state.api_key in dh_keys)) ? [state.api_key] : [])).as(cand_keys,
                     (size(cand_keys) == 0) ?
                       { "ok": true, "skipped": true, "id": tid, "evts": [], "baselines": [], "err": dyn({}) }
                     :
@@ -316,16 +314,22 @@ program: |-
                           (r0.StatusCode == 200) ?
                             { "ok": true, "body": bytes(r0.Body).decode_json(), "key": cand_keys[0], "resp": r0 }
                           : (size(cand_keys) > 1 ?
-                            get_request(stats_url).with({ "Header": { "Authorization": ["ApiKey " + cand_keys[1]] } }).do_request().as(r1,
-                              (r1.StatusCode == 200) ?
-                                { "ok": true, "body": bytes(r1.Body).decode_json(), "key": cand_keys[1], "resp": r1 }
-                              : (size(cand_keys) > 2 ?
-                                get_request(stats_url).with({ "Header": { "Authorization": ["ApiKey " + cand_keys[2]] } }).do_request().as(r2,
-                                  (r2.StatusCode == 200) ?
-                                    { "ok": true, "body": bytes(r2.Body).decode_json(), "key": cand_keys[2], "resp": r2 }
-                                  : { "ok": false, "body": dyn({}), "key": "", "resp": r2 }
+                            tail(cand_keys).filter(ck, ck != cand_keys[0]).as(rem_keys,
+                              (size(rem_keys) == 0) ?
+                                { "ok": false, "body": dyn({}), "key": "", "resp": r0 }
+                              :
+                                rem_keys.map(ck,
+                                  get_request(stats_url).with({ "Header": { "Authorization": ["ApiKey " + ck] } }).do_request().as(cr,
+                                    { "ok": cr.StatusCode == 200, "key": ck, "resp": cr }
+                                  )
+                                ).as(rest_resps,
+                                  rest_resps.filter(x, x.ok).as(ok_resps,
+                                    (size(ok_resps) > 0) ?
+                                      { "ok": true, "body": bytes(ok_resps[0].resp.Body).decode_json(), "key": ok_resps[0].key, "resp": ok_resps[0].resp }
+                                    :
+                                      { "ok": false, "body": dyn({}), "key": "", "resp": rest_resps.last().resp }
+                                  )
                                 )
-                              : { "ok": false, "body": dyn({}), "key": "", "resp": r1 })
                             )
                           : { "ok": false, "body": dyn({}), "key": "", "resp": r0 })
                         ).as(harvest,
@@ -683,7 +687,7 @@ program: |-
                             )
                         )
                       )
-                  )
+                  )))
                 ))
               ).as(results,
                 results.filter(r, r.ok && !r.skipped).map(r, r.id).as(newly_harvested_ids,

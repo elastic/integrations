@@ -22,6 +22,7 @@ state:
   lookbehind: !!int {{lookbehind}}
   sync_fleet_config: !!bool {{sync_fleet_config}}
   conf_unit_rate: !!str {{escape_string unit_rate}}
+  conf_onprem_unit_rate: !!str {{escape_string onprem_unit_rate}}
   conf_currency_unit: !!str {{escape_string currency_unit}}
   conf_effective_from: !!str {{escape_string config_effective_from}}
   collect_ess_credits: !!bool {{collect_ess_credits}}
@@ -34,22 +35,25 @@ program: |-
     now.format(time_layout.DateOnly).as(today_utc,
     state.conf_unit_rate.trim_space().as(clean_rate,
     clean_rate.matches("^[0-9]+(\\.[0-9]+)?$").as(rate_valid,
+    state.conf_onprem_unit_rate.trim_space().as(clean_onprem_rate,
+    (clean_onprem_rate == "" || clean_onprem_rate.matches("^[0-9]+(\\.[0-9]+)?$")).as(onprem_rate_valid,
     state.conf_effective_from.trim_space().as(clean_eff_from,
     (clean_eff_from == "" ? true : (
-      !clean_eff_from.matches("^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])(T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](\\.[0-9]+)?(Z|[+-]([01][0-9]|2[0-3]):[0-5][0-9]))?$") ? false : (
+      !clean_eff_from.matches("^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])(T00:00:00(\\.[0]+)?(Z|[+-]00:00))?$") ? false : (
         int(clean_eff_from.substring(0, 4)).as(eff_y,
         int(clean_eff_from.substring(5, 7)).as(eff_m,
         int(clean_eff_from.substring(8, 10)).as(eff_d,
         ((eff_y % 4 == 0 && eff_y % 100 != 0) || (eff_y % 400 == 0)).as(eff_leap,
         ((eff_m == 4 || eff_m == 6 || eff_m == 9 || eff_m == 11) ? 30 : ((eff_m == 2) ? (eff_leap ? 29 : 28) : 31)).as(eff_max_d,
           eff_y >= 1970 && eff_d <= eff_max_d && (
-            timestamp(clean_eff_from.contains("T") ? clean_eff_from : (clean_eff_from + "T00:00:00Z")) < timestamp("2046-12-31T23:59:59.999Z")
+            timestamp(clean_eff_from.substring(0, 10) + "T00:00:00Z") < timestamp("2046-12-31T23:59:59.999Z")
           )
         )))))
       )
     )).as(eff_valid,
+    (clean_eff_from == "" ? "" : (clean_eff_from.substring(0, 10) + "T00:00:00Z")).as(norm_eff_from,
     (!state.sync_fleet_config ? "disabled" : (
-      (rate_valid && eff_valid) ? (clean_rate + "|" + state.conf_currency_unit + "|" + clean_eff_from + "|" + today_utc) : state.?cursor.conf_sig.orValue("")
+      (rate_valid && onprem_rate_valid && eff_valid) ? (clean_rate + "|" + clean_onprem_rate + "|" + state.conf_currency_unit + "|" + norm_eff_from + "|" + today_utc) : state.?cursor.conf_sig.orValue("")
     )).as(conf_sig,
     ((state.sync_fleet_config && !rate_valid) ?
       [dyn({
@@ -59,12 +63,20 @@ program: |-
           "message": "Invalid unit_rate '" + state.conf_unit_rate + "': expected non-negative decimal using '.' (for example 0.85)",
         },
       })]
+    : ((state.sync_fleet_config && !onprem_rate_valid) ?
+      [dyn({
+        "error": {
+          "code": "invalid_config",
+          "id": "onprem_unit_rate",
+          "message": "Invalid onprem_unit_rate '" + state.conf_onprem_unit_rate + "': expected empty string or non-negative decimal using '.' (for example 0.00085)",
+        },
+      })]
     : ((state.sync_fleet_config && !eff_valid) ?
       [dyn({
         "error": {
           "code": "invalid_config",
           "id": "config_effective_from",
-          "message": "Invalid config_effective_from '" + state.conf_effective_from + "': expected empty string or valid ISO-8601 calendar date/timestamp between 1970-01-01 and 2046-12-31 (for example 2026-01-01T00:00:00Z)",
+          "message": "Invalid config_effective_from '" + state.conf_effective_from + "': expected empty string or UTC day-boundary date/timestamp between 1970-01-01 and 2046-12-31 (for example 2026-01-01 or 2026-01-01T00:00:00Z)",
         },
       })]
     : ((state.sync_fleet_config && state.?cursor.conf_sig.orValue("") != conf_sig) ?
@@ -72,15 +84,16 @@ program: |-
         "doc_type": "config_snapshot",
         "conf_sync_enabled": true,
         "conf_chargeable_unit_rate": double(clean_rate),
+        "conf_onprem_chargeable_unit_rate": clean_onprem_rate != "" ? double(clean_onprem_rate) : double(clean_rate),
         "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-        "conf_effective_from": clean_eff_from,
+        "conf_effective_from": norm_eff_from,
       })]
     : ((!state.sync_fleet_config && state.?cursor.conf_sig.orValue("") != "disabled") ?
       [dyn({
         "doc_type": "config_snapshot",
         "conf_sync_enabled": false,
       })]
-    : [])))).as(conf_evts,
+    : []))))).as(conf_evts,
     (state.organization_id == "" || state.api_key == "" || state.api_key.startsWith("$co.elastic.secret")) ?
       {
         "events": size(conf_evts) > 0 ? conf_evts : [dyn({ "fake": true })],
@@ -186,17 +199,19 @@ program: |-
                           "retryable": false,
                           "err": dyn({}),
                           "items": raw_deps.filter(d,
-                            has(d.resources) && d.resources != null && has(d.resources.elasticsearch) && d.resources.elasticsearch != null && size(d.resources.elasticsearch) > 0
+                            has(d.id) && d.id != null && string(d.id) != ""
                           ).map(d,
-                            d.resources.elasticsearch[0].as(es_r,
-                              dyn({
-                                "id": string(es_r.id),
-                                "dep_id": has(d.id) && d.id != null ? string(d.id) : string(es_r.id),
-                                "name": (has(d.name) && d.name != null && string(d.name) != "") ? string(d.name) : string(es_r.id),
-                                "region": (has(es_r.region) && es_r.region != null) ? string(es_r.region) : "",
-                                "tags": (has(d.metadata) && d.metadata != null && has(d.metadata.tags) && d.metadata.tags != null) ?
-                                  d.metadata.tags.filter(t, has(t.key) && t.key != null && has(t.value) && t.value != null).map(t, string(t.key) + ":" + string(t.value)) : [],
-                              })
+                            (has(d.resources) && d.resources != null && has(d.resources.elasticsearch) && d.resources.elasticsearch != null && size(d.resources.elasticsearch) > 0).as(has_es_res,
+                              (has_es_res ? string(d.resources.elasticsearch[0].id) : string(d.id)).as(primary_id,
+                                dyn({
+                                  "id": primary_id,
+                                  "dep_id": string(d.id),
+                                  "name": (has(d.name) && d.name != null && string(d.name) != "") ? string(d.name) : primary_id,
+                                  "region": (has_es_res && has(d.resources.elasticsearch[0].region) && d.resources.elasticsearch[0].region != null) ? string(d.resources.elasticsearch[0].region) : "",
+                                  "tags": (has(d.metadata) && d.metadata != null && has(d.metadata.tags) && d.metadata.tags != null) ?
+                                    d.metadata.tags.filter(t, has(t.key) && t.key != null && has(t.value) && t.value != null).map(t, string(t.key) + ":" + string(t.value)) : [],
+                                })
+                              )
                             )
                           ),
                           "next_from": (has(dep_body.match_count) && dep_body.match_count != null && size(raw_deps) > 0 && (dep_from + size(raw_deps)) < int(dep_body.match_count)) ? (dep_from + size(raw_deps)) : -1,
@@ -355,7 +370,7 @@ program: |-
                       ).do_request().as(resp, (resp.StatusCode == 200) ?
                         bytes(resp.Body).decode_json().as(body,
                           ((has(body.instances) && body.instances != null) ? body.instances : []).as(raw_instances,
-                            raw_instances.exists(instance,
+                            (dep_failed && raw_instances.exists(instance,
                               ((has(instance.id) && instance.id != null && string(instance.id) != "") ? string(instance.id) : "unassociated").as(iid,
                                 iid != "unassociated" &&
                                 has(instance.product_line_items) && instance.product_line_items != null &&
@@ -363,22 +378,16 @@ program: |-
                                 !ech_deps.exists(d, string(d.id) == iid || string(d.dep_id) == iid) &&
                                 !sls_projs.exists(p, has(p.id) && string(p.id) == iid) &&
                                 ((has(instance.type) && instance.type != null) ? string(instance.type) : "").as(itype,
-                                  itype == "elasticsearch" ? es_failed : (
-                                    itype == "observability" ? obs_failed : (
-                                      itype == "security" ? sec_failed : (
-                                        itype == "" ? (dep_failed || es_failed || obs_failed || sec_failed) : dep_failed
-                                      )
-                                    )
-                                  )
+                                  itype != "elasticsearch" && itype != "observability" && itype != "security" && itype != "vectordb"
                                 )
                               )
-                            ).as(disc_blocks_billing,
+                            )).as(disc_blocks_billing,
                               disc_blocks_billing ?
                                 (meta_evts + disc_errs + (size(disc_errs) > 0 ? [] : [dyn({
                                   "error": {
                                     "code": "discovery_incomplete",
                                     "id": "unattributed_billing_instances",
-                                    "message": "Skipping billing ingestion for " + req.from.format(time_layout.DateOnly) + " because deployment or project discovery failed for billed instances",
+                                    "message": "Skipping billing ingestion for " + req.from.format(time_layout.DateOnly) + " because Elastic Cloud deployment discovery failed for billed deployment instances",
                                   },
                                 })])).as(block_evts,
                                   {
@@ -495,7 +504,7 @@ program: |-
         )
       )
       )))))
-    )))))))
+    ))))))))))
   )
 
 processors:
