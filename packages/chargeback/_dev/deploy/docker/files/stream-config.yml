@@ -271,6 +271,52 @@ rules:
                       "query_time_in_millis": 810,
                       "query_total": 95
                     }
+                  },
+                  "shards": {
+                    "0": [
+                      {
+                        "routing": {
+                          "state": "STARTED",
+                          "primary": true,
+                          "node": "node-ech-2"
+                        },
+                        "docs": {
+                          "count": 120000
+                        },
+                        "store": {
+                          "size_in_bytes": 536870912,
+                          "total_data_set_size_in_bytes": 536870912
+                        },
+                        "indexing": {
+                          "index_time_in_millis": 220
+                        },
+                        "search": {
+                          "query_time_in_millis": 410,
+                          "query_total": 50
+                        }
+                      },
+                      {
+                        "routing": {
+                          "state": "STARTED",
+                          "primary": false,
+                          "node": "node-ech-1"
+                        },
+                        "docs": {
+                          "count": 120000
+                        },
+                        "store": {
+                          "size_in_bytes": 536870912,
+                          "total_data_set_size_in_bytes": 536870912
+                        },
+                        "indexing": {
+                          "index_time_in_millis": 200
+                        },
+                        "search": {
+                          "query_time_in_millis": 400,
+                          "query_total": 45
+                        }
+                      }
+                    ]
                   }
                 },
                 ".security-7": {
@@ -314,7 +360,7 @@ rules:
             }
           `}}
 
-  - path: /ech1/_cluster/state/routing_table,nodes/{indices}
+  - path: /ech1/_nodes
     methods: ["GET"]
     request_headers:
       Authorization:
@@ -333,20 +379,6 @@ rules:
                 },
                 "node-ech-2": {
                   "roles": ["data_warm"]
-                }
-              },
-              "routing_table": {
-                "indices": {
-                  ".ds-logs-nginx.access-prod-2026.03.10-000001": {
-                    "shards": {
-                      "0": [
-                        {
-                          "state": "STARTED",
-                          "node": "node-ech-2"
-                        }
-                      ]
-                    }
-                  }
                 }
               }
             }
@@ -438,6 +470,31 @@ rules:
                       "query_time_in_millis": 320,
                       "query_total": 20
                     }
+                  },
+                  "shards": {
+                    "0": [
+                      {
+                        "routing": {
+                          "state": "STARTED",
+                          "primary": true,
+                          "node": "node-hub-1"
+                        },
+                        "docs": {
+                          "count": 80000
+                        },
+                        "store": {
+                          "size_in_bytes": 268435456,
+                          "total_data_set_size_in_bytes": 268435456
+                        },
+                        "indexing": {
+                          "index_time_in_millis": 0
+                        },
+                        "search": {
+                          "query_time_in_millis": 320,
+                          "query_total": 20
+                        }
+                      }
+                    ]
                   }
                 },
                 "chargeback_lookup.dest_billing_cluster_cost-1": {
@@ -481,7 +538,7 @@ rules:
             }
           `}}
 
-  - path: /hub/_cluster/state/routing_table,nodes/{indices}
+  - path: /hub/_nodes
     methods: ["GET"]
     request_headers:
       Authorization:
@@ -498,25 +555,11 @@ rules:
                 "node-hub-1": {
                   "roles": ["data_hot"]
                 }
-              },
-              "routing_table": {
-                "indices": {
-                  "app-orders-2026.03": {
-                    "shards": {
-                      "0": [
-                        {
-                          "state": "STARTED",
-                          "node": "node-hub-1"
-                        }
-                      ]
-                    }
-                  }
-                }
               }
             }
           `}}
 
-  - path: /ech1/_nodes/_all/stats/{metrics}
+  - path: /ech1/_nodes/data:true,data_hot:true,data_warm:true,data_cold:true,data_frozen:true,data_content:true/stats/{metrics}
     methods: ["GET"]
     request_headers:
       Authorization:
@@ -529,10 +572,16 @@ rules:
         body: |-
           {{ minify_json `
             {
+              "_nodes": {
+                "total": 2,
+                "successful": 2,
+                "failed": 0
+              },
               "nodes": {
                 "node-ech-1": {
                   "name": "instance-0000000001",
                   "roles": ["data_hot", "data_content"],
+                  "timestamp": 1773619200000,
                   "jvm": {
                     "mem": {
                       "heap_used_percent": 68
@@ -548,6 +597,7 @@ rules:
                 "node-ech-2": {
                   "name": "instance-0000000002",
                   "roles": ["data_warm"],
+                  "timestamp": 1773619200000,
                   "jvm": {
                     "mem": {
                       "heap_used_percent": 54
@@ -564,7 +614,7 @@ rules:
             }
           `}}
 
-  - path: /hub/_nodes/_all/stats/{metrics}
+  - path: /hub/_nodes/data:true,data_hot:true,data_warm:true,data_cold:true,data_frozen:true,data_content:true/stats/{metrics}
     methods: ["GET"]
     request_headers:
       Authorization:
@@ -577,10 +627,16 @@ rules:
         body: |-
           {{ minify_json `
             {
+              "_nodes": {
+                "total": 1,
+                "successful": 1,
+                "failed": 0
+              },
               "nodes": {
                 "node-hub-1": {
                   "name": "hub-data-01",
                   "roles": ["data_hot"],
+                  "timestamp": 1773619200000,
                   "jvm": {
                     "mem": {
                       "heap_used_percent": 47

@@ -492,7 +492,8 @@ pivot:
               }
               ((List)u.get('ns')).add([sOff, eOff, idxMs, qryMs, storeB, dsetB, tier]);
             } else {
-              u.put('bs', [storeB, dsetB, tier]);
+              if (!(u.get('bs') instanceof Map)) { u.put('bs', new HashMap()); }
+              ((Map)u.get('bs')).put(tier, [storeB, dsetB]);
             }
           } else {
             state.leg_cnt = ((Number)state.leg_cnt).longValue() + 1L;
@@ -609,8 +610,13 @@ pivot:
                 if (uv.get('ns') instanceof List) {
                   ((List)acc.get('ns')).addAll((List)uv.get('ns'));
                 }
-                if (uv.get('bs') instanceof List) {
-                  acc.put('bs', uv.get('bs'));
+                if (uv.get('bs') instanceof Map) {
+                  if (!(acc.get('bs') instanceof Map)) { acc.put('bs', new HashMap()); }
+                  ((Map)acc.get('bs')).putAll((Map)uv.get('bs'));
+                } else if (uv.get('bs') instanceof List) {
+                  List ubs = (List)uv.get('bs');
+                  if (!(acc.get('bs') instanceof Map)) { acc.put('bs', new HashMap()); }
+                  ((Map)acc.get('bs')).put(ubs.get(2).toString(), [ubs.get(0), ubs.get(1)]);
                 }
               }
             }
@@ -628,14 +634,14 @@ pivot:
             List lt = (List)u.get('lt');
             String ltier = u.get('ltier') != null ? u.get('ltier').toString() : 'unknown';
             List rawNs = (List)u.get('ns');
-            List bs = u.get('bs') instanceof List ? (List)u.get('bs') : null;
+            Map bsMap = u.get('bs') instanceof Map ? (Map)u.get('bs') : null;
 
             List ns = new ArrayList();
             if (rawNs != null && !rawNs.isEmpty()) {
               Set seen = new HashSet();
               for (def item : rawNs) {
                 List sp = (List)item;
-                String skey = sp.get(0).toString() + ':' + sp.get(1).toString();
+                String skey = sp.get(0).toString() + ':' + sp.get(1).toString() + ':' + sp.get(6).toString();
                 if (seen.add(skey)) { ns.add(sp); }
               }
             }
@@ -650,6 +656,7 @@ pivot:
               if (!ns.isEmpty()) {
                 usedNat = true;
                 Map idxTierAcc = new HashMap();
+                Set covSeen = new HashSet();
                 long minMs = 86400000L;
                 long maxMs = 0L;
                 long covMs = 0L;
@@ -660,7 +667,7 @@ pivot:
                   long spanMs = (eOff - sOff) > 1L ? (eOff - sOff) : 1L;
                   if (sOff < minMs) { minMs = sOff; }
                   if (eOff > maxMs) { maxMs = eOff; }
-                  covMs += spanMs;
+                  if (covSeen.add(sOff + ':' + eOff)) { covMs += spanMs; }
                   double wSlots = (double)spanMs / 600000.0;
                   String spTier = sp.get(6).toString();
                   List ta = (List)idxTierAcc.get(spTier);
@@ -699,29 +706,32 @@ pivot:
                     st.set(3, ((Number)st.get(3)).longValue() + add3);
                   }
                 }
-              } else if (bs != null) {
+              } else if (bsMap != null && !bsMap.isEmpty()) {
                 usedNat = true;
-                long bsStore = ((Number)bs.get(0)).longValue();
-                long bsDset = ((Number)bs.get(1)).longValue();
-                String bsTier = bs.get(2).toString();
-                sel.set(2, ((Number)sel.get(2)).longValue() + bsStore);
-                sel.set(3, ((Number)sel.get(3)).longValue() + bsDset);
-                rawNat.set(2, ((Number)rawNat.get(2)).longValue() + bsStore);
-                rawNat.set(3, ((Number)rawNat.get(3)).longValue() + bsDset);
-                List st = (List)selByTier.get(bsTier);
-                if (st == null) { selByTier.put(bsTier, [0L, 0L, bsStore, bsDset]); }
-                else {
-                  st.set(2, ((Number)st.get(2)).longValue() + bsStore);
-                  st.set(3, ((Number)st.get(3)).longValue() + bsDset);
+                for (def bse : bsMap.entrySet()) {
+                  String bsTier = bse.getKey().toString();
+                  List bsv = (List)bse.getValue();
+                  long bsStore = ((Number)bsv.get(0)).longValue();
+                  long bsDset = ((Number)bsv.get(1)).longValue();
+                  sel.set(2, ((Number)sel.get(2)).longValue() + bsStore);
+                  sel.set(3, ((Number)sel.get(3)).longValue() + bsDset);
+                  rawNat.set(2, ((Number)rawNat.get(2)).longValue() + bsStore);
+                  rawNat.set(3, ((Number)rawNat.get(3)).longValue() + bsDset);
+                  List st = (List)selByTier.get(bsTier);
+                  if (st == null) { selByTier.put(bsTier, [0L, 0L, bsStore, bsDset]); }
+                  else {
+                    st.set(2, ((Number)st.get(2)).longValue() + bsStore);
+                    st.set(3, ((Number)st.get(3)).longValue() + bsDset);
+                  }
+                  List rnt = (List)rawNatByTier.get(bsTier);
+                  if (rnt == null) { rawNatByTier.put(bsTier, [0L, 0L, bsStore, bsDset]); }
+                  else {
+                    rnt.set(2, ((Number)rnt.get(2)).longValue() + bsStore);
+                    rnt.set(3, ((Number)rnt.get(3)).longValue() + bsDset);
+                  }
+                  int tf = tierFlags.containsKey(bsTier) ? ((Number)tierFlags.get(bsTier)).intValue() : 0;
+                  tierFlags.put(bsTier, tf | 1);
                 }
-                List rnt = (List)rawNatByTier.get(bsTier);
-                if (rnt == null) { rawNatByTier.put(bsTier, [0L, 0L, bsStore, bsDset]); }
-                else {
-                  rnt.set(2, ((Number)rnt.get(2)).longValue() + bsStore);
-                  rnt.set(3, ((Number)rnt.get(3)).longValue() + bsDset);
-                }
-                int tf = tierFlags.containsKey(bsTier) ? ((Number)tierFlags.get(bsTier)).intValue() : 0;
-                tierFlags.put(bsTier, tf | 1);
               }
               continue;
             }
@@ -763,10 +773,12 @@ pivot:
             }
 
             long[] natSlotMs = new long[144];
+            Set slotSeen = new HashSet();
             for (def item : ns) {
               List sp = (List)item;
               long sOff = ((Number)sp.get(0)).longValue();
               long eOff = ((Number)sp.get(1)).longValue();
+              if (!slotSeen.add(sOff + ':' + eOff)) { continue; }
               int sb = (int)(sOff / 600000L);
               int eb = (int)((eOff - 1L) / 600000L);
               for (int k = sb; k <= eb; k++) {
@@ -791,6 +803,7 @@ pivot:
             }
 
             Map idxTierAcc = new HashMap();
+            Set covSeen = new HashSet();
             long minMs = 86400000L;
             long maxMs = 0L;
             long covMs = 0L;
@@ -804,7 +817,7 @@ pivot:
                 long spanMs = (eOff - sOff) > 1L ? (eOff - sOff) : 1L;
                 if (sOff < minMs) { minMs = sOff; }
                 if (eOff > maxMs) { maxMs = eOff; }
-                covMs += spanMs;
+                if (covSeen.add(sOff + ':' + eOff)) { covMs += spanMs; }
                 double wSlots = (double)spanMs / 600000.0;
                 String spTier = sp.get(6).toString();
                 List ta = (List)idxTierAcc.get(spTier);
@@ -858,7 +871,7 @@ pivot:
                   usedNat = true;
                   if (sOff < minMs) { minMs = sOff; }
                   if (eOff > maxMs) { maxMs = eOff; }
-                  covMs += uncovMs;
+                  if (covSeen.add(sOff + ':' + eOff)) { covMs += uncovMs; }
                   double cFrac = (double)uncovMs / (double)spanMs;
                   double uSlots = (double)uncovMs / 600000.0;
                   String spTier = sp.get(6).toString();

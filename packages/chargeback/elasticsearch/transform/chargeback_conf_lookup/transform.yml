@@ -84,6 +84,7 @@ pivot:
           scripted_metric:
             init_script: |
               state.owners = [:];
+              state.emitters = [:];
             map_script: |
               if (params._source == null) {
                 return;
@@ -94,24 +95,62 @@ pivot:
               def rawSync = params._source.get('conf_sync_enabled');
               boolean syncEnabled = (rawSync == null) || rawSync.toString().equalsIgnoreCase('true');
 
+              String ns = (params._source.data_stream instanceof Map && params._source.data_stream.namespace != null)
+                ? params._source.data_stream.namespace.toString().trim()
+                : (params._source.get('data_stream.namespace') != null ? params._source.get('data_stream.namespace').toString().trim() : 'default');
+              if (ns == '') { ns = 'default'; }
+
+              String polId = '';
+              if (params._source.get('conf_policy_id') != null) {
+                polId = params._source.get('conf_policy_id').toString().trim();
+              } else if (params._source.get('package_policy_id') != null) {
+                polId = params._source.get('package_policy_id').toString().trim();
+              } else if (params._source.input instanceof Map && params._source.input.package_policy_id != null) {
+                polId = params._source.input.package_policy_id.toString().trim();
+              } else if (params._source.elastic_agent instanceof Map && params._source.elastic_agent.package_policy_id != null) {
+                polId = params._source.elastic_agent.package_policy_id.toString().trim();
+              } else if (params._source.elastic_agent instanceof Map && params._source.elastic_agent.policy_id != null) {
+                polId = params._source.elastic_agent.policy_id.toString().trim();
+              } else if (params._source.get('elastic_agent.policy_id') != null) {
+                polId = params._source.get('elastic_agent.policy_id').toString().trim();
+              } else if (params._source.agent instanceof Map && params._source.agent.policy instanceof Map && params._source.agent.policy.id != null) {
+                polId = params._source.agent.policy.id.toString().trim();
+              } else if (params._source.get('agent.policy.id') != null) {
+                polId = params._source.get('agent.policy.id').toString().trim();
+              } else if (params._source.component instanceof Map && params._source.component.id != null) {
+                polId = params._source.component.id.toString().trim();
+              }
+
+              String agId = '';
+              if (params._source.agent instanceof Map && params._source.agent.id != null) {
+                agId = params._source.agent.id.toString().trim();
+              } else if (params._source.get('agent.id') != null) {
+                agId = params._source.get('agent.id').toString().trim();
+              } else if (params._source.elastic_agent instanceof Map && params._source.elastic_agent.id != null) {
+                agId = params._source.elastic_agent.id.toString().trim();
+              } else if (params._source.get('elastic_agent.id') != null) {
+                agId = params._source.get('elastic_agent.id').toString().trim();
+              }
+
               String explicitId = params._source.get('conf_owner_id') != null
                 ? params._source.get('conf_owner_id').toString().trim()
                 : '';
               boolean isExplicit = explicitId != '';
-              String ownerKey = '';
-              if (isExplicit) {
-                ownerKey = 'explicit:' + explicitId;
-              } else {
-                String ns = (params._source.data_stream instanceof Map && params._source.data_stream.namespace != null)
-                  ? params._source.data_stream.namespace.toString().trim()
-                  : (params._source.get('data_stream.namespace') != null ? params._source.get('data_stream.namespace').toString().trim() : 'default');
-                String scope = params._source.get('conf_policy_scope') != null
-                  ? params._source.get('conf_policy_scope').toString().trim()
-                  : '';
-                String agId = (params._source.agent instanceof Map && params._source.agent.id != null)
-                  ? params._source.agent.id.toString().trim()
-                  : (params._source.get('agent.id') != null ? params._source.get('agent.id').toString().trim() : '');
-                ownerKey = 'implicit:' + ns + '|' + scope + '|' + agId;
+              String ownerKey = isExplicit
+                ? ('explicit:' + explicitId)
+                : (polId != '' ? ('implicit:pol:' + polId) : ('implicit:ns:' + ns));
+
+              if (polId != '' || agId != '') {
+                String emitterId = polId != '' ? ('pol:' + polId) : ('ag:' + ns + '|' + agId);
+                Map em = (Map)state.emitters.get(emitterId);
+                if (em == null) {
+                  em = [:];
+                  state.emitters.put(emitterId, em);
+                }
+                long prevEmTs = em.get(ownerKey) instanceof Number ? ((Number)em.get(ownerKey)).longValue() : -1L;
+                if (ts > prevEmTs) {
+                  em.put(ownerKey, ts);
+                }
               }
 
               Map owner = (Map)state.owners.get(ownerKey);
@@ -151,7 +190,27 @@ pivot:
             combine_script: "return state;"
             reduce_script: |
               Map mergedOwners = [:];
+              Map mergedEmitters = [:];
               for (def s : states) {
+                if (s instanceof Map && s.emitters instanceof Map) {
+                  for (def ee : ((Map)s.emitters).entrySet()) {
+                    String eid = ee.getKey().toString();
+                    if (!(ee.getValue() instanceof Map)) { continue; }
+                    Map dstEm = (Map)mergedEmitters.get(eid);
+                    if (dstEm == null) {
+                      dstEm = [:];
+                      mergedEmitters.put(eid, dstEm);
+                    }
+                    for (def oke : ((Map)ee.getValue()).entrySet()) {
+                      String eok = oke.getKey().toString();
+                      long ets = oke.getValue() instanceof Number ? ((Number)oke.getValue()).longValue() : -1L;
+                      long curEts = dstEm.get(eok) instanceof Number ? ((Number)dstEm.get(eok)).longValue() : -1L;
+                      if (ets > curEts) {
+                        dstEm.put(eok, ets);
+                      }
+                    }
+                  }
+                }
                 if (s instanceof Map && s.owners instanceof Map) {
                   for (def oe : ((Map)s.owners).entrySet()) {
                     String ok = oe.getKey().toString();
@@ -206,30 +265,75 @@ pivot:
                 ];
               }
 
-              List explicitKeys = new ArrayList();
+              Set currentEmitterKeys = new HashSet();
+              Map supersededAt = [:];
+              for (def ee : mergedEmitters.entrySet()) {
+                Map em = (Map)ee.getValue();
+                long maxEmTs = -1L;
+                for (def v : em.values()) {
+                  long vts = v instanceof Number ? ((Number)v).longValue() : -1L;
+                  if (vts > maxEmTs) { maxEmTs = vts; }
+                }
+                for (def oke : em.entrySet()) {
+                  String kName = oke.getKey().toString();
+                  long kts = oke.getValue() instanceof Number ? ((Number)oke.getValue()).longValue() : -1L;
+                  if (kts >= 0L && kts == maxEmTs) {
+                    currentEmitterKeys.add(kName);
+                  } else if (kts >= 0L && kts < maxEmTs) {
+                    long prevSup = supersededAt.get(kName) instanceof Number ? ((Number)supersededAt.get(kName)).longValue() : -1L;
+                    if (kts > prevSup) {
+                      supersededAt.put(kName, kts);
+                    }
+                  }
+                }
+              }
+
+              Map activeOwners = [:];
               for (def e : mergedOwners.entrySet()) {
+                String ok = e.getKey().toString();
                 Map ov = (Map)e.getValue();
+                long ovTs = ov.get('newestTs') instanceof Number ? ((Number)ov.get('newestTs')).longValue() : -1L;
+                long supTs = supersededAt.get(ok) instanceof Number ? ((Number)supersededAt.get(ok)).longValue() : -1L;
+                if (!currentEmitterKeys.contains(ok) && supTs >= 0L && ovTs <= supTs) {
+                  continue;
+                }
+                activeOwners.put(ok, ov);
+              }
+              if (activeOwners.isEmpty()) {
+                activeOwners = mergedOwners;
+              }
+
+              List enabledExplicitKeys = new ArrayList();
+              List enabledImplicitKeys = new ArrayList();
+              for (def e : activeOwners.entrySet()) {
+                String ok = e.getKey().toString();
+                Map ov = (Map)e.getValue();
+                if (!Boolean.TRUE.equals(ov.get('newestSync'))) {
+                  continue;
+                }
                 if (Boolean.TRUE.equals(ov.get('explicit'))) {
-                  explicitKeys.add(e.getKey().toString());
+                  enabledExplicitKeys.add(ok);
+                } else {
+                  enabledImplicitKeys.add(ok);
                 }
               }
 
               String selectedOwner = null;
               boolean ownerConflict = false;
-              if (explicitKeys.size() == 1) {
-                selectedOwner = explicitKeys.get(0).toString();
-              } else if (explicitKeys.size() > 1) {
+              if (enabledExplicitKeys.size() == 1) {
+                selectedOwner = enabledExplicitKeys.get(0).toString();
+              } else if (enabledExplicitKeys.size() > 1) {
                 ownerConflict = true;
-              } else if (mergedOwners.size() == 1) {
-                selectedOwner = mergedOwners.keySet().iterator().next().toString();
-              } else {
+              } else if (enabledImplicitKeys.size() == 1) {
+                selectedOwner = enabledImplicitKeys.get(0).toString();
+              } else if (enabledImplicitKeys.size() > 1) {
                 ownerConflict = true;
               }
 
               boolean policySyncEnabled = false;
               Map bestStreams = [:];
               if (!ownerConflict && selectedOwner != null) {
-                Map sel = (Map)mergedOwners.get(selectedOwner);
+                Map sel = (Map)activeOwners.get(selectedOwner);
                 policySyncEnabled = Boolean.TRUE.equals(sel.get('newestSync'));
                 if (policySyncEnabled && sel.get('streams') instanceof Map) {
                   bestStreams = (Map)sel.get('streams');

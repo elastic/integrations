@@ -72,75 +72,30 @@ processors:
             idx.datastream = (name.startsWith('.') || stripped.startsWith('.')) ? 'system' : stripped;
           }
         }
-        List shardRolesList = idx.allocated_node_roles instanceof List ? (List)idx.allocated_node_roles : null;
         idx.remove('allocated_node_roles');
-        if (idx.tier == null || idx.tier == '') {
+        if (idx.tier != null && idx.tier != '') {
+          String rawTier = idx.tier.toString().trim();
+          if (rawTier == 'data_hot' || rawTier == 'data_content' || rawTier == 'hot' || rawTier == 'content') {
+            idx.tier = 'hot/content';
+          } else if (rawTier == 'data_warm') {
+            idx.tier = 'warm';
+          } else if (rawTier == 'data_cold') {
+            idx.tier = 'cold';
+          } else if (rawTier == 'data_frozen') {
+            idx.tier = 'frozen';
+          }
+        } else {
           String pref = idx.tier_preference != null ? idx.tier_preference.toString() : '';
-          List prefParts = new ArrayList();
-          if (pref != '') {
-            for (String p : pref.splitOnToken(',')) {
-              String tp = p.trim();
-              if (!tp.isEmpty()) prefParts.add(tp);
-            }
-          }
-          String resolvedTier = null;
-          if (shardRolesList != null && !shardRolesList.isEmpty()) {
-            Map tierCounts = new HashMap();
-            for (def entry : shardRolesList) {
-              if (entry == null) continue;
-              Set roleSet = new HashSet();
-              if (entry instanceof List) {
-                for (def r : (List)entry) {
-                  if (r != null) roleSet.add(r.toString().trim());
-                }
-              } else {
-                for (String r : entry.toString().splitOnToken(',')) {
-                  String tr = r.trim();
-                  if (!tr.isEmpty()) roleSet.add(tr);
-                }
-              }
-              if (roleSet.isEmpty()) continue;
-              String shardTier = null;
-              for (String p : prefParts) {
-                if (roleSet.contains(p) || roleSet.contains('data')) {
-                  if (p == 'data_frozen') shardTier = 'frozen';
-                  else if (p == 'data_cold') shardTier = 'cold';
-                  else if (p == 'data_warm') shardTier = 'warm';
-                  else if (p == 'data_hot' || p == 'data_content') shardTier = 'hot/content';
-                  if (shardTier != null) break;
-                }
-              }
-              if (shardTier == null) {
-                if (roleSet.contains('data') || roleSet.contains('data_hot') || roleSet.contains('data_content')) shardTier = 'hot/content';
-                else if (roleSet.contains('data_warm')) shardTier = 'warm';
-                else if (roleSet.contains('data_cold')) shardTier = 'cold';
-                else if (roleSet.contains('data_frozen')) shardTier = 'frozen';
-              }
-              if (shardTier != null) {
-                int cnt = tierCounts.containsKey(shardTier) ? ((Number)tierCounts.get(shardTier)).intValue() + 1 : 1;
-                tierCounts.put(shardTier, cnt);
-              }
-            }
-            int bestCount = 0;
-            for (String cand : ['hot/content', 'warm', 'cold', 'frozen']) {
-              int cnt = tierCounts.containsKey(cand) ? ((Number)tierCounts.get(cand)).intValue() : 0;
-              if (cnt > bestCount) {
-                bestCount = cnt;
-                resolvedTier = cand;
-              }
-            }
-          }
-          if (resolvedTier != null) {
-            idx.tier = resolvedTier;
-          } else if (pref == '') {
+          if (pref == '') {
             idx.tier = 'hot/content';
           } else {
             String prefTier = 'unknown';
-            for (String p : prefParts) {
-              if (p == 'data_frozen') { prefTier = 'frozen'; break; }
-              if (p == 'data_cold') { prefTier = 'cold'; break; }
-              if (p == 'data_warm') { prefTier = 'warm'; break; }
-              if (p == 'data_hot' || p == 'data_content') { prefTier = 'hot/content'; break; }
+            for (String p : pref.splitOnToken(',')) {
+              String tp = p.trim();
+              if (tp == 'data_frozen') { prefTier = 'frozen'; break; }
+              if (tp == 'data_cold') { prefTier = 'cold'; break; }
+              if (tp == 'data_warm') { prefTier = 'warm'; break; }
+              if (tp == 'data_hot' || tp == 'data_content') { prefTier = 'hot/content'; break; }
             }
             idx.tier = prefTier;
           }
@@ -170,6 +125,7 @@ processors:
         - "@timestamp"
         - period_obs_ts
         - elasticsearch.index.name
+        - elasticsearch.index.tier
       target_field: _id
       ignore_missing: true
       tag: fingerprint_usage_event
