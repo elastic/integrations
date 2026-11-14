@@ -1,0 +1,57 @@
+title: "Chargeback Usage"
+type: metrics
+dataset: chargeback.usage
+elasticsearch:
+  source_mode: synthetic
+streams:
+  - input: cel
+    title: Index & Tier Usage
+    description: Collect 10-minute reset-aware index, data stream, and data-tier usage metrics across ECH deployments, Serverless projects, and local/hub clusters, and configure blended workload allocation weights.
+    template_path: cel.yml.hbs
+    enabled: true
+    vars:
+      - name: indexing_weight
+        type: integer
+        title: Blended Indexing Weight
+        description: >-
+          Non-negative weight for indexing operations in blended cost calculation (default: 20, applies to hot/content tier).
+        multi: false
+        required: true
+        show_user: true
+        default: 20
+      - name: query_weight
+        type: integer
+        title: Blended Query Weight
+        description: >-
+          Non-negative weight for query operations in blended cost calculation (default: 20). The sum of query_weight and storage_weight must be greater than zero.
+        multi: false
+        required: true
+        show_user: true
+        default: 20
+      - name: storage_weight
+        type: integer
+        title: Blended Storage Weight
+        description: >-
+          Non-negative weight for storage in blended cost calculation (default: 40). The sum of query_weight and storage_weight must be greater than zero.
+        multi: false
+        required: true
+        show_user: true
+        default: 40
+      - name: tags
+        type: text
+        title: Tags
+        description: List of tags to include in remotely collected usage events.
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - chargeback
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Optional Beat processors applied before events are published.

@@ -1,7 +1,7 @@
 {
     "attributes": {
         "controlGroupInput": {},
-        "description": "Configuration",
+        "description": "Fleet Data Stream configuration guide, collection stream health, and per-deployment ECH & Serverless harvest registry.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "query": {
@@ -78,19 +78,21 @@
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "End-to-end health of Chargeback's three Fleet CEL data streams (Billing, Usage, and Node Stats) across discovered ECH deployments and Serverless projects.",
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9": {
+                                "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f": {
                                     "allowHidden": false,
                                     "allowNoIndex": false,
                                     "fieldFormats": {},
-                                    "id": "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9",
+                                    "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                     "managed": false,
-                                    "name": "chargeback_conf_lookup",
+                                    "name": "chargeback_lookup.billing_cluster_cost",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
-                                    "title": "chargeback_conf_lookup",
+                                    "timeFieldName": "@timestamp",
+                                    "title": "chargeback_lookup.billing_cluster_cost",
                                     "type": "esql"
                                 }
                             },
@@ -98,68 +100,116 @@
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9",
-                                            "title": "chargeback_conf_lookup"
+                                            "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "timeField": "@timestamp",
+                                            "title": "chargeback_lookup.billing_cluster_cost"
                                         }
                                     ],
                                     "layers": {
                                         "4dba9fd5-8ec5-498a-b710-1512bd5dc18f": {
                                             "columns": [
                                                 {
-                                                    "columnId": "Active now",
-                                                    "customLabel": true,
-                                                    "fieldName": "Active now",
-                                                    "label": "Active now",
+                                                    "columnId": "Billing Stream",
+                                                    "customLabel": false,
+                                                    "fieldName": "Billing Stream",
+                                                    "label": "Billing Stream",
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "conf_start_date",
-                                                    "customLabel": true,
-                                                    "fieldName": "conf_start_date",
-                                                    "label": "Start date",
-                                                    "meta": {
-                                                        "esType": "date",
-                                                        "type": "date"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "conf_end_date",
-                                                    "customLabel": true,
-                                                    "fieldName": "conf_end_date",
-                                                    "label": "End date",
-                                                    "meta": {
-                                                        "esType": "date",
-                                                        "type": "date"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "Rate unit",
-                                                    "customLabel": true,
-                                                    "fieldName": "Rate unit",
-                                                    "label": "Rate unit",
+                                                    "columnId": "Platform Mix",
+                                                    "customLabel": false,
+                                                    "fieldName": "Platform Mix",
+                                                    "label": "Platform Mix",
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "Chargeable unit rate",
-                                                    "customLabel": true,
-                                                    "fieldName": "Chargeable unit rate",
-                                                    "label": "Chargeable unit rate",
+                                                    "columnId": "Usage Stream (/_stats)",
+                                                    "customLabel": false,
+                                                    "fieldName": "Usage Stream (/_stats)",
+                                                    "label": "Usage Stream (/_stats)",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Node Stats Stream (ECH)",
+                                                    "customLabel": false,
+                                                    "fieldName": "Node Stats Stream (ECH)",
+                                                    "label": "Node Stats Stream (ECH)",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Historical Coverage",
+                                                    "customLabel": false,
+                                                    "fieldName": "Historical Coverage",
+                                                    "label": "Historical Coverage",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Billing Currency & Rate",
+                                                    "customLabel": false,
+                                                    "fieldName": "Billing Currency & Rate",
+                                                    "label": "Billing Currency & Rate",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Billed ECU",
+                                                    "customLabel": false,
+                                                    "fieldName": "Billed ECU",
+                                                    "label": "Billed ECU",
                                                     "meta": {
                                                         "esType": "double",
-                                                        "type": "number"
+                                                        "type": "number",
+                                                        "params": {
+                                                            "id": "number"
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Normalized Spend",
+                                                    "customLabel": false,
+                                                    "fieldName": "Normalized Spend",
+                                                    "label": "Normalized Spend",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number",
+                                                        "params": {
+                                                            "id": "number"
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Latest Billing Day",
+                                                    "customLabel": false,
+                                                    "fieldName": "Latest Billing Day",
+                                                    "label": "Latest Billing Day",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
                                                     }
                                                 }
                                             ],
-                                            "index": "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9",
+                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM chargeback_conf_lookup\n| EVAL `Rate unit` = conf_chargeable_unit_rate_unit, `Chargeable unit rate` = conf_chargeable_unit_rate, `Active now` = CASE(NOW() >= conf_start_date AND NOW() <= conf_end_date, \"yes\", \"no\")\n| KEEP `Active now`, conf_start_date, conf_end_date, `Rate unit`, `Chargeable unit rate`\n| SORT `Active now` DESC, conf_start_date DESC\n| LIMIT 20"
-                                            }
+                                                "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE @timestamp IS NOT NULL AND deployment_id IS NOT NULL\n| EVAL ts = @timestamp, ck = composite_key::keyword, b_dep_id = deployment_id\n| DROP composite_key\n| LOOKUP JOIN chargeback_lookup.cluster_deployment_contribution ON ck == composite_key\n| EVAL has_usage = CASE(deployment_sum_store_size IS NOT NULL, 1, 0)\n| DROP composite_key, deployment_id, @timestamp\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON ck == composite_key\n| EVAL has_util = CASE(heap_used_pct_p95 IS NOT NULL, 1, 0)\n| DROP composite_key, deployment_id, @timestamp\n| EVAL is_onprem_flag = CASE(COALESCE(is_onprem, ess.billing.deployment_type IN (\"onprem\", \"ece\", \"eck\") OR cloud.provider == \"onprem\", false), 1, 0), cloud_cfg_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON cloud_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL cloud_rate = conf_chargeable_unit_rate, cloud_unit = conf_chargeable_unit_rate_unit\n| DROP cloud_cfg_key, config_join_key, conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit\n| EVAL onprem_cfg_key = CASE(is_onprem_flag == 1, \"chargeback_config_onprem\", null)\n| LOOKUP JOIN chargeback_conf_lookup ON onprem_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL rate = CASE(is_onprem_flag == 1, COALESCE(conf_chargeable_unit_rate, 0.00085), COALESCE(cloud_rate, 0.85)), unit = CASE(is_onprem_flag == 1, COALESCE(conf_chargeable_unit_rate_unit, cloud_unit, \"EUR\"), COALESCE(cloud_unit, \"EUR\"))\n| EVAL cloud_r = CASE(is_onprem_flag == 0, rate, null), onprem_r = CASE(is_onprem_flag == 1, rate, null)\n| EVAL is_ech = CASE(is_onprem_flag == 0 AND (ess.billing.deployment_type == \"deployment\" OR cloud.provider IN (\"aws\", \"gcp\", \"azure\", \"cloud\")), 1, 0)\n| EVAL is_node_target = CASE(is_onprem_flag == 1 OR is_ech == 1, 1, 0)\n| EVAL is_fresh = CASE(DATE_DIFF(\"hour\", ts, NOW()) <= 72, 1, 0)\n| EVAL ech_id = CASE(is_ech == 1, b_dep_id, null), sls_id = CASE(is_onprem_flag == 0 AND is_ech == 0, b_dep_id, null), onprem_id = CASE(is_onprem_flag == 1, b_dep_id, null), node_target_id = CASE(is_node_target == 1, b_dep_id, null)\n| EVAL fresh_bill_id = CASE(is_fresh == 1, b_dep_id, null), usage_dep_id = CASE(has_usage == 1, b_dep_id, null), fresh_usage_id = CASE(is_fresh == 1 AND has_usage == 1, b_dep_id, null), util_dep_id = CASE(is_node_target == 1 AND has_util == 1, b_dep_id, null), fresh_util_id = CASE(is_fresh == 1 AND is_node_target == 1 AND has_util == 1, b_dep_id, null)\n| STATS\n    total_deps = COUNT_DISTINCT(b_dep_id),\n    fresh_bill_deps = COUNT_DISTINCT(fresh_bill_id),\n    ech_deps = COUNT_DISTINCT(ech_id),\n    sls_deps = COUNT_DISTINCT(sls_id),\n    onprem_deps = COUNT_DISTINCT(onprem_id),\n    node_target_deps = COUNT_DISTINCT(node_target_id),\n    usage_deps = COUNT_DISTINCT(usage_dep_id),\n    fresh_usage_deps = COUNT_DISTINCT(fresh_usage_id),\n    util_deps = COUNT_DISTINCT(util_dep_id),\n    fresh_util_deps = COUNT_DISTINCT(fresh_util_id),\n    total_ecu = ROUND(SUM(total_chargeable_units), 2),\n    total_cost = ROUND(SUM(total_chargeable_units * rate), 2),\n    unit_vals = VALUES(unit),\n    active_cloud_rate = MAX(cloud_r),\n    active_onprem_rate = MAX(onprem_r),\n    latest_ts = MAX(ts)\n| EVAL\n    active_unit = MV_MAX(unit_vals),\n    `Billing Stream` = CASE(total_deps == 0, \"Awaiting poll\", fresh_bill_deps > 0, CONCAT(\"Active (\", TO_STRING(fresh_bill_deps), \" / \", TO_STRING(total_deps), \" fresh)\"), CONCAT(\"Stale (last \", LEFT(TO_STRING(latest_ts), 10), \")\")),\n    `Platform Mix` = CASE(onprem_deps > 0, CONCAT(TO_STRING(ech_deps), \" ECH · \", TO_STRING(sls_deps), \" Serverless · \", TO_STRING(onprem_deps), \" On-Prem\"), CONCAT(TO_STRING(ech_deps), \" ECH · \", TO_STRING(sls_deps), \" Serverless\")),\n    `Usage Stream (/_stats)` = CASE(total_deps == 0, \"Awaiting poll\", fresh_usage_deps > 0, CONCAT(\"Active (\", TO_STRING(fresh_usage_deps), \" / \", TO_STRING(total_deps), \" fresh)\"), usage_deps > 0, CONCAT(\"Stale (\", TO_STRING(usage_deps), \" historical)\"), \"Missing\"),\n    `Node Stats Stream (ECH)` = CASE(node_target_deps == 0, \"N/A (Serverless only)\", fresh_util_deps > 0, CONCAT(\"Active (\", TO_STRING(fresh_util_deps), \" / \", TO_STRING(node_target_deps), \" fresh)\"), util_deps > 0, CONCAT(\"Stale (\", TO_STRING(util_deps), \" historical)\"), \"100% fallback (Missing)\"),\n    `Historical Coverage` = CONCAT(TO_STRING(total_deps), \" billed · \", TO_STRING(usage_deps), \" usage · \", TO_STRING(util_deps), \" node stats\"),\n    `Billing Currency & Rate` = CASE(onprem_deps > 0 AND (ech_deps + sls_deps) > 0, CONCAT(COALESCE(active_unit, \"EUR\"), \" (×\", TO_STRING(ROUND(COALESCE(active_cloud_rate, 0.85), 4)), \"/ECU · ×\", TO_STRING(ROUND(COALESCE(active_onprem_rate, 0.00085) * 1000.0, 4)), \"/ERU)\"), onprem_deps > 0, CONCAT(COALESCE(active_unit, \"EUR\"), \" (×\", TO_STRING(ROUND(COALESCE(active_onprem_rate, 0.00085) * 1000.0, 4)), \"/ERU)\"), CONCAT(COALESCE(active_unit, \"EUR\"), \" (×\", TO_STRING(ROUND(COALESCE(active_cloud_rate, 0.85), 4)), \"/ECU)\")),\n    `Billed ECU` = total_ecu,\n    `Normalized Spend` = total_cost,\n    `Latest Billing Day` = LEFT(TO_STRING(latest_ts), 10)\n| KEEP `Billing Stream`, `Platform Mix`, `Usage Stream (/_stats)`, `Node Stats Stream (ECH)`, `Historical Coverage`, `Billing Currency & Rate`, `Billed ECU`, `Normalized Spend`, `Latest Billing Day`"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -167,33 +217,53 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM chargeback_conf_lookup\n| EVAL `Rate unit` = conf_chargeable_unit_rate_unit, `Chargeable unit rate` = conf_chargeable_unit_rate, `Active now` = CASE(NOW() >= conf_start_date AND NOW() <= conf_end_date, \"yes\", \"no\")\n| KEEP `Active now`, conf_start_date, conf_end_date, `Rate unit`, `Chargeable unit rate`\n| SORT `Active now` DESC, conf_start_date DESC\n| LIMIT 20"
+                                "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE @timestamp IS NOT NULL AND deployment_id IS NOT NULL\n| EVAL ts = @timestamp, ck = composite_key::keyword, b_dep_id = deployment_id\n| DROP composite_key\n| LOOKUP JOIN chargeback_lookup.cluster_deployment_contribution ON ck == composite_key\n| EVAL has_usage = CASE(deployment_sum_store_size IS NOT NULL, 1, 0)\n| DROP composite_key, deployment_id, @timestamp\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON ck == composite_key\n| EVAL has_util = CASE(heap_used_pct_p95 IS NOT NULL, 1, 0)\n| DROP composite_key, deployment_id, @timestamp\n| EVAL is_onprem_flag = CASE(COALESCE(is_onprem, ess.billing.deployment_type IN (\"onprem\", \"ece\", \"eck\") OR cloud.provider == \"onprem\", false), 1, 0), cloud_cfg_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON cloud_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL cloud_rate = conf_chargeable_unit_rate, cloud_unit = conf_chargeable_unit_rate_unit\n| DROP cloud_cfg_key, config_join_key, conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit\n| EVAL onprem_cfg_key = CASE(is_onprem_flag == 1, \"chargeback_config_onprem\", null)\n| LOOKUP JOIN chargeback_conf_lookup ON onprem_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL rate = CASE(is_onprem_flag == 1, COALESCE(conf_chargeable_unit_rate, 0.00085), COALESCE(cloud_rate, 0.85)), unit = CASE(is_onprem_flag == 1, COALESCE(conf_chargeable_unit_rate_unit, cloud_unit, \"EUR\"), COALESCE(cloud_unit, \"EUR\"))\n| EVAL cloud_r = CASE(is_onprem_flag == 0, rate, null), onprem_r = CASE(is_onprem_flag == 1, rate, null)\n| EVAL is_ech = CASE(is_onprem_flag == 0 AND (ess.billing.deployment_type == \"deployment\" OR cloud.provider IN (\"aws\", \"gcp\", \"azure\", \"cloud\")), 1, 0)\n| EVAL is_node_target = CASE(is_onprem_flag == 1 OR is_ech == 1, 1, 0)\n| EVAL is_fresh = CASE(DATE_DIFF(\"hour\", ts, NOW()) <= 72, 1, 0)\n| EVAL ech_id = CASE(is_ech == 1, b_dep_id, null), sls_id = CASE(is_onprem_flag == 0 AND is_ech == 0, b_dep_id, null), onprem_id = CASE(is_onprem_flag == 1, b_dep_id, null), node_target_id = CASE(is_node_target == 1, b_dep_id, null)\n| EVAL fresh_bill_id = CASE(is_fresh == 1, b_dep_id, null), usage_dep_id = CASE(has_usage == 1, b_dep_id, null), fresh_usage_id = CASE(is_fresh == 1 AND has_usage == 1, b_dep_id, null), util_dep_id = CASE(is_node_target == 1 AND has_util == 1, b_dep_id, null), fresh_util_id = CASE(is_fresh == 1 AND is_node_target == 1 AND has_util == 1, b_dep_id, null)\n| STATS\n    total_deps = COUNT_DISTINCT(b_dep_id),\n    fresh_bill_deps = COUNT_DISTINCT(fresh_bill_id),\n    ech_deps = COUNT_DISTINCT(ech_id),\n    sls_deps = COUNT_DISTINCT(sls_id),\n    onprem_deps = COUNT_DISTINCT(onprem_id),\n    node_target_deps = COUNT_DISTINCT(node_target_id),\n    usage_deps = COUNT_DISTINCT(usage_dep_id),\n    fresh_usage_deps = COUNT_DISTINCT(fresh_usage_id),\n    util_deps = COUNT_DISTINCT(util_dep_id),\n    fresh_util_deps = COUNT_DISTINCT(fresh_util_id),\n    total_ecu = ROUND(SUM(total_chargeable_units), 2),\n    total_cost = ROUND(SUM(total_chargeable_units * rate), 2),\n    unit_vals = VALUES(unit),\n    active_cloud_rate = MAX(cloud_r),\n    active_onprem_rate = MAX(onprem_r),\n    latest_ts = MAX(ts)\n| EVAL\n    active_unit = MV_MAX(unit_vals),\n    `Billing Stream` = CASE(total_deps == 0, \"Awaiting poll\", fresh_bill_deps > 0, CONCAT(\"Active (\", TO_STRING(fresh_bill_deps), \" / \", TO_STRING(total_deps), \" fresh)\"), CONCAT(\"Stale (last \", LEFT(TO_STRING(latest_ts), 10), \")\")),\n    `Platform Mix` = CASE(onprem_deps > 0, CONCAT(TO_STRING(ech_deps), \" ECH · \", TO_STRING(sls_deps), \" Serverless · \", TO_STRING(onprem_deps), \" On-Prem\"), CONCAT(TO_STRING(ech_deps), \" ECH · \", TO_STRING(sls_deps), \" Serverless\")),\n    `Usage Stream (/_stats)` = CASE(total_deps == 0, \"Awaiting poll\", fresh_usage_deps > 0, CONCAT(\"Active (\", TO_STRING(fresh_usage_deps), \" / \", TO_STRING(total_deps), \" fresh)\"), usage_deps > 0, CONCAT(\"Stale (\", TO_STRING(usage_deps), \" historical)\"), \"Missing\"),\n    `Node Stats Stream (ECH)` = CASE(node_target_deps == 0, \"N/A (Serverless only)\", fresh_util_deps > 0, CONCAT(\"Active (\", TO_STRING(fresh_util_deps), \" / \", TO_STRING(node_target_deps), \" fresh)\"), util_deps > 0, CONCAT(\"Stale (\", TO_STRING(util_deps), \" historical)\"), \"100% fallback (Missing)\"),\n    `Historical Coverage` = CONCAT(TO_STRING(total_deps), \" billed · \", TO_STRING(usage_deps), \" usage · \", TO_STRING(util_deps), \" node stats\"),\n    `Billing Currency & Rate` = CASE(onprem_deps > 0 AND (ech_deps + sls_deps) > 0, CONCAT(COALESCE(active_unit, \"EUR\"), \" (×\", TO_STRING(ROUND(COALESCE(active_cloud_rate, 0.85), 4)), \"/ECU · ×\", TO_STRING(ROUND(COALESCE(active_onprem_rate, 0.00085) * 1000.0, 4)), \"/ERU)\"), onprem_deps > 0, CONCAT(COALESCE(active_unit, \"EUR\"), \" (×\", TO_STRING(ROUND(COALESCE(active_onprem_rate, 0.00085) * 1000.0, 4)), \"/ERU)\"), CONCAT(COALESCE(active_unit, \"EUR\"), \" (×\", TO_STRING(ROUND(COALESCE(active_cloud_rate, 0.85), 4)), \"/ECU)\")),\n    `Billed ECU` = total_ecu,\n    `Normalized Spend` = total_cost,\n    `Latest Billing Day` = LEFT(TO_STRING(latest_ts), 10)\n| KEEP `Billing Stream`, `Platform Mix`, `Usage Stream (/_stats)`, `Node Stats Stream (ECH)`, `Historical Coverage`, `Billing Currency & Rate`, `Billed ECU`, `Normalized Spend`, `Latest Billing Day`"
                             },
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "Active now",
+                                        "columnId": "Billing Stream",
                                         "isMetric": false,
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "conf_start_date",
+                                        "columnId": "Platform Mix",
                                         "isMetric": false,
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "conf_end_date",
+                                        "columnId": "Usage Stream (/_stats)",
                                         "isMetric": false,
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "Rate unit",
+                                        "columnId": "Node Stats Stream (ECH)",
                                         "isMetric": false,
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "Chargeable unit rate",
+                                        "columnId": "Historical Coverage",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "Billing Currency & Rate",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "Billed ECU",
                                         "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "Normalized Spend",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "Latest Billing Day",
+                                        "isMetric": false,
                                         "isTransposed": false
                                     }
                                 ],
@@ -201,19 +271,19 @@
                                 "layerType": "data"
                             }
                         },
-                        "title": "Configuration values by date window",
+                        "title": "Fleet Data Stream & Collection Coverage Summary",
                         "version": 2,
                         "visualizationType": "lnsDatatable"
                     },
-                    "description": "Consumption unit (ECU or ERU) rates and currency units configured over time",
-                    "title": "Configuration values by date window"
+                    "description": "End-to-end health of Chargeback's three Fleet CEL data streams (Billing, Usage, and Node Stats) across discovered ECH deployments, Serverless projects, and On-Premises clusters.",
+                    "title": "Fleet Data Stream & Collection Coverage Summary"
                 },
                 "gridData": {
-                    "h": 8,
-                    "i": "54ff8784-cfb6-41dc-ad15-50547f49f9e7",
-                    "w": 22,
                     "x": 0,
-                    "y": 19
+                    "y": 2,
+                    "w": 48,
+                    "h": 6,
+                    "i": "54ff8784-cfb6-41dc-ad15-50547f49f9e7"
                 },
                 "panelIndex": "54ff8784-cfb6-41dc-ad15-50547f49f9e7",
                 "type": "lens"
@@ -221,19 +291,21 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "The three weights that determine how indexing, querying, and storage activity are blended into a single cost figure per tier or data stream. Indexing weight only applies to the hot/content tier. Adjust these to reflect your organisation's relative value of each workload type.",
+                        "description": "Discovered ECH deployments, Serverless projects, and On-Premises clusters with live status for billing, hourly index/tier usage (/_stats and /_settings), and 15m data-node JVM/disk utilization.",
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9": {
+                                "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f": {
                                     "allowHidden": false,
                                     "allowNoIndex": false,
                                     "fieldFormats": {},
-                                    "id": "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9",
-                                    "name": "chargeback_conf_lookup",
+                                    "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                    "managed": false,
+                                    "name": "chargeback_lookup.billing_cluster_cost",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
-                                    "title": "chargeback_conf_lookup",
+                                    "timeFieldName": "@timestamp",
+                                    "title": "chargeback_lookup.billing_cluster_cost",
                                     "type": "esql"
                                 }
                             },
@@ -241,108 +313,136 @@
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9",
-                                            "title": "chargeback_conf_lookup"
+                                            "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "timeField": "@timestamp",
+                                            "title": "chargeback_lookup.billing_cluster_cost"
                                         }
                                     ],
                                     "layers": {
                                         "005d9023-92e0-4783-a349-4a2e05b0bce4": {
                                             "columns": [
                                                 {
-                                                    "columnId": "conf_start_date",
+                                                    "columnId": "Deployment",
                                                     "customLabel": false,
-                                                    "fieldName": "conf_start_date",
-                                                    "label": "Date from",
+                                                    "fieldName": "Deployment",
+                                                    "label": "Deployment",
                                                     "meta": {
-                                                        "esType": "date",
-                                                        "type": "date"
+                                                        "esType": "keyword",
+                                                        "type": "string"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "conf_end_date",
+                                                    "columnId": "Platform",
                                                     "customLabel": false,
-                                                    "fieldName": "conf_end_date",
-                                                    "label": "Date to",
+                                                    "fieldName": "Platform",
+                                                    "label": "Platform",
                                                     "meta": {
-                                                        "esType": "date",
-                                                        "type": "date"
+                                                        "esType": "keyword",
+                                                        "type": "string"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "conf_indexing_weight",
+                                                    "columnId": "Region",
                                                     "customLabel": false,
-                                                    "fieldName": "conf_indexing_weight",
-                                                    "label": "Indexing weight",
+                                                    "fieldName": "Region",
+                                                    "label": "Region",
                                                     "meta": {
-                                                        "esType": "long",
-                                                        "type": "number"
+                                                        "esType": "keyword",
+                                                        "type": "string"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "conf_query_weight",
+                                                    "columnId": "Chargeback Group",
                                                     "customLabel": false,
-                                                    "fieldName": "conf_query_weight",
-                                                    "label": "Query weight",
+                                                    "fieldName": "Chargeback Group",
+                                                    "label": "Chargeback Group",
                                                     "meta": {
-                                                        "esType": "long",
-                                                        "type": "number"
+                                                        "esType": "keyword",
+                                                        "type": "string"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "conf_storage_weight",
+                                                    "columnId": "Billing Stream",
                                                     "customLabel": false,
-                                                    "fieldName": "conf_storage_weight",
-                                                    "label": "Storage weight",
+                                                    "fieldName": "Billing Stream",
+                                                    "label": "Billing Stream",
                                                     "meta": {
-                                                        "esType": "long",
-                                                        "type": "number"
+                                                        "esType": "keyword",
+                                                        "type": "string"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "conf_utilization_memory_weight",
+                                                    "columnId": "Usage Stream (/_stats)",
                                                     "customLabel": false,
-                                                    "fieldName": "conf_utilization_memory_weight",
-                                                    "label": "Utilization memory %",
+                                                    "fieldName": "Usage Stream (/_stats)",
+                                                    "label": "Usage Stream (/_stats)",
                                                     "meta": {
-                                                        "esType": "long",
-                                                        "type": "number"
+                                                        "esType": "keyword",
+                                                        "type": "string"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "conf_utilization_storage_weight",
+                                                    "columnId": "Node Stats Stream (JVM/Disk)",
                                                     "customLabel": false,
-                                                    "fieldName": "conf_utilization_storage_weight",
-                                                    "label": "Utilization storage %",
+                                                    "fieldName": "Node Stats Stream (JVM/Disk)",
+                                                    "label": "Node Stats Stream (JVM/Disk)",
                                                     "meta": {
-                                                        "esType": "long",
-                                                        "type": "number"
+                                                        "esType": "keyword",
+                                                        "type": "string"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "conf_memory_cost_weight",
+                                                    "columnId": "Coverage Days (Bill / Usage / Util)",
                                                     "customLabel": false,
-                                                    "fieldName": "conf_memory_cost_weight",
-                                                    "label": "Memory cost weight",
+                                                    "fieldName": "Coverage Days (Bill / Usage / Util)",
+                                                    "label": "Coverage Days (Bill / Usage / Util)",
                                                     "meta": {
-                                                        "esType": "long",
-                                                        "type": "number"
+                                                        "esType": "keyword",
+                                                        "type": "string"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "conf_storage_cost_weight",
+                                                    "columnId": "Billed ECU",
                                                     "customLabel": false,
-                                                    "fieldName": "conf_storage_cost_weight",
-                                                    "label": "Storage cost weight",
+                                                    "fieldName": "Billed ECU",
+                                                    "label": "Billed ECU",
                                                     "meta": {
-                                                        "esType": "long",
-                                                        "type": "number"
+                                                        "esType": "double",
+                                                        "type": "number",
+                                                        "params": {
+                                                            "id": "number"
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Normalized Cost",
+                                                    "customLabel": false,
+                                                    "fieldName": "Normalized Cost",
+                                                    "label": "Normalized Cost",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number",
+                                                        "params": {
+                                                            "id": "number"
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Latest Billing Day",
+                                                    "customLabel": false,
+                                                    "fieldName": "Latest Billing Day",
+                                                    "label": "Latest Billing Day",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
                                                     }
                                                 }
                                             ],
-                                            "index": "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9",
+                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM chargeback_conf_lookup\n| KEEP conf_start_date, conf_end_date, conf_indexing_weight, conf_query_weight, conf_storage_weight, conf_utilization_memory_weight, conf_utilization_storage_weight, conf_memory_cost_weight, conf_storage_cost_weight\n| SORT conf_start_date DESC\n| LIMIT 20"
-                                            }
+                                                "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE @timestamp IS NOT NULL AND deployment_id IS NOT NULL\n| EVAL ts = @timestamp, ck = composite_key::keyword, b_dep_id = deployment_id, b_dep_name = deployment_name\n| DROP composite_key\n| LOOKUP JOIN chargeback_lookup.cluster_deployment_contribution ON ck == composite_key\n| EVAL store_gib = TO_DOUBLE(deployment_sum_store_size) / 1073741824.0\n| EVAL u_day = CASE(deployment_sum_store_size IS NOT NULL, ts, null)\n| DROP composite_key, deployment_id, @timestamp\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON ck == composite_key\n| EVAL n_day = CASE(heap_used_pct_p95 IS NOT NULL, ts, null)\n| DROP composite_key, deployment_id, @timestamp\n| EVAL is_onprem_flag = CASE(COALESCE(is_onprem, ess.billing.deployment_type IN (\"onprem\", \"ece\", \"eck\") OR cloud.provider == \"onprem\", false), 1, 0), cloud_cfg_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON cloud_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL cloud_rate = conf_chargeable_unit_rate\n| DROP cloud_cfg_key, config_join_key, conf_start_date, conf_end_date, conf_chargeable_unit_rate\n| EVAL onprem_cfg_key = CASE(is_onprem_flag == 1, \"chargeback_config_onprem\", null)\n| LOOKUP JOIN chargeback_conf_lookup ON onprem_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL rate = CASE(is_onprem_flag == 1, COALESCE(conf_chargeable_unit_rate, 0.00085), COALESCE(cloud_rate, 0.85))\n| EVAL is_ech = CASE(is_onprem_flag == 0 AND (ess.billing.deployment_type == \"deployment\" OR cloud.provider IN (\"aws\", \"gcp\", \"azure\", \"cloud\")), 1, 0)\n| EVAL grp = CASE(deployment_group IS NOT NULL AND deployment_group != \"\", deployment_group, \"(unassigned)\")\n| EVAL reg = CASE(cloud.region IS NOT NULL AND cloud.region != \"\" AND cloud.region != \"unknown\", cloud.region, null)\n| STATS\n    dep_names = VALUES(b_dep_name),\n    has_onprem = MAX(is_onprem_flag),\n    has_ech = MAX(is_ech),\n    reg_vals = VALUES(reg),\n    grp_vals = VALUES(grp),\n    billed_days = COUNT_DISTINCT(ts),\n    last_bill_ts = MAX(ts),\n    usage_days = COUNT_DISTINCT(u_day),\n    last_usage_ts = MAX(u_day),\n    max_store_gib = MAX(store_gib),\n    util_days = COUNT_DISTINCT(n_day),\n    last_util_ts = MAX(n_day),\n    avg_heap = AVG(heap_used_pct_p95),\n    avg_disk = AVG(disk_used_pct_p95),\n    `Billed ECU` = ROUND(SUM(total_chargeable_units), 2),\n    `Normalized Cost` = ROUND(SUM(total_chargeable_units * rate), 2)\n  BY b_dep_id\n| EVAL\n    dep_name = MV_MAX(dep_names),\n    `Region` = COALESCE(MV_MAX(reg_vals), \"—\"),\n    `Chargeback Group` = COALESCE(MV_MAX(grp_vals), \"(unassigned)\"),\n    `Platform` = CASE(has_onprem == 1, \"On-Premises\", has_ech == 1, \"ECH\", \"Serverless\"),\n    bill_age_h = DATE_DIFF(\"hour\", last_bill_ts, NOW()),\n    usage_age_h = DATE_DIFF(\"hour\", last_usage_ts, NOW()),\n    util_age_h = DATE_DIFF(\"hour\", last_util_ts, NOW()),\n    `Deployment` = CONCAT(COALESCE(dep_name, b_dep_id), \" (\", LEFT(b_dep_id, 6), \")\"),\n    `Billing Stream` = CASE(last_bill_ts IS NULL, \"Missing\", bill_age_h <= 72, \"Active\", CONCAT(\"Stale (last \", LEFT(TO_STRING(last_bill_ts), 10), \")\")),\n    `Usage Stream (/_stats)` = CASE(last_usage_ts IS NULL, \"Missing (Needs ES API key)\", usage_age_h <= 72, CONCAT(\"Active · \", TO_STRING(ROUND(COALESCE(max_store_gib, 0.0), 2)), \" GiB\"), CONCAT(\"Stale (last \", LEFT(TO_STRING(last_usage_ts), 10), \")\")),\n    `Node Stats Stream (JVM/Disk)` = CASE(`Platform` == \"Serverless\", \"N/A (Serverless)\", last_util_ts IS NULL, \"100% fallback (Missing)\", util_age_h <= 72, CONCAT(\"Active · Heap \", TO_STRING(ROUND(COALESCE(avg_heap, 0.0), 1)), \"% / Disk \", TO_STRING(ROUND(COALESCE(avg_disk, 0.0), 1)), \"%\"), CONCAT(\"Stale (last \", LEFT(TO_STRING(last_util_ts), 10), \")\")),\n    `Coverage Days (Bill / Usage / Util)` = CONCAT(TO_STRING(billed_days), \"d / \", TO_STRING(usage_days), \"d / \", CASE(`Platform` == \"Serverless\", \"—\", CONCAT(TO_STRING(util_days), \"d\"))),\n    `Latest Billing Day` = LEFT(TO_STRING(last_bill_ts), 10)\n| SORT `Normalized Cost` DESC, `Deployment` ASC\n| KEEP `Deployment`, `Platform`, `Region`, `Chargeback Group`, `Billing Stream`, `Usage Stream (/_stats)`, `Node Stats Stream (JVM/Disk)`, `Coverage Days (Bill / Usage / Util)`, `Billed ECU`, `Normalized Cost`, `Latest Billing Day`\n| LIMIT 200"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -350,509 +450,85 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM chargeback_conf_lookup\n| KEEP conf_start_date, conf_end_date, conf_indexing_weight, conf_query_weight, conf_storage_weight, conf_utilization_memory_weight, conf_utilization_storage_weight, conf_memory_cost_weight, conf_storage_cost_weight\n| SORT conf_start_date DESC\n| LIMIT 20"
+                                "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE @timestamp IS NOT NULL AND deployment_id IS NOT NULL\n| EVAL ts = @timestamp, ck = composite_key::keyword, b_dep_id = deployment_id, b_dep_name = deployment_name\n| DROP composite_key\n| LOOKUP JOIN chargeback_lookup.cluster_deployment_contribution ON ck == composite_key\n| EVAL store_gib = TO_DOUBLE(deployment_sum_store_size) / 1073741824.0\n| EVAL u_day = CASE(deployment_sum_store_size IS NOT NULL, ts, null)\n| DROP composite_key, deployment_id, @timestamp\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON ck == composite_key\n| EVAL n_day = CASE(heap_used_pct_p95 IS NOT NULL, ts, null)\n| DROP composite_key, deployment_id, @timestamp\n| EVAL is_onprem_flag = CASE(COALESCE(is_onprem, ess.billing.deployment_type IN (\"onprem\", \"ece\", \"eck\") OR cloud.provider == \"onprem\", false), 1, 0), cloud_cfg_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON cloud_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL cloud_rate = conf_chargeable_unit_rate\n| DROP cloud_cfg_key, config_join_key, conf_start_date, conf_end_date, conf_chargeable_unit_rate\n| EVAL onprem_cfg_key = CASE(is_onprem_flag == 1, \"chargeback_config_onprem\", null)\n| LOOKUP JOIN chargeback_conf_lookup ON onprem_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL rate = CASE(is_onprem_flag == 1, COALESCE(conf_chargeable_unit_rate, 0.00085), COALESCE(cloud_rate, 0.85))\n| EVAL is_ech = CASE(is_onprem_flag == 0 AND (ess.billing.deployment_type == \"deployment\" OR cloud.provider IN (\"aws\", \"gcp\", \"azure\", \"cloud\")), 1, 0)\n| EVAL grp = CASE(deployment_group IS NOT NULL AND deployment_group != \"\", deployment_group, \"(unassigned)\")\n| EVAL reg = CASE(cloud.region IS NOT NULL AND cloud.region != \"\" AND cloud.region != \"unknown\", cloud.region, null)\n| STATS\n    dep_names = VALUES(b_dep_name),\n    has_onprem = MAX(is_onprem_flag),\n    has_ech = MAX(is_ech),\n    reg_vals = VALUES(reg),\n    grp_vals = VALUES(grp),\n    billed_days = COUNT_DISTINCT(ts),\n    last_bill_ts = MAX(ts),\n    usage_days = COUNT_DISTINCT(u_day),\n    last_usage_ts = MAX(u_day),\n    max_store_gib = MAX(store_gib),\n    util_days = COUNT_DISTINCT(n_day),\n    last_util_ts = MAX(n_day),\n    avg_heap = AVG(heap_used_pct_p95),\n    avg_disk = AVG(disk_used_pct_p95),\n    `Billed ECU` = ROUND(SUM(total_chargeable_units), 2),\n    `Normalized Cost` = ROUND(SUM(total_chargeable_units * rate), 2)\n  BY b_dep_id\n| EVAL\n    dep_name = MV_MAX(dep_names),\n    `Region` = COALESCE(MV_MAX(reg_vals), \"—\"),\n    `Chargeback Group` = COALESCE(MV_MAX(grp_vals), \"(unassigned)\"),\n    `Platform` = CASE(has_onprem == 1, \"On-Premises\", has_ech == 1, \"ECH\", \"Serverless\"),\n    bill_age_h = DATE_DIFF(\"hour\", last_bill_ts, NOW()),\n    usage_age_h = DATE_DIFF(\"hour\", last_usage_ts, NOW()),\n    util_age_h = DATE_DIFF(\"hour\", last_util_ts, NOW()),\n    `Deployment` = CONCAT(COALESCE(dep_name, b_dep_id), \" (\", LEFT(b_dep_id, 6), \")\"),\n    `Billing Stream` = CASE(last_bill_ts IS NULL, \"Missing\", bill_age_h <= 72, \"Active\", CONCAT(\"Stale (last \", LEFT(TO_STRING(last_bill_ts), 10), \")\")),\n    `Usage Stream (/_stats)` = CASE(last_usage_ts IS NULL, \"Missing (Needs ES API key)\", usage_age_h <= 72, CONCAT(\"Active · \", TO_STRING(ROUND(COALESCE(max_store_gib, 0.0), 2)), \" GiB\"), CONCAT(\"Stale (last \", LEFT(TO_STRING(last_usage_ts), 10), \")\")),\n    `Node Stats Stream (JVM/Disk)` = CASE(`Platform` == \"Serverless\", \"N/A (Serverless)\", last_util_ts IS NULL, \"100% fallback (Missing)\", util_age_h <= 72, CONCAT(\"Active · Heap \", TO_STRING(ROUND(COALESCE(avg_heap, 0.0), 1)), \"% / Disk \", TO_STRING(ROUND(COALESCE(avg_disk, 0.0), 1)), \"%\"), CONCAT(\"Stale (last \", LEFT(TO_STRING(last_util_ts), 10), \")\")),\n    `Coverage Days (Bill / Usage / Util)` = CONCAT(TO_STRING(billed_days), \"d / \", TO_STRING(usage_days), \"d / \", CASE(`Platform` == \"Serverless\", \"—\", CONCAT(TO_STRING(util_days), \"d\"))),\n    `Latest Billing Day` = LEFT(TO_STRING(last_bill_ts), 10)\n| SORT `Normalized Cost` DESC, `Deployment` ASC\n| KEEP `Deployment`, `Platform`, `Region`, `Chargeback Group`, `Billing Stream`, `Usage Stream (/_stats)`, `Node Stats Stream (JVM/Disk)`, `Coverage Days (Bill / Usage / Util)`, `Billed ECU`, `Normalized Cost`, `Latest Billing Day`\n| LIMIT 200"
                             },
                             "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": false,
-                                    "yRight": true
-                                },
                                 "columns": [
                                     {
-                                        "columnId": "conf_start_date",
+                                        "columnId": "Deployment",
                                         "isMetric": false,
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "conf_end_date",
+                                        "columnId": "Platform",
                                         "isMetric": false,
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "conf_indexing_weight",
+                                        "columnId": "Region",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "Chargeback Group",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "Billing Stream",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "Usage Stream (/_stats)",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "Node Stats Stream (JVM/Disk)",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "Coverage Days (Bill / Usage / Util)",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "Billed ECU",
                                         "isMetric": true,
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "conf_query_weight",
+                                        "columnId": "Normalized Cost",
                                         "isMetric": true,
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "conf_storage_weight",
-                                        "isMetric": true,
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "conf_utilization_memory_weight",
-                                        "isMetric": true,
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "conf_utilization_storage_weight",
-                                        "isMetric": true,
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "conf_memory_cost_weight",
-                                        "isMetric": true,
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "conf_storage_cost_weight",
-                                        "isMetric": true,
+                                        "columnId": "Latest Billing Day",
+                                        "isMetric": false,
                                         "isTransposed": false
                                     }
                                 ],
-                                "fittingFunction": "Linear",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "conf_indexing_weight",
-                                            "conf_query_weight",
-                                            "conf_storage_weight"
-                                        ],
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "eui_amsterdam_color_blind",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rules": [
-                                                        {
-                                                            "type": "other"
-                                                        }
-                                                    ],
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
-                                        "layerId": "005d9023-92e0-4783-a349-4a2e05b0bce4",
-                                        "layerType": "data",
-                                        "seriesType": "bar_percentage_stacked"
-                                    }
-                                ],
-                                "legend": {
-                                    "horizontalAlignment": "right",
-                                    "isInside": true,
-                                    "isVisible": false,
-                                    "position": "right",
-                                    "showSingleSeries": false,
-                                    "verticalAlignment": "bottom"
-                                },
-                                "preferredSeriesType": "bar_stacked",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide"
+                                "layerId": "005d9023-92e0-4783-a349-4a2e05b0bce4",
+                                "layerType": "data"
                             }
                         },
-                        "title": "Blended cost weights",
+                        "title": "Per-Deployment Harvest & Telemetry Registry",
                         "version": 2,
-                        "visualizationType": "lnsXY"
+                        "visualizationType": "lnsDatatable"
                     },
-                    "title": "Blended cost weights"
+                    "description": "Discovered ECH deployments, Serverless projects, and On-Premises clusters with live status for billing, 10-minute index/tier usage (/_stats and /_settings), and 15m data-node JVM/disk utilization.",
+                    "title": "Per-Deployment Harvest & Telemetry Registry"
                 },
                 "gridData": {
-                    "h": 8,
-                    "i": "a3a091e7-6bff-4edf-bc65-993e8a3648de",
-                    "w": 8,
-                    "x": 22,
-                    "y": 19
+                    "x": 0,
+                    "y": 8,
+                    "w": 48,
+                    "h": 14,
+                    "i": "a3a091e7-6bff-4edf-bc65-993e8a3648de"
                 },
                 "panelIndex": "a3a091e7-6bff-4edf-bc65-993e8a3648de",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "Memory (heap p95) versus disk (disk p95) weight in the utilization score. Default 70 / 30 reflects that Elasticsearch is primarily memory-bound \u2014 heap exhaustion is the main failure mode. The floor (conf_utilization_floor, default 0.10) prevents realized cost reaching zero for idle or unmonitored clusters; it is set in the config table.",
-                        "references": [],
-                        "state": {
-                            "adHocDataViews": {
-                                "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9": {
-                                    "allowHidden": false,
-                                    "allowNoIndex": false,
-                                    "fieldFormats": {},
-                                    "id": "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9",
-                                    "name": "chargeback_conf_lookup",
-                                    "runtimeFieldMap": {},
-                                    "sourceFilters": [],
-                                    "title": "chargeback_conf_lookup",
-                                    "type": "esql"
-                                }
-                            },
-                            "datasourceStates": {
-                                "textBased": {
-                                    "indexPatternRefs": [
-                                        {
-                                            "id": "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9",
-                                            "title": "chargeback_conf_lookup"
-                                        }
-                                    ],
-                                    "layers": {
-                                        "b4e9eaa5-13f8-616d-a8d4-5ed62e3b2b8e": {
-                                            "columns": [
-                                                {
-                                                    "columnId": "conf_start_date",
-                                                    "customLabel": false,
-                                                    "fieldName": "conf_start_date",
-                                                    "label": "Date from",
-                                                    "meta": {
-                                                        "esType": "date",
-                                                        "type": "date"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "conf_end_date",
-                                                    "customLabel": false,
-                                                    "fieldName": "conf_end_date",
-                                                    "label": "Date to",
-                                                    "meta": {
-                                                        "esType": "date",
-                                                        "type": "date"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "conf_utilization_memory_weight",
-                                                    "customLabel": true,
-                                                    "fieldName": "conf_utilization_memory_weight",
-                                                    "label": "Memory (heap) weight",
-                                                    "meta": {
-                                                        "esType": "long",
-                                                        "type": "number"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "conf_utilization_storage_weight",
-                                                    "customLabel": true,
-                                                    "fieldName": "conf_utilization_storage_weight",
-                                                    "label": "Disk weight",
-                                                    "meta": {
-                                                        "esType": "long",
-                                                        "type": "number"
-                                                    }
-                                                }
-                                            ],
-                                            "index": "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9",
-                                            "query": {
-                                                "esql": "FROM chargeback_conf_lookup\n| KEEP conf_start_date, conf_end_date, conf_utilization_memory_weight, conf_utilization_storage_weight\n| SORT conf_start_date DESC\n| LIMIT 20"
-                                            }
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "needsRefresh": false,
-                            "query": {
-                                "esql": "FROM chargeback_conf_lookup\n| KEEP conf_start_date, conf_end_date, conf_indexing_weight, conf_query_weight, conf_storage_weight, conf_utilization_memory_weight, conf_utilization_storage_weight, conf_memory_cost_weight, conf_storage_cost_weight\n| SORT conf_start_date DESC\n| LIMIT 20"
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": false,
-                                    "yRight": true
-                                },
-                                "columns": [
-                                    {
-                                        "columnId": "conf_start_date",
-                                        "isMetric": false,
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "conf_end_date",
-                                        "isMetric": false,
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "conf_utilization_memory_weight",
-                                        "isMetric": true,
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "conf_utilization_storage_weight",
-                                        "isMetric": true,
-                                        "isTransposed": false
-                                    }
-                                ],
-                                "fittingFunction": "Linear",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "conf_utilization_memory_weight",
-                                            "conf_utilization_storage_weight"
-                                        ],
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "eui_amsterdam_color_blind",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rules": [
-                                                        {
-                                                            "type": "other"
-                                                        }
-                                                    ],
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
-                                        "layerId": "b4e9eaa5-13f8-616d-a8d4-5ed62e3b2b8e",
-                                        "layerType": "data",
-                                        "seriesType": "bar_percentage_stacked"
-                                    }
-                                ],
-                                "legend": {
-                                    "horizontalAlignment": "right",
-                                    "isInside": true,
-                                    "isVisible": false,
-                                    "position": "right",
-                                    "showSingleSeries": false,
-                                    "verticalAlignment": "bottom"
-                                },
-                                "preferredSeriesType": "bar_stacked",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide"
-                            }
-                        },
-                        "title": "Utilization score weights",
-                        "version": 2,
-                        "visualizationType": "lnsXY"
-                    },
-                    "title": "Utilization score weights"
-                },
-                "gridData": {
-                    "h": 8,
-                    "i": "13a38bed-2251-a75c-c496-d8be3b4c94b0",
-                    "w": 9,
-                    "x": 30,
-                    "y": 19
-                },
-                "panelIndex": "13a38bed-2251-a75c-c496-d8be3b4c94b0",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "Illustrative split of the chargeable pool (realized cost) between memory and storage contributions shown in the Data Tiers dashboard. Default 50 / 50. This does not affect the total chargeback amount \u2014 it only controls how the pool is visually decomposed between the two resource dimensions.",
-                        "references": [],
-                        "state": {
-                            "adHocDataViews": {
-                                "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9": {
-                                    "allowHidden": false,
-                                    "allowNoIndex": false,
-                                    "fieldFormats": {},
-                                    "id": "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9",
-                                    "name": "chargeback_conf_lookup",
-                                    "runtimeFieldMap": {},
-                                    "sourceFilters": [],
-                                    "title": "chargeback_conf_lookup",
-                                    "type": "esql"
-                                }
-                            },
-                            "datasourceStates": {
-                                "textBased": {
-                                    "indexPatternRefs": [
-                                        {
-                                            "id": "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9",
-                                            "title": "chargeback_conf_lookup"
-                                        }
-                                    ],
-                                    "layers": {
-                                        "7cbe76ed-5470-b2fe-261b-451262de4f47": {
-                                            "columns": [
-                                                {
-                                                    "columnId": "conf_start_date",
-                                                    "customLabel": false,
-                                                    "fieldName": "conf_start_date",
-                                                    "label": "Date from",
-                                                    "meta": {
-                                                        "esType": "date",
-                                                        "type": "date"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "conf_end_date",
-                                                    "customLabel": false,
-                                                    "fieldName": "conf_end_date",
-                                                    "label": "Date to",
-                                                    "meta": {
-                                                        "esType": "date",
-                                                        "type": "date"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "conf_memory_cost_weight",
-                                                    "customLabel": true,
-                                                    "fieldName": "conf_memory_cost_weight",
-                                                    "label": "Memory weight",
-                                                    "meta": {
-                                                        "esType": "long",
-                                                        "type": "number"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "conf_storage_cost_weight",
-                                                    "customLabel": true,
-                                                    "fieldName": "conf_storage_cost_weight",
-                                                    "label": "Storage weight",
-                                                    "meta": {
-                                                        "esType": "long",
-                                                        "type": "number"
-                                                    }
-                                                }
-                                            ],
-                                            "index": "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9",
-                                            "query": {
-                                                "esql": "FROM chargeback_conf_lookup\n| KEEP conf_start_date, conf_end_date, conf_memory_cost_weight, conf_storage_cost_weight\n| SORT conf_start_date DESC\n| LIMIT 20"
-                                            }
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "needsRefresh": false,
-                            "query": {
-                                "esql": "FROM chargeback_conf_lookup\n| KEEP conf_start_date, conf_end_date, conf_indexing_weight, conf_query_weight, conf_storage_weight, conf_utilization_memory_weight, conf_utilization_storage_weight, conf_memory_cost_weight, conf_storage_cost_weight\n| SORT conf_start_date DESC\n| LIMIT 20"
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": false,
-                                    "yRight": true
-                                },
-                                "columns": [
-                                    {
-                                        "columnId": "conf_start_date",
-                                        "isMetric": false,
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "conf_end_date",
-                                        "isMetric": false,
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "conf_memory_cost_weight",
-                                        "isMetric": true,
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "conf_storage_cost_weight",
-                                        "isMetric": true,
-                                        "isTransposed": false
-                                    }
-                                ],
-                                "fittingFunction": "Linear",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "conf_memory_cost_weight",
-                                            "conf_storage_cost_weight"
-                                        ],
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "eui_amsterdam_color_blind",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rules": [
-                                                        {
-                                                            "type": "other"
-                                                        }
-                                                    ],
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
-                                        "layerId": "7cbe76ed-5470-b2fe-261b-451262de4f47",
-                                        "layerType": "data",
-                                        "seriesType": "bar_percentage_stacked"
-                                    }
-                                ],
-                                "legend": {
-                                    "horizontalAlignment": "right",
-                                    "isInside": true,
-                                    "isVisible": false,
-                                    "position": "right",
-                                    "showSingleSeries": false,
-                                    "verticalAlignment": "bottom"
-                                },
-                                "preferredSeriesType": "bar_stacked",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide"
-                            }
-                        },
-                        "title": "Memory / storage cost split",
-                        "version": 2,
-                        "visualizationType": "lnsXY"
-                    },
-                    "title": "Memory / storage cost split"
-                },
-                "gridData": {
-                    "h": 8,
-                    "i": "b2b23b6d-1700-6c26-5349-a3f8201f9b83",
-                    "w": 9,
-                    "x": 39,
-                    "y": 19
-                },
-                "panelIndex": "b2b23b6d-1700-6c26-5349-a3f8201f9b83",
                 "type": "lens"
             },
             {
@@ -877,7 +553,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "## Normalized cost\nNormalized cost is calculated as consumption units (ECU - Elastic Consumption Units. or ERU - Elastic Resource Units, depending on your billing source) multiplied by the conversion rate (`conf_chargeable_unit_rate`) from the `chargeback_conf_lookup` index, where the rate is selected based on the time window being queried. This allows you to convert raw consumption (ECU or ERU) into your preferred currency (e.g., EUR, USD) and apply different rates for different time periods. You can adjust this by updating the lookup index with period-specific rates.",
+                            "markdown": "### Step 1 — Elastic Cloud & Cluster Access\nConfigure shared credentials in **Kibana → Fleet → Agent Policies → Chargeback → Elastic Cloud & Cluster Access**:\n\n- **`Organization ID` & `Elastic Cloud API Key`** (`organization_id`, `cloud_api_key`): Elastic Cloud API key with **Billing Admin** role and Cloud deployment / Serverless project read access. Leave empty for On-Premises / local Hub-only collection alongside **On-Premises Billing** (`metrics-ess_billing.billing-onprem*`) or a compatible billing producer.\n- **`Target Deployment Elasticsearch API Keys`** (`deployment_api_keys`): Optional least-privileged ES API keys (`<deployment_id_or_name>:<encoded_key>`) for direct collection from remote ECH clusters or Serverless projects.\n- **`Local / Hub Elasticsearch URL` & `Local / Hub Elasticsearch API Key`** (`hub_es_url`, `hub_es_api_key`): Optional direct endpoint and key for harvesting the local or self-managed Hub cluster. (Cross-Cluster Search remains supported via `*:monitoring-indices*`.)\n- **Deployment grouping**: Tag deployments in Cloud Console with `chargeback_group:<team_name>` to group spend by tenant.",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -886,11 +562,11 @@
                     }
                 },
                 "gridData": {
-                    "h": 17,
-                    "i": "487c387c-8c34-4dbe-95bc-74b4f439b440",
-                    "w": 10,
                     "x": 0,
-                    "y": 2
+                    "y": 22,
+                    "w": 16,
+                    "h": 14,
+                    "i": "487c387c-8c34-4dbe-95bc-74b4f439b440"
                 },
                 "panelIndex": "487c387c-8c34-4dbe-95bc-74b4f439b440",
                 "type": "visualization"
@@ -917,7 +593,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "## Configuration date span\nThe `chargeback_conf_lookup` index supports time-windowed configuration using `conf_start_date` and `conf_end_date` fields, allowing you to set different consumption unit (ECU or ERU) rates and weights for specific time periods. Create multiple configuration documents with different date ranges (e.g., Q1 rates versus Q2 rates) and the dashboard will apply the appropriate configuration based on the query time window. This enables historical cost analysis with period-accurate pricing and weight adjustments.",
+                            "markdown": "### Step 2 — Per-Data-Stream UI Settings\nCurrency rates, optional credit commitments, and cost/utilization weights are managed inside each data stream's UI config in **Fleet**:\n\n- **Elastic Cloud Daily Billing & Rate Settings (`chargeback.billing`)**: `Billing Lookbehind Days`, `Currency Unit` (for example `EUR`, `USD`), `Chargeable Unit Rate` (Elastic Cloud ECU, default `0.85`), `On-Premises Unit Rate (per mERU)` (default `0.00085`), `Configuration Effective Start Date (Optional)` (`config_effective_from`, UTC day boundary `YYYY-MM-DD` or `YYYY-MM-DDT00:00:00Z`), and `Collect ESS Credit Commitment Data (for stock ESS Billing Credits dashboard)`.\n- **Index & Tier Usage (`chargeback.usage`)**: `Blended Indexing Weight`, `Blended Query Weight`, and `Blended Storage Weight`.\n- **Elastic Cloud Data Node Utilization (15m) (`chargeback.node_stats`)**: `Utilization Memory (Heap p95) Weight`, `Utilization Storage (Disk p95) Weight`, and `Utilization Floor`.\n- **Manual / multi-period preservation**: Disable `Sync Fleet Rate & Weight Settings to Configuration Lookup` (`sync_fleet_config`) when managing custom or historical rate periods manually in `chargeback_conf_lookup` (use `POST chargeback_conf_lookup/_update/config` for Cloud ECU rates and `POST chargeback_conf_lookup/_update/config_onprem` with `\"config_join_key\": \"chargeback_config_onprem\"` for On-Premises mERU rates).",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -926,11 +602,11 @@
                     }
                 },
                 "gridData": {
-                    "h": 17,
-                    "i": "a38d4856-66c6-4eed-ada3-37e14ecf5b3b",
-                    "w": 10,
-                    "x": 10,
-                    "y": 2
+                    "x": 16,
+                    "y": 22,
+                    "w": 16,
+                    "h": 14,
+                    "i": "a38d4856-66c6-4eed-ada3-37e14ecf5b3b"
                 },
                 "panelIndex": "a38d4856-66c6-4eed-ada3-37e14ecf5b3b",
                 "type": "visualization"
@@ -957,7 +633,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "## Deployment group extraction\n\nThe chargeback integration extracts `deployment_group` from ESS Billing integration deployment tags (requires ESS Billing integration v1.7.0+) using runtime mappings that scan for tags matching the pattern `chargeback_group:<group_name>`. Set tags on your deployments via the Elasticsearch Service Console (cloud.elastic.co \u2192 deployment settings \u2192 add tag `chargeback_group:your_team_name`) or the ESS API. Deployments without the tag will have `deployment_group: \"\"` and still work, just without tag-based grouping.",
+                            "markdown": "### Step 3 — Automatic Transforms & Compatibility Aliases\nChargeback runs self-contained collection and continuous transforms automatically (`5m` configuration sync and `60m` billing, usage, and utilization rollups):\n\n- **Lookup sync**: Saving changes in the Fleet Data Stream UI (and daily snapshot renewal) emits a lightweight `config_snapshot` event and updates `chargeback_conf_lookup` (`_id: config` for Elastic Cloud ECU and `_id: config_onprem` for On-Premises mERU) without re-emitting billing line items.\n- **Freshness vs. coverage**: Stream status reflects telemetry received within the last 72 hours (`Active` vs. `Stale`), while historical coverage counts are reported separately.\n- **Stock dashboard compatibility** *(opt-in)*: Chargeback writes to versioned aliases `chargeback_lookup.billing_cluster_cost`, `chargeback_lookup.billing_realized_pool`, `chargeback_lookup.cluster_tier_and_datastream_contribution`, and `metrics-chargeback.usage-*` (`10m` per-index samples) without colliding with `ess_billing` or `index_pivot`. Standalone clusters can expose `metrics-ess_billing.billing-chargeback`, `metrics-ess_billing.credits-chargeback`, and `monitoring-indices` via `POST /_aliases` (see package documentation).",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -966,57 +642,17 @@
                     }
                 },
                 "gridData": {
-                    "h": 17,
-                    "i": "91546cb3-d62f-44f3-a3de-3de172e6ddc5",
-                    "w": 10,
-                    "x": 20,
-                    "y": 2
-                },
-                "panelIndex": "91546cb3-d62f-44f3-a3de-3de172e6ddc5",
-                "type": "visualization"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "savedVis": {
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "id": "",
-                        "params": {
-                            "fontSize": 12,
-                            "markdown": "## Configuration field guide\n\nThese values are read from `chargeback_conf_lookup` and are applied by date window (`conf_start_date` \u2192 `conf_end_date`). The active row appears first in the tables.\n\n- **`Chargeable unit rate`**: conversion from ECU/ERU units into currency.\n- **`Rate unit`**: currency unit for the conversion rate (for example EUR or USD).\n- **`conf_indexing_weight`**: blended-cost weight for indexing activity.\n- **`conf_query_weight`**: blended-cost weight for query activity.\n- **`conf_storage_weight`**: blended-cost weight for storage activity.\n- **`conf_utilization_memory_weight`**: memory importance when calculating utilization score.\n- **`conf_utilization_storage_weight`**: storage importance when calculating utilization score.\n- **`conf_memory_cost_weight`**: split factor for estimated memory allocation.\n- **`conf_storage_cost_weight`**: split factor for estimated storage allocation.\n- **`conf_start_date` / `conf_end_date`**: validity window used to select configuration for each day.",
-                            "openLinksInNewTab": false
-                        },
-                        "title": "",
-                        "type": "markdown",
-                        "uiState": {}
-                    }
-                },
-                "gridData": {
-                    "h": 17,
-                    "i": "0ae19cb1-c6c9-4ff9-9245-d57a5d570beb",
-                    "w": 18,
-                    "x": 30,
-                    "y": 2
+                    "x": 32,
+                    "y": 22,
+                    "w": 16,
+                    "h": 14,
+                    "i": "0ae19cb1-c6c9-4ff9-9245-d57a5d570beb"
                 },
                 "panelIndex": "0ae19cb1-c6c9-4ff9-9245-d57a5d570beb",
                 "type": "visualization"
             }
         ],
-        "timeFrom": "now-3M",
+        "timeFrom": "now-30d",
         "timeRestore": true,
         "timeTo": "now",
         "title": "[Chargeback] Configuration"

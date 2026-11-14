@@ -1,109 +1,383 @@
-description: Bootstrap chargeback configuration lookup index with default settings using billing data as source trigger.
+description: Syncs chargeback configuration lookup index from native Fleet configuration snapshot events while materializing an empty lookup for legacy-only installations and preserving manual or historical periods when Fleet sync is not active.
 source:
   index:
+    - metrics-chargeback.billing-*
+    - metrics-chargeback.usage-*
+    - metrics-chargeback.node_stats-*
     - metrics-ess_billing.billing-*
+    - metrics-elasticsearch.stack_monitoring.node_stats*
+    - .monitoring-es-*
+    - metricbeat-*
+    - monitoring-indices*
+    - -partial-*
+    - -metrics-ess_billing.billing-chargeback
+    - -monitoring-indices-chargeback
+    - -chargeback_lookup.*
+  query:
+    term:
+      doc_type: config_snapshot
   runtime_mappings:
     config_join_key:
       type: keyword
       script:
-        source: "emit('chargeback_config')"
-    conf_chargeable_unit_rate:
-      type: double
-      script:
-        source: "emit(0.85)"
-    conf_chargeable_unit_rate_unit:
-      type: keyword
-      script:
-        source: "emit('EUR')"
-    conf_indexing_weight:
-      type: long
-      script:
-        source: "emit(20)"
-    conf_query_weight:
-      type: long
-      script:
-        source: "emit(20)"
-    conf_storage_weight:
-      type: long
-      script:
-        source: "emit(40)"
-    conf_start_date:
+        source: |
+          emit('chargeback_config');
+          emit('chargeback_config_onprem');
+    cb_sync_ts:
       type: date
       script:
-        source: "emit(1262304000000L)"  # 2010-01-01T00:00:00.000Z - Elasticsearch birthdate
-    conf_end_date:
-      type: date
-      script:
-        source: "emit(2430518399999L)"  # 2046-12-31T23:59:59.999Z - 20 years from now
-    conf_utilization_memory_weight:
-      type: long
-      script:
-        source: "emit(70)"
-    conf_utilization_storage_weight:
-      type: long
-      script:
-        source: "emit(30)"
-    conf_utilization_floor:
-      type: double
-      script:
-        source: "emit(0.10)"
-    conf_memory_cost_weight:
-      type: long
-      script:
-        source: "emit(50)"
-    conf_storage_cost_weight:
-      type: long
-      script:
-        source: "emit(50)"
+        source: |
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              emit(doc['event.ingested'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+              emit(doc['event.created'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          for (String k : ['ingested', 'created']) {
+            def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get(k) : null;
+            if (rawVal == null && params._source != null) {
+              rawVal = params._source.get('event.' + k);
+            }
+            if (rawVal != null) {
+              if (rawVal instanceof Number) {
+                emit(((Number)rawVal).longValue());
+                return;
+              }
+              String s = rawVal.toString().trim();
+              if (s != '') {
+                try {
+                  emit(ZonedDateTime.parse(s).toInstant().toEpochMilli());
+                  return;
+                } catch (Exception e) {}
+              }
+            }
+          }
+          if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+            emit(doc['@timestamp'].value.toInstant().toEpochMilli());
+          }
 dest:
   index: chargeback_conf_lookup
-  pipeline: logs-chargeback.lookup-0.5.0-chargeback_conf
+  pipeline: logs-chargeback.lookup-0.6.0-chargeback_conf
+frequency: 5m
+sync:
+  time:
+    field: cb_sync_ts
+    delay: 60s
 pivot:
   group_by:
     config_join_key:
       terms:
         field: config_join_key
-    conf_chargeable_unit_rate_unit:
-      terms:
-        field: conf_chargeable_unit_rate_unit
   aggregations:
-    conf_chargeable_unit_rate:
-      max:
-        field: conf_chargeable_unit_rate
-    conf_indexing_weight:
-      max:
-        field: conf_indexing_weight
-    conf_query_weight:
-      max:
-        field: conf_query_weight
-    conf_storage_weight:
-      max:
-        field: conf_storage_weight
-    conf_start_date:
-      max:
-        field: conf_start_date
-    conf_end_date:
-      max:
-        field: conf_end_date
-    conf_utilization_memory_weight:
-      max:
-        field: conf_utilization_memory_weight
-    conf_utilization_storage_weight:
-      max:
-        field: conf_utilization_storage_weight
-    conf_utilization_floor:
-      max:
-        field: conf_utilization_floor
-    conf_memory_cost_weight:
-      max:
-        field: conf_memory_cost_weight
-    conf_storage_cost_weight:
-      max:
-        field: conf_storage_cost_weight
+    snapshots:
+      filter:
+        term:
+          doc_type: config_snapshot
+      aggs:
+        latest:
+          scripted_metric:
+            init_script: |
+              state.owners = [:];
+              state.emitters = [:];
+            map_script: |
+              if (params._source == null) {
+                return;
+              }
+              long ts = (doc.containsKey('@timestamp') && !doc['@timestamp'].empty)
+                ? doc['@timestamp'].value.toInstant().toEpochMilli()
+                : 0L;
+              def rawSync = params._source.get('conf_sync_enabled');
+              boolean syncEnabled = (rawSync == null) || rawSync.toString().equalsIgnoreCase('true');
+
+              String ns = (params._source.data_stream instanceof Map && params._source.data_stream.namespace != null)
+                ? params._source.data_stream.namespace.toString().trim()
+                : (params._source.get('data_stream.namespace') != null ? params._source.get('data_stream.namespace').toString().trim() : 'default');
+              if (ns == '') { ns = 'default'; }
+
+              String pkgPolId = '';
+              if (params._source.get('package_policy_id') != null) {
+                pkgPolId = params._source.get('package_policy_id').toString().trim();
+              } else if (params._source.input instanceof Map && params._source.input.package_policy_id != null) {
+                pkgPolId = params._source.input.package_policy_id.toString().trim();
+              } else if (params._source.get('input.package_policy_id') != null) {
+                pkgPolId = params._source.get('input.package_policy_id').toString().trim();
+              } else if (params._source.elastic_agent instanceof Map && params._source.elastic_agent.package_policy_id != null) {
+                pkgPolId = params._source.elastic_agent.package_policy_id.toString().trim();
+              } else if (params._source.get('elastic_agent.package_policy_id') != null) {
+                pkgPolId = params._source.get('elastic_agent.package_policy_id').toString().trim();
+              } else if (params._source.get('conf_policy_id') != null) {
+                pkgPolId = params._source.get('conf_policy_id').toString().trim();
+              } else if (params._source.input instanceof Map && params._source.input.id != null) {
+                pkgPolId = params._source.input.id.toString().trim();
+              } else if (params._source.get('input.id') != null) {
+                pkgPolId = params._source.get('input.id').toString().trim();
+              }
+              if (pkgPolId != '') {
+                def pm = /^(?:cel-(?:chargeback-)?)?([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$/.matcher(pkgPolId);
+                if (pm.matches()) {
+                  pkgPolId = pm.group(1).toLowerCase(Locale.ROOT);
+                }
+              }
+
+              String polId = pkgPolId;
+              if (polId == '') {
+                if (params._source.elastic_agent instanceof Map && params._source.elastic_agent.policy_id != null) {
+                  polId = params._source.elastic_agent.policy_id.toString().trim();
+                } else if (params._source.get('elastic_agent.policy_id') != null) {
+                  polId = params._source.get('elastic_agent.policy_id').toString().trim();
+                } else if (params._source.agent instanceof Map && params._source.agent.policy instanceof Map && params._source.agent.policy.id != null) {
+                  polId = params._source.agent.policy.id.toString().trim();
+                } else if (params._source.get('agent.policy.id') != null) {
+                  polId = params._source.get('agent.policy.id').toString().trim();
+                } else if (params._source.component instanceof Map && params._source.component.id != null) {
+                  polId = params._source.component.id.toString().trim();
+                }
+              }
+
+              String explicitId = params._source.get('conf_owner_id') != null
+                ? params._source.get('conf_owner_id').toString().trim()
+                : '';
+              boolean isExplicit = explicitId != '';
+              String ownerKey = isExplicit
+                ? ('explicit:' + explicitId)
+                : (polId != '' ? ('implicit:pol:' + polId) : ('implicit:ns:' + ns));
+
+              // Only track cross-owner supersession when an integration-policy-unique ID is present
+              // (conf_policy_id or package_policy_id). Shared agent/agent-policy fallback IDs can host
+              // multiple Chargeback integration policies and must not supersede another policy's owner.
+              if (pkgPolId != '') {
+                String emitterId = 'pkg:' + ns + '|' + pkgPolId;
+                Map em = (Map)state.emitters.get(emitterId);
+                if (em == null) {
+                  em = [:];
+                  state.emitters.put(emitterId, em);
+                }
+                long prevEmTs = em.get(ownerKey) instanceof Number ? ((Number)em.get(ownerKey)).longValue() : -1L;
+                if (ts > prevEmTs) {
+                  em.put(ownerKey, ts);
+                }
+              }
+
+              Map owner = (Map)state.owners.get(ownerKey);
+              if (owner == null) {
+                owner = [
+                  'explicit': isExplicit,
+                  'newestTs': -1L,
+                  'newestSync': false,
+                  'streams': [:]
+                ];
+                state.owners.put(ownerKey, owner);
+              }
+              long oTs = ((Number)owner.get('newestTs')).longValue();
+              if (ts > oTs || (ts == oTs && !syncEnabled)) {
+                owner.put('newestTs', ts);
+                owner.put('newestSync', syncEnabled);
+              }
+
+              String ds = params._source.data_stream instanceof Map && params._source.data_stream.dataset != null
+                ? params._source.data_stream.dataset.toString()
+                : (params._source.get('data_stream.dataset') != null ? params._source.get('data_stream.dataset').toString() : '');
+              if (ds == 'chargeback.billing' || ds == 'chargeback.usage' || ds == 'chargeback.node_stats') {
+                Map oStreams = (Map)owner.get('streams');
+                def prev = oStreams.get(ds);
+                long prevTs = (prev instanceof Map && prev.ts instanceof Number) ? ((Number)prev.ts).longValue() : -1L;
+                if (prev == null || ts > prevTs || (ts == prevTs && !syncEnabled)) {
+                  Map snap = ['ts': ts, 'sync': syncEnabled, 'conf_owner_key': ownerKey];
+                  for (def entry : params._source.entrySet()) {
+                    String k = entry.getKey().toString();
+                    if (k.startsWith('conf_') && entry.getValue() != null) {
+                      snap[k] = entry.getValue();
+                    }
+                  }
+                  oStreams.put(ds, snap);
+                }
+              }
+            combine_script: "return state;"
+            reduce_script: |
+              Map mergedOwners = [:];
+              Map mergedEmitters = [:];
+              for (def s : states) {
+                if (s instanceof Map && s.emitters instanceof Map) {
+                  for (def ee : ((Map)s.emitters).entrySet()) {
+                    String eid = ee.getKey().toString();
+                    if (!(ee.getValue() instanceof Map)) { continue; }
+                    Map dstEm = (Map)mergedEmitters.get(eid);
+                    if (dstEm == null) {
+                      dstEm = [:];
+                      mergedEmitters.put(eid, dstEm);
+                    }
+                    for (def oke : ((Map)ee.getValue()).entrySet()) {
+                      String eok = oke.getKey().toString();
+                      long ets = oke.getValue() instanceof Number ? ((Number)oke.getValue()).longValue() : -1L;
+                      long curEts = dstEm.get(eok) instanceof Number ? ((Number)dstEm.get(eok)).longValue() : -1L;
+                      if (ets > curEts) {
+                        dstEm.put(eok, ets);
+                      }
+                    }
+                  }
+                }
+                if (s instanceof Map && s.owners instanceof Map) {
+                  for (def oe : ((Map)s.owners).entrySet()) {
+                    String ok = oe.getKey().toString();
+                    def srcObj = oe.getValue();
+                    if (!(srcObj instanceof Map)) { continue; }
+                    Map src = (Map)srcObj;
+                    boolean srcExp = Boolean.TRUE.equals(src.get('explicit'));
+                    long srcTs = src.get('newestTs') instanceof Number ? ((Number)src.get('newestTs')).longValue() : -1L;
+                    boolean srcSync = Boolean.TRUE.equals(src.get('newestSync'));
+                    Map dst = (Map)mergedOwners.get(ok);
+                    if (dst == null) {
+                      dst = [
+                        'explicit': srcExp,
+                        'newestTs': -1L,
+                        'newestSync': false,
+                        'streams': [:]
+                      ];
+                      mergedOwners.put(ok, dst);
+                    }
+                    if (srcExp) { dst.put('explicit', true); }
+                    long dstTs = ((Number)dst.get('newestTs')).longValue();
+                    if (srcTs >= 0L && (srcTs > dstTs || (srcTs == dstTs && !srcSync))) {
+                      dst.put('newestTs', srcTs);
+                      dst.put('newestSync', srcSync);
+                    }
+                    if (src.get('streams') instanceof Map) {
+                      Map dstStreams = (Map)dst.get('streams');
+                      for (def se : ((Map)src.get('streams')).entrySet()) {
+                        String ds = se.getKey().toString();
+                        def candObj = se.getValue();
+                        if (!(candObj instanceof Map)) { continue; }
+                        Map cand = (Map)candObj;
+                        long cTs = cand.get('ts') instanceof Number ? ((Number)cand.get('ts')).longValue() : -1L;
+                        boolean cSync = Boolean.TRUE.equals(cand.get('sync'));
+                        def cur = dstStreams.get(ds);
+                        long curTs = (cur instanceof Map && cur.ts instanceof Number) ? ((Number)cur.ts).longValue() : -1L;
+                        if (cur == null || cTs > curTs || (cTs == curTs && !cSync)) {
+                          dstStreams.put(ds, cand);
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+
+              if (mergedOwners.isEmpty()) {
+                return [
+                  'has_snapshots': false,
+                  'policy_sync_enabled': false,
+                  'owner_conflict': false,
+                  'streams': [:]
+                ];
+              }
+
+              Set currentEmitterKeys = new HashSet();
+              Map supersededAt = [:];
+              for (def ee : mergedEmitters.entrySet()) {
+                Map em = (Map)ee.getValue();
+                long maxEmTs = -1L;
+                for (def v : em.values()) {
+                  long vts = v instanceof Number ? ((Number)v).longValue() : -1L;
+                  if (vts > maxEmTs) { maxEmTs = vts; }
+                }
+                for (def oke : em.entrySet()) {
+                  String kName = oke.getKey().toString();
+                  long kts = oke.getValue() instanceof Number ? ((Number)oke.getValue()).longValue() : -1L;
+                  if (kts >= 0L && kts == maxEmTs) {
+                    currentEmitterKeys.add(kName);
+                  } else if (kts >= 0L && kts < maxEmTs) {
+                    long prevSup = supersededAt.get(kName) instanceof Number ? ((Number)supersededAt.get(kName)).longValue() : -1L;
+                    if (kts > prevSup) {
+                      supersededAt.put(kName, kts);
+                    }
+                  }
+                }
+              }
+
+              Map activeOwners = [:];
+              for (def e : mergedOwners.entrySet()) {
+                String ok = e.getKey().toString();
+                Map ov = (Map)e.getValue();
+                long ovTs = ov.get('newestTs') instanceof Number ? ((Number)ov.get('newestTs')).longValue() : -1L;
+                long supTs = supersededAt.get(ok) instanceof Number ? ((Number)supersededAt.get(ok)).longValue() : -1L;
+                if (!currentEmitterKeys.contains(ok) && supTs >= 0L && ovTs <= supTs) {
+                  continue;
+                }
+                activeOwners.put(ok, ov);
+              }
+              if (activeOwners.isEmpty()) {
+                activeOwners = mergedOwners;
+              }
+
+              long maxActiveTs = -1L;
+              for (def ovObj : activeOwners.values()) {
+                if (ovObj instanceof Map && ((Map)ovObj).get('newestTs') instanceof Number) {
+                  long tsVal = ((Number)((Map)ovObj).get('newestTs')).longValue();
+                  if (tsVal > maxActiveTs) { maxActiveTs = tsVal; }
+                }
+              }
+
+              // Live sync-enabled policies renew their config_snapshot every UTC day via today_utc.
+              // Expire stale owners lagging the freshest active snapshot by >48h (172800000 ms) so
+              // deleted or replaced policies age out automatically without waiting for ILM retention.
+              long staleCutoffMs = 172800000L;
+              List enabledExplicitKeys = new ArrayList();
+              List enabledImplicitKeys = new ArrayList();
+              for (def e : activeOwners.entrySet()) {
+                String ok = e.getKey().toString();
+                Map ov = (Map)e.getValue();
+                if (!Boolean.TRUE.equals(ov.get('newestSync'))) {
+                  continue;
+                }
+                long ovTs = ov.get('newestTs') instanceof Number ? ((Number)ov.get('newestTs')).longValue() : -1L;
+                if (maxActiveTs > 0L && ovTs >= 0L && (maxActiveTs - ovTs) > staleCutoffMs) {
+                  continue;
+                }
+                if (Boolean.TRUE.equals(ov.get('explicit'))) {
+                  enabledExplicitKeys.add(ok);
+                } else {
+                  enabledImplicitKeys.add(ok);
+                }
+              }
+
+              String selectedOwner = null;
+              boolean ownerConflict = false;
+              if (enabledExplicitKeys.size() == 1) {
+                selectedOwner = enabledExplicitKeys.get(0).toString();
+              } else if (enabledExplicitKeys.size() > 1) {
+                ownerConflict = true;
+              } else if (enabledImplicitKeys.size() == 1) {
+                selectedOwner = enabledImplicitKeys.get(0).toString();
+              } else if (enabledImplicitKeys.size() > 1) {
+                ownerConflict = true;
+              }
+
+              boolean policySyncEnabled = false;
+              Map bestStreams = [:];
+              if (!ownerConflict && selectedOwner != null) {
+                Map sel = (Map)activeOwners.get(selectedOwner);
+                policySyncEnabled = Boolean.TRUE.equals(sel.get('newestSync'));
+                if (policySyncEnabled && sel.get('streams') instanceof Map) {
+                  bestStreams = (Map)sel.get('streams');
+                }
+              }
+
+              return [
+                'has_snapshots': true,
+                'policy_sync_enabled': policySyncEnabled,
+                'owner_conflict': ownerConflict,
+                'owner_key': selectedOwner != null ? selectedOwner : '',
+                'streams': bestStreams
+              ];
 settings:
   deduce_mappings: false
   unattended: true
 _meta:
   managed: true
   run_as_kibana_system: false
-  fleet_transform_version: 0.5.0
+  fleet_transform_version: 0.6.0

@@ -176,11 +176,11 @@
                                     "fieldFormats": {},
                                     "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                     "managed": false,
-                                    "name": "billing_cluster_cost_lookup",
+                                    "name": "chargeback_lookup.billing_cluster_cost",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "billing_cluster_cost_lookup",
+                                    "title": "chargeback_lookup.billing_cluster_cost",
                                     "type": "esql"
                                 }
                             },
@@ -190,7 +190,7 @@
                                         {
                                             "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "timeField": "@timestamp",
-                                            "title": "billing_cluster_cost_lookup"
+                                            "title": "chargeback_lookup.billing_cluster_cost"
                                         }
                                     ],
                                     "layers": {
@@ -229,7 +229,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| EVAL total_chargeable_units_value = total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0), deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| WHERE ts IS NOT NULL\n| STATS `Normalized cost` = SUM(total_chargeable_units_value) BY ts, deployment\n| RENAME ts AS `@timestamp`\n| SORT `@timestamp` DESC\n| LIMIT 5000"
+                                                "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE @timestamp IS NOT NULL\n| EVAL ts = @timestamp, deployment = CASE(deployment_id IS NULL, COALESCE(deployment_name, \"unknown\"), CONCAT(COALESCE(deployment_name, deployment_id), \" (\", LEFT(deployment_id, 6), \")\"))\n| EVAL is_onprem_row = COALESCE(is_onprem, ess.billing.deployment_type IN (\"onprem\", \"ece\", \"eck\") OR cloud.provider == \"onprem\", false), cloud_cfg_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON cloud_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL cloud_rate = conf_chargeable_unit_rate, cloud_unit = conf_chargeable_unit_rate_unit\n| DROP cloud_cfg_key, config_join_key, conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit\n| EVAL onprem_cfg_key = CASE(is_onprem_row, \"chargeback_config_onprem\", null)\n| LOOKUP JOIN chargeback_conf_lookup ON onprem_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL rate = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate, 0.00085), COALESCE(cloud_rate, 0.85)), currency_unit = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate_unit, cloud_unit, \"EUR\"), COALESCE(cloud_unit, \"EUR\"))\n| STATS `Normalized cost` = SUM(total_chargeable_units * rate) BY ts, deployment\n| RENAME ts AS `@timestamp`\n| SORT `@timestamp` ASC\n| LIMIT 5000"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -239,7 +239,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| EVAL total_chargeable_units_value = total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0), deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| WHERE ts IS NOT NULL\n| STATS `Normalized cost` = SUM(total_chargeable_units_value) BY ts, deployment\n| RENAME ts AS `@timestamp`\n| SORT `@timestamp` DESC\n| LIMIT 5000"
+                                "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE @timestamp IS NOT NULL\n| EVAL ts = @timestamp, deployment = CASE(deployment_id IS NULL, COALESCE(deployment_name, \"unknown\"), CONCAT(COALESCE(deployment_name, deployment_id), \" (\", LEFT(deployment_id, 6), \")\"))\n| EVAL is_onprem_row = COALESCE(is_onprem, ess.billing.deployment_type IN (\"onprem\", \"ece\", \"eck\") OR cloud.provider == \"onprem\", false), cloud_cfg_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON cloud_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL cloud_rate = conf_chargeable_unit_rate, cloud_unit = conf_chargeable_unit_rate_unit\n| DROP cloud_cfg_key, config_join_key, conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit\n| EVAL onprem_cfg_key = CASE(is_onprem_row, \"chargeback_config_onprem\", null)\n| LOOKUP JOIN chargeback_conf_lookup ON onprem_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL rate = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate, 0.00085), COALESCE(cloud_rate, 0.85)), currency_unit = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate_unit, cloud_unit, \"EUR\"), COALESCE(cloud_unit, \"EUR\"))\n| STATS `Normalized cost` = SUM(total_chargeable_units * rate) BY ts, deployment\n| RENAME ts AS `@timestamp`\n| SORT `@timestamp` ASC\n| LIMIT 5000"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -330,7 +330,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Full billing spend per chargeback group over time. Each group is defined by the chargeback_group tag set on ESS deployments. All SKUs (data tiers, ML, Kibana, snapshots, transfer) contribute \u2014 the stack totals equal the full organisation bill. FinOps value: shows which teams or business units are growing their spend fastest.",
+                        "description": "Full billing spend per chargeback group over time. Each group is defined by the chargeback_group tag set on ESS deployments. All SKUs (data tiers, ML, Kibana, snapshots, transfer) contribute — the stack totals equal the full organisation bill. FinOps value: shows which teams or business units are growing their spend fastest.",
                         "references": [],
                         "state": {
                             "adHocDataViews": {
@@ -340,11 +340,11 @@
                                     "fieldFormats": {},
                                     "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                     "managed": false,
-                                    "name": "billing_cluster_cost_lookup",
+                                    "name": "chargeback_lookup.billing_cluster_cost",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "billing_cluster_cost_lookup",
+                                    "title": "chargeback_lookup.billing_cluster_cost",
                                     "type": "esql"
                                 }
                             },
@@ -354,7 +354,7 @@
                                         {
                                             "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "timeField": "@timestamp",
-                                            "title": "billing_cluster_cost_lookup"
+                                            "title": "chargeback_lookup.billing_cluster_cost"
                                         }
                                     ],
                                     "layers": {
@@ -393,7 +393,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| EVAL total_chargeable_units_value = total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)\n| WHERE ts IS NOT NULL\n| STATS `Normalized cost` = SUM(total_chargeable_units_value) BY ts, deployment_group\n| RENAME ts AS `@timestamp`\n| SORT `@timestamp` DESC\n| LIMIT 5000"
+                                                "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE @timestamp IS NOT NULL\n| EVAL ts = @timestamp\n| EVAL is_onprem_row = COALESCE(is_onprem, ess.billing.deployment_type IN (\"onprem\", \"ece\", \"eck\") OR cloud.provider == \"onprem\", false), cloud_cfg_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON cloud_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL cloud_rate = conf_chargeable_unit_rate, cloud_unit = conf_chargeable_unit_rate_unit\n| DROP cloud_cfg_key, config_join_key, conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit\n| EVAL onprem_cfg_key = CASE(is_onprem_row, \"chargeback_config_onprem\", null)\n| LOOKUP JOIN chargeback_conf_lookup ON onprem_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL rate = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate, 0.00085), COALESCE(cloud_rate, 0.85)), currency_unit = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate_unit, cloud_unit, \"EUR\"), COALESCE(cloud_unit, \"EUR\"))\n| STATS `Normalized cost` = SUM(total_chargeable_units * rate) BY ts, deployment_group\n| RENAME ts AS `@timestamp`\n| SORT `@timestamp` ASC\n| LIMIT 5000"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -403,7 +403,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| EVAL total_chargeable_units_value = total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)\n| WHERE ts IS NOT NULL\n| STATS `Normalized cost` = SUM(total_chargeable_units_value) BY ts, deployment_group\n| RENAME ts AS `@timestamp`\n| SORT `@timestamp` DESC\n| LIMIT 5000"
+                                "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE @timestamp IS NOT NULL\n| EVAL ts = @timestamp\n| EVAL is_onprem_row = COALESCE(is_onprem, ess.billing.deployment_type IN (\"onprem\", \"ece\", \"eck\") OR cloud.provider == \"onprem\", false), cloud_cfg_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON cloud_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL cloud_rate = conf_chargeable_unit_rate, cloud_unit = conf_chargeable_unit_rate_unit\n| DROP cloud_cfg_key, config_join_key, conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit\n| EVAL onprem_cfg_key = CASE(is_onprem_row, \"chargeback_config_onprem\", null)\n| LOOKUP JOIN chargeback_conf_lookup ON onprem_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL rate = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate, 0.00085), COALESCE(cloud_rate, 0.85)), currency_unit = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate_unit, cloud_unit, \"EUR\"), COALESCE(cloud_unit, \"EUR\"))\n| STATS `Normalized cost` = SUM(total_chargeable_units * rate) BY ts, deployment_group\n| RENAME ts AS `@timestamp`\n| SORT `@timestamp` ASC\n| LIMIT 5000"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -556,7 +556,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "**Source:** `billing_cluster_cost_lookup` \u2014 full invoice, all SKUs.\n\nCost is normalized using the configured chargeable-unit rate. Groups are derived from the `chargeback_group` tag on ESS deployments. Totals in this section match the full deployment bill shown above.",
+                            "markdown": "**Source:** `chargeback_lookup.billing_cluster_cost` — full invoice, all SKUs.\n\nCost is normalized using the configured chargeable-unit rate. Groups are derived from the `chargeback_group` tag on ESS deployments. Totals in this section match the full deployment bill shown above.",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -578,7 +578,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Total normalized spend per chargeback group for the selected period, ranked highest to lowest. Covers the full invoice \u2014 all SKU families included. FinOps value: the primary allocation table for internal chargeback \u2014 each group's figure is what you charge back to that team or cost centre.",
+                        "description": "Total normalized spend per chargeback group for the selected period, ranked highest to lowest. Covers the full invoice — all SKU families included. FinOps value: the primary allocation table for internal chargeback — each group's figure is what you charge back to that team or cost centre.",
                         "references": [],
                         "state": {
                             "adHocDataViews": {
@@ -588,11 +588,11 @@
                                     "fieldFormats": {},
                                     "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                     "managed": false,
-                                    "name": "billing_cluster_cost_lookup",
+                                    "name": "chargeback_lookup.billing_cluster_cost",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "billing_cluster_cost_lookup",
+                                    "title": "chargeback_lookup.billing_cluster_cost",
                                     "type": "esql"
                                 }
                             },
@@ -602,7 +602,7 @@
                                         {
                                             "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "timeField": "@timestamp",
-                                            "title": "billing_cluster_cost_lookup"
+                                            "title": "chargeback_lookup.billing_cluster_cost"
                                         }
                                     ],
                                     "layers": {
@@ -628,7 +628,7 @@
                                                             "id": "number"
                                                         },
                                                         "sourceParams": {
-                                                            "indexPattern": "billing_cluster_cost_lookup",
+                                                            "indexPattern": "chargeback_lookup.billing_cluster_cost",
                                                             "sourceField": "Normalized cost"
                                                         },
                                                         "type": "number"
@@ -637,7 +637,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)) BY deployment_group | RENAME deployment_group AS `Deployment Group`\n| SORT `Normalized cost` DESC"
+                                                "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE @timestamp IS NOT NULL\n| EVAL ts = @timestamp\n| EVAL is_onprem_row = COALESCE(is_onprem, ess.billing.deployment_type IN (\"onprem\", \"ece\", \"eck\") OR cloud.provider == \"onprem\", false), cloud_cfg_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON cloud_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL cloud_rate = conf_chargeable_unit_rate, cloud_unit = conf_chargeable_unit_rate_unit\n| DROP cloud_cfg_key, config_join_key, conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit\n| EVAL onprem_cfg_key = CASE(is_onprem_row, \"chargeback_config_onprem\", null)\n| LOOKUP JOIN chargeback_conf_lookup ON onprem_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL rate = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate, 0.00085), COALESCE(cloud_rate, 0.85)), currency_unit = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate_unit, cloud_unit, \"EUR\"), COALESCE(cloud_unit, \"EUR\"))\n| STATS `Normalized cost` = SUM(total_chargeable_units * rate) BY deployment_group\n| RENAME deployment_group AS `Deployment Group`\n| SORT `Normalized cost` DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -647,7 +647,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)) BY deployment_group | RENAME deployment_group AS `Deployment Group`\n| SORT `Normalized cost` DESC"
+                                "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE @timestamp IS NOT NULL\n| EVAL ts = @timestamp\n| EVAL is_onprem_row = COALESCE(is_onprem, ess.billing.deployment_type IN (\"onprem\", \"ece\", \"eck\") OR cloud.provider == \"onprem\", false), cloud_cfg_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON cloud_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL cloud_rate = conf_chargeable_unit_rate, cloud_unit = conf_chargeable_unit_rate_unit\n| DROP cloud_cfg_key, config_join_key, conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit\n| EVAL onprem_cfg_key = CASE(is_onprem_row, \"chargeback_config_onprem\", null)\n| LOOKUP JOIN chargeback_conf_lookup ON onprem_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL rate = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate, 0.00085), COALESCE(cloud_rate, 0.85)), currency_unit = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate_unit, cloud_unit, \"EUR\"), COALESCE(cloud_unit, \"EUR\"))\n| STATS `Normalized cost` = SUM(total_chargeable_units * rate) BY deployment_group\n| RENAME deployment_group AS `Deployment Group`\n| SORT `Normalized cost` DESC"
                             },
                             "visualization": {
                                 "columns": [
@@ -678,7 +678,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM billing_cluster_cost_lookup\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)) BY deployment_group | RENAME deployment_group AS `Deployment Group`\n| SORT `Normalized cost` DESC"
+                        "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE @timestamp IS NOT NULL\n| EVAL ts = @timestamp\n| EVAL is_onprem_row = COALESCE(is_onprem, ess.billing.deployment_type IN (\"onprem\", \"ece\", \"eck\") OR cloud.provider == \"onprem\", false), cloud_cfg_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON cloud_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL cloud_rate = conf_chargeable_unit_rate, cloud_unit = conf_chargeable_unit_rate_unit\n| DROP cloud_cfg_key, config_join_key, conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit\n| EVAL onprem_cfg_key = CASE(is_onprem_row, \"chargeback_config_onprem\", null)\n| LOOKUP JOIN chargeback_conf_lookup ON onprem_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL rate = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate, 0.00085), COALESCE(cloud_rate, 0.85)), currency_unit = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate_unit, cloud_unit, \"EUR\"), COALESCE(cloud_unit, \"EUR\"))\n| STATS `Normalized cost` = SUM(total_chargeable_units * rate) BY deployment_group\n| RENAME deployment_group AS `Deployment Group`\n| SORT `Normalized cost` DESC"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -700,7 +700,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Cost breakdown per chargeback group split by FinOps category (data_tier, platform, transfer, snapshot, onprem). Total per group equals that group's full invoice amount. FinOps value: reveals whether a group's spend is dominated by compute (data_tier) or operational overhead (snapshots, egress transfer) \u2014 helps prioritise where optimisation conversations should start.",
+                        "description": "Cost breakdown per chargeback group split by FinOps category (data_tier, platform, transfer, snapshot, onprem). Total per group equals that group's full invoice amount. FinOps value: reveals whether a group's spend is dominated by compute (data_tier) or operational overhead (snapshots, egress transfer) — helps prioritise where optimisation conversations should start.",
                         "references": [],
                         "state": {
                             "adHocDataViews": {
@@ -710,11 +710,11 @@
                                     "fieldFormats": {},
                                     "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                     "managed": false,
-                                    "name": "billing_cluster_cost_lookup",
+                                    "name": "chargeback_lookup.billing_cluster_cost",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "billing_cluster_cost_lookup",
+                                    "title": "chargeback_lookup.billing_cluster_cost",
                                     "type": "esql"
                                 }
                             },
@@ -724,7 +724,7 @@
                                         {
                                             "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "timeField": "@timestamp",
-                                            "title": "billing_cluster_cost_lookup"
+                                            "title": "chargeback_lookup.billing_cluster_cost"
                                         }
                                     ],
                                     "layers": {
@@ -750,7 +750,7 @@
                                                             "id": "string"
                                                         },
                                                         "sourceParams": {
-                                                            "indexPattern": "billing_cluster_cost_lookup",
+                                                            "indexPattern": "chargeback_lookup.billing_cluster_cost",
                                                             "sourceField": "Cost Category"
                                                         },
                                                         "type": "string"
@@ -766,7 +766,7 @@
                                                             "id": "number"
                                                         },
                                                         "sourceParams": {
-                                                            "indexPattern": "billing_cluster_cost_lookup",
+                                                            "indexPattern": "chargeback_lookup.billing_cluster_cost",
                                                             "sourceField": "Normalized cost"
                                                         },
                                                         "type": "number"
@@ -775,7 +775,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n  | EVAL `ts` = @timestamp\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON\n          `ts` >= conf_start_date AND\n            `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY deployment_group, cost_category\n  | RENAME deployment_group AS `Deployment Group`, cost_category as `Cost Category`\n  | SORT `Normalized cost` DESC"
+                                                "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE @timestamp IS NOT NULL\n| EVAL ts = @timestamp\n| EVAL is_onprem_row = COALESCE(is_onprem, ess.billing.deployment_type IN (\"onprem\", \"ece\", \"eck\") OR cloud.provider == \"onprem\", false), cloud_cfg_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON cloud_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL cloud_rate = conf_chargeable_unit_rate, cloud_unit = conf_chargeable_unit_rate_unit\n| DROP cloud_cfg_key, config_join_key, conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit\n| EVAL onprem_cfg_key = CASE(is_onprem_row, \"chargeback_config_onprem\", null)\n| LOOKUP JOIN chargeback_conf_lookup ON onprem_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL rate = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate, 0.00085), COALESCE(cloud_rate, 0.85)), currency_unit = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate_unit, cloud_unit, \"EUR\"), COALESCE(cloud_unit, \"EUR\"))\n| STATS `Normalized cost` = SUM(total_chargeable_units * rate) BY deployment_group, cost_category\n| RENAME deployment_group AS `Deployment Group`, cost_category AS `Cost Category`\n| SORT `Normalized cost` DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -785,7 +785,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n  | EVAL `ts` = @timestamp\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON\n          `ts` >= conf_start_date AND\n            `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY deployment_group, cost_category\n  | RENAME deployment_group AS `Deployment Group`, cost_category as `Cost Category`\n  | SORT `Normalized cost` DESC"
+                                "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE @timestamp IS NOT NULL\n| EVAL ts = @timestamp\n| EVAL is_onprem_row = COALESCE(is_onprem, ess.billing.deployment_type IN (\"onprem\", \"ece\", \"eck\") OR cloud.provider == \"onprem\", false), cloud_cfg_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON cloud_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL cloud_rate = conf_chargeable_unit_rate, cloud_unit = conf_chargeable_unit_rate_unit\n| DROP cloud_cfg_key, config_join_key, conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit\n| EVAL onprem_cfg_key = CASE(is_onprem_row, \"chargeback_config_onprem\", null)\n| LOOKUP JOIN chargeback_conf_lookup ON onprem_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL rate = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate, 0.00085), COALESCE(cloud_rate, 0.85)), currency_unit = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate_unit, cloud_unit, \"EUR\"), COALESCE(cloud_unit, \"EUR\"))\n| STATS `Normalized cost` = SUM(total_chargeable_units * rate) BY deployment_group, cost_category\n| RENAME deployment_group AS `Deployment Group`, cost_category AS `Cost Category`\n| SORT `Normalized cost` DESC"
                             },
                             "visualization": {
                                 "columns": [
@@ -821,7 +821,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM billing_cluster_cost_lookup\n  | EVAL `ts` = @timestamp\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON\n          `ts` >= conf_start_date AND\n            `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY deployment_group, cost_category\n  | RENAME deployment_group AS `Deployment Group`, cost_category as `Cost Category`\n  | SORT `Normalized cost` DESC"
+                        "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE @timestamp IS NOT NULL\n| EVAL ts = @timestamp\n| EVAL is_onprem_row = COALESCE(is_onprem, ess.billing.deployment_type IN (\"onprem\", \"ece\", \"eck\") OR cloud.provider == \"onprem\", false), cloud_cfg_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON cloud_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL cloud_rate = conf_chargeable_unit_rate, cloud_unit = conf_chargeable_unit_rate_unit\n| DROP cloud_cfg_key, config_join_key, conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit\n| EVAL onprem_cfg_key = CASE(is_onprem_row, \"chargeback_config_onprem\", null)\n| LOOKUP JOIN chargeback_conf_lookup ON onprem_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL rate = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate, 0.00085), COALESCE(cloud_rate, 0.85)), currency_unit = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate_unit, cloud_unit, \"EUR\"), COALESCE(cloud_unit, \"EUR\"))\n| STATS `Normalized cost` = SUM(total_chargeable_units * rate) BY deployment_group, cost_category\n| RENAME deployment_group AS `Deployment Group`, cost_category AS `Cost Category`\n| SORT `Normalized cost` DESC"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -853,11 +853,11 @@
                                     "fieldFormats": {},
                                     "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                     "managed": false,
-                                    "name": "billing_cluster_cost_lookup",
+                                    "name": "chargeback_lookup.billing_cluster_cost",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "billing_cluster_cost_lookup",
+                                    "title": "chargeback_lookup.billing_cluster_cost",
                                     "type": "esql"
                                 }
                             },
@@ -867,7 +867,7 @@
                                         {
                                             "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "timeField": "@timestamp",
-                                            "title": "billing_cluster_cost_lookup"
+                                            "title": "chargeback_lookup.billing_cluster_cost"
                                         }
                                     ],
                                     "layers": {
@@ -912,7 +912,7 @@
                                                             "id": "string"
                                                         },
                                                         "sourceParams": {
-                                                            "indexPattern": "billing_cluster_cost_lookup",
+                                                            "indexPattern": "chargeback_lookup.billing_cluster_cost",
                                                             "sourceField": "Cost Category"
                                                         },
                                                         "type": "string"
@@ -921,7 +921,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n  | EVAL `ts` = @timestamp\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON\n          `ts` >= conf_start_date AND\n            `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY deployment_group, cost_category\n  | RENAME deployment_group AS `Deployment Group`, cost_category as `Cost Category`\n  | SORT `Normalized cost` DESC"
+                                                "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE @timestamp IS NOT NULL\n| EVAL ts = @timestamp\n| EVAL is_onprem_row = COALESCE(is_onprem, ess.billing.deployment_type IN (\"onprem\", \"ece\", \"eck\") OR cloud.provider == \"onprem\", false), cloud_cfg_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON cloud_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL cloud_rate = conf_chargeable_unit_rate, cloud_unit = conf_chargeable_unit_rate_unit\n| DROP cloud_cfg_key, config_join_key, conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit\n| EVAL onprem_cfg_key = CASE(is_onprem_row, \"chargeback_config_onprem\", null)\n| LOOKUP JOIN chargeback_conf_lookup ON onprem_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL rate = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate, 0.00085), COALESCE(cloud_rate, 0.85)), currency_unit = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate_unit, cloud_unit, \"EUR\"), COALESCE(cloud_unit, \"EUR\"))\n| STATS `Normalized cost` = SUM(total_chargeable_units * rate) BY deployment_group, cost_category\n| RENAME deployment_group AS `Deployment Group`, cost_category AS `Cost Category`\n| SORT `Normalized cost` DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -931,7 +931,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n  | EVAL `ts` = @timestamp\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON\n          `ts` >= conf_start_date AND\n            `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY deployment_group, cost_category\n  | RENAME deployment_group AS `Deployment Group`, cost_category as `Cost Category`\n  | SORT `Normalized cost` DESC"
+                                "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE @timestamp IS NOT NULL\n| EVAL ts = @timestamp\n| EVAL is_onprem_row = COALESCE(is_onprem, ess.billing.deployment_type IN (\"onprem\", \"ece\", \"eck\") OR cloud.provider == \"onprem\", false), cloud_cfg_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON cloud_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL cloud_rate = conf_chargeable_unit_rate, cloud_unit = conf_chargeable_unit_rate_unit\n| DROP cloud_cfg_key, config_join_key, conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit\n| EVAL onprem_cfg_key = CASE(is_onprem_row, \"chargeback_config_onprem\", null)\n| LOOKUP JOIN chargeback_conf_lookup ON onprem_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL rate = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate, 0.00085), COALESCE(cloud_rate, 0.85)), currency_unit = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate_unit, cloud_unit, \"EUR\"), COALESCE(cloud_unit, \"EUR\"))\n| STATS `Normalized cost` = SUM(total_chargeable_units * rate) BY deployment_group, cost_category\n| RENAME deployment_group AS `Deployment Group`, cost_category AS `Cost Category`\n| SORT `Normalized cost` DESC"
                             },
                             "visualization": {
                                 "layers": [
@@ -1036,7 +1036,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "**Source:** `billing_cluster_cost_lookup` \u2014 full invoice, filtered to SKUs with a classified `cost_type`.\n\nBilling components (`cost_type`) are derived from the ESS SKU string: data tiers (datahot/datacontent, datawarm, datacold, datafrozen), platform (ml, kibana, apm), data-transfer, snapshots, and on-premises nodes. FinOps categories (`cost_category`) group these into broader buckets: data_tier, platform, transfer, snapshot, onprem, other.\n\n\u26a0\ufe0f If any SKUs could not be classified (`cost_type IS NULL`), those rows are excluded \u2014 totals here may be slightly lower than the full bill above.",
+                            "markdown": "**Source:** `chargeback_lookup.billing_cluster_cost` — full invoice, filtered to SKUs with a classified `cost_type`.\n\nBilling components (`cost_type`) are derived from the ESS SKU string: data tiers (datahot/datacontent, datawarm, datacold, datafrozen), platform (ml, kibana, apm), data-transfer, snapshots, and on-premises nodes. FinOps categories (`cost_category`) group these into broader buckets: data_tier, platform, transfer, snapshot, onprem, other.\n\n⚠️ If any SKUs could not be classified (`cost_type IS NULL`), those rows are excluded — totals here may be slightly lower than the full bill above.",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -1058,7 +1058,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Cost per deployment broken down by billing component (cost_type: e.g. datahot/datacontent, datawarm, ml, kibana, snapshots, data-transfer) and FinOps category (cost_category: data_tier, platform, transfer, snapshot, onprem). Filtered to SKUs where cost_type has been classified \u2014 rows where classification could not be derived from the SKU are excluded. FinOps value: the most granular billing breakdown available \u2014 use this to identify which specific infrastructure components drive cost for each deployment.",
+                        "description": "Cost per deployment broken down by billing component (cost_type: e.g. datahot/datacontent, datawarm, ml, kibana, snapshots, data-transfer) and FinOps category (cost_category: data_tier, platform, transfer, snapshot, onprem). Filtered to SKUs where cost_type has been classified — rows where classification could not be derived from the SKU are excluded. FinOps value: the most granular billing breakdown available — use this to identify which specific infrastructure components drive cost for each deployment.",
                         "references": [],
                         "state": {
                             "adHocDataViews": {
@@ -1068,11 +1068,11 @@
                                     "fieldFormats": {},
                                     "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                     "managed": false,
-                                    "name": "billing_cluster_cost_lookup",
+                                    "name": "chargeback_lookup.billing_cluster_cost",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "billing_cluster_cost_lookup",
+                                    "title": "chargeback_lookup.billing_cluster_cost",
                                     "type": "esql"
                                 }
                             },
@@ -1082,7 +1082,7 @@
                                         {
                                             "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "timeField": "@timestamp",
-                                            "title": "billing_cluster_cost_lookup"
+                                            "title": "chargeback_lookup.billing_cluster_cost"
                                         }
                                     ],
                                     "layers": {
@@ -1137,7 +1137,7 @@
                                                             "id": "string"
                                                         },
                                                         "sourceParams": {
-                                                            "indexPattern": "billing_cluster_cost_lookup",
+                                                            "indexPattern": "chargeback_lookup.billing_cluster_cost",
                                                             "sourceField": "Cost Category"
                                                         },
                                                         "type": "string"
@@ -1174,7 +1174,7 @@
                                                             "id": "string"
                                                         },
                                                         "sourceParams": {
-                                                            "indexPattern": "billing_cluster_cost_lookup",
+                                                            "indexPattern": "chargeback_lookup.billing_cluster_cost",
                                                             "sourceField": "Cost Category"
                                                         },
                                                         "type": "string"
@@ -1200,7 +1200,7 @@
                                                             "id": "number"
                                                         },
                                                         "sourceParams": {
-                                                            "indexPattern": "billing_cluster_cost_lookup",
+                                                            "indexPattern": "chargeback_lookup.billing_cluster_cost",
                                                             "sourceField": "Normalized cost"
                                                         },
                                                         "type": "number"
@@ -1209,7 +1209,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n  | WHERE cost_type IS NOT NULL\n  | EVAL `ts` = @timestamp, `Cost Category` = cost_category, `Cost Type` = cost_type,\n      Deployment = deployment_name\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON `ts` >= conf_start_date AND `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY Deployment, `Cost Category`, `Cost Type`\n  | SORT `Normalized cost` DESC"
+                                                "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE @timestamp IS NOT NULL AND cost_type IS NOT NULL\n| EVAL ts = @timestamp, `Cost Category` = cost_category, `Cost Type` = cost_type, Deployment = deployment_name\n| EVAL is_onprem_row = COALESCE(is_onprem, ess.billing.deployment_type IN (\"onprem\", \"ece\", \"eck\") OR cloud.provider == \"onprem\", false), cloud_cfg_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON cloud_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL cloud_rate = conf_chargeable_unit_rate, cloud_unit = conf_chargeable_unit_rate_unit\n| DROP cloud_cfg_key, config_join_key, conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit\n| EVAL onprem_cfg_key = CASE(is_onprem_row, \"chargeback_config_onprem\", null)\n| LOOKUP JOIN chargeback_conf_lookup ON onprem_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL rate = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate, 0.00085), COALESCE(cloud_rate, 0.85)), currency_unit = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate_unit, cloud_unit, \"EUR\"), COALESCE(cloud_unit, \"EUR\"))\n| STATS `Normalized cost` = SUM(total_chargeable_units * rate) BY Deployment, `Cost Category`, `Cost Type`\n| SORT `Normalized cost` DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1219,7 +1219,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n  | WHERE cost_type IS NOT NULL\n  | EVAL `ts` = @timestamp, `Cost Category` = cost_category, `Cost Type` = cost_type,\n      Deployment = deployment_name\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON `ts` >= conf_start_date AND `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY Deployment, `Cost Category`, `Cost Type`\n  | SORT `Normalized cost` DESC"
+                                "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE @timestamp IS NOT NULL AND cost_type IS NOT NULL\n| EVAL ts = @timestamp, `Cost Category` = cost_category, `Cost Type` = cost_type, Deployment = deployment_name\n| EVAL is_onprem_row = COALESCE(is_onprem, ess.billing.deployment_type IN (\"onprem\", \"ece\", \"eck\") OR cloud.provider == \"onprem\", false), cloud_cfg_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON cloud_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL cloud_rate = conf_chargeable_unit_rate, cloud_unit = conf_chargeable_unit_rate_unit\n| DROP cloud_cfg_key, config_join_key, conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit\n| EVAL onprem_cfg_key = CASE(is_onprem_row, \"chargeback_config_onprem\", null)\n| LOOKUP JOIN chargeback_conf_lookup ON onprem_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL rate = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate, 0.00085), COALESCE(cloud_rate, 0.85)), currency_unit = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate_unit, cloud_unit, \"EUR\"), COALESCE(cloud_unit, \"EUR\"))\n| STATS `Normalized cost` = SUM(total_chargeable_units * rate) BY Deployment, `Cost Category`, `Cost Type`\n| SORT `Normalized cost` DESC"
                             },
                             "visualization": {
                                 "columns": [
@@ -1260,7 +1260,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM billing_cluster_cost_lookup\n  | WHERE cost_type IS NOT NULL\n  | EVAL `ts` = @timestamp, `Cost Category` = cost_category, `Cost Type` = cost_type,\n      Deployment = deployment_name\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON `ts` >= conf_start_date AND `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY Deployment, `Cost Category`, `Cost Type`\n  | SORT `Normalized cost` DESC"
+                        "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE @timestamp IS NOT NULL AND cost_type IS NOT NULL\n| EVAL ts = @timestamp, `Cost Category` = cost_category, `Cost Type` = cost_type, Deployment = deployment_name\n| EVAL is_onprem_row = COALESCE(is_onprem, ess.billing.deployment_type IN (\"onprem\", \"ece\", \"eck\") OR cloud.provider == \"onprem\", false), cloud_cfg_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON cloud_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL cloud_rate = conf_chargeable_unit_rate, cloud_unit = conf_chargeable_unit_rate_unit\n| DROP cloud_cfg_key, config_join_key, conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit\n| EVAL onprem_cfg_key = CASE(is_onprem_row, \"chargeback_config_onprem\", null)\n| LOOKUP JOIN chargeback_conf_lookup ON onprem_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL rate = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate, 0.00085), COALESCE(cloud_rate, 0.85)), currency_unit = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate_unit, cloud_unit, \"EUR\"), COALESCE(cloud_unit, \"EUR\"))\n| STATS `Normalized cost` = SUM(total_chargeable_units * rate) BY Deployment, `Cost Category`, `Cost Type`\n| SORT `Normalized cost` DESC"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -1282,7 +1282,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Proportional cost split by FinOps category per deployment \u2014 shows how much of each deployment's bill comes from data storage (data_tier) versus platform components (ML, Kibana, APM) versus operational overhead (transfer, snapshot). FinOps value: the headline for optimisation conversations \u2014 a high transfer or snapshot share signals quick-win reduction opportunities.",
+                        "description": "Proportional cost split by FinOps category per deployment — shows how much of each deployment's bill comes from data storage (data_tier) versus platform components (ML, Kibana, APM) versus operational overhead (transfer, snapshot). FinOps value: the headline for optimisation conversations — a high transfer or snapshot share signals quick-win reduction opportunities.",
                         "references": [],
                         "state": {
                             "adHocDataViews": {
@@ -1292,11 +1292,11 @@
                                     "fieldFormats": {},
                                     "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                     "managed": false,
-                                    "name": "billing_cluster_cost_lookup",
+                                    "name": "chargeback_lookup.billing_cluster_cost",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "billing_cluster_cost_lookup",
+                                    "title": "chargeback_lookup.billing_cluster_cost",
                                     "type": "esql"
                                 }
                             },
@@ -1306,7 +1306,7 @@
                                         {
                                             "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "timeField": "@timestamp",
-                                            "title": "billing_cluster_cost_lookup"
+                                            "title": "chargeback_lookup.billing_cluster_cost"
                                         }
                                     ],
                                     "layers": {
@@ -1343,7 +1343,7 @@
                                                             "id": "string"
                                                         },
                                                         "sourceParams": {
-                                                            "indexPattern": "billing_cluster_cost_lookup",
+                                                            "indexPattern": "chargeback_lookup.billing_cluster_cost",
                                                             "sourceField": "Deployment"
                                                         },
                                                         "type": "string"
@@ -1370,7 +1370,7 @@
                                                             "id": "string"
                                                         },
                                                         "sourceParams": {
-                                                            "indexPattern": "billing_cluster_cost_lookup",
+                                                            "indexPattern": "chargeback_lookup.billing_cluster_cost",
                                                             "sourceField": "Deployment"
                                                         },
                                                         "type": "string"
@@ -1400,7 +1400,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE cost_type IS NOT NULL\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)) BY deployment_name, cost_category\n| RENAME cost_category AS `Cost Category`, deployment_name AS `Deployment`\n| SORT `Normalized cost` DESC"
+                                                "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE @timestamp IS NOT NULL AND cost_type IS NOT NULL\n| EVAL ts = @timestamp\n| EVAL is_onprem_row = COALESCE(is_onprem, ess.billing.deployment_type IN (\"onprem\", \"ece\", \"eck\") OR cloud.provider == \"onprem\", false), cloud_cfg_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON cloud_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL cloud_rate = conf_chargeable_unit_rate, cloud_unit = conf_chargeable_unit_rate_unit\n| DROP cloud_cfg_key, config_join_key, conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit\n| EVAL onprem_cfg_key = CASE(is_onprem_row, \"chargeback_config_onprem\", null)\n| LOOKUP JOIN chargeback_conf_lookup ON onprem_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL rate = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate, 0.00085), COALESCE(cloud_rate, 0.85)), currency_unit = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate_unit, cloud_unit, \"EUR\"), COALESCE(cloud_unit, \"EUR\"))\n| STATS `Normalized cost` = SUM(total_chargeable_units * rate) BY deployment_name, cost_category\n| RENAME cost_category AS `Cost Category`, deployment_name AS `Deployment`\n| SORT `Normalized cost` DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1410,7 +1410,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE cost_type IS NOT NULL\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)) BY deployment_name, cost_category\n| RENAME cost_category AS `Cost Category`, deployment_name AS `Deployment`\n| SORT `Normalized cost` DESC"
+                                "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE @timestamp IS NOT NULL AND cost_type IS NOT NULL\n| EVAL ts = @timestamp\n| EVAL is_onprem_row = COALESCE(is_onprem, ess.billing.deployment_type IN (\"onprem\", \"ece\", \"eck\") OR cloud.provider == \"onprem\", false), cloud_cfg_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON cloud_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL cloud_rate = conf_chargeable_unit_rate, cloud_unit = conf_chargeable_unit_rate_unit\n| DROP cloud_cfg_key, config_join_key, conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit\n| EVAL onprem_cfg_key = CASE(is_onprem_row, \"chargeback_config_onprem\", null)\n| LOOKUP JOIN chargeback_conf_lookup ON onprem_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL rate = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate, 0.00085), COALESCE(cloud_rate, 0.85)), currency_unit = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate_unit, cloud_unit, \"EUR\"), COALESCE(cloud_unit, \"EUR\"))\n| STATS `Normalized cost` = SUM(total_chargeable_units * rate) BY deployment_name, cost_category\n| RENAME cost_category AS `Cost Category`, deployment_name AS `Deployment`\n| SORT `Normalized cost` DESC"
                             },
                             "visualization": {
                                 "layers": [
@@ -1455,7 +1455,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Proportional cost split by billing component (cost_type) per deployment \u2014 the finest-grained view of what Elastic is invoicing. FinOps value: pinpoints exactly which SKU families dominate spend, e.g. whether cold-tier storage or data-transfer is the unexpected cost driver.",
+                        "description": "Proportional cost split by billing component (cost_type) per deployment — the finest-grained view of what Elastic is invoicing. FinOps value: pinpoints exactly which SKU families dominate spend, e.g. whether cold-tier storage or data-transfer is the unexpected cost driver.",
                         "references": [],
                         "state": {
                             "adHocDataViews": {
@@ -1465,11 +1465,11 @@
                                     "fieldFormats": {},
                                     "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                     "managed": false,
-                                    "name": "billing_cluster_cost_lookup",
+                                    "name": "chargeback_lookup.billing_cluster_cost",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "billing_cluster_cost_lookup",
+                                    "title": "chargeback_lookup.billing_cluster_cost",
                                     "type": "esql"
                                 }
                             },
@@ -1479,7 +1479,7 @@
                                         {
                                             "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "timeField": "@timestamp",
-                                            "title": "billing_cluster_cost_lookup"
+                                            "title": "chargeback_lookup.billing_cluster_cost"
                                         }
                                     ],
                                     "layers": {
@@ -1516,7 +1516,7 @@
                                                             "id": "string"
                                                         },
                                                         "sourceParams": {
-                                                            "indexPattern": "billing_cluster_cost_lookup",
+                                                            "indexPattern": "chargeback_lookup.billing_cluster_cost",
                                                             "sourceField": "Deployment"
                                                         },
                                                         "type": "string"
@@ -1543,7 +1543,7 @@
                                                             "id": "string"
                                                         },
                                                         "sourceParams": {
-                                                            "indexPattern": "billing_cluster_cost_lookup",
+                                                            "indexPattern": "chargeback_lookup.billing_cluster_cost",
                                                             "sourceField": "Deployment"
                                                         },
                                                         "type": "string"
@@ -1573,7 +1573,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE cost_type IS NOT NULL\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)) BY deployment_name, cost_type\n| RENAME cost_type AS `Cost Type`, deployment_name as `Deployment`\n| SORT `Normalized cost` DESC"
+                                                "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE @timestamp IS NOT NULL AND cost_type IS NOT NULL\n| EVAL ts = @timestamp\n| EVAL is_onprem_row = COALESCE(is_onprem, ess.billing.deployment_type IN (\"onprem\", \"ece\", \"eck\") OR cloud.provider == \"onprem\", false), cloud_cfg_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON cloud_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL cloud_rate = conf_chargeable_unit_rate, cloud_unit = conf_chargeable_unit_rate_unit\n| DROP cloud_cfg_key, config_join_key, conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit\n| EVAL onprem_cfg_key = CASE(is_onprem_row, \"chargeback_config_onprem\", null)\n| LOOKUP JOIN chargeback_conf_lookup ON onprem_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL rate = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate, 0.00085), COALESCE(cloud_rate, 0.85)), currency_unit = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate_unit, cloud_unit, \"EUR\"), COALESCE(cloud_unit, \"EUR\"))\n| STATS `Normalized cost` = SUM(total_chargeable_units * rate) BY deployment_name, cost_type\n| RENAME cost_type AS `Cost Type`, deployment_name AS `Deployment`\n| SORT `Normalized cost` DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1583,7 +1583,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE cost_type IS NOT NULL\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)) BY deployment_name, cost_type\n| RENAME cost_type AS `Cost Type`, deployment_name as `Deployment`\n| SORT `Normalized cost` DESC"
+                                "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE @timestamp IS NOT NULL AND cost_type IS NOT NULL\n| EVAL ts = @timestamp\n| EVAL is_onprem_row = COALESCE(is_onprem, ess.billing.deployment_type IN (\"onprem\", \"ece\", \"eck\") OR cloud.provider == \"onprem\", false), cloud_cfg_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON cloud_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL cloud_rate = conf_chargeable_unit_rate, cloud_unit = conf_chargeable_unit_rate_unit\n| DROP cloud_cfg_key, config_join_key, conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit\n| EVAL onprem_cfg_key = CASE(is_onprem_row, \"chargeback_config_onprem\", null)\n| LOOKUP JOIN chargeback_conf_lookup ON onprem_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date\n| EVAL rate = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate, 0.00085), COALESCE(cloud_rate, 0.85)), currency_unit = CASE(is_onprem_row, COALESCE(conf_chargeable_unit_rate_unit, cloud_unit, \"EUR\"), COALESCE(cloud_unit, \"EUR\"))\n| STATS `Normalized cost` = SUM(total_chargeable_units * rate) BY deployment_name, cost_type\n| RENAME cost_type AS `Cost Type`, deployment_name AS `Deployment`\n| SORT `Normalized cost` DESC"
                             },
                             "visualization": {
                                 "layers": [
@@ -1610,7 +1610,7 @@
                         "version": 2,
                         "visualizationType": "lnsPie"
                     },
-                    "description": "Cost broken down by Deployment, and Billable component (Cost type).\nCost Type shows individual SKU families (datahot/datacontent, datawarm, ml, kibana, snapshots, \u2026).",
+                    "description": "Cost broken down by Deployment, and Billable component (Cost type).\nCost Type shows individual SKU families (datahot/datacontent, datawarm, ml, kibana, snapshots, …).",
                     "title": "Cost Share by Billing Component"
                 },
                 "gridData": {

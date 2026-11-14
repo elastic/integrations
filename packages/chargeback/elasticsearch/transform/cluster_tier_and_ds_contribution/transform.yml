@@ -1,19 +1,20 @@
-description: Aggregates daily total ECU usage per tier and datastream from billing metrics, using ingested timestamps with a 1-hour sync delay and running every 60 minutes.
+description: Aggregates daily total indexing, query, and storage usage per tier and data stream across native Chargeback and legacy monitoring-indices sources.
 source:
   index:
-    - "monitoring-indices*"
+    - metrics-chargeback.usage-*
+    - monitoring-indices*
     - "*:monitoring-indices*"
-    # Canonical usage source: Elasticsearch integration index_pivot output and
-    # Serverless staging (monitoring-indices*). Cloud Console Logs and metrics
-    # (.monitoring-es-*) feed Chargeback through index_pivot into this pattern.
-    # Do not also source .monitoring-es-* here — that double-counts when the pivot
-    # is running (raw Metricbeat rows plus their pivoted copies).
-  # These read whichever of <field> / <field>.keyword the mapping actually makes
-  # aggregatable. Where the .monitoring-es-mb index template is not governing the
-  # .monitoring-es-8-mb data stream, dynamic mapping produces `text` plus a `.keyword`
-  # subfield, and a terms aggregation on the text field fails with "Fielddata is
-  # disabled ... Will automatically retry [1/-1]" - retrying forever without ever
-  # producing a row. Both branches below use doc values, so there is no _source penalty.
+    - -monitoring-indices-chargeback
+    - "*:-monitoring-indices-chargeback"
+    - -chargeback_lookup.*
+    - "*:-chargeback_lookup.*"
+  query:
+    bool:
+      must_not:
+        - term:
+            doc_type: config_snapshot
+        - term:
+            cb_excluded_index: true
   runtime_mappings:
     cb_cluster_name:
       type: keyword
@@ -24,9 +25,18 @@ source:
             if (!doc[kw].empty) { emit(doc[kw].value.toString()); }
             return;
           }
-          if (doc.containsKey('elasticsearch.cluster.name') && !doc['elasticsearch.cluster.name'].empty) {
-            emit(doc['elasticsearch.cluster.name'].value.toString());
-          }
+          try {
+            if (doc.containsKey('elasticsearch.cluster.name') && !doc['elasticsearch.cluster.name'].empty) {
+              emit(doc['elasticsearch.cluster.name'].value.toString());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            def cname = params._source?.elasticsearch?.cluster?.name;
+            if (cname != null && cname.toString() != '') {
+              emit(cname.toString());
+            }
+          } catch (Exception e) {}
     cb_index_name:
       type: keyword
       script:
@@ -36,53 +46,264 @@ source:
             if (!doc[kw].empty) { emit(doc[kw].value.toString()); }
             return;
           }
-          if (doc.containsKey('elasticsearch.index.name') && !doc['elasticsearch.index.name'].empty) {
-            emit(doc['elasticsearch.index.name'].value.toString());
+          try {
+            if (doc.containsKey('elasticsearch.index.name') && !doc['elasticsearch.index.name'].empty) {
+              emit(doc['elasticsearch.index.name'].value.toString());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            def iname = params._source?.elasticsearch?.index?.name;
+            if (iname != null && iname.toString() != '') {
+              emit(iname.toString());
+            }
+          } catch (Exception e) {}
+    cb_excluded_index:
+      type: boolean
+      script:
+        source: |
+          String name = '';
+          String kw = 'elasticsearch.index.name.keyword';
+          if (doc.containsKey(kw) && !doc[kw].empty) {
+            name = doc[kw].value.toString();
+          } else {
+            try {
+              if (doc.containsKey('elasticsearch.index.name') && !doc['elasticsearch.index.name'].empty) {
+                name = doc['elasticsearch.index.name'].value.toString();
+              }
+            } catch (Exception e) {}
+            if (name == '') {
+              try {
+                def iname = params._source?.elasticsearch?.index?.name;
+                if (iname != null) { name = iname.toString(); }
+              } catch (Exception e) {}
+            }
           }
-    cb_index_datastream:
+          if (name != '') {
+            String stripped = name;
+            for (int i = 0; i < 4; i++) {
+              String prev = stripped;
+              if (stripped.startsWith('partial-')) { stripped = stripped.substring(8); }
+              if (stripped.startsWith('restored-')) { stripped = stripped.substring(9); }
+              def sm = /^shrink-.{4}-(.*)$/.matcher(stripped);
+              if (sm.matches()) { stripped = sm.group(1); }
+              if (stripped.equals(prev)) { break; }
+            }
+            boolean isCbLookup = (
+              name.startsWith('chargeback_lookup.') ||
+              stripped.startsWith('chargeback_lookup.') ||
+              name == 'monitoring-indices' ||
+              stripped == 'monitoring-indices' ||
+              name == 'monitoring-indices-chargeback' ||
+              stripped == 'monitoring-indices-chargeback' ||
+              /^(?:billing_cluster_cost_lookup|billing_realized_pool_lookup|chargeback_conf_lookup|cluster_capacity_utilization_lookup|cluster_deployment_contribution_lookup|cluster_tier_contribution_lookup|cluster_datastream_contribution_lookup|cluster_tier_and_datastream_contribution_lookup)(?:-\d+)?$/.matcher(stripped).matches()
+            );
+            if ((name.startsWith('.') && !name.startsWith('.ds-'))
+                || (stripped.startsWith('.') && !stripped.startsWith('.ds-'))
+                || name.startsWith('.ds-.')
+                || stripped.startsWith('.ds-.')
+                || name.startsWith('.ds-ilm-history')
+                || stripped.startsWith('.ds-ilm-history')
+                || isCbLookup
+                || name.contains('metrics-chargeback.')
+                || stripped.contains('metrics-chargeback.')
+                || name.contains('logs-chargeback.')
+                || stripped.contains('logs-chargeback.')) {
+              emit(true);
+              return;
+            }
+            emit(false);
+            return;
+          }
+          String ds = '';
+          for (String df : ['elasticsearch.index.datastream.keyword', 'elasticsearch.index.datastream']) {
+            try {
+              if (doc.containsKey(df) && !doc[df].empty) {
+                ds = doc[df].value.toString();
+                if (ds != '') { break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (ds != '' && (ds.startsWith('.') || ds.startsWith('ilm-history') || ds.startsWith('metrics-chargeback.') || ds.startsWith('logs-chargeback.') || ds.startsWith('chargeback_lookup.'))) {
+            emit(true);
+            return;
+          }
+          emit(false);
+    cb_sync_ts:
+      type: date
+      script:
+        source: |
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              emit(doc['event.ingested'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          for (String k : ['ingested', 'created']) {
+            if (k == 'created') {
+              try {
+                if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+                  emit(doc['event.created'].value.toInstant().toEpochMilli());
+                  return;
+                }
+              } catch (Exception e) {}
+            }
+            def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get(k) : null;
+            if (rawVal == null && params._source != null) {
+              rawVal = params._source.get('event.' + k);
+            }
+            if (rawVal != null) {
+              if (rawVal instanceof Number) {
+                emit(((Number)rawVal).longValue());
+                return;
+              }
+              String s = rawVal.toString().trim();
+              if (s != '') {
+                try {
+                  emit(ZonedDateTime.parse(s).toInstant().toEpochMilli());
+                  return;
+                } catch (Exception e) {}
+              }
+            }
+          }
+          if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+            emit(doc['@timestamp'].value.toInstant().toEpochMilli());
+          }
+    cb_resolved_tier:
       type: keyword
       script:
         source: |
-          String kw = 'elasticsearch.index.datastream.keyword';
-          if (doc.containsKey(kw)) {
-            if (!doc[kw].empty) { emit(doc[kw].value.toString()); }
-            return;
+          for (String f : ['elasticsearch.index.tier.keyword', 'elasticsearch.index.tier']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                String t = doc[f].value.toString();
+                if (t != '' && t != 'unknown') { emit(t); return; }
+              }
+            } catch (Exception e) {}
           }
-          if (doc.containsKey('elasticsearch.index.datastream') && !doc['elasticsearch.index.datastream'].empty) {
-            emit(doc['elasticsearch.index.datastream'].value.toString());
+          try {
+            def st = params._source?.elasticsearch?.index?.tier;
+            if (st != null && st.toString() != '' && st.toString() != 'unknown') {
+              emit(st.toString());
+              return;
+            }
+          } catch (Exception e) {}
+          String pref = null;
+          for (String pf : ['elasticsearch.index.tier_preference.keyword', 'elasticsearch.index.tier_preference']) {
+            try {
+              if (doc.containsKey(pf) && !doc[pf].empty) {
+                pref = doc[pf].value.toString();
+                if (pref != '') { break; }
+              }
+            } catch (Exception e) {}
           }
-    cb_index_tier:
+          if (pref == null || pref == '') {
+            try {
+              def sp = params._source?.elasticsearch?.index?.tier_preference;
+              if (sp != null) { pref = sp.toString(); }
+            } catch (Exception e) {}
+          }
+          if (pref == null || pref == '') { emit('unknown'); return; }
+          for (String part : pref.splitOnToken(',')) {
+            String tp = part.trim();
+            if (tp == 'data_frozen') { emit('frozen'); return; }
+            if (tp == 'data_cold') { emit('cold'); return; }
+            if (tp == 'data_warm') { emit('warm'); return; }
+            if (tp == 'data_hot' || tp == 'data_content') { emit('hot/content'); return; }
+          }
+          emit('unknown');
+    cb_bucket_tier:
       type: keyword
       script:
         source: |
-          String kw = 'elasticsearch.index.tier.keyword';
-          if (doc.containsKey(kw)) {
-            if (!doc[kw].empty) { emit(doc[kw].value.toString()); }
-            return;
+          String resolved = null;
+          for (String f : ['elasticsearch.index.tier.keyword', 'elasticsearch.index.tier']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                String t = doc[f].value.toString();
+                if (t != '' && t != 'unknown') { resolved = t; break; }
+              }
+            } catch (Exception e) {}
           }
-          if (doc.containsKey('elasticsearch.index.tier') && !doc['elasticsearch.index.tier'].empty) {
-            emit(doc['elasticsearch.index.tier'].value.toString());
+          if (resolved == null) {
+            try {
+              def st = params._source?.elasticsearch?.index?.tier;
+              if (st != null && st.toString() != '' && st.toString() != 'unknown') { resolved = st.toString(); }
+            } catch (Exception e) {}
           }
-    cb_index_tier_preference:
+          for (String ct : ['hot/content', 'warm', 'cold', 'frozen', 'unknown']) {
+            emit(ct);
+          }
+          if (resolved != null && resolved != 'hot/content' && resolved != 'warm' && resolved != 'cold' && resolved != 'frozen' && resolved != 'unknown') {
+            emit(resolved);
+          }
+    cb_resolved_datastream:
       type: keyword
       script:
         source: |
-          String kw = 'elasticsearch.index.tier_preference.keyword';
-          if (doc.containsKey(kw)) {
-            if (!doc[kw].empty) { emit(doc[kw].value.toString()); }
+          String name = '';
+          String kw = 'elasticsearch.index.name.keyword';
+          if (doc.containsKey(kw) && !doc[kw].empty) {
+            name = doc[kw].value.toString();
+          } else {
+            try {
+              if (doc.containsKey('elasticsearch.index.name') && !doc['elasticsearch.index.name'].empty) {
+                name = doc['elasticsearch.index.name'].value.toString();
+              }
+            } catch (Exception e) {}
+            if (name == '') {
+              try {
+                def iname = params._source?.elasticsearch?.index?.name;
+                if (iname != null) { name = iname.toString(); }
+              } catch (Exception e) {}
+            }
+          }
+          if (name != '') {
+            String stripped = name;
+            for (int i = 0; i < 4; i++) {
+              String prev = stripped;
+              if (stripped.startsWith('partial-')) { stripped = stripped.substring(8); }
+              if (stripped.startsWith('restored-')) { stripped = stripped.substring(9); }
+              def sm = /^shrink-.{4}-(.*)$/.matcher(stripped);
+              if (sm.matches()) { stripped = sm.group(1); }
+              if (stripped.equals(prev)) { break; }
+            }
+            if (stripped.startsWith('.ds-')) {
+              def dm = /^\.ds-([^:\s]+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d{6,})?$/.matcher(stripped);
+              if (dm.matches() && !dm.group(1).startsWith('.')) {
+                emit(dm.group(1));
+                return;
+              }
+            } else {
+              def rm = /^([^:\s]+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?(?:-\d{6,})?|-\d{6,})$/.matcher(stripped);
+              if (rm.matches() && !rm.group(1).startsWith('.')) {
+                emit(rm.group(1));
+                return;
+              }
+            }
+            emit((name.startsWith('.') || stripped.startsWith('.')) ? 'system' : stripped);
             return;
           }
-          if (doc.containsKey('elasticsearch.index.tier_preference') && !doc['elasticsearch.index.tier_preference'].empty) {
-            emit(doc['elasticsearch.index.tier_preference'].value.toString());
+          for (String f : ['elasticsearch.index.datastream.keyword', 'elasticsearch.index.datastream']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                String ds = doc[f].value.toString();
+                if (ds != '' && ds != 'unknown') { emit(ds); return; }
+              }
+            } catch (Exception e) {}
           }
+          emit('unknown');
 dest:
-  index: cluster_tier_and_datastream_contribution_lookup
-  pipeline: logs-chargeback.lookup-0.5.0-usage
+  index: chargeback_lookup.dest_cluster_tier_and_datastream_contribution-1
+  aliases:
+    - alias: chargeback_lookup.cluster_tier_and_datastream_contribution
+      move_on_creation: true
+  pipeline: logs-chargeback.lookup-0.6.0-usage
 frequency: 60m
 sync:
   time:
-    field: "@timestamp"
-    delay: 1h
+    field: cb_sync_ts
+    delay: 60s
 pivot:
   group_by:
     "@timestamp":
@@ -94,62 +315,664 @@ pivot:
         field: cb_cluster_name
     tier:
       terms:
-        script:
-          lang: painless
-          # Use | not >: folded > turns newlines into spaces so // comments eat the preference checks.
-          source: |
-            if (doc.containsKey('cb_index_tier') && !doc['cb_index_tier'].empty) {
-              def tier = doc['cb_index_tier'].value;
-              if (tier != null && tier != 'unknown') return tier;
-            }
-            def pref = doc.containsKey('cb_index_tier_preference') && !doc['cb_index_tier_preference'].empty ? doc['cb_index_tier_preference'].value : null;
-            if (pref == null) return 'unknown';
-            /* Match monitoring_indices.yml: frozen → cold → warm → hot/content
-               (preference lists like data_cold,data_warm,data_hot must not resolve to hot) */
-            if (pref.contains('data_frozen')) return 'frozen';
-            if (pref.contains('data_cold')) return 'cold';
-            if (pref.contains('data_warm')) return 'warm';
-            if (pref.contains('data_hot') || pref.contains('data_content')) return 'hot/content';
-            return 'unknown';
+        field: cb_bucket_tier
     datastream:
       terms:
-        script:
-          lang: painless
-          source: |
-            if (doc.containsKey('cb_index_datastream') && !doc['cb_index_datastream'].empty) {
-              return doc['cb_index_datastream'].value;
-            }
-
-            def name = doc.containsKey('cb_index_name') && !doc['cb_index_name'].empty
-              ? doc['cb_index_name'].value
-              : null;
-            if (name == null) return 'unknown';
-
-            def matcher = /^(?:partial-)?(?:restored-)?(?:shrink-.{4}-)?(?:\.ds-)?([a-z_0-9\-.]+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d+)?$/.matcher(name);
-            if (matcher.matches()) {
-              return matcher.group(1);
-            }
-            return 'unknown';
+        field: cb_resolved_datastream
   aggregations:
-    tier_and_datastream_sum_indexing_time:
-      sum:
-        field: elasticsearch.index.total.indexing.index_time_in_millis
-    tier_and_datastream_sum_query_time:
-      sum:
-        field: elasticsearch.index.total.search.query_time_in_millis
-    tier_and_datastream_sum_store_size:
-      sum:
-        field: elasticsearch.index.total.store.size_in_bytes
-    tier_and_datastream_sum_data_set_store_size:
-      sum:
-        field: elasticsearch.index.primaries.store.total_data_set_size_in_bytes
+    rollup:
+      scripted_metric:
+        init_script: |
+          state.units = new HashMap();
+          state.raw_nat = [0L, 0L, 0L, 0L];
+          state.raw_leg = [0L, 0L, 0L, 0L];
+          state.raw_nat_by_tier = new HashMap();
+          state.nat_cnt_by_tier = new HashMap();
+          state.raw_leg_by_tier = new HashMap();
+          state.leg_cnt_by_tier = new HashMap();
+          state.nat_cnt = 0L;
+          state.leg_cnt = 0L;
+        map_script: |
+          if (!doc.containsKey('@timestamp') || doc['@timestamp'].empty) { return; }
+          long ts = doc['@timestamp'].value.toInstant().toEpochMilli();
+          long rem = ts % 86400000L;
+          if (rem < 0L) { rem += 86400000L; }
+          long dayStartMs = ts - rem;
+          int b = (int)(rem / 600000L);
+          if (b < 0) { b = 0; }
+          if (b > 143) { b = 143; }
+          int w = b >> 6;
+          long bit = 1L << (b & 63);
+          String idx = (doc.containsKey('cb_index_name') && !doc['cb_index_name'].empty)
+            ? doc['cb_index_name'].value.toString()
+            : '_default_';
+          String tier = (doc.containsKey('cb_resolved_tier') && !doc['cb_resolved_tier'].empty)
+            ? doc['cb_resolved_tier'].value.toString()
+            : 'unknown';
+          String ds = (doc.containsKey('cb_resolved_datastream') && !doc['cb_resolved_datastream'].empty)
+            ? doc['cb_resolved_datastream'].value.toString()
+            : 'unknown';
+          if (idx == '_default_' && ds != 'unknown') { idx = 'ds:' + ds; }
+          String ukey = idx;
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback.usage';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback.usage';
+            }
+          } catch (Exception e) {
+            try {
+              if (params._source?.data_stream?.dataset != null) {
+                isNat = params._source.data_stream.dataset.toString() == 'chargeback.usage';
+              }
+            } catch (Exception e2) {}
+          }
+          String idxField = isNat ? 'elasticsearch.index.total.indexing.index_time_in_millis' : 'elasticsearch.index.total.indexing.index_time_in_millis_delta';
+          String qryField = isNat ? 'elasticsearch.index.total.search.query_time_in_millis' : 'elasticsearch.index.total.search.query_time_in_millis_delta';
+          long idxMs = 0L;
+          long qryMs = 0L;
+          long storeB = 0L;
+          long dsetB = 0L;
+          try {
+            if (doc.containsKey(idxField) && !doc[idxField].empty) { idxMs = ((Number)doc[idxField].value).longValue(); }
+            else if (params._source?.elasticsearch?.index?.total?.indexing != null) {
+              def v = isNat ? params._source.elasticsearch.index.total.indexing.index_time_in_millis : params._source.elasticsearch.index.total.indexing.index_time_in_millis_delta;
+              if (v instanceof Number) { idxMs = ((Number)v).longValue(); }
+            }
+          } catch (Exception e) {}
+          try {
+            if (doc.containsKey(qryField) && !doc[qryField].empty) { qryMs = ((Number)doc[qryField].value).longValue(); }
+            else if (params._source?.elasticsearch?.index?.total?.search != null) {
+              def v = isNat ? params._source.elasticsearch.index.total.search.query_time_in_millis : params._source.elasticsearch.index.total.search.query_time_in_millis_delta;
+              if (v instanceof Number) { qryMs = ((Number)v).longValue(); }
+            }
+          } catch (Exception e) {}
+          try {
+            if (doc.containsKey('elasticsearch.index.total.store.size_in_bytes') && !doc['elasticsearch.index.total.store.size_in_bytes'].empty) {
+              storeB = ((Number)doc['elasticsearch.index.total.store.size_in_bytes'].value).longValue();
+            } else if (params._source?.elasticsearch?.index?.total?.store?.size_in_bytes instanceof Number) {
+              storeB = ((Number)params._source.elasticsearch.index.total.store.size_in_bytes).longValue();
+            }
+          } catch (Exception e) {}
+          try {
+            if (doc.containsKey('elasticsearch.index.primaries.store.total_data_set_size_in_bytes') && !doc['elasticsearch.index.primaries.store.total_data_set_size_in_bytes'].empty) {
+              dsetB = ((Number)doc['elasticsearch.index.primaries.store.total_data_set_size_in_bytes'].value).longValue();
+            } else if (params._source?.elasticsearch?.index?.primaries?.store?.total_data_set_size_in_bytes instanceof Number) {
+              dsetB = ((Number)params._source.elasticsearch.index.primaries.store.total_data_set_size_in_bytes).longValue();
+            }
+          } catch (Exception e) {}
+
+          Map u = (Map)state.units.get(ukey);
+          if (u == null) {
+            u = new HashMap();
+            u.put('lm', [0L, 0L, 0L]);
+            u.put('lt', [0L, 0L, 0L, 0L, 0L]);
+            u.put('ltier', 'unknown');
+            u.put('ns', new ArrayList());
+            u.put('bs', null);
+            state.units.put(ukey, u);
+          }
+
+          if (isNat) {
+            state.nat_cnt = ((Number)state.nat_cnt).longValue() + 1L;
+            long tcPrev = state.nat_cnt_by_tier.containsKey(tier) ? ((Number)state.nat_cnt_by_tier.get(tier)).longValue() : 0L;
+            state.nat_cnt_by_tier.put(tier, tcPrev + 1L);
+
+            boolean hasDelta = false;
+            for (String df : [
+              'elasticsearch.index.primaries.docs.count_delta',
+              'elasticsearch.index.total.indexing.index_time_in_millis_delta',
+              'elasticsearch.index.interval.duration_ms'
+            ]) {
+              try {
+                if (doc.containsKey(df) && !doc[df].empty) { hasDelta = true; break; }
+              } catch (Exception e) {}
+            }
+            if (!hasDelta) {
+              try {
+                def ix = params._source?.elasticsearch?.index;
+                if (ix?.primaries?.docs?.count_delta != null
+                    || ix?.total?.indexing?.index_time_in_millis_delta != null
+                    || ix?.interval?.duration_ms != null) {
+                  hasDelta = true;
+                }
+              } catch (Exception e) {}
+            }
+
+            if (hasDelta) {
+              long intStartMs = -1L;
+              long intEndMs = -1L;
+              long durMs = -1L;
+              try {
+                if (doc.containsKey('elasticsearch.index.interval.start') && !doc['elasticsearch.index.interval.start'].empty) {
+                  intStartMs = doc['elasticsearch.index.interval.start'].value.toInstant().toEpochMilli();
+                }
+              } catch (Exception e) {}
+              if (intStartMs < 0L) {
+                try {
+                  def rs = params._source?.elasticsearch?.index?.interval?.start;
+                  if (rs instanceof Number) { intStartMs = ((Number)rs).longValue(); }
+                  else if (rs != null) { intStartMs = ZonedDateTime.parse(rs.toString()).toInstant().toEpochMilli(); }
+                } catch (Exception e) {}
+              }
+              try {
+                if (doc.containsKey('elasticsearch.index.interval.end') && !doc['elasticsearch.index.interval.end'].empty) {
+                  intEndMs = doc['elasticsearch.index.interval.end'].value.toInstant().toEpochMilli();
+                }
+              } catch (Exception e) {}
+              if (intEndMs < 0L) {
+                try {
+                  def re = params._source?.elasticsearch?.index?.interval?.end;
+                  if (re instanceof Number) { intEndMs = ((Number)re).longValue(); }
+                  else if (re != null) { intEndMs = ZonedDateTime.parse(re.toString()).toInstant().toEpochMilli(); }
+                } catch (Exception e) {}
+              }
+              try {
+                if (doc.containsKey('elasticsearch.index.interval.duration_ms') && !doc['elasticsearch.index.interval.duration_ms'].empty) {
+                  durMs = ((Number)doc['elasticsearch.index.interval.duration_ms'].value).longValue();
+                } else if (params._source?.elasticsearch?.index?.interval?.duration_ms instanceof Number) {
+                  durMs = ((Number)params._source.elasticsearch.index.interval.duration_ms).longValue();
+                }
+              } catch (Exception e) {}
+
+              long sOff = -1L;
+              long eOff = -1L;
+              if (intStartMs >= 0L && intEndMs > intStartMs) {
+                long dayEndMs = dayStartMs + 86400000L;
+                long cStart = intStartMs < dayEndMs ? intStartMs : dayEndMs;
+                if (cStart < dayStartMs) { cStart = dayStartMs; }
+                long cEnd = intEndMs < dayEndMs ? intEndMs : dayEndMs;
+                if (cEnd < cStart) { cEnd = cStart; }
+                sOff = cStart - dayStartMs;
+                eOff = cEnd - dayStartMs;
+              }
+              if (eOff <= sOff) {
+                long effDur = durMs > 0L ? (durMs < 86400000L ? durMs : 86400000L) : 600000L;
+                eOff = (b + 1L) * 600000L;
+                sOff = (eOff - effDur) > 0L ? (eOff - effDur) : 0L;
+              }
+              long spanMs = (eOff - sOff) > 1L ? (eOff - sOff) : 1L;
+              long rawWStore = Math.round((double)storeB * ((double)spanMs / 600000.0));
+              long rawWDset = Math.round((double)dsetB * ((double)spanMs / 600000.0));
+
+              List rn = (List)state.raw_nat;
+              rn.set(0, ((Number)rn.get(0)).longValue() + idxMs);
+              rn.set(1, ((Number)rn.get(1)).longValue() + qryMs);
+              rn.set(2, ((Number)rn.get(2)).longValue() + rawWStore);
+              rn.set(3, ((Number)rn.get(3)).longValue() + rawWDset);
+
+              List rnt = (List)state.raw_nat_by_tier.get(tier);
+              if (rnt == null) {
+                state.raw_nat_by_tier.put(tier, [idxMs, qryMs, rawWStore, rawWDset]);
+              } else {
+                rnt.set(0, ((Number)rnt.get(0)).longValue() + idxMs);
+                rnt.set(1, ((Number)rnt.get(1)).longValue() + qryMs);
+                rnt.set(2, ((Number)rnt.get(2)).longValue() + rawWStore);
+                rnt.set(3, ((Number)rnt.get(3)).longValue() + rawWDset);
+              }
+              ((List)u.get('ns')).add([sOff, eOff, idxMs, qryMs, storeB, dsetB, tier]);
+            } else {
+              if (!(u.get('bs') instanceof Map)) { u.put('bs', new HashMap()); }
+              ((Map)u.get('bs')).put(tier, [storeB, dsetB]);
+            }
+          } else {
+            state.leg_cnt = ((Number)state.leg_cnt).longValue() + 1L;
+            long ltcPrev = state.leg_cnt_by_tier.containsKey(tier) ? ((Number)state.leg_cnt_by_tier.get(tier)).longValue() : 0L;
+            state.leg_cnt_by_tier.put(tier, ltcPrev + 1L);
+            List rl = (List)state.raw_leg;
+            rl.set(0, ((Number)rl.get(0)).longValue() + idxMs);
+            rl.set(1, ((Number)rl.get(1)).longValue() + qryMs);
+            rl.set(2, ((Number)rl.get(2)).longValue() + storeB);
+            rl.set(3, ((Number)rl.get(3)).longValue() + dsetB);
+            List rlt = (List)state.raw_leg_by_tier.get(tier);
+            if (rlt == null) {
+              state.raw_leg_by_tier.put(tier, [idxMs, qryMs, storeB, dsetB]);
+            } else {
+              rlt.set(0, ((Number)rlt.get(0)).longValue() + idxMs);
+              rlt.set(1, ((Number)rlt.get(1)).longValue() + qryMs);
+              rlt.set(2, ((Number)rlt.get(2)).longValue() + storeB);
+              rlt.set(3, ((Number)rlt.get(3)).longValue() + dsetB);
+            }
+            List lm = (List)u.get('lm');
+            lm.set(w, ((Number)lm.get(w)).longValue() | bit);
+            List lt = (List)u.get('lt');
+            lt.set(0, ((Number)lt.get(0)).longValue() + idxMs);
+            lt.set(1, ((Number)lt.get(1)).longValue() + qryMs);
+            lt.set(2, ((Number)lt.get(2)).longValue() + storeB);
+            lt.set(3, ((Number)lt.get(3)).longValue() + dsetB);
+            lt.set(4, ((Number)lt.get(4)).longValue() + 1L);
+            u.put('ltier', tier);
+          }
+        combine_script: "return state;"
+        reduce_script: |
+          Map merged = new HashMap();
+          List rawNat = [0L, 0L, 0L, 0L];
+          List rawLeg = [0L, 0L, 0L, 0L];
+          Map rawNatByTier = new HashMap();
+          Map natCntByTier = new HashMap();
+          Map rawLegByTier = new HashMap();
+          Map legCntByTier = new HashMap();
+          long natCnt = 0L;
+          long legCnt = 0L;
+          for (def st : states) {
+            if (st == null) { continue; }
+            if (st.nat_cnt instanceof Number) { natCnt += ((Number)st.nat_cnt).longValue(); }
+            if (st.leg_cnt instanceof Number) { legCnt += ((Number)st.leg_cnt).longValue(); }
+            if (st.raw_nat instanceof List) {
+              for (int i = 0; i < 4; i++) { rawNat.set(i, ((Number)rawNat.get(i)).longValue() + ((Number)((List)st.raw_nat).get(i)).longValue()); }
+            }
+            if (st.raw_leg instanceof List) {
+              for (int i = 0; i < 4; i++) { rawLeg.set(i, ((Number)rawLeg.get(i)).longValue() + ((Number)((List)st.raw_leg).get(i)).longValue()); }
+            }
+            if (st.nat_cnt_by_tier instanceof Map) {
+              for (def te : ((Map)st.nat_cnt_by_tier).entrySet()) {
+                String tk = te.getKey().toString();
+                long tv = ((Number)te.getValue()).longValue();
+                long prev = natCntByTier.containsKey(tk) ? ((Number)natCntByTier.get(tk)).longValue() : 0L;
+                natCntByTier.put(tk, prev + tv);
+              }
+            }
+            if (st.raw_nat_by_tier instanceof Map) {
+              for (def te : ((Map)st.raw_nat_by_tier).entrySet()) {
+                String tk = te.getKey().toString();
+                List sv = (List)te.getValue();
+                List dv = (List)rawNatByTier.get(tk);
+                if (dv == null) {
+                  rawNatByTier.put(tk, [((Number)sv.get(0)).longValue(), ((Number)sv.get(1)).longValue(), ((Number)sv.get(2)).longValue(), ((Number)sv.get(3)).longValue()]);
+                } else {
+                  for (int i = 0; i < 4; i++) { dv.set(i, ((Number)dv.get(i)).longValue() + ((Number)sv.get(i)).longValue()); }
+                }
+              }
+            }
+            if (st.leg_cnt_by_tier instanceof Map) {
+              for (def te : ((Map)st.leg_cnt_by_tier).entrySet()) {
+                String tk = te.getKey().toString();
+                long tv = ((Number)te.getValue()).longValue();
+                long prev = legCntByTier.containsKey(tk) ? ((Number)legCntByTier.get(tk)).longValue() : 0L;
+                legCntByTier.put(tk, prev + tv);
+              }
+            }
+            if (st.raw_leg_by_tier instanceof Map) {
+              for (def te : ((Map)st.raw_leg_by_tier).entrySet()) {
+                String tk = te.getKey().toString();
+                List sv = (List)te.getValue();
+                List dv = (List)rawLegByTier.get(tk);
+                if (dv == null) {
+                  rawLegByTier.put(tk, [((Number)sv.get(0)).longValue(), ((Number)sv.get(1)).longValue(), ((Number)sv.get(2)).longValue(), ((Number)sv.get(3)).longValue()]);
+                } else {
+                  for (int i = 0; i < 4; i++) { dv.set(i, ((Number)dv.get(i)).longValue() + ((Number)sv.get(i)).longValue()); }
+                }
+              }
+            }
+            if (st.units instanceof Map) {
+              for (def ue : ((Map)st.units).entrySet()) {
+                String uk = ue.getKey().toString();
+                Map uv = (Map)ue.getValue();
+                Map acc = (Map)merged.get(uk);
+                if (acc == null) {
+                  acc = new HashMap();
+                  acc.put('lm', [0L, 0L, 0L]);
+                  acc.put('lt', [0L, 0L, 0L, 0L, 0L]);
+                  acc.put('ltier', 'unknown');
+                  acc.put('ns', new ArrayList());
+                  acc.put('bs', null);
+                  merged.put(uk, acc);
+                }
+                List alm = (List)acc.get('lm');
+                List ulm = (List)uv.get('lm');
+                for (int i = 0; i < 3; i++) { alm.set(i, ((Number)alm.get(i)).longValue() | ((Number)ulm.get(i)).longValue()); }
+                List alt = (List)acc.get('lt');
+                List ult = (List)uv.get('lt');
+                for (int i = 0; i < 5; i++) { alt.set(i, ((Number)alt.get(i)).longValue() + ((Number)ult.get(i)).longValue()); }
+                if (uv.get('ltier') != null && uv.get('ltier').toString() != 'unknown') {
+                  acc.put('ltier', uv.get('ltier').toString());
+                }
+                if (uv.get('ns') instanceof List) {
+                  ((List)acc.get('ns')).addAll((List)uv.get('ns'));
+                }
+                if (uv.get('bs') instanceof Map) {
+                  if (!(acc.get('bs') instanceof Map)) { acc.put('bs', new HashMap()); }
+                  ((Map)acc.get('bs')).putAll((Map)uv.get('bs'));
+                } else if (uv.get('bs') instanceof List) {
+                  List ubs = (List)uv.get('bs');
+                  if (!(acc.get('bs') instanceof Map)) { acc.put('bs', new HashMap()); }
+                  ((Map)acc.get('bs')).put(ubs.get(2).toString(), [ubs.get(0), ubs.get(1)]);
+                }
+              }
+            }
+          }
+
+          List sel = [0L, 0L, 0L, 0L];
+          Map selByTier = new HashMap();
+          Map tierFlags = new HashMap();
+          boolean usedNat = false;
+          boolean usedLeg = false;
+
+          for (def ue : merged.entrySet()) {
+            Map u = (Map)ue.getValue();
+            List lm = (List)u.get('lm');
+            List lt = (List)u.get('lt');
+            String ltier = u.get('ltier') != null ? u.get('ltier').toString() : 'unknown';
+            List rawNs = (List)u.get('ns');
+            Map bsMap = u.get('bs') instanceof Map ? (Map)u.get('bs') : null;
+
+            List ns = new ArrayList();
+            if (rawNs != null && !rawNs.isEmpty()) {
+              Set seen = new HashSet();
+              for (def item : rawNs) {
+                List sp = (List)item;
+                String skey = sp.get(0).toString() + ':' + sp.get(1).toString() + ':' + sp.get(6).toString();
+                if (seen.add(skey)) { ns.add(sp); }
+              }
+            }
+
+            long m0 = ((Number)lm.get(0)).longValue();
+            long m1 = ((Number)lm.get(1)).longValue();
+            long m2 = ((Number)lm.get(2)).longValue();
+            int legSlots = Long.bitCount(m0) + Long.bitCount(m1) + Long.bitCount(m2);
+            long legDocCnt = ((Number)lt.get(4)).longValue();
+
+            if (legSlots == 0) {
+              if (!ns.isEmpty()) {
+                usedNat = true;
+                Map idxTierAcc = new HashMap();
+                Set covSeen = new HashSet();
+                long minMs = 86400000L;
+                long maxMs = 0L;
+                long covMs = 0L;
+                for (def item : ns) {
+                  List sp = (List)item;
+                  long sOff = ((Number)sp.get(0)).longValue();
+                  long eOff = ((Number)sp.get(1)).longValue();
+                  long spanMs = (eOff - sOff) > 1L ? (eOff - sOff) : 1L;
+                  if (sOff < minMs) { minMs = sOff; }
+                  if (eOff > maxMs) { maxMs = eOff; }
+                  if (covSeen.add(sOff + ':' + eOff)) { covMs += spanMs; }
+                  double wSlots = (double)spanMs / 600000.0;
+                  String spTier = sp.get(6).toString();
+                  List ta = (List)idxTierAcc.get(spTier);
+                  if (ta == null) {
+                    ta = [0L, 0L, 0.0, 0.0];
+                    idxTierAcc.put(spTier, ta);
+                  }
+                  ta.set(0, ((Number)ta.get(0)).longValue() + ((Number)sp.get(2)).longValue());
+                  ta.set(1, ((Number)ta.get(1)).longValue() + ((Number)sp.get(3)).longValue());
+                  ta.set(2, ((Number)ta.get(2)).doubleValue() + ((Number)sp.get(4)).longValue() * wSlots);
+                  ta.set(3, ((Number)ta.get(3)).doubleValue() + ((Number)sp.get(5)).longValue() * wSlots);
+                  int tf = tierFlags.containsKey(spTier) ? ((Number)tierFlags.get(spTier)).intValue() : 0;
+                  tierFlags.put(spTier, tf | 1);
+                }
+                long activeMs = maxMs > minMs ? (maxMs - minMs) : covMs;
+                double gapScale = (covMs > 0L && activeMs > covMs && (activeMs - covMs) >= 300000L)
+                  ? ((double)activeMs / (double)covMs)
+                  : 1.0;
+                for (def te : idxTierAcc.entrySet()) {
+                  String tk = te.getKey().toString();
+                  List ta = (List)te.getValue();
+                  long add0 = ((Number)ta.get(0)).longValue();
+                  long add1 = ((Number)ta.get(1)).longValue();
+                  long add2 = Math.round(((Number)ta.get(2)).doubleValue() * gapScale);
+                  long add3 = Math.round(((Number)ta.get(3)).doubleValue() * gapScale);
+                  sel.set(0, ((Number)sel.get(0)).longValue() + add0);
+                  sel.set(1, ((Number)sel.get(1)).longValue() + add1);
+                  sel.set(2, ((Number)sel.get(2)).longValue() + add2);
+                  sel.set(3, ((Number)sel.get(3)).longValue() + add3);
+                  List st = (List)selByTier.get(tk);
+                  if (st == null) { selByTier.put(tk, [add0, add1, add2, add3]); }
+                  else {
+                    st.set(0, ((Number)st.get(0)).longValue() + add0);
+                    st.set(1, ((Number)st.get(1)).longValue() + add1);
+                    st.set(2, ((Number)st.get(2)).longValue() + add2);
+                    st.set(3, ((Number)st.get(3)).longValue() + add3);
+                  }
+                }
+              } else if (bsMap != null && !bsMap.isEmpty()) {
+                usedNat = true;
+                for (def bse : bsMap.entrySet()) {
+                  String bsTier = bse.getKey().toString();
+                  List bsv = (List)bse.getValue();
+                  long bsStore = ((Number)bsv.get(0)).longValue();
+                  long bsDset = ((Number)bsv.get(1)).longValue();
+                  sel.set(2, ((Number)sel.get(2)).longValue() + bsStore);
+                  sel.set(3, ((Number)sel.get(3)).longValue() + bsDset);
+                  rawNat.set(2, ((Number)rawNat.get(2)).longValue() + bsStore);
+                  rawNat.set(3, ((Number)rawNat.get(3)).longValue() + bsDset);
+                  List st = (List)selByTier.get(bsTier);
+                  if (st == null) { selByTier.put(bsTier, [0L, 0L, bsStore, bsDset]); }
+                  else {
+                    st.set(2, ((Number)st.get(2)).longValue() + bsStore);
+                    st.set(3, ((Number)st.get(3)).longValue() + bsDset);
+                  }
+                  List rnt = (List)rawNatByTier.get(bsTier);
+                  if (rnt == null) { rawNatByTier.put(bsTier, [0L, 0L, bsStore, bsDset]); }
+                  else {
+                    rnt.set(2, ((Number)rnt.get(2)).longValue() + bsStore);
+                    rnt.set(3, ((Number)rnt.get(3)).longValue() + bsDset);
+                  }
+                  int tf = tierFlags.containsKey(bsTier) ? ((Number)tierFlags.get(bsTier)).intValue() : 0;
+                  tierFlags.put(bsTier, tf | 1);
+                }
+              }
+              continue;
+            }
+
+            int firstLeg = -1;
+            int lastLeg = -1;
+            for (int k = 0; k < 144; k++) {
+              int kw = k >> 6;
+              long kbit = 1L << (k & 63);
+              if ((((Number)lm.get(kw)).longValue() & kbit) != 0L) {
+                if (firstLeg < 0) { firstLeg = k; }
+                lastLeg = k;
+              }
+            }
+
+            if (ns.isEmpty()) {
+              usedLeg = true;
+              int activeSlots = (lastLeg >= firstLeg && firstLeg >= 0) ? (lastLeg - firstLeg + 1) : legSlots;
+              int normSlots = legSlots > activeSlots ? legSlots : activeSlots;
+              long add0 = ((Number)lt.get(0)).longValue();
+              long add1 = ((Number)lt.get(1)).longValue();
+              long add2 = legDocCnt > 0L ? Math.round(((double)((Number)lt.get(2)).longValue() / (double)legDocCnt) * (double)normSlots) : 0L;
+              long add3 = legDocCnt > 0L ? Math.round(((double)((Number)lt.get(3)).longValue() / (double)legDocCnt) * (double)normSlots) : 0L;
+              sel.set(0, ((Number)sel.get(0)).longValue() + add0);
+              sel.set(1, ((Number)sel.get(1)).longValue() + add1);
+              sel.set(2, ((Number)sel.get(2)).longValue() + add2);
+              sel.set(3, ((Number)sel.get(3)).longValue() + add3);
+              List st = (List)selByTier.get(ltier);
+              if (st == null) { selByTier.put(ltier, [add0, add1, add2, add3]); }
+              else {
+                st.set(0, ((Number)st.get(0)).longValue() + add0);
+                st.set(1, ((Number)st.get(1)).longValue() + add1);
+                st.set(2, ((Number)st.get(2)).longValue() + add2);
+                st.set(3, ((Number)st.get(3)).longValue() + add3);
+              }
+              int tf = tierFlags.containsKey(ltier) ? ((Number)tierFlags.get(ltier)).intValue() : 0;
+              tierFlags.put(ltier, tf | 2);
+              continue;
+            }
+
+            long[] natSlotMs = new long[144];
+            Set slotSeen = new HashSet();
+            for (def item : ns) {
+              List sp = (List)item;
+              long sOff = ((Number)sp.get(0)).longValue();
+              long eOff = ((Number)sp.get(1)).longValue();
+              if (!slotSeen.add(sOff + ':' + eOff)) { continue; }
+              int sb = (int)(sOff / 600000L);
+              int eb = (int)((eOff - 1L) / 600000L);
+              for (int k = sb; k <= eb; k++) {
+                if (k >= 0 && k < 144) {
+                  long slotStart = k * 600000L;
+                  long slotEnd = (k + 1L) * 600000L;
+                  long ovEnd = eOff < slotEnd ? eOff : slotEnd;
+                  long ovStart = sOff > slotStart ? sOff : slotStart;
+                  long ov = ovEnd - ovStart;
+                  if (ov > 0L) { natSlotMs[k] += ov; }
+                }
+              }
+            }
+            boolean unitNatCovers = true;
+            for (int k = 0; k < 144; k++) {
+              int kw = k >> 6;
+              long kbit = 1L << (k & 63);
+              if ((((Number)lm.get(kw)).longValue() & kbit) != 0L && natSlotMs[k] < 300000L) {
+                unitNatCovers = false;
+                break;
+              }
+            }
+
+            Map idxTierAcc = new HashMap();
+            Set covSeen = new HashSet();
+            long minMs = 86400000L;
+            long maxMs = 0L;
+            long covMs = 0L;
+
+            if (unitNatCovers) {
+              usedNat = true;
+              for (def item : ns) {
+                List sp = (List)item;
+                long sOff = ((Number)sp.get(0)).longValue();
+                long eOff = ((Number)sp.get(1)).longValue();
+                long spanMs = (eOff - sOff) > 1L ? (eOff - sOff) : 1L;
+                if (sOff < minMs) { minMs = sOff; }
+                if (eOff > maxMs) { maxMs = eOff; }
+                if (covSeen.add(sOff + ':' + eOff)) { covMs += spanMs; }
+                double wSlots = (double)spanMs / 600000.0;
+                String spTier = sp.get(6).toString();
+                List ta = (List)idxTierAcc.get(spTier);
+                if (ta == null) {
+                  ta = [0L, 0L, 0.0, 0.0];
+                  idxTierAcc.put(spTier, ta);
+                }
+                ta.set(0, ((Number)ta.get(0)).longValue() + ((Number)sp.get(2)).longValue());
+                ta.set(1, ((Number)ta.get(1)).longValue() + ((Number)sp.get(3)).longValue());
+                ta.set(2, ((Number)ta.get(2)).doubleValue() + ((Number)sp.get(4)).longValue() * wSlots);
+                ta.set(3, ((Number)ta.get(3)).doubleValue() + ((Number)sp.get(5)).longValue() * wSlots);
+                int tf = tierFlags.containsKey(spTier) ? ((Number)tierFlags.get(spTier)).intValue() : 0;
+                tierFlags.put(spTier, tf | 1);
+              }
+            } else {
+              usedLeg = true;
+              minMs = firstLeg * 600000L;
+              maxMs = (lastLeg + 1L) * 600000L;
+              covMs = legSlots * 600000L;
+              double legStoreW = legDocCnt > 0L ? (((double)((Number)lt.get(2)).longValue() / (double)legDocCnt) * (double)legSlots) : 0.0;
+              double legDsetW = legDocCnt > 0L ? (((double)((Number)lt.get(3)).longValue() / (double)legDocCnt) * (double)legSlots) : 0.0;
+              String effLtier = (ltier != 'unknown') ? ltier : ((List)ns.get(0)).get(6).toString();
+              idxTierAcc.put(effLtier, [((Number)lt.get(0)).longValue(), ((Number)lt.get(1)).longValue(), legStoreW, legDsetW]);
+              int ltf = tierFlags.containsKey(effLtier) ? ((Number)tierFlags.get(effLtier)).intValue() : 0;
+              tierFlags.put(effLtier, ltf | 2);
+
+              for (def item : ns) {
+                List sp = (List)item;
+                long sOff = ((Number)sp.get(0)).longValue();
+                long eOff = ((Number)sp.get(1)).longValue();
+                long spanMs = (eOff - sOff) > 1L ? (eOff - sOff) : 1L;
+                int sb = (int)(sOff / 600000L);
+                int eb = (int)((eOff - 1L) / 600000L);
+                long legOvMs = 0L;
+                for (int k = sb; k <= eb; k++) {
+                  if (k >= 0 && k < 144) {
+                    int kw = k >> 6;
+                    long kbit = 1L << (k & 63);
+                    if ((((Number)lm.get(kw)).longValue() & kbit) != 0L) {
+                      long slotStart = k * 600000L;
+                      long slotEnd = (k + 1L) * 600000L;
+                      long ovEnd = eOff < slotEnd ? eOff : slotEnd;
+                      long ovStart = sOff > slotStart ? sOff : slotStart;
+                      long ov = ovEnd - ovStart;
+                      if (ov > 0L) { legOvMs += ov; }
+                    }
+                  }
+                }
+                long uncovMs = spanMs - legOvMs;
+                if (uncovMs > 0L) {
+                  usedNat = true;
+                  if (sOff < minMs) { minMs = sOff; }
+                  if (eOff > maxMs) { maxMs = eOff; }
+                  if (covSeen.add(sOff + ':' + eOff)) { covMs += uncovMs; }
+                  double cFrac = (double)uncovMs / (double)spanMs;
+                  double uSlots = (double)uncovMs / 600000.0;
+                  String spTier = sp.get(6).toString();
+                  List ta = (List)idxTierAcc.get(spTier);
+                  if (ta == null) {
+                    ta = [0L, 0L, 0.0, 0.0];
+                    idxTierAcc.put(spTier, ta);
+                  }
+                  ta.set(0, ((Number)ta.get(0)).longValue() + Math.round(((Number)sp.get(2)).longValue() * cFrac));
+                  ta.set(1, ((Number)ta.get(1)).longValue() + Math.round(((Number)sp.get(3)).longValue() * cFrac));
+                  ta.set(2, ((Number)ta.get(2)).doubleValue() + ((Number)sp.get(4)).longValue() * uSlots);
+                  ta.set(3, ((Number)ta.get(3)).doubleValue() + ((Number)sp.get(5)).longValue() * uSlots);
+                  int ntf = tierFlags.containsKey(spTier) ? ((Number)tierFlags.get(spTier)).intValue() : 0;
+                  tierFlags.put(spTier, ntf | 1);
+                }
+              }
+            }
+
+            long activeMs = maxMs > minMs ? (maxMs - minMs) : covMs;
+            double gapScale = (covMs > 0L && activeMs > covMs && (activeMs - covMs) >= 300000L)
+              ? ((double)activeMs / (double)covMs)
+              : 1.0;
+            for (def te : idxTierAcc.entrySet()) {
+              String tk = te.getKey().toString();
+              List ta = (List)te.getValue();
+              long add0 = ((Number)ta.get(0)).longValue();
+              long add1 = ((Number)ta.get(1)).longValue();
+              long add2 = Math.round(((Number)ta.get(2)).doubleValue() * gapScale);
+              long add3 = Math.round(((Number)ta.get(3)).doubleValue() * gapScale);
+              sel.set(0, ((Number)sel.get(0)).longValue() + add0);
+              sel.set(1, ((Number)sel.get(1)).longValue() + add1);
+              sel.set(2, ((Number)sel.get(2)).longValue() + add2);
+              sel.set(3, ((Number)sel.get(3)).longValue() + add3);
+              List st = (List)selByTier.get(tk);
+              if (st == null) { selByTier.put(tk, [add0, add1, add2, add3]); }
+              else {
+                st.set(0, ((Number)st.get(0)).longValue() + add0);
+                st.set(1, ((Number)st.get(1)).longValue() + add1);
+                st.set(2, ((Number)st.get(2)).longValue() + add2);
+                st.set(3, ((Number)st.get(3)).longValue() + add3);
+              }
+            }
+          }
+
+          String src = (usedNat && usedLeg) ? 'mixed' : (usedNat ? 'native' : 'legacy');
+          Map selSrcByTier = new HashMap();
+          for (def fe : tierFlags.entrySet()) {
+            String tk = fe.getKey().toString();
+            int fl = ((Number)fe.getValue()).intValue();
+            selSrcByTier.put(tk, (fl == 3) ? 'mixed' : ((fl == 1) ? 'native' : 'legacy'));
+          }
+          Map res = new HashMap();
+          res.put('usage_source', src);
+          res.put('has_native_usage', natCnt > 0L);
+          res.put('has_legacy_usage', legCnt > 0L);
+          res.put('leg_cnt', legCnt);
+          res.put('leg_cnt_by_tier', legCntByTier);
+          res.put('nat_cnt_by_tier', natCntByTier);
+          res.put('sel_by_tier', selByTier);
+          res.put('raw_nat_by_tier', rawNatByTier);
+          res.put('raw_leg_by_tier', rawLegByTier);
+          res.put('sel_src_by_tier', selSrcByTier);
+          res.put('selected_sum_indexing_time', sel.get(0));
+          res.put('selected_sum_query_time', sel.get(1));
+          res.put('selected_sum_store_size', sel.get(2));
+          res.put('selected_sum_data_set_store_size', sel.get(3));
+          res.put('native_sum_indexing_time', rawNat.get(0));
+          res.put('native_sum_query_time', rawNat.get(1));
+          res.put('native_sum_store_size', rawNat.get(2));
+          res.put('native_sum_data_set_store_size', rawNat.get(3));
+          res.put('legacy_sum_indexing_time', rawLeg.get(0));
+          res.put('legacy_sum_query_time', rawLeg.get(1));
+          res.put('legacy_sum_store_size', rawLeg.get(2));
+          res.put('legacy_sum_data_set_store_size', rawLeg.get(3));
+          return res;
 settings:
-  # This is required to prevent the transform from clobbering the Fleet-managed mappings.
+  align_checkpoints: false
   deduce_mappings: false
   unattended: true
 _meta:
   managed: true
   run_as_kibana_system: false
-  # Bump this version to delete, reinstall, and restart the transform during package.
-  # Version bump is needed if there is any code change in transform.
-  fleet_transform_version: 0.5.0
+  fleet_transform_version: 0.6.0

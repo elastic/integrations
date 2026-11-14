@@ -1,34 +1,220 @@
 ---
-description: Post-process chargeback configuration to extract currency unit from terms aggregation
+description: Post-process chargeback configuration from Fleet configuration snapshot events while preserving manual or historical rows when Fleet sync is inactive
 processors:
   - script:
-      description: Extract currency unit key from terms aggregation bucket
+      description: Gate on newest policy-wide sync marker, merge active per-stream settings, and reject invalid configuration writes
       lang: painless
       source: |
-        if (ctx.conf_chargeable_unit_rate_unit instanceof Map) {
-          def keys = new ArrayList(ctx.conf_chargeable_unit_rate_unit.keySet());
-          if (keys.size() > 0) {
-            ctx.conf_chargeable_unit_rate_unit = keys[0];
+        // Pass manual operator documents (without transform 'snapshots' aggregation output) straight through
+        // because Fleet configures this pipeline as index.default_pipeline on chargeback_conf_lookup.
+        if (!ctx.containsKey('snapshots')) {
+          if (ctx.config_join_key == null || ctx.config_join_key.toString().trim() == '') {
+            ctx.config_join_key = 'chargeback_config';
+          }
+          return;
+        }
+        ctx._from_transform = true;
+        Map snapRoot = null;
+        if (ctx.snapshots instanceof Map) {
+          snapRoot = (ctx.snapshots.latest instanceof Map) ? (Map)ctx.snapshots.latest : (Map)ctx.snapshots;
+        }
+        ctx.remove('snapshots');
+
+        // Gate writes on the newest policy-wide sync marker across all streams before merging per-stream settings.
+        if (snapRoot == null) {
+          ctx._skip_conf_write = true;
+          return;
+        }
+        def hasSnapsObj = snapRoot.get('has_snapshots');
+        boolean hasSnaps = (hasSnapsObj != null) && hasSnapsObj.toString().equalsIgnoreCase('true');
+        def policySyncObj = snapRoot.get('policy_sync_enabled');
+        boolean policySyncEnabled = (policySyncObj != null) && policySyncObj.toString().equalsIgnoreCase('true');
+        def conflictObj = snapRoot.get('owner_conflict');
+        boolean ownerConflict = (conflictObj != null) && conflictObj.toString().equalsIgnoreCase('true');
+        if (!hasSnaps || !policySyncEnabled || ownerConflict) {
+          ctx._skip_conf_write = true;
+          return;
+        }
+
+        Map m = [:];
+        boolean anyActiveStream = false;
+        String expectedOwnerKey = snapRoot.get('owner_key') != null ? snapRoot.get('owner_key').toString().trim() : '';
+        if (snapRoot.streams instanceof Map) {
+          Map streamsMap = (Map)snapRoot.streams;
+          for (String ds : ['chargeback.billing', 'chargeback.usage', 'chargeback.node_stats']) {
+            def bucket = streamsMap.get(ds);
+            if (bucket instanceof Map) {
+              def syncFlag = bucket.get('sync');
+              boolean syncEnabled = (syncFlag == null) || syncFlag.toString().equalsIgnoreCase('true');
+              if (syncEnabled) {
+                String bOwner = bucket.get('conf_owner_key') != null ? bucket.get('conf_owner_key').toString().trim() : '';
+                if (bOwner != '') {
+                  if (expectedOwnerKey == '') {
+                    expectedOwnerKey = bOwner;
+                  } else if (!expectedOwnerKey.equals(bOwner)) {
+                    ctx._skip_conf_write = true;
+                    return;
+                  }
+                }
+                anyActiveStream = true;
+                for (def entry : bucket.entrySet()) {
+                  String k = entry.getKey().toString();
+                  if (entry.getValue() != null && k.startsWith('conf_') && k != 'conf_sync_enabled' && k != 'conf_owner_key' && k != 'conf_owner_id' && k != 'conf_policy_id' && k != 'conf_policy_scope') {
+                    m[k] = entry.getValue();
+                  }
+                }
+              }
+            }
           }
         }
+        if (!anyActiveStream) {
+          ctx._skip_conf_write = true;
+          return;
+        }
+
+        double rate = 0.85;
+        boolean hasExplicitCloudRate = false;
+        try {
+          if (m.conf_chargeable_unit_rate instanceof Number) {
+            rate = ((Number)m.conf_chargeable_unit_rate).doubleValue();
+            hasExplicitCloudRate = true;
+          } else if (m.conf_chargeable_unit_rate != null && m.conf_chargeable_unit_rate.toString().trim() != '') {
+            rate = Double.parseDouble(m.conf_chargeable_unit_rate.toString().trim());
+            hasExplicitCloudRate = true;
+          }
+        } catch (NumberFormatException e) {
+          ctx._skip_conf_write = true;
+          return;
+        }
+        if (Double.isNaN(rate) || Double.isInfinite(rate) || rate < 0.0) {
+          ctx._skip_conf_write = true;
+          return;
+        }
+
+        double onpremRate = hasExplicitCloudRate ? rate : 0.00085;
+        try {
+          if (m.conf_onprem_chargeable_unit_rate instanceof Number) {
+            onpremRate = ((Number)m.conf_onprem_chargeable_unit_rate).doubleValue();
+          } else if (m.conf_onprem_chargeable_unit_rate != null && m.conf_onprem_chargeable_unit_rate.toString().trim() != '') {
+            onpremRate = Double.parseDouble(m.conf_onprem_chargeable_unit_rate.toString().trim());
+          }
+        } catch (NumberFormatException e) {
+          ctx._skip_conf_write = true;
+          return;
+        }
+        if (Double.isNaN(onpremRate) || Double.isInfinite(onpremRate) || onpremRate < 0.0) {
+          ctx._skip_conf_write = true;
+          return;
+        }
+
+        int idxW = 20;
+        int qryW = 20;
+        int stoW = 40;
+        int memW = 70;
+        int diskW = 30;
+        double floorVal = 0.10;
+        try {
+          if (m.conf_indexing_weight != null && m.conf_indexing_weight.toString().trim() != '') {
+            idxW = m.conf_indexing_weight instanceof Number ? ((Number)m.conf_indexing_weight).intValue() : (int)Double.parseDouble(m.conf_indexing_weight.toString().trim());
+          }
+          if (m.conf_query_weight != null && m.conf_query_weight.toString().trim() != '') {
+            qryW = m.conf_query_weight instanceof Number ? ((Number)m.conf_query_weight).intValue() : (int)Double.parseDouble(m.conf_query_weight.toString().trim());
+          }
+          if (m.conf_storage_weight != null && m.conf_storage_weight.toString().trim() != '') {
+            stoW = m.conf_storage_weight instanceof Number ? ((Number)m.conf_storage_weight).intValue() : (int)Double.parseDouble(m.conf_storage_weight.toString().trim());
+          }
+          if (m.conf_utilization_memory_weight != null && m.conf_utilization_memory_weight.toString().trim() != '') {
+            memW = m.conf_utilization_memory_weight instanceof Number ? ((Number)m.conf_utilization_memory_weight).intValue() : (int)Double.parseDouble(m.conf_utilization_memory_weight.toString().trim());
+          }
+          if (m.conf_utilization_storage_weight != null && m.conf_utilization_storage_weight.toString().trim() != '') {
+            diskW = m.conf_utilization_storage_weight instanceof Number ? ((Number)m.conf_utilization_storage_weight).intValue() : (int)Double.parseDouble(m.conf_utilization_storage_weight.toString().trim());
+          }
+          if (m.conf_utilization_floor instanceof Number) {
+            floorVal = ((Number)m.conf_utilization_floor).doubleValue();
+          } else if (m.conf_utilization_floor != null && m.conf_utilization_floor.toString().trim() != '') {
+            floorVal = Double.parseDouble(m.conf_utilization_floor.toString().trim());
+          }
+        } catch (NumberFormatException e) {
+          ctx._skip_conf_write = true;
+          return;
+        }
+        if (idxW < 0 || qryW < 0 || stoW < 0 || (qryW + stoW) <= 0 || memW < 0 || diskW < 0 || (memW + diskW) <= 0 || Double.isNaN(floorVal) || Double.isInfinite(floorVal) || floorVal < 0.0 || floorVal > 1.0) {
+          ctx._skip_conf_write = true;
+          return;
+        }
+
+        long startMillis = 1262304000000L;
+        long endMillis = 2430518399999L;
+        String effFrom = m.conf_effective_from != null ? m.conf_effective_from.toString().trim() : '';
+        if (effFrom != '') {
+          try {
+            ZonedDateTime parsedEff = effFrom.contains('T') ? ZonedDateTime.parse(effFrom) : ZonedDateTime.parse(effFrom + 'T00:00:00Z');
+            String checkDate = effFrom.contains('T') ? effFrom.substring(0, effFrom.indexOf('T')) : effFrom;
+            ZonedDateTime utcEff = parsedEff.withZoneSameInstant(ZoneOffset.UTC);
+            if (!utcEff.toLocalDate().toString().equals(checkDate)) {
+              ctx._skip_conf_write = true;
+              return;
+            }
+            startMillis = utcEff.toInstant().toEpochMilli();
+          } catch (DateTimeException e) {
+            ctx._skip_conf_write = true;
+            return;
+          }
+          if (startMillis < 0L || (startMillis % 86400000L) != 0L || startMillis >= endMillis) {
+            ctx._skip_conf_write = true;
+            return;
+          }
+        }
+
+        boolean isOnpremKey = 'chargeback_config_onprem'.equals(ctx.config_join_key);
+        ctx.conf_chargeable_unit_rate = isOnpremKey ? onpremRate : rate;
+        ctx.conf_chargeable_unit_rate_unit = (m.conf_chargeable_unit_rate_unit != null && m.conf_chargeable_unit_rate_unit.toString().trim() != '') ? m.conf_chargeable_unit_rate_unit.toString().trim() : 'EUR';
+        ctx.conf_indexing_weight = idxW;
+        ctx.conf_query_weight = qryW;
+        ctx.conf_storage_weight = stoW;
+        ctx.conf_utilization_memory_weight = memW;
+        ctx.conf_utilization_storage_weight = diskW;
+        ctx.conf_utilization_floor = floorVal;
+        ctx.conf_start_date = startMillis;
+        ctx.conf_end_date = endMillis;
+  - drop:
+      if: "ctx._skip_conf_write == true"
+      tag: preserve_existing_manual_config
   # LOOKUP JOIN overwrites left-side @timestamp with the right-side field when present.
   # Conf docs must not carry @timestamp (including null), or billing panels bucket into null / wrong dates.
   - remove:
       field: "@timestamp"
       ignore_missing: true
       tag: remove_conf_timestamp
-  # Pivot dest IDs are a hash of group_by. Force the bootstrap row to _id "config" so
-  # POST chargeback_conf_lookup/_update/config matches the documented update path.
   - set:
       field: _id
       value: config
+      if: "ctx._from_transform == true && ctx.config_join_key != 'chargeback_config_onprem'"
       override: true
       tag: set_config_document_id
+  - set:
+      field: _id
+      value: config_onprem
+      if: "ctx._from_transform == true && ctx.config_join_key == 'chargeback_config_onprem'"
+      override: true
+      tag: set_onprem_config_document_id
+  - remove:
+      field: _from_transform
+      ignore_missing: true
+      tag: remove_transform_flag
   - set:
       field: event.ingested
       value: "{{{_ingest.timestamp}}}"
       tag: set_event_ingested
+  - pipeline:
+      name: logs-chargeback.lookup@custom
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: logs-chargeback.lookup-chargeback_conf@custom
+      ignore_missing_pipeline: true
 on_failure:
-  - set:
-      field: error.message
-      value: "Failed to process chargeback config: {{ _ingest.on_failure_message }}"
+  - fail:
+      message: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'

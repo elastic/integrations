@@ -1,0 +1,24 @@
+input: cel
+service: chargeback
+vars:
+  organization_id: "1111"
+  cloud_api_key: cloud-key
+  billing_api_base: http://{{Hostname}}:{{Port}}
+  cloud_api_base: http://{{Hostname}}:{{Port}}
+  sync_fleet_config: true
+  enable_request_tracer: true
+data_stream:
+  vars:
+    lookbehind: 2
+    collect_ess_credits: true
+    unit_rate: "0.85"
+    currency_unit: EUR
+    config_effective_from: "2026-01-01T00:00:00Z"
+    processors: |-
+      - add_fields:
+          target: labels
+          fields:
+            test_run_id: "{{Test.RunID}}"
+assert:
+  # 1 config_snapshot + 1 credit_line_item + (3 billing_line_item * 2 lookbehind days) = 8 documents.
+  hit_count: 8

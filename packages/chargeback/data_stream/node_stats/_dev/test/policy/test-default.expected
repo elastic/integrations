@@ -1,0 +1,435 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: chargeback
+      name: test-default-chargeback
+      streams:
+        - config_version: 2
+          data_stream:
+            dataset: chargeback.node_stats
+          interval: 15m
+          processors:
+            - drop_event.when.equals.fake: true
+            - copy_fields:
+                fail_on_error: false
+                fields:
+                    - from: '@metadata.input_id'
+                      to: conf_policy_id
+                ignore_missing: true
+                when:
+                    and:
+                        - equals:
+                            doc_type: config_snapshot
+                        - not:
+                            has_fields:
+                                - conf_policy_id
+          program: |-
+            state.with(
+              now.format(time_layout.DateOnly).as(today_utc,
+              state.config_owner_id.trim_space().as(clean_owner_id,
+              state.hub_es_url.trim_space().as(trimmed_hub_url,
+              (trimmed_hub_url.endsWith("/") ? trimmed_hub_url.substring(0, size(trimmed_hub_url) - 1) : trimmed_hub_url).as(clean_hub_url,
+              state.conf_utilization_floor.trim_space().as(clean_floor,
+              clean_floor.matches("^(0(\\.[0-9]+)?|1(\\.0+)?)$").as(floor_valid,
+              (int(state.conf_utilization_memory_weight) >= 0 && int(state.conf_utilization_storage_weight) >= 0 && (int(state.conf_utilization_memory_weight) + int(state.conf_utilization_storage_weight)) > 0).as(weights_valid,
+              (!state.sync_fleet_config ? ("disabled|" + clean_owner_id) : (
+                (floor_valid && weights_valid) ? (clean_owner_id + "|" + string(state.conf_utilization_memory_weight) + "|" + string(state.conf_utilization_storage_weight) + "|" + clean_floor + "|" + today_utc) : state.?cursor.conf_sig.orValue("")
+              )).as(conf_sig,
+              ((state.sync_fleet_config && !floor_valid) ?
+                [dyn({
+                  "error": {
+                    "code": "invalid_config",
+                    "id": "utilization_floor",
+                    "message": "Invalid utilization_floor '" + state.conf_utilization_floor + "': expected decimal between 0.0 and 1.0 using '.' (for example 0.10)",
+                  },
+                })]
+              : ((state.sync_fleet_config && !weights_valid) ?
+                [dyn({
+                  "error": {
+                    "code": "invalid_config",
+                    "id": "utilization_weights",
+                    "message": "Invalid utilization weights (memory=" + string(state.conf_utilization_memory_weight) + ", storage=" + string(state.conf_utilization_storage_weight) + "): weights must be non-negative and their sum must be greater than 0",
+                  },
+                })]
+              : ((state.sync_fleet_config && state.?cursor.conf_sig.orValue("") != conf_sig) ?
+                [dyn({
+                  "doc_type": "config_snapshot",
+                  "conf_sync_enabled": true,
+                  "conf_owner_id": clean_owner_id,
+                  "conf_utilization_memory_weight": int(state.conf_utilization_memory_weight),
+                  "conf_utilization_storage_weight": int(state.conf_utilization_storage_weight),
+                  "conf_utilization_floor": double(clean_floor),
+                })]
+              : ((!state.sync_fleet_config && state.?cursor.conf_sig.orValue("") != conf_sig) ?
+                [dyn({
+                  "doc_type": "config_snapshot",
+                  "conf_sync_enabled": false,
+                  "conf_owner_id": clean_owner_id,
+                })]
+              : [])))).as(conf_evts,
+              (state.organization_id != "" && state.api_key != "" && !state.api_key.startsWith("$co.elastic.secret")).as(has_cloud,
+              (clean_hub_url != "" && state.hub_es_api_key != "" && !state.hub_es_api_key.startsWith("$co.elastic.secret")).as(has_hub,
+              (
+                !has(state.deployment_keys) || state.deployment_keys == null ? [] :
+                string(dyn(state.deployment_keys)).split(",")
+              ).map(k, k.trim_space()).filter(k, k != "" && k != "null" && !k.startsWith("$co.elastic.secret")).as(all_dkeys,
+              int(state.?cursor.disc_dep_from.orValue(has_cloud ? 0 : -1)).as(dep_from,
+              state.?cursor.disc_targets.orValue([]).as(acc_targets,
+              ((has_cloud && dep_from >= 0) ?
+                (state.cloud_api_base + "/api/v1/deployments/_search?show_metadata=true").as(dep_search_url,
+                  try(
+                    request(
+                      "POST",
+                      dep_search_url
+                    ).with(
+                      {
+                        "Header": {
+                          "Authorization": ["ApiKey " + state.api_key],
+                          "Content-Type": ["application/json"],
+                        },
+                        "Body": { "size": 500, "from": dep_from }.encode_json(),
+                      }
+                    ).do_request(),
+                    "req_err"
+                  ).as(dep_resp,
+                    has(dep_resp.req_err) ?
+                      {
+                        "ok": false,
+                        "err": dyn({ "error": { "code": "transport_error", "id": "deployments_search", "message": "POST " + dep_search_url + ": " + string(dep_resp.req_err) } }),
+                        "items": [],
+                        "next_from": -1,
+                      }
+                    : (dep_resp.StatusCode == 200) ?
+                      try(bytes(dep_resp.Body).decode_json(), "json_err").as(dep_body,
+                        has(dep_body.json_err) ?
+                          {
+                            "ok": false,
+                            "err": dyn({ "error": { "code": "decode_error", "id": "deployments_search", "message": "POST " + dep_search_url + ": " + string(dep_body.json_err) } }),
+                            "items": [],
+                            "next_from": -1,
+                          }
+                        :
+                          ((has(dep_body.deployments) && dep_body.deployments != null) ? dep_body.deployments : []).as(raw_deps,
+                            {
+                              "ok": true,
+                              "err": dyn({}),
+                              "items": raw_deps.filter(d,
+                                has(d.resources) && d.resources != null && has(d.resources.elasticsearch) && d.resources.elasticsearch != null && size(d.resources.elasticsearch) > 0 &&
+                                has(d.resources.elasticsearch[0].info) && has(d.resources.elasticsearch[0].info.metadata) && has(d.resources.elasticsearch[0].info.metadata.service_url) && d.resources.elasticsearch[0].info.metadata.service_url != null
+                              ).map(d,
+                                d.resources.elasticsearch[0].as(es_r,
+                                  string(es_r.info.metadata.service_url).as(raw_surl,
+                                    (raw_surl.endsWith("/") ? raw_surl.substring(0, size(raw_surl) - 1) : raw_surl).as(surl,
+                                      ((has(es_r.id) && es_r.id != null && string(es_r.id) != "") ? string(es_r.id) : (has(d.id) && d.id != null ? string(d.id) : surl)).as(es_id,
+                                        dyn({
+                                          "id": es_id,
+                                          "alt_id": has(d.id) && d.id != null ? string(d.id) : es_id,
+                                          "name": (has(d.name) && d.name != null && string(d.name) != "") ? string(d.name) : es_id,
+                                          "es_url": surl,
+                                          "is_hub": (has_hub && surl == clean_hub_url),
+                                        })
+                                      )
+                                    )
+                                  )
+                                )
+                              ),
+                              "next_from": (has(dep_body.match_count) && dep_body.match_count != null && size(raw_deps) > 0 && (dep_from + size(raw_deps)) < int(dep_body.match_count)) ? (dep_from + size(raw_deps)) : -1,
+                            }
+                          )
+                      )
+                    :
+                      {
+                        "ok": false,
+                        "err": dyn({ "error": { "code": string(dep_resp.StatusCode), "id": string(dep_resp.Status), "message": "POST " + dep_resp.Request.URL + ": " + ((size(dep_resp.Body) != 0) ? string(dep_resp.Body) : string(dep_resp.Status)) } }),
+                        "items": [],
+                        "next_from": -1,
+                      }
+                  )
+                )
+              : { "ok": true, "err": dyn({}), "items": [], "next_from": -1 }).as(dep_page,
+                (!dep_page.ok ? [dep_page.err] : []).as(cloud_disc_errs,
+                  (acc_targets + dep_page.items).as(cloud_targets,
+                    (dep_page.ok && dep_page.next_from >= 0) ?
+                      {
+                        "events": size(conf_evts) > 0 ? conf_evts : [dyn({ "fake": true })],
+                        "cursor": {
+                          "conf_sig": conf_sig,
+                          "disc_dep_from": dep_page.next_from,
+                          "disc_targets": cloud_targets,
+                        },
+                        "want_more": true,
+                      }
+                    : ((!has_hub && size(cloud_targets) == 0) ?
+                      {
+                        "events": size(conf_evts + cloud_disc_errs) > 0 ? (conf_evts + cloud_disc_errs) : [dyn({ "fake": true })],
+                        "cursor": { "conf_sig": conf_sig },
+                        "want_more": false,
+                      }
+                    :
+                      (has_hub ?
+                        try(
+                          get_request(clean_hub_url + "/").with({ "Header": { "Authorization": ["ApiKey " + state.hub_es_api_key] } }).do_request(),
+                          "req_err"
+                        ).as(hub_resp,
+                          has(hub_resp.req_err) ?
+                            {
+                              "ok": false,
+                              "err": dyn({ "error": { "code": "transport_error", "id": "hub_discovery", "message": "GET " + clean_hub_url + "/: " + string(hub_resp.req_err) } }),
+                              "targets": cloud_targets,
+                            }
+                          : (hub_resp.StatusCode == 200) ?
+                            try(bytes(hub_resp.Body).decode_json(), "json_err").as(hub_info,
+                              has(hub_info.json_err) ?
+                                {
+                                  "ok": false,
+                                  "err": dyn({ "error": { "code": "decode_error", "id": "hub_discovery", "message": "GET " + clean_hub_url + "/: " + string(hub_info.json_err) } }),
+                                  "targets": cloud_targets,
+                                }
+                              :
+                                ((has(hub_info.cluster_name) && hub_info.cluster_name != null && string(hub_info.cluster_name) != "") ? string(hub_info.cluster_name) : "hub").as(hub_cname,
+                                  {
+                                    "ok": true,
+                                    "err": dyn({}),
+                                    "targets": cloud_targets.exists(ct, string(ct.id) == hub_cname || string(ct.es_url) == clean_hub_url) ?
+                                      cloud_targets.map(ct, (string(ct.id) == hub_cname || string(ct.es_url) == clean_hub_url) ? dyn(ct.with({ "is_hub": true })) : ct)
+                                    :
+                                      cloud_targets + [dyn({
+                                        "id": hub_cname,
+                                        "alt_id": hub_cname,
+                                        "name": hub_cname,
+                                        "es_url": clean_hub_url,
+                                        "is_hub": true,
+                                      })],
+                                  }
+                                )
+                            )
+                          :
+                            {
+                              "ok": false,
+                              "err": dyn({ "error": { "code": string(hub_resp.StatusCode), "id": string(hub_resp.Status), "message": "GET " + hub_resp.Request.URL + ": " + ((size(hub_resp.Body) != 0) ? string(hub_resp.Body) : string(hub_resp.Status)) } }),
+                              "targets": cloud_targets,
+                            }
+                        )
+                      : { "ok": true, "err": dyn({}), "targets": cloud_targets }).as(hub_disc,
+                        hub_disc.targets.map(t,
+                          string(t.id).as(tid,
+                          (string(t.es_url).endsWith("/") ? string(t.es_url).substring(0, size(string(t.es_url)) - 1) : string(t.es_url)).as(es_base,
+                            all_dkeys.filter(k, k.startsWith(tid + ":") || k.startsWith(string(t.alt_id) + ":") || k.startsWith(string(t.name) + ":")).map(k,
+                              k.substring(size(k.split(":")[0]) + 1, size(k))
+                            ).filter(k, k != "").as(d_keys,
+                              (d_keys + ((bool(t.is_hub) && has_hub && !(state.hub_es_api_key in d_keys)) ? [state.hub_es_api_key] : [])).as(cand_keys,
+                              (size(cand_keys) == 0) ?
+                                [dyn({
+                                  "error": {
+                                    "code": "missing_credentials",
+                                    "id": tid,
+                                    "message": "Skipping node stats collection for deployment '" + string(t.name) + "' (" + tid + "): no matching Elasticsearch API key found in deployment_api_keys (<deployment_id_or_name>:<api_key>) or hub_es_url/hub_es_api_key.",
+                                  },
+                                })]
+                              :
+                                (es_base + "/_nodes/data:true,data_hot:true,data_warm:true,data_cold:true,data_frozen:true,data_content:true/stats/jvm,fs?filter_path=_nodes,nodes.*.name,nodes.*.roles,nodes.*.timestamp,nodes.*.jvm.mem.heap_used_percent,nodes.*.fs.total").as(stats_url,
+                                  try(
+                                    get_request(stats_url).with({ "Header": { "Authorization": ["ApiKey " + cand_keys[0]] } }).do_request(),
+                                    "req_err"
+                                  ).as(r0,
+                                    has(r0.req_err) ?
+                                      {
+                                        "ok": false,
+                                        "obs_ts": "",
+                                        "body": dyn({}),
+                                        "err": dyn({ "error": { "code": "transport_error", "id": tid, "message": "GET " + stats_url + ": " + string(r0.req_err) } }),
+                                      }
+                                    : (r0.StatusCode == 200) ?
+                                      now.format(time_layout.RFC3339).as(r0_obs_ts,
+                                        try(bytes(r0.Body).decode_json(), "json_err").as(b0,
+                                          has(b0.json_err) ?
+                                            {
+                                              "ok": false,
+                                              "obs_ts": "",
+                                              "body": dyn({}),
+                                              "err": dyn({ "error": { "code": "decode_error", "id": tid, "message": "GET " + stats_url + ": " + string(b0.json_err) } }),
+                                            }
+                                          : { "ok": true, "obs_ts": r0_obs_ts, "body": b0, "err": dyn({}) }
+                                        )
+                                      )
+                                    : (size(cand_keys) > 1 ?
+                                      tail(cand_keys).filter(ck, ck != cand_keys[0]).as(rem_keys,
+                                        (size(rem_keys) == 0) ?
+                                          {
+                                            "ok": false,
+                                            "obs_ts": "",
+                                            "body": dyn({}),
+                                            "err": dyn({ "error": { "code": string(r0.StatusCode), "id": string(r0.Status), "message": "GET " + r0.Request.URL + ": " + ((size(r0.Body) != 0) ? string(r0.Body) : string(r0.Status)) } }),
+                                          }
+                                        :
+                                          rem_keys.map(ck,
+                                            try(
+                                              get_request(stats_url).with({ "Header": { "Authorization": ["ApiKey " + ck] } }).do_request(),
+                                              "req_err"
+                                            ).as(cr,
+                                              has(cr.req_err) ?
+                                                {
+                                                  "ok": false,
+                                                  "obs_ts": "",
+                                                  "body": dyn({}),
+                                                  "err": dyn({ "error": { "code": "transport_error", "id": tid, "message": "GET " + stats_url + ": " + string(cr.req_err) } }),
+                                                }
+                                              : (cr.StatusCode == 200) ?
+                                                now.format(time_layout.RFC3339).as(cr_obs_ts,
+                                                  try(bytes(cr.Body).decode_json(), "json_err").as(cb,
+                                                    has(cb.json_err) ?
+                                                      {
+                                                        "ok": false,
+                                                        "obs_ts": "",
+                                                        "body": dyn({}),
+                                                        "err": dyn({ "error": { "code": "decode_error", "id": tid, "message": "GET " + stats_url + ": " + string(cb.json_err) } }),
+                                                      }
+                                                    : { "ok": true, "obs_ts": cr_obs_ts, "body": cb, "err": dyn({}) }
+                                                  )
+                                                )
+                                              :
+                                                {
+                                                  "ok": false,
+                                                  "obs_ts": "",
+                                                  "body": dyn({}),
+                                                  "err": dyn({ "error": { "code": string(cr.StatusCode), "id": string(cr.Status), "message": "GET " + cr.Request.URL + ": " + ((size(cr.Body) != 0) ? string(cr.Body) : string(cr.Status)) } }),
+                                                }
+                                            )
+                                          ).as(rest_resps,
+                                            rest_resps.filter(x, x.ok).as(ok_resps,
+                                              (size(ok_resps) > 0) ?
+                                                ok_resps[0]
+                                              :
+                                                rest_resps[size(rest_resps) - 1]
+                                            )
+                                          )
+                                      )
+                                    : {
+                                        "ok": false,
+                                        "obs_ts": "",
+                                        "body": dyn({}),
+                                        "err": dyn({ "error": { "code": string(r0.StatusCode), "id": string(r0.Status), "message": "GET " + r0.Request.URL + ": " + ((size(r0.Body) != 0) ? string(r0.Body) : string(r0.Status)) } }),
+                                      })
+                                  ).as(harvest,
+                                    (!harvest.ok) ?
+                                      [harvest.err]
+                                    : (!has(harvest.body.nodes) || harvest.body.nodes == null) ? [] :
+                                      ((has(harvest.body._nodes) && harvest.body._nodes != null && has(harvest.body._nodes.failed) && harvest.body._nodes.failed != null && int(harvest.body._nodes.failed) > 0) ? int(harvest.body._nodes.failed) : 0).as(failed_node_cnt,
+                                      ((has(harvest.body.nodes) && harvest.body.nodes != null) ? harvest.body.nodes : dyn({})).as(nodes_obj,
+                                      nodes_obj.keys().filter(knid,
+                                        nodes_obj[knid].as(knd,
+                                          ((has(knd.roles) && knd.roles != null) ? knd.roles.map(r, string(r)) : ["data"]).exists(rl,
+                                            rl == "data" || rl == "data_hot" || rl == "data_warm" || rl == "data_cold" || rl == "data_frozen" || rl == "data_content"
+                                          )
+                                        )
+                                      ).as(data_node_ids,
+                                        (size(data_node_ids) + failed_node_cnt).as(data_node_cnt,
+                                          data_node_ids.map(nid,
+                                            string(dyn(nid)).as(node_id,
+                                            nodes_obj[nid].as(nd,
+                                              (has(nd.jvm) && nd.jvm != null && has(nd.jvm.mem) && nd.jvm.mem != null && has(nd.jvm.mem.heap_used_percent) && nd.jvm.mem.heap_used_percent != null && double(nd.jvm.mem.heap_used_percent) >= 0.0 && double(nd.jvm.mem.heap_used_percent) <= 100.0).as(has_heap,
+                                              (has(nd.fs) && nd.fs != null && has(nd.fs.total) && nd.fs.total != null && has(nd.fs.total.total_in_bytes) && nd.fs.total.total_in_bytes != null && int(nd.fs.total.total_in_bytes) > 0 && has(nd.fs.total.available_in_bytes) && nd.fs.total.available_in_bytes != null && int(nd.fs.total.available_in_bytes) >= 0 && int(nd.fs.total.available_in_bytes) <= int(nd.fs.total.total_in_bytes)).as(has_fs,
+                                                dyn({
+                                                  "doc_type": "node_sample",
+                                                  "sample_ts": (has(nd.timestamp) && nd.timestamp != null && int(nd.timestamp) > 0) ? string(int(nd.timestamp)) : harvest.obs_ts,
+                                                  "deployment_name": string(t.name),
+                                                  "cluster_data_node_count": data_node_cnt,
+                                                  "elasticsearch": {
+                                                    "cluster": { "name": tid },
+                                                    "node": {
+                                                      "id": node_id,
+                                                      "name": (has(nd.name) && nd.name != null) ? string(nd.name) : node_id,
+                                                      "roles": (has(nd.roles) && nd.roles != null) ? nd.roles.map(r, string(r)) : ["data"],
+                                                      "stats": (has_heap ? dyn({
+                                                        "jvm": {
+                                                          "mem": {
+                                                            "heap": {
+                                                              "used": {
+                                                                "pct": double(nd.jvm.mem.heap_used_percent),
+                                                              },
+                                                            },
+                                                          },
+                                                        },
+                                                      }) : dyn({})).with(has_fs ? dyn({
+                                                        "fs": {
+                                                          "total": {
+                                                            "total_in_bytes": int(nd.fs.total.total_in_bytes),
+                                                            "available_in_bytes": int(nd.fs.total.available_in_bytes),
+                                                          },
+                                                        },
+                                                      }) : dyn({})),
+                                                    },
+                                                  },
+                                                })
+                                              ))
+                                            ))
+                                          )
+                                        )
+                                      )))
+                                  )
+                                )
+                              )
+                            )
+                          ))
+                        ).flatten().as(node_evts,
+                          (conf_evts + cloud_disc_errs + (!hub_disc.ok ? [hub_disc.err] : []) + node_evts).as(evts,
+                            {
+                              "events": size(evts) > 0 ? evts : [dyn({ "fake": true })],
+                              "cursor": { "conf_sig": conf_sig },
+                              "want_more": false,
+                            }
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )))))))))))))))
+            )
+          publisher_pipeline.disable_host: true
+          redact:
+            fields:
+                - api_key
+                - cloud_api_key
+                - hub_es_api_key
+                - deployment_keys
+                - deployment_api_keys
+                - proxy_url
+          resource.ssl: null
+          resource.timeout: 30s
+          resource.url: https://api.elastic-cloud.com/api/v1/deployments/_search?show_metadata=true
+          state:
+            api_key: ${SECRET_0}
+            cloud_api_base: https://api.elastic-cloud.com
+            conf_utilization_floor: "0.10"
+            conf_utilization_memory_weight: 70
+            conf_utilization_storage_weight: 30
+            config_owner_id: ""
+            deployment_keys: ""
+            hub_es_api_key: ""
+            hub_es_url: ""
+            organization_id: "1111"
+            sync_fleet_config: true
+          tags:
+            - forwarded
+            - chargeback
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - metrics-chargeback.node_stats-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

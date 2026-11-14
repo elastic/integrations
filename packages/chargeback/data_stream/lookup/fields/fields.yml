@@ -1,0 +1,301 @@
+- name: config_join_key
+  type: keyword
+  description: Join key for chargeback configuration.
+- name: conf_chargeable_unit_rate
+  type: double
+  description: Chargeable unit rate for cost calculation (ECU or mERU).
+- name: conf_chargeable_unit_rate_unit
+  type: keyword
+  description: Currency unit for chargeable unit rate (for example EUR or USD).
+- name: conf_ecu_rate
+  type: alias
+  path: conf_chargeable_unit_rate
+  description: Deprecated alias of conf_chargeable_unit_rate for dashboard ES|QL compatibility.
+- name: conf_ecu_rate_unit
+  type: alias
+  path: conf_chargeable_unit_rate_unit
+  description: Deprecated alias of conf_chargeable_unit_rate_unit for dashboard ES|QL
+    compatibility.
+- name: conf_indexing_weight
+  type: integer
+  description: Weight factor for indexing costs.
+- name: conf_query_weight
+  type: integer
+  description: Weight factor for query costs.
+- name: conf_storage_weight
+  type: integer
+  description: Weight factor for storage costs.
+- name: conf_start_date
+  type: date
+  description: Configuration validity start date.
+- name: conf_end_date
+  type: date
+  description: Configuration validity end date.
+- name: conf_utilization_memory_weight
+  type: integer
+  description: Weight for heap p95 in capacity utilization score blend.
+- name: conf_utilization_storage_weight
+  type: integer
+  description: Weight for disk p95 in capacity utilization score blend.
+- name: conf_utilization_floor
+  type: double
+  description: Minimum utilization score (0.0 to 1.0) applied to deployments.
+- name: event.ingested
+  type: date
+  description: Ingest pipeline execution timestamp.
+- name: deployment_group
+  type: keyword
+  description: User-defined group of the deployment (based on tag:chargeback_group).
+- name: deployment_id
+  type: keyword
+  description: Unique ID of the deployment.
+- name: deployment_name
+  type: keyword
+  description: Human-readable name of the deployment.
+- name: total_chargeable_units
+  type: double
+  description: Total chargeable units (ECU/ERU) aggregated for the deployment per
+    day.
+- name: total_ecu
+  type: alias
+  path: total_chargeable_units
+  description: Deprecated alias of total_chargeable_units for dashboard ES|QL compatibility.
+- name: composite_key
+  type: keyword
+  description: Composite key used for billing attribution (set by ingest pipeline)
+    consisting of date and deployment ID.
+- name: sku
+  type: keyword
+  description: Component where the ecu is being spend
+- name: cost_type
+  type: keyword
+  description: Component where the ecu is being spent, derived from SKU field.
+- name: cost_category
+  type: keyword
+  description: FinOps category (data_tier, platform, transfer, snapshot, support,
+    onprem, other).
+- name: is_allocatable
+  type: boolean
+  description: Whether this SKU row contributes to the realized data-tier capacity
+    pool.
+- name: is_onprem
+  type: boolean
+  description: Whether this billing row originates from an On-Premises mERU producer
+    (1 ERU = 1,000 mERU).
+- name: event.dataset
+  type: keyword
+  description: Symlink dataset identifier for ESS Billing compatibility.
+- name: ess.billing.organization_id
+  type: keyword
+  description: Elastic Cloud organization ID (ESS Billing symlink).
+- name: ess.billing.deployment_id
+  type: keyword
+  description: Deployment or Serverless project ID (ESS Billing symlink).
+- name: ess.billing.deployment_name
+  type: keyword
+  description: Deployment or Serverless project name (ESS Billing symlink).
+- name: ess.billing.deployment_type
+  type: keyword
+  description: Instance type (deployment, elasticsearch, observability, security)
+    (ESS Billing symlink).
+- name: ess.billing.sku
+  type: keyword
+  description: Elastic Cloud billing SKU (ESS Billing symlink).
+- name: ess.billing.type
+  type: keyword
+  description: ESS Billing category type (capacity, usage, storage, data_out, data_in,
+    support).
+- name: ess.billing.kind
+  type: keyword
+  description: Resource kind (elasticsearch, kibana, apm, enterprise_search, integrations_server).
+- name: ess.billing.total_ecu
+  type: double
+  description: Daily billed ECUs (ESS Billing symlink).
+- name: ess.billing.quantity.value
+  type: double
+  description: Raw billing quantity value (ESS Billing symlink).
+- name: ess.billing.ram_per_zone
+  type: long
+  description: Provisioned RAM per availability zone in MB (ESS Billing symlink).
+- name: ess.billing.zone_count
+  type: long
+  description: Availability zone count (ESS Billing symlink).
+- name: ess.billing.cloud.service.type
+  type: keyword
+  description: Cloud service type extracted from SKU (ESS Billing compatibility).
+- name: cloud.account.id
+  type: keyword
+  description: Elastic Cloud organization account ID (ESS Billing symlink).
+- name: cloud.instance.id
+  type: keyword
+  description: Deployment or project instance ID (ESS Billing symlink).
+- name: cloud.instance.name
+  type: keyword
+  description: Deployment or project instance name (ESS Billing symlink).
+- name: cloud.provider
+  type: keyword
+  description: Cloud provider name (ESS Billing symlink).
+- name: cloud.machine.type
+  type: keyword
+  description: Cloud machine profile extracted from ECH SKU (ESS Billing symlink).
+- name: cloud.region
+  type: keyword
+  description: Cloud region name (ESS Billing symlink).
+- name: cloud.geo.name
+  type: keyword
+  description: Cloud region geo label for Map visualization (ESS Billing symlink).
+- name: cloud.geo.location
+  type: geo_point
+  description: Cloud region coordinates for Map visualization (ESS Billing symlink).
+- name: ess.billing.active
+  type: boolean
+  description: Whether the prepaid credit commitment is currently active.
+- name: ess.billing.start
+  type: date
+  description: Start timestamp of the credit commitment contract window.
+- name: ess.billing.end
+  type: date
+  description: End timestamp of the credit commitment contract window.
+- name: ess.billing.ecu_balance
+  type: double
+  description: Remaining ECU balance on the credit commitment.
+- name: ess.billing.ecu_quantity
+  type: double
+  description: Total contracted ECU quantity on the credit commitment.
+- name: data_tier_capacity_ecu
+  type: double
+  description: Sum of allocatable data-tier chargeable units per deployment per day.
+- name: data_tier_capacity_hours
+  type: double
+  description: Optional max billed quantity (hours) for allocatable capacity rows.
+- name: data_tier_ram_per_zone_mb
+  type: long
+  description: Optional max RAM per zone in MB for allocatable capacity rows.
+- name: realized_chargeable_units
+  type: double
+  description: Raw allocatable pool before utilization (score applied in dashboard
+    ES|QL).
+- name: cluster_name
+  type: keyword
+  description: Elasticsearch cluster name (matches billing deployment_id).
+- name: elasticsearch.cluster.name
+  type: keyword
+  description: Legacy Elasticsearch cluster name preserved on pre-0.6.0 deployment lookup rows.
+- name: heap_used_pct_p95
+  type: double
+  description: P95 heap used percent across data-role nodes for the day.
+- name: disk_used_pct_p95
+  type: double
+  description: P95 disk used percent across data-role nodes for the day.
+- name: memory_utilization
+  type: double
+  description: Optional normalized heap utilization (heap_used_pct_p95 / 100).
+- name: storage_utilization
+  type: double
+  description: Optional normalized disk utilization (disk_used_pct_p95 / 100).
+- name: datastream
+  type: keyword
+  description: The name of the data stream.
+- name: ds_type
+  type: keyword
+  description: First segment of the data stream name (for example logs, metrics, traces).
+    Set to other when the name does not contain a hyphen.
+- name: ds_namespace
+  type: keyword
+  description: Last segment of the data stream name (team, environment, or cost-center
+    label). Set to other when the name does not contain a hyphen.
+- name: datastream_sum_indexing_time
+  type: long
+  description: Total indexing time in milliseconds for the data stream.
+- name: datastream_sum_query_time
+  type: long
+  description: Total query time in milliseconds for the data stream.
+- name: datastream_sum_store_size
+  type: long
+  description: Total primary shard store size in bytes for the data stream.
+- name: datastream_sum_data_set_store_size
+  type: long
+  description: Total dataset size in bytes for the data stream.
+- name: composite_datastream_key
+  type: keyword
+  description: Composite key consisting of date, deployment ID, and data stream.
+- name: usage_source
+  type: keyword
+  description: Usage telemetry source selected for this rollup row (native, legacy,
+    or mixed).
+- name: has_native_usage
+  type: boolean
+  description: Whether native Chargeback usage samples contributed to this bucket.
+- name: has_legacy_usage
+  type: boolean
+  description: Whether legacy monitoring-indices samples contributed to this bucket.
+- name: native_sum_indexing_time
+  type: long
+  description: Native Chargeback indexing time in milliseconds for the data stream.
+- name: native_sum_query_time
+  type: long
+  description: Native Chargeback query time in milliseconds for the data stream.
+- name: native_sum_store_size
+  type: long
+  description: Native Chargeback total shard store size in bytes for the data stream.
+- name: native_sum_data_set_store_size
+  type: long
+  description: Native Chargeback primary dataset size in bytes for the data stream.
+- name: legacy_sum_indexing_time
+  type: long
+  description: Legacy monitoring-indices indexing time in milliseconds for the data
+    stream.
+- name: legacy_sum_query_time
+  type: long
+  description: Legacy monitoring-indices query time in milliseconds for the data stream.
+- name: legacy_sum_store_size
+  type: long
+  description: Legacy monitoring-indices total shard store size in bytes for the data
+    stream.
+- name: legacy_sum_data_set_store_size
+  type: long
+  description: Legacy monitoring-indices primary dataset size in bytes for the data
+    stream.
+- name: deployment_sum_indexing_time
+  type: long
+  description: Total indexing time in milliseconds for the deployment.
+- name: deployment_sum_query_time
+  type: long
+  description: Total query time in milliseconds for the deployment.
+- name: deployment_sum_store_size
+  type: long
+  description: Total primary shard store size in bytes for the deployment.
+- name: deployment_sum_data_set_store_size
+  type: long
+  description: Total dataset size in bytes for the deployment.
+- name: tier
+  type: keyword
+  description: The data tier where the index resides (e.g. hot/content, warm, cold,
+    frozen).
+- name: tier_and_datastream_sum_indexing_time
+  type: long
+  description: Total indexing time in milliseconds for the tier and data stream.
+- name: tier_and_datastream_sum_query_time
+  type: long
+  description: Total query time in milliseconds for the tier and data stream.
+- name: tier_and_datastream_sum_store_size
+  type: long
+  description: Total primary shard store size in bytes for the tier and data stream.
+- name: tier_and_datastream_sum_data_set_store_size
+  type: long
+  description: Total dataset size in bytes for the tier and data stream.
+- name: composite_tier_key
+  type: keyword
+  description: Composite key consisting of date, deployment ID, and tier.
+- name: tier_sum_indexing_time
+  type: long
+  description: Total indexing time in milliseconds for the tier.
+- name: tier_sum_query_time
+  type: long
+  description: Total query time in milliseconds for the tier.
+- name: tier_sum_store_size
+  type: long
+  description: Total primary shard store size in bytes for the tier.
+- name: tier_sum_data_set_store_size
+  type: long
+  description: Total dataset size in bytes for the tier.

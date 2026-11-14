@@ -1,0 +1,161 @@
+---
+description: "Ingest pipeline for Chargeback self-collected index and tier usage data."
+processors:
+  - drop:
+      if: "ctx.elasticsearch?.index?.name == null && ctx.doc_type != 'config_snapshot' && ctx.error?.message == null"
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.elasticsearch?.index?.name == null && ctx.doc_type != 'config_snapshot'
+      description: Terminate early on collection error documents.
+  - set:
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+      if: ctx.event?.ingested == null
+      tag: set_event_ingested
+  - terminate:
+      tag: config_snapshot_complete
+      if: "ctx.doc_type == 'config_snapshot'"
+      description: Configuration snapshot events are complete after stamping event.ingested.
+  - date:
+      field: period_start
+      target_field: "@timestamp"
+      formats:
+        - ISO8601
+      if: ctx.period_start != null
+      ignore_failure: true
+      tag: restore_period_start_timestamp
+  - remove:
+      field: period_start
+      ignore_missing: true
+  - script:
+      lang: painless
+      ignore_failure: true
+      tag: normalize_index_tier_and_datastream
+      source: |
+        if (ctx.elasticsearch == null || ctx.elasticsearch.index == null) {
+          return;
+        }
+        def idx = ctx.elasticsearch.index;
+        String name = idx.name != null ? idx.name.toString() : '';
+        String stripped = name;
+        for (int i = 0; i < 4; i++) {
+          String prev = stripped;
+          if (stripped.startsWith('partial-')) { stripped = stripped.substring(8); }
+          if (stripped.startsWith('restored-')) { stripped = stripped.substring(9); }
+          def sm = /^shrink-.{4}-(.*)$/.matcher(stripped);
+          if (sm.matches()) { stripped = sm.group(1); }
+          if (stripped.equals(prev)) { break; }
+        }
+        boolean isCbLookup = (
+          name.startsWith('chargeback_lookup.') ||
+          stripped.startsWith('chargeback_lookup.') ||
+          name == 'monitoring-indices' ||
+          stripped == 'monitoring-indices' ||
+          name == 'monitoring-indices-chargeback' ||
+          stripped == 'monitoring-indices-chargeback' ||
+          /^(?:billing_cluster_cost_lookup|billing_realized_pool_lookup|chargeback_conf_lookup|cluster_capacity_utilization_lookup|cluster_deployment_contribution_lookup|cluster_tier_contribution_lookup|cluster_datastream_contribution_lookup|cluster_tier_and_datastream_contribution_lookup)(?:-\d+)?$/.matcher(stripped).matches()
+        );
+        // Drop internal non-.ds system indices and explicit Chargeback indices (including partial/restored/shrunk copies) to avoid feedback
+        if ((name.startsWith('.') && !name.startsWith('.ds-'))
+            || (stripped.startsWith('.') && !stripped.startsWith('.ds-'))
+            || name.startsWith('.ds-.')
+            || stripped.startsWith('.ds-.')
+            || name.startsWith('.ds-ilm-history')
+            || stripped.startsWith('.ds-ilm-history')
+            || isCbLookup
+            || name.contains('metrics-chargeback.')
+            || stripped.contains('metrics-chargeback.')
+            || name.contains('logs-chargeback.')
+            || stripped.contains('logs-chargeback.')) {
+          ctx._drop_internal = true;
+          return;
+        }
+        if (idx.datastream == null || idx.datastream == '') {
+          String resolvedDs = null;
+          if (stripped.startsWith('.ds-')) {
+            def dm = /^\.ds-([^:\s]+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d{6,})?$/.matcher(stripped);
+            if (dm.matches() && !dm.group(1).startsWith('.')) {
+              resolvedDs = dm.group(1);
+            }
+          } else {
+            def rm = /^([^:\s]+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?(?:-\d{6,})?|-\d{6,})$/.matcher(stripped);
+            if (rm.matches() && !rm.group(1).startsWith('.')) {
+              resolvedDs = rm.group(1);
+            }
+          }
+          if (resolvedDs != null) {
+            idx.datastream = resolvedDs;
+          } else {
+            idx.datastream = (name.startsWith('.') || stripped.startsWith('.')) ? 'system' : stripped;
+          }
+        }
+        idx.remove('allocated_node_roles');
+        if (idx.tier != null && idx.tier != '') {
+          String rawTier = idx.tier.toString().trim();
+          if (rawTier == 'data_hot' || rawTier == 'data_content' || rawTier == 'hot' || rawTier == 'content') {
+            idx.tier = 'hot/content';
+          } else if (rawTier == 'data_warm') {
+            idx.tier = 'warm';
+          } else if (rawTier == 'data_cold') {
+            idx.tier = 'cold';
+          } else if (rawTier == 'data_frozen') {
+            idx.tier = 'frozen';
+          }
+        } else {
+          String pref = idx.tier_preference != null ? idx.tier_preference.toString() : '';
+          if (pref == '') {
+            idx.tier = 'hot/content';
+          } else {
+            String prefTier = 'unknown';
+            for (String p : pref.splitOnToken(',')) {
+              String tp = p.trim();
+              if (tp == 'data_frozen') { prefTier = 'frozen'; break; }
+              if (tp == 'data_cold') { prefTier = 'cold'; break; }
+              if (tp == 'data_warm') { prefTier = 'warm'; break; }
+              if (tp == 'data_hot' || tp == 'data_content') { prefTier = 'hot/content'; break; }
+            }
+            idx.tier = prefTier;
+          }
+        }
+        if (idx.creation_date != null && ctx['@timestamp'] != null) {
+          try {
+            long tsMillis = (ctx['@timestamp'] instanceof Number)
+              ? ((Number)ctx['@timestamp']).longValue()
+              : ZonedDateTime.parse(ctx['@timestamp'].toString()).toInstant().toEpochMilli();
+            long createdMillis = (idx.creation_date instanceof Number)
+              ? ((Number)idx.creation_date).longValue()
+              : (/^\d+$/.matcher(idx.creation_date.toString()).matches()
+                  ? Long.parseLong(idx.creation_date.toString())
+                  : ZonedDateTime.parse(idx.creation_date.toString()).toInstant().toEpochMilli());
+            if (createdMillis > 0L) {
+              idx.creation_date = Instant.ofEpochMilli(createdMillis).toString();
+              long ageDays = (tsMillis - createdMillis) / 86400000L;
+              idx.age = ageDays > 0L ? ageDays : 0L;
+            }
+          } catch (Exception e) {}
+        }
+  - drop:
+      if: "ctx._drop_internal == true"
+  - fingerprint:
+      fields:
+        - elasticsearch.cluster.name
+        - "@timestamp"
+        - period_obs_ts
+        - elasticsearch.index.name
+        - elasticsearch.index.tier
+      target_field: _id
+      ignore_missing: true
+      tag: fingerprint_usage_event
+  - remove:
+      field: period_obs_ts
+      ignore_missing: true
+on_failure:
+  - set:
+      field: event.kind
+      value: "pipeline_error"
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'

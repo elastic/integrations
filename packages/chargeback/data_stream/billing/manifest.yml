@@ -1,0 +1,85 @@
+title: "Chargeback Billing"
+type: metrics
+dataset: chargeback.billing
+elasticsearch:
+  source_mode: synthetic
+streams:
+  - input: cel
+    title: Elastic Cloud Daily Billing & Rate Settings
+    description: Collect daily ECH and Serverless billing line items, deployment tags, currency conversion settings, and optional credit commitments from Elastic Cloud APIs.
+    template_path: cel.yml.hbs
+    enabled: true
+    vars:
+      - name: lookbehind
+        type: integer
+        title: Billing Lookbehind Days
+        description: >-
+          Number of historical days of billing data to backfill on initial install (default: 60).
+        multi: false
+        required: true
+        show_user: true
+        default: 60
+      - name: currency_unit
+        type: text
+        title: Currency Unit
+        description: >-
+          Target display currency code (for example, EUR, USD, GBP, ZAR).
+        multi: false
+        required: false
+        show_user: true
+        default: "EUR"
+      - name: unit_rate
+        type: text
+        title: Chargeable Unit Rate (Elastic Cloud ECU)
+        description: >-
+          Monetary value per Elastic Cloud Compute Unit (ECU), and fallback rate when On-Premises Unit Rate is left empty (for example, 0.85 per ECU).
+        multi: false
+        required: true
+        show_user: true
+        default: "0.85"
+      - name: onprem_unit_rate
+        type: text
+        title: On-Premises Unit Rate (per mERU)
+        description: >-
+          Monetary value per On-Premises milli-ERU (mERU) when consuming On-Premises Billing events where 1 ERU equals 1,000 mERU (for example, 0.00085 per mERU). Leave empty to inherit Chargeable Unit Rate.
+        multi: false
+        required: false
+        show_user: true
+        default: "0.00085"
+      - name: config_effective_from
+        type: text
+        title: Configuration Effective Start Date (Optional)
+        description: >-
+          Optional UTC day-boundary start date (YYYY-MM-DD or YYYY-MM-DDT00:00:00Z) when preserving earlier non-overlapping rate periods in chargeback_conf_lookup. Non-midnight timestamps are rejected because daily billing and usage buckets align to 00:00:00Z. Leave empty to apply the configured rate across the default validity window.
+        multi: false
+        required: false
+        show_user: true
+        default: ""
+      - name: collect_ess_credits
+        type: bool
+        title: Collect ESS Credit Commitment Data (for stock ESS Billing Credits dashboard)
+        description: >-
+          Pulls organization credit commitment line items (/api/v1/billing/organization/{id}/line_items) into metrics-chargeback.billing-* so standalone deployments can expose opt-in compatibility aliases for the stock [Metrics ESS Billing] Billing and Credits dashboards.
+        multi: false
+        required: false
+        show_user: true
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        description: List of tags to include in remotely collected billing events.
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - chargeback
+          - billing
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Optional Beat processors applied before events are published.

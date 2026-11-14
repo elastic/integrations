@@ -9,58 +9,101 @@ processors:
       ignore_failure: true
       lang: painless
       source: |
+        if (ctx.utilization instanceof Map) {
+          Map u = (Map)ctx.utilization;
+          if (u.containsKey('heap_used_pct_p95') && u.heap_used_pct_p95 != null) {
+            ctx.heap_used_pct_p95 = u.heap_used_pct_p95;
+          }
+          if (u.containsKey('disk_used_pct_p95') && u.disk_used_pct_p95 != null) {
+            ctx.disk_used_pct_p95 = u.disk_used_pct_p95;
+          }
+          ctx.remove('utilization');
+        } else {
+          long natCnt = (ctx.native instanceof Map && ctx.native.doc_cnt instanceof Number)
+            ? ((Number)ctx.native.doc_cnt).longValue()
+            : 0L;
+          long legCnt = (ctx.legacy instanceof Map && ctx.legacy.doc_cnt instanceof Number)
+            ? ((Number)ctx.legacy.doc_cnt).longValue()
+            : 0L;
+          boolean nativeCovers = (ctx.coverage instanceof Map && ctx.coverage.native_covers_day != null)
+            && ctx.coverage.native_covers_day.toString().equalsIgnoreCase('true');
+          Map chosen = ctx;
+          if (natCnt > 0L && (legCnt <= 0L || nativeCovers) && ctx.native instanceof Map) {
+            chosen = (Map)ctx.native;
+          } else if (legCnt > 0L && ctx.legacy instanceof Map) {
+            chosen = (Map)ctx.legacy;
+          } else if (natCnt > 0L && ctx.native instanceof Map) {
+            chosen = (Map)ctx.native;
+          }
+          if (chosen != ctx) {
+            if (chosen.containsKey('heap_used_pct_p95')) { ctx.heap_used_pct_p95 = chosen.heap_used_pct_p95; }
+            if (chosen.containsKey('disk_used_pct_p95')) { ctx.disk_used_pct_p95 = chosen.disk_used_pct_p95; }
+          }
+        }
+        ctx.remove('native');
+        ctx.remove('legacy');
+        ctx.remove('coverage');
+
         if (ctx['@timestamp'] != null && ctx.deployment_id != null) {
-            ctx.composite_key = ZonedDateTime.parse(ctx['@timestamp']).toLocalDate().toString() + '_' + ctx.deployment_id;
+          def rawTs = ctx['@timestamp'];
+          String dateStr = (rawTs instanceof Number)
+            ? Instant.ofEpochMilli(((Number)rawTs).longValue()).atZone(ZoneOffset.UTC).toLocalDate().toString()
+            : ZonedDateTime.parse(rawTs.toString()).toLocalDate().toString();
+          ctx.composite_key = dateStr + '_' + ctx.deployment_id;
         }
         if (ctx.heap_used_pct_p95 != null) {
-            def heap = ctx.heap_used_pct_p95;
-            def v = null;
-            if (heap instanceof Map) {
-              if (heap.values != null) {
-                v = heap.values['95.0'];
-                if (v == null) { v = heap.values['95']; }
-              }
-              if (v == null) { v = heap['95.0']; }
-              if (v == null) { v = heap['95']; }
-              // Map present but no scalar found — remove to avoid double mapping conflict
-              if (v == null) { ctx.remove('heap_used_pct_p95'); }
+          def heap = ctx.heap_used_pct_p95;
+          def v = null;
+          if (heap instanceof Number) {
+            v = ((Number)heap).doubleValue();
+          } else if (heap instanceof Map) {
+            if (heap.values != null) {
+              def hv = heap.values['95.0'];
+              if (hv == null) { hv = heap.values['95']; }
+              if (hv instanceof Number) { v = ((Number)hv).doubleValue(); }
             }
-            if (v != null) {
-              ctx.heap_used_pct_p95 = v;
-              ctx.memory_utilization = v / 100.0;
-            }
+            if (v == null && heap['95.0'] instanceof Number) { v = ((Number)heap['95.0']).doubleValue(); }
+            if (v == null && heap['95'] instanceof Number) { v = ((Number)heap['95']).doubleValue(); }
+            // Map present but no scalar found — remove to avoid double mapping conflict
+            if (v == null) { ctx.remove('heap_used_pct_p95'); }
+          }
+          if (v instanceof Number) {
+            double dv = ((Number)v).doubleValue();
+            ctx.heap_used_pct_p95 = dv;
+            ctx.memory_utilization = dv / 100.0;
+          }
         }
         if (ctx.disk_used_pct_p95 != null) {
-            def disk = ctx.disk_used_pct_p95;
-            def v = null;
-            if (disk instanceof Map) {
-              if (disk.values != null) {
-                v = disk.values['95.0'];
-                if (v == null) { v = disk.values['95']; }
-              }
-              if (v == null) { v = disk['95.0']; }
-              if (v == null) { v = disk['95']; }
-              // Map present but no scalar found — remove to avoid double mapping conflict
-              if (v == null) { ctx.remove('disk_used_pct_p95'); }
+          def disk = ctx.disk_used_pct_p95;
+          def v = null;
+          if (disk instanceof Number) {
+            v = ((Number)disk).doubleValue();
+          } else if (disk instanceof Map) {
+            if (disk.values != null) {
+              def dvObj = disk.values['95.0'];
+              if (dvObj == null) { dvObj = disk.values['95']; }
+              if (dvObj instanceof Number) { v = ((Number)dvObj).doubleValue(); }
             }
-            if (v != null) {
-              ctx.disk_used_pct_p95 = v;
-              ctx.storage_utilization = v / 100.0;
-            }
+            if (v == null && disk['95.0'] instanceof Number) { v = ((Number)disk['95.0']).doubleValue(); }
+            if (v == null && disk['95'] instanceof Number) { v = ((Number)disk['95']).doubleValue(); }
+            // Map present but no scalar found — remove to avoid double mapping conflict
+            if (v == null) { ctx.remove('disk_used_pct_p95'); }
+          }
+          if (v instanceof Number) {
+            double dv = ((Number)v).doubleValue();
+            ctx.disk_used_pct_p95 = dv;
+            ctx.storage_utilization = dv / 100.0;
+          }
         }
   - set:
       field: event.ingested
       value: "{{{_ingest.timestamp}}}"
       tag: set_event_ingested
   - pipeline:
-      description: '[Fleet] Global pipeline for all data streams'
+      description: '[Fleet] Pipeline for Chargeback lookup destination rows'
       ignore_missing_pipeline: true
-      name: global@custom
+      name: logs-chargeback.lookup@custom
   - pipeline:
-      description: '[Fleet] Pipeline for all data streams of type `metrics`'
+      description: '[Fleet] Pipeline for Chargeback capacity-utilization lookup destination rows'
       ignore_missing_pipeline: true
-      name: metrics@custom
-  - pipeline:
-      description: '[Fleet] Pipeline for all data streams of type `metrics` defined by the `chargeback` integration'
-      ignore_missing_pipeline: true
-      name: metrics-chargeback.integration@custom
+      name: logs-chargeback.lookup-capacity_utilization@custom

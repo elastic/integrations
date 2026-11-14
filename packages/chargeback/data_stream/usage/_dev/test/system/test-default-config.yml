@@ -1,0 +1,24 @@
+input: cel
+service: chargeback
+vars:
+  organization_id: "1111"
+  cloud_api_key: cloud-key
+  cloud_api_base: http://{{Hostname}}:{{Port}}
+  hub_es_url: http://{{Hostname}}:{{Port}}/hub
+  hub_es_api_key: hub-key
+  deployment_api_keys: "dep-ech-01:ech-key"
+  sync_fleet_config: true
+  enable_request_tracer: true
+data_stream:
+  vars:
+    indexing_weight: 20
+    query_weight: 20
+    storage_weight: 40
+    processors: |-
+      - add_fields:
+          target: labels
+          fields:
+            test_run_id: "{{Test.RunID}}"
+assert:
+  # 1 config_snapshot + 5 index_usage documents (2 ECH per-tier rows for warm primary and hot/content replica, Serverless page 1, Serverless page 2, Hub; .security-7 and chargeback_lookup.* filtered).
+  hit_count: 6

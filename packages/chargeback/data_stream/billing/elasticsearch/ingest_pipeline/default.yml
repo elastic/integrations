@@ -1,0 +1,226 @@
+---
+description: "Ingest pipeline for Chargeback self-collected Elastic Cloud billing, credit commitment, and rate configuration events."
+processors:
+  - drop:
+      if: "ctx.ess?.billing == null && ctx.doc_type != 'config_snapshot' && ctx.error?.message == null"
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.ess?.billing == null && ctx.doc_type != 'config_snapshot'
+      description: Terminate early on collection error documents.
+  - set:
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+      if: ctx.event?.ingested == null
+      tag: set_event_ingested
+  - terminate:
+      tag: config_snapshot_complete
+      if: "ctx.doc_type == 'config_snapshot'"
+      description: Configuration snapshot events are complete after stamping event.ingested.
+  - set:
+      field: cloud.account.id
+      copy_from: ess.billing.organization_id
+      ignore_empty_value: true
+      tag: cloud_account_id
+  - date:
+      field: _credit_poll_ts
+      target_field: "@timestamp"
+      formats:
+        - ISO8601
+      if: "ctx.doc_type == 'credit_line_item' && ctx._credit_poll_ts != null"
+      ignore_failure: true
+      tag: set_credit_poll_timestamp
+  - remove:
+      field: _credit_poll_ts
+      ignore_missing: true
+  - fingerprint:
+      if: "ctx.doc_type == 'credit_line_item'"
+      fields:
+        - conf_policy_id
+        - data_stream.namespace
+        - "@timestamp"
+        - credit_line_id
+        - ess.billing.organization_id
+        - ess.billing.start
+        - ess.billing.end
+        - ess.billing.type
+        - ess.billing.ecu_quantity
+        - ess.billing.ecu_balance
+        - ess.billing.active
+      target_field: _id
+      ignore_missing: true
+      tag: fingerprint_credit_line_item
+  - terminate:
+      tag: credit_line_item_complete
+      if: "ctx.doc_type == 'credit_line_item'"
+      description: Credit commitment events retain snapshot @timestamp and ESS credit fields; deduplication occurs in the billing_credits transform.
+  - date:
+      field: ess.billing.from
+      target_field: "@timestamp"
+      formats:
+        - ISO8601
+      if: ctx.ess?.billing?.from != null
+      ignore_failure: true
+      tag: restore_billing_window_timestamp
+  - set:
+      field: cloud.instance.id
+      copy_from: ess.billing.deployment_id
+      ignore_empty_value: true
+      tag: cloud_instance_id
+  - set:
+      field: cloud.instance.name
+      copy_from: ess.billing.deployment_id
+      ignore_empty_value: true
+  - set:
+      field: cloud.instance.name
+      copy_from: ess.billing.deployment_name
+      ignore_empty_value: true
+      tag: cloud_instance_name
+  - grok:
+      field: "ess.billing.sku"
+      patterns:
+        - "(?:Cloud-[A-Za-z]+_)?%{CLOUD_PROVIDER:cloud.provider}\\.%{NOTSPACE:cloud.machine.type}_%{NOTSPACE:cloud.region}_%{NUMBER:ess.billing.ram_per_zone:long}_%{NUMBER:ess.billing.zone_count:long}"
+      pattern_definitions:
+        CLOUD_PROVIDER: "aws|gcp|azure|global"
+      if: "ctx.ess?.billing?.sku != null && ctx.ess?.billing?.deployment_type == 'deployment'"
+      ignore_failure: true
+      tag: grok_ech_sku
+  - dissect:
+      field: "ess.billing.sku"
+      pattern: "%{cloud.provider}.%{}"
+      if: "ctx.cloud?.provider == null && ctx.ess?.billing?.sku != null && ctx.ess?.billing?.deployment_type == 'deployment'"
+      ignore_failure: true
+      tag: dissect_ech_provider
+  - set:
+      field: "cloud.provider"
+      value: "onprem"
+      if: "ctx.cloud?.provider == null && (ctx.ess?.billing?.deployment_type == 'onprem' || ctx.ess?.billing?.deployment_type == 'ece' || ctx.ess?.billing?.deployment_type == 'eck' || ctx.ess?.billing?.sku == 'onprem_node')"
+      tag: set_onprem_provider
+  - grok:
+      field: "ess.billing.sku"
+      patterns:
+        - "%{DATA}\\.(?<ess.billing.cloud.service.type>[^_]+)(?:_(?<_sls_sku_region>(?:aws|gcp|azure)-[a-z0-9-]+))?"
+      if: "ctx.ess?.billing?.sku != null && ctx.ess?.billing?.deployment_type != 'deployment' && ctx.cloud?.provider != 'onprem'"
+      ignore_failure: true
+      tag: grok_serverless_sku
+  - set:
+      field: "cloud.region"
+      copy_from: "_sls_sku_region"
+      if: "(ctx.cloud?.region == null || ctx.cloud?.region == '') && ctx._sls_sku_region != null"
+      ignore_empty_value: true
+  - remove:
+      field: "_sls_sku_region"
+      ignore_missing: true
+  - set:
+      field: "cloud.provider"
+      if: "ctx.ess?.billing?.deployment_type != 'deployment' && ctx.cloud?.provider == null"
+      value: "serverless"
+  - script:
+      lang: painless
+      ignore_failure: true
+      tag: normalize_billing_types_and_geo
+      source: |
+        if (ctx.ess != null && ctx.ess.billing != null) {
+          def s = ctx.ess.billing.sku != null ? ctx.ess.billing.sku : '';
+          if ((ctx.ess.billing.kind == null || ctx.ess.billing.kind == '') && s.contains('.es.')) {
+            ctx.ess.billing.kind = 'elasticsearch';
+          }
+          def t = ctx.ess.billing.type != null ? ctx.ess.billing.type.toString().toLowerCase() : '';
+          if (t == '' || t == 'vcu' || t == 'search ai lake' || t == 'ingest' || t == 'synthetics' || t == 'data transfer') {
+            if (s.contains('data-out') || s.contains('data-transfer-out') || s.contains('egress')) {
+              ctx.ess.billing.type = 'data_out';
+            } else if (s.contains('data-in') || s.contains('data-transfer-in') || s.contains('ingress')) {
+              ctx.ess.billing.type = 'data_in';
+            } else if (s.contains('snapshot') || s.contains('retained') || s.contains('storage')) {
+              ctx.ess.billing.type = 'storage';
+            } else if (s.contains('support')) {
+              ctx.ess.billing.type = 'support';
+            } else if (s.contains('.es.') || s.contains('.kibana.') || s.contains('.apm.') || s.contains('.integrationsserver.') || s.contains('.enterprisesearch.') || s.contains('vcu') || s.contains('complete')) {
+              ctx.ess.billing.type = 'capacity';
+            } else {
+              ctx.ess.billing.type = 'usage';
+            }
+          }
+        }
+        Map regionGeo = [
+          'gcp-us-central1': ['location': ['lon': -95.8608, 'lat': 41.2619], 'name': 'gcp-us-central1'],
+          'gcp-us-east4': ['location': ['lon': -77.4874, 'lat': 39.0438], 'name': 'gcp-us-east4'],
+          'gcp-us-west1': ['location': ['lon': -121.1787, 'lat': 45.5946], 'name': 'gcp-us-west1'],
+          'gcp-us-west2': ['location': ['lon': -118.2437, 'lat': 34.0522], 'name': 'gcp-us-west2'],
+          'gcp-us-east1': ['location': ['lon': -80.0131, 'lat': 33.1960], 'name': 'gcp-us-east1'],
+          'gcp-northamerica-northeast1': ['location': ['lon': -73.6148, 'lat': 45.5059], 'name': 'gcp-northamerica-northeast1'],
+          'gcp-southamerica-east1': ['location': ['lon': -46.6333, 'lat': -23.5505], 'name': 'gcp-southamerica-east1'],
+          'gcp-europe-west1': ['location': ['lon': 3.8189, 'lat': 50.4501], 'name': 'gcp-europe-west1'],
+          'gcp-europe-west2': ['location': ['lon': -0.1276, 'lat': 51.5074], 'name': 'gcp-europe-west2'],
+          'gcp-europe-west3': ['location': ['lon': 8.6821, 'lat': 50.1109], 'name': 'gcp-europe-west3'],
+          'gcp-europe-west4': ['location': ['lon': 6.8315, 'lat': 53.4386], 'name': 'gcp-europe-west4'],
+          'gcp-europe-north1': ['location': ['lon': 24.9458, 'lat': 60.1921], 'name': 'gcp-europe-north1'],
+          'gcp-asia-east1': ['location': ['lon': 121.5654, 'lat': 25.0330], 'name': 'gcp-asia-east1'],
+          'gcp-asia-northeast1': ['location': ['lon': 139.6917, 'lat': 35.6895], 'name': 'gcp-asia-northeast1'],
+          'gcp-asia-south1': ['location': ['lon': 72.8777, 'lat': 19.0760], 'name': 'gcp-asia-south1'],
+          'gcp-asia-southeast1': ['location': ['lon': 103.8198, 'lat': 1.3521], 'name': 'gcp-asia-southeast1'],
+          'gcp-australia-southeast1': ['location': ['lon': 151.2093, 'lat': -33.8688], 'name': 'gcp-australia-southeast1'],
+          'gcp-asia-northeast3': ['location': ['lon': 126.9780, 'lat': 37.5665], 'name': 'gcp-asia-northeast3'],
+          'gcp-asia-southeast2': ['location': ['lon': 106.8650, 'lat': -6.2088], 'name': 'gcp-asia-southeast2'],
+          'gcp-europe-west9': ['location': ['lon': 2.3522, 'lat': 48.8566], 'name': 'gcp-europe-west9'],
+          'gcp-me-west1': ['location': ['lon': 34.8516, 'lat': 31.0461], 'name': 'gcp-me-west1'],
+          'aws-us-east-2': ['location': ['lon': -82.9988, 'lat': 39.9612], 'name': 'aws-us-east-2'],
+          'aws-us-east-1': ['location': ['lon': -77.0369, 'lat': 38.9072], 'name': 'aws-us-east-1'],
+          'us-east-1': ['location': ['lon': -77.0369, 'lat': 38.9072], 'name': 'us-east-1'],
+          'aws-eu-west-1': ['location': ['lon': -6.2603, 'lat': 53.3498], 'name': 'aws-eu-west-1'],
+          'eu-west-1': ['location': ['lon': -6.2603, 'lat': 53.3498], 'name': 'eu-west-1'],
+          'aws-us-west-1': ['location': ['lon': -122.4194, 'lat': 37.7749], 'name': 'aws-us-west-1'],
+          'us-west-1': ['location': ['lon': -122.4194, 'lat': 37.7749], 'name': 'us-west-1'],
+          'aws-us-west-2': ['location': ['lon': -122.6765, 'lat': 45.5235], 'name': 'aws-us-west-2'],
+          'us-west-2': ['location': ['lon': -122.6765, 'lat': 45.5235], 'name': 'us-west-2'],
+          'aws-ca-central-1': ['location': ['lon': -75.6972, 'lat': 45.4215], 'name': 'aws-ca-central-1'],
+          'sa-east-1': ['location': ['lon': -46.6333, 'lat': -23.5505], 'name': 'sa-east-1'],
+          'aws-eu-west-2': ['location': ['lon': -0.1276, 'lat': 51.5074], 'name': 'aws-eu-west-2'],
+          'aws-eu-west-3': ['location': ['lon': 2.3522, 'lat': 48.8566], 'name': 'aws-eu-west-3'],
+          'aws-eu-central-1': ['location': ['lon': 8.6821, 'lat': 50.1109], 'name': 'aws-eu-central-1'],
+          'aws-ap-south-1': ['location': ['lon': 72.8777, 'lat': 19.0760], 'name': 'aws-ap-south-1'],
+          'ap-northeast-1': ['location': ['lon': 139.6917, 'lat': 35.6895], 'name': 'ap-northeast-1'],
+          'aws-ap-northeast-2': ['location': ['lon': 126.9780, 'lat': 37.5665], 'name': 'aws-ap-northeast-2'],
+          'aws-ap-east-1': ['location': ['lon': 114.1095, 'lat': 22.3964], 'name': 'aws-ap-east-1'],
+          'ap-southeast-1': ['location': ['lon': 103.8198, 'lat': 1.3521], 'name': 'ap-southeast-1'],
+          'ap-southeast-2': ['location': ['lon': 151.2093, 'lat': -33.8688], 'name': 'ap-southeast-2'],
+          'aws-af-south-1': ['location': ['lon': 18.4241, 'lat': -33.9249], 'name': 'aws-af-south-1'],
+          'aws-me-south-1': ['location': ['lon': 50.5577, 'lat': 26.0667], 'name': 'aws-me-south-1'],
+          'aws-me-central-1': ['location': ['lon': 55.2708, 'lat': 25.2048], 'name': 'aws-me-central-1'],
+          'aws-eu-south-1': ['location': ['lon': 9.1900, 'lat': 45.4642], 'name': 'aws-eu-south-1'],
+          'aws-eu-north-1': ['location': ['lon': 18.0686, 'lat': 59.3293], 'name': 'aws-eu-north-1'],
+          'aws-eu-central-2': ['location': ['lon': 8.5417, 'lat': 47.3769], 'name': 'aws-eu-central-2'],
+          'eu-central-2': ['location': ['lon': 8.5417, 'lat': 47.3769], 'name': 'eu-central-2'],
+          'azure-eastus2': ['location': ['lon': -78.3875, 'lat': 36.6676], 'name': 'azure-eastus2'],
+          'azure-eastus': ['location': ['lon': -77.0369, 'lat': 38.9072], 'name': 'azure-eastus'],
+          'azure-centralus': ['location': ['lon': -93.6250, 'lat': 41.5868], 'name': 'azure-centralus'],
+          'azure-southcentralus': ['location': ['lon': -97.7431, 'lat': 30.2672], 'name': 'azure-southcentralus'],
+          'azure-westus2': ['location': ['lon': -119.8526, 'lat': 47.2343], 'name': 'azure-westus2'],
+          'azure-northeurope': ['location': ['lon': -6.2603, 'lat': 53.3498], 'name': 'azure-northeurope'],
+          'azure-uksouth': ['location': ['lon': -0.1276, 'lat': 51.5074], 'name': 'azure-uksouth'],
+          'azure-westeurope': ['location': ['lon': 4.9041, 'lat': 52.3676], 'name': 'azure-westeurope'],
+          'azure-francecentral': ['location': ['lon': 2.3522, 'lat': 48.8566], 'name': 'azure-francecentral'],
+          'azure-japaneast': ['location': ['lon': 139.6917, 'lat': 35.6895], 'name': 'azure-japaneast'],
+          'azure-southeastasia': ['location': ['lon': 103.8198, 'lat': 1.3521], 'name': 'azure-southeastasia'],
+          'azure-australiaeast': ['location': ['lon': 151.2093, 'lat': -33.8688], 'name': 'azure-australiaeast'],
+          'azure-canadacentral': ['location': ['lon': -79.3832, 'lat': 43.6532], 'name': 'azure-canadacentral'],
+          'azure-brazilsouth': ['location': ['lon': -46.6333, 'lat': -23.5505], 'name': 'azure-brazilsouth'],
+          'azure-southafricanorth': ['location': ['lon': 28.0473, 'lat': -26.2041], 'name': 'azure-southafricanorth'],
+          'azure-centralindia': ['location': ['lon': 73.8567, 'lat': 18.5204], 'name': 'azure-centralindia']
+        ];
+        if (ctx.cloud == null) { ctx.cloud = [:]; }
+        String reg = ctx.cloud.region;
+        if (reg != null && regionGeo.containsKey(reg)) {
+          ctx.cloud.geo = regionGeo[reg];
+        } else {
+          ctx.cloud.geo = ['name': (reg != null && reg != '') ? reg : 'unknown', 'location': ['lon': 135.0, 'lat': 90.0]];
+        }
+on_failure:
+  - set:
+      field: event.kind
+      value: "pipeline_error"
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'

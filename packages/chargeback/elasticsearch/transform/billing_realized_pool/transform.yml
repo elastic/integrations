@@ -1,13 +1,21 @@
-description: Aggregates daily allocatable data-tier capacity (chargeable units) per deployment for realized-cost allocation.
+description: Aggregates daily allocatable data-tier and Serverless workload capacity (chargeable units) per deployment for realized-cost allocation.
 source:
   index:
+    - metrics-chargeback.billing-*
     - metrics-ess_billing.billing-*
+    - -metrics-ess_billing.billing-chargeback
+    - -chargeback_lookup.*
   query:
     bool:
       must:
         - range:
             ess.billing.total_ecu:
-              gt: 0
+              gte: 0
+      must_not:
+        - terms:
+            doc_type:
+              - config_snapshot
+              - credit_line_item
       should:
         - term:
             ess.billing.sku: onprem_node
@@ -30,28 +38,112 @@ source:
                     - wildcard:
                         ess.billing.sku: "*.es.datacontent.*"
                   minimum_should_match: 1
-        # Serverless projects (deployment_type: elasticsearch) bill VCU and retained storage
-        # instead of ECH data-tier node SKUs, so the *.es.data*.* patterns above never match
-        # them. Without this their cost stays is_allocatable: false and
-        # billing_realized_pool_lookup has no serverless rows, leaving the dashboards with no
-        # pool to allocate against. Search and ingest VCU plus retained storage are the
-        # serverless equivalent of data-tier capacity. ML VCU is deliberately excluded to
-        # match ECH semantics, where ML is cost_category "platform" and not allocatable.
+        # Serverless projects (elasticsearch, observability, security, vectordb) bill VCU,
+        # solution ingest, and retained storage rather than ECH *.es.data*.* node SKUs.
+        # Non-allocatable platform/support/transfer/snapshot SKUs (ML VCU, Synthetics,
+        # inference, support, egress, snapshots) are explicitly excluded.
         - bool:
             must:
-              - term:
-                  ess.billing.deployment_type: elasticsearch
+              - terms:
+                  ess.billing.deployment_type:
+                    - elasticsearch
+                    - observability
+                    - security
+                    - vectordb
               - bool:
                   should:
                     - wildcard:
-                        ess.billing.sku: "elasticsearch.*-search-vcu_*"
+                        ess.billing.sku: "*search-vcu*"
                     - wildcard:
-                        ess.billing.sku: "elasticsearch.*-ingest-vcu_*"
+                        ess.billing.sku: "*ingest-vcu*"
                     - wildcard:
-                        ess.billing.sku: "elasticsearch.retained_*"
+                        ess.billing.sku: "*retained*"
+                    - wildcard:
+                        ess.billing.sku: "*retention*"
+                    - wildcard:
+                        ess.billing.sku: "observability.*"
+                    - wildcard:
+                        ess.billing.sku: "*.observability.*"
+                    - wildcard:
+                        ess.billing.sku: "security.*"
+                    - wildcard:
+                        ess.billing.sku: "*.security.*"
+                    - wildcard:
+                        ess.billing.sku: "vectordb.*"
+                    - wildcard:
+                        ess.billing.sku: "*.vectordb.*"
                   minimum_should_match: 1
+            must_not:
+              - wildcard:
+                  ess.billing.sku: "*ml-vcu*"
+              - wildcard:
+                  ess.billing.sku: "*synthetic*"
+              - wildcard:
+                  ess.billing.sku: "*inference*"
+              - wildcard:
+                  ess.billing.sku: "*llm*"
+              - wildcard:
+                  ess.billing.sku: "*agent-builder*"
+              - wildcard:
+                  ess.billing.sku: "*.eis*"
+              - wildcard:
+                  ess.billing.sku: "*support*"
+              - wildcard:
+                  ess.billing.sku: "*data-transfer*"
+              - wildcard:
+                  ess.billing.sku: "*data-out*"
+              - wildcard:
+                  ess.billing.sku: "*data-in*"
+              - wildcard:
+                  ess.billing.sku: "*egress*"
+              - wildcard:
+                  ess.billing.sku: "*ingress*"
+              - wildcard:
+                  ess.billing.sku: "*snapshot*"
+              - wildcard:
+                  ess.billing.sku: "*workflow*"
+              - wildcard:
+                  ess.billing.sku: "*cross-project*"
       minimum_should_match: 1
   runtime_mappings:
+    cb_sync_ts:
+      type: date
+      script:
+        source: |
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              emit(doc['event.ingested'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+              emit(doc['event.created'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          for (String k : ['ingested', 'created']) {
+            def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get(k) : null;
+            if (rawVal == null && params._source != null) {
+              rawVal = params._source.get('event.' + k);
+            }
+            if (rawVal != null) {
+              if (rawVal instanceof Number) {
+                emit(((Number)rawVal).longValue());
+                return;
+              }
+              String s = rawVal.toString().trim();
+              if (s != '') {
+                try {
+                  emit(ZonedDateTime.parse(s).toInstant().toEpochMilli());
+                  return;
+                } catch (Exception e) {}
+              }
+            }
+          }
+          if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+            emit(doc['@timestamp'].value.toInstant().toEpochMilli());
+          }
     deployment_group:
       type: keyword
       script:
@@ -74,45 +166,505 @@ source:
           }
           emit('');
 dest:
-  index: billing_realized_pool_lookup
-  pipeline: logs-chargeback.lookup-0.5.0-realized_pool
+  index: chargeback_lookup.dest_billing_realized_pool-1
+  aliases:
+    - alias: chargeback_lookup.billing_realized_pool
+      move_on_creation: true
+  pipeline: logs-chargeback.lookup-0.6.0-realized_pool
 frequency: 60m
 sync:
   time:
-    # Use @timestamp (billing day), not event.ingested. On-Prem Billing and some
-    # seeded sources do not map event.ingested, which left this transform at 0 docs
-    # and emptied the Usage & Cost Allocation dashboard.
-    field: "@timestamp"
-    delay: 1h
+    field: cb_sync_ts
+    delay: 60s
 pivot:
   group_by:
     "@timestamp":
       date_histogram:
         field: "@timestamp"
         calendar_interval: 1d
-    deployment_group:
-      terms:
-        field: deployment_group
     deployment_id:
       terms:
         field: ess.billing.deployment_id
-    deployment_name:
-      terms:
-        field: ess.billing.deployment_name
   aggregations:
-    data_tier_capacity_ecu:
-      sum:
-        field: ess.billing.total_ecu
-    data_tier_capacity_hours:
-      max:
-        field: ess.billing.quantity.value
-    data_tier_ram_per_zone_mb:
-      max:
-        field: ess.billing.ram_per_zone
+    by_sku:
+      terms:
+        field: ess.billing.sku
+        size: 1000
+      aggs:
+        native:
+          scripted_metric:
+            init_script: "state.items = new HashMap();"
+            map_script: |
+              boolean isNat = false;
+              try {
+                if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+                  isNat = doc['data_stream.dataset'].value.toString() == 'chargeback.billing';
+                } else if (params._source?.data_stream?.dataset != null) {
+                  isNat = params._source.data_stream.dataset.toString() == 'chargeback.billing';
+                }
+              } catch (Exception e) {}
+              if (!isNat) { return; }
+
+              long ingTs = 0L;
+              try {
+                if (doc.containsKey('cb_sync_ts') && !doc['cb_sync_ts'].empty) {
+                  ingTs = doc['cb_sync_ts'].value.toInstant().toEpochMilli();
+                }
+              } catch (Exception e) {}
+
+              String orgId = '';
+              try {
+                if (doc.containsKey('ess.billing.organization_id') && !doc['ess.billing.organization_id'].empty) {
+                  orgId = doc['ess.billing.organization_id'].value.toString();
+                } else if (params._source?.ess?.billing?.organization_id != null) {
+                  orgId = params._source.ess.billing.organization_id.toString();
+                }
+              } catch (Exception e) {}
+
+              String depId = '';
+              try {
+                if (doc.containsKey('ess.billing.deployment_id') && !doc['ess.billing.deployment_id'].empty) {
+                  depId = doc['ess.billing.deployment_id'].value.toString();
+                } else if (params._source?.ess?.billing?.deployment_id != null) {
+                  depId = params._source.ess.billing.deployment_id.toString();
+                }
+              } catch (Exception e) {}
+
+              String sku = '';
+              try {
+                if (doc.containsKey('ess.billing.sku') && !doc['ess.billing.sku'].empty) {
+                  sku = doc['ess.billing.sku'].value.toString();
+                } else if (params._source?.ess?.billing?.sku != null) {
+                  sku = params._source.ess.billing.sku.toString();
+                }
+              } catch (Exception e) {}
+
+              String fromKey = '';
+              try {
+                if (doc.containsKey('ess.billing.from') && !doc['ess.billing.from'].empty) {
+                  fromKey = Long.toString(doc['ess.billing.from'].value.toInstant().toEpochMilli());
+                } else if (params._source?.ess?.billing?.from != null) {
+                  String fs = params._source.ess.billing.from.toString().trim();
+                  try { fromKey = Long.toString(ZonedDateTime.parse(fs).toInstant().toEpochMilli()); }
+                  catch (Exception pe) { fromKey = fs; }
+                } else if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+                  fromKey = 'ts:' + Long.toString(doc['@timestamp'].value.toInstant().toEpochMilli());
+                }
+              } catch (Exception e) {}
+
+              String toKey = '';
+              try {
+                if (doc.containsKey('ess.billing.to') && !doc['ess.billing.to'].empty) {
+                  toKey = Long.toString(doc['ess.billing.to'].value.toInstant().toEpochMilli());
+                } else if (params._source?.ess?.billing?.to != null) {
+                  String tsStr = params._source.ess.billing.to.toString().trim();
+                  try { toKey = Long.toString(ZonedDateTime.parse(tsStr).toInstant().toEpochMilli()); }
+                  catch (Exception pe) { toKey = tsStr; }
+                }
+              } catch (Exception e) {}
+
+              String nodeStr = '';
+              try {
+                def nk = params._source?.elasticsearch?.node?.id;
+                if (nk == null || nk.toString() == '') {
+                  String dtCheck = params._source?.ess?.billing?.deployment_type != null ? params._source.ess.billing.deployment_type.toString() : '';
+                  if ('onprem_node'.equals(sku) || 'onprem'.equals(dtCheck) || 'ece'.equals(dtCheck) || 'eck'.equals(dtCheck)) {
+                    nk = params._source?.host?.name;
+                  }
+                }
+                if (nk != null) { nodeStr = nk.toString(); }
+              } catch (Exception e) {}
+
+              String dedupKey = orgId + '|' + depId + '|' + fromKey + '|' + toKey + '|' + sku + (nodeStr != '' ? '|' + nodeStr : '');
+
+              double ecu = 0.0;
+              try {
+                if (doc.containsKey('ess.billing.total_ecu') && !doc['ess.billing.total_ecu'].empty) {
+                  ecu = ((Number)doc['ess.billing.total_ecu'].value).doubleValue();
+                } else if (params._source?.ess?.billing?.total_ecu instanceof Number) {
+                  ecu = ((Number)params._source.ess.billing.total_ecu).doubleValue();
+                }
+              } catch (Exception e) {}
+
+              boolean hasQty = false;
+              double qty = 0.0;
+              try {
+                if (doc.containsKey('ess.billing.quantity.value') && !doc['ess.billing.quantity.value'].empty) {
+                  qty = ((Number)doc['ess.billing.quantity.value'].value).doubleValue();
+                  hasQty = true;
+                } else if (params._source?.ess?.billing?.quantity?.value instanceof Number) {
+                  qty = ((Number)params._source.ess.billing.quantity.value).doubleValue();
+                  hasQty = true;
+                }
+              } catch (Exception e) {}
+
+              boolean hasRam = false;
+              long ram = 0L;
+              try {
+                if (doc.containsKey('ess.billing.ram_per_zone') && !doc['ess.billing.ram_per_zone'].empty) {
+                  ram = ((Number)doc['ess.billing.ram_per_zone'].value).longValue();
+                  hasRam = true;
+                } else if (params._source?.ess?.billing?.ram_per_zone instanceof Number) {
+                  ram = ((Number)params._source.ess.billing.ram_per_zone).longValue();
+                  hasRam = true;
+                }
+              } catch (Exception e) {}
+
+              String depGroup = '';
+              try {
+                if (doc.containsKey('deployment_group') && !doc['deployment_group'].empty) {
+                  depGroup = doc['deployment_group'].value.toString();
+                }
+              } catch (Exception e) {}
+
+              String depName = '';
+              try {
+                if (doc.containsKey('ess.billing.deployment_name') && !doc['ess.billing.deployment_name'].empty) {
+                  depName = doc['ess.billing.deployment_name'].value.toString();
+                } else if (params._source?.ess?.billing?.deployment_name != null) {
+                  depName = params._source.ess.billing.deployment_name.toString();
+                }
+              } catch (Exception e) {}
+
+              String depType = '';
+              try {
+                if (doc.containsKey('ess.billing.deployment_type') && !doc['ess.billing.deployment_type'].empty) {
+                  depType = doc['ess.billing.deployment_type'].value.toString();
+                } else if (params._source?.ess?.billing?.deployment_type != null) {
+                  depType = params._source.ess.billing.deployment_type.toString();
+                }
+              } catch (Exception e) {}
+              boolean isOnprem = ('onprem_node'.equals(sku) || 'onprem'.equals(depType) || 'ece'.equals(depType) || 'eck'.equals(depType));
+
+              Map rec = [
+                'ing_ts': ingTs,
+                'ecu': ecu,
+                'has_qty': hasQty,
+                'qty': qty,
+                'has_ram': hasRam,
+                'ram': ram,
+                'dep_group': depGroup,
+                'dep_name': depName,
+                'is_onprem': isOnprem
+              ];
+              Map ex = (Map)state.items.get(dedupKey);
+              if (ex == null) {
+                state.items.put(dedupKey, rec);
+              } else {
+                long exTs = ((Number)ex.get('ing_ts')).longValue();
+                int newMeta = (depGroup != '' ? 2 : 0) + (depName != '' ? 1 : 0);
+                int oldMeta = (ex.get('dep_group') != '' ? 2 : 0) + (ex.get('dep_name') != '' ? 1 : 0);
+                if (ingTs > exTs || (ingTs == exTs && (newMeta > oldMeta || (newMeta == oldMeta && ecu >= ((Number)ex.get('ecu')).doubleValue())))) {
+                  state.items.put(dedupKey, rec);
+                }
+              }
+            combine_script: "return state;"
+            reduce_script: |
+              Map merged = new HashMap();
+              for (def st : states) {
+                if (st == null || !(st.items instanceof Map)) { continue; }
+                for (def e : ((Map)st.items).entrySet()) {
+                  String k = e.getKey().toString();
+                  Map rec = (Map)e.getValue();
+                  Map ex = (Map)merged.get(k);
+                  if (ex == null) {
+                    merged.put(k, rec);
+                  } else {
+                    long ingTs = ((Number)rec.get('ing_ts')).longValue();
+                    long exTs = ((Number)ex.get('ing_ts')).longValue();
+                    int newMeta = (rec.get('dep_group') != '' ? 2 : 0) + (rec.get('dep_name') != '' ? 1 : 0);
+                    int oldMeta = (ex.get('dep_group') != '' ? 2 : 0) + (ex.get('dep_name') != '' ? 1 : 0);
+                    if (ingTs > exTs || (ingTs == exTs && (newMeta > oldMeta || (newMeta == oldMeta && ((Number)rec.get('ecu')).doubleValue() >= ((Number)ex.get('ecu')).doubleValue())))) {
+                      merged.put(k, rec);
+                    }
+                  }
+                }
+              }
+              if (merged.isEmpty()) {
+                return ['doc_cnt': 0L];
+              }
+              double sumEcu = 0.0;
+              boolean hasQty = false;
+              double maxQty = 0.0;
+              boolean hasRam = false;
+              long maxRam = 0L;
+              long bestTs = -1L;
+              long bestGroupTs = -1L;
+              String depGroup = '';
+              String depName = '';
+              boolean anyOnprem = false;
+              for (def recObj : merged.values()) {
+                Map rec = (Map)recObj;
+                sumEcu += ((Number)rec.get('ecu')).doubleValue();
+                if (Boolean.TRUE.equals(rec.get('is_onprem'))) { anyOnprem = true; }
+                if (Boolean.TRUE.equals(rec.get('has_qty'))) {
+                  double q = ((Number)rec.get('qty')).doubleValue();
+                  if (!hasQty || q > maxQty) { maxQty = q; hasQty = true; }
+                }
+                if (Boolean.TRUE.equals(rec.get('has_ram'))) {
+                  long r = ((Number)rec.get('ram')).longValue();
+                  if (!hasRam || r > maxRam) { maxRam = r; hasRam = true; }
+                }
+                long rTs = ((Number)rec.get('ing_ts')).longValue();
+                String rGroup = rec.get('dep_group') != null ? rec.get('dep_group').toString() : '';
+                if (rTs > bestGroupTs || (rTs == bestGroupTs && rGroup != '')) {
+                  bestGroupTs = rTs;
+                  depGroup = rGroup;
+                }
+                boolean isNewer = rTs >= bestTs;
+                if (isNewer) { bestTs = rTs; }
+                if (rec.get('dep_name') != '' && (depName == '' || isNewer)) { depName = rec.get('dep_name').toString(); }
+              }
+              Map res = [
+                'doc_cnt': (long)merged.size(),
+                'ing_ts': bestTs,
+                'data_tier_capacity_ecu': sumEcu,
+                'deployment_group': depGroup,
+                'deployment_name': depName,
+                'is_onprem': anyOnprem
+              ];
+              if (hasQty) { res.put('data_tier_capacity_hours', maxQty); }
+              if (hasRam) { res.put('data_tier_ram_per_zone_mb', maxRam); }
+              return res;
+        legacy:
+          scripted_metric:
+            init_script: "state.items = new HashMap();"
+            map_script: |
+              boolean isNat = false;
+              try {
+                if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+                  isNat = doc['data_stream.dataset'].value.toString() == 'chargeback.billing';
+                } else if (params._source?.data_stream?.dataset != null) {
+                  isNat = params._source.data_stream.dataset.toString() == 'chargeback.billing';
+                }
+              } catch (Exception e) {}
+              if (isNat) { return; }
+
+              long ingTs = 0L;
+              try {
+                if (doc.containsKey('cb_sync_ts') && !doc['cb_sync_ts'].empty) {
+                  ingTs = doc['cb_sync_ts'].value.toInstant().toEpochMilli();
+                }
+              } catch (Exception e) {}
+
+              String orgId = '';
+              try {
+                if (doc.containsKey('ess.billing.organization_id') && !doc['ess.billing.organization_id'].empty) {
+                  orgId = doc['ess.billing.organization_id'].value.toString();
+                } else if (params._source?.ess?.billing?.organization_id != null) {
+                  orgId = params._source.ess.billing.organization_id.toString();
+                }
+              } catch (Exception e) {}
+
+              String depId = '';
+              try {
+                if (doc.containsKey('ess.billing.deployment_id') && !doc['ess.billing.deployment_id'].empty) {
+                  depId = doc['ess.billing.deployment_id'].value.toString();
+                } else if (params._source?.ess?.billing?.deployment_id != null) {
+                  depId = params._source.ess.billing.deployment_id.toString();
+                }
+              } catch (Exception e) {}
+
+              String sku = '';
+              try {
+                if (doc.containsKey('ess.billing.sku') && !doc['ess.billing.sku'].empty) {
+                  sku = doc['ess.billing.sku'].value.toString();
+                } else if (params._source?.ess?.billing?.sku != null) {
+                  sku = params._source.ess.billing.sku.toString();
+                }
+              } catch (Exception e) {}
+
+              String fromKey = '';
+              try {
+                if (doc.containsKey('ess.billing.from') && !doc['ess.billing.from'].empty) {
+                  fromKey = Long.toString(doc['ess.billing.from'].value.toInstant().toEpochMilli());
+                } else if (params._source?.ess?.billing?.from != null) {
+                  String fs = params._source.ess.billing.from.toString().trim();
+                  try { fromKey = Long.toString(ZonedDateTime.parse(fs).toInstant().toEpochMilli()); }
+                  catch (Exception pe) { fromKey = fs; }
+                } else if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+                  fromKey = 'ts:' + Long.toString(doc['@timestamp'].value.toInstant().toEpochMilli());
+                }
+              } catch (Exception e) {}
+
+              String toKey = '';
+              try {
+                if (doc.containsKey('ess.billing.to') && !doc['ess.billing.to'].empty) {
+                  toKey = Long.toString(doc['ess.billing.to'].value.toInstant().toEpochMilli());
+                } else if (params._source?.ess?.billing?.to != null) {
+                  String tsStr = params._source.ess.billing.to.toString().trim();
+                  try { toKey = Long.toString(ZonedDateTime.parse(tsStr).toInstant().toEpochMilli()); }
+                  catch (Exception pe) { toKey = tsStr; }
+                }
+              } catch (Exception e) {}
+
+              String nodeStr = '';
+              try {
+                def nk = params._source?.elasticsearch?.node?.id;
+                if (nk == null || nk.toString() == '') {
+                  String dtCheck = params._source?.ess?.billing?.deployment_type != null ? params._source.ess.billing.deployment_type.toString() : '';
+                  if ('onprem_node'.equals(sku) || 'onprem'.equals(dtCheck) || 'ece'.equals(dtCheck) || 'eck'.equals(dtCheck)) {
+                    nk = params._source?.host?.name;
+                  }
+                }
+                if (nk != null) { nodeStr = nk.toString(); }
+              } catch (Exception e) {}
+
+              String dedupKey = orgId + '|' + depId + '|' + fromKey + '|' + toKey + '|' + sku + (nodeStr != '' ? '|' + nodeStr : '');
+
+              double ecu = 0.0;
+              try {
+                if (doc.containsKey('ess.billing.total_ecu') && !doc['ess.billing.total_ecu'].empty) {
+                  ecu = ((Number)doc['ess.billing.total_ecu'].value).doubleValue();
+                } else if (params._source?.ess?.billing?.total_ecu instanceof Number) {
+                  ecu = ((Number)params._source.ess.billing.total_ecu).doubleValue();
+                }
+              } catch (Exception e) {}
+
+              boolean hasQty = false;
+              double qty = 0.0;
+              try {
+                if (doc.containsKey('ess.billing.quantity.value') && !doc['ess.billing.quantity.value'].empty) {
+                  qty = ((Number)doc['ess.billing.quantity.value'].value).doubleValue();
+                  hasQty = true;
+                } else if (params._source?.ess?.billing?.quantity?.value instanceof Number) {
+                  qty = ((Number)params._source.ess.billing.quantity.value).doubleValue();
+                  hasQty = true;
+                }
+              } catch (Exception e) {}
+
+              boolean hasRam = false;
+              long ram = 0L;
+              try {
+                if (doc.containsKey('ess.billing.ram_per_zone') && !doc['ess.billing.ram_per_zone'].empty) {
+                  ram = ((Number)doc['ess.billing.ram_per_zone'].value).longValue();
+                  hasRam = true;
+                } else if (params._source?.ess?.billing?.ram_per_zone instanceof Number) {
+                  ram = ((Number)params._source.ess.billing.ram_per_zone).longValue();
+                  hasRam = true;
+                }
+              } catch (Exception e) {}
+
+              String depGroup = '';
+              try {
+                if (doc.containsKey('deployment_group') && !doc['deployment_group'].empty) {
+                  depGroup = doc['deployment_group'].value.toString();
+                }
+              } catch (Exception e) {}
+
+              String depName = '';
+              try {
+                if (doc.containsKey('ess.billing.deployment_name') && !doc['ess.billing.deployment_name'].empty) {
+                  depName = doc['ess.billing.deployment_name'].value.toString();
+                } else if (params._source?.ess?.billing?.deployment_name != null) {
+                  depName = params._source.ess.billing.deployment_name.toString();
+                }
+              } catch (Exception e) {}
+
+              String depType = '';
+              try {
+                if (doc.containsKey('ess.billing.deployment_type') && !doc['ess.billing.deployment_type'].empty) {
+                  depType = doc['ess.billing.deployment_type'].value.toString();
+                } else if (params._source?.ess?.billing?.deployment_type != null) {
+                  depType = params._source.ess.billing.deployment_type.toString();
+                }
+              } catch (Exception e) {}
+              boolean isOnprem = ('onprem_node'.equals(sku) || 'onprem'.equals(depType) || 'ece'.equals(depType) || 'eck'.equals(depType));
+
+              Map rec = [
+                'ing_ts': ingTs,
+                'ecu': ecu,
+                'has_qty': hasQty,
+                'qty': qty,
+                'has_ram': hasRam,
+                'ram': ram,
+                'dep_group': depGroup,
+                'dep_name': depName,
+                'is_onprem': isOnprem
+              ];
+              Map ex = (Map)state.items.get(dedupKey);
+              if (ex == null) {
+                state.items.put(dedupKey, rec);
+              } else {
+                long exTs = ((Number)ex.get('ing_ts')).longValue();
+                int newMeta = (depGroup != '' ? 2 : 0) + (depName != '' ? 1 : 0);
+                int oldMeta = (ex.get('dep_group') != '' ? 2 : 0) + (ex.get('dep_name') != '' ? 1 : 0);
+                if (ingTs > exTs || (ingTs == exTs && (newMeta > oldMeta || (newMeta == oldMeta && ecu >= ((Number)ex.get('ecu')).doubleValue())))) {
+                  state.items.put(dedupKey, rec);
+                }
+              }
+            combine_script: "return state;"
+            reduce_script: |
+              Map merged = new HashMap();
+              for (def st : states) {
+                if (st == null || !(st.items instanceof Map)) { continue; }
+                for (def e : ((Map)st.items).entrySet()) {
+                  String k = e.getKey().toString();
+                  Map rec = (Map)e.getValue();
+                  Map ex = (Map)merged.get(k);
+                  if (ex == null) {
+                    merged.put(k, rec);
+                  } else {
+                    long ingTs = ((Number)rec.get('ing_ts')).longValue();
+                    long exTs = ((Number)ex.get('ing_ts')).longValue();
+                    int newMeta = (rec.get('dep_group') != '' ? 2 : 0) + (rec.get('dep_name') != '' ? 1 : 0);
+                    int oldMeta = (ex.get('dep_group') != '' ? 2 : 0) + (ex.get('dep_name') != '' ? 1 : 0);
+                    if (ingTs > exTs || (ingTs == exTs && (newMeta > oldMeta || (newMeta == oldMeta && ((Number)rec.get('ecu')).doubleValue() >= ((Number)ex.get('ecu')).doubleValue())))) {
+                      merged.put(k, rec);
+                    }
+                  }
+                }
+              }
+              if (merged.isEmpty()) {
+                return ['doc_cnt': 0L];
+              }
+              double sumEcu = 0.0;
+              boolean hasQty = false;
+              double maxQty = 0.0;
+              boolean hasRam = false;
+              long maxRam = 0L;
+              long bestTs = -1L;
+              long bestGroupTs = -1L;
+              String depGroup = '';
+              String depName = '';
+              boolean anyOnprem = false;
+              for (def recObj : merged.values()) {
+                Map rec = (Map)recObj;
+                sumEcu += ((Number)rec.get('ecu')).doubleValue();
+                if (Boolean.TRUE.equals(rec.get('is_onprem'))) { anyOnprem = true; }
+                if (Boolean.TRUE.equals(rec.get('has_qty'))) {
+                  double q = ((Number)rec.get('qty')).doubleValue();
+                  if (!hasQty || q > maxQty) { maxQty = q; hasQty = true; }
+                }
+                if (Boolean.TRUE.equals(rec.get('has_ram'))) {
+                  long r = ((Number)rec.get('ram')).longValue();
+                  if (!hasRam || r > maxRam) { maxRam = r; hasRam = true; }
+                }
+                long rTs = ((Number)rec.get('ing_ts')).longValue();
+                String rGroup = rec.get('dep_group') != null ? rec.get('dep_group').toString() : '';
+                if (rTs > bestGroupTs || (rTs == bestGroupTs && rGroup != '')) {
+                  bestGroupTs = rTs;
+                  depGroup = rGroup;
+                }
+                boolean isNewer = rTs >= bestTs;
+                if (isNewer) { bestTs = rTs; }
+                if (rec.get('dep_name') != '' && (depName == '' || isNewer)) { depName = rec.get('dep_name').toString(); }
+              }
+              Map res = [
+                'doc_cnt': (long)merged.size(),
+                'ing_ts': bestTs,
+                'data_tier_capacity_ecu': sumEcu,
+                'deployment_group': depGroup,
+                'deployment_name': depName,
+                'is_onprem': anyOnprem
+              ];
+              if (hasQty) { res.put('data_tier_capacity_hours', maxQty); }
+              if (hasRam) { res.put('data_tier_ram_per_zone_mb', maxRam); }
+              return res;
 settings:
   deduce_mappings: false
   unattended: true
 _meta:
   managed: true
   run_as_kibana_system: false
-  fleet_transform_version: 0.5.0
+  fleet_transform_version: 0.6.0

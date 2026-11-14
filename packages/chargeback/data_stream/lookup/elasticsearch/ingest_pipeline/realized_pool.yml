@@ -5,27 +5,209 @@ processors:
       ignore_failure: true
       lang: painless
       source: |
+        if (ctx.by_sku instanceof Map) {
+          double sumEcu = 0.0;
+          Double maxHours = null;
+          Long maxRam = null;
+          boolean hasNativeSku = false;
+          String nativeGroup = '';
+          long nativeGroupTs = -1L;
+          String legacyGroup = '';
+          long legacyGroupTs = -1L;
+          String nativeName = '';
+          long nativeNameTs = -1L;
+          String legacyName = '';
+          long legacyNameTs = -1L;
+          boolean anyOnprem = false;
+          if (ctx.by_sku.buckets instanceof List) {
+            for (def bObj : (List)ctx.by_sku.buckets) {
+              if (bObj instanceof Map && 'onprem_node'.equals(bObj.get('key'))) {
+                anyOnprem = true;
+              }
+            }
+          } else {
+            for (def kObj : ((Map)ctx.by_sku).keySet()) {
+              if ('onprem_node'.equals(kObj != null ? kObj.toString() : '')) {
+                anyOnprem = true;
+              }
+            }
+          }
+          Collection skuItems = (ctx.by_sku.buckets instanceof List)
+            ? (List)ctx.by_sku.buckets
+            : ((Map)ctx.by_sku).values();
+          for (def skuObj : skuItems) {
+            if (skuObj instanceof Map) {
+              Map chosenSku = null;
+              boolean skuIsNative = false;
+              if (skuObj.native instanceof Map && skuObj.native.doc_cnt instanceof Number && ((Number)skuObj.native.doc_cnt).longValue() > 0L) {
+                chosenSku = (Map)skuObj.native;
+                skuIsNative = true;
+              } else if (skuObj.legacy instanceof Map && skuObj.legacy.doc_cnt instanceof Number && ((Number)skuObj.legacy.doc_cnt).longValue() > 0L) {
+                chosenSku = (Map)skuObj.legacy;
+              }
+              if (chosenSku != null) {
+                if (skuIsNative) {
+                  hasNativeSku = true;
+                }
+                long skuIngTs = (chosenSku.ing_ts instanceof Number) ? ((Number)chosenSku.ing_ts).longValue() : -1L;
+                if (Boolean.TRUE.equals(chosenSku.get('is_onprem'))) {
+                  anyOnprem = true;
+                }
+                if (chosenSku.data_tier_capacity_ecu instanceof Number) {
+                  double ecuVal = ((Number)chosenSku.data_tier_capacity_ecu).doubleValue();
+                  if (!Double.isNaN(ecuVal) && !Double.isInfinite(ecuVal)) {
+                    sumEcu += ecuVal;
+                  }
+                }
+                if (chosenSku.data_tier_capacity_hours instanceof Number) {
+                  double h = ((Number)chosenSku.data_tier_capacity_hours).doubleValue();
+                  if (!Double.isNaN(h) && !Double.isInfinite(h) && (maxHours == null || h > maxHours.doubleValue())) {
+                    maxHours = Double.valueOf(h);
+                  }
+                }
+                if (chosenSku.data_tier_ram_per_zone_mb instanceof Number) {
+                  double rd = ((Number)chosenSku.data_tier_ram_per_zone_mb).doubleValue();
+                  if (!Double.isNaN(rd) && !Double.isInfinite(rd)) {
+                    long r = ((Number)chosenSku.data_tier_ram_per_zone_mb).longValue();
+                    if (maxRam == null || r > maxRam.longValue()) {
+                      maxRam = Long.valueOf(r);
+                    }
+                  }
+                }
+                for (String fn : ['deployment_group', 'deployment_name']) {
+                  def rawV = chosenSku.get(fn);
+                  String extracted = '';
+                  if (rawV instanceof Map) {
+                    def b = rawV.buckets;
+                    if (b instanceof List && b.size() > 0) {
+                      def kv = b[0].key_as_string != null ? b[0].key_as_string : b[0].key;
+                      extracted = kv != null ? kv.toString() : '';
+                    } else if (!(b instanceof List)) {
+                      def ks = new ArrayList(rawV.keySet());
+                      extracted = ks.size() > 0 && ks[0] != null ? ks[0].toString() : '';
+                    }
+                  } else if (rawV != null) {
+                    extracted = rawV.toString();
+                  }
+                  if (fn == 'deployment_group') {
+                    if (skuIsNative) {
+                      if (skuIngTs >= 0L) {
+                        if (skuIngTs > nativeGroupTs || (skuIngTs == nativeGroupTs && extracted != '')) {
+                          nativeGroup = extracted;
+                          nativeGroupTs = skuIngTs;
+                        }
+                      } else if (extracted != '' && nativeGroupTs < 0L) {
+                        nativeGroup = extracted;
+                      }
+                    } else {
+                      if (skuIngTs >= 0L) {
+                        if (skuIngTs > legacyGroupTs || (skuIngTs == legacyGroupTs && extracted != '')) {
+                          legacyGroup = extracted;
+                          legacyGroupTs = skuIngTs;
+                        }
+                      } else if (extracted != '' && legacyGroupTs < 0L) {
+                        legacyGroup = extracted;
+                      }
+                    }
+                  } else if (extracted != '') {
+                    if (skuIsNative) {
+                      if (nativeName == '' || (skuIngTs >= 0L && skuIngTs >= nativeNameTs)) {
+                        nativeName = extracted;
+                        if (skuIngTs >= 0L) { nativeNameTs = skuIngTs; }
+                      }
+                    } else {
+                      if (legacyName == '' || (skuIngTs >= 0L && skuIngTs >= legacyNameTs)) {
+                        legacyName = extracted;
+                        if (skuIngTs >= 0L) { legacyNameTs = skuIngTs; }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          String bestGroup = hasNativeSku ? nativeGroup : legacyGroup;
+          String bestName = nativeName != '' ? nativeName : legacyName;
+          ctx.remove('by_sku');
+          ctx.data_tier_capacity_ecu = sumEcu;
+          ctx.is_onprem = anyOnprem;
+          if (maxHours != null) {
+            ctx.data_tier_capacity_hours = maxHours.doubleValue();
+          }
+          if (maxRam != null) {
+            ctx.data_tier_ram_per_zone_mb = maxRam.longValue();
+          }
+          ctx.deployment_group = bestGroup != null ? bestGroup : '';
+          ctx.deployment_name = (bestName != null && bestName != '')
+            ? bestName
+            : (ctx.deployment_id != null ? ctx.deployment_id.toString() : 'unknown');
+        } else {
+          Map chosen = ctx;
+          if (ctx.native instanceof Map && ctx.native.doc_cnt instanceof Number && ((Number)ctx.native.doc_cnt).longValue() > 0L) {
+            chosen = ctx.native;
+          } else if (ctx.legacy instanceof Map) {
+            chosen = ctx.legacy;
+          }
+          if (chosen != ctx) {
+            for (String k : ['data_tier_capacity_ecu', 'data_tier_capacity_hours', 'data_tier_ram_per_zone_mb', 'deployment_group', 'deployment_name', 'is_onprem']) {
+              if (chosen.containsKey(k)) {
+                ctx[k] = chosen[k];
+              } else if (k == 'deployment_group') {
+                ctx[k] = '';
+              }
+            }
+          }
+          ctx.remove('native');
+          ctx.remove('legacy');
+          ctx.is_onprem = Boolean.TRUE.equals(ctx.is_onprem);
+
+          for (String fn : ['deployment_group', 'deployment_name']) {
+            def v = ctx[fn];
+            if (v instanceof Map) {
+              def b = v.buckets;
+              if (b instanceof List && b.size() > 0) {
+                ctx[fn] = b[0].key_as_string != null ? b[0].key_as_string : b[0].key;
+              } else if (!(b instanceof List)) {
+                def ks = new ArrayList(v.keySet());
+                ctx[fn] = ks.size() > 0 ? ks[0] : null;
+              } else {
+                ctx[fn] = null;
+              }
+            }
+          }
+          if (ctx.deployment_group == null) {
+            ctx.deployment_group = '';
+          } else {
+            ctx.deployment_group = ctx.deployment_group.toString();
+          }
+          if (ctx.deployment_name == null || ctx.deployment_name.toString() == '') {
+            ctx.deployment_name = ctx.deployment_id != null ? ctx.deployment_id.toString() : 'unknown';
+          } else {
+            ctx.deployment_name = ctx.deployment_name.toString();
+          }
+        }
+
         if (ctx['@timestamp'] != null && ctx.deployment_id != null) {
-            ctx.composite_key = ZonedDateTime.parse(ctx['@timestamp']).toLocalDate().toString() + '_' + ctx.deployment_id;
+          def rawTs = ctx['@timestamp'];
+          String dateStr = (rawTs instanceof Number)
+            ? Instant.ofEpochMilli(((Number)rawTs).longValue()).atZone(ZoneOffset.UTC).toLocalDate().toString()
+            : ZonedDateTime.parse(rawTs.toString()).toLocalDate().toString();
+          ctx.composite_key = dateStr + '_' + ctx.deployment_id;
         }
         if (ctx.data_tier_capacity_ecu != null) {
-            // provisioned pool — utilization discount is applied later in ES|QL
-            ctx.realized_chargeable_units = ctx.data_tier_capacity_ecu;
-            ctx.total_chargeable_units = ctx.data_tier_capacity_ecu;
+          // provisioned pool — utilization discount is applied later in ES|QL
+          ctx.realized_chargeable_units = ctx.data_tier_capacity_ecu;
+          ctx.total_chargeable_units = ctx.data_tier_capacity_ecu;
         }
   - set:
       field: event.ingested
       value: "{{{_ingest.timestamp}}}"
       tag: set_event_ingested
   - pipeline:
-      description: '[Fleet] Global pipeline for all data streams'
+      description: '[Fleet] Pipeline for Chargeback lookup destination rows'
       ignore_missing_pipeline: true
-      name: global@custom
+      name: logs-chargeback.lookup@custom
   - pipeline:
-      description: '[Fleet] Pipeline for all data streams of type `metrics`'
+      description: '[Fleet] Pipeline for Chargeback realized-pool lookup destination rows'
       ignore_missing_pipeline: true
-      name: metrics@custom
-  - pipeline:
-      description: '[Fleet] Pipeline for all data streams of type `metrics` defined by the `chargeback` integration'
-      ignore_missing_pipeline: true
-      name: metrics-chargeback.integration@custom
+      name: logs-chargeback.lookup-realized_pool@custom

@@ -1,17 +1,138 @@
 ---
-description: 'Chargeback: Set correlation keys and blended calculation weights.'
+description: 'Chargeback: Set correlation keys, per-index/interval source selection tags, and blended calculation labels.'
 processors:
   - script:
       ignore_failure: true
       lang: painless
       source: |
+        String pfx = (ctx.tier != null && ctx.datastream != null)
+          ? 'tier_and_datastream'
+          : (ctx.tier != null ? 'tier' : (ctx.datastream != null ? 'datastream' : 'deployment'));
+
+        if (ctx.rollup instanceof Map) {
+          Map r = (Map)ctx.rollup;
+          String[] metrics = new String[] { 'sum_indexing_time', 'sum_query_time', 'sum_store_size', 'sum_data_set_store_size' };
+          if (ctx.tier != null && r.sel_by_tier instanceof Map) {
+            String tKey = ctx.tier.toString();
+            boolean hasSelTier = ((Map)r.sel_by_tier).get(tKey) instanceof List;
+            Map natCntMap = (r.nat_cnt_by_tier instanceof Map) ? (Map)r.nat_cnt_by_tier : null;
+            long natTierCnt = (natCntMap != null && natCntMap.get(tKey) instanceof Number)
+              ? ((Number)natCntMap.get(tKey)).longValue()
+              : 0L;
+            Map legCntMap = (r.leg_cnt_by_tier instanceof Map) ? (Map)r.leg_cnt_by_tier : null;
+            long legTierCnt = (legCntMap != null && legCntMap.get(tKey) instanceof Number)
+              ? ((Number)legCntMap.get(tKey)).longValue()
+              : ((r.leg_cnt_by_tier == null && r.leg_cnt instanceof Number) ? ((Number)r.leg_cnt).longValue() : 0L);
+            // Retain empty shadow tier buckets as zero-valued rows so continuous transform
+            // checkpoints overwrite previously materialized tier rows after ILM tier moves.
+            List selT = hasSelTier ? (List)((Map)r.sel_by_tier).get(tKey) : [0L, 0L, 0L, 0L];
+            List natT = (r.raw_nat_by_tier instanceof Map && ((Map)r.raw_nat_by_tier).get(tKey) instanceof List)
+              ? (List)((Map)r.raw_nat_by_tier).get(tKey)
+              : [0L, 0L, 0L, 0L];
+            List legT = (r.raw_leg_by_tier instanceof Map && ((Map)r.raw_leg_by_tier).get(tKey) instanceof List)
+              ? (List)((Map)r.raw_leg_by_tier).get(tKey)
+              : null;
+            String tierSrc = (r.sel_src_by_tier instanceof Map && ((Map)r.sel_src_by_tier).get(tKey) != null)
+              ? ((Map)r.sel_src_by_tier).get(tKey).toString()
+              : (r.usage_source != null ? r.usage_source.toString() : 'legacy');
+            ctx.usage_source = tierSrc;
+            for (int i = 0; i < 4; i++) {
+              String m = metrics[i];
+              ctx[pfx + '_' + m] = ((Number)selT.get(i)).longValue();
+              ctx['native_' + m] = ((Number)natT.get(i)).longValue();
+              if (legT != null) {
+                ctx['legacy_' + m] = ((Number)legT.get(i)).longValue();
+              } else if (r.raw_leg_by_tier instanceof Map) {
+                ctx['legacy_' + m] = 0L;
+              } else {
+                def lv = r.get('legacy_' + m);
+                ctx['legacy_' + m] = (lv instanceof Number) ? ((Number)lv).longValue() : 0L;
+              }
+            }
+            ctx.has_native_usage = (natTierCnt > 0L);
+            ctx.has_legacy_usage = (legTierCnt > 0L);
+          } else {
+            ctx.usage_source = r.usage_source != null ? r.usage_source.toString() : 'legacy';
+            for (int i = 0; i < 4; i++) {
+              String m = metrics[i];
+              def sv = r.get('selected_' + m);
+              ctx[pfx + '_' + m] = (sv instanceof Number) ? ((Number)sv).longValue() : 0L;
+              if (pfx != 'deployment') {
+                def nv = r.get('native_' + m);
+                def lv = r.get('legacy_' + m);
+                ctx['native_' + m] = (nv instanceof Number) ? ((Number)nv).longValue() : 0L;
+                ctx['legacy_' + m] = (lv instanceof Number) ? ((Number)lv).longValue() : 0L;
+              }
+            }
+            if (pfx != 'deployment') {
+              ctx.has_native_usage = Boolean.TRUE.equals(r.has_native_usage)
+                || (r.has_native_usage != null && r.has_native_usage.toString().equalsIgnoreCase('true'));
+              ctx.has_legacy_usage = Boolean.TRUE.equals(r.has_legacy_usage)
+                || (r.has_legacy_usage != null && r.has_legacy_usage.toString().equalsIgnoreCase('true'));
+            }
+          }
+          ctx.remove('rollup');
+        } else {
+          // Fallback for pre-0.6.0 transform documents emitting ctx.native / ctx.legacy / ctx.coverage.
+          Map nat = ctx.native instanceof Map ? (Map)ctx.native : null;
+          Map leg = ctx.legacy instanceof Map ? (Map)ctx.legacy : null;
+          long natCnt = (nat != null && nat.doc_cnt instanceof Number) ? ((Number)nat.doc_cnt).longValue() : 0L;
+          long legCnt = (leg != null && leg.doc_cnt instanceof Number) ? ((Number)leg.doc_cnt).longValue() : 0L;
+          boolean nativeCoversAll = (ctx.coverage instanceof Map && ctx.coverage.native_covers_all != null)
+            && ctx.coverage.native_covers_all.toString().equalsIgnoreCase('true');
+
+          for (String cpfx : ['tier', 'datastream', 'tier_and_datastream']) {
+            if ((nat != null && nat.containsKey(cpfx + '_sum_store_size')) || (leg != null && leg.containsKey(cpfx + '_sum_store_size'))) {
+              ctx.has_native_usage = natCnt > 0L;
+              ctx.has_legacy_usage = legCnt > 0L;
+              for (String m : ['sum_indexing_time', 'sum_query_time', 'sum_store_size', 'sum_data_set_store_size']) {
+                def nv = (nat != null) ? nat.get(cpfx + '_' + m) : null;
+                def lv = (leg != null) ? leg.get(cpfx + '_' + m) : null;
+                ctx['native_' + m] = (nv instanceof Number) ? ((Number)nv).longValue() : 0L;
+                ctx['legacy_' + m] = (lv instanceof Number) ? ((Number)lv).longValue() : 0L;
+              }
+            }
+          }
+
+          boolean chooseNative = (natCnt > 0L) && (legCnt <= 0L || nativeCoversAll);
+
+          Map chosen = ctx;
+          if (chooseNative && nat != null) {
+            chosen = nat;
+            ctx.usage_source = 'native';
+          } else if (leg != null && legCnt > 0L) {
+            chosen = leg;
+            ctx.usage_source = 'legacy';
+          } else if (nat != null && natCnt > 0L) {
+            chosen = nat;
+            ctx.usage_source = 'native';
+          } else if (ctx.usage_source == null) {
+            ctx.usage_source = 'legacy';
+          }
+          if (chosen != ctx) {
+            for (def entry : chosen.entrySet()) {
+              String k = entry.getKey().toString();
+              if (k != 'doc_cnt' && k != 'has_delta' && k != 'min_ts' && k != 'max_ts') {
+                ctx[k] = entry.getValue();
+              }
+            }
+          }
+          ctx.remove('native');
+          ctx.remove('legacy');
+          ctx.remove('coverage');
+        }
+
         if (ctx.cluster_name != null) {
           ctx.deployment_id = ctx.cluster_name;
         } else if (ctx.elasticsearch?.cluster?.name != null) {
           ctx.deployment_id = ctx.elasticsearch.cluster.name;
         }
         if (ctx['@timestamp'] != null && ctx.deployment_id != null) {
-          def date = ZonedDateTime.parse(ctx['@timestamp']).toLocalDate().toString();
+          def rawTs = ctx['@timestamp'];
+          Instant tsInst = (rawTs instanceof Number)
+            ? Instant.ofEpochMilli(((Number)rawTs).longValue())
+            : ZonedDateTime.parse(rawTs.toString()).toInstant();
+          String date = tsInst.atZone(ZoneOffset.UTC).toLocalDate().toString();
           ctx.composite_key = date + '_' + ctx.deployment_id;
 
           if (ctx.tier != null) {
@@ -24,7 +145,7 @@ processors:
         }
 
         // Parse Fleet data stream naming: <type>-<dataset>-<namespace>
-        // first segment → ds_type; last segment → ds_namespace; else other
+        // first segment -> ds_type; last segment -> ds_namespace; else other
         if (ctx.datastream != null && ctx.datastream != '') {
           def parts = ctx.datastream.splitOnToken('-');
           if (parts.length >= 2) {
@@ -34,27 +155,16 @@ processors:
             ctx.ds_type = 'other';
             ctx.ds_namespace = 'other';
           }
-        } else {
-          ctx.ds_type = 'other';
-          ctx.ds_namespace = 'other';
         }
   - set:
       field: event.ingested
       value: "{{{_ingest.timestamp}}}"
       tag: set_event_ingested
   - pipeline:
-      description: '[Fleet] Global pipeline for all data streams'
+      description: '[Fleet] Pipeline for Chargeback lookup destination rows'
       ignore_missing_pipeline: true
-      name: global@custom
+      name: logs-chargeback.lookup@custom
   - pipeline:
-      description: '[Fleet] Pipeline for all data streams of type `metrics`'
+      description: '[Fleet] Pipeline for Chargeback usage lookup destination rows'
       ignore_missing_pipeline: true
-      name: metrics@custom
-  - pipeline:
-      description: '[Fleet] Pipeline for all data streams of type `metrics` defined by the `chargeback` integration'
-      ignore_missing_pipeline: true
-      name: metrics-chargeback.integration@custom
-  - pipeline:
-      description: '[Fleet] Pipeline for the `chargeback.usage` dataset'
-      ignore_missing_pipeline: true
-      name: metrics-chargeback.usage@custom
+      name: logs-chargeback.lookup-usage@custom
