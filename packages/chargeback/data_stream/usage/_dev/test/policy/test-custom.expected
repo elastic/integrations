@@ -18,6 +18,17 @@ inputs:
               state.config_owner_id.trim_space().as(clean_owner_id,
               state.hub_es_url.trim_space().as(trimmed_hub_url,
               (trimmed_hub_url.endsWith("/") ? trimmed_hub_url.substring(0, size(trimmed_hub_url) - 1) : trimmed_hub_url).as(clean_hub_url,
+              string(state.?cursor.conf_policy_id.orValue("")).as(prev_conf_pol_id,
+              (prev_conf_pol_id != "" ? prev_conf_pol_id :
+                state.billing_api_base.trim_space().as(tbill,
+                state.cloud_api_base.trim_space().as(tcloud,
+                  "pol|" + state.organization_id.trim_space() + "|" +
+                  clean_hub_url + "|" +
+                  (tbill.endsWith("/") ? tbill.substring(0, size(tbill) - 1) : tbill) + "|" +
+                  (tcloud.endsWith("/") ? tcloud.substring(0, size(tcloud) - 1) : tcloud) + "|" +
+                  clean_owner_id + "|" + (state.sync_fleet_config ? "sync" : "nosync")
+                ))
+              ).as(conf_policy_id,
               (int(state.conf_indexing_weight) >= 0 && int(state.conf_query_weight) >= 0 && int(state.conf_storage_weight) >= 0 && (int(state.conf_query_weight) + int(state.conf_storage_weight)) > 0).as(weights_valid,
               (!state.sync_fleet_config ? ("disabled|" + clean_owner_id) : (
                 weights_valid ? (clean_owner_id + "|" + string(state.conf_indexing_weight) + "|" + string(state.conf_query_weight) + "|" + string(state.conf_storage_weight) + "|" + today_utc) : state.?cursor.conf_sig.orValue("")
@@ -35,6 +46,7 @@ inputs:
                   "doc_type": "config_snapshot",
                   "conf_sync_enabled": true,
                   "conf_owner_id": clean_owner_id,
+                  "conf_policy_id": conf_policy_id,
                   "conf_indexing_weight": int(state.conf_indexing_weight),
                   "conf_query_weight": int(state.conf_query_weight),
                   "conf_storage_weight": int(state.conf_storage_weight),
@@ -44,6 +56,7 @@ inputs:
                   "doc_type": "config_snapshot",
                   "conf_sync_enabled": false,
                   "conf_owner_id": clean_owner_id,
+                  "conf_policy_id": conf_policy_id,
                 })]
               : []))).as(conf_evts,
               int(now).as(now_sec,
@@ -356,6 +369,7 @@ inputs:
                         "events": size(conf_evts + cloud_disc_errs) > 0 ? (conf_evts + cloud_disc_errs) : [dyn({ "fake": true })],
                         "cursor": {
                           "conf_sig": conf_sig,
+                          "conf_policy_id": conf_policy_id,
                           "idx_baselines": base_map,
                           "disc_dep_from": dep_page.next_from,
                           "disc_es_next": es_page.next,
@@ -371,6 +385,7 @@ inputs:
                         "events": size(conf_evts + cloud_disc_errs) > 0 ? (conf_evts + cloud_disc_errs) : [dyn({ "fake": true })],
                         "cursor": {
                           "conf_sig": conf_sig,
+                          "conf_policy_id": conf_policy_id,
                           "idx_baselines": base_map,
                         },
                         "want_more": false,
@@ -1038,6 +1053,7 @@ inputs:
                               "events": size(out_evts) > 0 ? out_evts : [dyn({ "fake": true })],
                               "cursor": {
                                 "conf_sig": conf_sig,
+                                "conf_policy_id": conf_policy_id,
                                 "idx_baselines": merged_baselines,
                               },
                               "want_more": false,
@@ -1048,7 +1064,7 @@ inputs:
                     )
                   )
                 )
-              )))))))))))))))))))))))))))))
+              )))))))))))))))))))))))))))))))
             )
           publisher_pipeline.disable_host: true
           redact:
@@ -1070,6 +1086,7 @@ inputs:
           resource.url: https://api.example.com/api/v1/deployments/_search?show_metadata=true
           state:
             api_key: ${SECRET_0}
+            billing_api_base: https://billing.example.com
             cloud_api_base: https://api.example.com
             conf_indexing_weight: 15
             conf_query_weight: 25

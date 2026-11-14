@@ -100,36 +100,30 @@ pivot:
                 : (params._source.get('data_stream.namespace') != null ? params._source.get('data_stream.namespace').toString().trim() : 'default');
               if (ns == '') { ns = 'default'; }
 
-              String polId = '';
+              String pkgPolId = '';
               if (params._source.get('conf_policy_id') != null) {
-                polId = params._source.get('conf_policy_id').toString().trim();
+                pkgPolId = params._source.get('conf_policy_id').toString().trim();
               } else if (params._source.get('package_policy_id') != null) {
-                polId = params._source.get('package_policy_id').toString().trim();
+                pkgPolId = params._source.get('package_policy_id').toString().trim();
               } else if (params._source.input instanceof Map && params._source.input.package_policy_id != null) {
-                polId = params._source.input.package_policy_id.toString().trim();
+                pkgPolId = params._source.input.package_policy_id.toString().trim();
               } else if (params._source.elastic_agent instanceof Map && params._source.elastic_agent.package_policy_id != null) {
-                polId = params._source.elastic_agent.package_policy_id.toString().trim();
-              } else if (params._source.elastic_agent instanceof Map && params._source.elastic_agent.policy_id != null) {
-                polId = params._source.elastic_agent.policy_id.toString().trim();
-              } else if (params._source.get('elastic_agent.policy_id') != null) {
-                polId = params._source.get('elastic_agent.policy_id').toString().trim();
-              } else if (params._source.agent instanceof Map && params._source.agent.policy instanceof Map && params._source.agent.policy.id != null) {
-                polId = params._source.agent.policy.id.toString().trim();
-              } else if (params._source.get('agent.policy.id') != null) {
-                polId = params._source.get('agent.policy.id').toString().trim();
-              } else if (params._source.component instanceof Map && params._source.component.id != null) {
-                polId = params._source.component.id.toString().trim();
+                pkgPolId = params._source.elastic_agent.package_policy_id.toString().trim();
               }
 
-              String agId = '';
-              if (params._source.agent instanceof Map && params._source.agent.id != null) {
-                agId = params._source.agent.id.toString().trim();
-              } else if (params._source.get('agent.id') != null) {
-                agId = params._source.get('agent.id').toString().trim();
-              } else if (params._source.elastic_agent instanceof Map && params._source.elastic_agent.id != null) {
-                agId = params._source.elastic_agent.id.toString().trim();
-              } else if (params._source.get('elastic_agent.id') != null) {
-                agId = params._source.get('elastic_agent.id').toString().trim();
+              String polId = pkgPolId;
+              if (polId == '') {
+                if (params._source.elastic_agent instanceof Map && params._source.elastic_agent.policy_id != null) {
+                  polId = params._source.elastic_agent.policy_id.toString().trim();
+                } else if (params._source.get('elastic_agent.policy_id') != null) {
+                  polId = params._source.get('elastic_agent.policy_id').toString().trim();
+                } else if (params._source.agent instanceof Map && params._source.agent.policy instanceof Map && params._source.agent.policy.id != null) {
+                  polId = params._source.agent.policy.id.toString().trim();
+                } else if (params._source.get('agent.policy.id') != null) {
+                  polId = params._source.get('agent.policy.id').toString().trim();
+                } else if (params._source.component instanceof Map && params._source.component.id != null) {
+                  polId = params._source.component.id.toString().trim();
+                }
               }
 
               String explicitId = params._source.get('conf_owner_id') != null
@@ -140,8 +134,11 @@ pivot:
                 ? ('explicit:' + explicitId)
                 : (polId != '' ? ('implicit:pol:' + polId) : ('implicit:ns:' + ns));
 
-              if (polId != '' || agId != '') {
-                String emitterId = polId != '' ? ('pol:' + polId) : ('ag:' + ns + '|' + agId);
+              // Only track cross-owner supersession when an integration-policy-unique ID is present
+              // (conf_policy_id or package_policy_id). Shared agent/agent-policy fallback IDs can host
+              // multiple Chargeback integration policies and must not supersede another policy's owner.
+              if (pkgPolId != '') {
+                String emitterId = 'pkg:' + ns + '|' + pkgPolId;
                 Map em = (Map)state.emitters.get(emitterId);
                 if (em == null) {
                   em = [:];
@@ -303,12 +300,28 @@ pivot:
                 activeOwners = mergedOwners;
               }
 
+              long maxActiveTs = -1L;
+              for (def ovObj : activeOwners.values()) {
+                if (ovObj instanceof Map && ((Map)ovObj).get('newestTs') instanceof Number) {
+                  long tsVal = ((Number)((Map)ovObj).get('newestTs')).longValue();
+                  if (tsVal > maxActiveTs) { maxActiveTs = tsVal; }
+                }
+              }
+
+              // Live sync-enabled policies renew their config_snapshot every UTC day via today_utc.
+              // Expire stale owners lagging the freshest active snapshot by >48h (172800000 ms) so
+              // deleted or replaced policies age out automatically without waiting for ILM retention.
+              long staleCutoffMs = 172800000L;
               List enabledExplicitKeys = new ArrayList();
               List enabledImplicitKeys = new ArrayList();
               for (def e : activeOwners.entrySet()) {
                 String ok = e.getKey().toString();
                 Map ov = (Map)e.getValue();
                 if (!Boolean.TRUE.equals(ov.get('newestSync'))) {
+                  continue;
+                }
+                long ovTs = ov.get('newestTs') instanceof Number ? ((Number)ov.get('newestTs')).longValue() : -1L;
+                if (maxActiveTs > 0L && ovTs >= 0L && (maxActiveTs - ovTs) > staleCutoffMs) {
                   continue;
                 }
                 if (Boolean.TRUE.equals(ov.get('explicit'))) {
