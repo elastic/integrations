@@ -30,18 +30,27 @@ streams:
         default: "EUR"
       - name: unit_rate
         type: text
-        title: Chargeable Unit Rate
+        title: Chargeable Unit Rate (Elastic Cloud ECU)
         description: >-
-          Monetary value per chargeable unit: per ECU for Elastic Cloud billing, or per milli-ERU (mERU) when consuming the On-Premises Billing producer (for example, 0.85 per ECU or 0.00085 per mERU).
+          Monetary value per Elastic Cloud Compute Unit (ECU), and fallback rate when On-Premises Unit Rate is left empty (for example, 0.85 per ECU).
         multi: false
         required: true
         show_user: true
         default: "0.85"
+      - name: onprem_unit_rate
+        type: text
+        title: On-Premises Unit Rate (per mERU)
+        description: >-
+          Monetary value per On-Premises milli-ERU (mERU) when consuming On-Premises Billing events where 1 ERU equals 1,000 mERU (for example, 0.00085 per mERU). Leave empty to inherit Chargeable Unit Rate.
+        multi: false
+        required: false
+        show_user: true
+        default: "0.00085"
       - name: config_effective_from
         type: text
         title: Configuration Effective Start Date (Optional)
         description: >-
-          Optional ISO-8601 UTC start timestamp (for example, 2026-01-01T00:00:00Z) when preserving earlier non-overlapping rate periods in chargeback_conf_lookup. Leave empty to apply the configured rate across the default validity window.
+          Optional UTC day-boundary start date (YYYY-MM-DD or YYYY-MM-DDT00:00:00Z) when preserving earlier non-overlapping rate periods in chargeback_conf_lookup. Non-midnight timestamps are rejected because daily billing and usage buckets align to 00:00:00Z. Leave empty to apply the configured rate across the default validity window.
         multi: false
         required: false
         show_user: true

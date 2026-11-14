@@ -5,6 +5,12 @@ processors:
       description: Gate on newest policy-wide sync marker, merge active per-stream settings, and reject invalid configuration writes
       lang: painless
       source: |
+        // Pass manual operator documents (without transform 'snapshots' aggregation output) straight through
+        // because Fleet configures this pipeline as index.default_pipeline on chargeback_conf_lookup.
+        if (!ctx.containsKey('snapshots')) {
+          return;
+        }
+        ctx._from_transform = true;
         Map snapRoot = null;
         if (ctx.snapshots instanceof Map) {
           snapRoot = (ctx.snapshots.latest instanceof Map) ? (Map)ctx.snapshots.latest : (Map)ctx.snapshots;
@@ -52,17 +58,36 @@ processors:
         }
 
         double rate = 0.85;
+        boolean hasExplicitCloudRate = false;
         try {
           if (m.conf_chargeable_unit_rate instanceof Number) {
             rate = ((Number)m.conf_chargeable_unit_rate).doubleValue();
+            hasExplicitCloudRate = true;
           } else if (m.conf_chargeable_unit_rate != null && m.conf_chargeable_unit_rate.toString().trim() != '') {
             rate = Double.parseDouble(m.conf_chargeable_unit_rate.toString().trim());
+            hasExplicitCloudRate = true;
           }
         } catch (NumberFormatException e) {
           ctx._skip_conf_write = true;
           return;
         }
         if (Double.isNaN(rate) || Double.isInfinite(rate) || rate < 0.0) {
+          ctx._skip_conf_write = true;
+          return;
+        }
+
+        double onpremRate = hasExplicitCloudRate ? rate : 0.00085;
+        try {
+          if (m.conf_onprem_chargeable_unit_rate instanceof Number) {
+            onpremRate = ((Number)m.conf_onprem_chargeable_unit_rate).doubleValue();
+          } else if (m.conf_onprem_chargeable_unit_rate != null && m.conf_onprem_chargeable_unit_rate.toString().trim() != '') {
+            onpremRate = Double.parseDouble(m.conf_onprem_chargeable_unit_rate.toString().trim());
+          }
+        } catch (NumberFormatException e) {
+          ctx._skip_conf_write = true;
+          return;
+        }
+        if (Double.isNaN(onpremRate) || Double.isInfinite(onpremRate) || onpremRate < 0.0) {
           ctx._skip_conf_write = true;
           return;
         }
@@ -110,22 +135,24 @@ processors:
           try {
             ZonedDateTime parsedEff = effFrom.contains('T') ? ZonedDateTime.parse(effFrom) : ZonedDateTime.parse(effFrom + 'T00:00:00Z');
             String checkDate = effFrom.contains('T') ? effFrom.substring(0, effFrom.indexOf('T')) : effFrom;
-            if (!parsedEff.toLocalDate().toString().equals(checkDate)) {
+            ZonedDateTime utcEff = parsedEff.withZoneSameInstant(ZoneOffset.UTC);
+            if (!utcEff.toLocalDate().toString().equals(checkDate)) {
               ctx._skip_conf_write = true;
               return;
             }
-            startMillis = parsedEff.toInstant().toEpochMilli();
+            startMillis = utcEff.toInstant().toEpochMilli();
           } catch (DateTimeException e) {
             ctx._skip_conf_write = true;
             return;
           }
-          if (startMillis >= endMillis) {
+          if (startMillis < 0L || (startMillis % 86400000L) != 0L || startMillis >= endMillis) {
             ctx._skip_conf_write = true;
             return;
           }
         }
 
-        ctx.conf_chargeable_unit_rate = rate;
+        boolean isOnpremKey = 'chargeback_config_onprem'.equals(ctx.config_join_key);
+        ctx.conf_chargeable_unit_rate = isOnpremKey ? onpremRate : rate;
         ctx.conf_chargeable_unit_rate_unit = (m.conf_chargeable_unit_rate_unit != null && m.conf_chargeable_unit_rate_unit.toString().trim() != '') ? m.conf_chargeable_unit_rate_unit.toString().trim() : 'EUR';
         ctx.conf_indexing_weight = idxW;
         ctx.conf_query_weight = qryW;
@@ -147,12 +174,29 @@ processors:
   - set:
       field: _id
       value: config
+      if: "ctx._from_transform == true && ctx.config_join_key != 'chargeback_config_onprem'"
       override: true
       tag: set_config_document_id
+  - set:
+      field: _id
+      value: config_onprem
+      if: "ctx._from_transform == true && ctx.config_join_key == 'chargeback_config_onprem'"
+      override: true
+      tag: set_onprem_config_document_id
+  - remove:
+      field: _from_transform
+      ignore_missing: true
+      tag: remove_transform_flag
   - set:
       field: event.ingested
       value: "{{{_ingest.timestamp}}}"
       tag: set_event_ingested
+  - pipeline:
+      name: logs-chargeback.lookup@custom
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: logs-chargeback.lookup-chargeback_conf@custom
+      ignore_missing_pipeline: true
 on_failure:
   - fail:
       message: >-

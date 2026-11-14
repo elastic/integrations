@@ -25,9 +25,18 @@ source:
             if (!doc[kw].empty) { emit(doc[kw].value.toString()); }
             return;
           }
-          if (doc.containsKey('elasticsearch.cluster.name') && !doc['elasticsearch.cluster.name'].empty) {
-            emit(doc['elasticsearch.cluster.name'].value.toString());
-          }
+          try {
+            if (doc.containsKey('elasticsearch.cluster.name') && !doc['elasticsearch.cluster.name'].empty) {
+              emit(doc['elasticsearch.cluster.name'].value.toString());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            def cname = params._source?.elasticsearch?.cluster?.name;
+            if (cname != null && cname.toString() != '') {
+              emit(cname.toString());
+            }
+          } catch (Exception e) {}
     cb_index_name:
       type: keyword
       script:
@@ -103,10 +112,16 @@ source:
             return;
           }
           emit(false);
-    event.ingested:
+    cb_sync_ts:
       type: date
       script:
         source: |
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              emit(doc['event.ingested'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
           for (String k : ['ingested', 'created']) {
             if (k == 'created') {
               try {
@@ -253,7 +268,7 @@ dest:
 frequency: 60m
 sync:
   time:
-    field: event.ingested
+    field: cb_sync_ts
     delay: 60s
 pivot:
   group_by:
@@ -305,8 +320,20 @@ pivot:
             : 'unknown';
           if (idx == '_default_' && ds != 'unknown') { idx = 'ds:' + ds; }
           String ukey = idx;
-          boolean isNat = doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty
-            && doc['data_stream.dataset'].value == 'chargeback.usage';
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback.usage';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback.usage';
+            }
+          } catch (Exception e) {
+            try {
+              if (params._source?.data_stream?.dataset != null) {
+                isNat = params._source.data_stream.dataset.toString() == 'chargeback.usage';
+              }
+            } catch (Exception e2) {}
+          }
           String idxField = isNat ? 'elasticsearch.index.total.indexing.index_time_in_millis' : 'elasticsearch.index.total.indexing.index_time_in_millis_delta';
           String qryField = isNat ? 'elasticsearch.index.total.search.query_time_in_millis' : 'elasticsearch.index.total.search.query_time_in_millis_delta';
           long idxMs = 0L;

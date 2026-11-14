@@ -11,7 +11,7 @@ source:
       filter:
         - range:
             "@timestamp":
-              gte: now-26h
+              gte: now-2d/d
         - exists:
             field: elasticsearch.node.roles
         - terms:
@@ -115,14 +115,52 @@ source:
               emit(n.toString());
             }
           } catch (Exception e) {}
+    cb_sync_ts:
+      type: date
+      script:
+        source: |
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              emit(doc['event.ingested'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+              emit(doc['event.created'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          for (String k : ['ingested', 'created']) {
+            def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get(k) : null;
+            if (rawVal == null && params._source != null) {
+              rawVal = params._source.get('event.' + k);
+            }
+            if (rawVal != null) {
+              if (rawVal instanceof Number) {
+                emit(((Number)rawVal).longValue());
+                return;
+              }
+              String s = rawVal.toString().trim();
+              if (s != '') {
+                try {
+                  emit(ZonedDateTime.parse(s).toInstant().toEpochMilli());
+                  return;
+                } catch (Exception e) {}
+              }
+            }
+          }
+          if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+            emit(doc['@timestamp'].value.toInstant().toEpochMilli());
+          }
 dest:
   index: cluster_capacity_utilization_lookup
   pipeline: logs-chargeback.lookup-0.6.0-capacity_utilization
 frequency: 60m
 sync:
   time:
-    field: "@timestamp"
-    delay: 1h
+    field: cb_sync_ts
+    delay: 60s
 pivot:
   group_by:
     "@timestamp":
@@ -187,6 +225,12 @@ pivot:
               }
             } catch (Exception e) {}
           }
+          if (hasHeap && (Double.isNaN(heapVal) || Double.isInfinite(heapVal) || heapVal < 0.0 || heapVal > 100.0)) {
+            hasHeap = false;
+          }
+          if (hasDisk && (Double.isNaN(diskVal) || Double.isInfinite(diskVal) || diskVal < 0.0 || diskVal > 100.0)) {
+            hasDisk = false;
+          }
           if (!hasHeap && !hasDisk) { return; }
 
           String nid = (doc.containsKey('cb_node_id') && !doc['cb_node_id'].empty)
@@ -195,8 +239,22 @@ pivot:
           if (nid.startsWith('id:') && doc.containsKey('cb_node_name') && !doc['cb_node_name'].empty) {
             state.id_names.put(nid, doc['cb_node_name'].value.toString());
           }
-          boolean isNat = doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty
-            && doc['data_stream.dataset'].value == 'chargeback.node_stats';
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = 'chargeback.node_stats'.equals(doc['data_stream.dataset'].value.toString());
+            }
+          } catch (Exception e) {}
+          if (!isNat) {
+            try {
+              def dsVal = (params._source?.data_stream instanceof Map)
+                ? ((Map)params._source.data_stream).get('dataset')
+                : (params._source != null ? params._source.get('data_stream.dataset') : null);
+              if (dsVal != null && 'chargeback.node_stats'.equals(dsVal.toString())) {
+                isNat = true;
+              }
+            } catch (Exception e) {}
+          }
           Map target = isNat ? state.nat : state.leg;
           Map nodeSlots = (Map)target.get(nid);
           if (nodeSlots == null) {
@@ -206,16 +264,16 @@ pivot:
           String sk = Integer.toString(b);
           List slotAcc = (List)nodeSlots.get(sk);
           if (slotAcc == null) {
-            slotAcc = [new ArrayList(), new ArrayList()];
+            slotAcc = [0.0, 0L, 0.0, 0L];
             nodeSlots.put(sk, slotAcc);
           }
-          List hList = (List)slotAcc.get(0);
-          List dList = (List)slotAcc.get(1);
-          if (hasHeap && hList.size() < 180) {
-            hList.add(heapVal);
+          if (hasHeap) {
+            slotAcc.set(0, ((Number)slotAcc.get(0)).doubleValue() + heapVal);
+            slotAcc.set(1, ((Number)slotAcc.get(1)).longValue() + 1L);
           }
-          if (hasDisk && dList.size() < 180) {
-            dList.add(diskVal);
+          if (hasDisk) {
+            slotAcc.set(2, ((Number)slotAcc.get(2)).doubleValue() + diskVal);
+            slotAcc.set(3, ((Number)slotAcc.get(3)).longValue() + 1L);
           }
         combine_script: "return state;"
         reduce_script: |
@@ -263,27 +321,22 @@ pivot:
                 for (def se : srcSlots.entrySet()) {
                   String sk = se.getKey().toString();
                   List sv = (List)se.getValue();
-                  List svH = (List)sv.get(0);
-                  List svD = (List)sv.get(1);
-                  if (svH != null && !svH.isEmpty()) { anyNatHeapSlots.add(sk); }
-                  if (svD != null && !svD.isEmpty()) { anyNatDiskSlots.add(sk); }
+                  if (sv == null || sv.size() < 4) { continue; }
+                  double svHSum = ((Number)sv.get(0)).doubleValue();
+                  long svHCnt = ((Number)sv.get(1)).longValue();
+                  double svDSum = ((Number)sv.get(2)).doubleValue();
+                  long svDCnt = ((Number)sv.get(3)).longValue();
+                  if (svHCnt > 0L) { anyNatHeapSlots.add(sk); }
+                  if (svDCnt > 0L) { anyNatDiskSlots.add(sk); }
                   List dv = (List)dstSlots.get(sk);
                   if (dv == null) {
-                    dv = [new ArrayList(), new ArrayList()];
+                    dv = [0.0, 0L, 0.0, 0L];
                     dstSlots.put(sk, dv);
                   }
-                  List dvH = (List)dv.get(0);
-                  List dvD = (List)dv.get(1);
-                  if (svH != null) {
-                    for (def x : svH) {
-                      if (dvH.size() < 180) { dvH.add(((Number)x).doubleValue()); }
-                    }
-                  }
-                  if (svD != null) {
-                    for (def x : svD) {
-                      if (dvD.size() < 180) { dvD.add(((Number)x).doubleValue()); }
-                    }
-                  }
+                  dv.set(0, ((Number)dv.get(0)).doubleValue() + svHSum);
+                  dv.set(1, ((Number)dv.get(1)).longValue() + svHCnt);
+                  dv.set(2, ((Number)dv.get(2)).doubleValue() + svDSum);
+                  dv.set(3, ((Number)dv.get(3)).longValue() + svDCnt);
                 }
               }
             }
@@ -301,25 +354,20 @@ pivot:
                 for (def se : srcSlots.entrySet()) {
                   String sk = se.getKey().toString();
                   List sv = (List)se.getValue();
-                  List svH = (List)sv.get(0);
-                  List svD = (List)sv.get(1);
+                  if (sv == null || sv.size() < 4) { continue; }
+                  double svHSum = ((Number)sv.get(0)).doubleValue();
+                  long svHCnt = ((Number)sv.get(1)).longValue();
+                  double svDSum = ((Number)sv.get(2)).doubleValue();
+                  long svDCnt = ((Number)sv.get(3)).longValue();
                   List dv = (List)dstSlots.get(sk);
                   if (dv == null) {
-                    dv = [new ArrayList(), new ArrayList()];
+                    dv = [0.0, 0L, 0.0, 0L];
                     dstSlots.put(sk, dv);
                   }
-                  List dvH = (List)dv.get(0);
-                  List dvD = (List)dv.get(1);
-                  if (svH != null) {
-                    for (def x : svH) {
-                      if (dvH.size() < 180) { dvH.add(((Number)x).doubleValue()); }
-                    }
-                  }
-                  if (svD != null) {
-                    for (def x : svD) {
-                      if (dvD.size() < 180) { dvD.add(((Number)x).doubleValue()); }
-                    }
-                  }
+                  dv.set(0, ((Number)dv.get(0)).doubleValue() + svHSum);
+                  dv.set(1, ((Number)dv.get(1)).longValue() + svHCnt);
+                  dv.set(2, ((Number)dv.get(2)).doubleValue() + svDSum);
+                  dv.set(3, ((Number)dv.get(3)).longValue() + svDCnt);
                 }
               }
             }
@@ -338,23 +386,19 @@ pivot:
               String sk = Integer.toString(b);
               List natSlot = (natSlots != null) ? (List)natSlots.get(sk) : null;
               List legSlot = (legSlots != null) ? (List)legSlots.get(sk) : null;
-              List natH = (natSlot != null) ? (List)natSlot.get(0) : null;
-              List natD = (natSlot != null) ? (List)natSlot.get(1) : null;
-              List legH = (legSlot != null) ? (List)legSlot.get(0) : null;
-              List legD = (legSlot != null) ? (List)legSlot.get(1) : null;
-              if (natH != null && !natH.isEmpty()) {
-                heapVals.addAll(natH);
-              } else if (legH != null && !legH.isEmpty()) {
-                if (nid != '_default_' || !anyNatHeapSlots.contains(sk)) {
-                  heapVals.addAll(legH);
-                }
+              long natHCnt = (natSlot != null && natSlot.size() >= 4) ? ((Number)natSlot.get(1)).longValue() : 0L;
+              long natDCnt = (natSlot != null && natSlot.size() >= 4) ? ((Number)natSlot.get(3)).longValue() : 0L;
+              long legHCnt = (legSlot != null && legSlot.size() >= 4) ? ((Number)legSlot.get(1)).longValue() : 0L;
+              long legDCnt = (legSlot != null && legSlot.size() >= 4) ? ((Number)legSlot.get(3)).longValue() : 0L;
+              if (natHCnt > 0L) {
+                heapVals.add(((Number)natSlot.get(0)).doubleValue() / (double)natHCnt);
+              } else if (legHCnt > 0L && (!'_default_'.equals(nid) || !anyNatHeapSlots.contains(sk))) {
+                heapVals.add(((Number)legSlot.get(0)).doubleValue() / (double)legHCnt);
               }
-              if (natD != null && !natD.isEmpty()) {
-                diskVals.addAll(natD);
-              } else if (legD != null && !legD.isEmpty()) {
-                if (nid != '_default_' || !anyNatDiskSlots.contains(sk)) {
-                  diskVals.addAll(legD);
-                }
+              if (natDCnt > 0L) {
+                diskVals.add(((Number)natSlot.get(2)).doubleValue() / (double)natDCnt);
+              } else if (legDCnt > 0L && (!'_default_'.equals(nid) || !anyNatDiskSlots.contains(sk))) {
+                diskVals.add(((Number)legSlot.get(2)).doubleValue() / (double)legDCnt);
               }
             }
           }
@@ -382,6 +426,7 @@ pivot:
           }
           return res;
 settings:
+  align_checkpoints: false
   deduce_mappings: false
   unattended: true
 _meta:

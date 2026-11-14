@@ -1,29 +1,29 @@
 {
-    "id": "chargeback-deployment-missing-usage-data",
-    "type": "alerting_rule_template",
-    "attributes": {
-        "name": "[Chargeback] Deployment with chargeback group missing usage data",
-        "tags": [
-            "Chargeback"
-        ],
-        "ruleTypeId": ".es-query",
-        "schedule": {
-            "interval": "1h"
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "timeWindowSize": 3,
-            "timeWindowUnit": "d",
-            "esqlQuery": {
-                "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE deployment_group != \"\"\n| EVAL billing_deployment_id = deployment_id\n| DROP deployment_id\n| LOOKUP JOIN chargeback_lookup.cluster_deployment_contribution ON composite_key\n| WHERE cluster_name IS NULL\n| INLINE STATS count = COUNT(*) BY billing_deployment_id, deployment_name, deployment_group\n| EVAL result = CONCAT(\"Deployment `\", COALESCE(deployment_name, billing_deployment_id, \"unknown\"), \"` (`\", COALESCE(billing_deployment_id, \"unknown\"), \"`) in deployment group `\", deployment_group, \"` did not have usage data since \", LEFT(composite_key, 10), \".\")\n| STATS result = VALUES(result)\n| MV_EXPAND result"
-            },
-            "size": 100,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "excludeHitsFromPreviousRun": true
-        }
+  "id": "chargeback-deployment-missing-usage-data",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[Chargeback] Deployment with chargeback group missing usage data",
+    "tags": [
+      "Chargeback"
+    ],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1h"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 3,
+      "timeWindowUnit": "d",
+      "esqlQuery": {
+        "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE deployment_group IS NOT NULL AND deployment_group != \"\"\n| EVAL billing_deployment_id = deployment_id\n| DROP deployment_id\n| LOOKUP JOIN chargeback_lookup.cluster_deployment_contribution ON composite_key\n| WHERE cluster_name IS NULL\n| STATS earliest_day = MIN(LEFT(composite_key, 10)), dep_name = MAX(deployment_name) BY billing_deployment_id, deployment_group\n| EVAL result = CONCAT(\"Deployment `\", COALESCE(dep_name, billing_deployment_id, \"unknown\"), \"` (`\", COALESCE(billing_deployment_id, \"unknown\"), \"`) in deployment group `\", deployment_group, \"` did not have usage data since \", COALESCE(earliest_day, \"unknown\"), \".\")\n| SORT result ASC\n| KEEP result"
+      },
+      "size": 100,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "excludeHitsFromPreviousRun": true
     }
+  }
 }

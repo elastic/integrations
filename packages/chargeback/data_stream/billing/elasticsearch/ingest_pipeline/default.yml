@@ -21,22 +21,10 @@ processors:
       copy_from: ess.billing.organization_id
       ignore_empty_value: true
       tag: cloud_account_id
-  - fingerprint:
-      fields:
-        - doc_type
-        - ess.billing.organization_id
-        - "@timestamp"
-        - ess.billing.start
-        - ess.billing.end
-        - ess.billing.ecu_quantity
-      target_field: _id
-      ignore_missing: true
-      if: "ctx.doc_type == 'credit_line_item'"
-      tag: fingerprint_credit_event
   - terminate:
       tag: credit_line_item_complete
       if: "ctx.doc_type == 'credit_line_item'"
-      description: Credit commitment events retain snapshot @timestamp and ESS credit fields.
+      description: Credit commitment events retain snapshot @timestamp and ESS credit fields; deduplication occurs in the billing_credits transform.
   - date:
       field: ess.billing.from
       target_field: "@timestamp"
@@ -45,16 +33,6 @@ processors:
       if: ctx.ess?.billing?.from != null
       ignore_failure: true
       tag: restore_billing_window_timestamp
-  - fingerprint:
-      fields:
-        - ess.billing.organization_id
-        - ess.billing.deployment_id
-        - ess.billing.from
-        - ess.billing.to
-        - ess.billing.sku
-      target_field: _id
-      ignore_missing: true
-      tag: fingerprint_billing_event
   - set:
       field: cloud.instance.id
       copy_from: ess.billing.deployment_id
