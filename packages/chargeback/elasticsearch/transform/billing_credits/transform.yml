@@ -57,6 +57,15 @@ source:
           if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
             emit(doc['@timestamp'].value.toInstant().toEpochMilli());
           }
+    cb_ecu_quantity_whole:
+      type: long
+      script:
+        source: |
+          if (doc.containsKey('ess.billing.ecu_quantity') && !doc['ess.billing.ecu_quantity'].empty) {
+            emit(((Number)doc['ess.billing.ecu_quantity'].value).longValue());
+          } else if (params._source?.ess?.billing?.ecu_quantity instanceof Number) {
+            emit(((Number)params._source.ess.billing.ecu_quantity).longValue());
+          }
 dest:
   index: chargeback_lookup.dest_billing_credits-1
   aliases:
@@ -90,7 +99,7 @@ pivot:
         missing_bucket: true
     ecu_quantity:
       terms:
-        field: ess.billing.ecu_quantity
+        field: cb_ecu_quantity_whole
   aggregations:
     latest_credit:
       scripted_metric:
@@ -98,28 +107,74 @@ pivot:
           state.docs = [];
         map_script: |
           long ts = (!doc['@timestamp'].empty) ? doc['@timestamp'].value.toInstant().toEpochMilli() : 0L;
-          double bal = (doc.containsKey('ess.billing.ecu_balance') && !doc['ess.billing.ecu_balance'].empty) ? doc['ess.billing.ecu_balance'].value : 0.0;
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('doc_type') && !doc['doc_type'].empty) {
+              isNat = doc['doc_type'].value.toString() == 'credit_line_item';
+            } else if (params._source?.doc_type != null) {
+              isNat = params._source.doc_type.toString() == 'credit_line_item';
+            } else if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback.billing';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback.billing';
+            }
+          } catch (Exception e) {}
+          double qty = 0.0;
+          if (doc.containsKey('ess.billing.ecu_quantity') && !doc['ess.billing.ecu_quantity'].empty) {
+            qty = ((Number)doc['ess.billing.ecu_quantity'].value).doubleValue();
+          } else if (params._source?.ess?.billing?.ecu_quantity instanceof Number) {
+            qty = ((Number)params._source.ess.billing.ecu_quantity).doubleValue();
+          }
+          double bal = 0.0;
+          if (doc.containsKey('ess.billing.ecu_balance') && !doc['ess.billing.ecu_balance'].empty) {
+            bal = ((Number)doc['ess.billing.ecu_balance'].value).doubleValue();
+          } else if (params._source?.ess?.billing?.ecu_balance instanceof Number) {
+            bal = ((Number)params._source.ess.billing.ecu_balance).doubleValue();
+          }
           boolean act = (doc.containsKey('ess.billing.active') && !doc['ess.billing.active'].empty)
             && doc['ess.billing.active'].value.toString().equalsIgnoreCase('true');
-          state.docs.add([ts, bal, act]);
+          state.docs.add([ts, bal, act, qty, isNat]);
         combine_script: |
           return state.docs;
         reduce_script: |
           long bestTs = -1L;
           double bestBal = 0.0;
           boolean bestAct = false;
+          double bestQty = 0.0;
+          boolean hasNat = false;
+          long bestNatTs = -1L;
+          double bestNatQty = 0.0;
+          double bestNatBal = 0.0;
           for (shardDocs in states) {
             if (shardDocs == null) { continue; }
             for (d in shardDocs) {
               long ts = ((Number)d[0]).longValue();
-              if (ts >= bestTs) {
+              double bal = ((Number)d[1]).doubleValue();
+              boolean act = d[2] != null && d[2].toString().equalsIgnoreCase('true');
+              double qty = d.size() > 3 && d[3] instanceof Number ? ((Number)d[3]).doubleValue() : 0.0;
+              boolean isNat = d.size() > 4 && Boolean.TRUE.equals(d[4]);
+              if (isNat && (!hasNat || ts >= bestNatTs)) {
+                hasNat = true;
+                bestNatTs = ts;
+                bestNatQty = qty;
+                bestNatBal = bal;
+              }
+              if (ts > bestTs || (ts == bestTs && isNat)) {
                 bestTs = ts;
-                bestBal = ((Number)d[1]).doubleValue();
-                bestAct = d[2] != null && d[2].toString().equalsIgnoreCase('true');
+                bestBal = bal;
+                bestAct = act;
+                bestQty = qty;
               }
             }
           }
-          return ['ecu_balance': bestBal, 'active': bestAct, 'observed_at': bestTs > 0L ? bestTs : null];
+          double finalQty = hasNat ? bestNatQty : bestQty;
+          double finalBal = (hasNat && ((long)bestBal) == ((long)bestNatBal)) ? bestNatBal : bestBal;
+          return [
+            'ecu_quantity': finalQty,
+            'ecu_balance': finalBal,
+            'active': bestAct,
+            'observed_at': bestTs > 0L ? bestTs : null
+          ];
 settings:
   deduce_mappings: false
   unattended: true

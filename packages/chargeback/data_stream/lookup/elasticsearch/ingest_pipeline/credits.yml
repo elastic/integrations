@@ -29,7 +29,11 @@ processors:
         double bal = 0.0;
         boolean act = false;
         Long observedAtMs = null;
+        double qty = ctx.ecu_quantity instanceof Number ? ((Number)ctx.ecu_quantity).doubleValue() : 0.0;
         if (ctx.latest_credit instanceof Map) {
+          if (ctx.latest_credit.ecu_quantity instanceof Number) {
+            qty = ((Number)ctx.latest_credit.ecu_quantity).doubleValue();
+          }
           if (ctx.latest_credit.ecu_balance instanceof Number) {
             bal = ((Number)ctx.latest_credit.ecu_balance).doubleValue();
           }
@@ -40,16 +44,15 @@ processors:
             observedAtMs = Long.valueOf(((Number)ctx.latest_credit.observed_at).longValue());
           }
         }
-        if (observedAtMs != null) {
-          ctx['@timestamp'] = fmt.format(Instant.ofEpochMilli(observedAtMs.longValue()));
-        } else if (ctx.snapshot_day != null) {
+        if (ctx.snapshot_day != null) {
           if (ctx.snapshot_day instanceof Number) {
             ctx['@timestamp'] = fmt.format(Instant.ofEpochMilli(((Number)ctx.snapshot_day).longValue()));
           } else {
             ctx['@timestamp'] = fmt.format(ZonedDateTime.parse(ctx.snapshot_day.toString()).toInstant());
           }
+        } else if (observedAtMs != null) {
+          ctx['@timestamp'] = fmt.format(Instant.ofEpochMilli(observedAtMs.longValue()));
         }
-        double qty = ctx.ecu_quantity instanceof Number ? ((Number)ctx.ecu_quantity).doubleValue() : 0.0;
 
         ctx.data_stream = ['type': 'metrics', 'dataset': 'ess_billing.credits', 'namespace': 'default'];
         if (ctx.event == null) { ctx.event = [:]; }
