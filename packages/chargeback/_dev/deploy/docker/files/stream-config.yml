@@ -559,6 +559,10 @@ rules:
             }
           `}}
 
+  # Omit static epoch timestamps on mock _nodes/stats entries so CEL falls back
+  # to live harvest.obs_ts and satisfies cluster_capacity_utilization's now-2d/d
+  # source filter in system tests (explicit sample_ts restoration is covered in
+  # data_stream/node_stats/_dev/test/pipeline/test-node-stats.json).
   - path: /ech1/_nodes/data:true,data_hot:true,data_warm:true,data_cold:true,data_frozen:true,data_content:true/stats/{metrics}
     methods: ["GET"]
     request_headers:
@@ -581,7 +585,6 @@ rules:
                 "node-ech-1": {
                   "name": "instance-0000000001",
                   "roles": ["data_hot", "data_content"],
-                  "timestamp": 1773619200000,
                   "jvm": {
                     "mem": {
                       "heap_used_percent": 68
@@ -597,7 +600,6 @@ rules:
                 "node-ech-2": {
                   "name": "instance-0000000002",
                   "roles": ["data_warm"],
-                  "timestamp": 1773619200000,
                   "jvm": {
                     "mem": {
                       "heap_used_percent": 54
@@ -636,7 +638,6 @@ rules:
                 "node-hub-1": {
                   "name": "hub-data-01",
                   "roles": ["data_hot"],
-                  "timestamp": 1773619200000,
                   "jvm": {
                     "mem": {
                       "heap_used_percent": 47
