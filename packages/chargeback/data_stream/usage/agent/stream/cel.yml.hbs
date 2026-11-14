@@ -8,7 +8,8 @@ resource.tracer.maxbackups: 5
 resource.proxy_url: {{proxy_url}}
 {{/if}}
 {{#if ssl}}
-resource.ssl: {{ssl}}
+resource.ssl:
+  {{ssl}}
 {{/if}}
 {{#if http_client_timeout}}
 resource.timeout: {{http_client_timeout}}
@@ -22,6 +23,7 @@ state:
   hub_es_api_key: !!str {{escape_string hub_es_api_key}}
   deployment_keys: !!str {{escape_string deployment_api_keys}}
   sync_fleet_config: !!bool {{sync_fleet_config}}
+  config_owner_id: !!str {{escape_string config_owner_id}}
   conf_indexing_weight: !!int {{indexing_weight}}
   conf_query_weight: !!int {{query_weight}}
   conf_storage_weight: !!int {{storage_weight}}
@@ -35,9 +37,13 @@ redact:
 program: |-
   state.with(
     now.format(time_layout.DateOnly).as(today_utc,
+    state.config_owner_id.trim_space().as(clean_owner_id,
+    state.hub_es_url.trim_space().as(trimmed_hub_url,
+    (trimmed_hub_url.endsWith("/") ? trimmed_hub_url.substring(0, size(trimmed_hub_url) - 1) : trimmed_hub_url).as(clean_hub_url,
+    (state.organization_id.trim_space() + "|" + state.cloud_api_base.trim_space() + "|" + clean_hub_url).as(policy_scope,
     (int(state.conf_indexing_weight) >= 0 && int(state.conf_query_weight) >= 0 && int(state.conf_storage_weight) >= 0 && (int(state.conf_query_weight) + int(state.conf_storage_weight)) > 0).as(weights_valid,
-    (!state.sync_fleet_config ? "disabled" : (
-      weights_valid ? (string(state.conf_indexing_weight) + "|" + string(state.conf_query_weight) + "|" + string(state.conf_storage_weight) + "|" + today_utc) : state.?cursor.conf_sig.orValue("")
+    (!state.sync_fleet_config ? ("disabled|" + clean_owner_id + "|" + policy_scope) : (
+      weights_valid ? (clean_owner_id + "|" + policy_scope + "|" + string(state.conf_indexing_weight) + "|" + string(state.conf_query_weight) + "|" + string(state.conf_storage_weight) + "|" + today_utc) : state.?cursor.conf_sig.orValue("")
     )).as(conf_sig,
     ((state.sync_fleet_config && !weights_valid) ?
       [dyn({
@@ -51,14 +57,18 @@ program: |-
       [dyn({
         "doc_type": "config_snapshot",
         "conf_sync_enabled": true,
+        "conf_owner_id": clean_owner_id,
+        "conf_policy_scope": policy_scope,
         "conf_indexing_weight": int(state.conf_indexing_weight),
         "conf_query_weight": int(state.conf_query_weight),
         "conf_storage_weight": int(state.conf_storage_weight),
       })]
-    : ((!state.sync_fleet_config && state.?cursor.conf_sig.orValue("") != "disabled") ?
+    : ((!state.sync_fleet_config && state.?cursor.conf_sig.orValue("") != conf_sig) ?
       [dyn({
         "doc_type": "config_snapshot",
         "conf_sync_enabled": false,
+        "conf_owner_id": clean_owner_id,
+        "conf_policy_scope": policy_scope,
       })]
     : []))).as(conf_evts,
     int(now).as(now_sec,
@@ -82,8 +92,7 @@ program: |-
       : dyn({}))
     : raw_baselines).as(base_map,
     (state.organization_id != "" && state.api_key != "" && !state.api_key.startsWith("$co.elastic.secret")).as(has_cloud,
-    (state.hub_es_url != "" && state.hub_es_api_key != "" && !state.hub_es_api_key.startsWith("$co.elastic.secret")).as(has_hub,
-    (state.hub_es_url.endsWith("/") ? state.hub_es_url.substring(0, size(state.hub_es_url) - 1) : state.hub_es_url).as(clean_hub_url,
+    (clean_hub_url != "" && state.hub_es_api_key != "" && !state.hub_es_api_key.startsWith("$co.elastic.secret")).as(has_hub,
     (
       !has(state.deployment_keys) || state.deployment_keys == null ? [] :
       string(dyn(state.deployment_keys)).split(",")
@@ -92,155 +101,279 @@ program: |-
     string(state.?cursor.disc_es_next.orValue(has_cloud ? "START" : "")).as(es_next,
     string(state.?cursor.disc_obs_next.orValue(has_cloud ? "START" : "")).as(obs_next,
     string(state.?cursor.disc_sec_next.orValue(has_cloud ? "START" : "")).as(sec_next,
+    string(state.?cursor.disc_vdb_next.orValue(has_cloud ? "START" : "")).as(vdb_next,
     state.?cursor.disc_targets.orValue([]).as(acc_targets,
     ((has_cloud && dep_from >= 0) ?
-      request(
-        "POST",
-        state.cloud_api_base + "/api/v1/deployments/_search?show_metadata=true"
-      ).with(
-        {
-          "Header": {
-            "Authorization": ["ApiKey " + state.api_key],
-            "Content-Type": ["application/json"],
-          },
-          "Body": { "size": 500, "from": dep_from }.encode_json(),
-        }
-      ).do_request().as(dep_resp,
-        (dep_resp.StatusCode == 200) ?
-          bytes(dep_resp.Body).decode_json().as(dep_body,
-            ((has(dep_body.deployments) && dep_body.deployments != null) ? dep_body.deployments : []).as(raw_deps,
-              {
-                "ok": true,
-                "err": dyn({}),
-                "items": raw_deps.filter(d,
-                  has(d.resources) && d.resources != null && has(d.resources.elasticsearch) && d.resources.elasticsearch != null && size(d.resources.elasticsearch) > 0 &&
-                  has(d.resources.elasticsearch[0].info) && has(d.resources.elasticsearch[0].info.metadata) && has(d.resources.elasticsearch[0].info.metadata.service_url) && d.resources.elasticsearch[0].info.metadata.service_url != null
-                ).map(d,
-                  d.resources.elasticsearch[0].as(es_r,
-                    string(es_r.info.metadata.service_url).as(raw_surl,
-                      (raw_surl.endsWith("/") ? raw_surl.substring(0, size(raw_surl) - 1) : raw_surl).as(surl,
-                        dyn({
-                          "id": string(es_r.id),
-                          "alt_id": has(d.id) && d.id != null ? string(d.id) : string(es_r.id),
-                          "name": (has(d.name) && d.name != null && string(d.name) != "") ? string(d.name) : string(es_r.id),
-                          "es_url": surl,
-                          "is_ech": true,
-                          "is_hub": (has_hub && surl == clean_hub_url),
-                        })
+      (state.cloud_api_base + "/api/v1/deployments/_search?show_metadata=true").as(dep_search_url,
+        try(
+          request(
+            "POST",
+            dep_search_url
+          ).with(
+            {
+              "Header": {
+                "Authorization": ["ApiKey " + state.api_key],
+                "Content-Type": ["application/json"],
+              },
+              "Body": { "size": 500, "from": dep_from }.encode_json(),
+            }
+          ).do_request(),
+          "req_err"
+        ).as(dep_resp,
+          has(dep_resp.req_err) ?
+            {
+              "ok": false,
+              "err": dyn({ "error": { "code": "transport_error", "id": "deployments_search", "message": "POST " + dep_search_url + ": " + string(dep_resp.req_err) } }),
+              "items": [],
+              "next_from": -1,
+            }
+          : (dep_resp.StatusCode == 200) ?
+            try(bytes(dep_resp.Body).decode_json(), "json_err").as(dep_body,
+              has(dep_body.json_err) ?
+                {
+                  "ok": false,
+                  "err": dyn({ "error": { "code": "decode_error", "id": "deployments_search", "message": "POST " + dep_search_url + ": " + string(dep_body.json_err) } }),
+                  "items": [],
+                  "next_from": -1,
+                }
+              :
+                ((has(dep_body.deployments) && dep_body.deployments != null) ? dep_body.deployments : []).as(raw_deps,
+                  {
+                    "ok": true,
+                    "err": dyn({}),
+                    "items": raw_deps.filter(d,
+                      has(d.resources) && d.resources != null && has(d.resources.elasticsearch) && d.resources.elasticsearch != null && size(d.resources.elasticsearch) > 0 &&
+                      has(d.resources.elasticsearch[0].info) && has(d.resources.elasticsearch[0].info.metadata) && has(d.resources.elasticsearch[0].info.metadata.service_url) && d.resources.elasticsearch[0].info.metadata.service_url != null
+                    ).map(d,
+                      d.resources.elasticsearch[0].as(es_r,
+                        string(es_r.info.metadata.service_url).as(raw_surl,
+                          (raw_surl.endsWith("/") ? raw_surl.substring(0, size(raw_surl) - 1) : raw_surl).as(surl,
+                            dyn({
+                              "id": string(es_r.id),
+                              "alt_id": has(d.id) && d.id != null ? string(d.id) : string(es_r.id),
+                              "name": (has(d.name) && d.name != null && string(d.name) != "") ? string(d.name) : string(es_r.id),
+                              "es_url": surl,
+                              "is_ech": true,
+                              "is_hub": (has_hub && surl == clean_hub_url),
+                            })
+                          )
+                        )
                       )
-                    )
-                  )
-                ),
-                "next_from": (has(dep_body.match_count) && dep_body.match_count != null && size(raw_deps) > 0 && (dep_from + size(raw_deps)) < int(dep_body.match_count)) ? (dep_from + size(raw_deps)) : -1,
-              }
+                    ),
+                    "next_from": (has(dep_body.match_count) && dep_body.match_count != null && size(raw_deps) > 0 && (dep_from + size(raw_deps)) < int(dep_body.match_count)) ? (dep_from + size(raw_deps)) : -1,
+                  }
+                )
             )
-          )
-        : (dep_resp.StatusCode == 404 ? { "ok": true, "err": dyn({}), "items": [], "next_from": -1 } : {
-            "ok": false,
-            "err": dyn({ "error": { "code": string(dep_resp.StatusCode), "id": string(dep_resp.Status), "message": "POST " + dep_resp.Request.URL + ": " + ((size(dep_resp.Body) != 0) ? string(dep_resp.Body) : string(dep_resp.Status)) } }),
-            "items": [],
-            "next_from": -1,
-          })
+          : (dep_resp.StatusCode == 404 ? { "ok": true, "err": dyn({}), "items": [], "next_from": -1 } : {
+              "ok": false,
+              "err": dyn({ "error": { "code": string(dep_resp.StatusCode), "id": string(dep_resp.Status), "message": "POST " + dep_resp.Request.URL + ": " + ((size(dep_resp.Body) != 0) ? string(dep_resp.Body) : string(dep_resp.Status)) } }),
+              "items": [],
+              "next_from": -1,
+            })
+        )
       )
     : { "ok": true, "err": dyn({}), "items": [], "next_from": -1 }).as(dep_page,
     ((has_cloud && es_next != "") ?
-      get_request(
-        state.cloud_api_base + "/api/v1/serverless/projects/elasticsearch?" + (es_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [es_next] }).format_query()
-      ).with({ "Header": { "Authorization": ["ApiKey " + state.api_key] } }).do_request().as(r,
-        (r.StatusCode == 200) ?
-          bytes(r.Body).decode_json().as(b,
+      (state.cloud_api_base + "/api/v1/serverless/projects/elasticsearch?" + (es_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [es_next] }).format_query()).as(es_disc_url,
+        try(
+          get_request(es_disc_url).with({ "Header": { "Authorization": ["ApiKey " + state.api_key] } }).do_request(),
+          "req_err"
+        ).as(r,
+          has(r.req_err) ?
             {
-              "ok": true,
-              "err": dyn({}),
-              "items": ((has(b.items) && b.items != null) ? b.items : []).filter(p, has(p.endpoints) && p.endpoints != null && has(p.endpoints.elasticsearch) && p.endpoints.elasticsearch != null).map(p,
-                dyn({
-                  "id": string(p.id),
-                  "alt_id": string(p.id),
-                  "name": (has(p.name) && p.name != null && string(p.name) != "") ? string(p.name) : string(p.id),
-                  "es_url": string(p.endpoints.elasticsearch),
-                  "is_ech": false,
-                  "is_hub": false,
-                })
-              ),
-              "next": (has(b.next_page) && b.next_page != null && string(b.next_page) != "") ? string(b.next_page) : "",
+              "ok": false,
+              "err": dyn({ "error": { "code": "transport_error", "id": "serverless_elasticsearch", "message": "GET " + es_disc_url + ": " + string(r.req_err) } }),
+              "items": [],
+              "next": "",
             }
-          )
-        : (r.StatusCode == 404 ? { "ok": true, "err": dyn({}), "items": [], "next": "" } : {
-            "ok": false,
-            "err": dyn({ "error": { "code": string(r.StatusCode), "id": string(r.Status), "message": "GET " + r.Request.URL + ": " + ((size(r.Body) != 0) ? string(r.Body) : string(r.Status)) } }),
-            "items": [],
-            "next": "",
-          })
+          : (r.StatusCode == 200) ?
+            try(bytes(r.Body).decode_json(), "json_err").as(b,
+              has(b.json_err) ?
+                {
+                  "ok": false,
+                  "err": dyn({ "error": { "code": "decode_error", "id": "serverless_elasticsearch", "message": "GET " + es_disc_url + ": " + string(b.json_err) } }),
+                  "items": [],
+                  "next": "",
+                }
+              :
+                {
+                  "ok": true,
+                  "err": dyn({}),
+                  "items": ((has(b.items) && b.items != null) ? b.items : []).filter(p, has(p.endpoints) && p.endpoints != null && has(p.endpoints.elasticsearch) && p.endpoints.elasticsearch != null).map(p,
+                    dyn({
+                      "id": string(p.id),
+                      "alt_id": string(p.id),
+                      "name": (has(p.name) && p.name != null && string(p.name) != "") ? string(p.name) : string(p.id),
+                      "es_url": string(p.endpoints.elasticsearch),
+                      "is_ech": false,
+                      "is_hub": false,
+                    })
+                  ),
+                  "next": (has(b.next_page) && b.next_page != null && string(b.next_page) != "") ? string(b.next_page) : "",
+                }
+            )
+          : (r.StatusCode == 404 ? { "ok": true, "err": dyn({}), "items": [], "next": "" } : {
+              "ok": false,
+              "err": dyn({ "error": { "code": string(r.StatusCode), "id": string(r.Status), "message": "GET " + r.Request.URL + ": " + ((size(r.Body) != 0) ? string(r.Body) : string(r.Status)) } }),
+              "items": [],
+              "next": "",
+            })
+        )
       )
     : { "ok": true, "err": dyn({}), "items": [], "next": "" }).as(es_page,
     ((has_cloud && obs_next != "") ?
-      get_request(
-        state.cloud_api_base + "/api/v1/serverless/projects/observability?" + (obs_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [obs_next] }).format_query()
-      ).with({ "Header": { "Authorization": ["ApiKey " + state.api_key] } }).do_request().as(r,
-        (r.StatusCode == 200) ?
-          bytes(r.Body).decode_json().as(b,
+      (state.cloud_api_base + "/api/v1/serverless/projects/observability?" + (obs_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [obs_next] }).format_query()).as(obs_disc_url,
+        try(
+          get_request(obs_disc_url).with({ "Header": { "Authorization": ["ApiKey " + state.api_key] } }).do_request(),
+          "req_err"
+        ).as(r,
+          has(r.req_err) ?
             {
-              "ok": true,
-              "err": dyn({}),
-              "items": ((has(b.items) && b.items != null) ? b.items : []).filter(p, has(p.endpoints) && p.endpoints != null && has(p.endpoints.elasticsearch) && p.endpoints.elasticsearch != null).map(p,
-                dyn({
-                  "id": string(p.id),
-                  "alt_id": string(p.id),
-                  "name": (has(p.name) && p.name != null && string(p.name) != "") ? string(p.name) : string(p.id),
-                  "es_url": string(p.endpoints.elasticsearch),
-                  "is_ech": false,
-                  "is_hub": false,
-                })
-              ),
-              "next": (has(b.next_page) && b.next_page != null && string(b.next_page) != "") ? string(b.next_page) : "",
+              "ok": false,
+              "err": dyn({ "error": { "code": "transport_error", "id": "serverless_observability", "message": "GET " + obs_disc_url + ": " + string(r.req_err) } }),
+              "items": [],
+              "next": "",
             }
-          )
-        : (r.StatusCode == 404 ? { "ok": true, "err": dyn({}), "items": [], "next": "" } : {
-            "ok": false,
-            "err": dyn({ "error": { "code": string(r.StatusCode), "id": string(r.Status), "message": "GET " + r.Request.URL + ": " + ((size(r.Body) != 0) ? string(r.Body) : string(r.Status)) } }),
-            "items": [],
-            "next": "",
-          })
+          : (r.StatusCode == 200) ?
+            try(bytes(r.Body).decode_json(), "json_err").as(b,
+              has(b.json_err) ?
+                {
+                  "ok": false,
+                  "err": dyn({ "error": { "code": "decode_error", "id": "serverless_observability", "message": "GET " + obs_disc_url + ": " + string(b.json_err) } }),
+                  "items": [],
+                  "next": "",
+                }
+              :
+                {
+                  "ok": true,
+                  "err": dyn({}),
+                  "items": ((has(b.items) && b.items != null) ? b.items : []).filter(p, has(p.endpoints) && p.endpoints != null && has(p.endpoints.elasticsearch) && p.endpoints.elasticsearch != null).map(p,
+                    dyn({
+                      "id": string(p.id),
+                      "alt_id": string(p.id),
+                      "name": (has(p.name) && p.name != null && string(p.name) != "") ? string(p.name) : string(p.id),
+                      "es_url": string(p.endpoints.elasticsearch),
+                      "is_ech": false,
+                      "is_hub": false,
+                    })
+                  ),
+                  "next": (has(b.next_page) && b.next_page != null && string(b.next_page) != "") ? string(b.next_page) : "",
+                }
+            )
+          : (r.StatusCode == 404 ? { "ok": true, "err": dyn({}), "items": [], "next": "" } : {
+              "ok": false,
+              "err": dyn({ "error": { "code": string(r.StatusCode), "id": string(r.Status), "message": "GET " + r.Request.URL + ": " + ((size(r.Body) != 0) ? string(r.Body) : string(r.Status)) } }),
+              "items": [],
+              "next": "",
+            })
+        )
       )
     : { "ok": true, "err": dyn({}), "items": [], "next": "" }).as(obs_page,
     ((has_cloud && sec_next != "") ?
-      get_request(
-        state.cloud_api_base + "/api/v1/serverless/projects/security?" + (sec_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [sec_next] }).format_query()
-      ).with({ "Header": { "Authorization": ["ApiKey " + state.api_key] } }).do_request().as(r,
-        (r.StatusCode == 200) ?
-          bytes(r.Body).decode_json().as(b,
+      (state.cloud_api_base + "/api/v1/serverless/projects/security?" + (sec_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [sec_next] }).format_query()).as(sec_disc_url,
+        try(
+          get_request(sec_disc_url).with({ "Header": { "Authorization": ["ApiKey " + state.api_key] } }).do_request(),
+          "req_err"
+        ).as(r,
+          has(r.req_err) ?
             {
-              "ok": true,
-              "err": dyn({}),
-              "items": ((has(b.items) && b.items != null) ? b.items : []).filter(p, has(p.endpoints) && p.endpoints != null && has(p.endpoints.elasticsearch) && p.endpoints.elasticsearch != null).map(p,
-                dyn({
-                  "id": string(p.id),
-                  "alt_id": string(p.id),
-                  "name": (has(p.name) && p.name != null && string(p.name) != "") ? string(p.name) : string(p.id),
-                  "es_url": string(p.endpoints.elasticsearch),
-                  "is_ech": false,
-                  "is_hub": false,
-                })
-              ),
-              "next": (has(b.next_page) && b.next_page != null && string(b.next_page) != "") ? string(b.next_page) : "",
+              "ok": false,
+              "err": dyn({ "error": { "code": "transport_error", "id": "serverless_security", "message": "GET " + sec_disc_url + ": " + string(r.req_err) } }),
+              "items": [],
+              "next": "",
             }
-          )
-        : (r.StatusCode == 404 ? { "ok": true, "err": dyn({}), "items": [], "next": "" } : {
-            "ok": false,
-            "err": dyn({ "error": { "code": string(r.StatusCode), "id": string(r.Status), "message": "GET " + r.Request.URL + ": " + ((size(r.Body) != 0) ? string(r.Body) : string(r.Status)) } }),
-            "items": [],
-            "next": "",
-          })
+          : (r.StatusCode == 200) ?
+            try(bytes(r.Body).decode_json(), "json_err").as(b,
+              has(b.json_err) ?
+                {
+                  "ok": false,
+                  "err": dyn({ "error": { "code": "decode_error", "id": "serverless_security", "message": "GET " + sec_disc_url + ": " + string(b.json_err) } }),
+                  "items": [],
+                  "next": "",
+                }
+              :
+                {
+                  "ok": true,
+                  "err": dyn({}),
+                  "items": ((has(b.items) && b.items != null) ? b.items : []).filter(p, has(p.endpoints) && p.endpoints != null && has(p.endpoints.elasticsearch) && p.endpoints.elasticsearch != null).map(p,
+                    dyn({
+                      "id": string(p.id),
+                      "alt_id": string(p.id),
+                      "name": (has(p.name) && p.name != null && string(p.name) != "") ? string(p.name) : string(p.id),
+                      "es_url": string(p.endpoints.elasticsearch),
+                      "is_ech": false,
+                      "is_hub": false,
+                    })
+                  ),
+                  "next": (has(b.next_page) && b.next_page != null && string(b.next_page) != "") ? string(b.next_page) : "",
+                }
+            )
+          : (r.StatusCode == 404 ? { "ok": true, "err": dyn({}), "items": [], "next": "" } : {
+              "ok": false,
+              "err": dyn({ "error": { "code": string(r.StatusCode), "id": string(r.Status), "message": "GET " + r.Request.URL + ": " + ((size(r.Body) != 0) ? string(r.Body) : string(r.Status)) } }),
+              "items": [],
+              "next": "",
+            })
+        )
       )
     : { "ok": true, "err": dyn({}), "items": [], "next": "" }).as(sec_page,
+    ((has_cloud && vdb_next != "") ?
+      (state.cloud_api_base + "/api/v1/serverless/projects/vectordb?" + (vdb_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [vdb_next] }).format_query()).as(vdb_disc_url,
+        try(
+          get_request(vdb_disc_url).with({ "Header": { "Authorization": ["ApiKey " + state.api_key] } }).do_request(),
+          "req_err"
+        ).as(r,
+          has(r.req_err) ?
+            {
+              "ok": false,
+              "err": dyn({ "error": { "code": "transport_error", "id": "serverless_vectordb", "message": "GET " + vdb_disc_url + ": " + string(r.req_err) } }),
+              "items": [],
+              "next": "",
+            }
+          : (r.StatusCode == 200) ?
+            try(bytes(r.Body).decode_json(), "json_err").as(b,
+              has(b.json_err) ?
+                {
+                  "ok": false,
+                  "err": dyn({ "error": { "code": "decode_error", "id": "serverless_vectordb", "message": "GET " + vdb_disc_url + ": " + string(b.json_err) } }),
+                  "items": [],
+                  "next": "",
+                }
+              :
+                {
+                  "ok": true,
+                  "err": dyn({}),
+                  "items": ((has(b.items) && b.items != null) ? b.items : []).filter(p, has(p.endpoints) && p.endpoints != null && has(p.endpoints.elasticsearch) && p.endpoints.elasticsearch != null).map(p,
+                    dyn({
+                      "id": string(p.id),
+                      "alt_id": string(p.id),
+                      "name": (has(p.name) && p.name != null && string(p.name) != "") ? string(p.name) : string(p.id),
+                      "es_url": string(p.endpoints.elasticsearch),
+                      "is_ech": false,
+                      "is_hub": false,
+                    })
+                  ),
+                  "next": (has(b.next_page) && b.next_page != null && string(b.next_page) != "") ? string(b.next_page) : "",
+                }
+            )
+          : (r.StatusCode == 404 ? { "ok": true, "err": dyn({}), "items": [], "next": "" } : {
+              "ok": false,
+              "err": dyn({ "error": { "code": string(r.StatusCode), "id": string(r.Status), "message": "GET " + r.Request.URL + ": " + ((size(r.Body) != 0) ? string(r.Body) : string(r.Status)) } }),
+              "items": [],
+              "next": "",
+            })
+        )
+      )
+    : { "ok": true, "err": dyn({}), "items": [], "next": "" }).as(vdb_page,
       (
         (!dep_page.ok ? [dep_page.err] : []) +
         (!es_page.ok ? [es_page.err] : []) +
         (!obs_page.ok ? [obs_page.err] : []) +
-        (!sec_page.ok ? [sec_page.err] : [])
+        (!sec_page.ok ? [sec_page.err] : []) +
+        (!vdb_page.ok ? [vdb_page.err] : [])
       ).as(cloud_disc_errs,
-        (acc_targets + dep_page.items + es_page.items + obs_page.items + sec_page.items).as(cloud_targets,
-          (dep_page.next_from >= 0 || es_page.next != "" || obs_page.next != "" || sec_page.next != "") ?
+        (acc_targets + dep_page.items + es_page.items + obs_page.items + sec_page.items + vdb_page.items).as(cloud_targets,
+          (dep_page.next_from >= 0 || es_page.next != "" || obs_page.next != "" || sec_page.next != "" || vdb_page.next != "") ?
             {
               "events": size(conf_evts + cloud_disc_errs) > 0 ? (conf_evts + cloud_disc_errs) : [dyn({ "fake": true })],
               "cursor": {
@@ -250,6 +383,7 @@ program: |-
                 "disc_es_next": es_page.next,
                 "disc_obs_next": obs_page.next,
                 "disc_sec_next": sec_page.next,
+                "disc_vdb_next": vdb_page.next,
                 "disc_targets": cloud_targets,
               },
               "want_more": true,
@@ -265,26 +399,42 @@ program: |-
             }
           :
             (has_hub ?
-              get_request(clean_hub_url + "/").with({ "Header": { "Authorization": ["ApiKey " + state.hub_es_api_key] } }).do_request().as(hub_resp,
-                (hub_resp.StatusCode == 200) ?
-                  bytes(hub_resp.Body).decode_json().as(hub_info,
-                    ((has(hub_info.cluster_name) && hub_info.cluster_name != null && string(hub_info.cluster_name) != "") ? string(hub_info.cluster_name) : "hub").as(hub_cname,
+              try(
+                get_request(clean_hub_url + "/").with({ "Header": { "Authorization": ["ApiKey " + state.hub_es_api_key] } }).do_request(),
+                "req_err"
+              ).as(hub_resp,
+                has(hub_resp.req_err) ?
+                  {
+                    "ok": false,
+                    "err": dyn({ "error": { "code": "transport_error", "id": "hub_discovery", "message": "GET " + clean_hub_url + "/: " + string(hub_resp.req_err) } }),
+                    "targets": cloud_targets,
+                  }
+                : (hub_resp.StatusCode == 200) ?
+                  try(bytes(hub_resp.Body).decode_json(), "json_err").as(hub_info,
+                    has(hub_info.json_err) ?
                       {
-                        "ok": true,
-                        "err": dyn({}),
-                        "targets": cloud_targets.exists(ct, string(ct.id) == hub_cname || string(ct.es_url) == clean_hub_url) ?
-                          cloud_targets.map(ct, (string(ct.id) == hub_cname || string(ct.es_url) == clean_hub_url) ? dyn(ct.with({ "is_hub": true })) : ct)
-                        :
-                          cloud_targets + [dyn({
-                            "id": hub_cname,
-                            "alt_id": hub_cname,
-                            "name": hub_cname,
-                            "es_url": clean_hub_url,
-                            "is_ech": true,
-                            "is_hub": true,
-                          })],
+                        "ok": false,
+                        "err": dyn({ "error": { "code": "decode_error", "id": "hub_discovery", "message": "GET " + clean_hub_url + "/: " + string(hub_info.json_err) } }),
+                        "targets": cloud_targets,
                       }
-                    )
+                    :
+                      ((has(hub_info.cluster_name) && hub_info.cluster_name != null && string(hub_info.cluster_name) != "") ? string(hub_info.cluster_name) : "hub").as(hub_cname,
+                        {
+                          "ok": true,
+                          "err": dyn({}),
+                          "targets": cloud_targets.exists(ct, string(ct.id) == hub_cname || string(ct.es_url) == clean_hub_url) ?
+                            cloud_targets.map(ct, (string(ct.id) == hub_cname || string(ct.es_url) == clean_hub_url) ? dyn(ct.with({ "is_hub": true })) : ct)
+                          :
+                            cloud_targets + [dyn({
+                              "id": hub_cname,
+                              "alt_id": hub_cname,
+                              "name": hub_cname,
+                              "es_url": clean_hub_url,
+                              "is_ech": true,
+                              "is_hub": true,
+                            })],
+                        }
+                      )
                   )
                 :
                   {
@@ -303,35 +453,104 @@ program: |-
                     (d_keys + ((bool(t.is_hub) && has_hub && !(state.hub_es_api_key in d_keys)) ? [state.hub_es_api_key] : [])).as(dh_keys,
                     (dh_keys + ((!bool(t.is_ech) && has_cloud && !(state.api_key in dh_keys)) ? [state.api_key] : [])).as(cand_keys,
                     (size(cand_keys) == 0) ?
-                      { "ok": true, "skipped": true, "id": tid, "evts": [], "baselines": [], "err": dyn({}) }
+                      {
+                        "ok": false,
+                        "skipped": true,
+                        "id": tid,
+                        "evts": [],
+                        "baselines": [],
+                        "err": dyn({
+                          "error": {
+                            "code": "missing_credentials",
+                            "id": tid,
+                            "message": "Skipping index usage collection for deployment '" + string(t.name) + "' (" + tid + "): no matching Elasticsearch API key found in deployment_api_keys (<deployment_id_or_name>:<api_key>) or hub_es_url/hub_es_api_key.",
+                          },
+                        }),
+                      }
                     :
                       (es_base + (bool(t.is_ech) ?
-                        "/*,.ds-*/_stats/docs,store,indexing,search?expand_wildcards=open,hidden&ignore_unavailable=true&allow_no_indices=true&filter_path=indices.*.primaries.docs.count,indices.*.primaries.store.total_data_set_size_in_bytes,indices.*.primaries.store.size_in_bytes,indices.*.total.store.size_in_bytes,indices.*.total.indexing.index_time_in_millis,indices.*.total.search.query_time_in_millis,indices.*.total.search.query_total"
+                        "/*,.ds-*/_stats/docs,store,indexing,search?expand_wildcards=open,hidden&ignore_unavailable=true&allow_no_indices=true&filter_path=_shards,indices.*.primaries.docs.count,indices.*.primaries.store.total_data_set_size_in_bytes,indices.*.primaries.store.size_in_bytes,indices.*.total.store.size_in_bytes,indices.*.total.indexing.index_time_in_millis,indices.*.total.search.query_time_in_millis,indices.*.total.search.query_total"
                       :
                         "/_cat/indices/*,.ds-*?format=json&bytes=b&time=ms&expand_wildcards=open,hidden&h=index,docs.count,store.size,dataset.size,indexing.index_time,search.query_time,search.query_total,creation.date"
                       )).as(stats_url,
-                        get_request(stats_url).with({ "Header": { "Authorization": ["ApiKey " + cand_keys[0]] } }).do_request().as(r0,
-                          (r0.StatusCode == 200) ?
-                            { "ok": true, "body": bytes(r0.Body).decode_json(), "key": cand_keys[0], "resp": r0 }
+                        try(
+                          get_request(stats_url).with({ "Header": { "Authorization": ["ApiKey " + cand_keys[0]] } }).do_request(),
+                          "req_err"
+                        ).as(r0,
+                          has(r0.req_err) ?
+                            {
+                              "ok": false,
+                              "body": dyn({}),
+                              "key": "",
+                              "err": dyn({ "error": { "code": "transport_error", "id": tid, "message": "GET " + stats_url + ": " + string(r0.req_err) } }),
+                            }
+                          : (r0.StatusCode == 200) ?
+                            try(bytes(r0.Body).decode_json(), "json_err").as(b0,
+                              (type(b0) == map && has(b0.json_err)) ?
+                                {
+                                  "ok": false,
+                                  "body": dyn({}),
+                                  "key": "",
+                                  "err": dyn({ "error": { "code": "decode_error", "id": tid, "message": "GET " + stats_url + ": " + string(b0.json_err) } }),
+                                }
+                              : { "ok": true, "body": b0, "key": cand_keys[0], "err": dyn({}) }
+                            )
                           : (size(cand_keys) > 1 ?
                             tail(cand_keys).filter(ck, ck != cand_keys[0]).as(rem_keys,
                               (size(rem_keys) == 0) ?
-                                { "ok": false, "body": dyn({}), "key": "", "resp": r0 }
+                                {
+                                  "ok": false,
+                                  "body": dyn({}),
+                                  "key": "",
+                                  "err": dyn({ "error": { "code": string(r0.StatusCode), "id": string(r0.Status), "message": "GET " + r0.Request.URL + ": " + ((size(r0.Body) != 0) ? string(r0.Body) : string(r0.Status)) } }),
+                                }
                               :
                                 rem_keys.map(ck,
-                                  get_request(stats_url).with({ "Header": { "Authorization": ["ApiKey " + ck] } }).do_request().as(cr,
-                                    { "ok": cr.StatusCode == 200, "key": ck, "resp": cr }
+                                  try(
+                                    get_request(stats_url).with({ "Header": { "Authorization": ["ApiKey " + ck] } }).do_request(),
+                                    "req_err"
+                                  ).as(cr,
+                                    has(cr.req_err) ?
+                                      {
+                                        "ok": false,
+                                        "body": dyn({}),
+                                        "key": "",
+                                        "err": dyn({ "error": { "code": "transport_error", "id": tid, "message": "GET " + stats_url + ": " + string(cr.req_err) } }),
+                                      }
+                                    : (cr.StatusCode == 200) ?
+                                      try(bytes(cr.Body).decode_json(), "json_err").as(cb,
+                                        (type(cb) == map && has(cb.json_err)) ?
+                                          {
+                                            "ok": false,
+                                            "body": dyn({}),
+                                            "key": "",
+                                            "err": dyn({ "error": { "code": "decode_error", "id": tid, "message": "GET " + stats_url + ": " + string(cb.json_err) } }),
+                                          }
+                                        : { "ok": true, "body": cb, "key": ck, "err": dyn({}) }
+                                      )
+                                    :
+                                      {
+                                        "ok": false,
+                                        "body": dyn({}),
+                                        "key": "",
+                                        "err": dyn({ "error": { "code": string(cr.StatusCode), "id": string(cr.Status), "message": "GET " + cr.Request.URL + ": " + ((size(cr.Body) != 0) ? string(cr.Body) : string(cr.Status)) } }),
+                                      }
                                   )
                                 ).as(rest_resps,
                                   rest_resps.filter(x, x.ok).as(ok_resps,
                                     (size(ok_resps) > 0) ?
-                                      { "ok": true, "body": bytes(ok_resps[0].resp.Body).decode_json(), "key": ok_resps[0].key, "resp": ok_resps[0].resp }
+                                      ok_resps[0]
                                     :
-                                      { "ok": false, "body": dyn({}), "key": "", "resp": rest_resps[size(rest_resps) - 1].resp }
+                                      rest_resps[size(rest_resps) - 1]
                                   )
                                 )
                             )
-                          : { "ok": false, "body": dyn({}), "key": "", "resp": r0 })
+                          : {
+                              "ok": false,
+                              "body": dyn({}),
+                              "key": "",
+                              "err": dyn({ "error": { "code": string(r0.StatusCode), "id": string(r0.Status), "message": "GET " + r0.Request.URL + ": " + ((size(r0.Body) != 0) ? string(r0.Body) : string(r0.Status)) } }),
+                            })
                         ).as(harvest,
                           (!harvest.ok) ?
                             {
@@ -340,19 +559,43 @@ program: |-
                               "id": tid,
                               "evts": [],
                               "baselines": [],
+                              "err": harvest.err,
+                            }
+                          : (bool(t.is_ech) && type(harvest.body) == map && has(harvest.body._shards) && harvest.body._shards != null && has(harvest.body._shards.failed) && harvest.body._shards.failed != null && int(harvest.body._shards.failed) > 0) ?
+                            {
+                              "ok": false,
+                              "skipped": false,
+                              "id": tid,
+                              "evts": [],
+                              "baselines": [],
                               "err": dyn({
                                 "error": {
-                                  "code": string(harvest.resp.StatusCode),
-                                  "id": string(harvest.resp.Status),
-                                  "message": "GET " + harvest.resp.Request.URL + ": " + ((size(harvest.resp.Body) != 0) ? string(harvest.resp.Body) : string(harvest.resp.Status)),
+                                  "code": "partial_shard_stats",
+                                  "id": tid,
+                                  "message": "Skipping index usage delta for deployment '" + string(t.name) + "' (" + tid + "): _stats reported " + string(harvest.body._shards.failed) + " failed shard(s); preserving previous counter baselines.",
                                 },
                               }),
                             }
                           :
                             (bool(t.is_ech) ?
                               (es_base + "/*,.ds-*/_settings/index.routing.allocation.include._tier_preference,index.creation_date?expand_wildcards=open,hidden&ignore_unavailable=true&allow_no_indices=true&flat_settings=true&filter_path=*.settings").as(set_url,
-                                get_request(set_url).with({ "Header": { "Authorization": ["ApiKey " + harvest.key] } }).do_request().as(set_resp,
-                                  (set_resp.StatusCode != 200) ?
+                                try(
+                                  get_request(set_url).with({ "Header": { "Authorization": ["ApiKey " + harvest.key] } }).do_request(),
+                                  "req_err"
+                                ).as(set_resp,
+                                  has(set_resp.req_err) ?
+                                    {
+                                      "ok": false,
+                                      "err": dyn({
+                                        "error": {
+                                          "code": "transport_error",
+                                          "id": tid,
+                                          "message": "GET " + set_url + ": " + string(set_resp.req_err),
+                                        },
+                                      }),
+                                      "rows": [],
+                                    }
+                                  : (set_resp.StatusCode != 200) ?
                                     {
                                       "ok": false,
                                       "err": dyn({
@@ -365,54 +608,72 @@ program: |-
                                       "rows": [],
                                     }
                                   :
-                                    bytes(set_resp.Body).decode_json().as(settings_map,
-                                      (es_base + "/_cluster/state/routing_table,nodes/*,.ds-*?local=true&expand_wildcards=open,hidden&ignore_unavailable=true&allow_no_indices=true&filter_path=nodes.*.roles,routing_table.indices.*.shards.*.state,routing_table.indices.*.shards.*.node").as(cs_url,
-                                        get_request(cs_url).with({ "Header": { "Authorization": ["ApiKey " + harvest.key] } }).do_request().as(cs_resp,
-                                          (cs_resp.StatusCode == 200 ? bytes(cs_resp.Body).decode_json() : dyn({})).as(cs_body,
-                                            ((has(cs_body.nodes) && cs_body.nodes != null) ? cs_body.nodes : dyn({})).as(cs_nodes,
-                                            ((has(cs_body.routing_table) && cs_body.routing_table != null && has(cs_body.routing_table.indices) && cs_body.routing_table.indices != null) ? cs_body.routing_table.indices : dyn({})).as(cs_rt,
-                                            ((has(harvest.body.indices) && harvest.body.indices != null) ? harvest.body.indices : dyn({})).as(indices_obj,
-                                              {
-                                                "ok": true,
-                                                "err": dyn({}),
-                                                "rows": indices_obj.keys().map(raw_idx,
-                                                  string(raw_idx).as(rname,
-                                                  (rname.contains(":") ? rname.substring(size(rname.split(":")[0]) + 1, size(rname)) : rname).as(iname,
-                                                  indices_obj[raw_idx].as(istats,
-                                                  ((iname in settings_map && settings_map[iname] != null && has(settings_map[iname].settings) && settings_map[iname].settings != null) ? settings_map[iname].settings : dyn({})).as(iset,
-                                                  ((has(istats.primaries) && istats.primaries != null && has(istats.primaries.store) && istats.primaries.store != null) ? (
-                                                    (has(istats.primaries.store.total_data_set_size_in_bytes) && istats.primaries.store.total_data_set_size_in_bytes != null) ? int(istats.primaries.store.total_data_set_size_in_bytes) : (
-                                                      (has(istats.primaries.store.size_in_bytes) && istats.primaries.store.size_in_bytes != null) ? int(istats.primaries.store.size_in_bytes) : 0
-                                                    )
-                                                  ) : 0).as(dset_b,
-                                                    dyn({
-                                                      "raw_idx": rname,
-                                                      "idx_name": iname,
-                                                      "tier_pref": (("index.routing.allocation.include._tier_preference" in iset) && iset["index.routing.allocation.include._tier_preference"] != null) ? string(iset["index.routing.allocation.include._tier_preference"]) : "",
-                                                      "alloc_roles": ((iname in cs_rt && cs_rt[iname] != null && has(cs_rt[iname].shards) && cs_rt[iname].shards != null) ?
-                                                        cs_rt[iname].shards.keys().map(sk,
-                                                          cs_rt[iname].shards[sk].filter(sr,
-                                                            has(sr.state) && (string(sr.state) == "STARTED" || string(sr.state) == "RELOCATING") &&
-                                                            has(sr.node) && sr.node != null && string(sr.node) in cs_nodes &&
-                                                            cs_nodes[string(sr.node)] != null && has(cs_nodes[string(sr.node)].roles) && cs_nodes[string(sr.node)].roles != null
-                                                          ).map(sr, cs_nodes[string(sr.node)].roles.map(rl, string(rl)).join(","))
-                                                        ).flatten()
-                                                      : []),
-                                                      "created_ms": (("index.creation_date" in iset && iset["index.creation_date"] != null && string(iset["index.creation_date"]).matches("^[0-9]+$")) ? int(iset["index.creation_date"]) : 0),
-                                                      "docs": ((has(istats.primaries) && istats.primaries != null && has(istats.primaries.docs) && istats.primaries.docs != null && has(istats.primaries.docs.count) && istats.primaries.docs.count != null) ? int(istats.primaries.docs.count) : 0),
-                                                      "dset": dset_b,
-                                                      "tot": ((has(istats.total) && istats.total != null && has(istats.total.store) && istats.total.store != null && has(istats.total.store.size_in_bytes) && istats.total.store.size_in_bytes != null) ? int(istats.total.store.size_in_bytes) : dset_b),
-                                                      "idx_ms": ((has(istats.total) && istats.total != null && has(istats.total.indexing) && istats.total.indexing != null && has(istats.total.indexing.index_time_in_millis) && istats.total.indexing.index_time_in_millis != null) ? int(istats.total.indexing.index_time_in_millis) : 0),
-                                                      "qry_ms": ((has(istats.total) && istats.total != null && has(istats.total.search) && istats.total.search != null && has(istats.total.search.query_time_in_millis) && istats.total.search.query_time_in_millis != null) ? int(istats.total.search.query_time_in_millis) : 0),
-                                                      "qry_cnt": ((has(istats.total) && istats.total != null && has(istats.total.search) && istats.total.search != null && has(istats.total.search.query_total) && istats.total.search.query_total != null) ? int(istats.total.search.query_total) : 0),
-                                                    })
-                                                  )))))
-                                                ),
-                                              }
-                                            )))
+                                    try(bytes(set_resp.Body).decode_json(), "json_err").as(settings_map,
+                                      has(settings_map.json_err) ?
+                                        {
+                                          "ok": false,
+                                          "err": dyn({
+                                            "error": {
+                                              "code": "decode_error",
+                                              "id": tid,
+                                              "message": "GET " + set_url + ": " + string(settings_map.json_err),
+                                            },
+                                          }),
+                                          "rows": [],
+                                        }
+                                      :
+                                        (es_base + "/_cluster/state/routing_table,nodes/*,.ds-*?local=true&expand_wildcards=open,hidden&ignore_unavailable=true&allow_no_indices=true&filter_path=nodes.*.roles,routing_table.indices.*.shards.*.state,routing_table.indices.*.shards.*.node").as(cs_url,
+                                          try(
+                                            get_request(cs_url).with({ "Header": { "Authorization": ["ApiKey " + harvest.key] } }).do_request(),
+                                            "req_err"
+                                          ).as(cs_resp,
+                                            ((!has(cs_resp.req_err) && cs_resp.StatusCode == 200) ?
+                                              try(bytes(cs_resp.Body).decode_json(), "json_err").as(cs_dec, has(cs_dec.json_err) ? dyn({}) : cs_dec)
+                                            : dyn({})).as(cs_body,
+                                              ((has(cs_body.nodes) && cs_body.nodes != null) ? cs_body.nodes : dyn({})).as(cs_nodes,
+                                              ((has(cs_body.routing_table) && cs_body.routing_table != null && has(cs_body.routing_table.indices) && cs_body.routing_table.indices != null) ? cs_body.routing_table.indices : dyn({})).as(cs_rt,
+                                              ((has(harvest.body.indices) && harvest.body.indices != null) ? harvest.body.indices : dyn({})).as(indices_obj,
+                                                {
+                                                  "ok": true,
+                                                  "err": dyn({}),
+                                                  "rows": indices_obj.keys().map(raw_idx,
+                                                    string(raw_idx).as(rname,
+                                                    (rname.contains(":") ? rname.substring(size(rname.split(":")[0]) + 1, size(rname)) : rname).as(iname,
+                                                    indices_obj[raw_idx].as(istats,
+                                                    ((iname in settings_map && settings_map[iname] != null && has(settings_map[iname].settings) && settings_map[iname].settings != null) ? settings_map[iname].settings : dyn({})).as(iset,
+                                                    ((has(istats.primaries) && istats.primaries != null && has(istats.primaries.store) && istats.primaries.store != null) ? (
+                                                      (has(istats.primaries.store.total_data_set_size_in_bytes) && istats.primaries.store.total_data_set_size_in_bytes != null) ? int(istats.primaries.store.total_data_set_size_in_bytes) : (
+                                                        (has(istats.primaries.store.size_in_bytes) && istats.primaries.store.size_in_bytes != null) ? int(istats.primaries.store.size_in_bytes) : 0
+                                                      )
+                                                    ) : 0).as(dset_b,
+                                                      dyn({
+                                                        "raw_idx": rname,
+                                                        "idx_name": iname,
+                                                        "tier_pref": (("index.routing.allocation.include._tier_preference" in iset) && iset["index.routing.allocation.include._tier_preference"] != null) ? string(iset["index.routing.allocation.include._tier_preference"]) : "",
+                                                        "alloc_roles": ((iname in cs_rt && cs_rt[iname] != null && has(cs_rt[iname].shards) && cs_rt[iname].shards != null) ?
+                                                          cs_rt[iname].shards.keys().map(sk,
+                                                            cs_rt[iname].shards[sk].filter(sr,
+                                                              has(sr.state) && (string(sr.state) == "STARTED" || string(sr.state) == "RELOCATING") &&
+                                                              has(sr.node) && sr.node != null && string(sr.node) in cs_nodes &&
+                                                              cs_nodes[string(sr.node)] != null && has(cs_nodes[string(sr.node)].roles) && cs_nodes[string(sr.node)].roles != null
+                                                            ).map(sr, cs_nodes[string(sr.node)].roles.map(rl, string(rl)).join(","))
+                                                          ).flatten()
+                                                        : []),
+                                                        "created_ms": (("index.creation_date" in iset && iset["index.creation_date"] != null && string(iset["index.creation_date"]).matches("^[0-9]+$")) ? int(iset["index.creation_date"]) : 0),
+                                                        "docs": ((has(istats.primaries) && istats.primaries != null && has(istats.primaries.docs) && istats.primaries.docs != null && has(istats.primaries.docs.count) && istats.primaries.docs.count != null) ? int(istats.primaries.docs.count) : 0),
+                                                        "dset": dset_b,
+                                                        "tot": ((has(istats.total) && istats.total != null && has(istats.total.store) && istats.total.store != null && has(istats.total.store.size_in_bytes) && istats.total.store.size_in_bytes != null) ? int(istats.total.store.size_in_bytes) : dset_b),
+                                                        "idx_ms": ((has(istats.total) && istats.total != null && has(istats.total.indexing) && istats.total.indexing != null && has(istats.total.indexing.index_time_in_millis) && istats.total.indexing.index_time_in_millis != null) ? int(istats.total.indexing.index_time_in_millis) : 0),
+                                                        "qry_ms": ((has(istats.total) && istats.total != null && has(istats.total.search) && istats.total.search != null && has(istats.total.search.query_time_in_millis) && istats.total.search.query_time_in_millis != null) ? int(istats.total.search.query_time_in_millis) : 0),
+                                                        "qry_cnt": ((has(istats.total) && istats.total != null && has(istats.total.search) && istats.total.search != null && has(istats.total.search.query_total) && istats.total.search.query_total != null) ? int(istats.total.search.query_total) : 0),
+                                                      })
+                                                    )))))
+                                                  ),
+                                                }
+                                              )))
+                                            )
                                           )
                                         )
-                                      )
                                     )
                                 )
                               )
@@ -692,7 +953,7 @@ program: |-
               ).as(results,
                 results.filter(r, r.ok && !r.skipped).map(r, r.id).as(newly_harvested_ids,
                 results.map(r, r.baselines).flatten().as(new_bases,
-                base_map.keys().filter(k, !(string(base_map[k].c) in newly_harvested_ids)).as(kept_keys,
+                base_map.keys().filter(k, !(string(base_map[k].c) in newly_harvested_ids) && ("t" in base_map[k]) && base_map[k].t != null && int(base_map[k].t) >= (now_sec - 172800)).as(kept_keys,
                 (
                   (size(kept_keys) > 0 ? zip(kept_keys, kept_keys.map(k, base_map[k])) : dyn({}))
                 ).with(
@@ -719,8 +980,17 @@ program: |-
           )
         )
       )
-    )))))))))))))))))))))))))
+    ))))))))))))))))))))))))))))))
   )
+{{#if tags.length}}
+tags:
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
 
 processors:
 - drop_event.when.equals.fake: true

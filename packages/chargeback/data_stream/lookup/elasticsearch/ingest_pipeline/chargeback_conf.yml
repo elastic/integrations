@@ -26,13 +26,16 @@ processors:
         boolean hasSnaps = (hasSnapsObj != null) && hasSnapsObj.toString().equalsIgnoreCase('true');
         def policySyncObj = snapRoot.get('policy_sync_enabled');
         boolean policySyncEnabled = (policySyncObj != null) && policySyncObj.toString().equalsIgnoreCase('true');
-        if (!hasSnaps || !policySyncEnabled) {
+        def conflictObj = snapRoot.get('owner_conflict');
+        boolean ownerConflict = (conflictObj != null) && conflictObj.toString().equalsIgnoreCase('true');
+        if (!hasSnaps || !policySyncEnabled || ownerConflict) {
           ctx._skip_conf_write = true;
           return;
         }
 
         Map m = [:];
         boolean anyActiveStream = false;
+        String expectedOwnerKey = snapRoot.get('owner_key') != null ? snapRoot.get('owner_key').toString().trim() : '';
         if (snapRoot.streams instanceof Map) {
           Map streamsMap = (Map)snapRoot.streams;
           for (String ds : ['chargeback.billing', 'chargeback.usage', 'chargeback.node_stats']) {
@@ -41,10 +44,19 @@ processors:
               def syncFlag = bucket.get('sync');
               boolean syncEnabled = (syncFlag == null) || syncFlag.toString().equalsIgnoreCase('true');
               if (syncEnabled) {
+                String bOwner = bucket.get('conf_owner_key') != null ? bucket.get('conf_owner_key').toString().trim() : '';
+                if (bOwner != '') {
+                  if (expectedOwnerKey == '') {
+                    expectedOwnerKey = bOwner;
+                  } else if (!expectedOwnerKey.equals(bOwner)) {
+                    ctx._skip_conf_write = true;
+                    return;
+                  }
+                }
                 anyActiveStream = true;
                 for (def entry : bucket.entrySet()) {
                   String k = entry.getKey().toString();
-                  if (entry.getValue() != null && k.startsWith('conf_') && k != 'conf_sync_enabled') {
+                  if (entry.getValue() != null && k.startsWith('conf_') && k != 'conf_sync_enabled' && k != 'conf_owner_key' && k != 'conf_owner_id' && k != 'conf_policy_scope') {
                     m[k] = entry.getValue();
                   }
                 }
