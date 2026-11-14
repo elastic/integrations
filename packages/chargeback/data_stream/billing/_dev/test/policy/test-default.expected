@@ -140,26 +140,41 @@ inputs:
                             }
                           :
                             now.format("2006-01-02T15:04:05.000Z").as(cred_obs_ts,
-                              {
-                                "evts": (type(cred_items) == list ? cred_items : []).map(item,
-                                  dyn({
-                                    "_credit_poll_ts": cred_obs_ts,
-                                    "doc_type": "credit_line_item",
-                                    "ess": {
-                                      "billing": {
-                                        "organization_id": state.organization_id,
-                                        "start": item.start,
-                                        "end": item.end,
-                                        "ecu_quantity": (has(item.ecu_quantity) && item.ecu_quantity != null) ? double(item.ecu_quantity) : 0.0,
-                                        "ecu_balance": (has(item.ecu_balance) && item.ecu_balance != null) ? double(item.ecu_balance) : 0.0,
-                                        "active": (has(item.active) && item.active != null) ? bool(item.active) : false,
-                                        "type": (has(item.type) && item.type != null) ? string(item.type) : "",
-                                      },
-                                    },
-                                  })
-                                ),
-                                "credit_day": today_utc,
-                              }
+                              (type(cred_items) == list ? cred_items : []).as(cred_list,
+                                size(cred_list).as(cred_len,
+                                  [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63].as(d64,
+                                    {
+                                      "evts": d64.filter(b2, b2 * 4096 < cred_len).map(b2,
+                                        d64.filter(b1, b2 * 4096 + b1 * 64 < cred_len).map(b1,
+                                          d64.filter(b0, b2 * 4096 + b1 * 64 + b0 < cred_len).map(b0,
+                                            (b2 * 4096 + b1 * 64 + b0).as(cred_idx,
+                                              cred_list[cred_idx].as(item,
+                                                dyn({
+                                                  "_credit_poll_ts": cred_obs_ts,
+                                                  "credit_line_id": (has(item.id) && item.id != null && string(item.id) != "") ? string(item.id) : ("idx:" + string(cred_idx)),
+                                                  "doc_type": "credit_line_item",
+                                                  "ess": {
+                                                    "billing": {
+                                                      "organization_id": state.organization_id,
+                                                      "start": item.start,
+                                                      "end": item.end,
+                                                      "ecu_quantity": (has(item.ecu_quantity) && item.ecu_quantity != null) ? double(item.ecu_quantity) : 0.0,
+                                                      "ecu_balance": (has(item.ecu_balance) && item.ecu_balance != null) ? double(item.ecu_balance) : 0.0,
+                                                      "active": (has(item.active) && item.active != null) ? bool(item.active) : false,
+                                                      "type": (has(item.type) && item.type != null) ? string(item.type) : "",
+                                                    },
+                                                  },
+                                                })
+                                              )
+                                            )
+                                          )
+                                        ).flatten()
+                                      ).flatten(),
+                                      "credit_day": today_utc,
+                                    }
+                                  )
+                                )
+                              )
                             )
                         )
                       :

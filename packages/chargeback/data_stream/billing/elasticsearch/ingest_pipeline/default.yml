@@ -32,6 +32,23 @@ processors:
   - remove:
       field: _credit_poll_ts
       ignore_missing: true
+  - fingerprint:
+      if: "ctx.doc_type == 'credit_line_item'"
+      fields:
+        - conf_policy_id
+        - data_stream.namespace
+        - "@timestamp"
+        - credit_line_id
+        - ess.billing.organization_id
+        - ess.billing.start
+        - ess.billing.end
+        - ess.billing.type
+        - ess.billing.ecu_quantity
+        - ess.billing.ecu_balance
+        - ess.billing.active
+      target_field: _id
+      ignore_missing: true
+      tag: fingerprint_credit_line_item
   - terminate:
       tag: credit_line_item_complete
       if: "ctx.doc_type == 'credit_line_item'"
