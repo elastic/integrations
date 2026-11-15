@@ -81,13 +81,20 @@ program: |-
                   },
                 }
               :
-                {
-                  // A null, missing or non-list data field is treated as an empty page (end of the pass).
-                  "assets": (type(response_body) == map && type(response_body.?data.orValue(null)) == list) ?
-                    response_body.data
-                  :
-                    [],
-                }
+                // Only a data list (possibly empty) is a valid envelope; anything else is an error so the
+                // in-progress pass is kept and retried instead of being committed as finished.
+                (type(response_body) == map && type(response_body.?data.orValue(null)) == list) ?
+                  {
+                    "assets": response_body.data,
+                  }
+                :
+                  {
+                    "error": {
+                      "code": string(response.StatusCode),
+                      "id": string(response.Status),
+                      "message": "GET /v1/asset/enumerate/contents: unexpected response shape: data is not a list: " + string(response.Body).substring(0, [size(string(response.Body)), 512].min()),
+                    },
+                  }
             )
           :
             {

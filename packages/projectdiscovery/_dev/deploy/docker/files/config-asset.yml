@@ -107,7 +107,7 @@ rules:
             - text/html
         body: |-
           <html><head><title>502 Bad Gateway</title></head><body>bad gateway</body></html>
-  # 200 with a null data array (treated as an empty page).
+  # 200 with a null data array (malformed envelope, reported as an error).
   - path: /v1/asset/enumerate/contents
     methods: [GET]
     request_headers:
@@ -120,7 +120,7 @@ rules:
             - application/json
         body: |-
           {"current_page":0,"data":null,"message":"enumeration retrieved successfully","result_count":0,"total_pages":0,"total_results":0}
-  # 200 without a data key (treated as an empty page).
+  # 200 without a data key (malformed envelope, reported as an error).
   - path: /v1/asset/enumerate/contents
     methods: [GET]
     request_headers:
@@ -133,6 +133,19 @@ rules:
             - application/json
         body: |-
           {"current_page":0,"message":"enumeration retrieved successfully","result_count":0,"total_pages":0,"total_results":0}
+  # 200 with a data object instead of a list (malformed envelope, reported as an error).
+  - path: /v1/asset/enumerate/contents
+    methods: [GET]
+    request_headers:
+      X-API-Key:
+        - '^object-data-key$'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {"current_page":0,"data":{},"message":"enumeration retrieved successfully","result_count":0,"total_pages":0,"total_results":0}
   # 200 with an empty data array (end of the population on an exact page boundary).
   - path: /v1/asset/enumerate/contents
     methods: [GET]
