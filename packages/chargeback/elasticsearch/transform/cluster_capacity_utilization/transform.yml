@@ -51,11 +51,25 @@ source:
       type: double
       script:
         source: |
+          String tf = 'elasticsearch.node.stats.fs.total.total_in_bytes';
+          String af = 'elasticsearch.node.stats.fs.total.available_in_bytes';
           try {
-            def total = params._source.elasticsearch.node.stats.fs.total.total_in_bytes;
-            def avail = params._source.elasticsearch.node.stats.fs.total.available_in_bytes;
-            if (total != null && avail != null && total > 0) {
-              emit((total - avail) * 100.0 / total);
+            if (doc.containsKey(tf) && !doc[tf].empty && doc.containsKey(af) && !doc[af].empty) {
+              double totD = ((Number)doc[tf].value).doubleValue();
+              double avD = ((Number)doc[af].value).doubleValue();
+              if (totD > 0.0) {
+                emit((totD - avD) * 100.0 / totD);
+                return;
+              }
+            }
+          } catch (Exception e) {}
+          try {
+            def total = params._source?.elasticsearch?.node?.stats?.fs?.total?.total_in_bytes;
+            def avail = params._source?.elasticsearch?.node?.stats?.fs?.total?.available_in_bytes;
+            if (total instanceof Number && avail instanceof Number && ((Number)total).doubleValue() > 0.0) {
+              double totD = ((Number)total).doubleValue();
+              double avD = ((Number)avail).doubleValue();
+              emit((totD - avD) * 100.0 / totD);
             }
           } catch (Exception e) {}
     cb_node_id:

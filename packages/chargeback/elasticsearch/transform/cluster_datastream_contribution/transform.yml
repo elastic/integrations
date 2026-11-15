@@ -21,8 +21,8 @@ source:
       script:
         source: |
           String kw = 'elasticsearch.cluster.name.keyword';
-          if (doc.containsKey(kw)) {
-            if (!doc[kw].empty) { emit(doc[kw].value.toString()); }
+          if (doc.containsKey(kw) && !doc[kw].empty) {
+            emit(doc[kw].value.toString());
             return;
           }
           try {
@@ -42,8 +42,8 @@ source:
       script:
         source: |
           String kw = 'elasticsearch.index.name.keyword';
-          if (doc.containsKey(kw)) {
-            if (!doc[kw].empty) { emit(doc[kw].value.toString()); }
+          if (doc.containsKey(kw) && !doc[kw].empty) {
+            emit(doc[kw].value.toString());
             return;
           }
           try {
@@ -89,14 +89,33 @@ source:
               if (sm.matches()) { stripped = sm.group(1); }
               if (stripped.equals(prev)) { break; }
             }
+            String cbBase = stripped;
+            int cbDash = cbBase.lastIndexOf('-');
+            if (cbDash > 0 && cbDash < cbBase.length() - 1) {
+              boolean cbDigits = true;
+              for (int di = cbDash + 1; di < cbBase.length(); di++) {
+                int dc = (int)cbBase.charAt(di);
+                if (dc < 48 || dc > 57) { cbDigits = false; break; }
+              }
+              if (cbDigits) { cbBase = cbBase.substring(0, cbDash); }
+            }
             boolean isCbLookup = (
               name.startsWith('chargeback_lookup.') ||
               stripped.startsWith('chargeback_lookup.') ||
               name == 'monitoring-indices' ||
               stripped == 'monitoring-indices' ||
+              cbBase == 'monitoring-indices' ||
               name == 'monitoring-indices-chargeback' ||
               stripped == 'monitoring-indices-chargeback' ||
-              /^(?:billing_cluster_cost_lookup|billing_realized_pool_lookup|chargeback_conf_lookup|cluster_capacity_utilization_lookup|cluster_deployment_contribution_lookup|cluster_tier_contribution_lookup|cluster_datastream_contribution_lookup|cluster_tier_and_datastream_contribution_lookup)(?:-\d+)?$/.matcher(stripped).matches()
+              cbBase == 'monitoring-indices-chargeback' ||
+              cbBase == 'billing_cluster_cost_lookup' ||
+              cbBase == 'billing_realized_pool_lookup' ||
+              cbBase == 'chargeback_conf_lookup' ||
+              cbBase == 'cluster_capacity_utilization_lookup' ||
+              cbBase == 'cluster_deployment_contribution_lookup' ||
+              cbBase == 'cluster_tier_contribution_lookup' ||
+              cbBase == 'cluster_datastream_contribution_lookup' ||
+              cbBase == 'cluster_tier_and_datastream_contribution_lookup'
             );
             if ((name.startsWith('.') && !name.startsWith('.ds-'))
                 || (stripped.startsWith('.') && !stripped.startsWith('.ds-'))
@@ -139,33 +158,33 @@ source:
               return;
             }
           } catch (Exception e) {}
-          for (String k : ['ingested', 'created']) {
-            if (k == 'created') {
-              try {
-                if (doc.containsKey('event.created') && !doc['event.created'].empty) {
-                  emit(doc['event.created'].value.toInstant().toEpochMilli());
+          try {
+            if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+              emit(doc['event.created'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            for (String k : ['ingested', 'created']) {
+              def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get(k) : null;
+              if (rawVal == null && params._source != null) {
+                rawVal = params._source.get('event.' + k);
+              }
+              if (rawVal != null) {
+                if (rawVal instanceof Number) {
+                  emit(((Number)rawVal).longValue());
                   return;
                 }
-              } catch (Exception e) {}
-            }
-            def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get(k) : null;
-            if (rawVal == null && params._source != null) {
-              rawVal = params._source.get('event.' + k);
-            }
-            if (rawVal != null) {
-              if (rawVal instanceof Number) {
-                emit(((Number)rawVal).longValue());
-                return;
-              }
-              String s = rawVal.toString().trim();
-              if (s != '') {
-                try {
-                  emit(ZonedDateTime.parse(s).toInstant().toEpochMilli());
-                  return;
-                } catch (Exception e) {}
+                String s = rawVal.toString().trim();
+                if (s != '') {
+                  try {
+                    emit(ZonedDateTime.parse(s).toInstant().toEpochMilli());
+                    return;
+                  } catch (Exception e) {}
+                }
               }
             }
-          }
+          } catch (Exception e) {}
           if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
             emit(doc['@timestamp'].value.toInstant().toEpochMilli());
           }
@@ -173,21 +192,31 @@ source:
       type: keyword
       script:
         source: |
+          String rawTier = null;
           for (String f : ['elasticsearch.index.tier.keyword', 'elasticsearch.index.tier']) {
             try {
               if (doc.containsKey(f) && !doc[f].empty) {
-                String t = doc[f].value.toString();
-                if (t != '' && t != 'unknown') { emit(t); return; }
+                String t = doc[f].value.toString().trim();
+                if (t != '' && t != 'unknown') { rawTier = t; break; }
               }
             } catch (Exception e) {}
           }
-          try {
-            def st = params._source?.elasticsearch?.index?.tier;
-            if (st != null && st.toString() != '' && st.toString() != 'unknown') {
-              emit(st.toString());
-              return;
-            }
-          } catch (Exception e) {}
+          if (rawTier == null) {
+            try {
+              def st = params._source?.elasticsearch?.index?.tier;
+              if (st != null) {
+                String t = st.toString().trim();
+                if (t != '' && t != 'unknown') { rawTier = t; }
+              }
+            } catch (Exception e) {}
+          }
+          if (rawTier != null) {
+            String tl = rawTier.toLowerCase(Locale.ROOT);
+            if (tl == 'hot' || tl == 'content' || tl == 'data_hot' || tl == 'data_content' || tl == 'hot/content') { emit('hot/content'); return; }
+            if (tl == 'warm' || tl == 'data_warm') { emit('warm'); return; }
+            if (tl == 'cold' || tl == 'data_cold') { emit('cold'); return; }
+            if (tl == 'frozen' || tl == 'data_frozen') { emit('frozen'); return; }
+          }
           String pref = null;
           for (String pf : ['elasticsearch.index.tier_preference.keyword', 'elasticsearch.index.tier_preference']) {
             try {
@@ -205,11 +234,11 @@ source:
           }
           if (pref == null || pref == '') { emit('unknown'); return; }
           for (String part : pref.splitOnToken(',')) {
-            String tp = part.trim();
-            if (tp == 'data_frozen') { emit('frozen'); return; }
-            if (tp == 'data_cold') { emit('cold'); return; }
-            if (tp == 'data_warm') { emit('warm'); return; }
-            if (tp == 'data_hot' || tp == 'data_content') { emit('hot/content'); return; }
+            String tp = part.trim().toLowerCase(Locale.ROOT);
+            if (tp == 'data_frozen' || tp == 'frozen') { emit('frozen'); return; }
+            if (tp == 'data_cold' || tp == 'cold') { emit('cold'); return; }
+            if (tp == 'data_warm' || tp == 'warm') { emit('warm'); return; }
+            if (tp == 'data_hot' || tp == 'data_content' || tp == 'hot' || tp == 'content') { emit('hot/content'); return; }
           }
           emit('unknown');
     cb_resolved_datastream:
@@ -267,6 +296,13 @@ source:
               }
             } catch (Exception e) {}
           }
+          try {
+            def sds = params._source?.elasticsearch?.index?.datastream;
+            if (sds != null && sds.toString() != '' && sds.toString() != 'unknown') {
+              emit(sds.toString());
+              return;
+            }
+          } catch (Exception e) {}
           emit('unknown');
 dest:
   index: chargeback_lookup.dest_cluster_datastream_contribution-1
@@ -340,23 +376,33 @@ pivot:
               }
             } catch (Exception e2) {}
           }
-          String idxField = isNat ? 'elasticsearch.index.total.indexing.index_time_in_millis' : 'elasticsearch.index.total.indexing.index_time_in_millis_delta';
-          String qryField = isNat ? 'elasticsearch.index.total.search.query_time_in_millis' : 'elasticsearch.index.total.search.query_time_in_millis_delta';
+          String idxDeltaF = 'elasticsearch.index.total.indexing.index_time_in_millis_delta';
+          String idxRawF = 'elasticsearch.index.total.indexing.index_time_in_millis';
+          String qryDeltaF = 'elasticsearch.index.total.search.query_time_in_millis_delta';
+          String qryRawF = 'elasticsearch.index.total.search.query_time_in_millis';
           long idxMs = 0L;
           long qryMs = 0L;
           long storeB = 0L;
           long dsetB = 0L;
           try {
-            if (doc.containsKey(idxField) && !doc[idxField].empty) { idxMs = ((Number)doc[idxField].value).longValue(); }
-            else if (params._source?.elasticsearch?.index?.total?.indexing != null) {
-              def v = isNat ? params._source.elasticsearch.index.total.indexing.index_time_in_millis : params._source.elasticsearch.index.total.indexing.index_time_in_millis_delta;
+            if (doc.containsKey(idxDeltaF) && !doc[idxDeltaF].empty) {
+              idxMs = ((Number)doc[idxDeltaF].value).longValue();
+            } else if (isNat && doc.containsKey(idxRawF) && !doc[idxRawF].empty) {
+              idxMs = ((Number)doc[idxRawF].value).longValue();
+            } else if (params._source?.elasticsearch?.index?.total?.indexing != null) {
+              def ix = params._source.elasticsearch.index.total.indexing;
+              def v = ix.index_time_in_millis_delta != null ? ix.index_time_in_millis_delta : (isNat ? ix.index_time_in_millis : null);
               if (v instanceof Number) { idxMs = ((Number)v).longValue(); }
             }
           } catch (Exception e) {}
           try {
-            if (doc.containsKey(qryField) && !doc[qryField].empty) { qryMs = ((Number)doc[qryField].value).longValue(); }
-            else if (params._source?.elasticsearch?.index?.total?.search != null) {
-              def v = isNat ? params._source.elasticsearch.index.total.search.query_time_in_millis : params._source.elasticsearch.index.total.search.query_time_in_millis_delta;
+            if (doc.containsKey(qryDeltaF) && !doc[qryDeltaF].empty) {
+              qryMs = ((Number)doc[qryDeltaF].value).longValue();
+            } else if (isNat && doc.containsKey(qryRawF) && !doc[qryRawF].empty) {
+              qryMs = ((Number)doc[qryRawF].value).longValue();
+            } else if (params._source?.elasticsearch?.index?.total?.search != null) {
+              def sx = params._source.elasticsearch.index.total.search;
+              def v = sx.query_time_in_millis_delta != null ? sx.query_time_in_millis_delta : (isNat ? sx.query_time_in_millis : null);
               if (v instanceof Number) { qryMs = ((Number)v).longValue(); }
             }
           } catch (Exception e) {}
@@ -374,23 +420,12 @@ pivot:
               dsetB = ((Number)params._source.elasticsearch.index.primaries.store.total_data_set_size_in_bytes).longValue();
             }
           } catch (Exception e) {}
-
-          Map u = (Map)state.units.get(ukey);
-          if (u == null) {
-            u = new HashMap();
-            u.put('lm', [0L, 0L, 0L]);
-            u.put('lt', [0L, 0L, 0L, 0L, 0L]);
-            u.put('ltier', 'unknown');
-            u.put('ns', new ArrayList());
-            u.put('bs', null);
-            state.units.put(ukey, u);
-          }
+          if (idxMs < 0L) { idxMs = 0L; }
+          if (qryMs < 0L) { qryMs = 0L; }
+          if (storeB < 0L) { storeB = 0L; }
+          if (dsetB < 0L) { dsetB = 0L; }
 
           if (isNat) {
-            state.nat_cnt = ((Number)state.nat_cnt).longValue() + 1L;
-            long tcPrev = state.nat_cnt_by_tier.containsKey(tier) ? ((Number)state.nat_cnt_by_tier.get(tier)).longValue() : 0L;
-            state.nat_cnt_by_tier.put(tier, tcPrev + 1L);
-
             boolean hasDelta = false;
             for (String df : [
               'elasticsearch.index.primaries.docs.count_delta',
@@ -458,15 +493,20 @@ pivot:
                 if (cEnd < cStart) { cEnd = cStart; }
                 sOff = cStart - dayStartMs;
                 eOff = cEnd - dayStartMs;
-              }
-              if (eOff <= sOff) {
+                if (eOff <= sOff) { return; }
+              } else {
                 long effDur = durMs > 0L ? (durMs < 86400000L ? durMs : 86400000L) : 600000L;
-                eOff = (b + 1L) * 600000L;
-                sOff = (eOff - effDur) > 0L ? (eOff - effDur) : 0L;
+                sOff = rem;
+                eOff = (rem + effDur <= 86400000L) ? (rem + effDur) : 86400000L;
               }
               long spanMs = (eOff - sOff) > 1L ? (eOff - sOff) : 1L;
-              long rawWStore = Math.round((double)storeB * ((double)spanMs / 600000.0));
-              long rawWDset = Math.round((double)dsetB * ((double)spanMs / 600000.0));
+              double wSlots = (double)spanMs / 600000.0;
+              long rawWStore = Math.round((double)storeB * wSlots);
+              long rawWDset = Math.round((double)dsetB * wSlots);
+
+              state.nat_cnt = ((Number)state.nat_cnt).longValue() + 1L;
+              long tcPrev = state.nat_cnt_by_tier.containsKey(tier) ? ((Number)state.nat_cnt_by_tier.get(tier)).longValue() : 0L;
+              state.nat_cnt_by_tier.put(tier, tcPrev + 1L);
 
               List rn = (List)state.raw_nat;
               rn.set(0, ((Number)rn.get(0)).longValue() + idxMs);
@@ -483,10 +523,113 @@ pivot:
                 rnt.set(2, ((Number)rnt.get(2)).longValue() + rawWStore);
                 rnt.set(3, ((Number)rnt.get(3)).longValue() + rawWDset);
               }
-              ((List)u.get('ns')).add([sOff, eOff, idxMs, qryMs, storeB, dsetB, tier]);
+
+              Map u = (Map)state.units.get(ukey);
+              if (u == null) {
+                u = new HashMap();
+                u.put('ds', ds);
+                u.put('lm', [0L, 0L, 0L]);
+                u.put('lt', new HashMap());
+                u.put('nc', [0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L]);
+                u.put('nspan', [86400000L, 0L, 0L]);
+                u.put('nt', new HashMap());
+                u.put('bs', null);
+                u.put('seen', new HashSet());
+                u.put('cseen', new HashSet());
+                state.units.put(ukey, u);
+              } else if (ds != 'unknown' && 'unknown'.equals(u.get('ds'))) {
+                u.put('ds', ds);
+              }
+
+              String skey = Long.toString(sOff) + ':' + Long.toString(eOff) + ':' + tier;
+              if (((Set)u.get('seen')).add(skey)) {
+                int sb = (int)(sOff / 600000L);
+                int eb = (int)((eOff - 1L) / 600000L);
+                if (sb < 0) { sb = 0; }
+                if (eb > 143) { eb = 143; }
+                Map ntMap = (Map)u.get('nt');
+                List ntv = (List)ntMap.get(tier);
+                if (ntv == null) {
+                  ntv = [0L, 0L, 0L, 0L, 0L, 0.0, 0.0];
+                  ntMap.put(tier, ntv);
+                }
+                ntv.set(3, ((Number)ntv.get(3)).longValue() + idxMs);
+                ntv.set(4, ((Number)ntv.get(4)).longValue() + qryMs);
+                ntv.set(5, ((Number)ntv.get(5)).doubleValue() + (double)storeB * wSlots);
+                ntv.set(6, ((Number)ntv.get(6)).doubleValue() + (double)dsetB * wSlots);
+
+                boolean newCov = ((Set)u.get('cseen')).add(Long.toString(sOff) + ':' + Long.toString(eOff));
+                if (newCov) {
+                  List nsp = (List)u.get('nspan');
+                  if (sOff < ((Number)nsp.get(0)).longValue()) { nsp.set(0, sOff); }
+                  if (eOff > ((Number)nsp.get(1)).longValue()) { nsp.set(1, eOff); }
+                  nsp.set(2, ((Number)nsp.get(2)).longValue() + spanMs);
+                }
+                List nc = (List)u.get('nc');
+                for (int k = sb; k <= eb; k++) {
+                  long slotStart = k * 600000L;
+                  long slotEnd = (k + 1L) * 600000L;
+                  long ovEnd = eOff < slotEnd ? eOff : slotEnd;
+                  long ovStart = sOff > slotStart ? sOff : slotStart;
+                  long ov = ovEnd - ovStart;
+                  if (ov > 0L) {
+                    int kw = k >> 6;
+                    long kbit = 1L << (k & 63);
+                    ntv.set(kw, ((Number)ntv.get(kw)).longValue() | kbit);
+                    if (newCov) {
+                      int q = (ov >= 300000L) ? 8 : (int)(ov / 60000L);
+                      if (q > 0) {
+                        long c0 = ((Number)nc.get(kw)).longValue();
+                        long c1 = ((Number)nc.get(3 + kw)).longValue();
+                        long c2 = ((Number)nc.get(6 + kw)).longValue();
+                        long c3 = ((Number)nc.get(9 + kw)).longValue();
+                        int cur = ((c0 & kbit) != 0L ? 1 : 0)
+                                | ((c1 & kbit) != 0L ? 2 : 0)
+                                | ((c2 & kbit) != 0L ? 4 : 0)
+                                | ((c3 & kbit) != 0L ? 8 : 0);
+                        int nxt = (cur + q) > 8 ? 8 : (cur + q);
+                        if (nxt != cur) {
+                          nc.set(kw, (nxt & 1) != 0 ? (c0 | kbit) : (c0 & ~kbit));
+                          nc.set(3 + kw, (nxt & 2) != 0 ? (c1 | kbit) : (c1 & ~kbit));
+                          nc.set(6 + kw, (nxt & 4) != 0 ? (c2 | kbit) : (c2 & ~kbit));
+                          nc.set(9 + kw, (nxt & 8) != 0 ? (c3 | kbit) : (c3 & ~kbit));
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             } else {
+              state.nat_cnt = ((Number)state.nat_cnt).longValue() + 1L;
+              long tcPrev = state.nat_cnt_by_tier.containsKey(tier) ? ((Number)state.nat_cnt_by_tier.get(tier)).longValue() : 0L;
+              state.nat_cnt_by_tier.put(tier, tcPrev + 1L);
+              Map u = (Map)state.units.get(ukey);
+              if (u == null) {
+                u = new HashMap();
+                u.put('ds', ds);
+                u.put('lm', [0L, 0L, 0L]);
+                u.put('lt', new HashMap());
+                u.put('nc', [0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L]);
+                u.put('nspan', [86400000L, 0L, 0L]);
+                u.put('nt', new HashMap());
+                u.put('bs', new HashMap());
+                u.put('seen', new HashSet());
+                u.put('cseen', new HashSet());
+                state.units.put(ukey, u);
+              } else if (ds != 'unknown' && 'unknown'.equals(u.get('ds'))) {
+                u.put('ds', ds);
+              }
               if (!(u.get('bs') instanceof Map)) { u.put('bs', new HashMap()); }
-              ((Map)u.get('bs')).put(tier, [storeB, dsetB]);
+              Map bsMap = (Map)u.get('bs');
+              List bsv = (List)bsMap.get(tier);
+              if (bsv == null) {
+                bsMap.put(tier, [w == 0 ? bit : 0L, w == 1 ? bit : 0L, w == 2 ? bit : 0L, storeB, dsetB, 1L]);
+              } else {
+                bsv.set(w, ((Number)bsv.get(w)).longValue() | bit);
+                bsv.set(3, ((Number)bsv.get(3)).longValue() + storeB);
+                bsv.set(4, ((Number)bsv.get(4)).longValue() + dsetB);
+                bsv.set(5, ((Number)bsv.get(5)).longValue() + 1L);
+              }
             }
           } else {
             state.leg_cnt = ((Number)state.leg_cnt).longValue() + 1L;
@@ -506,17 +649,55 @@ pivot:
               rlt.set(2, ((Number)rlt.get(2)).longValue() + storeB);
               rlt.set(3, ((Number)rlt.get(3)).longValue() + dsetB);
             }
+            Map u = (Map)state.units.get(ukey);
+            if (u == null) {
+              u = new HashMap();
+              u.put('ds', ds);
+              u.put('lm', [0L, 0L, 0L]);
+              u.put('lt', new HashMap());
+              u.put('nc', [0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L]);
+              u.put('nspan', [86400000L, 0L, 0L]);
+              u.put('nt', new HashMap());
+              u.put('bs', null);
+              u.put('seen', new HashSet());
+              u.put('cseen', new HashSet());
+              state.units.put(ukey, u);
+            } else if (ds != 'unknown' && 'unknown'.equals(u.get('ds'))) {
+              u.put('ds', ds);
+            }
             List lm = (List)u.get('lm');
             lm.set(w, ((Number)lm.get(w)).longValue() | bit);
-            List lt = (List)u.get('lt');
-            lt.set(0, ((Number)lt.get(0)).longValue() + idxMs);
-            lt.set(1, ((Number)lt.get(1)).longValue() + qryMs);
-            lt.set(2, ((Number)lt.get(2)).longValue() + storeB);
-            lt.set(3, ((Number)lt.get(3)).longValue() + dsetB);
-            lt.set(4, ((Number)lt.get(4)).longValue() + 1L);
-            u.put('ltier', tier);
+            Map ltMap = (Map)u.get('lt');
+            List ltv = (List)ltMap.get(tier);
+            if (ltv == null) {
+              ltv = [0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L];
+              ltv.set(w, bit);
+              ltv.set(3, idxMs);
+              ltv.set(4, qryMs);
+              ltv.set(5, storeB);
+              ltv.set(6, dsetB);
+              ltv.set(7, 1L);
+              ltMap.put(tier, ltv);
+            } else {
+              ltv.set(w, ((Number)ltv.get(w)).longValue() | bit);
+              ltv.set(3, ((Number)ltv.get(3)).longValue() + idxMs);
+              ltv.set(4, ((Number)ltv.get(4)).longValue() + qryMs);
+              ltv.set(5, ((Number)ltv.get(5)).longValue() + storeB);
+              ltv.set(6, ((Number)ltv.get(6)).longValue() + dsetB);
+              ltv.set(7, ((Number)ltv.get(7)).longValue() + 1L);
+            }
           }
-        combine_script: "return state;"
+        combine_script: |
+          if (state.units instanceof Map) {
+            for (def uObj : ((Map)state.units).values()) {
+              if (uObj instanceof Map) {
+                Map u = (Map)uObj;
+                u.remove('seen');
+                u.remove('cseen');
+              }
+            }
+          }
+          return state;
         reduce_script: |
           Map merged = new HashMap();
           List rawNat = [0L, 0L, 0L, 0L];
@@ -582,130 +763,333 @@ pivot:
                 String uk = ue.getKey().toString();
                 Map uv = (Map)ue.getValue();
                 Map acc = (Map)merged.get(uk);
+                String uvDs = uv.get('ds') != null ? uv.get('ds').toString() : 'unknown';
                 if (acc == null) {
-                  acc = new HashMap();
-                  acc.put('lm', [0L, 0L, 0L]);
-                  acc.put('lt', [0L, 0L, 0L, 0L, 0L]);
-                  acc.put('ltier', 'unknown');
-                  acc.put('ns', new ArrayList());
-                  acc.put('bs', null);
+                  acc = [
+                    'ds': uvDs,
+                    'lm': [0L, 0L, 0L],
+                    'lt': new HashMap(),
+                    'nc': [0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L],
+                    'nspan': [86400000L, 0L, 0L],
+                    'nt': new HashMap(),
+                    'bs': null
+                  ];
                   merged.put(uk, acc);
+                } else if (uvDs != 'unknown' && 'unknown'.equals(acc.get('ds'))) {
+                  acc.put('ds', uvDs);
                 }
                 List alm = (List)acc.get('lm');
                 List ulm = (List)uv.get('lm');
-                for (int i = 0; i < 3; i++) { alm.set(i, ((Number)alm.get(i)).longValue() | ((Number)ulm.get(i)).longValue()); }
-                List alt = (List)acc.get('lt');
-                List ult = (List)uv.get('lt');
-                for (int i = 0; i < 5; i++) { alt.set(i, ((Number)alt.get(i)).longValue() + ((Number)ult.get(i)).longValue()); }
-                if (uv.get('ltier') != null && uv.get('ltier').toString() != 'unknown') {
-                  acc.put('ltier', uv.get('ltier').toString());
+                for (int i = 0; i < 3; i++) {
+                  alm.set(i, ((Number)alm.get(i)).longValue() | ((Number)ulm.get(i)).longValue());
                 }
-                if (uv.get('ns') instanceof List) {
-                  ((List)acc.get('ns')).addAll((List)uv.get('ns'));
+                if (uv.get('lt') instanceof Map) {
+                  Map altMap = (Map)acc.get('lt');
+                  for (def lte : ((Map)uv.get('lt')).entrySet()) {
+                    String ltk = lte.getKey().toString();
+                    List sv = (List)lte.getValue();
+                    List dv = (List)altMap.get(ltk);
+                    if (dv == null) {
+                      List cp = new ArrayList();
+                      for (int i = 0; i < 8; i++) { cp.add(((Number)sv.get(i)).longValue()); }
+                      altMap.put(ltk, cp);
+                    } else {
+                      for (int i = 0; i < 3; i++) { dv.set(i, ((Number)dv.get(i)).longValue() | ((Number)sv.get(i)).longValue()); }
+                      for (int i = 3; i < 8; i++) { dv.set(i, ((Number)dv.get(i)).longValue() + ((Number)sv.get(i)).longValue()); }
+                    }
+                  }
+                }
+                List anc = (List)acc.get('nc');
+                List unc = (List)uv.get('nc');
+                for (int w = 0; w < 3; w++) {
+                  long b0 = ((Number)unc.get(w)).longValue();
+                  long b1 = ((Number)unc.get(3 + w)).longValue();
+                  long b2 = ((Number)unc.get(6 + w)).longValue();
+                  long b3 = ((Number)unc.get(9 + w)).longValue();
+                  if ((b0 | b1 | b2 | b3) != 0L) {
+                    long a0 = ((Number)anc.get(w)).longValue();
+                    long a1 = ((Number)anc.get(3 + w)).longValue();
+                    long a2 = ((Number)anc.get(6 + w)).longValue();
+                    long a3 = ((Number)anc.get(9 + w)).longValue();
+                    long s0 = a0 ^ b0;
+                    long k0 = a0 & b0;
+                    long x1 = a1 ^ b1;
+                    long s1 = x1 ^ k0;
+                    long k1 = (a1 & b1) | (x1 & k0);
+                    long x2 = a2 ^ b2;
+                    long s2 = x2 ^ k1;
+                    long k2 = (a2 & b2) | (x2 & k1);
+                    anc.set(w, s0);
+                    anc.set(3 + w, s1);
+                    anc.set(6 + w, s2);
+                    anc.set(9 + w, a3 | b3 | k2);
+                  }
+                }
+                List ansp = (List)acc.get('nspan');
+                List unsp = (List)uv.get('nspan');
+                long uMin = ((Number)unsp.get(0)).longValue();
+                long uMax = ((Number)unsp.get(1)).longValue();
+                if (uMin < ((Number)ansp.get(0)).longValue()) { ansp.set(0, uMin); }
+                if (uMax > ((Number)ansp.get(1)).longValue()) { ansp.set(1, uMax); }
+                ansp.set(2, ((Number)ansp.get(2)).longValue() + ((Number)unsp.get(2)).longValue());
+                if (uv.get('nt') instanceof Map) {
+                  Map antMap = (Map)acc.get('nt');
+                  for (def nte : ((Map)uv.get('nt')).entrySet()) {
+                    String ntk = nte.getKey().toString();
+                    List sv = (List)nte.getValue();
+                    List dv = (List)antMap.get(ntk);
+                    if (dv == null) {
+                      antMap.put(ntk, [
+                        ((Number)sv.get(0)).longValue(), ((Number)sv.get(1)).longValue(), ((Number)sv.get(2)).longValue(),
+                        ((Number)sv.get(3)).longValue(), ((Number)sv.get(4)).longValue(),
+                        ((Number)sv.get(5)).doubleValue(), ((Number)sv.get(6)).doubleValue()
+                      ]);
+                    } else {
+                      for (int i = 0; i < 3; i++) { dv.set(i, ((Number)dv.get(i)).longValue() | ((Number)sv.get(i)).longValue()); }
+                      for (int i = 3; i < 5; i++) { dv.set(i, ((Number)dv.get(i)).longValue() + ((Number)sv.get(i)).longValue()); }
+                      for (int i = 5; i < 7; i++) { dv.set(i, ((Number)dv.get(i)).doubleValue() + ((Number)sv.get(i)).doubleValue()); }
+                    }
+                  }
                 }
                 if (uv.get('bs') instanceof Map) {
                   if (!(acc.get('bs') instanceof Map)) { acc.put('bs', new HashMap()); }
-                  ((Map)acc.get('bs')).putAll((Map)uv.get('bs'));
-                } else if (uv.get('bs') instanceof List) {
-                  List ubs = (List)uv.get('bs');
-                  if (!(acc.get('bs') instanceof Map)) { acc.put('bs', new HashMap()); }
-                  ((Map)acc.get('bs')).put(ubs.get(2).toString(), [ubs.get(0), ubs.get(1)]);
+                  Map absMap = (Map)acc.get('bs');
+                  for (def bse : ((Map)uv.get('bs')).entrySet()) {
+                    String btk = bse.getKey().toString();
+                    List sv = (List)bse.getValue();
+                    List dv = (List)absMap.get(btk);
+                    if (dv == null) {
+                      List cp = new ArrayList();
+                      for (int i = 0; i < 6; i++) { cp.add(((Number)sv.get(i)).longValue()); }
+                      absMap.put(btk, cp);
+                    } else {
+                      for (int i = 0; i < 3; i++) { dv.set(i, ((Number)dv.get(i)).longValue() | ((Number)sv.get(i)).longValue()); }
+                      for (int i = 3; i < 6; i++) { dv.set(i, ((Number)dv.get(i)).longValue() + ((Number)sv.get(i)).longValue()); }
+                    }
+                  }
                 }
               }
+            }
+          }
+
+          boolean hasDsUnit = false;
+          for (def ukObj : merged.keySet()) {
+            if (ukObj.toString().startsWith('ds:')) { hasDsUnit = true; break; }
+          }
+          Map dsLegMask = null;
+          Map dsNatAny = null;
+          if (hasDsUnit) {
+            Map dsNatCov = new HashMap();
+            dsNatAny = new HashMap();
+            for (def ue : merged.entrySet()) {
+              String uk = ue.getKey().toString();
+              if (uk.startsWith('ds:')) { continue; }
+              Map u = (Map)ue.getValue();
+              String uds = u.get('ds') != null ? u.get('ds').toString() : 'unknown';
+              if (uds == 'unknown') { continue; }
+              Map ntMap = (Map)u.get('nt');
+              if (ntMap != null && !ntMap.isEmpty()) {
+                List nc = (List)u.get('nc');
+                long cv0 = ((Number)nc.get(9)).longValue() | (((Number)nc.get(6)).longValue() & (((Number)nc.get(3)).longValue() | ((Number)nc.get(0)).longValue()));
+                long cv1 = ((Number)nc.get(10)).longValue() | (((Number)nc.get(7)).longValue() & (((Number)nc.get(4)).longValue() | ((Number)nc.get(1)).longValue()));
+                long cv2 = ((Number)nc.get(11)).longValue() | (((Number)nc.get(8)).longValue() & (((Number)nc.get(5)).longValue() | ((Number)nc.get(2)).longValue()));
+                List prevCv = (List)dsNatCov.get(uds);
+                if (prevCv == null) {
+                  dsNatCov.put(uds, [cv0, cv1, cv2]);
+                } else {
+                  prevCv.set(0, ((Number)prevCv.get(0)).longValue() | cv0);
+                  prevCv.set(1, ((Number)prevCv.get(1)).longValue() | cv1);
+                  prevCv.set(2, ((Number)prevCv.get(2)).longValue() | cv2);
+                }
+                long na0 = 0L;
+                long na1 = 0L;
+                long na2 = 0L;
+                for (def ntvObj : ntMap.values()) {
+                  List ntv0 = (List)ntvObj;
+                  na0 |= ((Number)ntv0.get(0)).longValue();
+                  na1 |= ((Number)ntv0.get(1)).longValue();
+                  na2 |= ((Number)ntv0.get(2)).longValue();
+                }
+                List prevNa = (List)dsNatAny.get(uds);
+                if (prevNa == null) {
+                  dsNatAny.put(uds, [na0, na1, na2]);
+                } else {
+                  prevNa.set(0, ((Number)prevNa.get(0)).longValue() | na0);
+                  prevNa.set(1, ((Number)prevNa.get(1)).longValue() | na1);
+                  prevNa.set(2, ((Number)prevNa.get(2)).longValue() | na2);
+                }
+              }
+            }
+            dsLegMask = new HashMap();
+            for (def ue : merged.entrySet()) {
+              String uk = ue.getKey().toString();
+              if (!uk.startsWith('ds:')) { continue; }
+              String uds = uk.substring(3);
+              Map u = (Map)ue.getValue();
+              List lm = (List)u.get('lm');
+              long lm0 = ((Number)lm.get(0)).longValue();
+              long lm1 = ((Number)lm.get(1)).longValue();
+              long lm2 = ((Number)lm.get(2)).longValue();
+              if ((lm0 | lm1 | lm2) == 0L) { continue; }
+              List natCv = (List)dsNatCov.get(uds);
+              if (natCv != null) {
+                long nc0 = ((Number)natCv.get(0)).longValue();
+                long nc1 = ((Number)natCv.get(1)).longValue();
+                long nc2 = ((Number)natCv.get(2)).longValue();
+                if (((lm0 & ~nc0) | (lm1 & ~nc1) | (lm2 & ~nc2)) == 0L) {
+                  u.put('skip', true);
+                  continue;
+                }
+              }
+              dsLegMask.put(uds, [lm0, lm1, lm2]);
             }
           }
 
           List sel = [0L, 0L, 0L, 0L];
           Map selByTier = new HashMap();
           Map tierFlags = new HashMap();
+          Map effLegCntByTier = new HashMap();
+          Map effRawLegByTier = new HashMap();
           boolean usedNat = false;
           boolean usedLeg = false;
 
           for (def ue : merged.entrySet()) {
+            String uk = ue.getKey().toString();
             Map u = (Map)ue.getValue();
             List lm = (List)u.get('lm');
-            List lt = (List)u.get('lt');
-            String ltier = u.get('ltier') != null ? u.get('ltier').toString() : 'unknown';
-            List rawNs = (List)u.get('ns');
+            Map ltMap = (Map)u.get('lt');
+            Map ntMap = (Map)u.get('nt');
             Map bsMap = u.get('bs') instanceof Map ? (Map)u.get('bs') : null;
 
-            List ns = new ArrayList();
-            if (rawNs != null && !rawNs.isEmpty()) {
-              Set seen = new HashSet();
-              for (def item : rawNs) {
-                List sp = (List)item;
-                String skey = sp.get(0).toString() + ':' + sp.get(1).toString() + ':' + sp.get(6).toString();
-                if (seen.add(skey)) { ns.add(sp); }
+            String fallbackNatTier = null;
+            int bestNatSlots = -1;
+            if (ntMap != null) {
+              for (def nteFb : ntMap.entrySet()) {
+                String cand = nteFb.getKey().toString();
+                List ntvFb = (List)nteFb.getValue();
+                int candSlots = Long.bitCount(((Number)ntvFb.get(0)).longValue()) + Long.bitCount(((Number)ntvFb.get(1)).longValue()) + Long.bitCount(((Number)ntvFb.get(2)).longValue());
+                if (fallbackNatTier == null || (fallbackNatTier == 'unknown' && cand != 'unknown') || (cand != 'unknown' && (candSlots > bestNatSlots || (candSlots == bestNatSlots && cand.compareTo(fallbackNatTier) < 0)))) {
+                  fallbackNatTier = cand;
+                  if (cand != 'unknown') { bestNatSlots = candSlots; }
+                }
               }
             }
+            if (ltMap != null && !ltMap.isEmpty()) {
+              for (def lteDiag : ltMap.entrySet()) {
+                String ltkDiag = lteDiag.getKey().toString();
+                String effDiagTier = (ltkDiag == 'unknown' && ltMap.size() == 1 && fallbackNatTier != null) ? fallbackNatTier : ltkDiag;
+                List ltvDiag = (List)lteDiag.getValue();
+                long dCnt = ((Number)ltvDiag.get(7)).longValue();
+                long prevLC = effLegCntByTier.containsKey(effDiagTier) ? ((Number)effLegCntByTier.get(effDiagTier)).longValue() : 0L;
+                effLegCntByTier.put(effDiagTier, prevLC + dCnt);
+                List erlt = (List)effRawLegByTier.get(effDiagTier);
+                if (erlt == null) {
+                  effRawLegByTier.put(effDiagTier, [((Number)ltvDiag.get(3)).longValue(), ((Number)ltvDiag.get(4)).longValue(), ((Number)ltvDiag.get(5)).longValue(), ((Number)ltvDiag.get(6)).longValue()]);
+                } else {
+                  erlt.set(0, ((Number)erlt.get(0)).longValue() + ((Number)ltvDiag.get(3)).longValue());
+                  erlt.set(1, ((Number)erlt.get(1)).longValue() + ((Number)ltvDiag.get(4)).longValue());
+                  erlt.set(2, ((Number)erlt.get(2)).longValue() + ((Number)ltvDiag.get(5)).longValue());
+                  erlt.set(3, ((Number)erlt.get(3)).longValue() + ((Number)ltvDiag.get(6)).longValue());
+                }
+              }
+            }
+            if (Boolean.TRUE.equals(u.get('skip'))) { continue; }
 
             long m0 = ((Number)lm.get(0)).longValue();
             long m1 = ((Number)lm.get(1)).longValue();
             long m2 = ((Number)lm.get(2)).longValue();
             int legSlots = Long.bitCount(m0) + Long.bitCount(m1) + Long.bitCount(m2);
-            long legDocCnt = ((Number)lt.get(4)).longValue();
+            boolean hasOwnLeg = (legSlots > 0);
 
-            if (legSlots == 0) {
-              if (!ns.isEmpty()) {
+            long dlm0 = 0L;
+            long dlm1 = 0L;
+            long dlm2 = 0L;
+            if (dsLegMask != null && !uk.startsWith('ds:')) {
+              String uds = u.get('ds') != null ? u.get('ds').toString() : 'unknown';
+              List dlm = (List)dsLegMask.get(uds);
+              if (dlm != null) {
+                dlm0 = ((Number)dlm.get(0)).longValue();
+                dlm1 = ((Number)dlm.get(1)).longValue();
+                dlm2 = ((Number)dlm.get(2)).longValue();
+              }
+            }
+            long effLm0 = m0 | dlm0;
+            long effLm1 = m1 | dlm1;
+            long effLm2 = m2 | dlm2;
+            boolean hasEffLeg = ((effLm0 | effLm1 | effLm2) != 0L);
+
+            boolean hasNt = (ntMap != null && !ntMap.isEmpty());
+            boolean unitNatCovers = false;
+            if (hasNt && hasEffLeg && hasOwnLeg && ((dlm0 | dlm1 | dlm2) == 0L)) {
+              List nc = (List)u.get('nc');
+              long cov0 = ((Number)nc.get(9)).longValue() | (((Number)nc.get(6)).longValue() & (((Number)nc.get(3)).longValue() | ((Number)nc.get(0)).longValue()));
+              long cov1 = ((Number)nc.get(10)).longValue() | (((Number)nc.get(7)).longValue() & (((Number)nc.get(4)).longValue() | ((Number)nc.get(1)).longValue()));
+              long cov2 = ((Number)nc.get(11)).longValue() | (((Number)nc.get(8)).longValue() & (((Number)nc.get(5)).longValue() | ((Number)nc.get(2)).longValue()));
+              unitNatCovers = (((m0 & ~cov0) | (m1 & ~cov1) | (m2 & ~cov2)) == 0L);
+            }
+
+            if (hasNt && (!hasEffLeg || unitNatCovers)) {
+              usedNat = true;
+              List nsp = (List)u.get('nspan');
+              long minMs = ((Number)nsp.get(0)).longValue();
+              long maxMs = ((Number)nsp.get(1)).longValue();
+              long covMs = ((Number)nsp.get(2)).longValue();
+              long activeMs = maxMs > minMs ? (maxMs - minMs) : covMs;
+              if (covMs > activeMs) { covMs = activeMs; }
+              double gapScale = (covMs > 0L && activeMs > covMs && (activeMs - covMs) >= 300000L)
+                ? ((double)activeMs / (double)covMs)
+                : 1.0;
+              for (def nte : ntMap.entrySet()) {
+                String tk = nte.getKey().toString();
+                List ntv = (List)nte.getValue();
+                List adds = [
+                  ((Number)ntv.get(3)).longValue(),
+                  ((Number)ntv.get(4)).longValue(),
+                  Math.round(((Number)ntv.get(5)).doubleValue() * gapScale),
+                  Math.round(((Number)ntv.get(6)).doubleValue() * gapScale)
+                ];
+                for (int i = 0; i < 4; i++) { sel.set(i, ((Number)sel.get(i)).longValue() + ((Number)adds.get(i)).longValue()); }
+                List st = (List)selByTier.get(tk);
+                if (st == null) { selByTier.put(tk, new ArrayList(adds)); }
+                else { for (int i = 0; i < 4; i++) { st.set(i, ((Number)st.get(i)).longValue() + ((Number)adds.get(i)).longValue()); } }
+                int tf = tierFlags.containsKey(tk) ? ((Number)tierFlags.get(tk)).intValue() : 0;
+                tierFlags.put(tk, tf | 1);
+              }
+              continue;
+            }
+
+            if (!hasEffLeg) {
+              if (bsMap != null && !bsMap.isEmpty()) {
                 usedNat = true;
-                Map idxTierAcc = new HashMap();
-                Set covSeen = new HashSet();
-                long minMs = 86400000L;
-                long maxMs = 0L;
-                long covMs = 0L;
-                for (def item : ns) {
-                  List sp = (List)item;
-                  long sOff = ((Number)sp.get(0)).longValue();
-                  long eOff = ((Number)sp.get(1)).longValue();
-                  long spanMs = (eOff - sOff) > 1L ? (eOff - sOff) : 1L;
-                  if (sOff < minMs) { minMs = sOff; }
-                  if (eOff > maxMs) { maxMs = eOff; }
-                  if (covSeen.add(sOff + ':' + eOff)) { covMs += spanMs; }
-                  double wSlots = (double)spanMs / 600000.0;
-                  String spTier = sp.get(6).toString();
-                  List ta = (List)idxTierAcc.get(spTier);
-                  if (ta == null) {
-                    ta = [0L, 0L, 0.0, 0.0];
-                    idxTierAcc.put(spTier, ta);
-                  }
-                  ta.set(0, ((Number)ta.get(0)).longValue() + ((Number)sp.get(2)).longValue());
-                  ta.set(1, ((Number)ta.get(1)).longValue() + ((Number)sp.get(3)).longValue());
-                  ta.set(2, ((Number)ta.get(2)).doubleValue() + ((Number)sp.get(4)).longValue() * wSlots);
-                  ta.set(3, ((Number)ta.get(3)).doubleValue() + ((Number)sp.get(5)).longValue() * wSlots);
-                  int tf = tierFlags.containsKey(spTier) ? ((Number)tierFlags.get(spTier)).intValue() : 0;
-                  tierFlags.put(spTier, tf | 1);
+                long bm0 = 0L;
+                long bm1 = 0L;
+                long bm2 = 0L;
+                for (def bse0 : bsMap.entrySet()) {
+                  List bsv0 = (List)bse0.getValue();
+                  bm0 |= ((Number)bsv0.get(0)).longValue();
+                  bm1 |= ((Number)bsv0.get(1)).longValue();
+                  bm2 |= ((Number)bsv0.get(2)).longValue();
                 }
-                long activeMs = maxMs > minMs ? (maxMs - minMs) : covMs;
-                double gapScale = (covMs > 0L && activeMs > covMs && (activeMs - covMs) >= 300000L)
-                  ? ((double)activeMs / (double)covMs)
-                  : 1.0;
-                for (def te : idxTierAcc.entrySet()) {
-                  String tk = te.getKey().toString();
-                  List ta = (List)te.getValue();
-                  long add0 = ((Number)ta.get(0)).longValue();
-                  long add1 = ((Number)ta.get(1)).longValue();
-                  long add2 = Math.round(((Number)ta.get(2)).doubleValue() * gapScale);
-                  long add3 = Math.round(((Number)ta.get(3)).doubleValue() * gapScale);
-                  sel.set(0, ((Number)sel.get(0)).longValue() + add0);
-                  sel.set(1, ((Number)sel.get(1)).longValue() + add1);
-                  sel.set(2, ((Number)sel.get(2)).longValue() + add2);
-                  sel.set(3, ((Number)sel.get(3)).longValue() + add3);
-                  List st = (List)selByTier.get(tk);
-                  if (st == null) { selByTier.put(tk, [add0, add1, add2, add3]); }
-                  else {
-                    st.set(0, ((Number)st.get(0)).longValue() + add0);
-                    st.set(1, ((Number)st.get(1)).longValue() + add1);
-                    st.set(2, ((Number)st.get(2)).longValue() + add2);
-                    st.set(3, ((Number)st.get(3)).longValue() + add3);
-                  }
-                }
-              } else if (bsMap != null && !bsMap.isEmpty()) {
-                usedNat = true;
+                int bsSlots = Long.bitCount(bm0) + Long.bitCount(bm1) + Long.bitCount(bm2);
+                int firstBs = (bm0 != 0L) ? Long.numberOfTrailingZeros(bm0)
+                  : ((bm1 != 0L) ? (64 + Long.numberOfTrailingZeros(bm1))
+                  : ((bm2 != 0L) ? (128 + Long.numberOfTrailingZeros(bm2)) : -1));
+                int lastBs = (bm2 != 0L) ? (191 - Long.numberOfLeadingZeros(bm2))
+                  : ((bm1 != 0L) ? (127 - Long.numberOfLeadingZeros(bm1))
+                  : ((bm0 != 0L) ? (63 - Long.numberOfLeadingZeros(bm0)) : -1));
+                int bsActive = (lastBs >= firstBs && firstBs >= 0) ? (lastBs - firstBs + 1) : bsSlots;
+                int bsNormSlots = bsSlots > bsActive ? bsSlots : bsActive;
+                if (bsNormSlots < 1) { bsNormSlots = 1; }
+                double bsNormScale = bsSlots > 0 ? ((double)bsNormSlots / (double)bsSlots) : 1.0;
                 for (def bse : bsMap.entrySet()) {
                   String bsTier = bse.getKey().toString();
                   List bsv = (List)bse.getValue();
-                  long bsStore = ((Number)bsv.get(0)).longValue();
-                  long bsDset = ((Number)bsv.get(1)).longValue();
+                  int tSlots = Long.bitCount(((Number)bsv.get(0)).longValue()) + Long.bitCount(((Number)bsv.get(1)).longValue()) + Long.bitCount(((Number)bsv.get(2)).longValue());
+                  if (tSlots < 1) { tSlots = 1; }
+                  long tDocCnt = ((Number)bsv.get(5)).longValue();
+                  double tNormSlots = (double)tSlots * bsNormScale;
+                  long bsStore = tDocCnt > 0L ? Math.round(((double)((Number)bsv.get(3)).longValue() / (double)tDocCnt) * tNormSlots) : 0L;
+                  long bsDset = tDocCnt > 0L ? Math.round(((double)((Number)bsv.get(4)).longValue() / (double)tDocCnt) * tNormSlots) : 0L;
                   sel.set(2, ((Number)sel.get(2)).longValue() + bsStore);
                   sel.set(3, ((Number)sel.get(3)).longValue() + bsDset);
                   rawNat.set(2, ((Number)rawNat.get(2)).longValue() + bsStore);
@@ -729,182 +1113,171 @@ pivot:
               continue;
             }
 
-            int firstLeg = -1;
-            int lastLeg = -1;
-            for (int k = 0; k < 144; k++) {
-              int kw = k >> 6;
-              long kbit = 1L << (k & 63);
-              if ((((Number)lm.get(kw)).longValue() & kbit) != 0L) {
-                if (firstLeg < 0) { firstLeg = k; }
-                lastLeg = k;
-              }
-            }
+            int firstLeg = (m0 != 0L) ? Long.numberOfTrailingZeros(m0)
+              : ((m1 != 0L) ? (64 + Long.numberOfTrailingZeros(m1))
+              : ((m2 != 0L) ? (128 + Long.numberOfTrailingZeros(m2)) : -1));
+            int lastLeg = (m2 != 0L) ? (191 - Long.numberOfLeadingZeros(m2))
+              : ((m1 != 0L) ? (127 - Long.numberOfLeadingZeros(m1))
+              : ((m0 != 0L) ? (63 - Long.numberOfLeadingZeros(m0)) : -1));
 
-            if (ns.isEmpty()) {
-              usedLeg = true;
-              int activeSlots = (lastLeg >= firstLeg && firstLeg >= 0) ? (lastLeg - firstLeg + 1) : legSlots;
-              int normSlots = legSlots > activeSlots ? legSlots : activeSlots;
-              long add0 = ((Number)lt.get(0)).longValue();
-              long add1 = ((Number)lt.get(1)).longValue();
-              long add2 = legDocCnt > 0L ? Math.round(((double)((Number)lt.get(2)).longValue() / (double)legDocCnt) * (double)normSlots) : 0L;
-              long add3 = legDocCnt > 0L ? Math.round(((double)((Number)lt.get(3)).longValue() / (double)legDocCnt) * (double)normSlots) : 0L;
-              sel.set(0, ((Number)sel.get(0)).longValue() + add0);
-              sel.set(1, ((Number)sel.get(1)).longValue() + add1);
-              sel.set(2, ((Number)sel.get(2)).longValue() + add2);
-              sel.set(3, ((Number)sel.get(3)).longValue() + add3);
-              List st = (List)selByTier.get(ltier);
-              if (st == null) { selByTier.put(ltier, [add0, add1, add2, add3]); }
-              else {
-                st.set(0, ((Number)st.get(0)).longValue() + add0);
-                st.set(1, ((Number)st.get(1)).longValue() + add1);
-                st.set(2, ((Number)st.get(2)).longValue() + add2);
-                st.set(3, ((Number)st.get(3)).longValue() + add3);
-              }
-              int tf = tierFlags.containsKey(ltier) ? ((Number)tierFlags.get(ltier)).intValue() : 0;
-              tierFlags.put(ltier, tf | 2);
-              continue;
-            }
-
-            long[] natSlotMs = new long[144];
-            Set slotSeen = new HashSet();
-            for (def item : ns) {
-              List sp = (List)item;
-              long sOff = ((Number)sp.get(0)).longValue();
-              long eOff = ((Number)sp.get(1)).longValue();
-              if (!slotSeen.add(sOff + ':' + eOff)) { continue; }
-              int sb = (int)(sOff / 600000L);
-              int eb = (int)((eOff - 1L) / 600000L);
-              for (int k = sb; k <= eb; k++) {
-                if (k >= 0 && k < 144) {
-                  long slotStart = k * 600000L;
-                  long slotEnd = (k + 1L) * 600000L;
-                  long ovEnd = eOff < slotEnd ? eOff : slotEnd;
-                  long ovStart = sOff > slotStart ? sOff : slotStart;
-                  long ov = ovEnd - ovStart;
-                  if (ov > 0L) { natSlotMs[k] += ov; }
+            if (!hasNt) {
+              if (hasOwnLeg) {
+                usedLeg = true;
+                long cm0 = m0;
+                long cm1 = m1;
+                long cm2 = m2;
+                if (dsNatAny != null && uk.startsWith('ds:')) {
+                  List dsn = (List)dsNatAny.get(uk.substring(3));
+                  if (dsn != null) {
+                    cm0 |= ((Number)dsn.get(0)).longValue();
+                    cm1 |= ((Number)dsn.get(1)).longValue();
+                    cm2 |= ((Number)dsn.get(2)).longValue();
+                  }
                 }
-              }
-            }
-            boolean unitNatCovers = true;
-            for (int k = 0; k < 144; k++) {
-              int kw = k >> 6;
-              long kbit = 1L << (k & 63);
-              if ((((Number)lm.get(kw)).longValue() & kbit) != 0L && natSlotMs[k] < 300000L) {
-                unitNatCovers = false;
-                break;
-              }
-            }
-
-            Map idxTierAcc = new HashMap();
-            Set covSeen = new HashSet();
-            long minMs = 86400000L;
-            long maxMs = 0L;
-            long covMs = 0L;
-
-            if (unitNatCovers) {
-              usedNat = true;
-              for (def item : ns) {
-                List sp = (List)item;
-                long sOff = ((Number)sp.get(0)).longValue();
-                long eOff = ((Number)sp.get(1)).longValue();
-                long spanMs = (eOff - sOff) > 1L ? (eOff - sOff) : 1L;
-                if (sOff < minMs) { minMs = sOff; }
-                if (eOff > maxMs) { maxMs = eOff; }
-                if (covSeen.add(sOff + ':' + eOff)) { covMs += spanMs; }
-                double wSlots = (double)spanMs / 600000.0;
-                String spTier = sp.get(6).toString();
-                List ta = (List)idxTierAcc.get(spTier);
-                if (ta == null) {
-                  ta = [0L, 0L, 0.0, 0.0];
-                  idxTierAcc.put(spTier, ta);
+                int activeSlots = (lastLeg >= firstLeg && firstLeg >= 0) ? (lastLeg - firstLeg + 1) : legSlots;
+                int cSlots = legSlots;
+                if (lastLeg >= firstLeg && firstLeg >= 0) {
+                  cSlots = 0;
+                  for (int s = firstLeg; s <= lastLeg; s++) {
+                    int sw = s >> 6;
+                    long sb = 1L << (s & 63);
+                    long sm = (sw == 0) ? cm0 : ((sw == 1) ? cm1 : cm2);
+                    if ((sm & sb) != 0L) { cSlots++; }
+                  }
                 }
-                ta.set(0, ((Number)ta.get(0)).longValue() + ((Number)sp.get(2)).longValue());
-                ta.set(1, ((Number)ta.get(1)).longValue() + ((Number)sp.get(3)).longValue());
-                ta.set(2, ((Number)ta.get(2)).doubleValue() + ((Number)sp.get(4)).longValue() * wSlots);
-                ta.set(3, ((Number)ta.get(3)).doubleValue() + ((Number)sp.get(5)).longValue() * wSlots);
-                int tf = tierFlags.containsKey(spTier) ? ((Number)tierFlags.get(spTier)).intValue() : 0;
-                tierFlags.put(spTier, tf | 1);
+                int unitNormSlots = cSlots > activeSlots ? cSlots : activeSlots;
+                double normScale = cSlots > 0 ? ((double)unitNormSlots / (double)cSlots) : 1.0;
+                for (def lte : ltMap.entrySet()) {
+                  String ltk = lte.getKey().toString();
+                  List ltv = (List)lte.getValue();
+                  int tSlots = Long.bitCount(((Number)ltv.get(0)).longValue()) + Long.bitCount(((Number)ltv.get(1)).longValue()) + Long.bitCount(((Number)ltv.get(2)).longValue());
+                  long tDocCnt = ((Number)ltv.get(7)).longValue();
+                  double tNormSlots = (double)tSlots * normScale;
+                  List adds = [
+                    ((Number)ltv.get(3)).longValue(),
+                    ((Number)ltv.get(4)).longValue(),
+                    tDocCnt > 0L ? Math.round(((double)((Number)ltv.get(5)).longValue() / (double)tDocCnt) * tNormSlots) : 0L,
+                    tDocCnt > 0L ? Math.round(((double)((Number)ltv.get(6)).longValue() / (double)tDocCnt) * tNormSlots) : 0L
+                  ];
+                  for (int i = 0; i < 4; i++) { sel.set(i, ((Number)sel.get(i)).longValue() + ((Number)adds.get(i)).longValue()); }
+                  List st = (List)selByTier.get(ltk);
+                  if (st == null) { selByTier.put(ltk, new ArrayList(adds)); }
+                  else { for (int i = 0; i < 4; i++) { st.set(i, ((Number)st.get(i)).longValue() + ((Number)adds.get(i)).longValue()); } }
+                  int tf = tierFlags.containsKey(ltk) ? ((Number)tierFlags.get(ltk)).intValue() : 0;
+                  tierFlags.put(ltk, tf | 2);
+                }
               }
             } else {
-              usedLeg = true;
-              minMs = firstLeg * 600000L;
-              maxMs = (lastLeg + 1L) * 600000L;
-              covMs = legSlots * 600000L;
-              double legStoreW = legDocCnt > 0L ? (((double)((Number)lt.get(2)).longValue() / (double)legDocCnt) * (double)legSlots) : 0.0;
-              double legDsetW = legDocCnt > 0L ? (((double)((Number)lt.get(3)).longValue() / (double)legDocCnt) * (double)legSlots) : 0.0;
-              String effLtier = (ltier != 'unknown') ? ltier : ((List)ns.get(0)).get(6).toString();
-              idxTierAcc.put(effLtier, [((Number)lt.get(0)).longValue(), ((Number)lt.get(1)).longValue(), legStoreW, legDsetW]);
-              int ltf = tierFlags.containsKey(effLtier) ? ((Number)tierFlags.get(effLtier)).intValue() : 0;
-              tierFlags.put(effLtier, ltf | 2);
-
-              for (def item : ns) {
-                List sp = (List)item;
-                long sOff = ((Number)sp.get(0)).longValue();
-                long eOff = ((Number)sp.get(1)).longValue();
-                long spanMs = (eOff - sOff) > 1L ? (eOff - sOff) : 1L;
-                int sb = (int)(sOff / 600000L);
-                int eb = (int)((eOff - 1L) / 600000L);
-                long legOvMs = 0L;
-                for (int k = sb; k <= eb; k++) {
-                  if (k >= 0 && k < 144) {
-                    int kw = k >> 6;
-                    long kbit = 1L << (k & 63);
-                    if ((((Number)lm.get(kw)).longValue() & kbit) != 0L) {
-                      long slotStart = k * 600000L;
-                      long slotEnd = (k + 1L) * 600000L;
-                      long ovEnd = eOff < slotEnd ? eOff : slotEnd;
-                      long ovStart = sOff > slotStart ? sOff : slotStart;
-                      long ov = ovEnd - ovStart;
-                      if (ov > 0L) { legOvMs += ov; }
-                    }
-                  }
-                }
-                long uncovMs = spanMs - legOvMs;
-                if (uncovMs > 0L) {
-                  usedNat = true;
-                  if (sOff < minMs) { minMs = sOff; }
-                  if (eOff > maxMs) { maxMs = eOff; }
-                  if (covSeen.add(sOff + ':' + eOff)) { covMs += uncovMs; }
-                  double cFrac = (double)uncovMs / (double)spanMs;
-                  double uSlots = (double)uncovMs / 600000.0;
-                  String spTier = sp.get(6).toString();
-                  List ta = (List)idxTierAcc.get(spTier);
+              Map idxTierAcc = new HashMap();
+              long minMs = 86400000L;
+              long maxMs = 0L;
+              long covMs = 0L;
+              if (hasOwnLeg) {
+                usedLeg = true;
+                minMs = firstLeg * 600000L;
+                maxMs = (lastLeg + 1L) * 600000L;
+                covMs = legSlots * 600000L;
+                for (def lte : ltMap.entrySet()) {
+                  String ltk = lte.getKey().toString();
+                  String effLtier = (ltk == 'unknown' && ltMap.size() == 1 && fallbackNatTier != null) ? fallbackNatTier : ltk;
+                  List ltv = (List)lte.getValue();
+                  int tSlots = Long.bitCount(((Number)ltv.get(0)).longValue()) + Long.bitCount(((Number)ltv.get(1)).longValue()) + Long.bitCount(((Number)ltv.get(2)).longValue());
+                  long tDocCnt = ((Number)ltv.get(7)).longValue();
+                  double legStoreW = tDocCnt > 0L ? (((double)((Number)ltv.get(5)).longValue() / (double)tDocCnt) * (double)tSlots) : 0.0;
+                  double legDsetW = tDocCnt > 0L ? (((double)((Number)ltv.get(6)).longValue() / (double)tDocCnt) * (double)tSlots) : 0.0;
+                  List ta = (List)idxTierAcc.get(effLtier);
                   if (ta == null) {
-                    ta = [0L, 0L, 0.0, 0.0];
-                    idxTierAcc.put(spTier, ta);
+                    idxTierAcc.put(effLtier, [((Number)ltv.get(3)).longValue(), ((Number)ltv.get(4)).longValue(), legStoreW, legDsetW]);
+                  } else {
+                    ta.set(0, ((Number)ta.get(0)).longValue() + ((Number)ltv.get(3)).longValue());
+                    ta.set(1, ((Number)ta.get(1)).longValue() + ((Number)ltv.get(4)).longValue());
+                    ta.set(2, ((Number)ta.get(2)).doubleValue() + legStoreW);
+                    ta.set(3, ((Number)ta.get(3)).doubleValue() + legDsetW);
                   }
-                  ta.set(0, ((Number)ta.get(0)).longValue() + Math.round(((Number)sp.get(2)).longValue() * cFrac));
-                  ta.set(1, ((Number)ta.get(1)).longValue() + Math.round(((Number)sp.get(3)).longValue() * cFrac));
-                  ta.set(2, ((Number)ta.get(2)).doubleValue() + ((Number)sp.get(4)).longValue() * uSlots);
-                  ta.set(3, ((Number)ta.get(3)).doubleValue() + ((Number)sp.get(5)).longValue() * uSlots);
-                  int ntf = tierFlags.containsKey(spTier) ? ((Number)tierFlags.get(spTier)).intValue() : 0;
-                  tierFlags.put(spTier, ntf | 1);
+                  int ltf = tierFlags.containsKey(effLtier) ? ((Number)tierFlags.get(effLtier)).intValue() : 0;
+                  tierFlags.put(effLtier, ltf | 2);
                 }
               }
-            }
 
-            long activeMs = maxMs > minMs ? (maxMs - minMs) : covMs;
-            double gapScale = (covMs > 0L && activeMs > covMs && (activeMs - covMs) >= 300000L)
-              ? ((double)activeMs / (double)covMs)
-              : 1.0;
-            for (def te : idxTierAcc.entrySet()) {
-              String tk = te.getKey().toString();
-              List ta = (List)te.getValue();
-              long add0 = ((Number)ta.get(0)).longValue();
-              long add1 = ((Number)ta.get(1)).longValue();
-              long add2 = Math.round(((Number)ta.get(2)).doubleValue() * gapScale);
-              long add3 = Math.round(((Number)ta.get(3)).doubleValue() * gapScale);
-              sel.set(0, ((Number)sel.get(0)).longValue() + add0);
-              sel.set(1, ((Number)sel.get(1)).longValue() + add1);
-              sel.set(2, ((Number)sel.get(2)).longValue() + add2);
-              sel.set(3, ((Number)sel.get(3)).longValue() + add3);
-              List st = (List)selByTier.get(tk);
-              if (st == null) { selByTier.put(tk, [add0, add1, add2, add3]); }
-              else {
-                st.set(0, ((Number)st.get(0)).longValue() + add0);
-                st.set(1, ((Number)st.get(1)).longValue() + add1);
-                st.set(2, ((Number)st.get(2)).longValue() + add2);
-                st.set(3, ((Number)st.get(3)).longValue() + add3);
+              long natAll0 = 0L;
+              long natAll1 = 0L;
+              long natAll2 = 0L;
+              for (def nte : ntMap.entrySet()) {
+                String ntk = nte.getKey().toString();
+                List ntv = (List)nte.getValue();
+                long tm0 = ((Number)ntv.get(0)).longValue();
+                long tm1 = ((Number)ntv.get(1)).longValue();
+                long tm2 = ((Number)ntv.get(2)).longValue();
+                natAll0 |= tm0;
+                natAll1 |= tm1;
+                natAll2 |= tm2;
+                int totSlots = Long.bitCount(tm0) + Long.bitCount(tm1) + Long.bitCount(tm2);
+                long u0 = tm0 & ~effLm0;
+                long u1 = tm1 & ~effLm1;
+                long u2 = tm2 & ~effLm2;
+                int uSlots = Long.bitCount(u0) + Long.bitCount(u1) + Long.bitCount(u2);
+                if (uSlots > 0 && totSlots > 0) {
+                  usedNat = true;
+                  double uFrac = (double)uSlots / (double)totSlots;
+                  List ta = (List)idxTierAcc.get(ntk);
+                  if (ta == null) {
+                    ta = [0L, 0L, 0.0, 0.0];
+                    idxTierAcc.put(ntk, ta);
+                  }
+                  ta.set(0, ((Number)ta.get(0)).longValue() + Math.round(((Number)ntv.get(3)).longValue() * uFrac));
+                  ta.set(1, ((Number)ta.get(1)).longValue() + Math.round(((Number)ntv.get(4)).longValue() * uFrac));
+                  ta.set(2, ((Number)ta.get(2)).doubleValue() + ((Number)ntv.get(5)).doubleValue() * uFrac);
+                  ta.set(3, ((Number)ta.get(3)).doubleValue() + ((Number)ntv.get(6)).doubleValue() * uFrac);
+                  int ntf = tierFlags.containsKey(ntk) ? ((Number)tierFlags.get(ntk)).intValue() : 0;
+                  tierFlags.put(ntk, ntf | 1);
+                }
+              }
+              long own0 = m0 | natAll0;
+              long own1 = m1 | natAll1;
+              long own2 = m2 | natAll2;
+              if ((own0 | own1 | own2) != 0L) {
+                int ownFirst = (own0 != 0L) ? Long.numberOfTrailingZeros(own0)
+                  : ((own1 != 0L) ? (64 + Long.numberOfTrailingZeros(own1)) : (128 + Long.numberOfTrailingZeros(own2)));
+                int ownLast = (own2 != 0L) ? (191 - Long.numberOfLeadingZeros(own2))
+                  : ((own1 != 0L) ? (127 - Long.numberOfLeadingZeros(own1)) : (63 - Long.numberOfLeadingZeros(own0)));
+                long covMask0 = own0 | dlm0;
+                long covMask1 = own1 | dlm1;
+                long covMask2 = own2 | dlm2;
+                int covSlots = 0;
+                for (int s = ownFirst; s <= ownLast; s++) {
+                  int sw = s >> 6;
+                  long sb = 1L << (s & 63);
+                  long sm = (sw == 0) ? covMask0 : ((sw == 1) ? covMask1 : covMask2);
+                  if ((sm & sb) != 0L) { covSlots++; }
+                }
+                minMs = ownFirst * 600000L;
+                maxMs = (ownLast + 1L) * 600000L;
+                covMs = covSlots * 600000L;
+              }
+              long activeMs = maxMs > minMs ? (maxMs - minMs) : covMs;
+              if (covMs > activeMs) { covMs = activeMs; }
+              double gapScale = (covMs > 0L && activeMs > covMs && (activeMs - covMs) >= 300000L)
+                ? ((double)activeMs / (double)covMs)
+                : 1.0;
+              for (def te : idxTierAcc.entrySet()) {
+                String tk = te.getKey().toString();
+                List ta = (List)te.getValue();
+                long add0 = ((Number)ta.get(0)).longValue();
+                long add1 = ((Number)ta.get(1)).longValue();
+                long add2 = Math.round(((Number)ta.get(2)).doubleValue() * gapScale);
+                long add3 = Math.round(((Number)ta.get(3)).doubleValue() * gapScale);
+                sel.set(0, ((Number)sel.get(0)).longValue() + add0);
+                sel.set(1, ((Number)sel.get(1)).longValue() + add1);
+                sel.set(2, ((Number)sel.get(2)).longValue() + add2);
+                sel.set(3, ((Number)sel.get(3)).longValue() + add3);
+                List st = (List)selByTier.get(tk);
+                if (st == null) { selByTier.put(tk, [add0, add1, add2, add3]); }
+                else {
+                  st.set(0, ((Number)st.get(0)).longValue() + add0);
+                  st.set(1, ((Number)st.get(1)).longValue() + add1);
+                  st.set(2, ((Number)st.get(2)).longValue() + add2);
+                  st.set(3, ((Number)st.get(3)).longValue() + add3);
+                }
               }
             }
           }
@@ -921,11 +1294,11 @@ pivot:
           res.put('has_native_usage', natCnt > 0L);
           res.put('has_legacy_usage', legCnt > 0L);
           res.put('leg_cnt', legCnt);
-          res.put('leg_cnt_by_tier', legCntByTier);
+          res.put('leg_cnt_by_tier', legCnt > 0L ? effLegCntByTier : legCntByTier);
           res.put('nat_cnt_by_tier', natCntByTier);
           res.put('sel_by_tier', selByTier);
           res.put('raw_nat_by_tier', rawNatByTier);
-          res.put('raw_leg_by_tier', rawLegByTier);
+          res.put('raw_leg_by_tier', legCnt > 0L ? effRawLegByTier : rawLegByTier);
           res.put('sel_src_by_tier', selSrcByTier);
           res.put('selected_sum_indexing_time', sel.get(0));
           res.put('selected_sum_query_time', sel.get(1));

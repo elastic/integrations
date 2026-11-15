@@ -9,118 +9,126 @@ processors:
           ? 'tier_and_datastream'
           : (ctx.tier != null ? 'tier' : (ctx.datastream != null ? 'datastream' : 'deployment'));
 
-        if (ctx.rollup instanceof Map) {
-          Map r = (Map)ctx.rollup;
-          String[] metrics = new String[] { 'sum_indexing_time', 'sum_query_time', 'sum_store_size', 'sum_data_set_store_size' };
-          if (ctx.tier != null && r.sel_by_tier instanceof Map) {
-            String tKey = ctx.tier.toString();
-            boolean hasSelTier = ((Map)r.sel_by_tier).get(tKey) instanceof List;
-            Map natCntMap = (r.nat_cnt_by_tier instanceof Map) ? (Map)r.nat_cnt_by_tier : null;
-            long natTierCnt = (natCntMap != null && natCntMap.get(tKey) instanceof Number)
-              ? ((Number)natCntMap.get(tKey)).longValue()
-              : 0L;
-            Map legCntMap = (r.leg_cnt_by_tier instanceof Map) ? (Map)r.leg_cnt_by_tier : null;
-            long legTierCnt = (legCntMap != null && legCntMap.get(tKey) instanceof Number)
-              ? ((Number)legCntMap.get(tKey)).longValue()
-              : ((r.leg_cnt_by_tier == null && r.leg_cnt instanceof Number) ? ((Number)r.leg_cnt).longValue() : 0L);
-            // Retain empty shadow tier buckets as zero-valued rows so continuous transform
-            // checkpoints overwrite previously materialized tier rows after ILM tier moves.
-            List selT = hasSelTier ? (List)((Map)r.sel_by_tier).get(tKey) : [0L, 0L, 0L, 0L];
-            List natT = (r.raw_nat_by_tier instanceof Map && ((Map)r.raw_nat_by_tier).get(tKey) instanceof List)
-              ? (List)((Map)r.raw_nat_by_tier).get(tKey)
-              : [0L, 0L, 0L, 0L];
-            List legT = (r.raw_leg_by_tier instanceof Map && ((Map)r.raw_leg_by_tier).get(tKey) instanceof List)
-              ? (List)((Map)r.raw_leg_by_tier).get(tKey)
-              : null;
-            String tierSrc = (r.sel_src_by_tier instanceof Map && ((Map)r.sel_src_by_tier).get(tKey) != null)
-              ? ((Map)r.sel_src_by_tier).get(tKey).toString()
-              : (r.usage_source != null ? r.usage_source.toString() : 'legacy');
-            ctx.usage_source = tierSrc;
-            for (int i = 0; i < 4; i++) {
-              String m = metrics[i];
-              ctx[pfx + '_' + m] = ((Number)selT.get(i)).longValue();
-              ctx['native_' + m] = ((Number)natT.get(i)).longValue();
-              if (legT != null) {
-                ctx['legacy_' + m] = ((Number)legT.get(i)).longValue();
-              } else if (r.raw_leg_by_tier instanceof Map) {
-                ctx['legacy_' + m] = 0L;
-              } else {
-                def lv = r.get('legacy_' + m);
-                ctx['legacy_' + m] = (lv instanceof Number) ? ((Number)lv).longValue() : 0L;
+        try {
+          if (ctx.rollup instanceof Map) {
+            Map r = (Map)ctx.rollup;
+            String[] metrics = new String[] { 'sum_indexing_time', 'sum_query_time', 'sum_store_size', 'sum_data_set_store_size' };
+            if (ctx.tier != null && r.sel_by_tier instanceof Map) {
+              String tKey = ctx.tier.toString();
+              boolean hasSelTier = ((Map)r.sel_by_tier).get(tKey) instanceof List;
+              Map natCntMap = (r.nat_cnt_by_tier instanceof Map) ? (Map)r.nat_cnt_by_tier : null;
+              long natTierCnt = (natCntMap != null && natCntMap.get(tKey) instanceof Number)
+                ? ((Number)natCntMap.get(tKey)).longValue()
+                : 0L;
+              Map legCntMap = (r.leg_cnt_by_tier instanceof Map) ? (Map)r.leg_cnt_by_tier : null;
+              long legTierCnt = (legCntMap != null && legCntMap.get(tKey) instanceof Number)
+                ? ((Number)legCntMap.get(tKey)).longValue()
+                : ((r.leg_cnt_by_tier == null && r.leg_cnt instanceof Number) ? ((Number)r.leg_cnt).longValue() : 0L);
+              // Retain empty shadow tier buckets as zero-valued rows so continuous transform
+              // checkpoints overwrite previously materialized tier rows after ILM tier moves.
+              List selT = hasSelTier ? (List)((Map)r.sel_by_tier).get(tKey) : [0L, 0L, 0L, 0L];
+              List natT = (r.raw_nat_by_tier instanceof Map && ((Map)r.raw_nat_by_tier).get(tKey) instanceof List)
+                ? (List)((Map)r.raw_nat_by_tier).get(tKey)
+                : [0L, 0L, 0L, 0L];
+              List legT = (r.raw_leg_by_tier instanceof Map && ((Map)r.raw_leg_by_tier).get(tKey) instanceof List)
+                ? (List)((Map)r.raw_leg_by_tier).get(tKey)
+                : null;
+              String tierSrc = (r.sel_src_by_tier instanceof Map && ((Map)r.sel_src_by_tier).get(tKey) != null)
+                ? ((Map)r.sel_src_by_tier).get(tKey).toString()
+                : (r.usage_source != null ? r.usage_source.toString() : 'legacy');
+              ctx.usage_source = tierSrc;
+              for (int i = 0; i < 4; i++) {
+                String m = metrics[i];
+                ctx[pfx + '_' + m] = (selT.size() > i && selT.get(i) instanceof Number) ? ((Number)selT.get(i)).longValue() : 0L;
+                ctx['native_' + m] = (natT.size() > i && natT.get(i) instanceof Number) ? ((Number)natT.get(i)).longValue() : 0L;
+                if (legT != null) {
+                  ctx['legacy_' + m] = (legT.size() > i && legT.get(i) instanceof Number) ? ((Number)legT.get(i)).longValue() : 0L;
+                } else if (r.raw_leg_by_tier instanceof Map) {
+                  ctx['legacy_' + m] = 0L;
+                } else {
+                  def lv = r.get('legacy_' + m);
+                  ctx['legacy_' + m] = (lv instanceof Number) ? ((Number)lv).longValue() : 0L;
+                }
               }
-            }
-            ctx.has_native_usage = (natTierCnt > 0L);
-            ctx.has_legacy_usage = (legTierCnt > 0L);
-          } else {
-            ctx.usage_source = r.usage_source != null ? r.usage_source.toString() : 'legacy';
-            for (int i = 0; i < 4; i++) {
-              String m = metrics[i];
-              def sv = r.get('selected_' + m);
-              ctx[pfx + '_' + m] = (sv instanceof Number) ? ((Number)sv).longValue() : 0L;
+              ctx.has_native_usage = (natTierCnt > 0L);
+              ctx.has_legacy_usage = (legTierCnt > 0L);
+            } else {
+              ctx.usage_source = r.usage_source != null ? r.usage_source.toString() : 'legacy';
+              for (int i = 0; i < 4; i++) {
+                String m = metrics[i];
+                def sv = r.get('selected_' + m);
+                ctx[pfx + '_' + m] = (sv instanceof Number) ? ((Number)sv).longValue() : 0L;
+                if (pfx != 'deployment') {
+                  def nv = r.get('native_' + m);
+                  def lv = r.get('legacy_' + m);
+                  ctx['native_' + m] = (nv instanceof Number) ? ((Number)nv).longValue() : 0L;
+                  ctx['legacy_' + m] = (lv instanceof Number) ? ((Number)lv).longValue() : 0L;
+                }
+              }
               if (pfx != 'deployment') {
-                def nv = r.get('native_' + m);
-                def lv = r.get('legacy_' + m);
-                ctx['native_' + m] = (nv instanceof Number) ? ((Number)nv).longValue() : 0L;
-                ctx['legacy_' + m] = (lv instanceof Number) ? ((Number)lv).longValue() : 0L;
+                ctx.has_native_usage = Boolean.TRUE.equals(r.has_native_usage)
+                  || (r.has_native_usage != null && r.has_native_usage.toString().equalsIgnoreCase('true'));
+                ctx.has_legacy_usage = Boolean.TRUE.equals(r.has_legacy_usage)
+                  || (r.has_legacy_usage != null && r.has_legacy_usage.toString().equalsIgnoreCase('true'));
               }
             }
-            if (pfx != 'deployment') {
-              ctx.has_native_usage = Boolean.TRUE.equals(r.has_native_usage)
-                || (r.has_native_usage != null && r.has_native_usage.toString().equalsIgnoreCase('true'));
-              ctx.has_legacy_usage = Boolean.TRUE.equals(r.has_legacy_usage)
-                || (r.has_legacy_usage != null && r.has_legacy_usage.toString().equalsIgnoreCase('true'));
+          } else {
+            // Fallback for pre-0.6.0 transform documents emitting ctx.native / ctx.legacy / ctx.coverage.
+            Map nat = ctx.native instanceof Map ? (Map)ctx.native : null;
+            Map leg = ctx.legacy instanceof Map ? (Map)ctx.legacy : null;
+            long natCnt = (nat != null && nat.doc_cnt instanceof Number) ? ((Number)nat.doc_cnt).longValue() : 0L;
+            long legCnt = (leg != null && leg.doc_cnt instanceof Number) ? ((Number)leg.doc_cnt).longValue() : 0L;
+            boolean nativeCoversAll = (ctx.coverage instanceof Map && ctx.coverage.native_covers_all != null)
+              && ctx.coverage.native_covers_all.toString().equalsIgnoreCase('true');
+
+            for (String cpfx : ['tier', 'datastream', 'tier_and_datastream']) {
+              if ((nat != null && nat.containsKey(cpfx + '_sum_store_size')) || (leg != null && leg.containsKey(cpfx + '_sum_store_size'))) {
+                ctx.has_native_usage = natCnt > 0L;
+                ctx.has_legacy_usage = legCnt > 0L;
+                for (String m : ['sum_indexing_time', 'sum_query_time', 'sum_store_size', 'sum_data_set_store_size']) {
+                  def nv = (nat != null) ? nat.get(cpfx + '_' + m) : null;
+                  def lv = (leg != null) ? leg.get(cpfx + '_' + m) : null;
+                  ctx['native_' + m] = (nv instanceof Number) ? ((Number)nv).longValue() : 0L;
+                  ctx['legacy_' + m] = (lv instanceof Number) ? ((Number)lv).longValue() : 0L;
+                }
+              }
+            }
+
+            boolean chooseNative = (natCnt > 0L) && (legCnt <= 0L || nativeCoversAll);
+
+            Map chosen = ctx;
+            if (chooseNative && nat != null) {
+              chosen = nat;
+              ctx.usage_source = 'native';
+            } else if (leg != null && legCnt > 0L) {
+              chosen = leg;
+              ctx.usage_source = 'legacy';
+            } else if (nat != null && natCnt > 0L) {
+              chosen = nat;
+              ctx.usage_source = 'native';
+            } else if (ctx.usage_source == null) {
+              ctx.usage_source = 'legacy';
+            }
+            if (chosen != ctx) {
+              for (def entry : chosen.entrySet()) {
+                String k = entry.getKey().toString();
+                if (k != 'doc_cnt' && k != 'has_delta' && k != 'min_ts' && k != 'max_ts') {
+                  ctx[k] = entry.getValue();
+                }
+              }
             }
           }
+        } catch (Exception e) {
           ctx.remove('rollup');
-        } else {
-          // Fallback for pre-0.6.0 transform documents emitting ctx.native / ctx.legacy / ctx.coverage.
-          Map nat = ctx.native instanceof Map ? (Map)ctx.native : null;
-          Map leg = ctx.legacy instanceof Map ? (Map)ctx.legacy : null;
-          long natCnt = (nat != null && nat.doc_cnt instanceof Number) ? ((Number)nat.doc_cnt).longValue() : 0L;
-          long legCnt = (leg != null && leg.doc_cnt instanceof Number) ? ((Number)leg.doc_cnt).longValue() : 0L;
-          boolean nativeCoversAll = (ctx.coverage instanceof Map && ctx.coverage.native_covers_all != null)
-            && ctx.coverage.native_covers_all.toString().equalsIgnoreCase('true');
-
-          for (String cpfx : ['tier', 'datastream', 'tier_and_datastream']) {
-            if ((nat != null && nat.containsKey(cpfx + '_sum_store_size')) || (leg != null && leg.containsKey(cpfx + '_sum_store_size'))) {
-              ctx.has_native_usage = natCnt > 0L;
-              ctx.has_legacy_usage = legCnt > 0L;
-              for (String m : ['sum_indexing_time', 'sum_query_time', 'sum_store_size', 'sum_data_set_store_size']) {
-                def nv = (nat != null) ? nat.get(cpfx + '_' + m) : null;
-                def lv = (leg != null) ? leg.get(cpfx + '_' + m) : null;
-                ctx['native_' + m] = (nv instanceof Number) ? ((Number)nv).longValue() : 0L;
-                ctx['legacy_' + m] = (lv instanceof Number) ? ((Number)lv).longValue() : 0L;
-              }
-            }
-          }
-
-          boolean chooseNative = (natCnt > 0L) && (legCnt <= 0L || nativeCoversAll);
-
-          Map chosen = ctx;
-          if (chooseNative && nat != null) {
-            chosen = nat;
-            ctx.usage_source = 'native';
-          } else if (leg != null && legCnt > 0L) {
-            chosen = leg;
-            ctx.usage_source = 'legacy';
-          } else if (nat != null && natCnt > 0L) {
-            chosen = nat;
-            ctx.usage_source = 'native';
-          } else if (ctx.usage_source == null) {
-            ctx.usage_source = 'legacy';
-          }
-          if (chosen != ctx) {
-            for (def entry : chosen.entrySet()) {
-              String k = entry.getKey().toString();
-              if (k != 'doc_cnt' && k != 'has_delta' && k != 'min_ts' && k != 'max_ts') {
-                ctx[k] = entry.getValue();
-              }
-            }
-          }
           ctx.remove('native');
           ctx.remove('legacy');
           ctx.remove('coverage');
+          throw e;
         }
+        ctx.remove('rollup');
+        ctx.remove('native');
+        ctx.remove('legacy');
+        ctx.remove('coverage');
 
         if (ctx.cluster_name != null) {
           ctx.deployment_id = ctx.cluster_name;
@@ -129,25 +137,36 @@ processors:
         }
         if (ctx['@timestamp'] != null && ctx.deployment_id != null) {
           def rawTs = ctx['@timestamp'];
-          Instant tsInst = (rawTs instanceof Number)
-            ? Instant.ofEpochMilli(((Number)rawTs).longValue())
-            : ZonedDateTime.parse(rawTs.toString()).toInstant();
-          String date = tsInst.atZone(ZoneOffset.UTC).toLocalDate().toString();
-          ctx.composite_key = date + '_' + ctx.deployment_id;
-
-          if (ctx.tier != null) {
-            ctx.composite_tier_key = ctx.composite_key + '_' + ctx.tier.replace('/', '_');
+          String date = null;
+          if (rawTs instanceof Number) {
+            date = Instant.ofEpochMilli(((Number)rawTs).longValue()).atZone(ZoneOffset.UTC).toLocalDate().toString();
+          } else {
+            String tsStr = rawTs.toString().trim();
+            try {
+              date = ZonedDateTime.parse(tsStr).toInstant().atZone(ZoneOffset.UTC).toLocalDate().toString();
+            } catch (Exception e) {
+              try {
+                date = LocalDate.parse(tsStr).toString();
+              } catch (Exception e2) {}
+            }
           }
+          if (date != null) {
+            ctx.composite_key = date + '_' + ctx.deployment_id;
 
-          if (ctx.datastream != null) {
-            ctx.composite_datastream_key = ctx.composite_key + '_' + ctx.datastream;
+            if (ctx.tier != null) {
+              ctx.composite_tier_key = ctx.composite_key + '_' + ctx.tier.toString().replace('/', '_');
+            }
+
+            if (ctx.datastream != null) {
+              ctx.composite_datastream_key = ctx.composite_key + '_' + ctx.datastream;
+            }
           }
         }
 
         // Parse Fleet data stream naming: <type>-<dataset>-<namespace>
         // first segment -> ds_type; last segment -> ds_namespace; else other
-        if (ctx.datastream != null && ctx.datastream != '') {
-          def parts = ctx.datastream.splitOnToken('-');
+        if (ctx.datastream != null && ctx.datastream.toString() != '') {
+          def parts = ctx.datastream.toString().splitOnToken('-');
           if (parts.length >= 2) {
             ctx.ds_type = parts[0];
             ctx.ds_namespace = parts[parts.length - 1];

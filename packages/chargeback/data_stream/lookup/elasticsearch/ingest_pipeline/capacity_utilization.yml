@@ -9,47 +9,67 @@ processors:
       ignore_failure: true
       lang: painless
       source: |
-        if (ctx.utilization instanceof Map) {
-          Map u = (Map)ctx.utilization;
-          if (u.containsKey('heap_used_pct_p95') && u.heap_used_pct_p95 != null) {
-            ctx.heap_used_pct_p95 = u.heap_used_pct_p95;
+        try {
+          if (ctx.utilization instanceof Map) {
+            Map u = (Map)ctx.utilization;
+            if (u.containsKey('heap_used_pct_p95') && u.heap_used_pct_p95 != null) {
+              ctx.heap_used_pct_p95 = u.heap_used_pct_p95;
+            }
+            if (u.containsKey('disk_used_pct_p95') && u.disk_used_pct_p95 != null) {
+              ctx.disk_used_pct_p95 = u.disk_used_pct_p95;
+            }
+          } else {
+            long natCnt = (ctx.native instanceof Map && ctx.native.doc_cnt instanceof Number)
+              ? ((Number)ctx.native.doc_cnt).longValue()
+              : 0L;
+            long legCnt = (ctx.legacy instanceof Map && ctx.legacy.doc_cnt instanceof Number)
+              ? ((Number)ctx.legacy.doc_cnt).longValue()
+              : 0L;
+            boolean nativeCovers = (ctx.coverage instanceof Map && ctx.coverage.native_covers_day != null)
+              && ctx.coverage.native_covers_day.toString().equalsIgnoreCase('true');
+            Map chosen = ctx;
+            if (natCnt > 0L && (legCnt <= 0L || nativeCovers) && ctx.native instanceof Map) {
+              chosen = (Map)ctx.native;
+            } else if (legCnt > 0L && ctx.legacy instanceof Map) {
+              chosen = (Map)ctx.legacy;
+            } else if (natCnt > 0L && ctx.native instanceof Map) {
+              chosen = (Map)ctx.native;
+            }
+            if (chosen != ctx) {
+              if (chosen.containsKey('heap_used_pct_p95')) { ctx.heap_used_pct_p95 = chosen.heap_used_pct_p95; }
+              if (chosen.containsKey('disk_used_pct_p95')) { ctx.disk_used_pct_p95 = chosen.disk_used_pct_p95; }
+            }
           }
-          if (u.containsKey('disk_used_pct_p95') && u.disk_used_pct_p95 != null) {
-            ctx.disk_used_pct_p95 = u.disk_used_pct_p95;
-          }
+        } catch (Exception e) {
           ctx.remove('utilization');
-        } else {
-          long natCnt = (ctx.native instanceof Map && ctx.native.doc_cnt instanceof Number)
-            ? ((Number)ctx.native.doc_cnt).longValue()
-            : 0L;
-          long legCnt = (ctx.legacy instanceof Map && ctx.legacy.doc_cnt instanceof Number)
-            ? ((Number)ctx.legacy.doc_cnt).longValue()
-            : 0L;
-          boolean nativeCovers = (ctx.coverage instanceof Map && ctx.coverage.native_covers_day != null)
-            && ctx.coverage.native_covers_day.toString().equalsIgnoreCase('true');
-          Map chosen = ctx;
-          if (natCnt > 0L && (legCnt <= 0L || nativeCovers) && ctx.native instanceof Map) {
-            chosen = (Map)ctx.native;
-          } else if (legCnt > 0L && ctx.legacy instanceof Map) {
-            chosen = (Map)ctx.legacy;
-          } else if (natCnt > 0L && ctx.native instanceof Map) {
-            chosen = (Map)ctx.native;
-          }
-          if (chosen != ctx) {
-            if (chosen.containsKey('heap_used_pct_p95')) { ctx.heap_used_pct_p95 = chosen.heap_used_pct_p95; }
-            if (chosen.containsKey('disk_used_pct_p95')) { ctx.disk_used_pct_p95 = chosen.disk_used_pct_p95; }
-          }
+          ctx.remove('native');
+          ctx.remove('legacy');
+          ctx.remove('coverage');
+          throw e;
         }
+        ctx.remove('utilization');
         ctx.remove('native');
         ctx.remove('legacy');
         ctx.remove('coverage');
 
         if (ctx['@timestamp'] != null && ctx.deployment_id != null) {
           def rawTs = ctx['@timestamp'];
-          String dateStr = (rawTs instanceof Number)
-            ? Instant.ofEpochMilli(((Number)rawTs).longValue()).atZone(ZoneOffset.UTC).toLocalDate().toString()
-            : ZonedDateTime.parse(rawTs.toString()).toLocalDate().toString();
-          ctx.composite_key = dateStr + '_' + ctx.deployment_id;
+          String dateStr = null;
+          if (rawTs instanceof Number) {
+            dateStr = Instant.ofEpochMilli(((Number)rawTs).longValue()).atZone(ZoneOffset.UTC).toLocalDate().toString();
+          } else {
+            String tsStr = rawTs.toString().trim();
+            try {
+              dateStr = ZonedDateTime.parse(tsStr).toInstant().atZone(ZoneOffset.UTC).toLocalDate().toString();
+            } catch (Exception e) {
+              try {
+                dateStr = LocalDate.parse(tsStr).toString();
+              } catch (Exception e2) {}
+            }
+          }
+          if (dateStr != null) {
+            ctx.composite_key = dateStr + '_' + ctx.deployment_id;
+          }
         }
         if (ctx.heap_used_pct_p95 != null) {
           def heap = ctx.heap_used_pct_p95;

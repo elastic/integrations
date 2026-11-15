@@ -122,25 +122,27 @@ source:
               return;
             }
           } catch (Exception e) {}
-          for (String k : ['ingested', 'created']) {
-            def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get(k) : null;
-            if (rawVal == null && params._source != null) {
-              rawVal = params._source.get('event.' + k);
-            }
-            if (rawVal != null) {
-              if (rawVal instanceof Number) {
-                emit(((Number)rawVal).longValue());
-                return;
+          try {
+            for (String k : ['ingested', 'created']) {
+              def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get(k) : null;
+              if (rawVal == null && params._source != null) {
+                rawVal = params._source.get('event.' + k);
               }
-              String s = rawVal.toString().trim();
-              if (s != '') {
-                try {
-                  emit(ZonedDateTime.parse(s).toInstant().toEpochMilli());
+              if (rawVal != null) {
+                if (rawVal instanceof Number) {
+                  emit(((Number)rawVal).longValue());
                   return;
-                } catch (Exception e) {}
+                }
+                String s = rawVal.toString().trim();
+                if (s != '') {
+                  try {
+                    emit(ZonedDateTime.parse(s).toInstant().toEpochMilli());
+                    return;
+                  } catch (Exception e) {}
+                }
               }
             }
-          }
+          } catch (Exception e) {}
           if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
             emit(doc['@timestamp'].value.toInstant().toEpochMilli());
           }
@@ -148,22 +150,43 @@ source:
       type: keyword
       script:
         source: |
-          if (params._source?.ess?.billing?.deployment_tags != null) {
-            def tags = params._source.ess.billing.deployment_tags;
-            if (tags instanceof List) {
-              for (tag in tags) {
-                if (tag.startsWith('chargeback_group:')) {
-                  emit(tag.substring('chargeback_group:'.length()));
+          for (String tf : ['ess.billing.deployment_tags', 'ess.billing.deployment_tags.keyword']) {
+            try {
+              if (doc.containsKey(tf) && !doc[tf].empty) {
+                for (def tv : doc[tf]) {
+                  if (tv != null) {
+                    String s = tv.toString();
+                    if (s.startsWith('chargeback_group:')) {
+                      emit(s.substring('chargeback_group:'.length()));
+                      return;
+                    }
+                  }
+                }
+              }
+            } catch (Exception e) {}
+          }
+          try {
+            if (params._source?.ess?.billing?.deployment_tags != null) {
+              def tags = params._source.ess.billing.deployment_tags;
+              if (tags instanceof List) {
+                for (def tag : tags) {
+                  if (tag != null) {
+                    String s = tag.toString();
+                    if (s.startsWith('chargeback_group:')) {
+                      emit(s.substring('chargeback_group:'.length()));
+                      return;
+                    }
+                  }
+                }
+              } else {
+                String s = tags.toString();
+                if (s.startsWith('chargeback_group:')) {
+                  emit(s.substring('chargeback_group:'.length()));
                   return;
                 }
               }
-            } else if (tags instanceof String) {
-              if (tags.startsWith('chargeback_group:')) {
-                emit(tags.substring('chargeback_group:'.length()));
-                return;
-              }
             }
-          }
+          } catch (Exception e) {}
           emit('');
 dest:
   index: chargeback_lookup.dest_billing_realized_pool-1
@@ -265,17 +288,58 @@ pivot:
 
               String nodeStr = '';
               try {
-                def nk = params._source?.elasticsearch?.node?.id;
-                if (nk == null || nk.toString() == '') {
-                  String dtCheck = params._source?.ess?.billing?.deployment_type != null ? params._source.ess.billing.deployment_type.toString() : '';
-                  if ('onprem_node'.equals(sku) || 'onprem'.equals(dtCheck) || 'ece'.equals(dtCheck) || 'eck'.equals(dtCheck)) {
-                    nk = params._source?.host?.name;
+                for (String nf : ['elasticsearch.node.id', 'elasticsearch.node.id.keyword']) {
+                  if (doc.containsKey(nf) && !doc[nf].empty) {
+                    nodeStr = doc[nf].value.toString();
+                    if (nodeStr != '') { break; }
                   }
                 }
-                if (nk != null) { nodeStr = nk.toString(); }
+                if (nodeStr == '') {
+                  def nk = params._source?.elasticsearch?.node?.id;
+                  if (nk != null && nk.toString() != '') {
+                    nodeStr = nk.toString();
+                  }
+                }
+                if (nodeStr == '') {
+                  String dtCheck = '';
+                  if (doc.containsKey('ess.billing.deployment_type') && !doc['ess.billing.deployment_type'].empty) {
+                    dtCheck = doc['ess.billing.deployment_type'].value.toString();
+                  } else if (params._source?.ess?.billing?.deployment_type != null) {
+                    dtCheck = params._source.ess.billing.deployment_type.toString();
+                  }
+                  if ('onprem_node'.equals(sku) || 'onprem'.equals(dtCheck) || 'ece'.equals(dtCheck) || 'eck'.equals(dtCheck)) {
+                    for (String hf : ['host.name', 'host.name.keyword']) {
+                      if (doc.containsKey(hf) && !doc[hf].empty) {
+                        nodeStr = doc[hf].value.toString();
+                        if (nodeStr != '') { break; }
+                      }
+                    }
+                    if (nodeStr == '' && params._source?.host?.name != null) {
+                      nodeStr = params._source.host.name.toString();
+                    }
+                  }
+                }
               } catch (Exception e) {}
 
-              String dedupKey = orgId + '|' + depId + '|' + fromKey + '|' + toKey + '|' + sku + (nodeStr != '' ? '|' + nodeStr : '');
+              String bType = '';
+              try {
+                if (doc.containsKey('ess.billing.type') && !doc['ess.billing.type'].empty) {
+                  bType = doc['ess.billing.type'].value.toString();
+                } else if (params._source?.ess?.billing?.type != null) {
+                  bType = params._source.ess.billing.type.toString();
+                }
+              } catch (Exception e) {}
+
+              String bKind = '';
+              try {
+                if (doc.containsKey('ess.billing.kind') && !doc['ess.billing.kind'].empty) {
+                  bKind = doc['ess.billing.kind'].value.toString();
+                } else if (params._source?.ess?.billing?.kind != null) {
+                  bKind = params._source.ess.billing.kind.toString();
+                }
+              } catch (Exception e) {}
+
+              String dedupKey = orgId + '|' + depId + '|' + fromKey + '|' + toKey + '|' + sku + '|' + bType + '|' + bKind + (nodeStr != '' ? '|' + nodeStr : '');
 
               double ecu = 0.0;
               try {
@@ -500,17 +564,58 @@ pivot:
 
               String nodeStr = '';
               try {
-                def nk = params._source?.elasticsearch?.node?.id;
-                if (nk == null || nk.toString() == '') {
-                  String dtCheck = params._source?.ess?.billing?.deployment_type != null ? params._source.ess.billing.deployment_type.toString() : '';
-                  if ('onprem_node'.equals(sku) || 'onprem'.equals(dtCheck) || 'ece'.equals(dtCheck) || 'eck'.equals(dtCheck)) {
-                    nk = params._source?.host?.name;
+                for (String nf : ['elasticsearch.node.id', 'elasticsearch.node.id.keyword']) {
+                  if (doc.containsKey(nf) && !doc[nf].empty) {
+                    nodeStr = doc[nf].value.toString();
+                    if (nodeStr != '') { break; }
                   }
                 }
-                if (nk != null) { nodeStr = nk.toString(); }
+                if (nodeStr == '') {
+                  def nk = params._source?.elasticsearch?.node?.id;
+                  if (nk != null && nk.toString() != '') {
+                    nodeStr = nk.toString();
+                  }
+                }
+                if (nodeStr == '') {
+                  String dtCheck = '';
+                  if (doc.containsKey('ess.billing.deployment_type') && !doc['ess.billing.deployment_type'].empty) {
+                    dtCheck = doc['ess.billing.deployment_type'].value.toString();
+                  } else if (params._source?.ess?.billing?.deployment_type != null) {
+                    dtCheck = params._source.ess.billing.deployment_type.toString();
+                  }
+                  if ('onprem_node'.equals(sku) || 'onprem'.equals(dtCheck) || 'ece'.equals(dtCheck) || 'eck'.equals(dtCheck)) {
+                    for (String hf : ['host.name', 'host.name.keyword']) {
+                      if (doc.containsKey(hf) && !doc[hf].empty) {
+                        nodeStr = doc[hf].value.toString();
+                        if (nodeStr != '') { break; }
+                      }
+                    }
+                    if (nodeStr == '' && params._source?.host?.name != null) {
+                      nodeStr = params._source.host.name.toString();
+                    }
+                  }
+                }
               } catch (Exception e) {}
 
-              String dedupKey = orgId + '|' + depId + '|' + fromKey + '|' + toKey + '|' + sku + (nodeStr != '' ? '|' + nodeStr : '');
+              String bType = '';
+              try {
+                if (doc.containsKey('ess.billing.type') && !doc['ess.billing.type'].empty) {
+                  bType = doc['ess.billing.type'].value.toString();
+                } else if (params._source?.ess?.billing?.type != null) {
+                  bType = params._source.ess.billing.type.toString();
+                }
+              } catch (Exception e) {}
+
+              String bKind = '';
+              try {
+                if (doc.containsKey('ess.billing.kind') && !doc['ess.billing.kind'].empty) {
+                  bKind = doc['ess.billing.kind'].value.toString();
+                } else if (params._source?.ess?.billing?.kind != null) {
+                  bKind = params._source.ess.billing.kind.toString();
+                }
+              } catch (Exception e) {}
+
+              String dedupKey = orgId + '|' + depId + '|' + fromKey + '|' + toKey + '|' + sku + '|' + bType + '|' + bKind + (nodeStr != '' ? '|' + nodeStr : '');
 
               double ecu = 0.0;
               try {

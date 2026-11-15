@@ -3,15 +3,14 @@ description: "Ingest pipeline for Chargeback self-collected index and tier usage
 processors:
   - drop:
       if: "ctx.elasticsearch?.index?.name == null && ctx.doc_type != 'config_snapshot' && ctx.error?.message == null"
+  - set:
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+      tag: set_event_ingested
   - terminate:
       tag: data_collection_error
       if: ctx.error?.message != null && ctx.elasticsearch?.index?.name == null && ctx.doc_type != 'config_snapshot'
       description: Terminate early on collection error documents.
-  - set:
-      field: event.ingested
-      value: "{{{_ingest.timestamp}}}"
-      if: ctx.event?.ingested == null
-      tag: set_event_ingested
   - terminate:
       tag: config_snapshot_complete
       if: "ctx.doc_type == 'config_snapshot'"
@@ -46,14 +45,33 @@ processors:
           if (sm.matches()) { stripped = sm.group(1); }
           if (stripped.equals(prev)) { break; }
         }
+        String cbBase = stripped;
+        int cbDash = cbBase.lastIndexOf('-');
+        if (cbDash > 0 && cbDash < cbBase.length() - 1) {
+          boolean cbDigits = true;
+          for (int di = cbDash + 1; di < cbBase.length(); di++) {
+            int dc = (int)cbBase.charAt(di);
+            if (dc < 48 || dc > 57) { cbDigits = false; break; }
+          }
+          if (cbDigits) { cbBase = cbBase.substring(0, cbDash); }
+        }
         boolean isCbLookup = (
           name.startsWith('chargeback_lookup.') ||
           stripped.startsWith('chargeback_lookup.') ||
           name == 'monitoring-indices' ||
           stripped == 'monitoring-indices' ||
+          cbBase == 'monitoring-indices' ||
           name == 'monitoring-indices-chargeback' ||
           stripped == 'monitoring-indices-chargeback' ||
-          /^(?:billing_cluster_cost_lookup|billing_realized_pool_lookup|chargeback_conf_lookup|cluster_capacity_utilization_lookup|cluster_deployment_contribution_lookup|cluster_tier_contribution_lookup|cluster_datastream_contribution_lookup|cluster_tier_and_datastream_contribution_lookup)(?:-\d+)?$/.matcher(stripped).matches()
+          cbBase == 'monitoring-indices-chargeback' ||
+          cbBase == 'billing_cluster_cost_lookup' ||
+          cbBase == 'billing_realized_pool_lookup' ||
+          cbBase == 'chargeback_conf_lookup' ||
+          cbBase == 'cluster_capacity_utilization_lookup' ||
+          cbBase == 'cluster_deployment_contribution_lookup' ||
+          cbBase == 'cluster_tier_contribution_lookup' ||
+          cbBase == 'cluster_datastream_contribution_lookup' ||
+          cbBase == 'cluster_tier_and_datastream_contribution_lookup'
         );
         // Drop internal non-.ds system indices and explicit Chargeback indices (including partial/restored/shrunk copies) to avoid feedback
         if ((name.startsWith('.') && !name.startsWith('.ds-'))

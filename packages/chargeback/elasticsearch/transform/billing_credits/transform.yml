@@ -212,7 +212,7 @@ pivot:
                   latestNatOwner = owner;
                 }
               } else {
-                legDocs.add([ts, ingTs, qty, bal, act, owner]);
+                legDocs.add([ts, ingTs, qty, bal, act, owner, lineId]);
                 if (ts > maxLegTs
                     || (ts == maxLegTs && (ingTs > maxLegIngTs
                         || (ingTs == maxLegIngTs && owner.compareTo(latestLegOwner) > 0)))) {
@@ -263,11 +263,7 @@ pivot:
             }
           }
 
-          boolean hasLeg = false;
-          long bestLegIngTs = -1L;
-          double legQty = 0.0;
-          double legBal = 0.0;
-          boolean legAct = false;
+          Map latestLegItems = new LinkedHashMap();
           for (ld in legDocs) {
             long lTs = ((Number)ld[0]).longValue();
             long lIngTs = ((Number)ld[1]).longValue();
@@ -275,12 +271,34 @@ pivot:
             boolean inLatestPoll = lOwner.equals(latestLegOwner)
               && (maxLegTs - lTs) <= 5000L;
             if (!inLatestPoll) { continue; }
-            if (!hasLeg || lIngTs >= bestLegIngTs) {
-              hasLeg = true;
-              bestLegIngTs = lIngTs;
-              legQty = ((Number)ld[2]).doubleValue();
-              legBal = ((Number)ld[3]).doubleValue();
-              legAct = Boolean.TRUE.equals(ld[4]);
+            double lQty = ((Number)ld[2]).doubleValue();
+            double lBal = ((Number)ld[3]).doubleValue();
+            boolean lAct = Boolean.TRUE.equals(ld[4]);
+            String lDocId = ld.size() > 6 && ld[6] != null ? ld[6].toString().trim() : '';
+            String legDedupKey = lDocId != ''
+              ? ('id:' + lDocId)
+              : ('raw:' + Long.toString(lTs) + '|' + Double.toString(lQty) + '|' + Double.toString(lBal) + '|' + Boolean.toString(lAct));
+            List prevLeg = (List)latestLegItems.get(legDedupKey);
+            if (prevLeg == null || lIngTs >= ((Number)prevLeg[0]).longValue()) {
+              latestLegItems.put(legDedupKey, [lIngTs, lQty, lBal, lAct]);
+            }
+          }
+          boolean hasLeg = !latestLegItems.isEmpty();
+          int legActCount = 0;
+          double legActQty = 0.0;
+          double legActBal = 0.0;
+          double legAllQty = 0.0;
+          double legAllBal = 0.0;
+          for (li in latestLegItems.values()) {
+            double lQty = ((Number)li[1]).doubleValue();
+            double lBal = ((Number)li[2]).doubleValue();
+            boolean lAct = Boolean.TRUE.equals(li[3]);
+            legAllQty += lQty;
+            legAllBal += lBal;
+            if (lAct) {
+              legActCount += 1;
+              legActQty += lQty;
+              legActBal += lBal;
             }
           }
 
@@ -294,9 +312,9 @@ pivot:
             finalBal = finalAct ? natActBal : natAllBal;
             finalTs = maxNatTs;
           } else if (hasLeg) {
-            finalAct = legAct;
-            finalQty = legQty;
-            finalBal = legBal;
+            finalAct = legActCount > 0;
+            finalQty = finalAct ? legActQty : legAllQty;
+            finalBal = finalAct ? legActBal : legAllBal;
             finalTs = maxLegTs;
           }
           return [

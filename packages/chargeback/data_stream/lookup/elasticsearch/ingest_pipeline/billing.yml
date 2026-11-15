@@ -6,20 +6,28 @@ processors:
       lang: painless
       tag: ess_billing
       source: |
-        Map chosen = ctx;
-        if (ctx.native instanceof Map && ctx.native.doc_cnt instanceof Number && ((Number)ctx.native.doc_cnt).longValue() > 0L) {
-          chosen = ctx.native;
-        } else if (ctx.legacy instanceof Map) {
-          chosen = ctx.legacy;
-        }
-        if (chosen != ctx) {
-          for (String k : ['total_chargeable_units', 'quantity_value', 'deployment_group', 'deployment_name', 'organization_id', 'deployment_type', 'billing_type', 'billing_kind', 'cloud_region']) {
-            if (chosen.containsKey(k)) {
-              ctx[k] = chosen[k];
-            } else if (k == 'deployment_group') {
-              ctx[k] = '';
-            }
+        boolean incomingOnprem = Boolean.TRUE.equals(ctx.is_onprem) || (ctx.is_onprem != null && ctx.is_onprem.toString().equalsIgnoreCase('true'));
+        try {
+          Map chosen = ctx;
+          if (ctx.native instanceof Map && ctx.native.doc_cnt instanceof Number && ((Number)ctx.native.doc_cnt).longValue() > 0L) {
+            chosen = ctx.native;
+          } else if (ctx.legacy instanceof Map) {
+            chosen = ctx.legacy;
           }
+          if (chosen != ctx) {
+            for (String k : ['total_chargeable_units', 'quantity_value', 'deployment_group', 'deployment_name', 'organization_id', 'deployment_type', 'billing_type', 'billing_kind', 'cloud_region', 'is_onprem']) {
+              if (chosen.containsKey(k)) {
+                ctx[k] = chosen[k];
+              } else if (k == 'deployment_group') {
+                ctx[k] = '';
+              }
+            }
+            incomingOnprem = incomingOnprem || Boolean.TRUE.equals(ctx.is_onprem) || (ctx.is_onprem != null && ctx.is_onprem.toString().equalsIgnoreCase('true'));
+          }
+        } catch (Exception e) {
+          ctx.remove('native');
+          ctx.remove('legacy');
+          throw e;
         }
         ctx.remove('native');
         ctx.remove('legacy');
@@ -53,10 +61,22 @@ processors:
 
         if (ctx['@timestamp'] != null && ctx.deployment_id != null) {
           def rawTs = ctx['@timestamp'];
-          String dateStr = (rawTs instanceof Number)
-            ? Instant.ofEpochMilli(((Number)rawTs).longValue()).atZone(ZoneOffset.UTC).toLocalDate().toString()
-            : ZonedDateTime.parse(rawTs.toString()).toLocalDate().toString();
-          ctx.composite_key = dateStr + '_' + ctx.deployment_id;
+          String dateStr = null;
+          if (rawTs instanceof Number) {
+            dateStr = Instant.ofEpochMilli(((Number)rawTs).longValue()).atZone(ZoneOffset.UTC).toLocalDate().toString();
+          } else {
+            String tsStr = rawTs.toString().trim();
+            try {
+              dateStr = ZonedDateTime.parse(tsStr).toInstant().atZone(ZoneOffset.UTC).toLocalDate().toString();
+            } catch (Exception e) {
+              try {
+                dateStr = LocalDate.parse(tsStr).toString();
+              } catch (Exception e2) {}
+            }
+          }
+          if (dateStr != null) {
+            ctx.composite_key = dateStr + '_' + ctx.deployment_id;
+          }
         }
 
         // Populate ESS Billing compatibility fields
@@ -67,9 +87,12 @@ processors:
         String s = ctx.sku != null ? ctx.sku.toString() : '';
         String orgId = (ctx.organization_id != null && ctx.organization_id != '') ? ctx.organization_id.toString() : 'unknown';
         String depName = ctx.deployment_name;
+        String existingEssDepType = (ctx.ess instanceof Map && ctx.ess.billing instanceof Map && ctx.ess.billing.deployment_type != null)
+          ? ctx.ess.billing.deployment_type.toString()
+          : '';
         String depType = (ctx.deployment_type != null && ctx.deployment_type != '')
           ? ctx.deployment_type.toString()
-          : (s == 'onprem_node' ? 'onprem' : ((s.startsWith('elasticsearch.') || s.startsWith('observability.') || s.startsWith('security.') || s.startsWith('vectordb.') || s.startsWith('serverless.')) ? 'elasticsearch' : 'deployment'));
+          : (existingEssDepType != '' ? existingEssDepType : ((incomingOnprem || s == 'onprem_node') ? 'onprem' : ((s.startsWith('elasticsearch.') || s.startsWith('observability.') || s.startsWith('security.') || s.startsWith('vectordb.') || s.startsWith('serverless.')) ? 'elasticsearch' : 'deployment')));
 
         if (ctx.ess == null) { ctx.ess = [:]; }
         if (ctx.ess.billing == null) { ctx.ess.billing = [:]; }
@@ -144,15 +167,19 @@ processors:
           'aws-us-west-2': ['location': ['lon': -122.6765, 'lat': 45.5235], 'name': 'aws-us-west-2'],
           'us-west-2': ['location': ['lon': -122.6765, 'lat': 45.5235], 'name': 'us-west-2'],
           'aws-ca-central-1': ['location': ['lon': -75.6972, 'lat': 45.4215], 'name': 'aws-ca-central-1'],
+          'aws-sa-east-1': ['location': ['lon': -46.6333, 'lat': -23.5505], 'name': 'aws-sa-east-1'],
           'sa-east-1': ['location': ['lon': -46.6333, 'lat': -23.5505], 'name': 'sa-east-1'],
           'aws-eu-west-2': ['location': ['lon': -0.1276, 'lat': 51.5074], 'name': 'aws-eu-west-2'],
           'aws-eu-west-3': ['location': ['lon': 2.3522, 'lat': 48.8566], 'name': 'aws-eu-west-3'],
           'aws-eu-central-1': ['location': ['lon': 8.6821, 'lat': 50.1109], 'name': 'aws-eu-central-1'],
           'aws-ap-south-1': ['location': ['lon': 72.8777, 'lat': 19.0760], 'name': 'aws-ap-south-1'],
+          'aws-ap-northeast-1': ['location': ['lon': 139.6917, 'lat': 35.6895], 'name': 'aws-ap-northeast-1'],
           'ap-northeast-1': ['location': ['lon': 139.6917, 'lat': 35.6895], 'name': 'ap-northeast-1'],
           'aws-ap-northeast-2': ['location': ['lon': 126.9780, 'lat': 37.5665], 'name': 'aws-ap-northeast-2'],
           'aws-ap-east-1': ['location': ['lon': 114.1095, 'lat': 22.3964], 'name': 'aws-ap-east-1'],
+          'aws-ap-southeast-1': ['location': ['lon': 103.8198, 'lat': 1.3521], 'name': 'aws-ap-southeast-1'],
           'ap-southeast-1': ['location': ['lon': 103.8198, 'lat': 1.3521], 'name': 'ap-southeast-1'],
+          'aws-ap-southeast-2': ['location': ['lon': 151.2093, 'lat': -33.8688], 'name': 'aws-ap-southeast-2'],
           'ap-southeast-2': ['location': ['lon': 151.2093, 'lat': -33.8688], 'name': 'ap-southeast-2'],
           'aws-af-south-1': ['location': ['lon': 18.4241, 'lat': -33.9249], 'name': 'aws-af-south-1'],
           'aws-me-south-1': ['location': ['lon': 50.5577, 'lat': 26.0667], 'name': 'aws-me-south-1'],
@@ -179,8 +206,8 @@ processors:
           'azure-centralindia': ['location': ['lon': 73.8567, 'lat': 18.5204], 'name': 'azure-centralindia']
         ];
 
-        def echMatcher = /^(?:Cloud-[A-Za-z]+_)?(aws|gcp|azure|global)\.([^_]+)_([^_]+)_(\d+)_(\d+)$/.matcher(s);
-        if (echMatcher.matches()) {
+        def echMatcher = /^(?:Cloud-[A-Za-z]+_)?(aws|gcp|azure|global)\.(.+)_([^_]+)_(\d+)_(\d+)$/.matcher(s);
+        if (!incomingOnprem && echMatcher.matches()) {
           ctx.cloud.provider = echMatcher.group(1);
           ctx.cloud.machine = ['type': echMatcher.group(2)];
           if (ctx.cloud.region == null || ctx.cloud.region == '') {
@@ -188,29 +215,45 @@ processors:
           }
           ctx.ess.billing.ram_per_zone = Long.parseLong(echMatcher.group(4));
           ctx.ess.billing.zone_count = Long.parseLong(echMatcher.group(5));
-        } else if (depType == 'onprem' || depType == 'ece' || depType == 'eck' || s == 'onprem_node') {
+        } else if (incomingOnprem || depType == 'onprem' || depType == 'ece' || depType == 'eck' || s == 'onprem_node') {
           ctx.cloud.provider = 'onprem';
         } else if (depType == 'deployment') {
-          ctx.cloud.provider = s.startsWith('aws.') ? 'aws' : (s.startsWith('gcp.') ? 'gcp' : (s.startsWith('azure.') ? 'azure' : 'cloud'));
+          String sStripped = s;
+          if (sStripped.startsWith('Cloud-')) {
+            int us = sStripped.indexOf('_');
+            if (us > 6 && us < sStripped.length() - 1) { sStripped = sStripped.substring(us + 1); }
+          }
+          ctx.cloud.provider = sStripped.startsWith('aws.') ? 'aws' : (sStripped.startsWith('gcp.') ? 'gcp' : (sStripped.startsWith('azure.') ? 'azure' : 'cloud'));
         } else {
           ctx.cloud.provider = 'serverless';
           def slsMatcher = /^[^.]+\.([^_]+)(?:_(.+))?$/.matcher(s);
           if (slsMatcher.matches()) {
             ctx.ess.billing.cloud = ['service': ['type': slsMatcher.group(1)]];
-            if ((ctx.cloud.region == null || ctx.cloud.region == '') && slsMatcher.group(2) != null && regionGeo.containsKey(slsMatcher.group(2))) {
-              ctx.cloud.region = slsMatcher.group(2);
+            String r2 = slsMatcher.group(2);
+            if ((ctx.cloud.region == null || ctx.cloud.region == '') && r2 != null && (regionGeo.containsKey(r2) || /^(?:aws|gcp|azure)-[a-z0-9-]+$/.matcher(r2).matches())) {
+              ctx.cloud.region = r2;
             }
           }
         }
 
         String reg = ctx.cloud.region;
-        if (reg != null && regionGeo.containsKey(reg)) {
-          ctx.cloud.geo = regionGeo[reg];
+        Map geoEntry = null;
+        if (reg != null && reg != '') {
+          if (regionGeo.containsKey(reg)) {
+            geoEntry = regionGeo[reg];
+          } else if (reg.startsWith('aws-') && regionGeo.containsKey(reg.substring(4))) {
+            geoEntry = ['location': regionGeo[reg.substring(4)]['location'], 'name': reg];
+          } else if (!reg.startsWith('aws-') && regionGeo.containsKey('aws-' + reg)) {
+            geoEntry = ['location': regionGeo['aws-' + reg]['location'], 'name': reg];
+          }
+        }
+        if (geoEntry != null) {
+          ctx.cloud.geo = geoEntry;
         } else {
           ctx.cloud.geo = ['name': (reg != null && reg != '') ? reg : 'unknown', 'location': ['lon': 135.0, 'lat': 90.0]];
         }
 
-        ctx.is_onprem = (ctx.cloud.provider == 'onprem' || s == 'onprem_node' || depType == 'onprem' || depType == 'ece' || depType == 'eck');
+        ctx.is_onprem = (incomingOnprem || ctx.cloud.provider == 'onprem' || s == 'onprem_node' || depType == 'onprem' || depType == 'ece' || depType == 'eck');
 
         for (String tmp : ['quantity_value', 'organization_id', 'deployment_type', 'billing_type', 'billing_kind', 'cloud_region']) {
           ctx.remove(tmp);
@@ -218,25 +261,26 @@ processors:
   - set:
       field: cost_type
       value: 'data-transfer'
-      if: ctx.sku =~ /^(aws|gcp|azure).data-transfer.*/
+      if: ctx.sku != null && ctx.sku =~ /^(?:Cloud-[A-Za-z]+_)?(?:aws|gcp|azure)\.data-transfer.*/
   - set:
       field: cost_type
       value: 'snapshots'
-      if: ctx.sku =~ /^(aws|gcp|azure).snapshot-storage.*/
+      if: ctx.sku != null && ctx.sku =~ /^(?:Cloud-[A-Za-z]+_)?(?:aws|gcp|azure)\.snapshot-storage.*/
   - set:
       field: cost_type
       value: 'inference'
-      if: ctx.sku == 'global.inference-chat-input'
+      if: ctx.sku == 'global.inference-chat-input' || (ctx.sku != null && ctx.sku =~ /^(?:Cloud-[A-Za-z]+_)?global\.inference-chat-input$/)
   - grok:
       field: sku
       ignore_failure: true
       patterns:
-        - "%{WORD}.es.%{WORD:cost_type}.%{GREEDYDATA}"
-        - "%{WORD}.%{DATA:cost_type}-vcu_%{GREEDYDATA}"
-        - "%{WORD}.%{WORD:cost_type}.%{GREEDYDATA}"
-        - "%{WORD}.%{DATA:cost_type}.%{GREEDYDATA}"
+        - "^(?:Cloud-[A-Za-z]+_)?[A-Za-z0-9-]+\\.es\\.(?<cost_type>[^.]+)\\.%{GREEDYDATA}"
+        - "^(?:Cloud-[A-Za-z]+_)?[A-Za-z0-9-]+\\.(?<cost_type>[^._]+)-vcu_%{GREEDYDATA}"
+        - "^(?:Cloud-[A-Za-z]+_)?[A-Za-z0-9-]+\\.(?<cost_type>[^.]+)\\.%{GREEDYDATA}"
+        - "^(?:Cloud-[A-Za-z]+_)?[A-Za-z0-9-]+\\.(?<cost_type>[^._]+)_%{GREEDYDATA}"
+        - "^(?:Cloud-[A-Za-z]+_)?[A-Za-z0-9-]+\\.%{DATA:cost_type}$"
       description: retrieve a human readable cost type from the sku field
-      if: ctx.cost_type == null
+      if: ctx.cost_type == null && ctx.sku != null
   - set:
       field: cost_type
       value: 'datahot/datacontent'
@@ -244,7 +288,7 @@ processors:
   - set:
       field: cost_type
       value: 'onprem'
-      if: ctx.sku == 'onprem_node'
+      if: ctx.sku == 'onprem_node' || (ctx.is_onprem == true && ctx.cost_type == null)
   - script:
       ignore_failure: true
       lang: painless
@@ -325,6 +369,11 @@ processors:
             ctx.is_allocatable = false;
             return;
           }
+        }
+        if (Boolean.TRUE.equals(ctx.is_onprem)) {
+          ctx.cost_category = 'onprem';
+          ctx.is_allocatable = true;
+          return;
         }
         ctx.cost_category = 'other';
         ctx.is_allocatable = false;

@@ -10,7 +10,6 @@ processors:
   - set:
       field: event.ingested
       value: "{{{_ingest.timestamp}}}"
-      if: ctx.event?.ingested == null
       tag: set_event_ingested
   - terminate:
       tag: config_snapshot_complete
@@ -79,6 +78,7 @@ processors:
       field: "ess.billing.sku"
       patterns:
         - "(?:Cloud-[A-Za-z]+_)?%{CLOUD_PROVIDER:cloud.provider}\\.%{NOTSPACE:cloud.machine.type}_%{NOTSPACE:_ech_sku_region}_%{NUMBER:ess.billing.ram_per_zone:long}_%{NUMBER:ess.billing.zone_count:long}"
+        - "^(?:Cloud-[A-Za-z]+_)?%{CLOUD_PROVIDER:cloud.provider}\\.%{GREEDYDATA}"
       pattern_definitions:
         CLOUD_PROVIDER: "aws|gcp|azure|global"
       if: "ctx.ess?.billing?.sku != null && ctx.ess?.billing?.deployment_type == 'deployment'"
@@ -186,15 +186,19 @@ processors:
           'aws-us-west-2': ['location': ['lon': -122.6765, 'lat': 45.5235], 'name': 'aws-us-west-2'],
           'us-west-2': ['location': ['lon': -122.6765, 'lat': 45.5235], 'name': 'us-west-2'],
           'aws-ca-central-1': ['location': ['lon': -75.6972, 'lat': 45.4215], 'name': 'aws-ca-central-1'],
+          'aws-sa-east-1': ['location': ['lon': -46.6333, 'lat': -23.5505], 'name': 'aws-sa-east-1'],
           'sa-east-1': ['location': ['lon': -46.6333, 'lat': -23.5505], 'name': 'sa-east-1'],
           'aws-eu-west-2': ['location': ['lon': -0.1276, 'lat': 51.5074], 'name': 'aws-eu-west-2'],
           'aws-eu-west-3': ['location': ['lon': 2.3522, 'lat': 48.8566], 'name': 'aws-eu-west-3'],
           'aws-eu-central-1': ['location': ['lon': 8.6821, 'lat': 50.1109], 'name': 'aws-eu-central-1'],
           'aws-ap-south-1': ['location': ['lon': 72.8777, 'lat': 19.0760], 'name': 'aws-ap-south-1'],
+          'aws-ap-northeast-1': ['location': ['lon': 139.6917, 'lat': 35.6895], 'name': 'aws-ap-northeast-1'],
           'ap-northeast-1': ['location': ['lon': 139.6917, 'lat': 35.6895], 'name': 'ap-northeast-1'],
           'aws-ap-northeast-2': ['location': ['lon': 126.9780, 'lat': 37.5665], 'name': 'aws-ap-northeast-2'],
           'aws-ap-east-1': ['location': ['lon': 114.1095, 'lat': 22.3964], 'name': 'aws-ap-east-1'],
+          'aws-ap-southeast-1': ['location': ['lon': 103.8198, 'lat': 1.3521], 'name': 'aws-ap-southeast-1'],
           'ap-southeast-1': ['location': ['lon': 103.8198, 'lat': 1.3521], 'name': 'ap-southeast-1'],
+          'aws-ap-southeast-2': ['location': ['lon': 151.2093, 'lat': -33.8688], 'name': 'aws-ap-southeast-2'],
           'ap-southeast-2': ['location': ['lon': 151.2093, 'lat': -33.8688], 'name': 'ap-southeast-2'],
           'aws-af-south-1': ['location': ['lon': 18.4241, 'lat': -33.9249], 'name': 'aws-af-south-1'],
           'aws-me-south-1': ['location': ['lon': 50.5577, 'lat': 26.0667], 'name': 'aws-me-south-1'],
@@ -222,8 +226,18 @@ processors:
         ];
         if (ctx.cloud == null) { ctx.cloud = [:]; }
         String reg = ctx.cloud.region;
-        if (reg != null && regionGeo.containsKey(reg)) {
-          ctx.cloud.geo = regionGeo[reg];
+        Map geoEntry = null;
+        if (reg != null && reg != '') {
+          if (regionGeo.containsKey(reg)) {
+            geoEntry = regionGeo[reg];
+          } else if (reg.startsWith('aws-') && regionGeo.containsKey(reg.substring(4))) {
+            geoEntry = ['location': regionGeo[reg.substring(4)]['location'], 'name': reg];
+          } else if (!reg.startsWith('aws-') && regionGeo.containsKey('aws-' + reg)) {
+            geoEntry = ['location': regionGeo['aws-' + reg]['location'], 'name': reg];
+          }
+        }
+        if (geoEntry != null) {
+          ctx.cloud.geo = geoEntry;
         } else {
           ctx.cloud.geo = ['name': (reg != null && reg != '') ? reg : 'unknown', 'location': ['lon': 135.0, 'lat': 90.0]];
         }

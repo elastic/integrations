@@ -89,9 +89,30 @@ pivot:
               if (params._source == null) {
                 return;
               }
+              String srcIdx = (doc.containsKey('_index') && !doc['_index'].empty)
+                ? doc['_index'].value.toString()
+                : '';
+              if (srcIdx != ''
+                  && !(srcIdx.startsWith('.ds-metrics-chargeback.billing-')
+                      || srcIdx.startsWith('metrics-chargeback.billing-')
+                      || srcIdx == 'metrics-chargeback.billing'
+                      || srcIdx.startsWith('.ds-metrics-chargeback.usage-')
+                      || srcIdx.startsWith('metrics-chargeback.usage-')
+                      || srcIdx == 'metrics-chargeback.usage'
+                      || srcIdx.startsWith('.ds-metrics-chargeback.node_stats-')
+                      || srcIdx.startsWith('metrics-chargeback.node_stats-')
+                      || srcIdx == 'metrics-chargeback.node_stats')) {
+                return;
+              }
               long ts = (doc.containsKey('@timestamp') && !doc['@timestamp'].empty)
                 ? doc['@timestamp'].value.toInstant().toEpochMilli()
                 : 0L;
+              long syncTs = (doc.containsKey('cb_sync_ts') && !doc['cb_sync_ts'].empty)
+                ? doc['cb_sync_ts'].value.toInstant().toEpochMilli()
+                : -1L;
+              if (syncTs > 0L && ts > (syncTs + 300000L)) {
+                ts = syncTs;
+              }
               def rawSync = params._source.get('conf_sync_enabled');
               boolean syncEnabled = (rawSync == null) || rawSync.toString().equalsIgnoreCase('true');
 
@@ -100,6 +121,7 @@ pivot:
                 : (params._source.get('data_stream.namespace') != null ? params._source.get('data_stream.namespace').toString().trim() : 'default');
               if (ns == '') { ns = 'default'; }
 
+              boolean fromInputId = false;
               String pkgPolId = '';
               if (params._source.get('package_policy_id') != null) {
                 pkgPolId = params._source.get('package_policy_id').toString().trim();
@@ -113,15 +135,25 @@ pivot:
                 pkgPolId = params._source.get('elastic_agent.package_policy_id').toString().trim();
               } else if (params._source.get('conf_policy_id') != null) {
                 pkgPolId = params._source.get('conf_policy_id').toString().trim();
+                fromInputId = true;
               } else if (params._source.input instanceof Map && params._source.input.id != null) {
                 pkgPolId = params._source.input.id.toString().trim();
+                fromInputId = true;
               } else if (params._source.get('input.id') != null) {
                 pkgPolId = params._source.get('input.id').toString().trim();
+                fromInputId = true;
               }
               if (pkgPolId != '') {
-                def pm = /^(?:cel-(?:chargeback-)?)?([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$/.matcher(pkgPolId);
+                def pm = /^(?:.*-)?([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$/.matcher(pkgPolId);
                 if (pm.matches()) {
                   pkgPolId = pm.group(1).toLowerCase(Locale.ROOT);
+                } else if (fromInputId) {
+                  def sm = /^cel-chargeback\.(?:billing|usage|node_stats)(?:-(.+))?$/.matcher(pkgPolId);
+                  if (sm.matches()) {
+                    pkgPolId = sm.group(1) != null ? ('cel-chargeback-' + sm.group(1)) : '';
+                  } else if (!pkgPolId.startsWith('cel-chargeback-') && pkgPolId.contains('.')) {
+                    pkgPolId = '';
+                  }
                 }
               }
 
@@ -363,7 +395,53 @@ pivot:
                 Map sel = (Map)activeOwners.get(selectedOwner);
                 policySyncEnabled = Boolean.TRUE.equals(sel.get('newestSync'));
                 if (policySyncEnabled && sel.get('streams') instanceof Map) {
-                  bestStreams = (Map)sel.get('streams');
+                  bestStreams = new HashMap((Map)sel.get('streams'));
+                  if (bestStreams.size() < 3) {
+                    Map bestCarryTs = [:];
+                    for (def ee : mergedEmitters.entrySet()) {
+                      Map em = (Map)ee.getValue();
+                      long selEmTs = em.get(selectedOwner) instanceof Number
+                        ? ((Number)em.get(selectedOwner)).longValue()
+                        : -1L;
+                      if (selEmTs < 0L) { continue; }
+                      for (def oke : em.entrySet()) {
+                        String prevOk = oke.getKey().toString();
+                        long prevEmTs = oke.getValue() instanceof Number
+                          ? ((Number)oke.getValue()).longValue()
+                          : -1L;
+                        if (prevOk.equals(selectedOwner) || prevEmTs < 0L || prevEmTs >= selEmTs) {
+                          continue;
+                        }
+                        if (maxActiveTs > 0L && (maxActiveTs - prevEmTs) > staleCutoffMs) {
+                          continue;
+                        }
+                        def prevOwnerObj = mergedOwners.get(prevOk);
+                        if (!(prevOwnerObj instanceof Map)) { continue; }
+                        Map prevOwner = (Map)prevOwnerObj;
+                        if (!(prevOwner.get('streams') instanceof Map)) { continue; }
+                        Map prevStreams = (Map)prevOwner.get('streams');
+                        for (String dsName : ['chargeback.billing', 'chargeback.usage', 'chargeback.node_stats']) {
+                          if (sel.get('streams') instanceof Map && ((Map)sel.get('streams')).containsKey(dsName)) {
+                            continue;
+                          }
+                          def psObj = prevStreams.get(dsName);
+                          if (!(psObj instanceof Map)) { continue; }
+                          Map ps = (Map)psObj;
+                          if (!Boolean.TRUE.equals(ps.get('sync'))) { continue; }
+                          long psTs = ps.get('ts') instanceof Number ? ((Number)ps.get('ts')).longValue() : -1L;
+                          long curCarryTs = bestCarryTs.get(dsName) instanceof Number
+                            ? ((Number)bestCarryTs.get(dsName)).longValue()
+                            : -1L;
+                          if (psTs >= 0L && psTs > curCarryTs && (maxActiveTs <= 0L || (maxActiveTs - psTs) <= staleCutoffMs)) {
+                            Map carried = new HashMap(ps);
+                            carried.put('conf_owner_key', selectedOwner);
+                            bestStreams.put(dsName, carried);
+                            bestCarryTs.put(dsName, psTs);
+                          }
+                        }
+                      }
+                    }
+                  }
                 }
               }
 

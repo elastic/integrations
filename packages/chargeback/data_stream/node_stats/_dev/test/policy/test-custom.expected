@@ -28,6 +28,9 @@ inputs:
           program: |-
             state.with(
               now.format(time_layout.DateOnly).as(today_utc,
+              state.organization_id.trim_space().as(clean_org_id,
+              state.cloud_api_base.trim_space().as(trimmed_cloud_base,
+              (trimmed_cloud_base.endsWith("/") ? trimmed_cloud_base.substring(0, size(trimmed_cloud_base) - 1) : trimmed_cloud_base).as(clean_cloud_base,
               state.config_owner_id.trim_space().as(clean_owner_id,
               state.hub_es_url.trim_space().as(trimmed_hub_url,
               (trimmed_hub_url.endsWith("/") ? trimmed_hub_url.substring(0, size(trimmed_hub_url) - 1) : trimmed_hub_url).as(clean_hub_url,
@@ -69,16 +72,16 @@ inputs:
                   "conf_owner_id": clean_owner_id,
                 })]
               : [])))).as(conf_evts,
-              (state.organization_id != "" && state.api_key != "" && !state.api_key.startsWith("$co.elastic.secret")).as(has_cloud,
+              (clean_org_id != "" && clean_cloud_base != "" && state.api_key != "" && !state.api_key.startsWith("$co.elastic.secret")).as(has_cloud,
               (clean_hub_url != "" && state.hub_es_api_key != "" && !state.hub_es_api_key.startsWith("$co.elastic.secret")).as(has_hub,
               (
                 !has(state.deployment_keys) || state.deployment_keys == null ? [] :
-                string(dyn(state.deployment_keys)).split(",")
+                string(dyn(state.deployment_keys)).split("\n").map(ln, ln.split("\r")).flatten().map(ln, ln.split(",")).flatten()
               ).map(k, k.trim_space()).filter(k, k != "" && k != "null" && !k.startsWith("$co.elastic.secret")).as(all_dkeys,
               int(state.?cursor.disc_dep_from.orValue(has_cloud ? 0 : -1)).as(dep_from,
               state.?cursor.disc_targets.orValue([]).as(acc_targets,
               ((has_cloud && dep_from >= 0) ?
-                (state.cloud_api_base + "/api/v1/deployments/_search?show_metadata=true").as(dep_search_url,
+                (clean_cloud_base + "/api/v1/deployments/_search?show_metadata=true").as(dep_search_url,
                   try(
                     request(
                       "POST",
@@ -116,8 +119,9 @@ inputs:
                               "ok": true,
                               "err": dyn({}),
                               "items": raw_deps.filter(d,
-                                has(d.resources) && d.resources != null && has(d.resources.elasticsearch) && d.resources.elasticsearch != null && size(d.resources.elasticsearch) > 0 &&
-                                has(d.resources.elasticsearch[0].info) && has(d.resources.elasticsearch[0].info.metadata) && has(d.resources.elasticsearch[0].info.metadata.service_url) && d.resources.elasticsearch[0].info.metadata.service_url != null
+                                (!has(d.metadata) || d.metadata == null || !has(d.metadata.organization_id) || d.metadata.organization_id == null || string(d.metadata.organization_id) == "" || string(d.metadata.organization_id) == clean_org_id) &&
+                                has(d.resources) && d.resources != null && has(d.resources.elasticsearch) && d.resources.elasticsearch != null && size(d.resources.elasticsearch) > 0 && d.resources.elasticsearch[0] != null &&
+                                has(d.resources.elasticsearch[0].info) && d.resources.elasticsearch[0].info != null && has(d.resources.elasticsearch[0].info.metadata) && d.resources.elasticsearch[0].info.metadata != null && has(d.resources.elasticsearch[0].info.metadata.service_url) && d.resources.elasticsearch[0].info.metadata.service_url != null
                               ).map(d,
                                 d.resources.elasticsearch[0].as(es_r,
                                   string(es_r.info.metadata.service_url).as(raw_surl,
@@ -193,7 +197,7 @@ inputs:
                                     "ok": true,
                                     "err": dyn({}),
                                     "targets": cloud_targets.exists(ct, string(ct.id) == hub_cname || string(ct.es_url) == clean_hub_url) ?
-                                      cloud_targets.map(ct, (string(ct.id) == hub_cname || string(ct.es_url) == clean_hub_url) ? dyn(ct.with({ "is_hub": true })) : ct)
+                                      cloud_targets.map(ct, (string(ct.id) == hub_cname || string(ct.es_url) == clean_hub_url) ? dyn(ct.with({ "is_hub": true, "es_url": clean_hub_url })) : ct)
                                     :
                                       cloud_targets + [dyn({
                                         "id": hub_cname,
@@ -217,7 +221,10 @@ inputs:
                           string(t.id).as(tid,
                           (string(t.es_url).endsWith("/") ? string(t.es_url).substring(0, size(string(t.es_url)) - 1) : string(t.es_url)).as(es_base,
                             all_dkeys.filter(k, k.startsWith(tid + ":") || k.startsWith(string(t.alt_id) + ":") || k.startsWith(string(t.name) + ":")).map(k,
-                              k.substring(size(k.split(":")[0]) + 1, size(k))
+                              k.startsWith(tid + ":") ? k.substring(size(tid) + 1, size(k)) : (
+                                k.startsWith(string(t.alt_id) + ":") ? k.substring(size(string(t.alt_id)) + 1, size(k)) :
+                                k.substring(size(string(t.name)) + 1, size(k))
+                              )
                             ).filter(k, k != "").as(d_keys,
                               (d_keys + ((bool(t.is_hub) && has_hub && !(state.hub_es_api_key in d_keys)) ? [state.hub_es_api_key] : [])).as(cand_keys,
                               (size(cand_keys) == 0) ?
@@ -254,7 +261,7 @@ inputs:
                                           : { "ok": true, "obs_ts": r0_obs_ts, "body": b0, "err": dyn({}) }
                                         )
                                       )
-                                    : (size(cand_keys) > 1 ?
+                                    : ((r0.StatusCode == 401 || r0.StatusCode == 403) && size(cand_keys) > 1 ?
                                       tail(cand_keys).filter(ck, ck != cand_keys[0]).as(rem_keys,
                                         (size(rem_keys) == 0) ?
                                           {
@@ -386,7 +393,7 @@ inputs:
                     )
                   )
                 )
-              )))))))))))))))
+              ))))))))))))))))))
             )
           publisher_pipeline.disable_host: true
           redact:

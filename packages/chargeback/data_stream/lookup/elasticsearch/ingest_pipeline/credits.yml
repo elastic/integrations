@@ -9,97 +9,109 @@ processors:
         if (!ctx.containsKey('latest_credit') && !ctx.containsKey('snapshot_day') && ctx.ess?.billing instanceof Map) {
           return;
         }
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC);
-        String orgId = ctx.organization_id != null ? ctx.organization_id.toString() : 'unknown';
+        try {
+          DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC);
+          String orgId = ctx.organization_id != null ? ctx.organization_id.toString() : 'unknown';
 
-        String startIso = null;
-        if (ctx.credit_start != null) {
-          if (ctx.credit_start instanceof Number) {
-            startIso = fmt.format(Instant.ofEpochMilli(((Number)ctx.credit_start).longValue()));
-          } else {
-            String rawStart = ctx.credit_start.toString().trim();
-            if (rawStart != '') {
-              try {
-                startIso = fmt.format(ZonedDateTime.parse(rawStart).toInstant());
-              } catch (Exception e) {
-                startIso = fmt.format(LocalDate.parse(rawStart).atStartOfDay(ZoneOffset.UTC).toInstant());
+          String startIso = null;
+          if (ctx.credit_start != null) {
+            if (ctx.credit_start instanceof Number) {
+              startIso = fmt.format(Instant.ofEpochMilli(((Number)ctx.credit_start).longValue()));
+            } else {
+              String rawStart = ctx.credit_start.toString().trim();
+              if (rawStart != '') {
+                try {
+                  startIso = fmt.format(ZonedDateTime.parse(rawStart).toInstant());
+                } catch (Exception e) {
+                  try {
+                    startIso = fmt.format(LocalDate.parse(rawStart).atStartOfDay(ZoneOffset.UTC).toInstant());
+                  } catch (Exception e2) {}
+                }
               }
             }
           }
-        }
-        String endIso = null;
-        if (ctx.credit_end != null) {
-          if (ctx.credit_end instanceof Number) {
-            endIso = fmt.format(Instant.ofEpochMilli(((Number)ctx.credit_end).longValue()));
-          } else {
-            String rawEnd = ctx.credit_end.toString().trim();
-            if (rawEnd != '') {
-              try {
-                endIso = fmt.format(ZonedDateTime.parse(rawEnd).toInstant());
-              } catch (Exception e) {
-                endIso = fmt.format(LocalDate.parse(rawEnd).atStartOfDay(ZoneOffset.UTC).toInstant());
+          String endIso = null;
+          if (ctx.credit_end != null) {
+            if (ctx.credit_end instanceof Number) {
+              endIso = fmt.format(Instant.ofEpochMilli(((Number)ctx.credit_end).longValue()));
+            } else {
+              String rawEnd = ctx.credit_end.toString().trim();
+              if (rawEnd != '') {
+                try {
+                  endIso = fmt.format(ZonedDateTime.parse(rawEnd).toInstant());
+                } catch (Exception e) {
+                  try {
+                    endIso = fmt.format(LocalDate.parse(rawEnd).atStartOfDay(ZoneOffset.UTC).toInstant());
+                  } catch (Exception e2) {}
+                }
               }
             }
           }
-        }
 
-        double bal = 0.0;
-        boolean act = false;
-        Long observedAtMs = null;
-        double qty = ctx.ecu_quantity instanceof Number ? ((Number)ctx.ecu_quantity).doubleValue() : 0.0;
-        if (ctx.latest_credit instanceof Map) {
-          if (ctx.latest_credit.ecu_quantity instanceof Number) {
-            qty = ((Number)ctx.latest_credit.ecu_quantity).doubleValue();
-          }
-          if (ctx.latest_credit.ecu_balance instanceof Number) {
-            bal = ((Number)ctx.latest_credit.ecu_balance).doubleValue();
-          }
-          if (ctx.latest_credit.active != null) {
-            act = ctx.latest_credit.active.toString().equalsIgnoreCase('true');
-          }
-          if (ctx.latest_credit.observed_at instanceof Number && ((Number)ctx.latest_credit.observed_at).longValue() > 0L) {
-            observedAtMs = Long.valueOf(((Number)ctx.latest_credit.observed_at).longValue());
-          }
-        }
-        if (ctx.snapshot_day != null) {
-          if (ctx.snapshot_day instanceof Number) {
-            ctx['@timestamp'] = fmt.format(Instant.ofEpochMilli(((Number)ctx.snapshot_day).longValue()));
-          } else {
-            String rawDay = ctx.snapshot_day.toString().trim();
-            if (rawDay != '') {
-              try {
-                ctx['@timestamp'] = fmt.format(ZonedDateTime.parse(rawDay).toInstant());
-              } catch (Exception e) {
-                ctx['@timestamp'] = fmt.format(LocalDate.parse(rawDay).atStartOfDay(ZoneOffset.UTC).toInstant());
-              }
+          double bal = 0.0;
+          boolean act = false;
+          Long observedAtMs = null;
+          double qty = ctx.ecu_quantity instanceof Number ? ((Number)ctx.ecu_quantity).doubleValue() : 0.0;
+          if (ctx.latest_credit instanceof Map) {
+            if (ctx.latest_credit.ecu_quantity instanceof Number) {
+              qty = ((Number)ctx.latest_credit.ecu_quantity).doubleValue();
+            }
+            if (ctx.latest_credit.ecu_balance instanceof Number) {
+              bal = ((Number)ctx.latest_credit.ecu_balance).doubleValue();
+            }
+            if (ctx.latest_credit.active != null) {
+              act = ctx.latest_credit.active.toString().equalsIgnoreCase('true');
+            }
+            if (ctx.latest_credit.observed_at instanceof Number && ((Number)ctx.latest_credit.observed_at).longValue() > 0L) {
+              observedAtMs = Long.valueOf(((Number)ctx.latest_credit.observed_at).longValue());
             }
           }
-        } else if (observedAtMs != null) {
-          ctx['@timestamp'] = fmt.format(Instant.ofEpochMilli(observedAtMs.longValue()));
-        }
+          if (ctx.snapshot_day != null) {
+            if (ctx.snapshot_day instanceof Number) {
+              ctx['@timestamp'] = fmt.format(Instant.ofEpochMilli(((Number)ctx.snapshot_day).longValue()));
+            } else {
+              String rawDay = ctx.snapshot_day.toString().trim();
+              if (rawDay != '') {
+                try {
+                  ctx['@timestamp'] = fmt.format(ZonedDateTime.parse(rawDay).toInstant());
+                } catch (Exception e) {
+                  try {
+                    ctx['@timestamp'] = fmt.format(LocalDate.parse(rawDay).atStartOfDay(ZoneOffset.UTC).toInstant());
+                  } catch (Exception e2) {}
+                }
+              }
+            }
+          } else if (observedAtMs != null) {
+            ctx['@timestamp'] = fmt.format(Instant.ofEpochMilli(observedAtMs.longValue()));
+          }
 
-        ctx.data_stream = ['type': 'metrics', 'dataset': 'ess_billing.credits', 'namespace': 'default'];
-        if (ctx.event == null) { ctx.event = [:]; }
-        ctx.event.dataset = 'ess_billing.credits';
-        ctx.cloud = ['account': ['id': orgId]];
-        ctx.ess = [
-          'billing': [
-            'organization_id': orgId,
-            'active': act,
-            'ecu_balance': bal,
-            'ecu_quantity': qty
-          ]
-        ];
-        if (ctx.credit_type != null && ctx.credit_type.toString() != '') {
-          ctx.ess.billing.type = ctx.credit_type.toString();
+          ctx.data_stream = ['type': 'metrics', 'dataset': 'ess_billing.credits', 'namespace': 'default'];
+          if (ctx.event == null) { ctx.event = [:]; }
+          ctx.event.dataset = 'ess_billing.credits';
+          ctx.cloud = ['account': ['id': orgId]];
+          ctx.ess = [
+            'billing': [
+              'organization_id': orgId,
+              'active': act,
+              'ecu_balance': bal,
+              'ecu_quantity': qty
+            ]
+          ];
+          if (ctx.credit_type != null && ctx.credit_type.toString() != '') {
+            ctx.ess.billing.type = ctx.credit_type.toString();
+          }
+          if (startIso != null) {
+            ctx.ess.billing.start = startIso;
+          }
+          if (endIso != null) {
+            ctx.ess.billing.end = endIso;
+          }
+        } catch (Exception e) {
+          for (String tmp : ['snapshot_day', 'organization_id', 'credit_start', 'credit_end', 'credit_type', 'ecu_quantity', 'latest_credit']) {
+            ctx.remove(tmp);
+          }
+          throw e;
         }
-        if (startIso != null) {
-          ctx.ess.billing.start = startIso;
-        }
-        if (endIso != null) {
-          ctx.ess.billing.end = endIso;
-        }
-
         for (String tmp : ['snapshot_day', 'organization_id', 'credit_start', 'credit_end', 'credit_type', 'ecu_quantity', 'latest_credit']) {
           ctx.remove(tmp);
         }
