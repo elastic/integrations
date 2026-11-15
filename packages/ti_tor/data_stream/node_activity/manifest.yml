@@ -1,0 +1,76 @@
+title: TOR node activity
+type: logs
+streams:
+  - input: httpjson
+    template_path: httpjson.yml.hbs
+    title: TOR node activity
+    description: Fetch TOR relay details from the Onionoo API.
+    vars:
+      - name: url
+        type: text
+        title: Onionoo details URL
+        multi: false
+        required: true
+        show_user: true
+        default: https://onionoo.torproject.org/details
+      - name: fields
+        type: text
+        title: Onionoo fields
+        description: Comma-separated list of relay fields to request (the `fields` query parameter). Leave empty to request every field.
+        multi: false
+        required: false
+        show_user: false
+        default: exit_addresses,nickname,fingerprint,running,as_name,verified_host_names,unverified_host_names,or_addresses,last_seen,last_changed_address_or_port,first_seen,hibernating,last_restarted,bandwidth_rate,bandwidth_burst,observed_bandwidth,flags,version,version_status,advertised_bandwidth,platform,recommended_version,contact
+      - name: interval
+        type: text
+        title: Interval
+        description: How often to poll Onionoo. Onionoo data refreshes hourly; supported units are h/m/s.
+        multi: false
+        required: true
+        show_user: true
+        default: 3h
+      - name: http_client_timeout
+        type: text
+        title: HTTP client timeout
+        multi: false
+        required: false
+        show_user: false
+        default: 120s
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        description: URL to proxy connections, in the form `http[s]://<user>:<password>@<server name/ip>:<port>`.
+        multi: false
+        required: false
+        show_user: false
+      - name: ssl
+        type: yaml
+        title: SSL configuration
+        description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+        multi: false
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - ti_tor-node_activity
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Preserves a raw copy of the original relay JSON in `event.original`.
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        description: Agent-side processors applied before the ingest pipeline. See https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html
+        multi: false
+        required: false
+        show_user: false
