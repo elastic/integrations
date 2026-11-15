@@ -78,12 +78,20 @@ processors:
   - grok:
       field: "ess.billing.sku"
       patterns:
-        - "(?:Cloud-[A-Za-z]+_)?%{CLOUD_PROVIDER:cloud.provider}\\.%{NOTSPACE:cloud.machine.type}_%{NOTSPACE:cloud.region}_%{NUMBER:ess.billing.ram_per_zone:long}_%{NUMBER:ess.billing.zone_count:long}"
+        - "(?:Cloud-[A-Za-z]+_)?%{CLOUD_PROVIDER:cloud.provider}\\.%{NOTSPACE:cloud.machine.type}_%{NOTSPACE:_ech_sku_region}_%{NUMBER:ess.billing.ram_per_zone:long}_%{NUMBER:ess.billing.zone_count:long}"
       pattern_definitions:
         CLOUD_PROVIDER: "aws|gcp|azure|global"
       if: "ctx.ess?.billing?.sku != null && ctx.ess?.billing?.deployment_type == 'deployment'"
       ignore_failure: true
       tag: grok_ech_sku
+  - set:
+      field: "cloud.region"
+      copy_from: "_ech_sku_region"
+      if: "(ctx.cloud?.region == null || ctx.cloud?.region == '') && ctx._ech_sku_region != null"
+      ignore_empty_value: true
+  - remove:
+      field: "_ech_sku_region"
+      ignore_missing: true
   - dissect:
       field: "ess.billing.sku"
       pattern: "%{cloud.provider}.%{}"
@@ -95,6 +103,11 @@ processors:
       value: "onprem"
       if: "ctx.cloud?.provider == null && (ctx.ess?.billing?.deployment_type == 'onprem' || ctx.ess?.billing?.deployment_type == 'ece' || ctx.ess?.billing?.deployment_type == 'eck' || ctx.ess?.billing?.sku == 'onprem_node')"
       tag: set_onprem_provider
+  - set:
+      field: "cloud.provider"
+      value: "cloud"
+      if: "ctx.cloud?.provider == null && ctx.ess?.billing?.deployment_type == 'deployment'"
+      tag: set_ech_fallback_provider
   - grok:
       field: "ess.billing.sku"
       patterns:

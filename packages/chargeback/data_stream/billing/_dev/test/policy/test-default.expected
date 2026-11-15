@@ -138,6 +138,17 @@ inputs:
                               })],
                               "credit_day": prev_credit_day,
                             }
+                          : (cred_items != null && type(cred_items) != list) ?
+                            {
+                              "evts": [dyn({
+                                "error": {
+                                  "code": "decode_error",
+                                  "id": "credit_line_items",
+                                  "message": "GET " + cred_url + ": unexpected non-array JSON response",
+                                },
+                              })],
+                              "credit_day": prev_credit_day,
+                            }
                           :
                             now.format("2006-01-02T15:04:05.000Z").as(cred_obs_ts,
                               (type(cred_items) == list ? cred_items : []).as(cred_list,
@@ -156,12 +167,12 @@ inputs:
                                                   "ess": {
                                                     "billing": {
                                                       "organization_id": state.organization_id,
-                                                      "start": item.start,
-                                                      "end": item.end,
+                                                      "start": (has(item.start) && item.start != null && string(item.start) != "") ? dyn(item.start) : dyn(null),
+                                                      "end": (has(item.end) && item.end != null && string(item.end) != "") ? dyn(item.end) : dyn(null),
                                                       "ecu_quantity": (has(item.ecu_quantity) && item.ecu_quantity != null) ? double(item.ecu_quantity) : 0.0,
                                                       "ecu_balance": (has(item.ecu_balance) && item.ecu_balance != null) ? double(item.ecu_balance) : 0.0,
                                                       "active": (has(item.active) && item.active != null) ? bool(item.active) : false,
-                                                      "type": (has(item.type) && item.type != null) ? string(item.type) : "",
+                                                      "type": (has(item.type) && item.type != null && string(item.type) != "") ? dyn(string(item.type)) : dyn(null),
                                                     },
                                                   },
                                                 })

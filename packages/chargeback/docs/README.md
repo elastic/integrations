@@ -47,6 +47,8 @@ POST /_aliases
 }
 ```
 
+- Attach `metrics-ess_billing.billing-chargeback` and `metrics-ess_billing.credits-chargeback` only when no `metrics-ess_billing.billing-*` (including `metrics-ess_billing.billing-onprem*`) or `metrics-ess_billing.credits-*` backing indices exist on the cluster. Because Chargeback transforms already roll up historical `ess_billing` records into the destination lookup indices using `double` and `long` precision, matching both legacy backing indices and the compatibility alias under `FROM metrics-ess_billing.*` duplicates historical rows and triggers ES|QL numeric type-ambiguity errors (`float`/`integer`/`long` versus `double`/`long`). If decommissioning an earlier `ess_billing` policy, wait for its Chargeback rollup to finish and delete the retired `metrics-ess_billing.*` data streams before attaching the alias.
+
 **Data flow:**
 1. Elastic Agent collects billing into `metrics-chargeback.billing-*`, index/tier usage into `metrics-chargeback.usage-*`, and node stats into `metrics-chargeback.node_stats-*` (alongside On-Premises Billing or any existing monitoring streams).
 2. Chargeback continuous transforms (`5m` configuration sync and `60m` billing, credit commitment, usage, and utilization rollups) aggregate and enrich this telemetry into nine `lookup`-mode indices.
