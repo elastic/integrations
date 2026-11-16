@@ -30,7 +30,7 @@ processors:
       field: event.original
       ecs_compatibility: v1
       patterns:
-        - "^(?:%{SYSLOG5424PRI}%{NONNEGINT} )+(?:%{TIMESTAMP_ISO8601}|-) +(?:%{HOSTNAME:syslog5424_host}|-) +(-|%{SYSLOG5424PRINTASCII}) +(-|%{SYSLOG5424PRINTASCII}) +(-|%{SYSLOG5424PRINTASCII}) +(-|%{SYSLOG5424PRINTASCII}) +(?:%{GREEDYDATA:syslog5424_msg}|-|)"
+        - "^(?:%{SYSLOG5424PRI}%{NONNEGINT} )+(?:%{TIMESTAMP_ISO8601:_temp.syslog5424_ts}|-) +(?:%{HOSTNAME:syslog5424_host}|-) +(-|%{SYSLOG5424PRINTASCII}) +(-|%{SYSLOG5424PRINTASCII}) +(-|%{SYSLOG5424PRINTASCII}) +(-|%{SYSLOG5424PRINTASCII}) +(?:%{GREEDYDATA:syslog5424_msg}|-|)"
         - "^(?:%{SYSLOG5424PRI} *)?%{GREEDYDATA:syslog5424_msg}$"
   - script:
       tag: script_4a9d0c10
@@ -239,6 +239,14 @@ processors:
         - yyyy-MM-dd HH:mm:ss z
         - ISO8601
       if: ctx._temp?.time != null && ctx.event?.timezone == null
+  - date:
+      tag: date__temp_syslog5424_ts_to_timestamp
+      description: RFC 5424 format logs carry no date/time fields; use the syslog header timestamp.
+      field: _temp.syslog5424_ts
+      target_field: "@timestamp"
+      formats:
+        - ISO8601
+      if: ctx._temp?.time == null && ctx._temp?.syslog5424_ts != null
   - gsub:
       tag: gsub_fortinet_firewall_eventtime_7a46875e
       field: fortinet.firewall.eventtime
@@ -334,7 +342,7 @@ processors:
       tag: append_email_cc_address_4d235e7f
       field: email.cc.address
       value: "{{{fortinet.firewall.cc}}}"
-      if: ctx.fortinet?.cc?.address != null
+      if: ctx.fortinet?.firewall?.cc != null
   - set:
       tag: set_email_subject_5cfd5faa
       field: email.subject
@@ -616,6 +624,43 @@ processors:
       field: fortinet.firewall.wanout
       type: long
       ignore_missing: true
+  - script:
+      tag: script_fortiextender_signal_units
+      description: >-
+        FortiExtender cellular statistics carry units (e.g. rsrp="-89 dBm", temperature="40 C").
+        Strip the unit and convert to a number so the values match their numeric mapping.
+      lang: painless
+      if: ctx.fortinet?.firewall instanceof Map
+      params:
+        fields:
+          - rsrp
+          - rsrq
+          - signalstrength
+          - sinr
+          - temperature
+      source: |
+        def fw = ctx.fortinet.firewall;
+        for (def name : params.fields) {
+          def v = fw[name];
+          if (!(v instanceof String)) {
+            continue;
+          }
+          String s = v.trim();
+          int end = s.length();
+          while (end > 0 && (Character.isLetter(s.charAt(end - 1)) || s.charAt(end - 1) == (char)' ')) {
+            end--;
+          }
+          s = s.substring(0, end);
+          try {
+            if (s.contains('.')) {
+              fw[name] = Double.parseDouble(s);
+            } else {
+              fw[name] = Long.parseLong(s);
+            }
+          } catch (NumberFormatException e) {
+            // Leave values in an unrecognised form unchanged.
+          }
+        }
   - geoip:
       tag: geoip_source_ip_to_source_geo_0e79e8a4
       field: source.ip
