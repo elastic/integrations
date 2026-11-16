@@ -535,7 +535,7 @@
                                             ],
                                             "index": "b83d908799763e2391d1d2f3e6acca19ec2100bab9d4d4c2f83031d64de49644",
                                             "query": {
-                                                "esql": "FROM azure_billing.usage_fetches, azure_billing.forecast_latest\n| EVAL upcoming_forecast = azure.billing.forecast_cost IS NOT NULL AND azure.billing.usage_date > NOW() - 1 day AND @timestamp > NOW() - 3 days\n| INLINE STATS newest_forecast = MAX(@timestamp) WHERE upcoming_forecast BY azure.billing.scope\n| EVAL current_forecast = upcoming_forecast AND @timestamp == newest_forecast\n| LOOKUP JOIN azure_billing.usage_latest_fetch ON azure.billing.subscription_day\n| WHERE (azure.billing.pretax_cost IS NOT NULL AND azure.billing.fetch_key == latest.azure.billing.fetch_key) OR current_forecast\n| STATS actual_cost = SUM(azure.billing.pretax_cost), forecast_cost = SUM(azure.billing.forecast_cost) BY usage_day = BUCKET(azure.billing.usage_date, 1 day), azure.billing.currency\n| SORT usage_day ASC\n| RENAME usage_day AS `Usage date`, actual_cost AS `Actual costs`, forecast_cost AS `Forecast costs`"
+                                                "esql": "FROM azure_billing.usage_fetches, azure_billing.forecast_latest\n| EVAL upcoming_forecast = azure.billing.forecast_cost IS NOT NULL AND azure.billing.usage_date > NOW() - 1 day AND @timestamp > NOW() - 3 days\n| INLINE STATS newest_forecast = MAX(@timestamp) WHERE upcoming_forecast BY azure.billing.scope\n| EVAL current_forecast = upcoming_forecast AND @timestamp == newest_forecast\n| LOOKUP JOIN azure_billing.usage_latest_fetch ON azure.billing.subscription_day\n| WHERE (azure.billing.pretax_cost IS NOT NULL AND azure.billing.fetch_key == latest.azure.billing.fetch_key) OR current_forecast\n| STATS actual_cost = SUM(azure.billing.pretax_cost), forecast_cost = SUM(azure.billing.forecast_cost) BY usage_day = BUCKET(azure.billing.usage_date, 1 day), azure.billing.currency\n| SORT usage_day ASC\n| LIMIT 10000\n| RENAME usage_day AS `Usage date`, actual_cost AS `Actual costs`, forecast_cost AS `Forecast costs`"
                                             },
                                             "timeField": "azure.billing.usage_date"
                                         }
@@ -545,7 +545,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM azure_billing.usage_fetches, azure_billing.forecast_latest\n| EVAL upcoming_forecast = azure.billing.forecast_cost IS NOT NULL AND azure.billing.usage_date > NOW() - 1 day AND @timestamp > NOW() - 3 days\n| INLINE STATS newest_forecast = MAX(@timestamp) WHERE upcoming_forecast BY azure.billing.scope\n| EVAL current_forecast = upcoming_forecast AND @timestamp == newest_forecast\n| LOOKUP JOIN azure_billing.usage_latest_fetch ON azure.billing.subscription_day\n| WHERE (azure.billing.pretax_cost IS NOT NULL AND azure.billing.fetch_key == latest.azure.billing.fetch_key) OR current_forecast\n| STATS actual_cost = SUM(azure.billing.pretax_cost), forecast_cost = SUM(azure.billing.forecast_cost) BY usage_day = BUCKET(azure.billing.usage_date, 1 day), azure.billing.currency\n| SORT usage_day ASC\n| RENAME usage_day AS `Usage date`, actual_cost AS `Actual costs`, forecast_cost AS `Forecast costs`"
+                                "esql": "FROM azure_billing.usage_fetches, azure_billing.forecast_latest\n| EVAL upcoming_forecast = azure.billing.forecast_cost IS NOT NULL AND azure.billing.usage_date > NOW() - 1 day AND @timestamp > NOW() - 3 days\n| INLINE STATS newest_forecast = MAX(@timestamp) WHERE upcoming_forecast BY azure.billing.scope\n| EVAL current_forecast = upcoming_forecast AND @timestamp == newest_forecast\n| LOOKUP JOIN azure_billing.usage_latest_fetch ON azure.billing.subscription_day\n| WHERE (azure.billing.pretax_cost IS NOT NULL AND azure.billing.fetch_key == latest.azure.billing.fetch_key) OR current_forecast\n| STATS actual_cost = SUM(azure.billing.pretax_cost), forecast_cost = SUM(azure.billing.forecast_cost) BY usage_day = BUCKET(azure.billing.usage_date, 1 day), azure.billing.currency\n| SORT usage_day ASC\n| LIMIT 10000\n| RENAME usage_day AS `Usage date`, actual_cost AS `Actual costs`, forecast_cost AS `Forecast costs`"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -612,7 +612,7 @@
                     "enhancements": {},
                     "filters": [],
                     "query": {
-                        "esql": "FROM azure_billing.usage_fetches, azure_billing.forecast_latest\n| EVAL upcoming_forecast = azure.billing.forecast_cost IS NOT NULL AND azure.billing.usage_date > NOW() - 1 day AND @timestamp > NOW() - 3 days\n| INLINE STATS newest_forecast = MAX(@timestamp) WHERE upcoming_forecast BY azure.billing.scope\n| EVAL current_forecast = upcoming_forecast AND @timestamp == newest_forecast\n| LOOKUP JOIN azure_billing.usage_latest_fetch ON azure.billing.subscription_day\n| WHERE (azure.billing.pretax_cost IS NOT NULL AND azure.billing.fetch_key == latest.azure.billing.fetch_key) OR current_forecast\n| STATS actual_cost = SUM(azure.billing.pretax_cost), forecast_cost = SUM(azure.billing.forecast_cost) BY usage_day = BUCKET(azure.billing.usage_date, 1 day), azure.billing.currency\n| SORT usage_day ASC\n| RENAME usage_day AS `Usage date`, actual_cost AS `Actual costs`, forecast_cost AS `Forecast costs`"
+                        "esql": "FROM azure_billing.usage_fetches, azure_billing.forecast_latest\n| EVAL upcoming_forecast = azure.billing.forecast_cost IS NOT NULL AND azure.billing.usage_date > NOW() - 1 day AND @timestamp > NOW() - 3 days\n| INLINE STATS newest_forecast = MAX(@timestamp) WHERE upcoming_forecast BY azure.billing.scope\n| EVAL current_forecast = upcoming_forecast AND @timestamp == newest_forecast\n| LOOKUP JOIN azure_billing.usage_latest_fetch ON azure.billing.subscription_day\n| WHERE (azure.billing.pretax_cost IS NOT NULL AND azure.billing.fetch_key == latest.azure.billing.fetch_key) OR current_forecast\n| STATS actual_cost = SUM(azure.billing.pretax_cost), forecast_cost = SUM(azure.billing.forecast_cost) BY usage_day = BUCKET(azure.billing.usage_date, 1 day), azure.billing.currency\n| SORT usage_day ASC\n| LIMIT 10000\n| RENAME usage_day AS `Usage date`, actual_cost AS `Actual costs`, forecast_cost AS `Forecast costs`"
                     }
                 },
                 "gridData": {
@@ -701,7 +701,7 @@
                                             ],
                                             "index": "7ab247f4e07fc4d704dc47b07878bc7b5c206cda541acd3ca74dd0d92210e526",
                                             "query": {
-                                                "esql": "FROM azure_billing.usage_fetches\n| LOOKUP JOIN azure_billing.usage_latest_fetch ON azure.billing.subscription_day\n| WHERE azure.billing.fetch_key == latest.azure.billing.fetch_key\n| WHERE azure.billing.usage_date IS NOT NULL\n| STATS sum_pretax_cost = SUM(azure.billing.pretax_cost) BY usage_day = BUCKET(azure.billing.usage_date, 1 day), azure.billing.currency\n| SORT usage_day ASC\n| RENAME usage_day AS `Usage date`, sum_pretax_cost AS `Usage Details`"
+                                                "esql": "FROM azure_billing.usage_fetches\n| LOOKUP JOIN azure_billing.usage_latest_fetch ON azure.billing.subscription_day\n| WHERE azure.billing.fetch_key == latest.azure.billing.fetch_key\n| WHERE azure.billing.usage_date IS NOT NULL\n| STATS sum_pretax_cost = SUM(azure.billing.pretax_cost) BY usage_day = BUCKET(azure.billing.usage_date, 1 day), azure.billing.currency\n| SORT usage_day ASC\n| LIMIT 10000\n| RENAME usage_day AS `Usage date`, sum_pretax_cost AS `Usage Details`"
                                             },
                                             "timeField": "azure.billing.usage_date"
                                         }
@@ -711,7 +711,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM azure_billing.usage_fetches\n| LOOKUP JOIN azure_billing.usage_latest_fetch ON azure.billing.subscription_day\n| WHERE azure.billing.fetch_key == latest.azure.billing.fetch_key\n| WHERE azure.billing.usage_date IS NOT NULL\n| STATS sum_pretax_cost = SUM(azure.billing.pretax_cost) BY usage_day = BUCKET(azure.billing.usage_date, 1 day), azure.billing.currency\n| SORT usage_day ASC\n| RENAME usage_day AS `Usage date`, sum_pretax_cost AS `Usage Details`"
+                                "esql": "FROM azure_billing.usage_fetches\n| LOOKUP JOIN azure_billing.usage_latest_fetch ON azure.billing.subscription_day\n| WHERE azure.billing.fetch_key == latest.azure.billing.fetch_key\n| WHERE azure.billing.usage_date IS NOT NULL\n| STATS sum_pretax_cost = SUM(azure.billing.pretax_cost) BY usage_day = BUCKET(azure.billing.usage_date, 1 day), azure.billing.currency\n| SORT usage_day ASC\n| LIMIT 10000\n| RENAME usage_day AS `Usage date`, sum_pretax_cost AS `Usage Details`"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -776,7 +776,7 @@
                     "enhancements": {},
                     "filters": [],
                     "query": {
-                        "esql": "FROM azure_billing.usage_fetches\n| LOOKUP JOIN azure_billing.usage_latest_fetch ON azure.billing.subscription_day\n| WHERE azure.billing.fetch_key == latest.azure.billing.fetch_key\n| WHERE azure.billing.usage_date IS NOT NULL\n| STATS sum_pretax_cost = SUM(azure.billing.pretax_cost) BY usage_day = BUCKET(azure.billing.usage_date, 1 day), azure.billing.currency\n| SORT usage_day ASC\n| RENAME usage_day AS `Usage date`, sum_pretax_cost AS `Usage Details`"
+                        "esql": "FROM azure_billing.usage_fetches\n| LOOKUP JOIN azure_billing.usage_latest_fetch ON azure.billing.subscription_day\n| WHERE azure.billing.fetch_key == latest.azure.billing.fetch_key\n| WHERE azure.billing.usage_date IS NOT NULL\n| STATS sum_pretax_cost = SUM(azure.billing.pretax_cost) BY usage_day = BUCKET(azure.billing.usage_date, 1 day), azure.billing.currency\n| SORT usage_day ASC\n| LIMIT 10000\n| RENAME usage_day AS `Usage date`, sum_pretax_cost AS `Usage Details`"
                     }
                 },
                 "gridData": {
