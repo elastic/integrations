@@ -719,7 +719,7 @@
                                         }
                                     ],
                                     "layers": {
-                                        "4083654d-ba66-4458-a097-3e03a8aecd33": {
+                                        "0a3d3f38-ad2e-405e-bc25-dafa2385d6bf": {
                                             "columns": [
                                                 {
                                                     "columnId": "count",
@@ -749,7 +749,7 @@
                                             ],
                                             "index": "b2bcbb11fd7b30e2a9f2ee93a6a5ffd1f700ee82fff0bfc92dd439c707a35ebb",
                                             "query": {
-                                                "esql": "FROM logs-corelight.various-*\r\n| WHERE event.dataset == \"anomaly\"\r\n    AND observer.hostname IS NOT NULL\r\n    AND use_case_description IS NOT NULL\r\n    AND anomaly.original_entity IS NOT NULL\r\n    AND anomaly.item IS NOT NULL\r\n| EVAL anomaly_detection = CONCAT(use_case_description, \" | \", anomaly.original_entity)\r\n| STATS\r\n    epoch_last_alert_time = MAX(@timestamp),\r\n    use_case_description  = MAX(use_case_description)\r\n  BY anomaly_detection, anomaly.item\r\n| EVAL @timestamp = epoch_last_alert_time\r\n| STATS count = COUNT() BY BUCKET(@timestamp, 1 hour), use_case_description\r\n| LIMIT 10000\r\n"
+                                                "esql": "FROM logs-corelight.various-*\r\n| WHERE event.dataset == \"anomaly\"\r\n    AND observer.hostname IS NOT NULL\r\n    AND use_case_description IS NOT NULL\r\n    AND anomaly.original_entity IS NOT NULL\r\n    AND anomaly.item IS NOT NULL\r\n| EVAL anomaly_detection = CONCAT(use_case_description, \" | \", anomaly.original_entity)\r\n| STATS BY BUCKET(@timestamp, 1 hour), use_case_description, anomaly_detection, anomaly.item\r\n| STATS count = COUNT() BY `BUCKET(@timestamp, 1 hour)`, use_case_description\r\n| LIMIT 10000"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -758,7 +758,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "FROM logs-corelight.various-*\r\n| WHERE event.dataset == \"anomaly\"\r\n    AND observer.hostname IS NOT NULL\r\n    AND use_case_description IS NOT NULL\r\n    AND anomaly.original_entity IS NOT NULL\r\n    AND anomaly.item IS NOT NULL\r\n| EVAL anomaly_detection = CONCAT(use_case_description, \" | \", anomaly.original_entity)\r\n| STATS\r\n    epoch_last_alert_time = MAX(@timestamp),\r\n    use_case_description  = MAX(use_case_description)\r\n  BY anomaly_detection, anomaly.item\r\n| EVAL @timestamp = epoch_last_alert_time\r\n| STATS count = COUNT() BY BUCKET(@timestamp, 1 hour), use_case_description\r\n| LIMIT 10000\r\n"
+                                "esql": "FROM logs-corelight.various-*\r\n| WHERE event.dataset == \"anomaly\"\r\n    AND observer.hostname IS NOT NULL\r\n    AND use_case_description IS NOT NULL\r\n    AND anomaly.original_entity IS NOT NULL\r\n    AND anomaly.item IS NOT NULL\r\n| EVAL anomaly_detection = CONCAT(use_case_description, \" | \", anomaly.original_entity)\r\n| STATS BY BUCKET(@timestamp, 1 hour), use_case_description, anomaly_detection, anomaly.item\r\n| STATS count = COUNT() BY `BUCKET(@timestamp, 1 hour)`, use_case_description\r\n| LIMIT 10000"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -800,7 +800,7 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "4083654d-ba66-4458-a097-3e03a8aecd33",
+                                        "layerId": "0a3d3f38-ad2e-405e-bc25-dafa2385d6bf",
                                         "layerType": "data",
                                         "seriesType": "bar_stacked",
                                         "splitAccessor": "use_case_description",
@@ -2840,7 +2840,7 @@
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-11-06T05:53:22.643Z",
+    "created_at": "2026-11-16T05:59:49.138Z",
     "id": "corelight-840406c1-9b84-43bc-b526-6aa86e72a150",
     "references": [
         {
