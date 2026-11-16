@@ -238,6 +238,24 @@ processors:
         Map m = new HashMap(); m.put('type', type); m.put('length', val.length()); f.add(m);
       }
 
+      boolean sensitiveKey(def k, def params) {
+        if (k == null) { return false; }
+        String n = k.toString().toLowerCase().replace('_', '').replace('-', '').replace('.', '');
+        if (params.secret_keys.contains(n)) { return true; }
+        for (def sfx : params.secret_key_suffixes) { if (n.endsWith((String) sfx)) { return true; } }
+        return false;
+      }
+      String keyType(def k) {
+        String n = k.toString().toLowerCase();
+        return (n.indexOf('pass') >= 0 || n.indexOf('pwd') >= 0) ? 'password' : 'secret_field';
+      }
+      void keyHit(List f, List seen, def k, def v, def params) {
+        if (!(v instanceof String) || !sensitiveKey(k, params)) { return; }
+        String s = (String) v;
+        if (s.length() > 512 || !plausible(s, params.stop, false)) { return; }
+        hit(f, seen, keyType(k), s);
+      }
+
       void scan(String text, List f, List seen, List errs, def params) {
         if (text == null || text.length() < 4) { return; }
         List stop = params.stop;
@@ -253,9 +271,11 @@ processors:
         try { m = /(?<![A-Za-z0-9])sk-(?!ant-)(?:proj-|svcacct-)?[A-Za-z0-9_\-]{32,}/.matcher(text); while (m.find()) { hit(f, seen, 'openai_api_key', m.group()); } } catch (Exception e) { errs.add('openai_api_key'); }
         try { m = /AIza[0-9A-Za-z_\-]{35}/.matcher(text); while (m.find()) { hit(f, seen, 'google_api_key', m.group()); } } catch (Exception e) { errs.add('google_api_key'); }
         try { m = /[sr]k_live_[0-9A-Za-z]{24,}/.matcher(text); while (m.find()) { hit(f, seen, 'stripe_key', m.group()); } } catch (Exception e) { errs.add('stripe_key'); }
-        try { m = /-----BEGIN (?:RSA |EC |DSA |OPENSSH |PGP |ENCRYPTED )?PRIVATE KEY(?: BLOCK)?-----/.matcher(text); while (m.find()) { hit(f, seen, 'private_key', m.group()); } } catch (Exception e) { errs.add('private_key'); }
+        try { m = /-----BEGIN (?:RSA |EC |DSA |OPENSSH |PGP |ENCRYPTED )?PRIVATE KEY(?: BLOCK)?-----(?:(?:\\r)?(?:\\n|\r?\n)[A-Za-z\-]{2,16}: ?[^\r\n\\]*)*(?:[A-Za-z0-9+\/=\r\n]|\\[rn])*(?:-----END (?:RSA |EC |DSA |OPENSSH |PGP |ENCRYPTED )?PRIVATE KEY(?: BLOCK)?-----)?/.matcher(text); while (m.find()) { hit(f, seen, 'private_key', m.group()); } } catch (Exception e) { errs.add('private_key'); }
         try { m = /eyJ[A-Za-z0-9_\-]{10,}\.eyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}/.matcher(text); while (m.find()) { hit(f, seen, 'jwt', m.group()); } } catch (Exception e) { errs.add('jwt'); }
         try { m = /(?i)authorization\s?[:=]\s?['"]?(?:apikey|bearer|basic) ([A-Za-z0-9+\/=._\-]{16,})/.matcher(text); while (m.find()) { hit(f, seen, 'auth_header', m.group(1)); } } catch (Exception e) { errs.add('auth_header'); }
+        // "key": "value" in JSON text (also backslash-escaped JSON) where the key names a credential
+        try { m = /\\?"([A-Za-z0-9_.\-]{1,64})\\?" ?: ?\\?"([^"\\\s]{4,512})/.matcher(text); while (m.find()) { if (sensitiveKey(m.group(1), params) && plausible(m.group(2), stop, false)) { hit(f, seen, keyType(m.group(1)), m.group(2)); } } } catch (Exception e) { errs.add('json_secret_field'); }
         // NAME=value / "NAME": "value" where NAME contains PASSWORD|PASSWD|SECRET|TOKEN|API_KEY|APIKEY (indexOf + anchored window)
         try {
           int tl = text.length();
@@ -334,7 +354,7 @@ processors:
       void walkScan(def o, List f, List seen, List errs, def params, int depth) {
         if (o == null || depth > 25) { return; }
         if (o instanceof String) { scan((String) o, f, seen, errs, params); }
-        else if (o instanceof Map) { for (def v : ((Map) o).values()) { walkScan(v, f, seen, errs, params, depth + 1); } }
+        else if (o instanceof Map) { for (def e : ((Map) o).entrySet()) { walkScan(e.getValue(), f, seen, errs, params, depth + 1); keyHit(f, seen, e.getKey(), e.getValue(), params); } }
         else if (o instanceof List) { for (def v : (List) o) { walkScan(v, f, seen, errs, params, depth + 1); } }
       }
       def walkReplace(def o, List vals, List tags, int depth) {
@@ -350,11 +370,12 @@ processors:
       }
 
 
-      // ---- main (desktop): scan the log text and the parsed MCP payload, redact both ----
+      // ---- main (desktop): scan the log text, the parsed MCP payload and error.*, redact all three ----
       List f = new ArrayList(); List seen = new ArrayList(); List errs = new ArrayList();
       def cd = ctx.claude_desktop;
       walkScan(ctx.message, f, seen, errs, params, 0);
       if (cd?.mcp?.payload != null) { walkScan(cd.mcp.payload, f, seen, errs, params, 0); }
+      if (ctx.error != null) { walkScan(ctx.error, f, seen, errs, params, 0); }
       if (f.isEmpty() && errs.isEmpty()) { return; }
       if (cd == null) { cd = new HashMap(); ctx.claude_desktop = cd; }
       Map sec = new HashMap();
@@ -366,6 +387,7 @@ processors:
         for (def i : order) { vals.add(seen.get(i)); tags.add('[REDACTED:' + f.get(i).type + ']'); }
         if (ctx.message != null) { ctx.message = walkReplace(ctx.message, vals, tags, 0); }
         if (cd.mcp?.payload != null) { cd.mcp.payload = walkReplace(cd.mcp.payload, vals, tags, 0); }
+        if (ctx.error != null) { ctx.error = walkReplace(ctx.error, vals, tags, 0); }
         List types = new ArrayList(); for (def x : f) { if (!types.contains(x.type)) { types.add(x.type); } }
         sec.put('count', f.size()); sec.put('types', types); sec.put('findings', f); sec.put('redacted', true);
       }
@@ -431,10 +453,45 @@ processors:
       - is
       - be
       - changeme_please
+      - 'true'
+      - 'false'
       - password
       - secret
       - token
       - example
+      secret_keys:
+      - token
+      - secret
+      - password
+      - passwd
+      - pwd
+      - passphrase
+      - apikey
+      - apitoken
+      - accesstoken
+      - authtoken
+      - refreshtoken
+      - idtoken
+      - sessiontoken
+      - bearertoken
+      - clientsecret
+      - secretkey
+      - privatekey
+      - secretaccesskey
+      - authorization
+      secret_key_suffixes:
+      - password
+      - passwd
+      - passphrase
+      - secret
+      - apikey
+      - apitoken
+      - accesstoken
+      - authtoken
+      - refreshtoken
+      - sessiontoken
+      - privatekey
+      - secretkey
       env_keywords:
       - PASSWORD
       - PASSWD
