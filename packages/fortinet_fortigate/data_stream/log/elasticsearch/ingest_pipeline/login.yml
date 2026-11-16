@@ -87,6 +87,20 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       description: "Administrator admin logged in successfully from jsconsole|ssh(172.16.200.254)|fgfm_fgc|Administrator admin accepted login disclaimer and logged in successfully from https(10.1.2.3)"
+# FortiAnalyzer (subtype=fazsys) login text does not match the FortiGate admin
+# patterns above. The outcome is carried in the changes field.
+- set:
+    tag: set_event_outcome_a8c41d27
+    field: "event.outcome"
+    value: "success"
+    if: "ctx.event?.outcome == null && ctx.fortinet?.firewall?.subtype == 'fazsys' && ctx.fortinet?.firewall?.action == 'login' && ctx.fortinet?.firewall?.changes instanceof String && ctx.fortinet.firewall.changes.toLowerCase().contains('success') && !ctx.fortinet.firewall.changes.toLowerCase().contains('fail')"
+    description: "FortiAnalyzer fazsys login with changes containing success"
+- set:
+    tag: set_event_outcome_e3b90f16
+    field: "event.outcome"
+    value: "failure"
+    if: "ctx.event?.outcome == null && ctx.fortinet?.firewall?.subtype == 'fazsys' && ctx.fortinet?.firewall?.action == 'login' && ctx.fortinet?.firewall?.changes instanceof String && ctx.fortinet.firewall.changes.toLowerCase().contains('fail') && !ctx.fortinet.firewall.changes.toLowerCase().contains('success')"
+    description: "FortiAnalyzer fazsys login with changes containing fail"
 - set:
     tag: set_event_outcome_4b7c0079
     field: "event.outcome"

@@ -669,6 +669,12 @@ processors:
       ignore_empty_value: true
       if: ctx.okta?.actor?.id != null
   - set:
+      tag: set_user_id_f881a902
+      field: user.id
+      copy_from: okta.actor.id
+      ignore_empty_value: true
+      if: ctx.okta?.actor?.type instanceof String && ctx.okta.actor.type.equalsIgnoreCase('User')
+  - set:
       tag: set_full_name_2_78fe52b1
       field: client.user.full_name
       value: "{{{okta.actor.display_name}}}"
@@ -704,6 +710,12 @@ processors:
       value: "{{{user.name}}}"
       allow_duplicates: false
       if: ctx.user?.name != null
+  - append:
+      tag: append_user_4_d087ac04
+      field: related.user
+      value: "{{{user.id}}}"
+      allow_duplicates: false
+      if: ctx.user?.id != null
   - append:
       tag: append_ip_723473d3
       field: related.ip

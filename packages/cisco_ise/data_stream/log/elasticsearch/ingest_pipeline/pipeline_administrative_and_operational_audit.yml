@@ -724,6 +724,20 @@ processors:
       target_field: cisco_ise.log.operation_message.text
       ignore_failure: true
       ignore_missing: true
+  - grok:
+      tag: grok_cisco_ise_log_operation_message_text_to_user_target_name_40fcc5f1
+      field: cisco_ise.log.operation_message.text
+      patterns:
+        - '^Added user %{NOTSPACE:user.target.name} with role:'
+        - '^User %{NOTSPACE:user.target.name} has been'
+      ignore_missing: true
+      ignore_failure: true
+  - append:
+      tag: append_related_user_target_name_c9af5a37
+      field: related.user
+      value: '{{{user.target.name}}}'
+      if: ctx.user?.target?.name != null
+      allow_duplicates: false
   - rename:
       tag: rename_cisco_ise_log_log_details_PortalName_to_cisco_ise_log_portal_name_78f7f9ec
       field: cisco_ise.log.log_details.PortalName

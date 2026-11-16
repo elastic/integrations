@@ -97,6 +97,16 @@ Recommended Chunk Duration values:
 
 A chunk should be small enough to be fully collected between the interruptions you expect, and must not exceed `720h` (30 days). Once the data stream has caught up, the window end is limited by `now - Lag Time`, so Chunk Duration has no effect on steady-state collection. Leaving the setting empty, or setting it to `0`, disables chunking. Existing saved positions are reused unchanged when the setting is turned on or off.
 
+### Duplicate events and index rollover
+
+The `access_transparency`, `admin`, `chat`, `context_aware_access`, `device`, `drive`, `gcp`, `group_enterprise`, `groups`, `login`, `rules`, `saml`, `token` and `user_accounts` data streams set the document `_id` to a fingerprint of the event's `id` and `events` fields, so collecting the same event twice normally produces one document. The `alert` data stream does the same with a fingerprint of the alert's identifiers and timestamps. The other data streams let Elasticsearch generate the `_id`, so every re-collected event from them is stored again.
+
+The fingerprint prevents duplicates only within one backing index. A data stream checks for an existing `_id` only in its current write index, so if the data stream rolls over between the first and second collection of an event, the second copy is stored in the new backing index. Two documents with the same `_id` in different backing indices are the sign of this. The backing index rolls over by size or by age according to the data stream's lifecycle policy, and a large replay can trigger a size-based rollover by itself within hours.
+
+For example, with Chunk Duration unset and a saved position several weeks old, the next interval requests those weeks in one window. If the agent restarts partway through, the whole window is requested again, and any events that were already indexed before a rollover are indexed a second time. With Chunk Duration set to `1h`, the same saved position produces one hour of activity per interval, and a restart re-collects at most that hour, so at most one hour of events can be duplicated if a rollover happens in between.
+
+To limit duplicates, set Chunk Duration on busy data streams, and keep Initial Interval no longer than the history you need when a data stream starts with no saved position. If you do need a long initial history, set Chunk Duration as well so it is collected one chunk at a time.
+
 # Google Workspace Gmail Logs
 
 :::{note}
@@ -385,11 +395,11 @@ The data stream calls `https://admin.googleapis.com`. You can change this with t
 - **An error document reports HTTP 403 on a roles, role assignments, groups or members request.** The delegated account lacks the privilege for that option. Users are still collected, without that information. For the roles option, the delegated account must be a super administrator.
 - **Fewer users than expected.** The delegated account's role is probably limited to some organizational units. Grant Users → Read on all organizational units.
 
-## Agentless Enabled Integration
+## Elastic Managed enabled integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ## Logs
 

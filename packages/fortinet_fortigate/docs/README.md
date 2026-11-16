@@ -360,6 +360,7 @@ The `log` data stream collects all log types from the FortiGate firewall, includ
 | fortinet.firewall.cfgpath | Configuration path | keyword |
 | fortinet.firewall.cfgtid | Configuration transaction ID | keyword |
 | fortinet.firewall.cfgtxpower | Configuration TX power | integer |
+| fortinet.firewall.changes | Details of the configuration or login change. FortiAnalyzer fazsys login events record the outcome here, for example "Successfully login." | keyword |
 | fortinet.firewall.channel | Wireless Channel | integer |
 | fortinet.firewall.channeltype | SSH channel type | keyword |
 | fortinet.firewall.chassisid | Chassis ID | integer |
@@ -566,6 +567,7 @@ The `log` data stream collects all log types from the FortiGate firewall, includ
 | fortinet.firewall.oldvalue | Old Value | keyword |
 | fortinet.firewall.oldwprof | Old Web Filter Profile | keyword |
 | fortinet.firewall.onwire | A flag to indicate if the AP is onwire or not | keyword |
+| fortinet.firewall.operation | Operation performed, for example "Log In". | keyword |
 | fortinet.firewall.opercountry | Operating Country | keyword |
 | fortinet.firewall.opertxpower | Operating TX power | integer |
 | fortinet.firewall.osname | Operating System name | keyword |
