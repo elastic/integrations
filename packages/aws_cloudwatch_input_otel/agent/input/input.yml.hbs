@@ -1,20 +1,10 @@
-extensions:
 {{#if supports_identity_federation}}
-{{#semverSatisfies _meta.agent.version ">=9.7.0"}}
+extensions:
   awsidentityfederation:
     role_arn: {{role_arn}}
     sts_region: {{region}}
 {{else}}
-  awscredentialsprovider:
-{{#if role_arn}}
-    assume_role:
-      arn: {{role_arn}}
-{{#if external_id}}
-      external_id: {{external_id}}
-{{/if}}
-{{/if}}
-{{/semverSatisfies}}
-{{else}}
+extensions:
   awscredentialsprovider:
 {{#if access_key_id}}
     credentials:
@@ -36,11 +26,7 @@ extensions:
 receivers:
   awscloudwatch:
 {{#if supports_identity_federation}}
-{{#semverSatisfies _meta.agent.version ">=9.7.0"}}
     credentials_provider: awsidentityfederation
-{{else}}
-    credentials_provider: awscredentialsprovider
-{{/semverSatisfies}}
 {{else}}
     credentials_provider: awscredentialsprovider
 {{/if}}
@@ -92,11 +78,7 @@ processors:
 
 service:
 {{#if supports_identity_federation}}
-{{#semverSatisfies _meta.agent.version ">=9.7.0"}}
   extensions: [awsidentityfederation]
-{{else}}
-  extensions: [awscredentialsprovider]
-{{/semverSatisfies}}
 {{else}}
   extensions: [awscredentialsprovider]
 {{/if}}
