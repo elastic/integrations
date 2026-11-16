@@ -8,7 +8,7 @@ The AWS OpenTelemetry integration collects CloudWatch metrics for AWS services. 
 
 This integration adds metric discovery and poll settings on each data stream. The input package flattens CloudWatch dimensions. Each data stream adds host resource detection. EC2 also adds only the EC2 detector, and ECS adds only the ECS detector.
 
-Installing this integration also installs the AWS OpenTelemetry content packages for EC2, Lambda, RDS, SQS, load balancers, and ECS. Classic Load Balancer has no content package yet. Fleet installs all of them together, not only the data streams enabled on a policy.
+The AWS OpenTelemetry content packages for EC2, Lambda, RDS, SQS, load balancers, and ECS provide dashboards, alerting rule templates, SLO templates, and anomaly detection jobs. Kibana installs each content package automatically once its data stream receives data.
 
 ## Deployment modes
 
@@ -39,7 +39,7 @@ Every data stream collects on a 5-minute interval, waits 5 minutes for late Clou
 | **AWS region** | The region your resources run in |
 | **Elastic Stack** | 9.5.0+ |
 | **Input package** | `aws_cloudwatch_input_otel` (installed automatically as a dependency) |
-| **Content packages** | `aws_ec2_otel`, `aws_lambda_otel`, `aws_rds_otel`, `aws_sqs_otel`, `aws_elb_metrics_otel`, `aws_ecs_otel` (installed automatically as dependencies) |
+| **Content packages** | `aws_ec2_otel`, `aws_lambda_otel`, `aws_rds_otel`, `aws_sqs_otel`, `aws_elb_metrics_otel`, `aws_ecs_otel` (installed automatically when the matching data stream receives data) |
 
 ## Configuration
 
