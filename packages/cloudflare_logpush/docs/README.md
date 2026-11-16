@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, Audit Logs v2, CASB, Device Posture, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, WARP Config Changes, WARP Toggle Changes, Zero Trust Network Session, and Workers Trace Events logs.
+The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, Audit Logs v2, CASB, Device Posture, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, Magic Network Monitoring Flow, MCP Portal, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, WARP Config Changes, WARP Toggle Changes, Zero Trust Network Session, and Workers Trace Events logs.
 
 Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
 
@@ -44,6 +44,7 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 - `gateway_dns`: DNS queries inspected by Cloudflare Gateway. See [Gateway DNS schema](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_dns/).
 - `gateway_http`: HTTP requests inspected by Cloudflare Gateway. See [Gateway HTTP schema](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_http/).
 - `gateway_network`: Network packets inspected by Cloudflare Gateway. See [Gateway Network schema](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_network/).
+- `mcp_portal_logs`: MCP (Model Context Protocol) requests proxied through Cloudflare MCP Server Portals to upstream MCP servers, including the user, JSON-RPC method, tool, prompt or resource requested, and outcome. See [MCP Portal Logs schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/mcp_portal_logs/).
 - `network_session`: Network session logs for traffic proxied by Cloudflare Gateway. See [Zero Trust Network Session schema](https://developers.cloudflare.com/logs/reference/log-fields/account/zero_trust_network_sessions/).
 - `warp_config_changes`: WARP configuration switch events from the Cloudflare One Client (WARP), recording the account and configuration a device switched from and to. See [WARP Config Changes schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/warp_config_changes/).
 - `warp_toggle_changes`: WARP on/off toggle events from the Cloudflare One Client (WARP) per device. See [WARP Toggle Changes schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/warp_toggle_changes/).
@@ -58,6 +59,7 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 - `firewall_event`: Zone-level Firewall events for requests mitigated by Cloudflare security products (WAF, Rate Limiting, Firewall Rules, etc.). See [Firewall Events schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/firewall_events/).
 - `http_request`: HTTP/HTTPS request logs served at the Cloudflare edge. See [HTTP Requests schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/http_requests/).
 - `magic_ids`: Magic Network Monitoring IDS detection logs. See [Magic IDS Detections schema](https://developers.cloudflare.com/logs/reference/log-fields/account/magic_ids_detections/).
+- `mnm_flow_logs`: Magic Network Monitoring flow logs (NetFlow, sFlow, IPFIX and AWS VPC flow samples) from routers, switches and cloud VPCs, including source and destination addresses, ports, AS numbers, protocol, traffic volume and matching rule IDs. See [Magic Network Monitoring Flow Logs schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/mnm_flow_logs/).
 - `nel_report`: Network Error Logging (NEL) reports collected from end-user browsers. See [NEL Reports schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/nel_reports/).
 - `network_analytics`: Network Analytics (Magic Transit / Magic WAN packet-sampled flow) logs. See [Network Analytics Logs schema](https://developers.cloudflare.com/logs/reference/log-fields/account/network_analytics_logs/).
 - `page_shield_events`: Page Shield events reporting changes to scripts and connections observed on protected zones. See [Page Shield Events schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/page_shield_events/).
@@ -70,7 +72,8 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 Integrating Cloudflare Logpush with Elastic provides centralized visibility across Cloudflare's edge, Zero Trust, and network-layer products. Common use cases include:
 
 - Investigating traffic, WAF, and DDoS-mitigation events from the Cloudflare edge (`http_request`, `firewall_event`, `network_analytics`).
-- Monitoring Zero Trust user activity, policy decisions, and device posture (`gateway_http`, `gateway_dns`, `gateway_network`, `access_request`, `device_posture`, `network_session`, `warp_config_changes`, `warp_toggle_changes`).
+- Monitoring Zero Trust user activity, policy decisions, and device posture (`gateway_http`, `gateway_dns`, `gateway_network`, `access_request`, `device_posture`, `network_session`, `warp_config_changes`, `warp_toggle_changes`, `mcp_portal_logs`).
+- Monitoring network traffic flows from on-premises routers, switches and cloud VPCs (`mnm_flow_logs`).
 - Detecting data exfiltration and SaaS misconfigurations (`dlp_forensic_copies`, `casb`, `email_security_alerts`).
 - Auditing administrative activity on the Cloudflare account (`audit`, `audit_logs_v2`).
 - Troubleshooting DNS and client-side performance issues (`dns`, `dns_firewall`, `nel_report`, `workers_trace`).
@@ -90,7 +93,7 @@ To use this integration, you must be able to create and manage [Cloudflare Logpu
 Creating and managing Logpush jobs requires an API token or user role with the `Logs Write` permission (or a role that includes it, such as **Super Administrator**, **Administrator**, or **Log Share** with edit permissions). Refer to [Cloudflare Logpush permissions](https://developers.cloudflare.com/logs/logpush/permissions/) for details.
 
 - **Zone-scoped datasets** (for example, `http_requests`, `firewall_events`, `dns_logs`, `spectrum_events`, `nel_reports`, `page_shield_events`) require a **zone-scoped token**.
-- **Account-scoped datasets** (for example, `audit_logs`, `audit_logs_v2`, `access_requests`, `casb_findings`, `device_posture_results`, `dlp_forensic_copies`, `email_security_alerts`, `gateway_*`, `dns_firewall_logs`, `magic_ids_detections`, `network_analytics_logs`, `sinkhole_http_logs`, `workers_trace_events`, `zero_trust_network_sessions`) require an **account-scoped token**.
+- **Account-scoped datasets** (for example, `audit_logs`, `audit_logs_v2`, `access_requests`, `casb_findings`, `device_posture_results`, `dlp_forensic_copies`, `email_security_alerts`, `gateway_*`, `dns_firewall_logs`, `magic_ids_detections`, `mcp_portal_logs`, `mnm_flow_logs`, `network_analytics_logs`, `sinkhole_http_logs`, `workers_trace_events`, `zero_trust_network_sessions`) require an **account-scoped token**.
 - Zero Trust datasets (Access, Gateway, DEX) additionally require `Zero Trust: PII Read`.
 
 **Destination-specific credentials**
@@ -136,6 +139,8 @@ Configure one of the following delivery pipelines before enabling the integratio
   | Gateway Network            | gateway_network        |
   | HTTP Request               | http_request           |
   | Magic IDS                  | magic_ids              |
+  | MCP Portal Logs            | mcp_portal_logs        |
+  | MNM Flow Logs              | mnm_flow_logs          |
   | NEL Report                 | nel_report             |
   | Network Analytics          | network_analytics_logs |
   | Page Shield Events         | page_shield_events     |
@@ -3567,6 +3572,320 @@ An example event for `magic_ids` looks as following:
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
+
+
+#### mcp_portal_logs
+
+This is the `mcp_portal_logs` dataset.
+
+##### Example
+
+An example event for `mcp_portal` looks as following:
+
+```json
+{
+    "@timestamp": "2026-10-20T10:00:00.000Z",
+    "agent": {
+        "ephemeral_id": "31a926f5-3dc7-407c-902b-a1e514b7bf8e",
+        "id": "2eecd886-812f-4724-86a6-d6ce36985905",
+        "name": "elastic-agent-73570",
+        "type": "filebeat",
+        "version": "9.5.2"
+    },
+    "cloudflare_logpush": {
+        "mcp_portal_logs": {
+            "colo": {
+                "code": "DFW"
+            },
+            "portal": {
+                "aud": "4f1c8e2a9b7d3e6f0a5c1b8d2e7f9a3c4b6d8e0f1a2c3b4d5e6f7a8b9c0d1e2f",
+                "id": "9b2f4c1e-7a3d-4e5f-8b6c-1d2e3f4a5b6c"
+            },
+            "server": {
+                "aud": "7e3a1c5b9d2f4e6a8c0b1d3f5e7a9c2b4d6f8e0a1c3b5d7f9e2a4c6b8d0f1e3a",
+                "id": "3c4d5e6f-7a8b-4c9d-8e0f-1a2b3c4d5e6f"
+            },
+            "session": {
+                "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "cloudflare_logpush.mcp_portal_logs",
+        "namespace": "19018",
+        "type": "logs"
+    },
+    "destination": {
+        "domain": "mcp-server-1.example.com"
+    },
+    "ecs": {
+        "version": "9.3.0"
+    },
+    "elastic_agent": {
+        "id": "2eecd886-812f-4724-86a6-d6ce36985905",
+        "snapshot": false,
+        "version": "9.5.2"
+    },
+    "event": {
+        "action": "tools/call",
+        "agent_id_status": "verified",
+        "category": [
+            "api"
+        ],
+        "dataset": "cloudflare_logpush.mcp_portal_logs",
+        "duration": 142000000,
+        "ingested": "2026-11-03T09:23:58Z",
+        "kind": "event",
+        "module": "cloudflare_logpush",
+        "original": "{\"ClientCountry\":\"US\",\"ClientIP\":\"192.0.2.10\",\"ColoCode\":\"DFW\",\"Datetime\":\"2026-10-20T10:00:00Z\",\"Method\":\"tools/call\",\"PortalAUD\":\"4f1c8e2a9b7d3e6f0a5c1b8d2e7f9a3c4b6d8e0f1a2c3b4d5e6f7a8b9c0d1e2f\",\"PortalID\":\"9b2f4c1e-7a3d-4e5f-8b6c-1d2e3f4a5b6c\",\"ServerAUD\":\"7e3a1c5b9d2f4e6a8c0b1d3f5e7a9c2b4d6f8e0a1c3b5d7f9e2a4c6b8d0f1e3a\",\"ServerID\":\"3c4d5e6f-7a8b-4c9d-8e0f-1a2b3c4d5e6f\",\"ServerResponseDurationMs\":142,\"ServerURL\":\"https://mcp-server-1.example.com/mcp\",\"SessionID\":\"a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d\",\"Success\":true,\"ToolCallName\":\"search_documents\",\"UserEmail\":\"alice.johnson@example.com\",\"UserID\":\"5d6e7f8a-9b0c-4d1e-8f2a-3b4c5d6e7f8a\"}",
+        "outcome": "success",
+        "type": [
+            "access"
+        ]
+    },
+    "gen_ai": {
+        "tool": {
+            "name": "search_documents"
+        }
+    },
+    "input": {
+        "type": "http_endpoint"
+    },
+    "related": {
+        "hosts": [
+            "mcp-server-1.example.com"
+        ],
+        "ip": [
+            "192.0.2.10"
+        ],
+        "user": [
+            "5d6e7f8a-9b0c-4d1e-8f2a-3b4c5d6e7f8a",
+            "alice.johnson@example.com"
+        ]
+    },
+    "source": {
+        "as": {
+            "number": 64500,
+            "organization": {
+                "name": "Documentation ASN"
+            }
+        },
+        "geo": {
+            "country_iso_code": "US"
+        },
+        "ip": "192.0.2.10"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "cloudflare_logpush-mcp_portal_logs"
+    ],
+    "url": {
+        "domain": "mcp-server-1.example.com",
+        "original": "https://mcp-server-1.example.com/mcp",
+        "path": "/mcp",
+        "scheme": "https"
+    },
+    "user": {
+        "email": "alice.johnson@example.com",
+        "id": "5d6e7f8a-9b0c-4d1e-8f2a-3b4c5d6e7f8a"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
+| cloudflare_logpush.mcp_portal_logs.colo.code | The IATA airport code of the Cloudflare data center that processed the request (for example, DFW). | keyword |
+| cloudflare_logpush.mcp_portal_logs.error | The error message returned when the MCP request failed. | keyword |
+| cloudflare_logpush.mcp_portal_logs.error.text | Multi-field of `cloudflare_logpush.mcp_portal_logs.error`. | match_only_text |
+| cloudflare_logpush.mcp_portal_logs.portal.aud | The Access application audience (AUD) tag of the MCP portal. | keyword |
+| cloudflare_logpush.mcp_portal_logs.portal.id | The ID of the MCP portal. | keyword |
+| cloudflare_logpush.mcp_portal_logs.prompt_get_name | The name of the prompt requested by a `prompts/get` call. | keyword |
+| cloudflare_logpush.mcp_portal_logs.resource_read_uri | The URI of the resource requested by a `resources/read` call. | keyword |
+| cloudflare_logpush.mcp_portal_logs.server.aud | The Access application audience (AUD) tag of the upstream MCP server. | keyword |
+| cloudflare_logpush.mcp_portal_logs.server.id | The ID of the upstream MCP server. | keyword |
+| cloudflare_logpush.mcp_portal_logs.session.id | The ID of the MCP session. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
+| gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
+| gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
+| gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
+| log.source.address | Source address from which the log event was read / sent from. | keyword |
+
+
+#### mnm_flow_logs
+
+This is the `mnm_flow_logs` dataset.
+
+##### Example
+
+An example event for `mnm_flow` looks as following:
+
+```json
+{
+    "@timestamp": "2026-10-20T10:00:05.000Z",
+    "agent": {
+        "ephemeral_id": "b2ab3df9-2593-4f15-87ad-f83af3d25c2d",
+        "id": "7cb26ed0-6c5f-4bcc-8ef2-2cee1cea3036",
+        "name": "elastic-agent-42615",
+        "type": "filebeat",
+        "version": "9.5.2"
+    },
+    "cloudflare_logpush": {
+        "mnm_flow_logs": {
+            "device_id": "7a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d",
+            "egress_bits": 0,
+            "egress_packets": 0,
+            "ethertype": "2048",
+            "flow_protocol": "NETFLOW_V9",
+            "num_flows": 1,
+            "sample_rate": 1000,
+            "sample_rate_type": "flow",
+            "tcp_flags": "24"
+        }
+    },
+    "data_stream": {
+        "dataset": "cloudflare_logpush.mnm_flow_logs",
+        "namespace": "12708",
+        "type": "logs"
+    },
+    "destination": {
+        "as": {
+            "number": 64497
+        },
+        "geo": {
+            "city_name": "Amsterdam",
+            "continent_name": "Europe",
+            "country_iso_code": "NL",
+            "country_name": "Netherlands",
+            "region_iso_code": "NL-NH",
+            "region_name": "North Holland"
+        },
+        "ip": "198.51.100.20",
+        "port": 443
+    },
+    "ecs": {
+        "version": "9.3.0"
+    },
+    "elastic_agent": {
+        "id": "7cb26ed0-6c5f-4bcc-8ef2-2cee1cea3036",
+        "snapshot": false,
+        "version": "9.5.2"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "dataset": "cloudflare_logpush.mnm_flow_logs",
+        "ingested": "2026-11-05T15:52:45Z",
+        "kind": "event",
+        "module": "cloudflare_logpush",
+        "original": "{\"Bits\":96000,\"DestinationAS\":64497,\"DestinationAddress\":\"198.51.100.20\",\"DestinationPort\":443,\"DeviceID\":\"7a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d\",\"EgressBits\":0,\"EgressPackets\":0,\"Ethertype\":2048,\"FlowProtocol\":\"NETFLOW_V9\",\"FlowTimestamp\":\"2026-10-20T10:00:00Z\",\"NumFlows\":1,\"PacketID\":\"\",\"Packets\":80,\"Protocol\":6,\"RuleIDs\":\"0f1e2d3c4b5a69788796a5b4c3d2e1f0\",\"SampleRate\":1000,\"SampleRateType\":\"flow\",\"SamplerAddress\":\"192.0.2.1\",\"SourceAS\":64496,\"SourceAddress\":\"192.0.2.10\",\"SourcePort\":51544,\"TcpFlags\":24,\"Timestamp\":\"2026-10-20T10:00:05Z\"}",
+        "start": "2026-10-20T10:00:00.000Z",
+        "type": [
+            "connection"
+        ]
+    },
+    "input": {
+        "type": "http_endpoint"
+    },
+    "network": {
+        "bytes": 12000,
+        "iana_number": "6",
+        "packets": 80,
+        "transport": "tcp",
+        "type": "ipv4"
+    },
+    "observer": {
+        "ip": [
+            "192.0.2.1"
+        ]
+    },
+    "related": {
+        "ip": [
+            "192.0.2.10",
+            "198.51.100.20",
+            "192.0.2.1"
+        ]
+    },
+    "rule": {
+        "id": "0f1e2d3c4b5a69788796a5b4c3d2e1f0"
+    },
+    "source": {
+        "as": {
+            "number": 64496
+        },
+        "geo": {
+            "city_name": "Las Vegas",
+            "continent_name": "North America",
+            "country_iso_code": "US",
+            "country_name": "United States",
+            "region_iso_code": "US-NV",
+            "region_name": "Nevada"
+        },
+        "ip": "192.0.2.10",
+        "port": 51544
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "cloudflare_logpush-mnm_flow_logs"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
+| cloudflare_logpush.mnm_flow_logs.aws_vpc_flow | The AWS VPC flow log record parsed from AWSVPCFlowJSON. Only present when the flow protocol is AWS_VPC. | flattened |
+| cloudflare_logpush.mnm_flow_logs.aws_vpc_flow_json | The raw AWS VPC flow log record (AWSVPCFlowJSON), kept only when it could not be parsed as JSON. | keyword |
+| cloudflare_logpush.mnm_flow_logs.device_id | The ID of the network device that originated the flow. | keyword |
+| cloudflare_logpush.mnm_flow_logs.egress_bits | The number of egress bits in the flow. | long |
+| cloudflare_logpush.mnm_flow_logs.egress_packets | The number of egress packets in the flow. | long |
+| cloudflare_logpush.mnm_flow_logs.ethertype | The EtherType of the flow (for example, 2048 for IPv4 and 34525 for IPv6). | keyword |
+| cloudflare_logpush.mnm_flow_logs.flow_protocol | The protocol used to export the flow (AWS_VPC, IPFIX, SFLOW_5, or NETFLOW_V9). | keyword |
+| cloudflare_logpush.mnm_flow_logs.num_flows | The number of flows aggregated in the record. | long |
+| cloudflare_logpush.mnm_flow_logs.packet_id | The ID of the packet. | keyword |
+| cloudflare_logpush.mnm_flow_logs.sample_rate | The sampling rate applied to the flow. | long |
+| cloudflare_logpush.mnm_flow_logs.sample_rate_type | How the sample rate was determined (flow, default, or propagated). | keyword |
+| cloudflare_logpush.mnm_flow_logs.tcp_flags | The TCP flags of the flow, as a bitmask. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
+| gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
+| gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
+| gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
+| log.source.address | Source address from which the log event was read / sent from. | keyword |
+| network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
 
 
 #### nel_report

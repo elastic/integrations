@@ -1,0 +1,531 @@
+---
+description: Pipeline for parsing Cloudflare Magic Network Monitoring Flow logs.
+processors:
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: '9.3.0'
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      tag: json_event_original_to_json
+      field: event.original
+      target_field: json
+      if: ctx.event?.original != null
+  - append:
+      tag: append_event_category_network
+      field: event.category
+      value: network
+      allow_duplicates: false
+  - append:
+      tag: append_event_type_connection
+      field: event.type
+      value: connection
+      allow_duplicates: false
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+  ## AWS S3 input does _id Based Deduplication and generates "_id" by default.
+  ## When "Data Deduplication" is not enabled, this field must be removed.
+  ## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
+  - remove:
+      field: _id
+      tag: remove_id_based_deduplication
+      description: >
+        When data deduplication is disabled, the _id field (used for _id Based Deduplication)
+        must be removed.
+      if: ctx._conf?.enable_deduplication == false && ctx.input?.type == 'aws-s3'
+      ignore_missing: true
+
+  # @timestamp
+  - convert:
+      tag: convert_json_Timestamp_to_long
+      field: json.Timestamp
+      type: long
+      if: ctx.json?.Timestamp != null && ctx.json.Timestamp != ''
+      ignore_failure: true
+  - script:
+      lang: painless
+      tag: script_timestamp_to_milli
+      description: Normalizes a numeric Timestamp in seconds or nanoseconds to milliseconds.
+      if: ctx.json?.Timestamp != null && ctx.json.Timestamp instanceof Number
+      source: |
+        long t = (long)(ctx.json.Timestamp);
+        if (t > (long)(1e18)) {
+          ctx.json.Timestamp = t/(long)(1e6)
+        } else if (t < (long)(1e10))  {
+          ctx.json.Timestamp = t*(long)(1e3)
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_timestamp_script
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_json_Timestamp
+      field: json.Timestamp
+      target_field: '@timestamp'
+      if: ctx.json?.Timestamp != null && ctx.json.Timestamp != ''
+      formats:
+        - UNIX_MS
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ssZ
+      timezone: UTC
+      on_failure:
+        - remove:
+            tag: remove_json_Timestamp
+            field: json.Timestamp
+            ignore_missing: true
+        - append:
+            tag: append_error_message_timestamp
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # event.start
+  - convert:
+      tag: convert_json_FlowTimestamp_to_long
+      field: json.FlowTimestamp
+      type: long
+      if: ctx.json?.FlowTimestamp != null && ctx.json.FlowTimestamp != ''
+      ignore_failure: true
+  - script:
+      lang: painless
+      tag: script_flow_timestamp_to_milli
+      description: Normalizes a numeric FlowTimestamp in seconds or nanoseconds to milliseconds.
+      if: ctx.json?.FlowTimestamp != null && ctx.json.FlowTimestamp instanceof Number
+      source: |
+        long t = (long)(ctx.json.FlowTimestamp);
+        if (t > (long)(1e18)) {
+          ctx.json.FlowTimestamp = t/(long)(1e6)
+        } else if (t < (long)(1e10))  {
+          ctx.json.FlowTimestamp = t*(long)(1e3)
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_flow_timestamp_script
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_json_FlowTimestamp
+      field: json.FlowTimestamp
+      target_field: event.start
+      if: ctx.json?.FlowTimestamp != null && ctx.json.FlowTimestamp != ''
+      formats:
+        - UNIX_MS
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ssZ
+      timezone: UTC
+      on_failure:
+        - remove:
+            tag: remove_json_FlowTimestamp
+            field: json.FlowTimestamp
+            ignore_missing: true
+        - append:
+            tag: append_error_message_flow_timestamp
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # source.*
+  - convert:
+      tag: convert_json_SourceAddress_to_source_ip
+      field: json.SourceAddress
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.SourceAddress != null && ctx.json.SourceAddress != ''
+      on_failure:
+        - append:
+            tag: append_error_message_source_address
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      tag: rename_json_SourcePort_to_source_port
+      field: json.SourcePort
+      target_field: source.port
+      ignore_missing: true
+  - rename:
+      tag: rename_json_SourceAS_to_source_as_number
+      description: AS number 0 means the AS is unknown, so it is not mapped.
+      field: json.SourceAS
+      target_field: source.as.number
+      if: ctx.json?.SourceAS instanceof Number && ctx.json.SourceAS > 0
+  - geoip:
+      tag: geoip_source_ip_to_source_geo
+      field: source.ip
+      target_field: source.geo
+      properties:
+        - continent_name
+        - country_iso_code
+        - country_name
+        - region_iso_code
+        - region_name
+        - city_name
+      ignore_missing: true
+      if: ctx.source?.ip != null
+  - geoip:
+      tag: geoip_source_ip_to_source_as
+      description: >-
+        Falls back to a GeoIP ASN lookup only when Cloudflare did not report the source AS,
+        so that the GeoIP result cannot contradict the Cloudflare AS number.
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+      if: ctx.source?.ip != null && ctx.source?.as?.number == null
+  - rename:
+      tag: rename_source_as_asn_to_source_as_number
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+
+  # destination.*
+  - convert:
+      tag: convert_json_DestinationAddress_to_destination_ip
+      field: json.DestinationAddress
+      target_field: destination.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.DestinationAddress != null && ctx.json.DestinationAddress != ''
+      on_failure:
+        - append:
+            tag: append_error_message_destination_address
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      tag: rename_json_DestinationPort_to_destination_port
+      field: json.DestinationPort
+      target_field: destination.port
+      ignore_missing: true
+  - rename:
+      tag: rename_json_DestinationAS_to_destination_as_number
+      description: AS number 0 means the AS is unknown, so it is not mapped.
+      field: json.DestinationAS
+      target_field: destination.as.number
+      if: ctx.json?.DestinationAS instanceof Number && ctx.json.DestinationAS > 0
+  - geoip:
+      tag: geoip_destination_ip_to_destination_geo
+      field: destination.ip
+      target_field: destination.geo
+      properties:
+        - continent_name
+        - country_iso_code
+        - country_name
+        - region_iso_code
+        - region_name
+        - city_name
+      ignore_missing: true
+      if: ctx.destination?.ip != null
+  - geoip:
+      tag: geoip_destination_ip_to_destination_as
+      description: >-
+        Falls back to a GeoIP ASN lookup only when Cloudflare did not report the destination AS,
+        so that the GeoIP result cannot contradict the Cloudflare AS number.
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+      if: ctx.destination?.ip != null && ctx.destination?.as?.number == null
+  - rename:
+      tag: rename_destination_as_asn_to_destination_as_number
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      tag: rename_destination_as_organization_name_to_destination_as_organization_name
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+
+  # observer.*
+  - convert:
+      tag: convert_json_SamplerAddress_to_ip
+      description: Validates that SamplerAddress is an IP address before it is added to the observer.ip array.
+      field: json.SamplerAddress
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.SamplerAddress != null && ctx.json.SamplerAddress != ''
+      on_failure:
+        - remove:
+            tag: remove_json_SamplerAddress
+            field: json.SamplerAddress
+            ignore_missing: true
+        - append:
+            tag: append_error_message_sampler_address
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      tag: append_json_SamplerAddress_to_observer_ip
+      field: observer.ip
+      value: '{{{json.SamplerAddress}}}'
+      allow_duplicates: false
+      if: ctx.json?.SamplerAddress != null && ctx.json.SamplerAddress != ''
+
+  # network.*
+  - rename:
+      tag: rename_json_Protocol_to_network_iana_number
+      field: json.Protocol
+      target_field: network.iana_number
+      ignore_missing: true
+  - script:
+      lang: painless
+      tag: script_network_transport_from_iana_number
+      description: Maps the IANA protocol number to the network.transport name.
+      if: ctx.network?.iana_number != null
+      params:
+        '1': icmp
+        '2': igmp
+        '6': tcp
+        '17': udp
+        '41': ipv6
+        '47': gre
+        '50': esp
+        '51': ah
+        '58': ipv6-icmp
+        '89': ospf
+        '112': vrrp
+        '132': sctp
+      source: |-
+        def name = params.get(String.valueOf(ctx.network.iana_number));
+        if (name != null) {
+          ctx.network.transport = name;
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_network_transport
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_network_type_ipv4
+      field: network.type
+      value: ipv4
+      if: ctx.json?.Ethertype == 2048
+  - set:
+      tag: set_network_type_ipv6
+      field: network.type
+      value: ipv6
+      if: ctx.json?.Ethertype == 34525
+  - script:
+      lang: painless
+      tag: script_network_bytes_from_bits
+      description: Converts the Bits count to bytes for network.bytes.
+      if: ctx.json?.Bits instanceof Number
+      source: |
+        if (ctx.network == null) {
+          ctx.network = new HashMap();
+        }
+        ctx.network.bytes = ((Number) ctx.json.Bits).longValue() / 8L;
+      on_failure:
+        - append:
+            tag: append_error_message_network_bytes
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      tag: rename_json_Packets_to_network_packets
+      field: json.Packets
+      target_field: network.packets
+      ignore_missing: true
+
+  # rule.*
+  - split:
+      tag: split_json_RuleIDs_to_rule_id
+      field: json.RuleIDs
+      target_field: rule.id
+      separator: '\s*,\s*'
+      if: ctx.json?.RuleIDs instanceof String && ctx.json.RuleIDs != ''
+
+  # cloudflare_logpush.mnm_flow_logs.*
+  - json:
+      tag: json_AWSVPCFlowJSON_to_aws_vpc_flow
+      field: json.AWSVPCFlowJSON
+      target_field: cloudflare_logpush.mnm_flow_logs.aws_vpc_flow
+      if: ctx.json?.AWSVPCFlowJSON instanceof String && ctx.json.AWSVPCFlowJSON != ''
+      on_failure:
+        - rename:
+            tag: rename_json_AWSVPCFlowJSON_to_aws_vpc_flow_json
+            field: json.AWSVPCFlowJSON
+            target_field: cloudflare_logpush.mnm_flow_logs.aws_vpc_flow_json
+            ignore_missing: true
+  - script:
+      lang: painless
+      tag: script_aws_vpc_flow_action_and_account
+      description: >-
+        Maps the AWS VPC flow record's action to event.action and event.type
+        (allowed or denied), and its account ID to cloud.account.id.
+      if: ctx.cloudflare_logpush?.mnm_flow_logs?.aws_vpc_flow instanceof Map
+      source: |
+        Map flow = ctx.cloudflare_logpush.mnm_flow_logs.aws_vpc_flow;
+        def action = flow.get('action');
+        if (action instanceof String) {
+          String a = action.toLowerCase();
+          if (a == 'accept' || a == 'reject') {
+            ctx.event.action = a;
+            String t = a == 'accept' ? 'allowed' : 'denied';
+            if (!ctx.event.type.contains(t)) {
+              ctx.event.type.add(t);
+            }
+          }
+        }
+        def account = flow.get('account-id');
+        if (account != null && account.toString() != '' && account.toString() != 'unknown') {
+          if (ctx.cloud == null) {
+            ctx.cloud = new HashMap();
+          }
+          ctx.cloud.provider = 'aws';
+          ctx.cloud.account = ['id': account.toString()];
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_aws_vpc_flow_action_and_account
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      tag: rename_json_DeviceID_to_device_id
+      field: json.DeviceID
+      target_field: cloudflare_logpush.mnm_flow_logs.device_id
+      ignore_missing: true
+  - rename:
+      tag: rename_json_EgressBits_to_egress_bits
+      field: json.EgressBits
+      target_field: cloudflare_logpush.mnm_flow_logs.egress_bits
+      ignore_missing: true
+  - rename:
+      tag: rename_json_EgressPackets_to_egress_packets
+      field: json.EgressPackets
+      target_field: cloudflare_logpush.mnm_flow_logs.egress_packets
+      ignore_missing: true
+  - rename:
+      tag: rename_json_Ethertype_to_ethertype
+      field: json.Ethertype
+      target_field: cloudflare_logpush.mnm_flow_logs.ethertype
+      ignore_missing: true
+  - rename:
+      tag: rename_json_FlowProtocol_to_flow_protocol
+      field: json.FlowProtocol
+      target_field: cloudflare_logpush.mnm_flow_logs.flow_protocol
+      ignore_missing: true
+  - rename:
+      tag: rename_json_NumFlows_to_num_flows
+      field: json.NumFlows
+      target_field: cloudflare_logpush.mnm_flow_logs.num_flows
+      ignore_missing: true
+  - rename:
+      tag: rename_json_PacketID_to_packet_id
+      field: json.PacketID
+      target_field: cloudflare_logpush.mnm_flow_logs.packet_id
+      ignore_missing: true
+  - rename:
+      tag: rename_json_SampleRate_to_sample_rate
+      field: json.SampleRate
+      target_field: cloudflare_logpush.mnm_flow_logs.sample_rate
+      ignore_missing: true
+  - rename:
+      tag: rename_json_SampleRateType_to_sample_rate_type
+      field: json.SampleRateType
+      target_field: cloudflare_logpush.mnm_flow_logs.sample_rate_type
+      ignore_missing: true
+  - rename:
+      tag: rename_json_TcpFlags_to_tcp_flags
+      field: json.TcpFlags
+      target_field: cloudflare_logpush.mnm_flow_logs.tcp_flags
+      ignore_missing: true
+
+  # related.*
+  - append:
+      tag: append_source_ip_into_related_ip
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+  - append:
+      tag: append_destination_ip_into_related_ip
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      if: ctx.destination?.ip != null
+      allow_duplicates: false
+  - append:
+      tag: append_observer_ip_into_related_ip
+      field: related.ip
+      value: '{{{observer.ip.0}}}'
+      if: ctx.observer?.ip != null && ctx.observer.ip.size() > 0
+      allow_duplicates: false
+
+  - remove:
+      tag: remove_json_conf
+      field:
+        - json
+        - _conf
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || v == 'N/A' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      tag: append_preserve_original_event_tag
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      tag: append_pipeline_error_message
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event_tag_on_failure
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

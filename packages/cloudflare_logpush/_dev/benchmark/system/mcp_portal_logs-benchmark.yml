@@ -1,0 +1,25 @@
+---
+description: Benchmark 10000 mcp_portal_logs events ingested
+input: http_endpoint
+vars:
+  listen_address: 0.0.0.0
+data_stream:
+  name: mcp_portal_logs
+  vars:
+    listen_port: 9560
+    url: /cloudflare_logpush/mcp_portal_logs
+    preserve_original_event: true
+warmup_time_period: 10s
+corpora:
+  input_service:
+    name: cloudflare-logpush-mcp-portal-logs
+    signal: SIGHUP
+  generator:
+    total_events: 10000
+    template:
+      path: ./mcp_portal_logs-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./mcp_portal_logs-benchmark/config.yml
+    fields:
+      path: ./mcp_portal_logs-benchmark/fields.yml

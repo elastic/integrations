@@ -1,0 +1,48 @@
+- name: cloudflare_logpush.mcp_portal_logs
+  type: group
+  fields:
+    - name: colo
+      type: group
+      fields:
+        - name: code
+          type: keyword
+          description: The IATA airport code of the Cloudflare data center that processed the request (for example, DFW).
+    - name: error
+      type: keyword
+      description: The error message returned when the MCP request failed.
+      multi_fields:
+        - name: text
+          type: match_only_text
+    - name: portal
+      type: group
+      fields:
+        - name: aud
+          type: keyword
+          description: The Access application audience (AUD) tag of the MCP portal.
+        - name: id
+          type: keyword
+          description: The ID of the MCP portal.
+    - name: prompt_get_name
+      type: keyword
+      description: The name of the prompt requested by a `prompts/get` call.
+    - name: resource_read_uri
+      type: keyword
+      description: The URI of the resource requested by a `resources/read` call.
+    - name: server
+      type: group
+      fields:
+        - name: aud
+          type: keyword
+          description: The Access application audience (AUD) tag of the upstream MCP server.
+        - name: id
+          type: keyword
+          description: The ID of the upstream MCP server.
+    - name: session
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: The ID of the MCP session.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.

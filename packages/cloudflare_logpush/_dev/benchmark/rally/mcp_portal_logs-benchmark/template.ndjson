@@ -1,0 +1,47 @@
+{{- $timestamp := generate "timestamp" -}}
+{{- $client_country := generate "client_country" -}}
+{{- $client_ip := generate "client_ip" -}}
+{{- $colo_code := generate "colo_code" -}}
+{{- $method := generate "method" -}}
+{{- $portal_id := generate "portal_id" -}}
+{{- $server_id := generate "server_id" -}}
+{{- $server_host := generate "server_host" -}}
+{{- $duration_ms := generate "duration_ms" -}}
+{{- $session_id := generate "session_id" -}}
+{{- $success := generate "success" -}}
+{{- $tool_name := generate "tool_name" -}}
+{{- $prompt_name := generate "prompt_name" -}}
+{{- $resource_path := generate "resource_path" -}}
+{{- $user_id := generate "user_id" -}}
+{
+    "@timestamp": "{{ $timestamp.Format "2006-01-02T15:04:05.999999Z07:00" }}",
+    "agent": {
+        "ephemeral_id": "cdaaaabb-be7e-432f-816b-bda019fd7c15",
+        "id": "da6cb4c8-c84c-4c5f-97c7-f8586a098af4",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.19.7"
+    },
+    "data_stream": {
+        "dataset": "cloudflare_logpush.mcp_portal_logs",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "elastic_agent": {
+        "id": "da6cb4c8-c84c-4c5f-97c7-f8586a098af4",
+        "snapshot": false,
+        "version": "8.19.7"
+    },
+    "message": "{\"ClientCountry\":\"{{ $client_country }}\",\"ClientIP\":\"{{ $client_ip }}\",\"ColoCode\":\"{{ $colo_code }}\",\"Datetime\":\"{{ $timestamp.Format "2006-01-02T15:04:05Z07:00" }}\",{{- if not $success }}\"Error\":\"upstream MCP server returned 502 Bad Gateway\",{{ end -}}\"Method\":\"{{ $method }}\",\"PortalAUD\":\"4f1c8e2a9b7d3e6f0a5c1b8d2e7f9a3c4b6d8e0f1a2c3b4d5e6f7a8b9c0d1e2f\",\"PortalID\":\"{{ $portal_id }}\",{{- if eq $method "prompts/get" }}\"PromptGetName\":\"{{ $prompt_name }}\",{{ end -}}{{- if eq $method "resources/read" }}\"ResourceReadURI\":\"file:///{{ $resource_path }}\",{{ end -}}\"ServerAUD\":\"7e3a1c5b9d2f4e6a8c0b1d3f5e7a9c2b4d6f8e0a1c3b5d7f9e2a4c6b8d0f1e3a\",\"ServerID\":\"{{ $server_id }}\",\"ServerResponseDurationMs\":{{ $duration_ms }},\"ServerURL\":\"https://{{ $server_host }}/mcp\",\"SessionID\":\"{{ $session_id }}\",\"Success\":{{ $success }},{{- if eq $method "tools/call" }}\"ToolCallName\":\"{{ $tool_name }}\",{{ end -}}\"UserEmail\":\"user{{ $user_id }}@example.com\",\"UserID\":\"{{ $user_id }}\"}",
+    "event": {
+        "dataset": "cloudflare_logpush.mcp_portal_logs"
+    },
+    "input": {
+        "type": "http_endpoint"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "cloudflare_logpush-mcp_portal_logs"
+    ]
+}

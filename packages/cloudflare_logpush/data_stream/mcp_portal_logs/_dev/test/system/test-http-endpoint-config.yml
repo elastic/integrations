@@ -1,0 +1,15 @@
+deployer: docker
+service: cloudflare-logpush-mcp-portal-logs-http-endpoint
+service_notify_signal: SIGHUP
+input: http_endpoint
+wait_for_data_timeout: 1m
+vars:
+  listen_address: 0.0.0.0
+data_stream:
+  vars:
+    url: /cloudflare_logpush/mcp_portal_logs
+    listen_port: 9560
+    preserve_original_event: true
+    enable_request_tracer: true
+assert:
+  hit_count: 5
