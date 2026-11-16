@@ -266,36 +266,34 @@ processors:
             tag: rename_internalIpAddress_8fe9ce5f
             target_field: island_browser.device.internal_ip
             ignore_missing: true
-  - gsub:
-      field: island_browser.device.internal_ip
-      target_field: _temp1
-      tag: gsub_normalize_internal_ip_separators_06a78c26
-      pattern: '\s*\|\s*'
-      replacement: '/'
-      ignore_missing: true
-      description: >-
-        The Island API can return internalIpAddress as a list of IP addresses
-        and adapter labels (one per NIC) separated by "|" and "/", for example
-        "<ip> | <adapter>/<ip>" or "<adapter>/<ip> | <adapter>/<ip>". Use "/"
-        as the only separator so the value can be split into tokens.
-  - split:
-      field: _temp1
-      target_field: island_browser.device.internal_ip_address
-      tag: split_internal_ip_address_5d9e1991
-      separator: '\s*/\s*'
-      ignore_missing: true
-      description: Split the normalized "/"-separated value into IP addresses and adapter labels.
   - script:
       lang: painless
-      tag: script_drop_internal_ip_adapter_labels_2e6b1c47
+      tag: script_parse_internal_ip_addresses_2e6b1c47
       description: >-
-        Drop adapter labels (such as adapter GUIDs or names like "en0") so only
-        IP addresses remain. Tokens are kept if they look like an IPv4 or IPv6
-        address, so malformed IP addresses are still reported by the convert
-        processor below.
-      if: ctx.island_browser?.device?.internal_ip_address instanceof List
-      source: >-
-        ctx.island_browser.device.internal_ip_address.removeIf(v -> !(v instanceof String) || !(v.contains(':') || v =~ /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/));
+        The Island API can return internalIpAddress as a "|"-separated list of
+        addresses (one per NIC), where each address is an IP address that may
+        have an adapter label (such as a name like "en0" or an adapter GUID)
+        before it and a prefix length after it, separated by "/". For example
+        "<ip> | <adapter>/<ip>", "<adapter>/<ip> | <adapter>/<ip>" or
+        "<adapter>/<ip>/<prefix length>". Keep the last "/"-separated part of
+        each address that looks like an IPv4 or IPv6 address, so malformed IP
+        addresses are still reported by the convert processor below.
+      if: ctx.island_browser?.device?.internal_ip instanceof String
+      source: |-
+        List addrs = new ArrayList();
+        for (String elem : /\s*\|\s*/.split(ctx.island_browser.device.internal_ip.trim())) {
+          String[] parts = elem.splitOnToken('/');
+          for (int i = parts.length - 1; i >= 0; i--) {
+            String addr = parts[i].trim();
+            if (addr.contains(':') || addr =~ /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/) {
+              addrs.add(addr);
+              break;
+            }
+          }
+        }
+        if (!addrs.isEmpty()) {
+          ctx.island_browser.device.internal_ip_address = addrs;
+        }
   - convert:
       field: island_browser.device.internal_ip_address
       tag: convert_internal_ip_address_to_ip_b7109d2d
@@ -873,7 +871,6 @@ processors:
       field:
         - json
         - _temp
-        - _temp1
       tag: remove_json_and_temp_b1752a9b
       ignore_missing: true
   - script:
