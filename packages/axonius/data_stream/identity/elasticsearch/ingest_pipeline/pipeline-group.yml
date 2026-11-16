@@ -95,16 +95,57 @@ processors:
                 tag: append_error_message_e59182ba
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: axonius.identity.user_count_link
-      tag: foreach_user_count_link_value_c47c8002
+  - script:
+      tag: script_split_user_count_link_value_into_related_user_ca1aacda
+      lang: painless
+      description: Appends each email of the user_count_link values to related.user, without duplicates. A value can be a comma-separated string or an array of strings, and each array element can itself be comma-separated.
       if: ctx.axonius?.identity?.user_count_link instanceof List
-      processor:
-        append:
-          field: related.user
-          tag: append_user_count_link_value_into_related_user_3aa32572
-          value: '{{{_ingest._value.value}}}'
-          allow_duplicates: false
+      source: |-
+        void addUsers(List users, def value) {
+          if (!(value instanceof String)) {
+            return;
+          }
+          String text = value;
+          for (String part : text.splitOnToken(',')) {
+            String user = part.trim();
+            if (!user.isEmpty() && !users.contains(user)) {
+              users.add(user);
+            }
+          }
+        }
+        List users = new ArrayList();
+        for (def link : ctx.axonius.identity.user_count_link) {
+          if (!(link instanceof Map)) {
+            continue;
+          }
+          def value = link.value;
+          if (value instanceof List) {
+            for (def element : value) {
+              addUsers(users, element);
+            }
+          } else {
+            addUsers(users, value);
+          }
+        }
+        if (users.isEmpty()) {
+          return;
+        }
+        if (!(ctx.related instanceof Map)) {
+          ctx.related = new HashMap();
+        }
+        if (!(ctx.related.user instanceof List)) {
+          ctx.related.user = ctx.related.user == null ? new ArrayList() : new ArrayList([ctx.related.user]);
+        }
+        for (String user : users) {
+          if (!ctx.related.user.contains(user)) {
+            ctx.related.user.add(user);
+          }
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_5b3f1891
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 on_failure:
   - append:
       tag: append_error_message_417e65c9
