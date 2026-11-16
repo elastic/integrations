@@ -6,7 +6,7 @@ processors:
       lang: painless
       source: |
         // Pass manual operator documents (without transform 'snapshots' aggregation output) straight through
-        // because Fleet configures this pipeline as index.default_pipeline on chargeback_conf_lookup.
+        // because Fleet configures this pipeline as index.default_pipeline on chargeback_lookup.chargeback_conf.
         if (!ctx.containsKey('snapshots')) {
           if (ctx.config_join_key == null || ctx.config_join_key.toString().trim() == '') {
             ctx.config_join_key = 'chargeback_config';
@@ -33,6 +33,134 @@ processors:
         boolean ownerConflict = (conflictObj != null) && conflictObj.toString().equalsIgnoreCase('true');
         if (!hasSnaps || !policySyncEnabled || ownerConflict) {
           ctx._skip_conf_write = true;
+          return;
+        }
+
+        def legacyFlagObj = snapRoot.get('from_legacy_conf');
+        boolean fromLegacyConf = (legacyFlagObj != null) && legacyFlagObj.toString().equalsIgnoreCase('true');
+        if (fromLegacyConf && snapRoot.get('legacy_conf') instanceof Map) {
+          Map lc = (Map)snapRoot.get('legacy_conf');
+          double lRate = 0.85;
+          def rawLRate = lc.get('conf_chargeable_unit_rate') != null ? lc.get('conf_chargeable_unit_rate') : lc.get('conf_ecu_rate');
+          try {
+            if (rawLRate instanceof Number) {
+              lRate = ((Number)rawLRate).doubleValue();
+            } else if (rawLRate != null && rawLRate.toString().trim() != '') {
+              lRate = Double.parseDouble(rawLRate.toString().trim());
+            }
+          } catch (NumberFormatException e) {
+            ctx._skip_conf_write = true;
+            return;
+          }
+          if (Double.isNaN(lRate) || Double.isInfinite(lRate) || lRate < 0.0) {
+            ctx._skip_conf_write = true;
+            return;
+          }
+
+          double lOnpremRate = 0.00085;
+          try {
+            if (lc.get('conf_onprem_chargeable_unit_rate') instanceof Number) {
+              lOnpremRate = ((Number)lc.get('conf_onprem_chargeable_unit_rate')).doubleValue();
+            } else if (lc.get('conf_onprem_chargeable_unit_rate') != null && lc.get('conf_onprem_chargeable_unit_rate').toString().trim() != '') {
+              lOnpremRate = Double.parseDouble(lc.get('conf_onprem_chargeable_unit_rate').toString().trim());
+            }
+          } catch (NumberFormatException e) {
+            ctx._skip_conf_write = true;
+            return;
+          }
+          if (Double.isNaN(lOnpremRate) || Double.isInfinite(lOnpremRate) || lOnpremRate < 0.0) {
+            ctx._skip_conf_write = true;
+            return;
+          }
+
+          int lIdxW = 20;
+          int lQryW = 20;
+          int lStoW = 40;
+          int lMemW = 70;
+          int lDiskW = 30;
+          double lFloor = 0.10;
+          try {
+            if (lc.get('conf_indexing_weight') != null && lc.get('conf_indexing_weight').toString().trim() != '') {
+              lIdxW = lc.get('conf_indexing_weight') instanceof Number ? ((Number)lc.get('conf_indexing_weight')).intValue() : (int)Double.parseDouble(lc.get('conf_indexing_weight').toString().trim());
+            }
+            if (lc.get('conf_query_weight') != null && lc.get('conf_query_weight').toString().trim() != '') {
+              lQryW = lc.get('conf_query_weight') instanceof Number ? ((Number)lc.get('conf_query_weight')).intValue() : (int)Double.parseDouble(lc.get('conf_query_weight').toString().trim());
+            }
+            if (lc.get('conf_storage_weight') != null && lc.get('conf_storage_weight').toString().trim() != '') {
+              lStoW = lc.get('conf_storage_weight') instanceof Number ? ((Number)lc.get('conf_storage_weight')).intValue() : (int)Double.parseDouble(lc.get('conf_storage_weight').toString().trim());
+            }
+            if (lc.get('conf_utilization_memory_weight') != null && lc.get('conf_utilization_memory_weight').toString().trim() != '') {
+              lMemW = lc.get('conf_utilization_memory_weight') instanceof Number ? ((Number)lc.get('conf_utilization_memory_weight')).intValue() : (int)Double.parseDouble(lc.get('conf_utilization_memory_weight').toString().trim());
+            }
+            if (lc.get('conf_utilization_storage_weight') != null && lc.get('conf_utilization_storage_weight').toString().trim() != '') {
+              lDiskW = lc.get('conf_utilization_storage_weight') instanceof Number ? ((Number)lc.get('conf_utilization_storage_weight')).intValue() : (int)Double.parseDouble(lc.get('conf_utilization_storage_weight').toString().trim());
+            }
+            if (lc.get('conf_utilization_floor') instanceof Number) {
+              lFloor = ((Number)lc.get('conf_utilization_floor')).doubleValue();
+            } else if (lc.get('conf_utilization_floor') != null && lc.get('conf_utilization_floor').toString().trim() != '') {
+              lFloor = Double.parseDouble(lc.get('conf_utilization_floor').toString().trim());
+            }
+          } catch (NumberFormatException e) {
+            ctx._skip_conf_write = true;
+            return;
+          }
+          if (lIdxW < 0 || lQryW < 0 || lStoW < 0 || (lQryW + lStoW) <= 0 || lMemW < 0 || lDiskW < 0 || (lMemW + lDiskW) <= 0 || Double.isNaN(lFloor) || Double.isInfinite(lFloor) || lFloor < 0.0 || lFloor > 1.0) {
+            ctx._skip_conf_write = true;
+            return;
+          }
+
+          long lStartMillis = 1262304000000L;
+          long lEndMillis = 2430518399999L;
+          def rawStart = lc.get('conf_start_date');
+          if (rawStart instanceof Number) {
+            lStartMillis = ((Number)rawStart).longValue();
+          } else if (rawStart != null && rawStart.toString().trim() != '') {
+            String rs = rawStart.toString().trim();
+            try {
+              lStartMillis = Long.parseLong(rs);
+            } catch (NumberFormatException nfe) {
+              try {
+                lStartMillis = ZonedDateTime.parse(rs.contains('T') ? rs : (rs + 'T00:00:00Z')).toInstant().toEpochMilli();
+              } catch (DateTimeException dte) {
+                ctx._skip_conf_write = true;
+                return;
+              }
+            }
+          }
+          def rawEnd = lc.get('conf_end_date');
+          if (rawEnd instanceof Number) {
+            lEndMillis = ((Number)rawEnd).longValue();
+          } else if (rawEnd != null && rawEnd.toString().trim() != '') {
+            String re = rawEnd.toString().trim();
+            try {
+              lEndMillis = Long.parseLong(re);
+            } catch (NumberFormatException nfe) {
+              try {
+                lEndMillis = ZonedDateTime.parse(re.contains('T') ? re : (re + 'T23:59:59.999Z')).toInstant().toEpochMilli();
+              } catch (DateTimeException dte) {
+                ctx._skip_conf_write = true;
+                return;
+              }
+            }
+          }
+          if (lStartMillis < 0L || lStartMillis >= lEndMillis) {
+            ctx._skip_conf_write = true;
+            return;
+          }
+
+          def rawLUnit = lc.get('conf_chargeable_unit_rate_unit') != null ? lc.get('conf_chargeable_unit_rate_unit') : lc.get('conf_ecu_rate_unit');
+          String lUnit = (rawLUnit != null && rawLUnit.toString().trim() != '') ? rawLUnit.toString().trim() : 'EUR';
+          boolean isLegacyOnpremKey = 'chargeback_config_onprem'.equals(ctx.config_join_key);
+          ctx.conf_chargeable_unit_rate = isLegacyOnpremKey ? lOnpremRate : lRate;
+          ctx.conf_chargeable_unit_rate_unit = lUnit;
+          ctx.conf_indexing_weight = lIdxW;
+          ctx.conf_query_weight = lQryW;
+          ctx.conf_storage_weight = lStoW;
+          ctx.conf_utilization_memory_weight = lMemW;
+          ctx.conf_utilization_storage_weight = lDiskW;
+          ctx.conf_utilization_floor = lFloor;
+          ctx.conf_start_date = lStartMillis;
+          ctx.conf_end_date = lEndMillis;
           return;
         }
 

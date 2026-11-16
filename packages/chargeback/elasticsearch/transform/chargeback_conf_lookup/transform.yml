@@ -9,13 +9,23 @@ source:
     - .monitoring-es-*
     - metricbeat-*
     - monitoring-indices*
+    - chargeback_conf_lookup
     - -partial-*
     - -metrics-ess_billing.billing-chargeback
     - -monitoring-indices-chargeback
     - -chargeback_lookup.*
   query:
-    term:
-      doc_type: config_snapshot
+    bool:
+      should:
+        - term:
+            doc_type: config_snapshot
+        - bool:
+            must:
+              - term:
+                  _index: chargeback_conf_lookup
+              - exists:
+                  field: conf_start_date
+      minimum_should_match: 1
   runtime_mappings:
     config_join_key:
       type: keyword
@@ -60,9 +70,16 @@ source:
           }
           if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
             emit(doc['@timestamp'].value.toInstant().toEpochMilli());
+            return;
+          }
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'chargeback_conf_lookup') {
+            emit(1262304000000L);
           }
 dest:
-  index: chargeback_conf_lookup
+  index: chargeback_lookup.dest_chargeback_conf-1
+  aliases:
+    - alias: chargeback_lookup.chargeback_conf
+      move_on_creation: true
   pipeline: logs-chargeback.lookup-0.6.0-chargeback_conf
 frequency: 5m
 sync:
@@ -77,14 +94,24 @@ pivot:
   aggregations:
     snapshots:
       filter:
-        term:
-          doc_type: config_snapshot
+        bool:
+          should:
+            - term:
+                doc_type: config_snapshot
+            - bool:
+                must:
+                  - term:
+                      _index: chargeback_conf_lookup
+                  - exists:
+                      field: conf_start_date
+          minimum_should_match: 1
       aggs:
         latest:
           scripted_metric:
             init_script: |
               state.owners = [:];
               state.emitters = [:];
+              state.legacyConf = null;
             map_script: |
               if (params._source == null) {
                 return;
@@ -92,6 +119,41 @@ pivot:
               String srcIdx = (doc.containsKey('_index') && !doc['_index'].empty)
                 ? doc['_index'].value.toString()
                 : '';
+              if (srcIdx == 'chargeback_conf_lookup') {
+                String docId = (doc.containsKey('_id') && !doc['_id'].empty) ? doc['_id'].value.toString() : '';
+                if (docId == 'config_onprem') {
+                  return;
+                }
+                long lSync = (doc.containsKey('cb_sync_ts') && !doc['cb_sync_ts'].empty)
+                  ? doc['cb_sync_ts'].value.toInstant().toEpochMilli()
+                  : 0L;
+                int prio = (docId == 'config') ? 2 : 1;
+                boolean take = (state.legacyConf == null);
+                if (!take) {
+                  int curPrio = state.legacyConf.prio instanceof Number ? ((Number)state.legacyConf.prio).intValue() : 0;
+                  long curTs = state.legacyConf.ts instanceof Number ? ((Number)state.legacyConf.ts).longValue() : -1L;
+                  if (prio > curPrio || (prio == curPrio && lSync >= curTs)) {
+                    take = true;
+                  }
+                }
+                if (take) {
+                  Map lc = ['prio': prio, 'ts': lSync];
+                  for (String k : [
+                    'conf_start_date', 'conf_end_date',
+                    'conf_chargeable_unit_rate', 'conf_chargeable_unit_rate_unit',
+                    'conf_ecu_rate', 'conf_ecu_rate_unit',
+                    'conf_onprem_chargeable_unit_rate',
+                    'conf_indexing_weight', 'conf_query_weight', 'conf_storage_weight',
+                    'conf_utilization_memory_weight', 'conf_utilization_storage_weight', 'conf_utilization_floor'
+                  ]) {
+                    if (params._source.get(k) != null) {
+                      lc[k] = params._source.get(k);
+                    }
+                  }
+                  state.legacyConf = lc;
+                }
+                return;
+              }
               if (srcIdx != ''
                   && !(srcIdx.startsWith('.ds-metrics-chargeback.billing-')
                       || srcIdx.startsWith('metrics-chargeback.billing-')
@@ -234,7 +296,22 @@ pivot:
             reduce_script: |
               Map mergedOwners = [:];
               Map mergedEmitters = [:];
+              Map mergedLegacy = null;
               for (def s : states) {
+                if (s instanceof Map && s.legacyConf instanceof Map) {
+                  Map slc = (Map)s.legacyConf;
+                  if (mergedLegacy == null) {
+                    mergedLegacy = slc;
+                  } else {
+                    int sPrio = slc.prio instanceof Number ? ((Number)slc.prio).intValue() : 0;
+                    long sTs = slc.ts instanceof Number ? ((Number)slc.ts).longValue() : -1L;
+                    int cPrio = mergedLegacy.prio instanceof Number ? ((Number)mergedLegacy.prio).intValue() : 0;
+                    long cTs = mergedLegacy.ts instanceof Number ? ((Number)mergedLegacy.ts).longValue() : -1L;
+                    if (sPrio > cPrio || (sPrio == cPrio && sTs >= cTs)) {
+                      mergedLegacy = slc;
+                    }
+                  }
+                }
                 if (s instanceof Map && s.emitters instanceof Map) {
                   for (def ee : ((Map)s.emitters).entrySet()) {
                     String eid = ee.getKey().toString();
@@ -300,6 +377,16 @@ pivot:
               }
 
               if (mergedOwners.isEmpty()) {
+                if (mergedLegacy != null) {
+                  return [
+                    'has_snapshots': true,
+                    'policy_sync_enabled': true,
+                    'owner_conflict': false,
+                    'from_legacy_conf': true,
+                    'legacy_conf': mergedLegacy,
+                    'streams': [:]
+                  ];
+                }
                 return [
                   'has_snapshots': false,
                   'policy_sync_enabled': false,
