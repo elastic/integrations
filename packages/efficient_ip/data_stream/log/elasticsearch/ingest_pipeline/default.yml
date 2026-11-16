@@ -1,12 +1,11 @@
 ---
 description: Pipeline for parsing EfficientIP DDI logs.
 processors:
-  - rename:
-      tag: rename_message_to_event_original
-      field: message
-      target_field: event.original
-      ignore_missing: true
-      if: ctx.event?.original == null
+  - set:
+      tag: copy_message_to_event_original
+      field: event.original
+      copy_from: message
+      if: ctx.event?.original == null && ctx.message != null
   - set:
       tag: set_ecs_version
       field: ecs.version
@@ -185,21 +184,6 @@ processors:
           return false;
         }
         drop(ctx);
-  - set:
-      tag: save_message_when_original_not_preserved
-      field: _tmp.message
-      copy_from: message
-      if: ctx.message != null && ctx.tags?.contains('preserve_original_event') != true
-  - remove:
-      tag: remove_message_after_parsing
-      field: message
-      ignore_missing: true
-      if: ctx.event?.original != null
-  - set:
-      tag: restore_message_when_original_not_preserved
-      field: message
-      copy_from: _tmp.message
-      if: ctx._tmp?.message != null
   - remove:
       tag: remove_temporary_fields
       field:
