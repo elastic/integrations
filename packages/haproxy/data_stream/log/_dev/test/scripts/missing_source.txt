@@ -1,0 +1,36 @@
+# Non-connection logs leave source absent after grok fails. Script tests allow
+# checking this failure path while preserving the original parsing errors.
+[!external_stack] skip 'Skipping external stack test.'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default events.json
+
+stdout 'Provided Grok expressions do not match field value'
+stdout 'haproxy.request_date'
+stdout '"kind": "event"'
+! stdout 'null def reference'
+! stdout '"category":'
+! stdout '"type":'
+
+# Both append conditions must skip safely, allowing downstream cleanup to run.
+# The final script also removes the explicitly null source in the second event.
+! stdout '"_conf":'
+! stdout '"source":'
+
+uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+
+-- events.json --
+{
+  "message": "Nov 11 12:00:00 localhost haproxy[1234]: Proxy http-in started.",
+  "_conf": {
+    "tz_offset": "+0000"
+  }
+}
+{
+  "message": "Nov 11 12:00:00 localhost haproxy[1234]: Proxy http-in started.",
+  "source": null,
+  "_conf": {
+    "tz_offset": "+0000"
+  }
+}
