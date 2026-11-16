@@ -22,17 +22,17 @@ The Audit Service keeps events for 7 days. On the first run, the integration col
 ## What data does this integration collect?
 The CyberArk Identity Security (Idira) integration collects log messages of the following types:
 * `audit`: audit events from all services that send to the CyberArk Audit Service, for example:
-  * CyberArk Identity: sign-ins, sign-outs, failed sign-ins, MFA challenges, OAuth token creation, user, role and application changes, and provisioning.
+  * CyberArk Identity: sign-ins, sign-outs, failed sign-ins, MFA challenges, OAuth token creation, user, role, and application changes, and provisioning.
   * Privilege Cloud: vault sign-ins, password retrieval and changes, safe and owner changes, and privileged sessions.
-  * Secure Infrastructure Access: privileged session start, end and failure.
+  * Secure Infrastructure Access: privileged session start, end, and failure.
   * Identity Threat Detection and Response: security alerts.
 
 ### Supported use cases
-Use this integration to monitor identity and privileged access activity across the CyberArk Identity Security Platform in one place. For example, detect sign-in failures and MFA abuse, track changes to administrative rights and roles, audit access to privileged credentials, and investigate CyberArk threat detection alerts together with your other security data.
+Use this integration to monitor identity and privileged access activity across the CyberArk Identity Security Platform in one place. For example, detect sign-in failures and MFA misuse, track changes to administrative rights and roles, audit access to privileged credentials, and investigate CyberArk threat detection alerts together with your other security data.
 
 ## What do I need to use this integration?
 - A CyberArk Identity Security Platform tenant.
-- An administrator who can create web apps, users and roles in Identity Administration, and create a SIEM integration in the administration portal.
+- An administrator who can create web apps, users, and roles in Identity Administration, and create a SIEM integration in the administration portal.
 - A free SIEM integration slot. A tenant can have at most two third-party SIEM integrations.
 
 ## How do I deploy this integration?
@@ -53,7 +53,7 @@ For more information, refer to [Elastic Managed integrations](https://www.elasti
 Menu names can be different in your portal version. Newer portals group the menus under **Access**, **Manage** and **Setup**.
 
 1. Create an OAuth2 Server web app:
-   1. In Identity Administration, go to **Apps & Widgets** > **Web Apps** and click **Add Web Apps**.
+   1. In Identity Administration, go to **Apps & Widgets** → **Web Apps** and click **Add Web Apps**.
    2. On the **Custom** tab, add **OAuth2 Server**.
    3. On the **Settings** tab, set the **Application ID**, for example `elastic_siem`. This is the **Application ID** in the integration settings.
    4. On the **Tokens** tab, set **Token Type** to `jwtRS256` and select only the **Client Creds** authentication method. Set the token lifetime, for example 5 hours.
@@ -65,13 +65,13 @@ Menu names can be different in your portal version. Newer portals group the menu
       ```
    7. Save the web app.
 2. Create a service user:
-   1. Go to **Core Services** > **Users** and click **Add User**.
+   1. Go to **Core Services** → **Users** and click **Add User**.
    2. Enable **Is service user** and **Is OAuth confidential client**.
    3. Note the full login name, including the tenant suffix, for example `svc_elastic@cyberark.cloud.1234`, and the password. These are the **Client ID** and **Client Secret** in the integration settings. Service users do not get an invitation, so the status **Not invited** is normal.
 3. On the **Permissions** tab of the web app, add the service user with the **Grant**, **View**, **Run** and **Automatically Deploy** permissions.
-4. Give the service user the **Read Only System Administration** administrative right. CyberArk documents that without this right, queries return no events. Go to **Core Services** > **Roles**, add a role, add the **Read Only System Administration** right on the **Administrative Rights** tab, and add the service user on the **Members** tab.
+4. Give the service user the **Read Only System Administration** administrative right. CyberArk documents that without this right, queries return no events. Go to **Core Services** → **Roles**, add a role, add the **Read Only System Administration** right on the **Administrative Rights** tab, and add the service user on the **Members** tab.
 5. Create a SIEM integration:
-   1. In the administration portal, go to **Integrations** > **Export to SIEM**, then click **Create** > **Create SIEM integration**.
+   1. In the administration portal, go to **Integrations** → **Export to SIEM**, then click **Create** → **Create SIEM integration**.
    2. Enter a name and click **Apply**.
    3. Copy the **API key** and the **API base URL**. The API key is shown only once. These are the **SIEM API Key** and **Audit API URL** in the integration settings.
 6. Note your Identity ID: in Identity Administration, click your user name, select **About**, and copy the **ID** shown under **Identity**, for example `ACF4874`.
@@ -81,7 +81,7 @@ Menu names can be different in your portal version. Newer portals group the menu
 - [Idira SIEM integration development guide](https://github.com/cyberark/Idira-Partner-Integration-Docs/blob/main/docs/audit-service/siem-integration/development-guide.md)
 
 ### Set up steps in Kibana
-1. In Kibana, go to **Management** > **Integrations**.
+1. In Kibana, go to **Management** → **Integrations**.
 2. Search for **CyberArk Identity Security** and select the integration.
 3. Click **Add CyberArk Identity Security (Idira)**.
 4. Enter the **Audit API URL**, **SIEM API Key**, **Identity ID**, **Application ID**, **Client ID** and **Client Secret** from the CyberArk setup.
