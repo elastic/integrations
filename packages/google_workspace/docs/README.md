@@ -94,6 +94,16 @@ Recommended Chunk Duration values:
 
 A chunk should be small enough to be fully collected between the interruptions you expect, and must not exceed `720h` (30 days). Once the data stream has caught up, the window end is limited by `now - Lag Time`, so Chunk Duration has no effect on steady-state collection. Leaving the setting empty, or setting it to `0`, disables chunking. Existing saved positions are reused unchanged when the setting is turned on or off.
 
+### Duplicate events and index rollover
+
+The `access_transparency`, `admin`, `chat`, `context_aware_access`, `device`, `drive`, `gcp`, `group_enterprise`, `groups`, `login`, `rules`, `saml`, `token` and `user_accounts` data streams set the document `_id` to a fingerprint of the event's `id` and `events` fields, so collecting the same event twice normally produces one document. The `alert` data stream does the same with a fingerprint of the alert's identifiers and timestamps. The other data streams let Elasticsearch generate the `_id`, so every re-collected event from them is stored again.
+
+The fingerprint prevents duplicates only within one backing index. A data stream checks for an existing `_id` only in its current write index, so if the data stream rolls over between the first and second collection of an event, the second copy is stored in the new backing index. Two documents with the same `_id` in different backing indices are the sign of this. The backing index rolls over by size or by age according to the data stream's lifecycle policy, and a large replay can trigger a size-based rollover by itself within hours.
+
+For example, with Chunk Duration unset and a saved position several weeks old, the next interval requests those weeks in one window. If the agent restarts partway through, the whole window is requested again, and any events that were already indexed before a rollover are indexed a second time. With Chunk Duration set to `1h`, the same saved position produces one hour of activity per interval, and a restart re-collects at most that hour, so at most one hour of events can be duplicated if a rollover happens in between.
+
+To limit duplicates, set Chunk Duration on busy data streams, and keep Initial Interval no longer than the history you need when a data stream starts with no saved position. If you do need a long initial history, set Chunk Duration as well so it is collected one chunk at a time.
+
 # Google Workspace Gmail Logs
 
 :::{note}
