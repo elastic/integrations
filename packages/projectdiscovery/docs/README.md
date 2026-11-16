@@ -298,7 +298,7 @@ The `vulnerability` data stream provides Nuclei vulnerability findings from Proj
 | projectdiscovery.vulnerability.template_id | Nuclei template identifier. | keyword |
 | projectdiscovery.vulnerability.template_path | Path of the Nuclei template. | keyword |
 | projectdiscovery.vulnerability.template_url | URL of the Nuclei template in the ProjectDiscovery Cloud Platform. | keyword |
-| projectdiscovery.vulnerability.updated_at | Time the finding was last updated, either re-detected or changed in status (UTC). | date |
+| projectdiscovery.vulnerability.updated_at | Time the finding was last updated, either re-detected or changed in status (UTC). Kept with microsecond precision to order versions of a finding. | date_nanos |
 | projectdiscovery.vulnerability.vuln_hash | Hash identifying the finding. | keyword |
 | projectdiscovery.vulnerability.vuln_status | Status of the finding: open, fixed, false_positive, duplicate, fix_in_progress, accepted_risk or triaged. | keyword |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
@@ -350,24 +350,24 @@ An example event for `vulnerability` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-04-01T12:00:00.420Z",
+    "@timestamp": "2026-10-08T12:00:00.420Z",
     "agent": {
-        "ephemeral_id": "74599dbd-6404-4dfa-a305-467cdcdfb119",
-        "id": "9c286448-69a3-4274-8dd7-2168182fc97f",
-        "name": "elastic-agent-68307",
+        "ephemeral_id": "8e70e799-55d2-4d3f-934b-e96c1d8e0a8f",
+        "id": "071075a7-d773-4e8d-b8bf-fed093a0934c",
+        "name": "elastic-agent-52253",
         "type": "filebeat",
         "version": "9.5.6"
     },
     "data_stream": {
         "dataset": "projectdiscovery.vulnerability",
-        "namespace": "34325",
+        "namespace": "69372",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "9c286448-69a3-4274-8dd7-2168182fc97f",
+        "id": "071075a7-d773-4e8d-b8bf-fed093a0934c",
         "snapshot": false,
         "version": "9.5.6"
     },
@@ -378,10 +378,10 @@ An example event for `vulnerability` looks as following:
         ],
         "dataset": "projectdiscovery.vulnerability",
         "id": "d7e0000000000000000e",
-        "ingested": "2026-11-11T22:03:23Z",
+        "ingested": "2026-11-16T09:36:15Z",
         "kind": "state",
         "module": "projectdiscovery",
-        "original": "{\"created_at\":\"2026-03-15T09:00:00.98765\",\"description\":\"Weak TLS cipher suites are supported by the server.\",\"event\":[{\"extracted-results\":[\"[tls10 TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA]\"],\"host\":\"mail.example.com\",\"info\":{\"author\":[\"erin-p\"],\"metadata\":{\"max-request\":4},\"name\":\"Weak Cipher Suites Detection\",\"reference\":[\"https://www.example.com/tls-cipher-guidance\"],\"severity\":\"medium\",\"tags\":[\"ssl\",\"tls\",\"misconfig\"]},\"ip\":\"198.51.100.50\",\"matched-at\":\"mail.example.com:443\",\"matcher-name\":\"tls-1.0\",\"matcher-status\":true,\"port\":\"443\",\"template-id\":\"weak-cipher-suites\",\"template-path\":\"/ops/ssl/weak-cipher-suites.yaml\",\"timestamp\":\"2026-04-01T11:59:48.5012Z\",\"type\":\"ssl\"}],\"impact\":\"\",\"is_internal\":false,\"labels\":null,\"matcher_status\":true,\"port\":443,\"remediation\":\"Disable weak cipher suites.\",\"result_type\":\"scan\",\"scan_id\":\"d2o2aaaabbbbccccdd10\",\"target\":\"mail.example.com\",\"template_encoded\":\"\",\"template_id\":\"weak-cipher-suites\",\"template_path\":\"/ops/ssl/weak-cipher-suites.yaml\",\"template_url\":\"https://cloud.projectdiscovery.io/public/weak-cipher-suites\",\"updated_at\":\"2026-04-01T12:00:00.4201\",\"vuln_hash\":\"0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e\",\"vuln_id\":\"d7e0000000000000000e\",\"vuln_status\":\"triaged\"}",
+        "original": "{\"created_at\":\"2026-03-15T09:00:00.98765\",\"description\":\"Weak TLS cipher suites are supported by the server.\",\"event\":[{\"extracted-results\":[\"[tls10 TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA]\"],\"host\":\"mail.example.com\",\"info\":{\"author\":[\"erin-p\"],\"metadata\":{\"max-request\":4},\"name\":\"Weak Cipher Suites Detection\",\"reference\":[\"https://www.example.com/tls-cipher-guidance\"],\"severity\":\"medium\",\"tags\":[\"ssl\",\"tls\",\"misconfig\"]},\"ip\":\"198.51.100.50\",\"matched-at\":\"mail.example.com:443\",\"matcher-name\":\"tls-1.0\",\"matcher-status\":true,\"port\":\"443\",\"template-id\":\"weak-cipher-suites\",\"template-path\":\"/ops/ssl/weak-cipher-suites.yaml\",\"timestamp\":\"2026-04-01T11:59:48.5012Z\",\"type\":\"ssl\"}],\"impact\":\"\",\"is_internal\":false,\"labels\":null,\"matcher_status\":true,\"port\":443,\"remediation\":\"Disable weak cipher suites.\",\"result_type\":\"scan\",\"scan_id\":\"d2o2aaaabbbbccccdd10\",\"target\":\"mail.example.com\",\"template_encoded\":\"\",\"template_id\":\"weak-cipher-suites\",\"template_path\":\"/ops/ssl/weak-cipher-suites.yaml\",\"template_url\":\"https://cloud.projectdiscovery.io/public/weak-cipher-suites\",\"updated_at\":\"2026-10-08T12:00:00.4201\",\"vuln_hash\":\"0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e\",\"vuln_id\":\"d7e0000000000000000e\",\"vuln_status\":\"triaged\"}",
         "type": [
             "info"
         ]
@@ -454,7 +454,7 @@ An example event for `vulnerability` looks as following:
             "template_id": "weak-cipher-suites",
             "template_path": "/ops/ssl/weak-cipher-suites.yaml",
             "template_url": "https://cloud.projectdiscovery.io/public/weak-cipher-suites",
-            "updated_at": "2026-04-01T12:00:00.420Z",
+            "updated_at": "2026-10-08T12:00:00.4201Z",
             "vuln_hash": "0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e",
             "vuln_status": "triaged"
         }
@@ -475,6 +475,12 @@ An example event for `vulnerability` looks as following:
         "name": "mail.example.com"
     },
     "server": {
+        "as": {
+            "number": 64501,
+            "organization": {
+                "name": "Documentation ASN"
+            }
+        },
         "domain": "mail.example.com",
         "registered_domain": "example.com",
         "subdomain": "mail",
@@ -640,7 +646,7 @@ An example event for `vulnerability` looks as following:
 | projectdiscovery.vulnerability.template_id | Nuclei template identifier. | keyword |
 | projectdiscovery.vulnerability.template_path | Path of the Nuclei template. | keyword |
 | projectdiscovery.vulnerability.template_url | URL of the Nuclei template in the ProjectDiscovery Cloud Platform. | keyword |
-| projectdiscovery.vulnerability.updated_at | Time the finding was last updated, either re-detected or changed in status (UTC). | date |
+| projectdiscovery.vulnerability.updated_at | Time the finding was last updated, either re-detected or changed in status (UTC). Kept with microsecond precision to order versions of a finding. | date_nanos |
 | projectdiscovery.vulnerability.vuln_hash | Hash identifying the finding. | keyword |
 | projectdiscovery.vulnerability.vuln_status | Status of the finding: open, fixed, false_positive, duplicate, fix_in_progress, accepted_risk or triaged. | keyword |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |

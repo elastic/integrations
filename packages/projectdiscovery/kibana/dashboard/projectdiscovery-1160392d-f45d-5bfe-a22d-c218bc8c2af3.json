@@ -43,7 +43,7 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "content": "Triage findings in **[Security › Findings › Vulnerabilities](security/cloud_security_posture/findings/vulnerabilities)**. Panels show open findings unless you select a status in the **Status** control.",
+                    "content": "Triage findings in **[Security › Findings › Vulnerabilities](/app/security/cloud_security_posture/findings/vulnerabilities)**. Panels show open findings unless you select a status in the **Status** control.",
                     "hidePanelTitles": true
                 },
                 "gridData": {
@@ -2754,7 +2754,7 @@
                             "searchSourceJSON": {
                                 "filter": [],
                                 "query": {
-                                    "esql": "FROM security_solution-projectdiscovery.vulnerability_latest METADATA _id, _index\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| SORT @timestamp DESC"
+                                    "esql": "FROM security_solution-projectdiscovery.vulnerability_latest METADATA _id, _index\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE (?status IS NULL AND projectdiscovery.vulnerability.vuln_status == \"open\") OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| SORT @timestamp DESC"
                                 }
                             }
                         },
@@ -2780,7 +2780,7 @@
                                     "hideChart": true,
                                     "isTextBasedQuery": true,
                                     "kibanaSavedObjectMeta": {
-                                        "searchSourceJSON": "{\"query\": {\"esql\": \"FROM security_solution-projectdiscovery.vulnerability_latest METADATA _id, _index\\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\\n| SORT @timestamp DESC\"}, \"filter\": []}"
+                                        "searchSourceJSON": "{\"query\": {\"esql\": \"FROM security_solution-projectdiscovery.vulnerability_latest METADATA _id, _index\\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\\n| WHERE (?status IS NULL AND projectdiscovery.vulnerability.vuln_status == \\\"open\\\") OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\\n| SORT @timestamp DESC\"}, \"filter\": []}"
                                     },
                                     "sort": [
                                         [
