@@ -341,15 +341,15 @@ The `vulnerability_findings` data stream collects CVE findings from `GET /v1/org
 | upwind.vulnerability_findings.source | The scan source that produced this finding. | keyword |
 | upwind.vulnerability_findings.status | The workflow status of this finding. | keyword |
 | upwind.vulnerability_findings.vulnerability.cve_first_seen_time | The timestamp when the CVE was first seen. | date |
-| upwind.vulnerability_findings.vulnerability.epss_score | The EPSS score of the vulnerability. | keyword |
+| upwind.vulnerability_findings.vulnerability.epss_score | The EPSS score of the vulnerability. | float |
 | upwind.vulnerability_findings.vulnerability.epss_severity | The EPSS severity of the vulnerability. | keyword |
 | upwind.vulnerability_findings.vulnerability.exploitable | Whether the vulnerability is known to be exploitable. | boolean |
 | upwind.vulnerability_findings.vulnerability.exploitable_functions_in_use | Exploitable functions of the vulnerable package observed in use at runtime. | flattened |
 | upwind.vulnerability_findings.vulnerability.known_exploit_sources | Sources that report known exploits for the vulnerability. | keyword |
 | upwind.vulnerability_findings.vulnerability.name | The name of the vulnerability. | keyword |
-| upwind.vulnerability_findings.vulnerability.nvd_cvss_v2_score | The NVD CVSS v2 score of the vulnerability. | keyword |
+| upwind.vulnerability_findings.vulnerability.nvd_cvss_v2_score | The NVD CVSS v2 score of the vulnerability. | float |
 | upwind.vulnerability_findings.vulnerability.nvd_cvss_v2_severity | The NVD CVSS v2 severity of the vulnerability. | keyword |
-| upwind.vulnerability_findings.vulnerability.nvd_cvss_v4_score | The NVD CVSS v4 score of the vulnerability. | keyword |
+| upwind.vulnerability_findings.vulnerability.nvd_cvss_v4_score | The NVD CVSS v4 score of the vulnerability. | float |
 | upwind.vulnerability_findings.vulnerability.nvd_cvss_v4_severity | The NVD CVSS v4 severity of the vulnerability. | keyword |
 | upwind.vulnerability_findings.vulnerability.nvd_description | The NVD description of the vulnerability. | keyword |
 | upwind.vulnerability_findings.vulnerability.nvd_publish_time | The timestamp when the vulnerability was published in the NVD. | date |
@@ -475,7 +475,7 @@ An example event for `vulnerability_findings` looks as following:
             "source": "RUNTIME_SCAN",
             "status": "OPEN",
             "vulnerability": {
-                "epss_score": "0.42",
+                "epss_score": 0.42,
                 "epss_severity": "high",
                 "exploitable": true,
                 "known_exploit_sources": "cisa",

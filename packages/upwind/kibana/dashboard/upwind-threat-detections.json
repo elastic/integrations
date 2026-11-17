@@ -130,7 +130,7 @@
                                             ],
                                             "index": "logs-*-d5a5e883ae0417ed043d94c00e044451029ff4e1f1cef066621114483e037ece",
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"upwind.threat_detections\"\n| STATS `Total Detections` = COUNT(*)"
+                                                "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"upwind.threat_detections\"\n| STATS `Total Detections` = COUNT_DISTINCT(event.id)"
                                             }
                                         }
                                     }
@@ -145,7 +145,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"upwind.threat_detections\"\n| STATS `Total Detections` = COUNT(*)"
+                                "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"upwind.threat_detections\"\n| STATS `Total Detections` = COUNT_DISTINCT(event.id)"
                             },
                             "visualization": {
                                 "layerId": "layer_0",
@@ -498,7 +498,7 @@
                                             ],
                                             "index": "logs-*-80385810c02a2895f64c491c638f7e2694d914491ebd055554edca207a46877d",
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"upwind.threat_detections\"\n| STATS `Total Occurrence Count` = SUM(upwind.threat_detections.occurrence_count)"
+                                                "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"upwind.threat_detections\"\n| STATS occ = MAX(upwind.threat_detections.occurrence_count) BY event.id\n| STATS `Total Occurrence Count` = SUM(occ)"
                                             }
                                         }
                                     }
@@ -513,7 +513,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"upwind.threat_detections\"\n| STATS `Total Occurrence Count` = SUM(upwind.threat_detections.occurrence_count)"
+                                "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"upwind.threat_detections\"\n| STATS occ = MAX(upwind.threat_detections.occurrence_count) BY event.id\n| STATS `Total Occurrence Count` = SUM(occ)"
                             },
                             "visualization": {
                                 "layerId": "layer_0",
