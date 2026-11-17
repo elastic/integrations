@@ -169,8 +169,7 @@ processors:
       target_field: gigamon.ami.start_time
       tag: date_gigamon_ami_start_time
       formats:
-        - 'yyyy:MM:dd HH:mm:ss.SSSSSS'
-        - 'yyyy:MM:dd HH:mm:ss.SSS'
+        - 'yyyy:MM:dd HH:mm:ss[.SSSSSS][.SSS]'
         - 'EEE MMM dd HH:mm:ss yyyy'
         - 'EEE MMM  d HH:mm:ss yyyy'
         - 'EEE MMM d HH:mm:ss yyyy'
@@ -187,8 +186,7 @@ processors:
       target_field: gigamon.ami.end_time
       tag: date_gigamon_ami_end_time
       formats:
-        - 'yyyy:MM:dd HH:mm:ss.SSSSSS'
-        - 'yyyy:MM:dd HH:mm:ss.SSS'
+        - 'yyyy:MM:dd HH:mm:ss[.SSSSSS][.SSS]'
         - 'EEE MMM dd HH:mm:ss yyyy'
         - 'EEE MMM  d HH:mm:ss yyyy'
         - 'EEE MMM d HH:mm:ss yyyy'
@@ -1326,8 +1324,8 @@ processors:
             } else {
               ctx.gigamon.ami.ssl_protocol_version_value = raw;
             }
-        }
-        }
+          }
+        }  
 
         // tcp_flag_reset
 
@@ -1341,12 +1339,11 @@ processors:
               long flags = Long.parseLong(raw);
               if ((flags & 4L) != 0L) {
                 ctx.gigamon.ami.tcp_flag_reset = "1";
+              }
+            } catch (Exception e) {
+            }
+          }
         }
-        } catch (Exception e) {
-        }
-        }
-        }
-
 
         // ssl_ext_sig_algorithm_hash
         if (ctx.gigamon.ami.ssl_ext_sig_algorithm_hash != null) {

@@ -1,0 +1,260 @@
+- name: ti_flashpoint
+  type: group
+  fields:
+    - name: sighting
+      type: group
+      fields:
+        - name: fpid
+          type: keyword
+          description: The Flashpoint ID of this credentials object.
+        - name: basetypes
+          type: keyword
+          description: This array contains the underlying type of the credentials object, in this case ["credential-sighting"].
+        - name: body
+          type: keyword
+          description: This is the raw content captured from the breach Flashpoint discovered.
+        - name: body_raw
+          type: object
+          object_type: keyword
+          description: This is the raw content captured from the breach Flashpoint discovered, retained here when it is delivered as a structured object rather than a string.
+        - name: affected_domain
+          type: keyword
+          description: (optional) Domain object extracted from the affected url.
+        - name: password
+          type: keyword
+          description: The password for the credential (in plain text, if possible).
+        - name: original_password
+          type: keyword
+          description: If the password was encrypted and it was able to be cracked by Flashpoint, this field would store the original hash value while password would store the cracked value.
+        - name: has_plaintext_recovered
+          type: boolean
+          description: This will be "true" if the plaintext password was recovered from a hashed value in the original breach data.
+        - name: is_fresh
+          type: boolean
+          description: This will be "true" if the credential has not been seen before, and it hasn't been marked "not fresh" by an analyst (historical breaches are not "fresh").
+        - name: times_seen
+          type: long
+          description: Integer representing the number of times this credential has been seen associated with this breach at Flashpoint.
+        - name: last_observed_at
+          type: group
+          description: If exists, this represents the most recent date stamp for when it was observed by Flashpoint.
+          fields:
+            - name: date_time
+              type: date
+              description: Datetime object formatted as YYYY-mm-ddTHH:MM:SSZ.
+            - name: timestamp
+              type: date
+              description: UNIX timestamp.
+        - name: password_complexity
+          type: group
+          description: This object reports relevant properties of the compromised password.
+          fields:
+            - name: length
+              type: long
+              description: Integer value that represents number of characters in password.
+            - name: has_lowercase
+              type: boolean
+              description: Boolean true/false if lowercase letters are present.
+            - name: has_uppercase
+              type: boolean
+              description: Boolean true/false if uppercase letters are present.
+            - name: has_number
+              type: boolean
+              description: Boolean true/false if numbers are present.
+            - name: has_symbol
+              type: boolean
+              description: Boolean true/false if symbols are present.
+            - name: probable_hash_algorithms
+              type: keyword
+              description: List of possible hash algorithms suspected based on text pattern of the password (May include values like "MD5", "SHA-1", "SHA-256", "bcrypt", etc.).
+        - name: breach
+          type: group
+          description: This describes the breach in which the credential was found.
+          fields:
+            - name: fpid
+              type: keyword
+              description: Flashpoint ID of the breach.
+            - name: basetypes
+              type: keyword
+              description: Array containing underlying base type of breach object, i.e. ["breach"].
+            - name: breach_type
+              type: keyword
+              description: Constant for future use ("credential").
+            - name: title
+              type: keyword
+              description: Title of breach.
+            - name: source
+              type: keyword
+              description: Actual source of where the dump was found (i.e. Analyst Research or a URL).
+            - name: source_type
+              type: keyword
+              description: Data source of breach (Analyst Research, Credential Stealer, Paste, Flashpoint Extracted, Phishing).
+            - name: created_at
+              type: group
+              description: Time object for when this breach was created at.
+              fields:
+                - name: date_time
+                  type: date
+                  description: Datetime object formatted as YYYY-mm-ddTHH:MM:SSZ.
+                - name: timestamp
+                  type: date
+                  description: UNIX timestamp.
+            - name: first_observed_at
+              type: group
+              description: Time object for when this breach was first seen at Flashpoint.
+              fields:
+                - name: date_time
+                  type: date
+                  description: Datetime object formatted as YYYY-mm-ddTHH:MM:SSZ.
+                - name: timestamp
+                  type: date
+                  description: UNIX timestamp.
+        - name: cookies
+          type: group
+          description: List of cookies associated with this credential.
+          fields:
+            - name: key
+              type: keyword
+              description: Key of key/value pair that specifies where the cookie is to be sent and what data to recall.
+            - name: value
+              type: keyword
+              description: Value of key/value pair that specifies where the cookie is to be sent and what data to recall.
+            - name: affected_domain
+              type: keyword
+              description: Domain element of the URL that the cookie is associated with.
+            - name: path
+              type: keyword
+              description: Path element that must exist in the requested URL for the browser to send the cookie.
+            - name: allow_subdomains
+              type: boolean
+              description: Flag indicating whether the cookie can be used by subdomains.
+        - name: infected_host_attributes
+          type: group
+          description: Object-formatted infected host attributes associated with this credential.
+          fields:
+            - name: fpid
+              type: keyword
+              description: Unique Flashpoint ID for the infected host.
+            - name: host_id
+              type: keyword
+              description: A string representing the infected host machine, generated by the malware (not guaranteed to be unique).
+            - name: ip
+              type: ip
+              description: Unique IP address that identifies a device on the network, ipv4 or ipv6.
+            - name: ipv4
+              type: ip
+              description: Unique IP address that identifies a device on the network, used if ip is ipv4 format.
+            - name: ipv6
+              type: ip
+              description: Unique IP address that identifies a device on the network, used if ip is ipv6 format.
+            - name: installed_software
+              type: group
+              description: List of installed software objects on the infected host, each object containing "name" and "version".
+              fields:
+                - name: name
+                  type: keyword
+                - name: version
+                  type: keyword
+            - name: malware
+              type: group
+              description: Malware information.
+              fields:
+                - name: family
+                  type: keyword
+                  description: Name of the malware family used to infiltrate infected host.
+                - name: version
+                  type: keyword
+                  description: Version of the malware family used to infiltrate infected host.
+                - name: scanned_at
+                  type: group
+                  description: Time that the malware scanned the infected machine.
+                  fields:
+                    - name: date_time
+                      type: date
+                      description: Datetime object formatted as YYYY-mm-ddTHH:MM:SSZ.
+            - name: machine
+              type: group
+              description: System configurations.
+              fields:
+                - name: os
+                  type: keyword
+                  description: Operating System (OS).
+                - name: architecture
+                  type: keyword
+                  description: System architecture (e.g., x64).
+                - name: cpu
+                  type: keyword
+                  description: List of Central Processing Units (CPUs).
+                - name: gpu
+                  type: keyword
+                  description: List of Graphics Processing Units (GPUs).
+                - name: ram
+                  type: keyword
+                  description: Random Access Memory (RAM).
+                - name: resolution
+                  type: keyword
+                  description: Display resolution on infected host measured in pixels.
+                - name: language
+                  type: keyword
+                  description: List of languages configured on the infected host.
+                - name: user
+                  type: keyword
+                  description: Local username configured on infected host.
+                - name: extra
+                  type: group
+                  description: Extra information about the host machine that isn't captured elsewhere in list of objects format, each item containing "key" and "value".
+                  fields:
+                    - name: key
+                      type: keyword
+                    - name: value
+                      type: keyword
+            - name: location
+              type: group
+              description: Approximate location, calculated by Flashpoint based on the IP address associated with this infected host.
+              fields:
+                - name: city_name
+                  type: keyword
+                  description: City name.
+                - name: country_name
+                  type: keyword
+                  description: Country name.
+                - name: continent_name
+                  type: keyword
+                  description: Continent name.
+                - name: latitude
+                  type: double
+                  description: Latitude element of the Global Positioning System (GPS) coordinates.
+                - name: longitude
+                  type: double
+                  description: Longitude element of the GPS coordinates.
+                - name: location
+                  type: geo_point
+                  description: Separate latitude/longitude object for performing efficient geopoint search (e.g., find docs within geopoint box).
+                - name: subdivision_1_name
+                  type: keyword
+                  description: Subdivision 1 (e.g., state).
+                - name: subdivision_2_name
+                  type: keyword
+                  description: Subdivision 2 (e.g., county).
+                - name: accuracy_radius
+                  type: long
+                  description: Accuracy radius in kilometers around the latitude and longitude.
+            - name: isp
+              type: group
+              description: Internet Service Provider (ISP) data, calculated by Flashpoint based on the IP address associated with this infected host.
+              fields:
+                - name: isp
+                  type: keyword
+                  description: ISP name.
+                - name: organization
+                  type: keyword
+                  description: ISP organization.
+                - name: connection_type
+                  type: keyword
+                  description: ISP connection type.
+                - name: autonomous_system_number
+                  type: long
+                  description: Autonomous System Number (ASN) used to control routing.
+                - name: autonomous_system_organization
+                  type: keyword
+                  description: ISP Autonomous System (AS) organization.

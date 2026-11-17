@@ -1,0 +1,167 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies execution of software whose reported code-signature subject matches a known remote monitoring and management (RMM) publisher with a download origin on a commonly abused web service. Adversaries use these services to deliver remote-access software during social engineering and intrusion campaigns.",
+        "false_positives": [
+            "Publishers in the maintained signer list may also sign scanners, backup clients, or other non-RMM software. Confirm the actual product and purpose from executable, command-line, hash, and deployment evidence.",
+            "IT or managed service providers may distribute RMM binaries through public hosting or shared download links. Confirm the package, host, operator, timing, and enrollment destination against a change record or support ticket."
+        ],
+        "from": "now-25m",
+        "interval": "5m",
+        "investigation_fields": {
+            "field_names": [
+                "host.name",
+                "user.name",
+                "process.executable",
+                "process.command_line",
+                "process.code_signature.subject_name",
+                "process.code_signature.trusted",
+                "process.hash.sha256",
+                "process.origin_url",
+                "Esql.file_origin_urls",
+                "Esql.file_origin_time"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Potential RMM Execution from a Commonly Abused Web Service",
+        "note": " ## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential RMM Execution from a Commonly Abused Web Service\n\nThis rule detects signed remote monitoring software launched on Windows after delivery from a commonly abused hosting or file-sharing service, which may indicate covert remote access despite the software appearing legitimate. An attacker may send a user a social-engineering link to download a trusted remote-support executable, then launch it to establish interactive control while blending with legitimate administration activity.\n\n### Possible investigation steps\n\n- Confirm whether the RMM product, executing user, device, and observed timeframe align with approved software inventory, help-desk activity, or authorized administrator actions.\n- Reconstruct the delivery chain using browser, email, proxy, and file telemetry to identify the initiating link, sender, download time, and any social-engineering context.\n- Review the process ancestry, command line, descendants, and nearby persistence changes for scripted installation, unattended-access configuration, credential access, or shell execution.\n- Correlate DNS, network, and firewall telemetry with vendor infrastructure and extract available session identifiers, configuration artifacts, or remote operator details.\n- Hunt enterprise-wide for the same hash, executable path, source URL, user, and related destinations, then isolate affected hosts and remove unauthorized access mechanisms if malicious activity is confirmed.\n\n### False positive analysis\n\n- An authorized help-desk technician may download and run approved RMM software from a listed file-sharing or hosting domain, which can be confirmed against support tickets, administrator activity, and the approved software inventory.\n- An approved software deployment may retrieve a signed RMM installer from organization-controlled cloud storage, which can be validated by reviewing the origin URL, code-signature trust, file hash, deployment timing, and change records.\n\n### Response and remediation\n\n- Isolate affected Windows hosts from the network while preserving endpoint evidence, including the RMM executable, process tree, command line, source URL, configuration files, and network connections.\n- Terminate unauthorized RMM sessions and remove associated executables, services, scheduled tasks, startup entries, registry run keys, unattended-access settings, and newly created accounts or access tokens.\n- Escalate immediately to incident response if the RMM accessed privileged accounts, executed shells or credential tools, moved laterally, established persistence, or appeared on multiple systems.\n- Reset credentials and revoke active sessions for affected users and administrators, then block confirmed malicious hashes, download URLs, domains, and remote-service destinations across endpoint, web, DNS, email, and firewall controls.\n- Reimage compromised hosts or restore them from a verified known-good baseline, patch affected software, and validate that no unauthorized RMM components, accounts, persistence artifacts, or outbound connections remain before reconnecting them.\n- Prevent recurrence by allowlisting approved RMM products and deployment sources, restricting installation and unattended-access configuration to authorized administrators, and monitoring for RMM downloads from public hosting or file-sharing services.\n",
+        "query": "// Union file and process rows. Then INLINE STATS attaches file-origin context for the host and path.\n// File-origin fallback correlation is only used when process.origin_url is missing or empty.\nFROM\n(\n  FROM logs-endpoint.events.file-*\n  | WHERE KQL(\"event.action: creation\") AND file.origin_url IS NOT NULL\n  // Strip the terminal :Zone.Identifier ADS suffix and optional :$DATA stream type from the file path so we can correlate with the process event.\n  | EVAL is_execution = false, origin_url = file.origin_url,\n      executable_path = REPLACE(TO_LOWER(file.path), \":zone[.]identifier(:[$]data)?$\", \"\")\n),\n(\n  FROM logs-endpoint.events.process-* METADATA _id, _version, _index\n  | WHERE host.os.type == \"windows\" AND KQL(\"event.type: start\")\n  | WHERE process.code_signature.subject_name IN (\n      \"Action1 Corporation\", \"Aeroadmin LLC\", \"AeroAdmin LLC\", \"AmidaWare LLC\", \"Ammyy LLC\", \"AnyDesk Software GmbH\",\n      \"AOMEI International Network Limited\", \"Atera Networks Ltd\", \"AWERAY PTE. LTD.\", \"BeamYourScreen GmbH\",\n      \"Bomgar Corporation\", \"BreakingSecurity.net\", \"ConnectWise, Inc.\", \"ConnectWise, LLC\", \"Connectwise, LLC\",\n      \"Devolutions Inc\", \"Devolutions inc.\", \"DOMOTZ INC.\", \"DUC FABULOUS CO.,LTD\", \"DWSNET O\u00dc\", \"DWSNET srl\",\n      \"Electronic Team, Inc.\", \"Famatech Corp.\", \"FleetDeck Inc\", \"FLEETDECK INC.\", \"GlavSoft LLC\", \"GlavSoft LLC.\",\n      \"GoTo Technologies USA, LLC\", \"Hefei Pingbo Network Technology Co. Ltd\", \"IDrive, Inc.\",\n      \"Impero Solutions Limited\", \"IMPERO SOLUTIONS LIMITED\", \"Instant Housecall\", \"ISL Online Ltd.\", \"JumpCloud Inc\",\n      \"Level Software, Inc.\", \"LogMeIn, Inc.\", \"LUNIXAR SAS DE CV\", \"MMSOFT Design Ltd.\", \"Monitoring Client\",\n      \"MSPBytes Corp\", \"MSPBytes, Corp.\", \"N-ABLE TECHNOLOGIES LTD\", \"Nanosystems S.r.l.\", \"NetSupport Ltd\",\n      \"NetSupport Ltd.\", \"NETSUPPORT LTD.\", \"NinjaOne LLC\", \"NinjaRMM, LLC\", \"Open Source Developer, Huabing Zhou\",\n      \"Parallels International GmbH\", \"philandro Software GmbH\", \"Pro Softnet Corporation\", \"PURSLANE\", \"RealVNC\",\n      \"RealVNC Limited\", \"REMOTE UTILITIES PTE. LTD.\", \"Remote Utilities LLC\", \"Rocket Software, Inc.\",\n      \"Rsupport Co., Ltd.\", \"SAFIB\", \"ScreenConnect Client\", \"Servably, Inc.\", \"Servably Inc.\", \"ShowMyPC INC\",\n      \"SimpleHelp Ltd\", \"Splashtop Inc.\", \"Superops Inc.\", \"Tailscale Inc.\", \"TeamViewer\", \"TeamViewer GmbH\",\n      \"TeamViewer Germany GmbH\", \"Techinline Limited\", \"uvnc bvba\", \"Yakhnovets Denis Aleksandrovich IP\",\n      \"Zhou Huabing\", \"ZOHO Corporation Private Limited\"\n    )\n  | EVAL is_execution = true, origin_url = process.origin_url, executable_path = TO_LOWER(process.executable)\n)\n\n// Both process.origin_url and file.origin_url are copied to the common origin_url variable in the subqueries.\n// So we can use the same logic for both the primary and fallback origin_url.\n| URI_PARTS origin = origin_url\n\n// Preserve executions with null/empty origin URLs so they can fall back to file origin if needed.\n| WHERE (is_execution AND (origin_url IS NULL OR origin_url == \"\")) OR\n    // Source code and developer artifact hosting.\n    TO_LOWER(origin.domain) LIKE (\n      \"api.bitbucket.org\", \"bitbucket.org\", \"api.github.com\", \"gist.githubusercontent.com\", \"github.com\",\n      \"github-releases.githubusercontent.com\", \"objects.githubusercontent.com\", \"raw.githack.com\",\n      \"raw.githubusercontent.com\", \"rawcdn.githack.com\", \"release-assets.githubusercontent.com\", \"gitlab.com\",\n      \"*.gitlab.com\", \"notabug.org\", \"sourceforge.net\", \"*.sourceforge.net\"\n    ) OR\n    // AWS S3 object storage.\n    TO_LOWER(origin.domain) LIKE (\n      \"s3.amazonaws.com\", \"*.s3.amazonaws.com\", \"s3.*.amazonaws.com\", \"*.s3.*.amazonaws.com\", \"s3-*.amazonaws.com\",\n      \"*.s3-*.amazonaws.com\", \"*.s3express-*.amazonaws.com\"\n    ) OR\n    // Azure, Cloudflare R2, Discord, and Dropbox.\n    TO_LOWER(origin.domain) LIKE (\n      \"*.azurewebsites.net\", \"*.azurestaticapps.net\", \"*.azurecontainerapps.io\", \"*.blob.core.windows.net\",\n      \"*.blob.storage.azure.net\", \"*.web.core.windows.net\", \"*.web.storage.azure.net\", \"*.file.core.windows.net\",\n      \"*.azurefd.net\", \"*.azureedge.net\", \"*.r2.dev\", \"cdn.discordapp.com\", \"dropbox.com\", \"*.dropbox.com\",\n      \"dropboxusercontent.com\", \"*.dropboxusercontent.com\"\n    ) OR\n    // Firebase Storage, Google Drive, and Cloud Storage.\n    TO_LOWER(origin.domain) LIKE (\n      \"*.googleusercontent.com\", \"content-storage.googleapis.com\", \"firebasestorage.googleapis.com\", \"docs.google.com\",\n      \"drive.google.com\", \"drive.usercontent.google.com\", \"storage-download.googleapis.com\", \"storage.googleapis.com\",\n      \"*.storage.googleapis.com\", \"www.googleapis.com\"\n    ) OR\n    // OneDrive, SharePoint, Onehub, OnlyOffice, pCloud, Slack, Supabase, and Wasabi.\n    TO_LOWER(origin.domain) LIKE (\n      \"api.onedrive.com\", \"files.1drv.com\", \"*.files.1drv.com\", \"onedrive.live.com\", \"*.onedrive.live.com\",\n      \"sharepoint.com\", \"*.sharepoint.com\", \"storage.live.com\", \"*.storage.live.com\", \"onehub.com\", \"*.onehub.com\",\n      \"onlyoffice.com\", \"*.onlyoffice.com\", \"pcloud.com\", \"*.pcloud.com\", \"files.slack.com\", \"slack-files.com\",\n      \"*.supabase.co\", \"s3.wasabisys.com\", \"*.s3.wasabisys.com\", \"s3.*.wasabisys.com\", \"*.s3.*.wasabisys.com\"\n    ) OR\n    // Developer tunnels, reverse proxies, automation, and webhooks.\n    TO_LOWER(origin.domain) LIKE (\n      \"devtunnels.ms\", \"*.devtunnels.ms\", \"localtunnel.me\", \"*.localtunnel.me\", \"n8n.cloud\", \"*.n8n.cloud\",\n      \"*.ngrok.app\", \"*.ngrok.dev\", \"*.ngrok-free.app\", \"*.ngrok-free.dev\", \"*.ngrok.io\", \"*.ngrok.pizza\",\n      \"*.ngrok.pro\", \"pagekite.me\", \"*.pagekite.me\", \"serveo.net\", \"*.serveo.net\", \"trycloudflare.com\",\n      \"*.trycloudflare.com\", \"webhook.site\"\n    ) OR\n    // File-sharing and transfer services.\n    TO_LOWER(origin.domain) LIKE (\n      \"4shared.com\", \"*.4shared.com\", \"*.4sync.com\", \"bashupload.com\", \"*.bashupload.com\", \"catbox.moe\", \"*.catbox.moe\",\n      \"easyupload.io\", \"*.easyupload.io\", \"file.io\", \"filebin.net\", \"filecloud.me\", \"files.fm\", \"*.files.fm\",\n      \"filetransfer.io\", \"*.filetransfer.io\", \"gofile.io\", \"*.gofile.io\", \"limewire.com\", \"*.limewire.com\",\n      \"mediafire.com\", \"*.mediafire.com\", \"mega.co.nz\", \"*.mega.co.nz\", \"mega.nz\", \"*.mega.nz\", \"pixeldrain.com\",\n      \"*.pixeldrain.com\", \"send.cm\", \"*.send.cm\", \"send.now\", \"*.send.now\", \"sendit.sh\", \"*.sendit.sh\", \"sendspace.com\",\n      \"*.sendspace.com\", \"share.riseup.net\", \"temp.sh\", \"tempsend.com\", \"transfer.sh\", \"ufile.io\", \"*.ufile.io\",\n      \"upload.ee\", \"*.upload.ee\", \"we.tl\", \"wetransfer.com\", \"*.wetransfer.com\", \"*.wetransfer.net\", \"workupload.com\"\n    ) OR\n    // CDN, paste, and public hosting services.\n    TO_LOWER(origin.domain) LIKE (\n      \"*.alwaysdata.net\", \"blogspot.com\", \"*.blogspot.com\", \"b-cdn.net\", \"*.b-cdn.net\", \"cdnmegafiles.com\",\n      \"*.cdnmegafiles.com\", \"infinityfreeapp.com\", \"*.infinityfreeapp.com\", \"free.keep.sh\", \"*.netlify.app\", \"paste.ee\",\n      \"publicvm.com\", \"*.publicvm.com\", \"*.vercel.app\", \"*.*.workers.dev\"\n    ) OR\n    // Decentralized and content-addressed storage.\n    TO_LOWER(origin.domain) LIKE (\n      \"ar.io\", \"*.ar.io\", \"arweave.net\", \"*.arweave.net\", \"ic0.app\", \"*.ic0.app\", \"icp0.io\", \"*.icp0.io\", \"dweb.link\",\n      \"*.dweb.link\", \"gateway.pinata.cloud\", \"ipfs.io\", \"*.ipfs.io\", \"mypinata.cloud\", \"*.mypinata.cloud\",\n      \"nftstorage.link\", \"*.nftstorage.link\", \"storjshare.io\", \"*.storjshare.io\", \"web3.storage\", \"*.web3.storage\"\n    )\n\n// For events where process.origin_url is missing or empty, we can look for file.origin_url values on the same host and path.\n| INLINE STATS Esql.file_origin_time = MIN(@timestamp) WHERE is_execution == false,\n    Esql.file_origin_urls = VALUES(origin_url) WHERE is_execution == false\n  BY host.id, executable_path\n// For fallback, at least one qualifying file event must happen at or before the process event.\n| WHERE is_execution AND (\n    (origin_url IS NOT NULL AND origin_url != \"\") OR @timestamp >= Esql.file_origin_time\n  )\n\n| KEEP @timestamp, _id, _version, _index, event.type, host.id, host.name, user.name,\n    process.entity_id, process.executable, process.command_line, process.hash.sha256,\n    process.code_signature.subject_name, process.code_signature.trusted, process.origin_url,\n    Esql.file_origin_time, Esql.file_origin_urls\n| SORT @timestamp DESC, _index ASC, _id ASC\n",
+        "references": [
+            "https://www.huntress.com/blog/series-of-unfortunate-rmm-events",
+            "https://www.cloudflare.com/cloudforce-one/research/report/vercel-hosted-rmm-abuse-campaign-evolves-with-telegram-c2-for-victim-filtering/",
+            "https://www.cloudflare.com/cloudforce-one/research/new-ssa-themed-phishing-campaign-installs-trojanized-screenconnect/",
+            "https://www.forescout.com/blog/from-urls-to-malware-how-threat-actors-abuse-domain-security-in-2025/",
+            "https://www.microsoft.com/en-us/security/blog/2026/09/29/phishing-abuses-rmm-tools-persistent-access"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": ">=9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "executable_path",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "file.origin_url",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "is_execution",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "origin.domain",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "origin_url",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.subject_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.origin_url",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "e06df914-e526-4a52-ab9d-0fd10d8015dd",
+        "setup": "## Setup\n\nThis rule requires Elastic Defend on Windows with process and file event collection, process code-signature metadata, and executable-origin URLs on process events or file creation events.\n\nSetup instructions: https://ela.st/install-elastic-defend\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Platform: Windows",
+            "Rule Type: ES|QL",
+            "Threat: Remote Management Tool Abuse",
+            "Use Case: Threat Detection",
+            "Tactic: Command and Control",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1105",
+                        "name": "Ingress Tool Transfer",
+                        "reference": "https://attack.mitre.org/techniques/T1105/"
+                    },
+                    {
+                        "id": "T1219",
+                        "name": "Remote Access Tools",
+                        "reference": "https://attack.mitre.org/techniques/T1219/",
+                        "subtechnique": [
+                            {
+                                "id": "T1219.002",
+                                "name": "Remote Desktop Software",
+                                "reference": "https://attack.mitre.org/techniques/T1219/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "e06df914-e526-4a52-ab9d-0fd10d8015dd_1",
+    "type": "security-rule"
+}

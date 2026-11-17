@@ -1,0 +1,222 @@
+{
+    "attributes": {
+        "alert_suppression": {
+            "duration": {
+                "unit": "h",
+                "value": 4
+            },
+            "group_by": [
+                "source.ip"
+            ],
+            "missing_fields_strategy": "suppress"
+        },
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects the same API Management subscription key calling Microsoft Foundry from source IPs in two or more countries, far enough apart and fast enough that the hop is not physical travel. Calls are grouped by apim_subscription_id. Requests with no subscription key are ignored, because those are unauthenticated calls and share no key.",
+        "false_positives": [
+            "A subscription key used from a VPN, a cloud VM, or a corporate proxy whose egress geo is far from the developer's network. A home ISP and a cloud build agent on the same key look like impossible travel.",
+            "One shared subscription key in front of users in different countries. Split that key per application, or raise the distance and speed thresholds in the query."
+        ],
+        "from": "now-4h",
+        "investigation_fields": {
+            "field_names": [
+                "azure.ai_foundry.properties.apim_subscription_id",
+                "azure.ai_foundry.properties.api_id",
+                "azure.ai_foundry.properties.operation_id",
+                "azure.resource.name",
+                "azure.resource.group",
+                "url.domain",
+                "url.path",
+                "Esql.distance_km",
+                "Esql.travel_kmh",
+                "Esql.window_minutes",
+                "Esql.country_count",
+                "Esql.event_count",
+                "Esql.source_ip_values",
+                "Esql.source_geo_country_name_values",
+                "Esql.source_geo_region_name_values",
+                "Esql.source_geo_city_name_values",
+                "Esql.source_as_organization_name_values",
+                "Esql.azure_ai_foundry_properties_user_agent_values",
+                "Esql.azure_ai_foundry_properties_backend_response_code_values",
+                "Esql.first_lat",
+                "Esql.first_lon",
+                "Esql.last_lat",
+                "Esql.last_lon",
+                "Esql.timestamp_first_seen",
+                "Esql.timestamp_last_seen"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Microsoft Foundry Subscription Key Impossible Travel",
+        "note": "## Triage and analysis\n\n### Investigating Microsoft Foundry Subscription Key Impossible Travel\n\nOne API Management subscription key was used from source IPs in at least two countries, and the first and last\nlocations in the lookback are too far apart for the time between them. The alert is grouped by that subscription,\nthe API, the operation, the API Management resource, and the URL. IP, country, ASN, and user agent stay as value\nlists because those change between the two locations. Distance and speed thresholds are in the query.\n\nA return to the first country can keep the first and last points close, so the alert may not fire. Sort the raw\nGatewayLogs for that subscription before closing it.\n\n#### Possible investigation steps\n\n- Read Esql.distance_km, Esql.travel_kmh, Esql.window_minutes, and the country, city, IP, and ASN lists. Two countries\n  and a high speed is the case this rule is for.\n- Compare user agents across the IPs. A browser or script on the distant IP that does not match the usual client for\n  that subscription is the higher priority hop.\n- Confirm the distant IP is not an approved egress for this subscription: a build VM, a NAT, or a second office.\n- Look for other GatewayLogs on the same subscription in the same window: refusals, HTTP 400 jailbreak blocks, or a\n  jump in call volume.\n\n### False positive analysis\n\n- VPN and cloud egress. The second IP often belongs to the cloud provider's ASN rather than a residential ISP.\n- A shared key used by design from more than one country. Exclude that subscription or raise the thresholds in the\n  query.\n\n### Response and remediation\n\n- If the distant IP is not approved, regenerate the API Management subscription key and update the applications that\n  use it.\n- Review Foundry calls for that subscription after the distant event for prompts, refusals, and token volume.\n",
+        "query": "from logs-azure_ai_foundry.logs-*\n| where\n    data_stream.dataset == \"azure_ai_foundry.logs\" and\n    azure.ai_foundry.category == \"GatewayLogs\" and\n    azure.ai_foundry.properties.apim_subscription_id is not null and\n    source.ip is not null and\n    source.geo.location is not null and\n    source.geo.country_name is not null\n| eval\n    Esql.source_geo_lat = st_y(source.geo.location),\n    Esql.source_geo_lon = st_x(source.geo.location)\n| where Esql.source_geo_lat is not null and Esql.source_geo_lon is not null\n| stats\n    Esql.first_lat = first(Esql.source_geo_lat, @timestamp),\n    Esql.first_lon = first(Esql.source_geo_lon, @timestamp),\n    Esql.last_lat = last(Esql.source_geo_lat, @timestamp),\n    Esql.last_lon = last(Esql.source_geo_lon, @timestamp),\n    Esql.event_count = count(*),\n    Esql.country_count = count_distinct(source.geo.country_name),\n    Esql.source_ip_values = values(source.ip),\n    Esql.source_geo_country_name_values = values(source.geo.country_name),\n    Esql.source_geo_region_name_values = values(source.geo.region_name),\n    Esql.source_geo_city_name_values = values(source.geo.city_name),\n    Esql.source_as_organization_name_values = values(source.as.organization.name),\n    Esql.azure_ai_foundry_properties_user_agent_values = values(azure.ai_foundry.properties.user_agent),\n    Esql.azure_ai_foundry_properties_backend_response_code_values = values(azure.ai_foundry.properties.backend_response_code),\n    Esql.azure_ai_foundry_properties_apim_subscription_id = min(azure.ai_foundry.properties.apim_subscription_id),\n    Esql.timestamp_first_seen = min(@timestamp),\n    Esql.timestamp_last_seen = max(@timestamp)\n  by\n    azure.ai_foundry.properties.apim_subscription_id,\n    azure.ai_foundry.properties.api_id,\n    azure.ai_foundry.properties.operation_id,\n    azure.resource.name,\n    azure.resource.group,\n    url.domain,\n    url.path\n| where Esql.event_count >= 2 and Esql.country_count >= 2\n| eval\n    Esql.p1 = to_geopoint(concat(\"POINT(\", to_string(Esql.first_lon), \" \", to_string(Esql.first_lat), \")\")),\n    Esql.p2 = to_geopoint(concat(\"POINT(\", to_string(Esql.last_lon), \" \", to_string(Esql.last_lat), \")\"))\n| eval\n    Esql.distance_km = round(st_distance(Esql.p1, Esql.p2) / 1000.0, 0),\n    Esql.window_minutes = date_diff(\"minute\", Esql.timestamp_first_seen, Esql.timestamp_last_seen),\n    Esql.travel_kmh = case(Esql.window_minutes > 0, round(Esql.distance_km * 60.0 / Esql.window_minutes, 0), null),\n    source.ip = MV_FIRST(Esql.source_ip_values)\n| where Esql.distance_km >= 500 and Esql.travel_kmh >= 800\n| keep\n    azure.ai_foundry.properties.apim_subscription_id,\n    azure.ai_foundry.properties.api_id,\n    azure.ai_foundry.properties.operation_id,\n    azure.resource.name,\n    azure.resource.group,\n    url.domain,\n    url.path,\n    source.ip,\n    Esql.*\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/azure_ai_foundry",
+            "https://learn.microsoft.com/en-us/azure/api-management/diagnostic-logs-reference"
+        ],
+        "related_integrations": [
+            {
+                "package": "azure_ai_foundry",
+                "version": ">=0.2.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "azure.ai_foundry.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.ai_foundry.properties.api_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.ai_foundry.properties.apim_subscription_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.ai_foundry.properties.backend_response_code",
+                "type": "integer"
+            },
+            {
+                "ecs": false,
+                "name": "azure.ai_foundry.properties.operation_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.ai_foundry.properties.user_agent",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.resource.group",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.resource.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.as.organization.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.geo.city_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.geo.country_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.geo.location",
+                "type": "geo_point"
+            },
+            {
+                "ecs": true,
+                "name": "source.geo.region_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "url.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "url.path",
+                "type": "wildcard"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "49fcbc29-675b-487e-88a2-655ec067a1cc",
+        "setup": "## Setup\n\nThis rule needs the Microsoft Foundry integration collecting Azure API Management GatewayLogs with the client IP.\nThe subscription key name is apim_subscription_id, and that is the value the rule groups on. Foundry\nRequestResponse logs do not record the key, and the caller address there is masked.\n\n- Use an API Management tier that emits resource logs. Developer or higher works. Consumption does not.\n- Send the GatewayLogs category to the Event Hub the integration reads.\n- Log the client IP in API diagnostics so source.ip and source.geo are on the event. The rule uses source.geo.location for the distance.\n\nhttps://www.elastic.co/docs/reference/integrations/azure_ai_foundry\n",
+        "severity": "medium",
+        "tags": [
+            "Data Source: Microsoft Foundry",
+            "Use Case: Threat Detection",
+            "Mitre Atlas: AML.T0091",
+            "Mitre Atlas: AML.T0012",
+            "Resources: Investigation Guide",
+            "Tactic: Credential Access",
+            "Tactic: Initial Access",
+            "Rule Type: ES|QL",
+            "Platform: Azure",
+            "Domain: Cloud",
+            "Domain: GenAI",
+            "Service: Azure API Management",
+            "Threat: Impossible Travel"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1528",
+                        "name": "Steal Application Access Token",
+                        "reference": "https://attack.mitre.org/techniques/T1528/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/",
+                        "subtechnique": [
+                            {
+                                "id": "T1078.004",
+                                "name": "Cloud Accounts",
+                                "reference": "https://attack.mitre.org/techniques/T1078/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "49fcbc29-675b-487e-88a2-655ec067a1cc_1",
+    "type": "security-rule"
+}
