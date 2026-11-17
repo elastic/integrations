@@ -1,6 +1,10 @@
 ---
 description: Pipeline for processing Zero Networks Audit logs
 processors:
+  - set:
+      tag: set_ecs_version_f5923bab
+      field: ecs.version
+      value: '8.17.0'
   - rename:
       tag: rename_message_to_event_original_a7b1f822
       field: message
@@ -74,19 +78,21 @@ processors:
       field: json.destinationEntitiesList
       ignore_missing: true
       processor:
-        set:
-          tag: set_zeronetworks_audit_destinationEntitiesList_name_4a717a7a
+        append:
+          tag: append_zeronetworks_audit_destinationEntitiesList_name_4a717a7a
           field: zeronetworks.audit.destinationEntitiesList.name
           value: '{{{_ingest._value.name}}}'
+          allow_duplicates: true
   - foreach:
       tag: foreach_json_destinationEntitiesList_66d11144
       field: json.destinationEntitiesList
       ignore_missing: true
       processor:
-        set:
-          tag: set_zeronetworks_audit_destinationEntitiesList_id_859f779d
+        append:
+          tag: append_zeronetworks_audit_destinationEntitiesList_id_859f779d
           field: zeronetworks.audit.destinationEntitiesList.id
           value: '{{{_ingest._value.id}}}'
+          allow_duplicates: true
   - json:
       tag: json_json_details_to_zeronetworks_audit_details_75798942
       field: json.details
@@ -110,6 +116,9 @@ processors:
         - json.timestamp
         - event.code
         - user.full_name
+        - zeronetworks.audit.reportedObjectId
+        - zeronetworks.audit.parentObjectId
+      ignore_missing: true
       target_field: event.id
   - set:
       tag: set__id_60edd145
@@ -138,6 +147,14 @@ processors:
           category:
             - host
             - configuration
+        "3":
+          action: 'Protection Failed Adding'
+          outcome: failure
+          type:
+            - info
+          category:
+            - host
+            - configuration
         "4":
           action: 'Asset is being removed from protection'
           outcome: success
@@ -153,6 +170,14 @@ processors:
           type:
             - end
             - change
+          category:
+            - host
+            - configuration
+        "6":
+          action: 'Protection Failed Removing'
+          outcome: failure
+          type:
+            - info
           category:
             - host
             - configuration
@@ -1126,12 +1151,2666 @@ processors:
           category:
             - host
             - configuration
-      source: >-
-        ctx.event.kind = 'event'; if (ctx?.event?.code == null) {
-            return;
-        } if (params.get(ctx.event.code) == null) {
-            return;
-        } def hm = new HashMap(params.get(ctx.event.code)); hm.forEach((k, v) -> ctx.event[k] = v);
+        "132":
+          action: 'Break glass activated for asset'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "133":
+          action: 'Break glass deactivated for asset'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "134":
+          action: 'Asset is being segmented (RPC)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "135":
+          action: 'Asset segmented (RPC)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "136":
+          action: 'Asset is being unsegmented (RPC)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "137":
+          action: 'Asset unsegmented (RPC)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "138":
+          action: 'RPC rule created'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "139":
+          action: 'RPC rule deleted'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "140":
+          action: 'RPC rule expired'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "141":
+          action: 'RPC rule edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "142":
+          action: 'Asset was revived but still marked as inactive'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "143":
+          action: 'User learning is done (identity)'
+          outcome: success
+          type:
+            - info
+          category:
+            - user
+            - configuration
+        "144":
+          action: 'User is back to learning (identity)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - user
+            - configuration
+        "145":
+          action: 'Members added to tag group'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "146":
+          action: 'Members removed from tag group'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "147":
+          action: 'Identity MFA policy created'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "148":
+          action: 'Identity MFA policy edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "149":
+          action: 'Identity MFA policy deleted'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "150":
+          action: 'Identity JIT rule created'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "151":
+          action: 'Identity JIT rule deleted'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "152":
+          action: 'Identity JIT rule expired'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "153":
+          action: 'Identity JIT rule edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "154":
+          action: 'Identity Detection Rejected'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "155":
+          action: 'Asset type changed'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "156":
+          action: 'Asset added to learning (RPC)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "157":
+          action: 'Asset removed from learning (RPC)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "158":
+          action: 'Asset learning extended (RPC)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "159":
+          action: 'Asset segmentation date postponed (RPC)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "160":
+          action: 'Asset learning is done (RPC)'
+          outcome: success
+          type:
+            - info
+          category:
+            - host
+            - configuration
+        "161":
+          action: 'Asset is back to learning (RPC)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "162":
+          action: 'Asset added to environment'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "163":
+          action: 'Asset removed from environment'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "164":
+          action: 'Asset environment updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "165":
+          action: 'Asset added to learning (identity)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "166":
+          action: 'Asset removed from learning (identity)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "167":
+          action: 'Asset learning extended (identity)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "168":
+          action: 'Asset segmentation date postponed (identity)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "169":
+          action: 'Asset learning is done (identity)'
+          outcome: success
+          type:
+            - info
+          category:
+            - host
+            - configuration
+        "170":
+          action: 'Asset is back to learning (identity)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "171":
+          action: 'Enforcing block rules'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "172":
+          action: 'Enforcing block rules due to policy'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "173":
+          action: 'Block rules enforced'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "174":
+          action: 'Removing block rules'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "175":
+          action: 'Group marked as inactive by entity repository'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "176":
+          action: 'Group marked as active by entity repository'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "177":
+          action: 'Cache MFA config created'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "178":
+          action: 'Cache MFA config updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "179":
+          action: 'Cache MFA config removed'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "180":
+          action: 'Identity onboarding policy created'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "181":
+          action: 'Identity onboarding policy deleted'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "182":
+          action: 'Identity onboarding policy edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "183":
+          action: 'Asset unsegmented (identity) (overriding policy)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "184":
+          action: 'Asset removed from learning (identity) (overriding policy)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "185":
+          action: 'Asset is being unsegmented (identity) (overriding policy)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "186":
+          action: 'Ssp Logon'
+          outcome: success
+          type:
+            - info
+          category:
+            - authentication
+        "187":
+          action: 'Asset OS type changed'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "188":
+          action: 'User marked as inactive by entity repository'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - user
+            - configuration
+        "189":
+          action: 'User marked as active by entity repository'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - user
+            - configuration
+        "190":
+          action: 'Connect server deleted'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "191":
+          action: 'Region deleted'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "192":
+          action: 'External Access policy created'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "193":
+          action: 'External Access policy removed'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "194":
+          action: 'External Access policy edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "195":
+          action: 'Switch added'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "196":
+          action: 'Switch edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "197":
+          action: 'Switch set as inactive'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "198":
+          action: 'Asset is being segmented (network)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "199":
+          action: 'Asset segmented (network)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "200":
+          action: 'Asset is being unsegmented (network)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "201":
+          action: 'Asset unsegmented (network)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "202":
+          action: 'OT/IoT rule created'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "203":
+          action: 'OT/IoT rule deleted'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "204":
+          action: 'OT/IoT rule edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "205":
+          action: 'OT/IoT rule expired'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "206":
+          action: 'Download portal logon'
+          outcome: success
+          type:
+            - info
+          category:
+            - authentication
+        "207":
+          action: 'External access portal logon'
+          outcome: success
+          type:
+            - info
+          category:
+            - authentication
+        "208":
+          action: 'Segmentation window added'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "209":
+          action: 'Segmentation window deleted'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "210":
+          action: 'Segmentation window edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "211":
+          action: 'Segmentation window set as default'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "212":
+          action: 'Tag group created'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "213":
+          action: 'Custom user created'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - iam
+            - configuration
+        "214":
+          action: 'Custom user deleted'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - iam
+            - configuration
+        "215":
+          action: 'User learning extended (identity)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - user
+            - configuration
+        "216":
+          action: 'Asset outbound restriction enabled'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "217":
+          action: 'Asset outbound restriction disabled'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "218":
+          action: 'Asset outbound restriction changed'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "219":
+          action: 'Asset mirrored'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "220":
+          action: 'Asset quarantined'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "221":
+          action: 'Asset unquarantined'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "222":
+          action: 'Custom user invited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - iam
+            - configuration
+        "223":
+          action: 'Custom user role changed to admin'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - iam
+            - configuration
+        "224":
+          action: 'Custom user role changed to viewer'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - iam
+            - configuration
+        "225":
+          action: 'Custom user role changed to operator'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - iam
+            - configuration
+        "226":
+          action: 'Custom user re-invited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - iam
+            - configuration
+        "227":
+          action: 'Custom user approved invite'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - iam
+            - configuration
+        "228":
+          action: 'Custom user rejected invite'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - iam
+            - configuration
+        "229":
+          action: 'Inbound AE exclusion deleted'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "230":
+          action: 'Outbound AE exclusion deleted'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "231":
+          action: 'Asset manager permission changed'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "232":
+          action: 'Added switch interfaces to monitor'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "233":
+          action: 'Removed switch interfaces to monitor'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "234":
+          action: 'Attempted to exceed network license limit'
+          outcome: failure
+          type:
+            - info
+          category:
+            - configuration
+        "235":
+          action: 'Network licenses available'
+          outcome: success
+          type:
+            - info
+          category:
+            - configuration
+        "236":
+          action: 'Attempted to exceed identity license limit'
+          outcome: failure
+          type:
+            - info
+          category:
+            - configuration
+        "237":
+          action: 'Identity licenses available'
+          outcome: success
+          type:
+            - info
+          category:
+            - configuration
+        "238":
+          action: 'Attempted to exceed RPC license limit'
+          outcome: failure
+          type:
+            - info
+          category:
+            - configuration
+        "239":
+          action: 'RPC licenses available'
+          outcome: success
+          type:
+            - info
+          category:
+            - configuration
+        "240":
+          action: 'Network anti-tampering detected and handled'
+          outcome: success
+          type:
+            - info
+          category:
+            - intrusion_detection
+            - host
+        "241":
+          action: 'Identity anti-tampering detected and handled'
+          outcome: success
+          type:
+            - info
+          category:
+            - intrusion_detection
+            - host
+        "242":
+          action: 'RPC anti-tampering detected and handled'
+          outcome: success
+          type:
+            - info
+          category:
+            - intrusion_detection
+            - host
+        "243":
+          action: 'User manually marked as inactive'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - user
+            - configuration
+        "244":
+          action: 'User manually marked as active'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - user
+            - configuration
+        "245":
+          action: 'User was revived but still marked as inactive'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - user
+            - configuration
+        "246":
+          action: 'Asset segmentation blocked (identity)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "247":
+          action: 'Asset segmentation blocked (rpc)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "248":
+          action: 'Outbound AE exclusion created'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "249":
+          action: 'Inbound AE exclusion created'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "250":
+          action: 'Outbound AE exclusion edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "251":
+          action: 'Inbound AE exclusion edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "252":
+          action: 'Cluster added'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "253":
+          action: 'Cluster edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "254":
+          action: 'Cluster deleted'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "255":
+          action: 'User marked as disabled by entity repository'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - user
+            - configuration
+        "256":
+          action: 'User marked as enabled by entity repository'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - user
+            - configuration
+        "257":
+          action: 'User marked as disabled by entity repository (previously inactive)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - user
+            - configuration
+        "258":
+          action: 'User marked as inactive by entity repository (previously disabled)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - user
+            - configuration
+        "259":
+          action: 'User manually marked as inactive (previously disabled)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - user
+            - configuration
+        "260":
+          action: 'Attempted to exceed connect license limit'
+          outcome: failure
+          type:
+            - info
+          category:
+            - configuration
+        "261":
+          action: 'Connect licenses available'
+          outcome: success
+          type:
+            - info
+          category:
+            - configuration
+        "262":
+          action: 'Inbound allow OT/IoT rule created'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "263":
+          action: 'Inbound block OT/IoT rule created'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "264":
+          action: 'Outbound allow OT/IoT rule created'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "265":
+          action: 'Outbound block OT/IoT rule created'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "266":
+          action: 'Inbound allow OT/IoT rule deleted'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "267":
+          action: 'Inbound block OT/IoT rule deleted'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "268":
+          action: 'Outbound allow OT/IoT rule deleted'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "269":
+          action: 'Outbound block OT/IoT rule deleted'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "270":
+          action: 'Inbound allow OT/IoT rule edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "271":
+          action: 'Inbound block OT/IoT rule edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "272":
+          action: 'Outbound allow OT/IoT rule edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "273":
+          action: 'Outbound block OT/IoT rule edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "274":
+          action: 'Inbound allow OT/IoT rule expired'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "275":
+          action: 'Inbound block OT/IoT rule expired'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "276":
+          action: 'Outbound allow OT/IoT rule expired'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "277":
+          action: 'Outbound block OT/IoT rule expired'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "278":
+          action: 'Group added to Network overriding onboarding policy'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "279":
+          action: 'Group added to Identity overriding onboarding policy'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "280":
+          action: 'Group removed from Network overriding onboarding policy'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "281":
+          action: 'Group removed from Identity overriding onboarding policy'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "282":
+          action: 'Block rules removed'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "283":
+          action: 'Attempted to exceed external access license limit'
+          outcome: failure
+          type:
+            - info
+          category:
+            - configuration
+        "284":
+          action: 'External access licenses available'
+          outcome: success
+          type:
+            - info
+          category:
+            - configuration
+        "285":
+          action: 'Asset is monitored by Segment connector'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "286":
+          action: 'Asset is no longer monitored by Segment connector'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "287":
+          action: 'Manual Linux asset edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "288":
+          action: 'External OT/IoT asset edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "289":
+          action: 'Internal subnets settings updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "290":
+          action: 'User quarantined'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - user
+            - configuration
+        "291":
+          action: 'User unquarantined'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - user
+            - configuration
+        "292":
+          action: 'Application group created'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "294":
+          action: 'Members added to application group'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "296":
+          action: 'Members removed from application group'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "297":
+          action: 'Env switches break glass config edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "298":
+          action: 'Switch network break glass activated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "299":
+          action: 'Switch network break glass deactivated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "300":
+          action: 'Switch monitoring break glass activated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "301":
+          action: 'Switch monitoring break glass deactivated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "302":
+          action: 'IP to name alias added'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "303":
+          action: 'IP to name alias edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "304":
+          action: 'IP to name alias removed'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "305":
+          action: 'Network trial started'
+          outcome: success
+          type:
+            - info
+          category:
+            - configuration
+        "306":
+          action: 'Identity trial started'
+          outcome: success
+          type:
+            - info
+          category:
+            - configuration
+        "307":
+          action: 'RPC trial started'
+          outcome: success
+          type:
+            - info
+          category:
+            - configuration
+        "308":
+          action: 'Connect trial started'
+          outcome: success
+          type:
+            - info
+          category:
+            - configuration
+        "309":
+          action: 'External Access trial started'
+          outcome: success
+          type:
+            - info
+          category:
+            - configuration
+        "310":
+          action: 'Network rule review - rule optimization updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "311":
+          action: 'Deployments cluster created'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "312":
+          action: 'Deployments cluster edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "313":
+          action: 'Deployments cluster deleted'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "314":
+          action: 'Assigned deployment server to a cluster'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "315":
+          action: 'Environment group created'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "316":
+          action: 'Environment group deleted'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "317":
+          action: 'Members added to environment group'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "318":
+          action: 'Members removed from environment group'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "319":
+          action: 'Custom group created'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "320":
+          action: 'Custom group deleted'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "321":
+          action: 'Custom group updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "322":
+          action: 'Members added to custom group'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "323":
+          action: 'Members removed from custom group'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "324":
+          action: 'New inbound allow rule suggestion created'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "325":
+          action: 'New inbound block rule suggestion created'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "326":
+          action: 'New outbound allow rule suggestion created'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "327":
+          action: 'New outbound block rule suggestion created'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "328":
+          action: 'Inbound allow rule deletion suggestion rejected'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "329":
+          action: 'Inbound block rule deletion suggestion rejected'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "330":
+          action: 'Outbound allow rule deletion suggestion rejected'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "331":
+          action: 'Outbound block rule deletion suggestion rejected'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "332":
+          action: 'Inbound allow rule deletion suggestion approved'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "333":
+          action: 'Inbound block rule deletion suggestion approved'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "334":
+          action: 'Outbound allow rule deletion suggestion approved'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "335":
+          action: 'Outbound block rule deletion suggestion approved'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "336":
+          action: 'Inbound allow rule deletion suggestion created'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "337":
+          action: 'Inbound block rule deletion suggestion created'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "338":
+          action: 'Outbound allow rule deletion suggestion created'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "339":
+          action: 'Outbound block rule deletion suggestion created'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "340":
+          action: 'Freeze Period Created'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "341":
+          action: 'Freeze Period Started'
+          outcome: success
+          type:
+            - info
+          category:
+            - configuration
+        "342":
+          action: 'Freeze Period Ended'
+          outcome: success
+          type:
+            - info
+          category:
+            - configuration
+        "343":
+          action: 'Freeze Period Updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "344":
+          action: 'Freeze Period Deleted'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "345":
+          action: 'Internal Access policy created'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "346":
+          action: 'Internal Access policy removed'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "347":
+          action: 'Internal Access policy edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "348":
+          action: 'Version Maintenance Window Created'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "349":
+          action: 'Version Maintenance Window Updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "350":
+          action: 'Version Maintenance Window Deleted'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "351":
+          action: 'Connect region down'
+          outcome: failure
+          type:
+            - info
+          category:
+            - configuration
+        "352":
+          action: 'Connect region recovered'
+          outcome: success
+          type:
+            - info
+          category:
+            - configuration
+        "353":
+          action: 'Firewall created'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "354":
+          action: 'Firewall updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "355":
+          action: 'Firewall deleted'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "356":
+          action: 'Manual maintenance window started'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "357":
+          action: 'Manual maintenance window stopped'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "358":
+          action: 'Cluster connected'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "359":
+          action: 'Inactive assets settings updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "360":
+          action: 'Client subnets settings updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "361":
+          action: 'Segment cluster strategy updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "362":
+          action: 'Collect external traffic settings updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "363":
+          action: 'Logoff existing sessions when the user is not allowed to log on settings updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "364":
+          action: 'Trusted internet addresses settings updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "365":
+          action: 'Connect auto-update settings updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "366":
+          action: 'k8s application label settings updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "367":
+          action: 'Anti-tampering audit cooldown updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "368":
+          action: 'Network rule review settings updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "369":
+          action: 'Learning settings updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "370":
+          action: 'Privileged ports settings updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "371":
+          action: 'Portal session TTL settings updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "372":
+          action: 'Allowed IPs settings updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "373":
+          action: 'Day-2 automation settings updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "374":
+          action: 'Connect posture check failed'
+          outcome: failure
+          type:
+            - info
+          category:
+            - configuration
+        "375":
+          action: 'Webhook created'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "376":
+          action: 'Webhook updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "377":
+          action: 'Webhook deleted'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "378":
+          action: 'Assets added to pilot group'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "379":
+          action: 'Assets removed from pilot group'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "380":
+          action: 'Asset labels changed'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "381":
+          action: 'Allowed ports while in learning with blocks settings updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "382":
+          action: 'Internet access clients settings updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "383":
+          action: 'Internet access servers settings updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "384":
+          action: 'Pilot group period extended'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "385":
+          action: 'Pilot group period completed'
+          outcome: success
+          type:
+            - info
+          category:
+            - configuration
+        "386":
+          action: 'Internal access portal logon'
+          outcome: success
+          type:
+            - info
+          category:
+            - authentication
+        "387":
+          action: 'Posture profile created'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "388":
+          action: 'Posture profile edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "389":
+          action: 'Posture profile deleted'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "390":
+          action: 'Posture violation found'
+          outcome: success
+          type:
+            - info
+          category:
+            - configuration
+        "391":
+          action: 'Posture violation resolved'
+          outcome: success
+          type:
+            - info
+          category:
+            - configuration
+        "392":
+          action: 'Posture violation setting updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "393":
+          action: 'Global posture checks excluded users updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "394":
+          action: 'Posture violation status changed'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "395":
+          action: 'Active Directory sync failure'
+          outcome: failure
+          type:
+            - info
+          category:
+            - configuration
+        "396":
+          action: 'Active Directory sync back to normal'
+          outcome: success
+          type:
+            - info
+          category:
+            - configuration
+        "397":
+          action: 'Dynamic label created'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "398":
+          action: 'Dynamic label updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "399":
+          action: 'Dynamic label deleted'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "400":
+          action: 'Cluster set as pilot group'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "401":
+          action: 'Cluster unset as pilot group'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "402":
+          action: 'Switch set as active'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "403":
+          action: 'Asset removed from DNS firewall'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "404":
+          action: 'Asset added to DNS firewall'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "405":
+          action: 'K8s rule created'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "406":
+          action: 'K8s rule modified'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "407":
+          action: 'K8s rule deleted'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "410":
+          action: 'K8s policy created'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "411":
+          action: 'K8s policy modified'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "412":
+          action: 'K8s policy deleted'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "413":
+          action: 'K8s scope approved'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "414":
+          action: 'Hypervisor sync failure'
+          outcome: failure
+          type:
+            - info
+          category:
+            - configuration
+        "415":
+          action: 'Hypervisor sync back to normal'
+          outcome: success
+          type:
+            - info
+          category:
+            - configuration
+        "416":
+          action: 'Hypervisor added'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "417":
+          action: 'Hypervisor edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "418":
+          action: 'Hypervisor removed'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "419":
+          action: 'K8s policy is now compliant'
+          outcome: success
+          type:
+            - info
+          category:
+            - configuration
+        "420":
+          action: 'K8s policy no longer compliant'
+          outcome: success
+          type:
+            - info
+          category:
+            - configuration
+        "421":
+          action: 'Active Directory failover'
+          outcome: success
+          type:
+            - info
+          category:
+            - configuration
+        "422":
+          action: 'New inbound allow rule suggestion edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "423":
+          action: 'New inbound block rule suggestion edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "424":
+          action: 'New outbound allow rule suggestion edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "425":
+          action: 'New outbound block rule suggestion edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "426":
+          action: 'Kubernetes anti-tampering audit cooldown updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "427":
+          action: 'Namespace is being segmented'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "428":
+          action: 'Namespace segmented'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "429":
+          action: 'Namespace is being unsegmented'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "430":
+          action: 'Namespace unsegmented'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "431":
+          action: 'Kubernetes anti-tampering handled'
+          outcome: success
+          type:
+            - info
+          category:
+            - intrusion_detection
+            - host
+        "432":
+          action: 'Network alert created'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "433":
+          action: 'Network alert moved to in progress'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "434":
+          action: 'Network alert closed'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "435":
+          action: 'Network alert reopened'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "436":
+          action: 'Network alert edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "437":
+          action: 'Allowed traffic filtering enabled'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "438":
+          action: 'Allowed traffic filtering disabled'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "439":
+          action: 'Users obfuscated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - user
+            - configuration
+        "440":
+          action: 'Asset added to outbound learning'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "441":
+          action: 'Asset removed from outbound learning'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "442":
+          action: 'Asset outbound learning extended'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "443":
+          action: 'Asset done outbound learning'
+          outcome: success
+          type:
+            - info
+          category:
+            - host
+            - configuration
+        "444":
+          action: 'Asset is back in outbound learning'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "445":
+          action: 'Asset outbound restriction date postponed'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "446":
+          action: 'Segment server version change'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "447":
+          action: 'Cloud environment added'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "448":
+          action: 'Cloud environment updated'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "449":
+          action: 'Cloud environment removed'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "450":
+          action: 'Azure subscription started syncing'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "451":
+          action: 'Azure subscription stopped syncing'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "452":
+          action: 'AIX asset created'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "453":
+          action: 'Azure resource group manually marked as inactive'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "454":
+          action: 'Azure resource group manually marked as active'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "455":
+          action: 'Network alert exclusion created'
+          outcome: success
+          type:
+            - info
+            - creation
+          category:
+            - configuration
+        "456":
+          action: 'Network alert exclusion edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "457":
+          action: 'Network alert exclusion deleted'
+          outcome: success
+          type:
+            - info
+            - deletion
+          category:
+            - configuration
+        "458":
+          action: 'Asset segmentation blocked, learning without activities (network)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "459":
+          action: 'AWS account started syncing'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "460":
+          action: 'AWS account stopped syncing'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+      source: |
+        ctx.event.kind = 'event';
+        if (ctx.event.code == null) {
+          return;
+        }
+        def mapping = params.get(ctx.event.code);
+        if (mapping == null) {
+          // Audit type not known to this version of the integration.
+          ctx.event.action = 'Unknown audit type ' + ctx.event.code;
+          ctx.event.type = ['info'];
+          return;
+        }
+        def hm = new HashMap(mapping);
+        hm.forEach((k, v) -> ctx.event[k] = v);
   - remove:
       tag: remove_f3d169b2
       field:

@@ -59,212 +59,304 @@ Enter values **"API Token"**.
 
 ## Logs reference
 
-### Audt
+### Audit
 
-The `Audit` data stream provides events from Zero Networks of the following types: audit.
-
-#### Example
+The `audit` data stream provides audit events from Zero Networks, such as asset segmentation changes, rule and policy changes, and portal logons.
 
 An example event for `audit` looks as following:
 
 ```json
 {
-	"@timestamp": [
-		"2023-03-22T14:57:23.356Z"
-	],
-	"agent.ephemeral_id": [
-		"01887fa8-409b-44a1-aa70-fa9cc4f2fd90"
-	],
-	"agent.id": [
-		"55518990-e6d4-4350-b447-88837a15d1d2"
-	],
-	"agent.name": [
-		"docker-fleet-agent"
-	],
-	"agent.type": [
-		"filebeat"
-	],
-	"agent.version": [
-		"8.6.2"
-	],
-	"data_stream.dataset": [
-		"zeronetworks.audit"
-	],
-	"data_stream.namespace": [
-		"default"
-	],
-	"data_stream.type": [
-		"logs"
-	],
-	"ecs.version": [
-		"8.0.0"
-	],
-	"elastic_agent.id": [
-		"55518990-e6d4-4350-b447-88837a15d1d2"
-	],
-	"elastic_agent.snapshot": [
-		false
-	],
-	"elastic_agent.version": [
-		"8.6.2"
-	],
-	"event.action": [
-		"API Token created"
-	],
-	"event.agent_id_status": [
-		"verified"
-	],
-	"event.category": [
-		"configuration"
-	],
-	"event.code": [
-		"25"
-	],
-	"event.created": [
-		"2023-03-24T14:45:14.459Z"
-	],
-	"event.dataset": [
-		"zeronetworks.audit"
-	],
-	"event.id": [
-		"+Ipxg6VvICbeFz5QoqS1i3GZETE="
-	],
-	"event.ingested": [
-		"2023-03-24T14:45:15.000Z"
-	],
-	"event.kind": [
-		"event"
-	],
-	"event.module": [
-		"zeronetworks"
-	],
-	"event.original": [
-		"{\"auditType\":25,\"destinationEntitiesList\":[{\"id\":\"m:6454ff4dd25ebda5279fd4823e5e1d026e2ae996\",\"name\":\"elastic\"}],\"details\":\"{\\\"name\\\":\\\"elastic\\\",\\\"clientId\\\":\\\"m:6454ff4dd25ebda5279fd4823e5e1d026e2ae996\\\",\\\"expiry\\\":\\\"2025-03-22T14:57:23.000Z\\\",\\\"issuedAt\\\":\\\"2023-03-22T14:57:23.000Z\\\",\\\"scope\\\":5,\\\"audience\\\":\\\"portal.zeronetworks.com\\\",\\\"issuer\\\":\\\"zeronetworks.com/api/v1/access-token\\\",\\\"type\\\":\\\"JWT\\\"}\",\"enforcementSource\":4,\"isoTimestamp\":\"2023-03-22T14:57:23.356Z\",\"parentObjectId\":\"\",\"performedBy\":{\"id\":\"39cc28f6-7bba-4310-95e6-a7e7189a3ed5\",\"name\":\"Nicholas DiCola\"},\"reportedObjectId\":\"m:6454ff4dd25ebda5279fd4823e5e1d026e2ae996\",\"timestamp\":1679497043356,\"userRole\":1}"
-	],
-	"event.outcome": [
-		"success"
-	],
-	"event.type": [
-		"info"
-	],
-	"input.type": [
-		"httpjson"
-	],
-	"related.user": [
-		"39cc28f6-7bba-4310-95e6-a7e7189a3ed5",
-		"Nicholas DiCola"
-	],
-	"tags": [
-		"forwarded",
-		"zeronetworks-audit",
-		"preserve_original_event"
-	],
-	"user.full_name": [
-		"Nicholas DiCola"
-	],
-	"user.id": [
-		"39cc28f6-7bba-4310-95e6-a7e7189a3ed5"
-	],
-	"zeronetworks.audit.destinationEntitiesList.id": [
-		"m:6454ff4dd25ebda5279fd4823e5e1d026e2ae996"
-	],
-	"zeronetworks.audit.destinationEntitiesList.name": [
-		"elastic"
-	],
-	"zeronetworks.audit.details.audience": [
-		"portal.zeronetworks.com"
-	],
-	"zeronetworks.audit.details.clientId": [
-		"m:6454ff4dd25ebda5279fd4823e5e1d026e2ae996"
-	],
-	"zeronetworks.audit.details.expiry": [
-		"2025-03-22T14:57:23.000Z"
-	],
-	"zeronetworks.audit.details.issuedAt": [
-		"2023-03-22T14:57:23.000Z"
-	],
-	"zeronetworks.audit.details.issuer": [
-		"zeronetworks.com/api/v1/access-token"
-	],
-	"zeronetworks.audit.details.name": [
-		"elastic"
-	],
-	"zeronetworks.audit.details.scope": [
-		5
-	],
-	"zeronetworks.audit.details.type": [
-		"JWT"
-	],
-	"zeronetworks.audit.enforcementSource": [
-		4
-	],
-	"zeronetworks.audit.reportedObjectId": [
-		"m:6454ff4dd25ebda5279fd4823e5e1d026e2ae996"
-	],
-	"zeronetworks.audit.userRole": [
-		1
-	]
+    "@timestamp": "2024-04-01T08:30:36.440Z",
+    "agent": {
+        "ephemeral_id": "9f5e16d9-5d3b-4d3a-b858-bcca443fd381",
+        "id": "adc346aa-b9e4-4a15-bca4-f4165156bd64",
+        "name": "elastic-agent-31641",
+        "type": "filebeat",
+        "version": "9.5.5"
+    },
+    "data_stream": {
+        "dataset": "zeronetworks.audit",
+        "namespace": "15730",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "adc346aa-b9e4-4a15-bca4-f4165156bd64",
+        "snapshot": false,
+        "version": "9.5.5"
+    },
+    "event": {
+        "action": "Inbound JIT rule created",
+        "agent_id_status": "verified",
+        "category": [
+            "configuration"
+        ],
+        "code": "20",
+        "created": "2026-11-17T13:09:57.999Z",
+        "dataset": "zeronetworks.audit",
+        "id": "5kpgk0bTgw+kPo5LHuGDTRF1or0=",
+        "ingested": "2026-11-17T13:10:02Z",
+        "kind": "event",
+        "module": "zeronetworks",
+        "original": "{\"auditType\":20,\"destinationEntitiesList\":[{\"id\":\"a:a:9ebab20f\",\"name\":\"SHARE\"}],\"details\":\"{\\\"rule\\\":{\\\"localEntityNames\\\":{\\\"id\\\":\\\"a:a:9ebab20f\\\",\\\"name\\\":\\\"SHARE\\\"},\\\"remoteEntityNames\\\":[{\\\"id\\\":\\\"a:a:Y5UYoaWk\\\",\\\"name\\\":\\\"SURFACE\\\"}],\\\"ports\\\":[{\\\"protocol_type\\\":6,\\\"ports\\\":\\\"3389\\\"}],\\\"expiration\\\":1711974636423,\\\"description\\\":\\\"RDP/WinRM MFA\\\",\\\"localProcesses\\\":[\\\"*\\\"],\\\"created_by\\\":{\\\"id\\\":\\\"u:a:OOdYqjWI\\\",\\\"name\\\":\\\"Benny Lakunishok\\\"},\\\"enforcementSource\\\":1,\\\"createdAt\\\":1711960236426,\\\"usedMfaMethod\\\":3,\\\"excludedLocalEntityNames\\\":[],\\\"state\\\":1,\\\"updatedAt\\\":1711960236426,\\\"updatedBy\\\":{},\\\"approvedAt\\\":0,\\\"approvedBy\\\":null,\\\"ruleClass\\\":3}}\",\"enforcementSource\":1,\"isoTimestamp\":\"2024-04-01T08:30:36.440Z\",\"parentObjectId\":\"75bde6e6-83d6-401b-b63b-c2ed062e80fb\",\"performedBy\":{\"id\":\"u:a:OOdYqjWI\",\"name\":\"Benny Lakunishok\"},\"reportedObjectGeneration\":15201363,\"reportedObjectId\":\"21cbb13b-848a-49f0-8fe1-1dc369987403\",\"timestamp\":1711960236440,\"userRole\":6}",
+        "outcome": "success",
+        "type": [
+            "info",
+            "change"
+        ]
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "related": {
+        "user": [
+            "u:a:OOdYqjWI",
+            "Benny Lakunishok"
+        ]
+    },
+    "tags": [
+        "forwarded",
+        "zeronetworks-audit",
+        "preserve_original_event"
+    ],
+    "user": {
+        "full_name": "Benny Lakunishok",
+        "id": "u:a:OOdYqjWI"
+    },
+    "zeronetworks": {
+        "audit": {
+            "destinationEntitiesList": {
+                "id": "a:a:9ebab20f",
+                "name": "SHARE"
+            },
+            "details": {
+                "rule": {
+                    "approvedAt": "1970-01-01T00:00:00.000Z",
+                    "createdAt": "2024-04-01T08:30:36.426Z",
+                    "created_by": {
+                        "id": "u:a:OOdYqjWI",
+                        "name": "Benny Lakunishok"
+                    },
+                    "description": "RDP/WinRM MFA",
+                    "enforcementSource": 1,
+                    "expiration": "2024-04-01T12:30:36.423Z",
+                    "localEntityNames": {
+                        "id": "a:a:9ebab20f",
+                        "name": "SHARE"
+                    },
+                    "localProcesses": "*",
+                    "ports": {
+                        "ports": "3389",
+                        "protocol_type": 6
+                    },
+                    "remoteEntityNames": {
+                        "id": "a:a:Y5UYoaWk",
+                        "name": "SURFACE"
+                    },
+                    "ruleClass": 3,
+                    "state": 1,
+                    "updatedAt": "2024-04-01T08:30:36.426Z",
+                    "usedMfaMethod": 3
+                }
+            },
+            "enforcementSource": 1,
+            "parentObjectId": "75bde6e6-83d6-401b-b63b-c2ed062e80fb",
+            "reportedObjectGeneration": 15201363,
+            "reportedObjectId": "21cbb13b-848a-49f0-8fe1-1dc369987403",
+            "userRole": 6
+        }
+    }
 }
 ```
 
-#### Exported fields
+**Exported fields**
 
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | match_only_text |
-| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
-| event.code | The audity type captured by the event| integer |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | Event creation time | date |
 | event.dataset | Event dataset | constant_keyword |
-| event.id | Unique ID to describe the event. | keyword |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. | keyword |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
-| related.user | All the user names or other user identifiers seen on the event. | keyword |
-| zeronetworks.audit.destinationEntitiesList.id | The `id` of the affected entity | keyword |
-| zeronetworks.audit.destinationEntitiesList.name | The `name` of the affected entity | keyword |
-| zeronetworks.audit.details.* | Various fields for properties of the audit `details`. Varies by audit type. | keyword |
-| zeronetworks.audit.enforcementsource | The `platform` of the audit event | integer |
-| zeronetworks.audit.userrole | The `user role` of the user performing the action | integer |
-| zeronetworks.audit.userrolename | The `user role` of the user performing the action | keyword |
-| tags | List of keywords used to tag each event. | keyword |
-| user.full_name | User's full name, if available. | keyword |
-| user.id | Unique identifier of the user. | keyword |
+| zeronetworks.audit.destinationEntitiesList.id | The id of the affected entity. | keyword |
+| zeronetworks.audit.destinationEntitiesList.name | The name of the affected entity. | keyword |
+| zeronetworks.audit.details.assetManager.entity.id | The id of the entity. | keyword |
+| zeronetworks.audit.details.assetManager.entity.name | The name of the entity. | keyword |
+| zeronetworks.audit.details.assetManager.manager.id | The id of the manager. | keyword |
+| zeronetworks.audit.details.assetManager.manager.name | The name of the manager. | keyword |
+| zeronetworks.audit.details.audience | The audience of the JWT token | keyword |
+| zeronetworks.audit.details.clientId | Id of the token. | keyword |
+| zeronetworks.audit.details.connectServer | The server the user connected to. | keyword |
+| zeronetworks.audit.details.connectedSince | The time the user connected. | date |
+| zeronetworks.audit.details.currInactiveReason | The current inactive reason. | integer |
+| zeronetworks.audit.details.detection.dstAsset.Name | The name of the destination asset. | keyword |
+| zeronetworks.audit.details.detection.dstAsset.id | The id of the destination asset. | keyword |
+| zeronetworks.audit.details.detection.dstProcess | The destination process. | keyword |
+| zeronetworks.audit.details.detection.loggedOnUser | The user that was logged on. | keyword |
+| zeronetworks.audit.details.detection.port.ports | The ports of the audit. | keyword |
+| zeronetworks.audit.details.detection.port.protocol_type | The protocol of the audit. | integer |
+| zeronetworks.audit.details.detection.rejectedBy.id | The id who rejected. | keyword |
+| zeronetworks.audit.details.detection.rejectedBy.name | The name who rejected. | keyword |
+| zeronetworks.audit.details.detection.srcAsset.id | The id of the source asset. | keyword |
+| zeronetworks.audit.details.detection.srcAsset.name | The name of the source asset. | keyword |
+| zeronetworks.audit.details.detection.srcProcess | The source process. | keyword |
+| zeronetworks.audit.details.detection.srcUser.id | The id of the source user. | keyword |
+| zeronetworks.audit.details.detection.srcUser.name | The name of the source user. | keyword |
+| zeronetworks.audit.details.detection.usedMfaMethod | The MFA method that was used. | integer |
+| zeronetworks.audit.details.expiresAt | When the token expires. | date |
+| zeronetworks.audit.details.expiry | When the token expires | date |
+| zeronetworks.audit.details.externalIP | The external IP of the user. | ip |
+| zeronetworks.audit.details.idp | The IDP used. | integer |
+| zeronetworks.audit.details.issuedAt | When the token was issued. | date |
+| zeronetworks.audit.details.issuer | The issuer of the token | keyword |
+| zeronetworks.audit.details.learningDuration | The duration of learning set. | integer |
+| zeronetworks.audit.details.name | The name of the token | keyword |
+| zeronetworks.audit.details.newAsset.id | The new id of the asset. | keyword |
+| zeronetworks.audit.details.newAsset.name | The new name of the asset. | keyword |
+| zeronetworks.audit.details.otAsset.displayName | The display name of the OT asset. | keyword |
+| zeronetworks.audit.details.otAsset.ipv4 | The IPv4 address of the OT asset. | ip |
+| zeronetworks.audit.details.otAsset.ipv6 | The IPv6 address of the OT asset. | ip |
+| zeronetworks.audit.details.otAsset.type | The type for the OT asset. | integer |
+| zeronetworks.audit.details.prevInactiveReason | The previous inactive reason. | integer |
+| zeronetworks.audit.details.prevOTAsset.displayName | The display name of the OT asset. | keyword |
+| zeronetworks.audit.details.prevOTAsset.ipv4 | The IPv4 address of the OT asset. | ip |
+| zeronetworks.audit.details.prevOTAsset.ipv6 | The IPv6 address of the OT asset. | ip |
+| zeronetworks.audit.details.prevOTAsset.type | The type for the OT asset. | integer |
+| zeronetworks.audit.details.prevProtectionPolicy.createdBy.id | The id of the created by. | keyword |
+| zeronetworks.audit.details.prevProtectionPolicy.createdBy.name | The name of the created by. | keyword |
+| zeronetworks.audit.details.prevProtectionPolicy.description | The description of the protection policy. | keyword |
+| zeronetworks.audit.details.prevProtectionPolicy.group.id | The id of the group. | keyword |
+| zeronetworks.audit.details.prevProtectionPolicy.group.name | The name of the group. | keyword |
+| zeronetworks.audit.details.prevProtectionPolicy.initialProtectAt | The date the protection policy. | date |
+| zeronetworks.audit.details.prevProtectionPolicy.minQueueDays | The integer of days in learning for the protection policy. | integer |
+| zeronetworks.audit.details.prevRp.additionalPorts.ports | The ports. | keyword |
+| zeronetworks.audit.details.prevRp.additionalPorts.protocol_type | The protocol type. | integer |
+| zeronetworks.audit.details.prevRp.createdBy.id | The id of created by. | keyword |
+| zeronetworks.audit.details.prevRp.createdBy.name | The name of created by. | keyword |
+| zeronetworks.audit.details.prevRp.description | The description of the reactive policy. | keyword |
+| zeronetworks.audit.details.prevRp.dstEntities.id | The id of the destination entity. | keyword |
+| zeronetworks.audit.details.prevRp.dstEntities.name | The name of the destination entity. | keyword |
+| zeronetworks.audit.details.prevRp.dstProcessNames | The destination process names. | keyword |
+| zeronetworks.audit.details.prevRp.duration | The duration of the rule. | integer |
+| zeronetworks.audit.details.prevRp.enforcementSource | The enforcement source. | integer |
+| zeronetworks.audit.details.prevRp.excludedSrcEntities.id | The id of excluded entity. | keyword |
+| zeronetworks.audit.details.prevRp.excludedSrcEntities.name | The name of excluded entity. | keyword |
+| zeronetworks.audit.details.prevRp.excludedSrcProcessNames | The excluded source processes. | keyword |
+| zeronetworks.audit.details.prevRp.mfaMethods | The approved MFA methods. | integer |
+| zeronetworks.audit.details.prevRp.overrideBuiltins | Override global policies. | boolean |
+| zeronetworks.audit.details.prevRp.ports | The ports for the policy. | keyword |
+| zeronetworks.audit.details.prevRp.protocol | The protocol for the policy. | integer |
+| zeronetworks.audit.details.prevRp.srcEntities.id | The id of the source entity. | keyword |
+| zeronetworks.audit.details.prevRp.srcEntities.name | The name of the source entity. | keyword |
+| zeronetworks.audit.details.prevRp.srcProcessNames | The source process names. | keyword |
+| zeronetworks.audit.details.prevRp.srcUsers.id | The id of the source users. | keyword |
+| zeronetworks.audit.details.prevRp.srcUsers.name | The name of the source users. | keyword |
+| zeronetworks.audit.details.prevRp.state | The state of the policy. | integer |
+| zeronetworks.audit.details.prevRp.userSource | The user source of the policy. | integer |
+| zeronetworks.audit.details.prevRule.approvedAt | When the previous rule was approved. | date |
+| zeronetworks.audit.details.prevRule.approvedBy.id | The id of the approver. | keyword |
+| zeronetworks.audit.details.prevRule.approvedBy.name | The name of the approver. | keyword |
+| zeronetworks.audit.details.prevRule.createdAt | The time the previous rule was created. | date |
+| zeronetworks.audit.details.prevRule.created_by.id | The id of created by. | keyword |
+| zeronetworks.audit.details.prevRule.created_by.name | The name of created by. | keyword |
+| zeronetworks.audit.details.prevRule.description | The description of the previous rule. | keyword |
+| zeronetworks.audit.details.prevRule.enforcementSource | The enforcement source of the previous rule. | integer |
+| zeronetworks.audit.details.prevRule.excludedLocalEntityNames.id | The id of the excluded local entity. | keyword |
+| zeronetworks.audit.details.prevRule.excludedLocalEntityNames.name | The name of the excluded local entity. | keyword |
+| zeronetworks.audit.details.prevRule.expiration | The time the previous rule will expire. | date |
+| zeronetworks.audit.details.prevRule.localEntityNames.id | The id of the local entity. | keyword |
+| zeronetworks.audit.details.prevRule.localEntityNames.name | The name of the local entity. | keyword |
+| zeronetworks.audit.details.prevRule.localProcesses | The local processes for the previous rule. | keyword |
+| zeronetworks.audit.details.prevRule.ports.ports | The ports of the previous rule. | keyword |
+| zeronetworks.audit.details.prevRule.ports.protocol_type | The protocol type for the ports of the previous rule. | integer |
+| zeronetworks.audit.details.prevRule.remoteEntityNames.id | The id of the remote entity. | keyword |
+| zeronetworks.audit.details.prevRule.remoteEntityNames.name | The name of the remote entity. | keyword |
+| zeronetworks.audit.details.prevRule.ruleClass | The rule class of the previous rule. | integer |
+| zeronetworks.audit.details.prevRule.state | The rule state of the previous rule. | integer |
+| zeronetworks.audit.details.prevRule.updatedAt | The time the previous rule was updated. | date |
+| zeronetworks.audit.details.prevRule.updatedBy.id | The id of the updated by. | keyword |
+| zeronetworks.audit.details.prevRule.updatedBy.name | The name of the updated by. | keyword |
+| zeronetworks.audit.details.prevRule.usedMfaMethod | The MFA method used for rule creation. | integer |
+| zeronetworks.audit.details.protectionDate | The date the asset was protected. | date |
+| zeronetworks.audit.details.protectionPolicy.createdBy.id | The id of the created by. | keyword |
+| zeronetworks.audit.details.protectionPolicy.createdBy.name | The name of the created by. | keyword |
+| zeronetworks.audit.details.protectionPolicy.description | The description of the protection policy. | keyword |
+| zeronetworks.audit.details.protectionPolicy.group.id | The id of the group. | keyword |
+| zeronetworks.audit.details.protectionPolicy.group.name | The name of the group. | keyword |
+| zeronetworks.audit.details.protectionPolicy.initialProtectAt | The date the protection policy. | date |
+| zeronetworks.audit.details.protectionPolicy.minQueueDays | The integer of days in learning for the protection policy. | integer |
+| zeronetworks.audit.details.publicIp | The IP the user logged into the portal with. | ip |
+| zeronetworks.audit.details.role | The role of the user. | integer |
+| zeronetworks.audit.details.rp.additionalPorts.ports | The ports. | keyword |
+| zeronetworks.audit.details.rp.additionalPorts.protocol_type | The protocol type. | integer |
+| zeronetworks.audit.details.rp.createdBy.id | The id of created by. | keyword |
+| zeronetworks.audit.details.rp.createdBy.name | The name of created by. | keyword |
+| zeronetworks.audit.details.rp.description | The description of the reactive policy. | keyword |
+| zeronetworks.audit.details.rp.dstEntities.id | The id of the destination entity. | keyword |
+| zeronetworks.audit.details.rp.dstEntities.name | The name of the destination entity. | keyword |
+| zeronetworks.audit.details.rp.dstProcessNames | The destination process names. | keyword |
+| zeronetworks.audit.details.rp.duration | The duration of the rule. | integer |
+| zeronetworks.audit.details.rp.enforcementSource | The enforcement source. | integer |
+| zeronetworks.audit.details.rp.excludedSrcEntities.id | The id of excluded entity. | keyword |
+| zeronetworks.audit.details.rp.excludedSrcEntities.name | The name of excluded entity. | keyword |
+| zeronetworks.audit.details.rp.excludedSrcProcessNames | The excluded source processes. | keyword |
+| zeronetworks.audit.details.rp.mfaMethods | The approved MFA methods. | integer |
+| zeronetworks.audit.details.rp.overrideBuiltins | Override global policies. | boolean |
+| zeronetworks.audit.details.rp.ports | The ports for the policy. | keyword |
+| zeronetworks.audit.details.rp.protocol | The protocol for the policy. | integer |
+| zeronetworks.audit.details.rp.srcEntities.id | The id of the source entity. | keyword |
+| zeronetworks.audit.details.rp.srcEntities.name | The name of the source entity. | keyword |
+| zeronetworks.audit.details.rp.srcProcessNames | The source process names. | keyword |
+| zeronetworks.audit.details.rp.srcUsers.id | The id of the source users. | keyword |
+| zeronetworks.audit.details.rp.srcUsers.name | The name of the source users. | keyword |
+| zeronetworks.audit.details.rp.state | The state of the policy. | integer |
+| zeronetworks.audit.details.rp.userSource | The user source of the policy. | integer |
+| zeronetworks.audit.details.rule.approvedAt | When the rule was approved. | date |
+| zeronetworks.audit.details.rule.approvedBy.id | The id of the approver. | keyword |
+| zeronetworks.audit.details.rule.approvedBy.name | The name of the approver. | keyword |
+| zeronetworks.audit.details.rule.createdAt | The time the rule was created. | date |
+| zeronetworks.audit.details.rule.created_by.id | The id of created by. | keyword |
+| zeronetworks.audit.details.rule.created_by.name | The name of created by. | keyword |
+| zeronetworks.audit.details.rule.description | The description of the rule. | keyword |
+| zeronetworks.audit.details.rule.enforcementSource | The enforcement source of the rule. | integer |
+| zeronetworks.audit.details.rule.excludedLocalEntityNames.id | The id of the excluded local entity. | keyword |
+| zeronetworks.audit.details.rule.excludedLocalEntityNames.name | The name of the excluded local entity. | keyword |
+| zeronetworks.audit.details.rule.expiration | The time the rule will expire. | date |
+| zeronetworks.audit.details.rule.localEntityNames.id | The id of the local entity. | keyword |
+| zeronetworks.audit.details.rule.localEntityNames.name | The name of the local entity. | keyword |
+| zeronetworks.audit.details.rule.localProcesses | The local processes for the rule. | keyword |
+| zeronetworks.audit.details.rule.ports.ports | The ports of the rule. | keyword |
+| zeronetworks.audit.details.rule.ports.protocol_type | The protocol type for the ports of the rule. | integer |
+| zeronetworks.audit.details.rule.remoteEntityNames.id | The id of the remote entity. | keyword |
+| zeronetworks.audit.details.rule.remoteEntityNames.name | The name of the remote entity. | keyword |
+| zeronetworks.audit.details.rule.ruleClass | The rule class of the rule. | integer |
+| zeronetworks.audit.details.rule.state | The rule state of the rule. | integer |
+| zeronetworks.audit.details.rule.updatedAt | The time the rule was updated. | date |
+| zeronetworks.audit.details.rule.updatedBy.id | The id of the updated by. | keyword |
+| zeronetworks.audit.details.rule.updatedBy.name | The name of the updated by. | keyword |
+| zeronetworks.audit.details.rule.usedMfaMethod | The MFA method used for rule creation. | integer |
+| zeronetworks.audit.details.scope | The scope of the token. | integer |
+| zeronetworks.audit.details.sourceAsset | The source asset of the audit. | keyword |
+| zeronetworks.audit.details.tokenTtl | The lifetime of the portal token. | date |
+| zeronetworks.audit.details.type | The type of token that was created. | keyword |
+| zeronetworks.audit.details.uacId | The UAC id. | keyword |
+| zeronetworks.audit.details.uacName | The UAC name. | keyword |
+| zeronetworks.audit.details.user | The user that performed the action. | keyword |
+| zeronetworks.audit.enforcementSource | The platform of the audit. | integer |
+| zeronetworks.audit.parentObjectId | The Id of the previous version object modified such as Rule Id. | keyword |
+| zeronetworks.audit.prevProtectAt | When the asset was previously set to be protected. | date |
+| zeronetworks.audit.protectAt | When the asset will be protected. | date |
+| zeronetworks.audit.publicIp | The IP the user logged into the portal with. | ip |
+| zeronetworks.audit.reason | The reason for the audit. | keyword |
+| zeronetworks.audit.reportedObjectGeneration | The version of the reported object. | integer |
+| zeronetworks.audit.reportedObjectId | The Id of the object modified such as Rule Id. | keyword |
+| zeronetworks.audit.userRole | The role of the user performaing the action | integer |
+
