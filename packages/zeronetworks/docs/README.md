@@ -69,22 +69,22 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2024-04-01T08:30:36.440Z",
     "agent": {
-        "ephemeral_id": "9f5e16d9-5d3b-4d3a-b858-bcca443fd381",
-        "id": "adc346aa-b9e4-4a15-bca4-f4165156bd64",
-        "name": "elastic-agent-31641",
+        "ephemeral_id": "aeb33dfe-9aa6-4771-88dc-e0a23ab8a890",
+        "id": "613b517d-5653-41e9-8dc7-6e84546d8cda",
+        "name": "elastic-agent-83906",
         "type": "filebeat",
         "version": "9.5.5"
     },
     "data_stream": {
         "dataset": "zeronetworks.audit",
-        "namespace": "15730",
+        "namespace": "32730",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "adc346aa-b9e4-4a15-bca4-f4165156bd64",
+        "id": "613b517d-5653-41e9-8dc7-6e84546d8cda",
         "snapshot": false,
         "version": "9.5.5"
     },
@@ -95,13 +95,13 @@ An example event for `audit` looks as following:
             "configuration"
         ],
         "code": "20",
-        "created": "2026-11-17T13:09:57.999Z",
+        "created": "2026-11-17T18:46:45.011Z",
         "dataset": "zeronetworks.audit",
-        "id": "5kpgk0bTgw+kPo5LHuGDTRF1or0=",
-        "ingested": "2026-11-17T13:10:02Z",
+        "id": "sskrDg4SdUdtkG88yVwfBLkPPkY=",
+        "ingested": "2026-11-17T18:46:49Z",
         "kind": "event",
         "module": "zeronetworks",
-        "original": "{\"auditType\":20,\"destinationEntitiesList\":[{\"id\":\"a:a:9ebab20f\",\"name\":\"SHARE\"}],\"details\":\"{\\\"rule\\\":{\\\"localEntityNames\\\":{\\\"id\\\":\\\"a:a:9ebab20f\\\",\\\"name\\\":\\\"SHARE\\\"},\\\"remoteEntityNames\\\":[{\\\"id\\\":\\\"a:a:Y5UYoaWk\\\",\\\"name\\\":\\\"SURFACE\\\"}],\\\"ports\\\":[{\\\"protocol_type\\\":6,\\\"ports\\\":\\\"3389\\\"}],\\\"expiration\\\":1711974636423,\\\"description\\\":\\\"RDP/WinRM MFA\\\",\\\"localProcesses\\\":[\\\"*\\\"],\\\"created_by\\\":{\\\"id\\\":\\\"u:a:OOdYqjWI\\\",\\\"name\\\":\\\"Benny Lakunishok\\\"},\\\"enforcementSource\\\":1,\\\"createdAt\\\":1711960236426,\\\"usedMfaMethod\\\":3,\\\"excludedLocalEntityNames\\\":[],\\\"state\\\":1,\\\"updatedAt\\\":1711960236426,\\\"updatedBy\\\":{},\\\"approvedAt\\\":0,\\\"approvedBy\\\":null,\\\"ruleClass\\\":3}}\",\"enforcementSource\":1,\"isoTimestamp\":\"2024-04-01T08:30:36.440Z\",\"parentObjectId\":\"75bde6e6-83d6-401b-b63b-c2ed062e80fb\",\"performedBy\":{\"id\":\"u:a:OOdYqjWI\",\"name\":\"Benny Lakunishok\"},\"reportedObjectGeneration\":15201363,\"reportedObjectId\":\"21cbb13b-848a-49f0-8fe1-1dc369987403\",\"timestamp\":1711960236440,\"userRole\":6}",
+        "original": "{\"auditType\":20,\"destinationEntitiesList\":[{\"id\":\"a:a:9ebab20f\",\"name\":\"SHARE\"}],\"details\":\"{\\\"rule\\\":{\\\"localEntityNames\\\":{\\\"id\\\":\\\"a:a:9ebab20f\\\",\\\"name\\\":\\\"SHARE\\\"},\\\"remoteEntityNames\\\":[{\\\"id\\\":\\\"a:a:Y5UYoaWk\\\",\\\"name\\\":\\\"SURFACE\\\"}],\\\"ports\\\":[{\\\"protocol_type\\\":6,\\\"ports\\\":\\\"3389\\\"}],\\\"expiration\\\":1711974636423,\\\"description\\\":\\\"RDP/WinRM MFA\\\",\\\"localProcesses\\\":[\\\"*\\\"],\\\"created_by\\\":{\\\"id\\\":\\\"u:a:OOdYqjWI\\\",\\\"name\\\":\\\"Alex Example\\\"},\\\"enforcementSource\\\":1,\\\"createdAt\\\":1711960236426,\\\"usedMfaMethod\\\":3,\\\"excludedLocalEntityNames\\\":[],\\\"state\\\":1,\\\"updatedAt\\\":1711960236426,\\\"updatedBy\\\":{},\\\"approvedAt\\\":0,\\\"approvedBy\\\":null,\\\"ruleClass\\\":3}}\",\"enforcementSource\":1,\"isoTimestamp\":\"2024-04-01T08:30:36.440Z\",\"parentObjectId\":\"75bde6e6-83d6-401b-b63b-c2ed062e80fb\",\"performedBy\":{\"id\":\"u:a:OOdYqjWI\",\"name\":\"Alex Example\"},\"reportedObjectGeneration\":15201363,\"reportedObjectId\":\"21cbb13b-848a-49f0-8fe1-1dc369987403\",\"timestamp\":1711960236440,\"userRole\":6}",
         "outcome": "success",
         "type": [
             "info",
@@ -114,7 +114,7 @@ An example event for `audit` looks as following:
     "related": {
         "user": [
             "u:a:OOdYqjWI",
-            "Benny Lakunishok"
+            "Alex Example"
         ]
     },
     "tags": [
@@ -123,7 +123,7 @@ An example event for `audit` looks as following:
         "preserve_original_event"
     ],
     "user": {
-        "full_name": "Benny Lakunishok",
+        "full_name": "Alex Example",
         "id": "u:a:OOdYqjWI"
     },
     "zeronetworks": {
@@ -138,7 +138,7 @@ An example event for `audit` looks as following:
                     "createdAt": "2024-04-01T08:30:36.426Z",
                     "created_by": {
                         "id": "u:a:OOdYqjWI",
-                        "name": "Benny Lakunishok"
+                        "name": "Alex Example"
                     },
                     "description": "RDP/WinRM MFA",
                     "enforcementSource": 1,
