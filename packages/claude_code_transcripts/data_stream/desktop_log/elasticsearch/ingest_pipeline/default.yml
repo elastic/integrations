@@ -23,38 +23,41 @@ processors:
     override: false
     tag: set_claude_desktop
 - rename:
+    description: >-
+      Work on a copy of the raw line under claude_desktop.tmp. The field is not mapped
+      (claude_desktop is dynamic: false) and is removed at the end of the pipeline, so the
+      unredacted line is never stored.
     field: message
-    target_field: _tmp.line
+    target_field: claude_desktop.tmp.line
     ignore_missing: true
     tag: rename_message
 - grok:
     description: chrome-native-host style, electron-log main.log style and MCP '[server] [level]' style; ISO with or without T/Z/brackets
-    field: _tmp.line
+    field: claude_desktop.tmp.line
     pattern_definitions:
       LVL: (?i:error|warn(?:ing)?|info|verbose|debug|silly|trace|fatal|log)
       ANY: (?m:.*)
-      TS: '%{TIMESTAMP_ISO8601}'
     patterns:
-    - ^\[%{TS:_tmp.ts} %{LVL:log.level} %{DATA:_tmp.component}\] %{ANY:_tmp.msg}
-    - ^\[?%{TS:_tmp.ts}\]? \[%{LVL:log.level}\] %{ANY:_tmp.msg}
-    - ^\[?%{TS:_tmp.ts}\]? \[%{DATA:claude_desktop.mcp.server}\] \[%{LVL:log.level}\] %{ANY:_tmp.msg}
-    - ^%{ANY:_tmp.msg}
+    - ^\[%{TIMESTAMP_ISO8601:claude_desktop.tmp.ts} %{LVL:log.level} %{DATA:claude_desktop.tmp.component}\] %{ANY:claude_desktop.tmp.msg}
+    - ^\[?%{TIMESTAMP_ISO8601:claude_desktop.tmp.ts}\]? \[%{LVL:log.level}\] %{ANY:claude_desktop.tmp.msg}
+    - ^\[?%{TIMESTAMP_ISO8601:claude_desktop.tmp.ts}\]? \[%{DATA:claude_desktop.mcp.server}\] \[%{LVL:log.level}\] %{ANY:claude_desktop.tmp.msg}
+    - ^%{ANY:claude_desktop.tmp.msg}
     ignore_missing: true
     tag: grok_tmp_line
 - set:
-    field: _tmp.tz
+    field: claude_desktop.tmp.tz
     copy_from: event.timezone
     ignore_empty_value: true
     tag: set_tmp_tz
 - set:
-    field: _tmp.tz
+    field: claude_desktop.tmp.tz
     value: UTC
     override: false
     tag: set_tmp_tz_2
 - date:
-    if: ctx._tmp?.ts != null
-    field: _tmp.ts
-    timezone: '{{{_tmp.tz}}}'
+    if: ctx.claude_desktop?.tmp?.ts != null
+    field: claude_desktop.tmp.ts
+    timezone: '{{{claude_desktop.tmp.tz}}}'
     formats:
     - ISO8601
     - yyyy-MM-dd HH:mm:ss.SSS
@@ -62,11 +65,15 @@ processors:
     on_failure:
     - append:
         field: error.message
-        value: unparsed timestamp {{{_tmp.ts}}}
+        value: >-
+          Processor '{{{ _ingest.on_failure_processor_type }}}'
+          {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+          {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+          failed with message '{{{ _ingest.on_failure_message }}}'
         tag: date_tmp_ts_on_failure_append_error_message
     tag: date_tmp_ts
 - append:
-    if: ctx._tmp?.ts == null
+    if: ctx.claude_desktop?.tmp?.ts == null
     field: tags
     value: claude_desktop_unparsed_line
     tag: append_tags
@@ -89,88 +96,164 @@ processors:
     tag: append_related_user
 - script:
     lang: painless
-    description: log file name, MCP server from file name, level normalisation
+    description: >-
+      Derive claude_desktop.log_file from the log file name without its directory or ".log"
+      extension (main, mcp, mcp-server-<name>, chrome-native-host, ...). Use it as log.logger
+      when the line names no component, and take claude_desktop.mcp.server from
+      mcp-server-<name>.log files. Lowercase log.level and map electron-log's "warning" to the
+      ECS value "warn".
     source: |
       String path = ctx.log?.file?.path;
-      if (path == null) { return; }
-      int s1 = path.lastIndexOf('/'); int s2 = path.lastIndexOf(String.valueOf((char) 92)); int s = s1 > s2 ? s1 : s2;
-      String base = path.substring(s + 1);
-      if (base.toLowerCase().endsWith('.log')) { base = base.substring(0, base.length() - 4); }
-      ctx.claude_desktop.log_file = base;
-      if (ctx.log.logger == null) { ctx.log.logger = base; }
-      if (base.startsWith('mcp-server-')) {
-        if (ctx.claude_desktop.mcp == null) { ctx.claude_desktop.mcp = new HashMap(); }
-        if (ctx.claude_desktop.mcp.server == null) { ctx.claude_desktop.mcp.server = base.substring(11); }
+      if (path == null) {
+        return;
       }
+
+      // The path may use either separator: Windows logs come from %APPDATA% and %LOCALAPPDATA%.
+      int s1 = path.lastIndexOf('/');
+      int s2 = path.lastIndexOf('\\');
+      int s = s1 > s2 ? s1 : s2;
+      String base = path.substring(s + 1);
+
+      if (base.toLowerCase().endsWith('.log')) {
+        base = base.substring(0, base.length() - 4);
+      }
+      ctx.claude_desktop.log_file = base;
+      if (ctx.log.logger == null) {
+        ctx.log.logger = base;
+      }
+      if (base.startsWith('mcp-server-')) {
+        if (ctx.claude_desktop.mcp == null) {
+          ctx.claude_desktop.mcp = new HashMap();
+        }
+        if (ctx.claude_desktop.mcp.server == null) {
+          ctx.claude_desktop.mcp.server = base.substring(11);
+        }
+      }
+
       if (ctx.log.level != null) {
         String l = ctx.log.level.toLowerCase();
-        if (l == 'warning') { l = 'warn'; }
+        if (l == 'warning') {
+          l = 'warn';
+        }
         ctx.log.level = l;
       }
     tag: script_log_file_name_mcp_server_from_file_name_
 - script:
     lang: painless
-    description: message text, truncation, detect MCP JSON-RPC traffic
+    description: >-
+      Build message from the text after the timestamp and level: strip electron-log's
+      " { metadata: undefined }" suffix and truncate at 64 KiB (setting
+      claude_desktop.truncated). A leading "[component]" becomes log.logger; in mcp.log the
+      component is the MCP server name. Then recognise MCP traffic ("Message from client" or
+      "Message from server"). Current Desktop builds log only a summary of each message
+      (method="tools/call" id=10 params, id=10 result(1 blocks)), which is parsed here into
+      claude_desktop.mcp.*, event.action, event.outcome and the gen_ai tool call fields. Older
+      builds log the full JSON-RPC message, which is left in claude_desktop.tmp.rpc_raw for
+      the json processor and the next script.
     source: |
-      String m = ctx._tmp.msg;
-      if (m == null) { m = ''; }
+      String m = ctx.claude_desktop.tmp.msg;
+      if (m == null) {
+        m = '';
+      }
       String suf = ' { metadata: undefined }';
-      if (m.endsWith(suf)) { m = m.substring(0, m.length() - suf.length()); }
+      if (m.endsWith(suf)) {
+        m = m.substring(0, m.length() - suf.length());
+      }
       int max = 65536;
-      if (m.length() > max) { m = m.substring(0, max); ctx.claude_desktop.truncated = true; }
+      if (m.length() > max) {
+        m = m.substring(0, max);
+        ctx.claude_desktop.truncated = true;
+      }
       ctx.message = m;
-      if (ctx.log == null) { ctx.log = new HashMap(); }
-      // component prefix: "[RemotePluginManager] ...", "[my-mcp-server] ..." (mcp.log: the MCP server name)
-      String comp = ctx._tmp.component;
+      if (ctx.log == null) {
+        ctx.log = new HashMap();
+      }
+
+      // Component prefix: "[RemotePluginManager] ...", or "[my-mcp-server] ..." in mcp.log.
+      String comp = ctx.claude_desktop.tmp.component;
       String rest = m;
       if (comp == null && m.startsWith('[')) {
         int e = m.indexOf('] ');
-        if (e > 1 && e < 64) { comp = m.substring(1, e); rest = m.substring(e + 2); }
+        if (1 < e && e < 64) {
+          comp = m.substring(1, e);
+          rest = m.substring(e + 2);
+        }
       }
       if (comp != null) {
         ctx.log.logger = comp;
         if (ctx.claude_desktop.log_file == 'mcp') {
-          if (ctx.claude_desktop.mcp == null) { ctx.claude_desktop.mcp = new HashMap(); }
+          if (ctx.claude_desktop.mcp == null) {
+            ctx.claude_desktop.mcp = new HashMap();
+          }
           ctx.claude_desktop.mcp.server = comp;
         }
       }
-      // MCP JSON-RPC traffic
+
+      // MCP JSON-RPC traffic: "Message from client: ..." or "Message from server: ...".
       int p = rest.indexOf('Message from ');
-      if (p < 0 || rest.length() < p + 21) { return; }
-      boolean fromClient = rest.startsWith('client', p + 13);
-      if (!fromClient && !rest.startsWith('server', p + 13)) { return; }
-      if (ctx.claude_desktop.mcp == null) { ctx.claude_desktop.mcp = new HashMap(); }
-      def mcp = ctx.claude_desktop.mcp;
-      mcp.direction = fromClient ? 'client_to_server' : 'server_to_client';
-      String body = rest.substring(p + 21).trim();
-      if (body.startsWith('{')) {
-        // older Desktop builds log the full JSON-RPC message
-        if (!ctx.claude_desktop.containsKey('truncated')) { ctx._tmp.rpc_raw = body; }
+      if (p < 0 || rest.length() < p + 21) {
         return;
       }
-      // current builds log a summary: method="tools/call" id=10 params | id=10 result(1 blocks) | id=3 error ...
-      String method = null; String id = null;
-      def mm = /method="([^"]+)"/.matcher(body);
-      if (mm.find()) { method = mm.group(1); mcp.method = method; }
-      def mi = /(?:^|\s)id=([^\s]+)/.matcher(body);
-      if (mi.find()) { id = mi.group(1); mcp.id = id; }
-      def mb = /result\((\d+) blocks?\)/.matcher(body);
-      if (mb.find()) { mcp.result_blocks = Integer.parseInt(mb.group(1)); }
-      if (method != null && id != null) { ctx.event.action = fromClient ? 'mcp-request' : 'mcp-server-request'; }
-      else if (method != null) { ctx.event.action = 'mcp-notification'; }
-      else if (id != null) {
-        ctx.event.action = 'mcp-response';
-        ctx.event.outcome = (/(?:^|\s)error\b/.matcher(body).find()) ? 'failure' : 'success';
+      boolean fromClient = rest.startsWith('client', p + 13);
+      if (!fromClient && !rest.startsWith('server', p + 13)) {
+        return;
       }
+      if (ctx.claude_desktop.mcp == null) {
+        ctx.claude_desktop.mcp = new HashMap();
+      }
+      def mcp = ctx.claude_desktop.mcp;
+      mcp.direction = fromClient ? 'client_to_server' : 'server_to_client';
+
+      String body = rest.substring(p + 21).trim();
+      if (body.startsWith('{')) {
+        // Older Desktop builds log the full JSON-RPC message. A truncated message is not
+        // valid JSON, so it is not parsed.
+        if (!ctx.claude_desktop.containsKey('truncated')) {
+          ctx.claude_desktop.tmp.rpc_raw = body;
+        }
+        return;
+      }
+
+      // Current builds log a summary:
+      //   method="tools/call" id=10 params | id=10 result(1 blocks) | id=3 error ...
+      String method = null;
+      String id = null;
+      def mm = /method="([^"]+)"/.matcher(body);
+      if (mm.find()) {
+        method = mm.group(1);
+        mcp.method = method;
+      }
+      def mi = /(?:^|\s)id=([^\s]+)/.matcher(body);
+      if (mi.find()) {
+        id = mi.group(1);
+        mcp.id = id;
+      }
+      def mb = /result\((\d+) blocks?\)/.matcher(body);
+      if (mb.find()) {
+        mcp.result_blocks = Integer.parseInt(mb.group(1));
+      }
+
+      if (method != null && id != null) {
+        ctx.event.action = fromClient ? 'mcp-request' : 'mcp-server-request';
+      } else if (method != null) {
+        ctx.event.action = 'mcp-notification';
+      } else if (id != null) {
+        ctx.event.action = 'mcp-response';
+        boolean failed = /(?:^|\s)error\b/.matcher(body).find();
+        ctx.event.outcome = failed ? 'failure' : 'success';
+      }
+
       if (method == 'tools/call') {
         ctx.gen_ai = ['operation': ['name': 'execute_tool']];
-        if (id != null) { ctx.gen_ai.tool = ['call': ['id': id]]; }
+        if (id != null) {
+          ctx.gen_ai.tool = ['call': ['id': id]];
+        }
       }
     tag: script_message_text_truncation_detect_mcp_json_
 - json:
-    if: ctx._tmp?.rpc_raw != null
-    field: _tmp.rpc_raw
-    target_field: _tmp.rpc
+    if: ctx.claude_desktop?.tmp?.rpc_raw != null
+    field: claude_desktop.tmp.rpc_raw
+    target_field: claude_desktop.tmp.rpc
     on_failure:
     - append:
         field: tags
@@ -178,105 +261,274 @@ processors:
         tag: json_tmp_rpc_raw_on_failure_append_tags
     tag: json_tmp_rpc_raw
 - script:
-    if: ctx._tmp?.rpc instanceof Map
+    if: ctx.claude_desktop?.tmp?.rpc instanceof Map
     lang: painless
-    description: JSON-RPC -> event.action, mcp.method/id, gen_ai tool call, error.*
+    description: >-
+      Map a full JSON-RPC message (older Desktop builds) to ECS and claude_desktop.mcp.*.
+      A message with a method and an id is a request (mcp-request from the client,
+      mcp-server-request from the server), a method without an id is an mcp-notification,
+      and anything else is an mcp-response. tools/call requests set gen_ai.operation.name
+      and the gen_ai.tool name and call id. A JSON-RPC error object sets event.outcome to
+      failure and is copied to claude_desktop.mcp.error; error.* is left for pipeline errors.
+      The message itself is kept, unindexed, in claude_desktop.mcp.payload, and is redacted
+      by the next processor.
     source: |
-      def r = ctx._tmp.rpc;
+      def r = ctx.claude_desktop.tmp.rpc;
       def mcp = ctx.claude_desktop.mcp;
       boolean fromClient = mcp.direction == 'client_to_server';
-      if (r.method != null) { mcp.method = r.method; }
-      if (r.id != null) { mcp.id = r.id.toString(); }
-      String act;
-      if (r.method != null && r.id != null) { act = fromClient ? 'mcp-request' : 'mcp-server-request'; }
-      else if (r.method != null) { act = 'mcp-notification'; }
-      else { act = 'mcp-response'; }
-      ctx.event.action = act;
-      if (r.method == 'tools/call' && r.params instanceof Map && r.params.name != null) {
-        ctx.gen_ai = ['operation': ['name': 'execute_tool'], 'tool': ['name': r.params.name]];
-        if (r.id != null) { ctx.gen_ai.tool.call = ['id': r.id.toString()]; }
+
+      if (r.method != null) {
+        mcp.method = r.method;
       }
+      if (r.id != null) {
+        mcp.id = r.id.toString();
+      }
+
+      String act;
+      if (r.method != null && r.id != null) {
+        act = fromClient ? 'mcp-request' : 'mcp-server-request';
+      } else if (r.method != null) {
+        act = 'mcp-notification';
+      } else {
+        act = 'mcp-response';
+      }
+      ctx.event.action = act;
+
+      if (r.method == 'tools/call' && r.params instanceof Map && r.params.name != null) {
+        ctx.gen_ai = [
+          'operation': ['name': 'execute_tool'],
+          'tool': ['name': r.params.name]
+        ];
+        if (r.id != null) {
+          ctx.gen_ai.tool.call = ['id': r.id.toString()];
+        }
+      }
+
       if (r.error instanceof Map) {
         ctx.event.outcome = 'failure';
-        ctx.error = new HashMap();
-        if (r.error.code != null) { ctx.error.code = r.error.code.toString(); }
-        if (r.error.message != null) { ctx.error.message = r.error.message.toString(); }
+        Map err = new HashMap();
+        if (r.error.code != null) {
+          err.code = r.error.code.toString();
+        }
+        if (r.error.message != null) {
+          err.message = r.error.message.toString();
+        }
+        mcp.error = err;
       } else if (act == 'mcp-response') {
-        ctx.event.outcome = (r.result instanceof Map && r.result.isError == true) ? 'failure' : 'success';
+        boolean isError = r.result instanceof Map && r.result.isError == true;
+        ctx.event.outcome = isError ? 'failure' : 'success';
       }
-      mcp.payload = r;   // stored, not indexed (enabled: false); redacted below
+
+      // Stored, not indexed (enabled: false), and redacted by the next processor.
+      mcp.payload = r;
     tag: script_json_rpc_event_action_mcp_method_id_gen_
 - script:
     tag: redact-secrets
     lang: painless
-    description: Same secret scanner as claude-code-transcript (type + length only)
+    description: >-
+      Find credentials in message, claude_desktop.mcp.payload, claude_desktop.mcp.error and
+      error.*, and replace each with [REDACTED:<type>]. Only the type and length of each
+      finding are recorded, in claude_desktop.secrets; the values themselves are never
+      stored. scan() below explains what is detected and how.
     source: |
-      // Deterministic secrets scan + redaction for every transcript line. Records type + length only; values are replaced with [REDACTED:<type>].
-      // Error messages are never copied (Painless regex errors echo the input text).
+      // plausible() decides whether a captured value looks like a real secret rather than a
+      // placeholder or prose: stop words ("required", "your", ...), template variables ($VAR,
+      // <value>, {value}, %VAR%), paths, masks such as **** or xxxx, and our own
+      // [REDACTED:...] marker are rejected. With strong set, the value must also contain a
+      // digit or symbol; this is used for the plain-language "password is X" pattern.
       boolean plausible(String v, List stop, boolean strong) {
-        if (v == null) { return false; }
+        if (v == null) {
+          return false;
+        }
         String s = v.trim();
-        while (s.length() > 0 && ".,;:!?)]}'\"`".indexOf(s.substring(s.length() - 1)) >= 0) { s = s.substring(0, s.length() - 1); }
-        if (s.length() < 4) { return false; }
-        if (stop.contains(s.toLowerCase())) { return false; }
-        if (s.startsWith('[REDACTED')) { return false; }   // our own redaction marker
+        while (s.length() > 0 && ".,;:!?)]}'\"`".indexOf(s.substring(s.length() - 1)) >= 0) {
+          s = s.substring(0, s.length() - 1);
+        }
+        if (s.length() < 4) {
+          return false;
+        }
+        if (stop.contains(s.toLowerCase())) {
+          return false;
+        }
+        if (s.startsWith('[REDACTED')) {
+          return false;
+        }
+
+        // A leading $ < { % / ~ or . marks a variable, placeholder or path.
         char c0 = s.charAt(0);
-        if (c0 == (char) 36 || c0 == (char) 60 || c0 == (char) 123 || c0 == (char) 37 || c0 == (char) 47 || c0 == (char) 126 || c0 == (char) 46) { return false; } // $ < { % / ~ .
+        if (c0 == (char) 36 || c0 == (char) 60 || c0 == (char) 123 || c0 == (char) 37
+            || c0 == (char) 47 || c0 == (char) 126 || c0 == (char) 46) {
+          return false;
+        }
+
+        // A value made only of * x X or . is a mask.
         boolean allMask = true;
-        for (int i = 0; i < s.length(); i++) { char ch = s.charAt(i); if (ch != (char) 42 && ch != (char) 120 && ch != (char) 88 && ch != (char) 46) { allMask = false; break; } } // * x X .
-        if (allMask) { return false; }
-        if (!strong) { return true; }
-        for (int i = 0; i < s.length(); i++) { if (!Character.isLetter(s.charAt(i))) { return true; } }   // needs a digit or symbol
+        for (int i = 0; i < s.length(); i++) {
+          char ch = s.charAt(i);
+          if (ch != (char) 42 && ch != (char) 120 && ch != (char) 88 && ch != (char) 46) {
+            allMask = false;
+            break;
+          }
+        }
+        if (allMask) {
+          return false;
+        }
+
+        if (!strong) {
+          return true;
+        }
+        for (int i = 0; i < s.length(); i++) {
+          if (!Character.isLetter(s.charAt(i))) {
+            return true;
+          }
+        }
         return false;
-      }
-      void hit(List f, List seen, String type, String raw) {
-        String val = raw.trim();
-        while (val.length() > 0 && ".,;:!?)]}'\"`".indexOf(val.substring(val.length() - 1)) >= 0) { val = val.substring(0, val.length() - 1); }
-        int minLen = (type == 'password' || type == 'sudo_password') ? 4 : 6;   // weak, context-free types need longer values
-        if (val.length() < minLen || seen.contains(val)) { return; }   // de-duplicate by value: first (most specific) type wins
-        seen.add(val);                                              // in-memory only, used for replacement
-        Map m = new HashMap(); m.put('type', type); m.put('length', val.length()); f.add(m);
       }
 
+      // hit() records one finding. Values are de-duplicated, so the first (most specific)
+      // type to claim a value wins. The value itself is kept only in memory, in seen, for
+      // the replacement step; the finding records its type and length.
+      void hit(List f, List seen, String type, String raw) {
+        String val = raw.trim();
+        while (val.length() > 0 && ".,;:!?)]}'\"`".indexOf(val.substring(val.length() - 1)) >= 0) {
+          val = val.substring(0, val.length() - 1);
+        }
+        // Weak, context-free types need longer values.
+        int minLen = (type == 'password' || type == 'sudo_password') ? 4 : 6;
+        if (val.length() < minLen || seen.contains(val)) {
+          return;
+        }
+        seen.add(val);
+        Map m = new HashMap();
+        m.put('type', type);
+        m.put('length', val.length());
+        f.add(m);
+      }
+
+      // findAll() records every match of a fixed-format pattern. Each pattern runs in its own
+      // try/catch so a pattern that fails (for example, on the regex complexity limit) only
+      // adds its name to errs. The exception message is not kept, because Painless regex
+      // errors echo the input text.
+      void findAll(String text, Pattern p, int group, String type, String name,
+                   List f, List seen, List errs) {
+        try {
+          Matcher m = p.matcher(text);
+          while (m.find()) {
+            hit(f, seen, type, m.group(group));
+          }
+        } catch (Exception e) {
+          errs.add(name);
+        }
+      }
+
+      // sensitiveKey() is true when a field or JSON key names a credential. The key is
+      // lowercased and stripped of _ - and . first, so apiKey, api_key and API-KEY all match.
       boolean sensitiveKey(def k, def params) {
-        if (k == null) { return false; }
+        if (k == null) {
+          return false;
+        }
         String n = k.toString().toLowerCase().replace('_', '').replace('-', '').replace('.', '');
-        if (params.secret_keys.contains(n)) { return true; }
-        for (def sfx : params.secret_key_suffixes) { if (n.endsWith((String) sfx)) { return true; } }
+        if (params.secret_keys.contains(n)) {
+          return true;
+        }
+        for (def sfx : params.secret_key_suffixes) {
+          if (n.endsWith((String) sfx)) {
+            return true;
+          }
+        }
         return false;
       }
+
       String keyType(def k) {
         String n = k.toString().toLowerCase();
         return (n.indexOf('pass') >= 0 || n.indexOf('pwd') >= 0) ? 'password' : 'secret_field';
       }
+
+      // keyHit() records the string value of a map entry whose key names a credential.
       void keyHit(List f, List seen, def k, def v, def params) {
-        if (!(v instanceof String) || !sensitiveKey(k, params)) { return; }
+        if (!(v instanceof String) || !sensitiveKey(k, params)) {
+          return;
+        }
         String s = (String) v;
-        if (s.length() > 512 || !plausible(s, params.stop, false)) { return; }
+        if (s.length() > 512 || !plausible(s, params.stop, false)) {
+          return;
+        }
         hit(f, seen, keyType(k), s);
       }
 
+      // scan() finds credentials in one string and records each one with hit().
+      //
+      // Intent: catch secrets that end up in log lines and MCP messages (pasted tokens,
+      // connection strings, CLI flags, "the password is ..." in prose) with few false
+      // positives, and never fail the document because of the scan.
+      //
+      // Approach, from most to least specific. Because hit() de-duplicates by value, a value
+      // keeps the type of the first pattern that found it.
+      //   1. Fixed-format tokens with a distinctive prefix or shape: cloud and SaaS API keys,
+      //      PEM private key blocks, JWTs and Authorization headers. One regex each.
+      //   2. JSON "key": "value" pairs, including backslash-escaped JSON, where the key names
+      //      a credential (params.secret_keys and params.secret_key_suffixes).
+      //   3. Context patterns: NAME=value with NAME containing PASSWORD, SECRET, TOKEN or
+      //      API_KEY; echo ... | sudo -S; curl "user = name:pass" configs; -u/--user CLI
+      //      credentials; plain-language "password is X"; and scheme://user:pass@host URLs.
+      //      These find a keyword with indexOf and run a short, anchored regex on a bounded
+      //      window after it, instead of one unanchored regex over the whole text. That keeps
+      //      the cost linear in the text length and avoids backtracking on long lines.
+      // Captured values from groups 2 and 3 must also pass plausible().
       void scan(String text, List f, List seen, List errs, def params) {
-        if (text == null || text.length() < 4) { return; }
+        if (text == null || text.length() < 4) {
+          return;
+        }
         List stop = params.stop;
         def m;
-        try { m = /A(?:KIA|SIA|BIA|CCA)[0-9A-Z]{16}/.matcher(text); while (m.find()) { hit(f, seen, 'aws_access_key', m.group()); } } catch (Exception e) { errs.add('aws_access_key'); }
-        try { m = /(?i)aws[_ \-]?secret[_ \-]?(?:access[_ \-]?)?key["']?\s?[=:]\s?['"]?([A-Za-z0-9\/+=]{40})(?![A-Za-z0-9\/+=])/.matcher(text); while (m.find()) { hit(f, seen, 'aws_secret_key', m.group(1)); } } catch (Exception e) { errs.add('aws_secret_key'); }
-        try { m = /gh[pousr]_[A-Za-z0-9]{36}/.matcher(text); while (m.find()) { hit(f, seen, 'github_token', m.group()); } } catch (Exception e) { errs.add('github_token'); }
-        try { m = /github_pat_[A-Za-z0-9_]{60,}/.matcher(text); while (m.find()) { hit(f, seen, 'github_token', m.group()); } } catch (Exception e) { errs.add('github_pat'); }
-        try { m = /glpat-[A-Za-z0-9_\-]{20,}/.matcher(text); while (m.find()) { hit(f, seen, 'gitlab_token', m.group()); } } catch (Exception e) { errs.add('gitlab_token'); }
-        try { m = /xox[abposr]-[A-Za-z0-9\-]{10,}/.matcher(text); while (m.find()) { hit(f, seen, 'slack_token', m.group()); } } catch (Exception e) { errs.add('slack_token'); }
-        try { m = /https:\/\/hooks\.slack\.com\/services\/[A-Za-z0-9\/]{20,}/.matcher(text); while (m.find()) { hit(f, seen, 'slack_webhook', m.group()); } } catch (Exception e) { errs.add('slack_webhook'); }
-        try { m = /sk-ant-[A-Za-z0-9_\-]{20,}/.matcher(text); while (m.find()) { hit(f, seen, 'anthropic_api_key', m.group()); } } catch (Exception e) { errs.add('anthropic_api_key'); }
-        try { m = /(?<![A-Za-z0-9])sk-(?!ant-)(?:proj-|svcacct-)?[A-Za-z0-9_\-]{32,}/.matcher(text); while (m.find()) { hit(f, seen, 'openai_api_key', m.group()); } } catch (Exception e) { errs.add('openai_api_key'); }
-        try { m = /AIza[0-9A-Za-z_\-]{35}/.matcher(text); while (m.find()) { hit(f, seen, 'google_api_key', m.group()); } } catch (Exception e) { errs.add('google_api_key'); }
-        try { m = /[sr]k_live_[0-9A-Za-z]{24,}/.matcher(text); while (m.find()) { hit(f, seen, 'stripe_key', m.group()); } } catch (Exception e) { errs.add('stripe_key'); }
-        try { m = /-----BEGIN (?:RSA |EC |DSA |OPENSSH |PGP |ENCRYPTED )?PRIVATE KEY(?: BLOCK)?-----(?:(?:\\r)?(?:\\n|\r?\n)[A-Za-z\-]{2,16}: ?[^\r\n\\]*)*(?:[A-Za-z0-9+\/=\r\n]|\\[rn])*(?:-----END (?:RSA |EC |DSA |OPENSSH |PGP |ENCRYPTED )?PRIVATE KEY(?: BLOCK)?-----)?/.matcher(text); while (m.find()) { hit(f, seen, 'private_key', m.group()); } } catch (Exception e) { errs.add('private_key'); }
-        try { m = /eyJ[A-Za-z0-9_\-]{10,}\.eyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}/.matcher(text); while (m.find()) { hit(f, seen, 'jwt', m.group()); } } catch (Exception e) { errs.add('jwt'); }
-        try { m = /(?i)authorization\s?[:=]\s?['"]?(?:apikey|bearer|basic) ([A-Za-z0-9+\/=._\-]{16,})/.matcher(text); while (m.find()) { hit(f, seen, 'auth_header', m.group(1)); } } catch (Exception e) { errs.add('auth_header'); }
-        // "key": "value" in JSON text (also backslash-escaped JSON) where the key names a credential
-        try { m = /\\?"([A-Za-z0-9_.\-]{1,64})\\?" ?: ?\\?"([^"\\\s]{4,512})/.matcher(text); while (m.find()) { if (sensitiveKey(m.group(1), params) && plausible(m.group(2), stop, false)) { hit(f, seen, keyType(m.group(1)), m.group(2)); } } } catch (Exception e) { errs.add('json_secret_field'); }
-        // NAME=value / "NAME": "value" where NAME contains PASSWORD|PASSWD|SECRET|TOKEN|API_KEY|APIKEY (indexOf + anchored window)
+
+        // 1. Fixed-format tokens.
+        findAll(text, /A(?:KIA|SIA|BIA|CCA)[0-9A-Z]{16}/, 0,
+            'aws_access_key', 'aws_access_key', f, seen, errs);
+        findAll(text, /(?i)aws[_ \-]?secret[_ \-]?(?:access[_ \-]?)?key["']?\s?[=:]\s?['"]?([A-Za-z0-9\/+=]{40})(?![A-Za-z0-9\/+=])/, 1,
+            'aws_secret_key', 'aws_secret_key', f, seen, errs);
+        findAll(text, /gh[pousr]_[A-Za-z0-9]{36}/, 0,
+            'github_token', 'github_token', f, seen, errs);
+        findAll(text, /github_pat_[A-Za-z0-9_]{60,}/, 0,
+            'github_token', 'github_pat', f, seen, errs);
+        findAll(text, /glpat-[A-Za-z0-9_\-]{20,}/, 0,
+            'gitlab_token', 'gitlab_token', f, seen, errs);
+        findAll(text, /xox[abposr]-[A-Za-z0-9\-]{10,}/, 0,
+            'slack_token', 'slack_token', f, seen, errs);
+        findAll(text, /https:\/\/hooks\.slack\.com\/services\/[A-Za-z0-9\/]{20,}/, 0,
+            'slack_webhook', 'slack_webhook', f, seen, errs);
+        findAll(text, /sk-ant-[A-Za-z0-9_\-]{20,}/, 0,
+            'anthropic_api_key', 'anthropic_api_key', f, seen, errs);
+        findAll(text, /(?<![A-Za-z0-9])sk-(?!ant-)(?:proj-|svcacct-)?[A-Za-z0-9_\-]{32,}/, 0,
+            'openai_api_key', 'openai_api_key', f, seen, errs);
+        findAll(text, /AIza[0-9A-Za-z_\-]{35}/, 0,
+            'google_api_key', 'google_api_key', f, seen, errs);
+        findAll(text, /[sr]k_live_[0-9A-Za-z]{24,}/, 0,
+            'stripe_key', 'stripe_key', f, seen, errs);
+        // The whole PEM block: BEGIN line, optional headers, base64 body (raw or with
+        // escaped \r\n newlines, as in JSON text) and END line.
+        findAll(text, /-----BEGIN (?:RSA |EC |DSA |OPENSSH |PGP |ENCRYPTED )?PRIVATE KEY(?: BLOCK)?-----(?:(?:\\r)?(?:\\n|\r?\n)[A-Za-z\-]{2,16}: ?[^\r\n\\]*)*(?:[A-Za-z0-9+\/=\r\n]|\\[rn])*(?:-----END (?:RSA |EC |DSA |OPENSSH |PGP |ENCRYPTED )?PRIVATE KEY(?: BLOCK)?-----)?/, 0,
+            'private_key', 'private_key', f, seen, errs);
+        findAll(text, /eyJ[A-Za-z0-9_\-]{10,}\.eyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}/, 0,
+            'jwt', 'jwt', f, seen, errs);
+        findAll(text, /(?i)authorization\s?[:=]\s?['"]?(?:apikey|bearer|basic) ([A-Za-z0-9+\/=._\-]{16,})/, 1,
+            'auth_header', 'auth_header', f, seen, errs);
+
+        // 2. "key": "value" in JSON text where the key names a credential.
+        try {
+          m = /\\?"([A-Za-z0-9_.\-]{1,64})\\?" ?: ?\\?"([^"\\\s]{4,512})/.matcher(text);
+          while (m.find()) {
+            if (sensitiveKey(m.group(1), params) && plausible(m.group(2), stop, false)) {
+              hit(f, seen, keyType(m.group(1)), m.group(2));
+            }
+          }
+        } catch (Exception e) {
+          errs.add('json_secret_field');
+        }
+
+        // 3a. NAME=value or "NAME": "value", where NAME is an upper-case identifier that
+        // contains one of params.env_keywords. The identifier is widened around the
+        // keyword by hand, then an anchored regex reads the value from a 120-character window.
         try {
           int tl = text.length();
           for (def kwd : params.env_keywords) {
@@ -284,21 +536,74 @@ processors:
             int from = 0;
             while (true) {
               int p = text.indexOf(kw, from);
-              if (p < 0) { break; }
+              if (p < 0) {
+                break;
+              }
               from = p + kw.length();
-              int s0 = p; while (s0 > 0) { char ch = text.charAt(s0 - 1); if ((ch >= (char) 65 && ch <= (char) 90) || (ch >= (char) 48 && ch <= (char) 57) || ch == (char) 95) { s0--; } else { break; } }
-              int e0 = from; while (e0 < tl) { char ch = text.charAt(e0); if ((ch >= (char) 65 && ch <= (char) 90) || (ch >= (char) 48 && ch <= (char) 57) || ch == (char) 95) { e0++; } else { break; } }
-              if (s0 > 0 && Character.isLetterOrDigit(text.charAt(s0 - 1))) { continue; }   // part of a lowercase/mixed word
+
+              // Widen to the whole identifier: A-Z, 0-9 and _ on both sides.
+              int s0 = p;
+              while (s0 > 0) {
+                char ch = text.charAt(s0 - 1);
+                if ((ch >= (char) 65 && ch <= (char) 90) || (ch >= (char) 48 && ch <= (char) 57) || ch == (char) 95) {
+                  s0--;
+                } else {
+                  break;
+                }
+              }
+              int e0 = from;
+              while (e0 < tl) {
+                char ch = text.charAt(e0);
+                if ((ch >= (char) 65 && ch <= (char) 90) || (ch >= (char) 48 && ch <= (char) 57) || ch == (char) 95) {
+                  e0++;
+                } else {
+                  break;
+                }
+              }
+              // Skip a keyword inside a lowercase or mixed-case word.
+              if (s0 > 0 && Character.isLetterOrDigit(text.charAt(s0 - 1))) {
+                continue;
+              }
               from = e0;
-              int we = e0 + 120; if (we > tl) { we = tl; }
+
+              int we = e0 + 120;
+              if (we > tl) {
+                we = tl;
+              }
               m = /^['"]? ?[=:] ?['"]?([^\s'",}]{4,})/.matcher(text.substring(e0, we));
-              if (m.find() && plausible(m.group(1), stop, false)) { hit(f, seen, 'env_secret', m.group(1)); }
+              if (m.find() && plausible(m.group(1), stop, false)) {
+                hit(f, seen, 'env_secret', m.group(1));
+              }
             }
           }
-        } catch (Exception e) { errs.add('env_secret'); }
-        try { m = /echo ['"]?([^\s'"|]{4,})['"]? ?\| ?sudo -S/.matcher(text); while (m.find()) { if (plausible(m.group(1), stop, false)) { hit(f, seen, 'sudo_password', m.group(1)); } } } catch (Exception e) { errs.add('sudo_password'); }
-        try { m = /(?<![A-Za-z0-9_])user ?= ?['"]?[^\s:'"]{1,64}:([^\s'"]{4,})/.matcher(text); while (m.find()) { if (plausible(m.group(1), stop, false)) { hit(f, seen, 'basic_auth_cli', m.group(1)); } } } catch (Exception e) { errs.add('curl_config'); }
-        // CLI credentials (-u user:pass, -u user -p pass, --user/--username ... --password ...): indexOf + anchored regex on a short window
+        } catch (Exception e) {
+          errs.add('env_secret');
+        }
+
+        // 3b. echo 'secret' | sudo -S, and curl config "user = name:pass".
+        try {
+          m = /echo ['"]?([^\s'"|]{4,})['"]? ?\| ?sudo -S/.matcher(text);
+          while (m.find()) {
+            if (plausible(m.group(1), stop, false)) {
+              hit(f, seen, 'sudo_password', m.group(1));
+            }
+          }
+        } catch (Exception e) {
+          errs.add('sudo_password');
+        }
+        try {
+          m = /(?<![A-Za-z0-9_])user ?= ?['"]?[^\s:'"]{1,64}:([^\s'"]{4,})/.matcher(text);
+          while (m.find()) {
+            if (plausible(m.group(1), stop, false)) {
+              hit(f, seen, 'basic_auth_cli', m.group(1));
+            }
+          }
+        } catch (Exception e) {
+          errs.add('curl_config');
+        }
+
+        // 3c. CLI credentials: -u user:pass, -u user -p pass, --user/--username ... --password ...
+        // The flag must start a word; the regexes read a 200-character window from it.
         try {
           int tl = text.length();
           for (def kwd : params.cli_flags) {
@@ -306,90 +611,224 @@ processors:
             int from = 0;
             while (true) {
               int p = text.indexOf(kw, from);
-              if (p < 0) { break; }
+              if (p < 0) {
+                break;
+              }
               from = p + kw.length();
-              if (p > 0) { char pc0 = text.charAt(p - 1); if (!(Character.isWhitespace(pc0) || pc0 == (char) 39 || pc0 == (char) 34)) { continue; } }
-              int we = p + 200; if (we > tl) { we = tl; }
+              if (p > 0) {
+                char pc0 = text.charAt(p - 1);
+                if (!(Character.isWhitespace(pc0) || pc0 == (char) 39 || pc0 == (char) 34)) {
+                  continue;
+                }
+              }
+              int we = p + 200;
+              if (we > tl) {
+                we = tl;
+              }
               String w = text.substring(p, we);
               m = /^(?:-u|--user|--username)[ =]['"]?[^\s:'"]{1,64}:([^\s'"@]{3,})/.matcher(w);
-              if (m.find() && plausible(m.group(1), stop, false)) { hit(f, seen, 'basic_auth_cli', m.group(1)); }
+              if (m.find() && plausible(m.group(1), stop, false)) {
+                hit(f, seen, 'basic_auth_cli', m.group(1));
+              }
               m = /^(?:-u|--user|--username)[ =]['"]?[^\s'"]{1,64}['"]? (?:-p ?|--password[ =])['"]?([^\s'"]{4,})/.matcher(w);
-              if (m.find() && plausible(m.group(1), stop, false)) { hit(f, seen, 'cli_password', m.group(1)); }
+              if (m.find() && plausible(m.group(1), stop, false)) {
+                hit(f, seen, 'cli_password', m.group(1));
+              }
             }
           }
-        } catch (Exception e) { errs.add('cli_credentials'); }
-        // plain-language "password is X": find keywords with indexOf, run an anchored regex on a short window only
+        } catch (Exception e) {
+          errs.add('cli_credentials');
+        }
+
+        // 3d. Plain language: "password is X", "api key: X", "secret key X1!". The keyword
+        // must start a word; the regex reads a 96-character window after it, and the value
+        // must pass the strong plausibility check.
         try {
           String lower = text.toLowerCase();
+          int tl = text.length();
           for (def kwd : params.pw_keywords) {
-            String kw = (String) kwd; int kl = kw.length(); int tl = text.length();
+            String kw = (String) kwd;
+            int kl = kw.length();
             int from = 0;
             while (true) {
               int p = lower.indexOf(kw, from);
-              if (p < 0) { break; }
+              if (p < 0) {
+                break;
+              }
               from = p + kl;
-              if (p > 0 && Character.isLetterOrDigit(lower.charAt(p - 1))) { continue; }   // word start only
-              int we = p + kl + 96; if (we > tl) { we = tl; }
+              if (p > 0 && Character.isLetterOrDigit(lower.charAt(p - 1))) {
+                continue;
+              }
+              int we = p + kl + 96;
+              if (we > tl) {
+                we = tl;
+              }
               String win = text.substring(p + kl, we);
               m = /^s?(?![A-Za-z0-9_])(?: (?:is|was)(?![A-Za-z0-9])| ?[=:]| (?=\S*[0-9!@#$%^&*]))(?: also(?![A-Za-z0-9]))? ?[:=]? {0,3}['"]?([^\s'",;]{4,})/.matcher(win);
-              if (m.find() && plausible(m.group(1), stop, true)) { hit(f, seen, 'password', m.group(1)); }
+              if (m.find() && plausible(m.group(1), stop, true)) {
+                hit(f, seen, 'password', m.group(1));
+              }
             }
           }
-        } catch (Exception e) { errs.add('password'); }
-        // scheme://user:pass@host, parsed without regex
+        } catch (Exception e) {
+          errs.add('password');
+        }
+
+        // 3e. scheme://user:pass@host, parsed without a regex.
         try {
           int from = 0;
           while (true) {
             int p = text.indexOf('://', from);
-            if (p < 0) { break; }
+            if (p < 0) {
+              break;
+            }
+            // The authority ends at whitespace, / ' or ".
             int end = p + 3;
-            while (end < text.length() && !Character.isWhitespace(text.charAt(end)) && text.charAt(end) != (char) 47 && text.charAt(end) != (char) 39 && text.charAt(end) != (char) 34) { end++; }
+            while (end < text.length()) {
+              char ch = text.charAt(end);
+              if (Character.isWhitespace(ch) || ch == (char) 47 || ch == (char) 39 || ch == (char) 34) {
+                break;
+              }
+              end++;
+            }
             String auth = text.substring(p + 3, end);
             int at = auth.lastIndexOf('@');
-            if (at > 0) { int col = auth.indexOf(':'); if (col > 0 && col < at) { String pw = auth.substring(col + 1, at); if (pw.length() >= 3 && plausible(pw, stop, false)) { hit(f, seen, 'url_credentials', pw); } } }
+            if (at > 0) {
+              int col = auth.indexOf(':');
+              if (col > 0 && col < at) {
+                String pw = auth.substring(col + 1, at);
+                if (pw.length() >= 3 && plausible(pw, stop, false)) {
+                  hit(f, seen, 'url_credentials', pw);
+                }
+              }
+            }
             from = end;
           }
-        } catch (Exception e) { errs.add('url_credentials'); }
+        } catch (Exception e) {
+          errs.add('url_credentials');
+        }
       }
+
+      // walkScan() scans every string in a value, and every map entry whose key names a
+      // credential. Nesting is capped at 25 levels.
       void walkScan(def o, List f, List seen, List errs, def params, int depth) {
-        if (o == null || depth > 25) { return; }
-        if (o instanceof String) { scan((String) o, f, seen, errs, params); }
-        else if (o instanceof Map) { for (def e : ((Map) o).entrySet()) { walkScan(e.getValue(), f, seen, errs, params, depth + 1); keyHit(f, seen, e.getKey(), e.getValue(), params); } }
-        else if (o instanceof List) { for (def v : (List) o) { walkScan(v, f, seen, errs, params, depth + 1); } }
+        if (o == null || depth > 25) {
+          return;
+        }
+        if (o instanceof String) {
+          scan((String) o, f, seen, errs, params);
+        } else if (o instanceof Map) {
+          for (def e : ((Map) o).entrySet()) {
+            walkScan(e.getValue(), f, seen, errs, params, depth + 1);
+            keyHit(f, seen, e.getKey(), e.getValue(), params);
+          }
+        } else if (o instanceof List) {
+          for (def v : (List) o) {
+            walkScan(v, f, seen, errs, params, depth + 1);
+          }
+        }
       }
+
+      // walkReplace() replaces every found value with its [REDACTED:<type>] tag, in place.
       def walkReplace(def o, List vals, List tags, int depth) {
-        if (o == null || depth > 25) { return o; }
+        if (o == null || depth > 25) {
+          return o;
+        }
         if (o instanceof String) {
           String s = (String) o;
-          for (int i = 0; i < vals.size(); i++) { String v = (String) vals.get(i); if (s.indexOf(v) >= 0) { s = s.replace(v, (String) tags.get(i)); } }
+          for (int i = 0; i < vals.size(); i++) {
+            String v = (String) vals.get(i);
+            if (s.indexOf(v) >= 0) {
+              s = s.replace(v, (String) tags.get(i));
+            }
+          }
           return s;
         }
-        if (o instanceof Map) { Map mp = (Map) o; for (def k : new ArrayList(mp.keySet())) { mp.put(k, walkReplace(mp.get(k), vals, tags, depth + 1)); } return mp; }
-        if (o instanceof List) { List l = (List) o; for (int i = 0; i < l.size(); i++) { l.set(i, walkReplace(l.get(i), vals, tags, depth + 1)); } return l; }
+        if (o instanceof Map) {
+          Map mp = (Map) o;
+          for (def k : new ArrayList(mp.keySet())) {
+            mp.put(k, walkReplace(mp.get(k), vals, tags, depth + 1));
+          }
+          return mp;
+        }
+        if (o instanceof List) {
+          List l = (List) o;
+          for (int i = 0; i < l.size(); i++) {
+            l.set(i, walkReplace(l.get(i), vals, tags, depth + 1));
+          }
+          return l;
+        }
         return o;
       }
 
-
-      // ---- main (desktop): scan the log text, the parsed MCP payload and error.*, redact all three ----
-      List f = new ArrayList(); List seen = new ArrayList(); List errs = new ArrayList();
+      // Main: scan the log text, the MCP payload and error, and error.*, then redact them all.
+      List f = new ArrayList();
+      List seen = new ArrayList();
+      List errs = new ArrayList();
       def cd = ctx.claude_desktop;
       walkScan(ctx.message, f, seen, errs, params, 0);
-      if (cd?.mcp?.payload != null) { walkScan(cd.mcp.payload, f, seen, errs, params, 0); }
-      if (ctx.error != null) { walkScan(ctx.error, f, seen, errs, params, 0); }
-      if (f.isEmpty() && errs.isEmpty()) { return; }
-      if (cd == null) { cd = new HashMap(); ctx.claude_desktop = cd; }
+      if (cd?.mcp?.payload != null) {
+        walkScan(cd.mcp.payload, f, seen, errs, params, 0);
+      }
+      if (cd?.mcp?.error != null) {
+        walkScan(cd.mcp.error, f, seen, errs, params, 0);
+      }
+      if (ctx.error != null) {
+        walkScan(ctx.error, f, seen, errs, params, 0);
+      }
+      if (f.isEmpty() && errs.isEmpty()) {
+        return;
+      }
+
+      if (cd == null) {
+        cd = new HashMap();
+        ctx.claude_desktop = cd;
+      }
       Map sec = new HashMap();
-      if (!errs.isEmpty()) { List el = new ArrayList(); for (def e : errs) { el.add('pattern ' + e + ' could not be evaluated'); } sec.put('errors', el); }
+      if (!errs.isEmpty()) {
+        List el = new ArrayList();
+        for (def e : errs) {
+          el.add('pattern ' + e + ' could not be evaluated');
+        }
+        sec.put('errors', el);
+      }
       if (!f.isEmpty()) {
-        List order = new ArrayList(); for (int i = 0; i < f.size(); i++) { order.add(i); }
+        // Replace longer values first, so a value that contains another is replaced whole.
+        List order = new ArrayList();
+        for (int i = 0; i < f.size(); i++) {
+          order.add(i);
+        }
         order.sort((a, b) -> ((String) seen.get(b)).length() - ((String) seen.get(a)).length());
-        List vals = new ArrayList(); List tags = new ArrayList();
-        for (def i : order) { vals.add(seen.get(i)); tags.add('[REDACTED:' + f.get(i).type + ']'); }
-        if (ctx.message != null) { ctx.message = walkReplace(ctx.message, vals, tags, 0); }
-        if (cd.mcp?.payload != null) { cd.mcp.payload = walkReplace(cd.mcp.payload, vals, tags, 0); }
-        if (ctx.error != null) { ctx.error = walkReplace(ctx.error, vals, tags, 0); }
-        List types = new ArrayList(); for (def x : f) { if (!types.contains(x.type)) { types.add(x.type); } }
-        sec.put('count', f.size()); sec.put('types', types); sec.put('findings', f); sec.put('redacted', true);
+        List vals = new ArrayList();
+        List tags = new ArrayList();
+        for (def i : order) {
+          vals.add(seen.get(i));
+          tags.add('[REDACTED:' + f.get(i).type + ']');
+        }
+
+        if (ctx.message != null) {
+          ctx.message = walkReplace(ctx.message, vals, tags, 0);
+        }
+        if (cd.mcp?.payload != null) {
+          cd.mcp.payload = walkReplace(cd.mcp.payload, vals, tags, 0);
+        }
+        if (cd.mcp?.error != null) {
+          cd.mcp.error = walkReplace(cd.mcp.error, vals, tags, 0);
+        }
+        if (ctx.error != null) {
+          ctx.error = walkReplace(ctx.error, vals, tags, 0);
+        }
+
+        List types = new ArrayList();
+        for (def x : f) {
+          if (!types.contains(x.type)) {
+            types.add(x.type);
+          }
+        }
+        sec.put('count', f.size());
+        sec.put('types', types);
+        sec.put('findings', f);
+        sec.put('redacted', true);
       }
       cd.secrets = sec;
     params:
@@ -521,22 +960,42 @@ processors:
         value: redaction script failed
         tag: redact-secrets_on_failure_append_claude_desktop_secrets_errors
 - remove:
-    description: _tmp holds the unredacted line; message keeps the redacted text
+    description: claude_desktop.tmp holds the unredacted line; message keeps the redacted text
     field:
-    - _tmp
+    - claude_desktop.tmp
     ignore_missing: true
     tag: remove_tmp
+- set:
+    if: ctx.error?.message != null
+    field: event.kind
+    value: pipeline_error
+    tag: set_event_kind_pipeline_error_on_error_message
+- append:
+    if: ctx.error?.message != null
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false
+    tag: append_tags_preserve_original_event_on_error_message
 on_failure:
 - append:
     tag: append_error_message_on_failure
     field: error.message
-    value: Processor '{{{ _ingest.on_failure_processor_type }}}' {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}' {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'
+    value: >-
+      Processor '{{{ _ingest.on_failure_processor_type }}}'
+      {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+      {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+      failed with message '{{{ _ingest.on_failure_message }}}'
 - set:
     tag: set_event_kind_pipeline_error
     field: event.kind
     value: pipeline_error
+- append:
+    tag: append_tags_preserve_original_event_on_failure
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false
 - remove:
     field:
-    - _tmp
+    - claude_desktop.tmp
     ignore_missing: true
     tag: remove_temp_fields_on_failure
