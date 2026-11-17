@@ -20,9 +20,14 @@ processors:
       field: _tmp.new_target_string
       tag: kv_new_target
       target_field: _tmp.new_target
-      field_split: ';'
-      value_split: '='
+      field_split: '(?<!\\);' # unescaped ;
+      value_split: '(?<!\\)=' # unescaped =
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_kv_new_target
+            value: "failed to parse new_target '{{{_tmp.new_target_string}}}': {{{_ingest.on_failure_message}}}"
   - remove:
       field: json.customData.new_target
       tag: remove_new_target_string

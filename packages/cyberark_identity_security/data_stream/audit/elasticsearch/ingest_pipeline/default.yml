@@ -772,9 +772,23 @@ processors:
   - geoip:
       field: source.ip
       tag: geoip_source_ip
-      target_field: source.geo
+      target_field: _tmp.source_geo
       ignore_missing: true
-      if: ctx.source?.ip != null && ctx.source.geo == null
+      if: ctx.source?.ip != null && ctx.source.geo?.location == null
+  # Keep the geo values that CyberArk sent; the lookup fills in only the missing ones.
+  - script:
+      lang: painless
+      tag: script_fill_source_geo
+      description: Copy GeoIP lookup values to source.geo for the keys that are not set.
+      if: ctx._tmp?.source_geo != null
+      source: |-
+        if (ctx.source.geo == null) {
+          ctx.source.geo = ctx._tmp.source_geo;
+          return;
+        }
+        for (def entry : ctx._tmp.source_geo.entrySet()) {
+          ctx.source.geo.putIfAbsent(entry.getKey(), entry.getValue());
+        }
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
