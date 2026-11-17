@@ -5,6 +5,11 @@
 
 The Upwind integration for Elastic collects runtime threat detections, vulnerability findings, and cloud configuration findings from the [Upwind](https://www.upwind.io/) Cloud Security Platform via the Management REST API.
 
+## Elastic Managed Enabled Integration
+
+Elastic Managed integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Elastic Managed integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ### Compatibility
 
 This integration is compatible with the Upwind Management REST API v1 list endpoints for threat detections, vulnerability findings, and configuration findings.
@@ -144,7 +149,3 @@ The `configuration_findings` data stream collects the current CSPM posture from 
 ##### Configuration findings sample event
 
 {{ event "configuration_findings" }}
-
-{{ ilm }}
-
-{{ transform }}
