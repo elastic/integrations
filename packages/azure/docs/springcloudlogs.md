@@ -153,7 +153,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.resource.namespace | Resource type/namespace | keyword |
 | azure.resource.provider | Resource type/namespace | keyword |
 | azure.springcloudlogs.category | Category | keyword |
-| azure.springcloudlogs.durationMs | Duration of the operation in milliseconds, as reported by the source event. Kept in its original vendor representation (string or number); use `event.duration` for the normalized value. | keyword |
 | azure.springcloudlogs.event_category | Event Category | keyword |
 | azure.springcloudlogs.log_format | ccpNamespace | keyword |
 | azure.springcloudlogs.logtag | Cloud | keyword |
@@ -175,6 +174,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
+| event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |
 | event.module | Event module | constant_keyword |
 | geo.city_name | City name. | keyword |
 | geo.continent_name | Name of the continent. | keyword |

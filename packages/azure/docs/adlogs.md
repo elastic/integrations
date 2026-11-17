@@ -422,7 +422,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | @timestamp | Event timestamp. | date |
 | azure.correlation_id | Correlation ID | keyword |
 | azure.identityprotection.category | Category | keyword |
-| azure.identityprotection.durationMs | Duration of the operation in milliseconds, as reported by the source event. Kept in its original vendor representation (string or number); use `event.duration` for the normalized value. | keyword |
 | azure.identityprotection.operation_name | Operation name | keyword |
 | azure.identityprotection.operation_version | Operation version | keyword |
 | azure.identityprotection.properties.activity | Indicates the activity type the detected risk is linked to. Possible values are: signin, user, unknownFutureValue. | keyword |
@@ -467,6 +466,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
+| event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |
 | event.module | Event module | constant_keyword |
 | geo.city_name | City name. | keyword |
 | geo.continent_name | Name of the continent. | keyword |
@@ -642,7 +642,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | @timestamp | Event timestamp. | date |
 | azure.correlation_id | Correlation ID | keyword |
 | azure.provisioning.category | Category | keyword |
-| azure.provisioning.durationMs | Duration of the operation in milliseconds, as reported by the source event. Kept in its original vendor representation (string or number); use `event.duration` for the normalized value. | keyword |
 | azure.provisioning.identity | Describes the identity of the user or application that performed the operation | keyword |
 | azure.provisioning.level | The severity level of the event | long |
 | azure.provisioning.operation_name | Operation name | keyword |
@@ -706,6 +705,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
+| event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |
 | event.module | Event module | constant_keyword |
 | geo.city_name | City name. | keyword |
 | geo.continent_name | Name of the continent. | keyword |

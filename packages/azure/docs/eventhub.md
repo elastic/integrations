@@ -153,7 +153,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure-eventhub.partition_id | Partition ID | keyword |
 | azure-eventhub.sequence_number | Sequence number | long |
 | azure.correlation_id | Correlation ID | keyword |
-| azure.eventhub.durationMs | Duration of the operation in milliseconds, as reported by the source event. Kept in its original vendor representation (string or number); use `event.duration` for the normalized value. | keyword |
 | azure.eventhub.properties.raw | Raw properties as a string, if the `properties` field is a string. | keyword |
 | azure.resource.authorization_rule | Authorization rule | keyword |
 | azure.resource.group | Resource group | keyword |
@@ -167,6 +166,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |
 | event.module | Event module | constant_keyword |
 | geo.city_name | City name. | keyword |
 | geo.continent_name | Name of the continent. | keyword |
