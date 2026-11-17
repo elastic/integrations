@@ -152,17 +152,31 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure-eventhub.offset | Offset | long |
 | azure-eventhub.partition_id | Partition ID | keyword |
 | azure-eventhub.sequence_number | Sequence number | long |
-| azure.correlation_id | Correlation ID | keyword |
+| azure.correlation.id | Correlation ID for grouping related operations. | keyword |
+| azure.correlation_id | [Deprecated] Legacy flat name for the correlation ID. Populated only in data streams that set it before 1.41.0. Planned to become an alias of `azure.correlation.id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.correlation.id` instead. | keyword |
+| azure.eventhub.Region | Region from the parsed message envelope (`parse_message` only). Also copied to `cloud.region` when `location` is absent. | keyword |
+| azure.eventhub.ResourceId | Resource ID from the parsed message envelope, capitalised variant (`parse_message` only). Also copied to `azure.resource_id` when `resourceId` is absent. | keyword |
+| azure.eventhub.TenantId | Tenant ID from the parsed message envelope, capitalised variant (`parse_message` only). Also copied to `azure.tenant.id`. | keyword |
+| azure.eventhub.category | Log category from the parsed message envelope (`parse_message` only). | keyword |
+| azure.eventhub.correlationId | Correlation ID from the parsed message envelope (`parse_message` only). Also copied to `azure.correlation.id`. | keyword |
+| azure.eventhub.location | Location from the parsed message envelope (`parse_message` only). Also copied to `cloud.region` when it is an Azure region. | keyword |
+| azure.eventhub.operationName | Operation name from the parsed message envelope (`parse_message` only). | keyword |
 | azure.eventhub.properties.raw | Raw properties as a string, if the `properties` field is a string. | keyword |
-| azure.resource.authorization_rule | Authorization rule | keyword |
-| azure.resource.group | Resource group | keyword |
-| azure.resource.id | Resource ID | keyword |
-| azure.resource.name | Name | keyword |
-| azure.resource.namespace | Resource type/namespace | keyword |
-| azure.resource.provider | Resource type/namespace | keyword |
-| azure.subscription_id | Azure subscription ID | keyword |
-| azure.tenant_id | tenant ID | keyword |
+| azure.eventhub.tenantId | Tenant ID from the parsed message envelope (`parse_message` only). Also copied to `azure.tenant.id`. | keyword |
+| azure.resource.authorization_rule | Authorization rule. | keyword |
+| azure.resource.group | [Deprecated] Legacy name for the resource group. Still populated. Planned to become an alias of `azure.resource_group.name` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.resource_group.name` instead. | keyword |
+| azure.resource.id | [Deprecated] Legacy name for the ARM resource ID. Still populated. Planned to become an alias of `cloud.resource_id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `cloud.resource_id` instead. | keyword |
+| azure.resource.name | Resource name. | keyword |
+| azure.resource.namespace | Event Hub namespace parsed from the ARM resource ID. | keyword |
+| azure.resource.provider | [Deprecated] Legacy name for the resource provider namespace. Still populated. Unlike `azure.resource_provider.namespace`, it includes the resource type (for example `Microsoft.KeyVault/vaults`). Planned to become an alias of `azure.resource_provider.namespace` about six months after 1.41.0, after which it is no longer stored in `_source` and returns the namespace only. Use `azure.resource_provider.namespace` instead. | keyword |
+| azure.resource_group.name | Azure resource group name. | keyword |
+| azure.resource_provider.namespace | Azure resource provider namespace (e.g., Microsoft.EventHub). | keyword |
+| azure.subscription.id | Azure subscription ID. | keyword |
+| azure.subscription_id | [Deprecated] Legacy flat name for the subscription ID. Still populated. Planned to become an alias of `azure.subscription.id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.subscription.id` instead. | keyword |
+| azure.tenant.id | Azure tenant ID. | keyword |
+| azure.tenant_id | [Deprecated] Legacy flat name for the tenant ID. Populated only in data streams that set it before 1.41.0. Planned to become an alias of `azure.tenant.id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.tenant.id` instead. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.resource_id | Fully-qualified Azure Resource Manager (ARM) resource ID. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |

@@ -568,6 +568,61 @@ Known data streams that might produce malformed logs:
 - Platform Logs
 - Spring Apps Logs
 
+## Common Azure metadata fields
+
+Every data stream in this integration emits a consistent set of Azure metadata fields based on [OpenTelemetry semantic conventions for Azure](https://opentelemetry.io/docs/specs/semconv/cloud/azure/).
+
+| Field | Type | Description | Available in |
+|---|---|---|---|
+| `cloud.provider` | keyword | Always `azure`. | All streams |
+| `cloud.account.id` | keyword | Azure subscription ID, parsed from the ARM resource ID. Not set by the tenant-scoped Entra ID streams (auditlogs, signinlogs, identity_protection, provisioning), which carry no subscription. graphactivitylogs and aadgraphactivitylogs set it to the tenant ID, as they did before 1.41.0; this will be corrected in a future major version. | ARM-scoped streams (activitylogs, platformlogs, springcloudlogs, application_gateway, firewall_logs, eventhub), graphactivitylogs, aadgraphactivitylogs |
+| `cloud.resource_id` | keyword | Fully-qualified Azure Resource Manager (ARM) resource ID, for example `/subscriptions/{id}/resourceGroups/{rg}/providers/...`. | All streams that receive an ARM resource path |
+| `cloud.region` | keyword | Azure region, taken from the envelope `location` field (`Region` for platformlogs, springcloudlogs and some eventhub payloads). | activitylogs and eventhub (newly populated), plus graphactivitylogs, aadgraphactivitylogs, platformlogs and springcloudlogs (unchanged) |
+| `azure.subscription.id` | keyword | Azure subscription ID parsed from the ARM resource ID. | ARM-scoped streams only |
+| `azure.tenant.id` | keyword | Azure tenant (directory) ID. | Entra ID streams (auditlogs, signinlogs, identity_protection, provisioning, graphactivitylogs, aadgraphactivitylogs), activitylogs, platformlogs, springcloudlogs, application_gateway, firewall_logs, eventhub |
+| `azure.correlation.id` | keyword | Correlation ID for grouping related operations. | All streams |
+| `azure.resource_group.name` | keyword | Azure resource group name parsed from the ARM resource ID. | Full ARM streams |
+| `azure.resource_provider.namespace` | keyword | Azure resource provider namespace without the resource type, for example `Microsoft.EventHub`. The legacy `azure.resource.provider` keeps its previous value, which includes the resource type (for example `Microsoft.EventHub/namespaces`). | All streams |
+
+### Legacy field names
+
+Version 1.41.0 is **additive**: the semantic-convention field names above were added without removing or renaming anything. Every previously populated field name is still a concrete field and is still populated with the same value in the data streams that populated it before, so existing queries, dashboards, saved searches, custom ingest pipelines, and `_source` consumers continue to work unchanged. The only mapping change is to three fields that were never populated, listed at the end of this section, which are now aliases.
+
+The legacy names below are **deprecated** as of 1.41.0.
+
+| Deprecated legacy field (still populated) | Semconv equivalent |
+|---|---|
+| `azure.resource.id` | `cloud.resource_id` |
+| `azure.resource.group` | `azure.resource_group.name` |
+| `azure.resource.provider` | `azure.resource_provider.namespace` |
+| `azure.subscription_id` | `azure.subscription.id` |
+| `azure.tenant_id` | `azure.tenant.id` |
+| `azure.activitylogs.tenant_id` | `azure.tenant.id` |
+| `azure.correlation_id` | `azure.correlation.id` |
+
+A legacy name is only populated in the data streams that populated it before this release. For example, `azure.correlation_id` is not added to eventhub, firewall_logs, application_gateway or aadgraphactivitylogs, which never had it.
+
+#### Deprecation timeline
+
+1. **From 1.41.0, for about six months:** each legacy name is written as a real field next to its semconv name. Both names appear in `_source`. This adds some storage per document.
+2. **About six months after 1.41.0:** the legacy names stop being written. Each one becomes a `type: alias` field that points to its semconv name. A changelog entry will announce the exact release.
+
+After the switch:
+
+- Queries, aggregations, ES|QL, Lens visualizations, dashboards, and detection rules that use a legacy name keep working, because Elasticsearch resolves the alias.
+- `azure.resource.provider` returns the namespace only (for example `Microsoft.KeyVault` instead of `Microsoft.KeyVault/vaults`). Queries that match the full provider/type value must change.
+- The legacy names are no longer in `_source`. Custom ingest pipelines (for example a Painless script or processor that reads `ctx.azure.correlation_id`), and anything else that reads the raw document, must use the semconv name.
+
+Move any custom ingest pipelines, `_source` consumers, and new queries to the semconv names during the transition period.
+
+Three fields were declared in earlier releases but never actually populated by any pipeline. Because no document ever carried them, they are now `type: alias` fields rather than concrete ones, which keeps them queryable at no storage cost:
+
+| Alias | Points to |
+|---|---|
+| `azure.auditlogs.tenant_id` | `azure.tenant.id` |
+| `azure.provisioning.tenant_id` | `azure.tenant.id` |
+| `azure.signinlogs.tenant_id` | `azure.tenant.id` |
+
 ## Reference
 
 Visit the page for each individual Azure Logs integration to see details about exported fields and sample events.

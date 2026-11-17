@@ -80,18 +80,28 @@ An example event for `application_gateway` looks as following:
             "operation_name": "ApplicationGatewayAccess"
         },
         "resource": {
-            "group": "PEERINGTEST",
-            "id": "/SUBSCRIPTIONS/23103928-B2CF-472A-8CDB-0146E2849129/RESOURCEGROUPS/PEERINGTEST/PROVIDERS/MICROSOFT.NETWORK/APPLICATIONGATEWAYS/Application-Gateway-Name",
             "name": "Application-Gateway-Name",
+            "id": "/SUBSCRIPTIONS/23103928-B2CF-472A-8CDB-0146E2849129/RESOURCEGROUPS/PEERINGTEST/PROVIDERS/MICROSOFT.NETWORK/APPLICATIONGATEWAYS/Application-Gateway-Name",
+            "group": "PEERINGTEST",
             "provider": "MICROSOFT.NETWORK/APPLICATIONGATEWAYS"
         },
-        "subscription_id": "23103928-B2CF-472A-8CDB-0146E2849129"
+        "subscription": {
+            "id": "23103928-B2CF-472A-8CDB-0146E2849129"
+        },
+        "subscription_id": "23103928-B2CF-472A-8CDB-0146E2849129",
+        "resource_group": {
+            "name": "PEERINGTEST"
+        },
+        "resource_provider": {
+            "namespace": "MICROSOFT.NETWORK"
+        }
     },
     "cloud": {
         "account": {
             "id": "23103928-B2CF-472A-8CDB-0146E2849129"
         },
-        "provider": "azure"
+        "provider": "azure",
+        "resource_id": "/SUBSCRIPTIONS/23103928-B2CF-472A-8CDB-0146E2849129/RESOURCEGROUPS/PEERINGTEST/PROVIDERS/MICROSOFT.NETWORK/APPLICATIONGATEWAYS/Application-Gateway-Name"
     },
     "destination": {
         "address": "www.contoso.com",
@@ -184,15 +194,21 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.application_gateway.policy.scope | The location of the policy - values can be "Global", "Listener", or "Location". | keyword |
 | azure.application_gateway.policy.scope_name | The name of the object where the policy is applied. | keyword |
 | azure.application_gateway.transaction_id | Unique ID for a given transaction which helps group multiple rule violations that occurred within the same request. | keyword |
-| azure.correlation_id | Correlation ID. | keyword |
+| azure.correlation.id | Correlation ID for grouping related operations. | keyword |
+| azure.correlation_id | [Deprecated] Legacy flat name for the correlation ID. Populated only in data streams that set it before 1.41.0. Planned to become an alias of `azure.correlation.id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.correlation.id` instead. | keyword |
 | azure.resource.authorization_rule | Authorization rule. | keyword |
-| azure.resource.group | Resource group. | keyword |
-| azure.resource.id | Resource ID. | keyword |
-| azure.resource.name | Name. | keyword |
-| azure.resource.namespace | Resource type/namespace. | keyword |
-| azure.resource.provider | Resource type/namespace. | keyword |
-| azure.subscription_id | Azure subscription ID. | keyword |
-| azure.tenant_id | tenant ID. | keyword |
+| azure.resource.group | [Deprecated] Legacy name for the resource group. Still populated. Planned to become an alias of `azure.resource_group.name` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.resource_group.name` instead. | keyword |
+| azure.resource.id | [Deprecated] Legacy name for the ARM resource ID. Still populated. Planned to become an alias of `cloud.resource_id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `cloud.resource_id` instead. | keyword |
+| azure.resource.name | Resource name. | keyword |
+| azure.resource.namespace | Event Hub namespace parsed from the ARM resource ID. | keyword |
+| azure.resource.provider | [Deprecated] Legacy name for the resource provider namespace. Still populated. Unlike `azure.resource_provider.namespace`, it includes the resource type (for example `Microsoft.KeyVault/vaults`). Planned to become an alias of `azure.resource_provider.namespace` about six months after 1.41.0, after which it is no longer stored in `_source` and returns the namespace only. Use `azure.resource_provider.namespace` instead. | keyword |
+| azure.resource_group.name | Azure resource group name. | keyword |
+| azure.resource_provider.namespace | Azure resource provider namespace (e.g., Microsoft.EventHub). | keyword |
+| azure.subscription.id | Azure subscription ID. | keyword |
+| azure.subscription_id | [Deprecated] Legacy flat name for the subscription ID. Still populated. Planned to become an alias of `azure.subscription.id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.subscription.id` instead. | keyword |
+| azure.tenant.id | Azure tenant ID. | keyword |
+| azure.tenant_id | [Deprecated] Legacy flat name for the tenant ID. Populated only in data streams that set it before 1.41.0. Planned to become an alias of `azure.tenant.id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.tenant.id` instead. | keyword |
+| cloud.resource_id | Fully-qualified Azure Resource Manager (ARM) resource ID. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |

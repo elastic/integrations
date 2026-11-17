@@ -1,42 +1,75 @@
+- name: cloud.resource_id
+  type: keyword
+  description: |
+    Fully-qualified Azure Resource Manager (ARM) resource ID.
 - name: azure
   type: group
   fields:
-    - name: subscription_id
-      type: keyword
-      description: |
-        Azure subscription ID
-    - name: correlation_id
-      type: keyword
-      description: |
-        Correlation ID
-    - name: tenant_id
-      type: keyword
-      description: |
-        tenant ID
-    - name: resource
+    - name: subscription
       type: group
       fields:
         - name: id
           type: keyword
           description: |
-            Resource ID
-        - name: group
+            Azure subscription ID.
+    - name: subscription_id
+      type: keyword
+      description: '[Deprecated] Legacy flat name for the subscription ID. Still populated. Planned to become an alias of `azure.subscription.id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.subscription.id` instead.'
+    - name: tenant
+      type: group
+      fields:
+        - name: id
           type: keyword
           description: |
-            Resource group
-        - name: provider
+            Azure tenant ID.
+    - name: correlation
+      type: group
+      fields:
+        - name: id
           type: keyword
           description: |
-            Resource type/namespace
-        - name: namespace
-          type: keyword
-          description: |
-            Resource type/namespace
+            Correlation ID for grouping related operations.
+    - name: resource_group
+      type: group
+      fields:
         - name: name
           type: keyword
           description: |
-            Name
+            Azure resource group name.
+    - name: resource_provider
+      type: group
+      fields:
+        - name: namespace
+          type: keyword
+          description: |
+            Azure resource provider namespace (e.g., Microsoft.EventHub).
+    - name: resource
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: |
+            Resource name.
+        - name: namespace
+          type: keyword
+          description: |
+            Event Hub namespace parsed from the ARM resource ID.
         - name: authorization_rule
           type: keyword
           description: |
-            Authorization rule
+            Authorization rule.
+        - name: id
+          type: keyword
+          description: '[Deprecated] Legacy name for the ARM resource ID. Still populated. Planned to become an alias of `cloud.resource_id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `cloud.resource_id` instead.'
+        - name: group
+          type: keyword
+          description: '[Deprecated] Legacy name for the resource group. Still populated. Planned to become an alias of `azure.resource_group.name` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.resource_group.name` instead.'
+        - name: provider
+          type: keyword
+          description: '[Deprecated] Legacy name for the resource provider namespace. Still populated. Unlike `azure.resource_provider.namespace`, it includes the resource type (for example `Microsoft.KeyVault/vaults`). Planned to become an alias of `azure.resource_provider.namespace` about six months after 1.41.0, after which it is no longer stored in `_source` and returns the namespace only. Use `azure.resource_provider.namespace` instead.'
+    - name: tenant_id
+      type: keyword
+      description: '[Deprecated] Legacy flat name for the tenant ID. Populated only in data streams that set it before 1.41.0. Planned to become an alias of `azure.tenant.id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.tenant.id` instead.'
+    - name: correlation_id
+      type: keyword
+      description: '[Deprecated] Legacy flat name for the correlation ID. Populated only in data streams that set it before 1.41.0. Planned to become an alias of `azure.correlation.id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.correlation.id` instead.'

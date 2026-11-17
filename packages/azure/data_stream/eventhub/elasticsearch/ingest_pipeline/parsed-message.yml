@@ -50,6 +50,43 @@ processors:
       field: azure.eventhub.resourceId
       target_field: azure.resource_id
       ignore_missing: true
+  - set:
+      tag: set_azure_eventhub_ResourceId_to_azure_resource_id_2ec65d1b
+      field: azure.resource_id
+      copy_from: azure.eventhub.ResourceId
+      if: ctx.azure?.resource_id == null
+      ignore_empty_value: true
+  - set:
+      tag: set_azure_eventhub_tenantId_to_azure_tenant_id_3b2b4c9f
+      field: azure.tenant.id
+      copy_from: azure.eventhub.tenantId
+      ignore_empty_value: true
+  - set:
+      tag: set_azure_eventhub_TenantId_to_azure_tenant_id_0d6db0e5
+      field: azure.tenant.id
+      copy_from: azure.eventhub.TenantId
+      if: ctx.azure?.tenant?.id == null
+      ignore_empty_value: true
+  - set:
+      tag: set_azure_eventhub_correlationId_to_azure_correlation_id_3ef212df
+      field: azure.correlation.id
+      copy_from: azure.eventhub.correlationId
+      ignore_empty_value: true
+  - set:
+      tag: set_cloud_region_from_eventhub_location_g4h5i6j7
+      field: cloud.region
+      copy_from: azure.eventhub.location
+      if: ctx.azure?.eventhub?.location != null && ctx.azure.eventhub.location.length() > 2
+      description: >-
+        The length guard skips country codes (for example `GB`) that tenant-level
+        events carry in `location`; they are not Azure regions.
+      ignore_empty_value: true
+  - set:
+      tag: set_azure_eventhub_Region_to_cloud_region_bda35c79
+      field: cloud.region
+      copy_from: azure.eventhub.Region
+      if: "ctx.cloud?.region == null"
+      ignore_empty_value: true
   - rename:
       tag: rename_azure_eventhub_durationMs_to_event_duration_f7de1882
       field: azure.eventhub.durationMs
@@ -82,7 +119,7 @@ processors:
         dropEmptyFields(ctx);
   - pipeline:
       tag: pipeline_azure_shared_pipeline_8653a0ad
-      name: '{{ IngestPipeline "azure-shared-pipeline" }}'
+      name: '{{ IngestPipeline "azure-shared-pipeline-resource" }}'
       ignore_failure: true
 on_failure:
   - set:

@@ -79,9 +79,9 @@ An example event for `springcloudlogs` looks as following:
     },
     "azure": {
         "resource": {
-            "group": "TESTM",
-            "id": "/SUBSCRIPTIONS/0E073EC1-C22F-4488-ADDE-DA35ED609CCD/RESOURCEGROUPS/TESTM/PROVIDERS/MICROSOFT.APPPLATFORM/SPRING/OBSSPRINCLOUD",
             "name": "OBSSPRINCLOUD",
+            "id": "/SUBSCRIPTIONS/0E073EC1-C22F-4488-ADDE-DA35ED609CCD/RESOURCEGROUPS/TESTM/PROVIDERS/MICROSOFT.APPPLATFORM/SPRING/OBSSPRINCLOUD",
+            "group": "TESTM",
             "provider": "MICROSOFT.APPPLATFORM/SPRING"
         },
         "springcloudlogs": {
@@ -98,10 +98,23 @@ An example event for `springcloudlogs` looks as following:
                 "stream": "stdout"
             }
         },
-        "subscription_id": "0E073EC1-C22F-4488-ADDE-DA35ED609CCD"
+        "subscription": {
+            "id": "0E073EC1-C22F-4488-ADDE-DA35ED609CCD"
+        },
+        "subscription_id": "0E073EC1-C22F-4488-ADDE-DA35ED609CCD",
+        "resource_group": {
+            "name": "TESTM"
+        },
+        "resource_provider": {
+            "namespace": "MICROSOFT.APPPLATFORM"
+        }
     },
     "cloud": {
-        "provider": "azure"
+        "provider": "azure",
+        "resource_id": "/SUBSCRIPTIONS/0E073EC1-C22F-4488-ADDE-DA35ED609CCD/RESOURCEGROUPS/TESTM/PROVIDERS/MICROSOFT.APPPLATFORM/SPRING/OBSSPRINCLOUD",
+        "account": {
+            "id": "0E073EC1-C22F-4488-ADDE-DA35ED609CCD"
+        }
     },
     "data_stream": {
         "dataset": "azure.springcloudlogs",
@@ -145,13 +158,17 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| azure.correlation_id | Correlation ID | keyword |
-| azure.resource.authorization_rule | Authorization rule | keyword |
-| azure.resource.group | Resource group | keyword |
-| azure.resource.id | Resource ID | keyword |
-| azure.resource.name | Name | keyword |
-| azure.resource.namespace | Resource type/namespace | keyword |
-| azure.resource.provider | Resource type/namespace | keyword |
+| azure.correlation.id | Correlation ID for grouping related operations. | keyword |
+| azure.correlation_id | [Deprecated] Legacy flat name for the correlation ID. Populated only in data streams that set it before 1.41.0. Planned to become an alias of `azure.correlation.id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.correlation.id` instead. | keyword |
+| azure.resource.authorization_rule | Authorization rule. | keyword |
+| azure.resource.group | [Deprecated] Legacy name for the resource group. Still populated. Planned to become an alias of `azure.resource_group.name` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.resource_group.name` instead. | keyword |
+| azure.resource.id | [Deprecated] Legacy name for the ARM resource ID. Still populated. Planned to become an alias of `cloud.resource_id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `cloud.resource_id` instead. | keyword |
+| azure.resource.name | Resource name. | keyword |
+| azure.resource.namespace | Event Hub namespace parsed from the ARM resource ID. | keyword |
+| azure.resource.provider | [Deprecated] Legacy name for the resource provider namespace. Still populated. Unlike `azure.resource_provider.namespace`, it includes the resource type (for example `Microsoft.KeyVault/vaults`). Planned to become an alias of `azure.resource_provider.namespace` about six months after 1.41.0, after which it is no longer stored in `_source` and returns the namespace only. Use `azure.resource_provider.namespace` instead. | keyword |
+| azure.resource_group.name | Azure resource group name. | keyword |
+| azure.resource_provider.namespace | Azure resource provider namespace (e.g., Microsoft.EventHub). | keyword |
+| azure.springcloudlogs.TenantId | Tenant ID from the log envelope (capitalised variant), as sent by Azure. Also copied to `azure.tenant.id`. | keyword |
 | azure.springcloudlogs.category | Category | keyword |
 | azure.springcloudlogs.event_category | Event Category | keyword |
 | azure.springcloudlogs.log_format | ccpNamespace | keyword |
@@ -167,9 +184,13 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.springcloudlogs.properties.thread | Thread | keyword |
 | azure.springcloudlogs.properties.type | Type | keyword |
 | azure.springcloudlogs.status | Status | keyword |
-| azure.subscription_id | Azure subscription ID | keyword |
-| azure.tenant_id | tenant ID | keyword |
+| azure.springcloudlogs.tenantId | Tenant ID from the log envelope, as sent by Azure. Also copied to `azure.tenant.id`. | keyword |
+| azure.subscription.id | Azure subscription ID. | keyword |
+| azure.subscription_id | [Deprecated] Legacy flat name for the subscription ID. Still populated. Planned to become an alias of `azure.subscription.id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.subscription.id` instead. | keyword |
+| azure.tenant.id | Azure tenant ID. | keyword |
+| azure.tenant_id | [Deprecated] Legacy flat name for the tenant ID. Populated only in data streams that set it before 1.41.0. Planned to become an alias of `azure.tenant.id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.tenant.id` instead. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.resource_id | Fully-qualified Azure Resource Manager (ARM) resource ID. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
