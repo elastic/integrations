@@ -2,16 +2,27 @@
 
 The Okta integration collects events from the Okta API, specifically reading from the Okta System Log API.
 
-## Agentless Enabled Integration
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+## Elastic Managed enabled integration
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ## Logs
 
 ### System
 
 The Okta System Log records system events related to your organization in order to provide an audit trail that can be used to understand platform activity and to diagnose problems. This module is implemented using the httpjson input and is configured to paginate through the logs while honoring any rate-limiting headers sent by Okta.
+
+#### User fields
+
+The System Log identifies the actor of each event by its Okta id, login and display name. These values are mapped to the ECS user fields as follows:
+
+- `user.id`: the Okta user id (for example `00u1abvz4pYqdM8ms4x6`) of the actor. It is set only when `okta.actor.type` is `User`, and it holds the same value as `user.id` in the [Okta Entity Analytics](https://www.elastic.co/docs/reference/integrations/entityanalytics_okta) integration.
+- `user.name`, `source.user.name`, `client.user.name`: the actor's login (`okta.actor.alternate_id`).
+- `user.email`, `source.user.email`, `client.user.email`: a copy of the actor's login when the login contains `@`. The System Log does not include the user's primary email, so this value is the login and can differ from the primary email (`profile.email`) that Okta Entity Analytics stores in `user.email`.
+- `user.target.id`: the Okta user id of the first target of type `User`.
+- `client.user.id`, `source.user.id`: the actor's Okta id for every actor type, including apps and system principals.
 
 ## Types Of Authentication
 ### API Key

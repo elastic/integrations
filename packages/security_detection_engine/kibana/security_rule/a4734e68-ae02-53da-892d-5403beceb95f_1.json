@@ -1,0 +1,124 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects list operations on Kubernetes Secrets from a non-loopback client when the request URI targets cluster-wide secrets or list operations under kube-system or default. Useful for spotting broad secret enumeration from remote clients.",
+        "from": "now-6m",
+        "index": [
+            "logs-aws.eks_audit-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS EKS Secrets List Across Cluster or Sensitive Namespaces",
+        "note": "## Triage and analysis\n\n### Investigating AWS EKS Secrets List Across Cluster or Sensitive Namespaces\nAudit events for `list` on the `secrets` resource against `/api/v1/secrets`, paginated cluster lists, or namespace-scoped\nlists under `kube-system` or `default`, from a source IP that is not localhost.\n\n### Possible investigation steps\n\n- Confirm the actor (`user.name`, groups) and whether the client is expected (CI, admin bastion, controller).\n- Review `aws.eks.audit.requestURI`, `user_agent.original`, and follow-on API activity from the same source.\n- Assess exposure: cluster-wide secret listing can surface many credentials.\n\n### False positive analysis\n\n- Legitimate controllers or operators listing secrets in `kube-system` / `default` from cluster nodes may match; tune by\n  source IP, user agent, or service account as needed.\n\n### Response and remediation\n\n- If the listing is unauthorized, revoke the credentials used, rotate the secrets that were exposed, and tighten RBAC so\n  that only the required service accounts can list secrets in those namespaces.\n- Review follow-on activity from the same identity and source IP for secret reads, pod exec, or RBAC changes.",
+        "query": "data_stream.dataset:\"aws.eks_audit\" and event.action:list and\naws.eks.audit.objectRef.resource:secrets and\naws.eks.audit.requestURI :(/api/v1/secrets or /api/v1/secrets?limit* or /api/v1/namespaces/kube-system/secrets or /api/v1/namespaces/kube-system/secrets?limit* or /api/v1/namespaces/default/secrets or /api/v1/namespaces/default/secrets?limit*) and\nsource.ip:(* and not (\"::1\" or \"127.0.0.1\")) and\nnot user.name: (system\\:kube-controller-manager or eks\\:cloud-controller-manager or eks\\:kms-storage-migrator or\n  \"system:serviceaccount:argocd:argocd-application-controller\" or\n  \"system:serviceaccount:elastic:kube-state-metrics\" or\n  \"system:serviceaccount:cert-manager:cert-manager-cainjector\" or\n  \"system:serviceaccount:elastic-system:elastic-agent\" or\n  \"system:serviceaccount:longhorn-system:longhorn-service-account\") and\nnot aws.eks.audit.user.groups:(\"system:serviceaccounts:ibm-csi\" or \"system:serviceaccounts:argocd\" or \"system:serviceaccounts:elastic\")\n",
+        "related_integrations": [
+            {
+                "package": "aws",
+                "version": ">=8.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.eks.audit.objectRef.resource",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.eks.audit.requestURI",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.eks.audit.user.groups",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "a4734e68-ae02-53da-892d-5403beceb95f",
+        "setup": "This rule reads EKS control-plane audit logs collected by the AWS integration\ninto `logs-aws.eks_audit-*`, where the AWS EKS audit ingest\npipelines normalize each audit record under `aws.eks.audit.*`.\n\nEnable the `audit` control-plane log type on the EKS cluster, send its\nCloudWatch log group through the AWS integration, and confirm events carry\n`data_stream.dataset: aws.eks_audit` and\n`cloud.provider: aws` before enabling this rule.\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Containers",
+            "Platform: AWS",
+            "Platform: Kubernetes",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: Kubernetes API Server Audit Logs",
+            "Service: AWS EKS",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Tactic: Discovery",
+            "Rule Type: Custom Query (KQL)",
+            "Resources: Investigation Guide",
+            "Profile: Beta"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.007",
+                                "name": "Container API",
+                                "reference": "https://attack.mitre.org/techniques/T1552/007/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1613",
+                        "name": "Container and Resource Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1613/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "a4734e68-ae02-53da-892d-5403beceb95f_1",
+    "type": "security-rule"
+}
