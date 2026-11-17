@@ -13,14 +13,6 @@ source:
             field: error.message
         - term:
             event.kind: pipeline_error
-        # Drop findings fixed more than 30 days ago; keep every other status.
-        - bool:
-            filter:
-              - term:
-                  projectdiscovery.vulnerability.vuln_status: fixed
-              - range:
-                  projectdiscovery.vulnerability.updated_at:
-                    lt: "now-30d"
         - terms:
             _tier:
               - data_frozen
