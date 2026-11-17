@@ -1382,7 +1382,7 @@ An example event for `dex_application_tests` looks as following:
 | cloudflare_logpush.dex_application_tests.traceroute.source_ip.version | IP version of the traceroute source IP address. | keyword |  |  |
 | cloudflare_logpush.dex_application_tests.traceroute.status | Final status of the traceroute test (for example `destinationReached`, `lastHopFailed` or `maxHopsExhausted`). | keyword |  |  |
 | cloudflare_logpush.dex_application_tests.traceroute.time_end | Time when the traceroute test finished. | date |  |  |
-| cloudflare_logpush.dex_application_tests.traceroute.version | Version of the traceroute test schema. | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.traceroute.version | Version of the WARP traceroute client that ran the test. | keyword |  |  |
 | cloudflare_logpush.dex_application_tests.tunnel_type | Tunnel protocol used during the test (for example `wireguard`, `masque` or `http2`). | keyword |  |  |
 | cloudflare_logpush.dex_application_tests.version | Version of the WARP client that ran the test. | keyword |  |  |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |  |

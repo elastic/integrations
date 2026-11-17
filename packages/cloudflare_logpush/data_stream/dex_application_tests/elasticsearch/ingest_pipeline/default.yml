@@ -346,21 +346,26 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      tag: rename_json_HTTPURL_to_url_full
+      tag: rename_json_HTTPURL_to_url_original
       field: json.HTTPURL
-      target_field: url.full
+      target_field: url.original
       ignore_missing: true
   - uri_parts:
-      tag: uri_parts_url_full
-      field: url.full
+      tag: uri_parts_url_original
+      field: url.original
       target_field: url
       keep_original: true
-      if: ctx.url?.full != null
+      if: ctx.url?.original != null
       on_failure:
         - append:
-            tag: append_error_message_uri_parts_url_full
+            tag: append_error_message_uri_parts_url_original
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_url_full_from_url_original
+      field: url.full
+      copy_from: url.original
+      ignore_empty_value: true
   - rename:
       tag: rename_json_HTTPErrorMessage_to_http_error_message
       field: json.HTTPErrorMessage
