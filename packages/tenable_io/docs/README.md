@@ -83,6 +83,19 @@ For existing users of Tenable Vulnerability Management integration, before upgra
    For more details on Transform Setup, refer to the link [here](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup)
 3. Because the latest copy of vulnerabilities is now indexed in two places, i.e., in both source and destination indices, users must anticipate storage requirements accordingly.
 
+### Vulnerability status
+
+The integration maps the Tenable finding state (`tenable_io.vulnerability.state`) to the `vulnerability.status` field so the [Vulnerability Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page-3) can distinguish active from remediated findings. `vulnerability.status` is a package-defined field that aligns with the ECS `vulnerability.status` field (added in ECS 9.5):
+
+| `tenable_io.vulnerability.state` | `vulnerability.status` |
+|---|---|
+| `OPEN` | `open` |
+| `REOPENED` | `reopened` |
+| `FIXED` | `fixed` |
+| any other value | `unknown` |
+
+Note: the Vulnerability Findings page does not currently filter on `vulnerability.status`, so by default all findings are shown regardless of status. To exclude remediated findings, add a filter such as `NOT vulnerability.status: fixed`.
+
 ## Logs reference
 
 ### asset
@@ -1187,11 +1200,12 @@ An example event for `vulnerability` looks as following:
 | tenable_io.vulnerability.severity.modification_type | The type of modification a user made to the vulnerability's severity. Possible values include:none, recasted and accepted. | keyword |
 | tenable_io.vulnerability.severity.value | The severity of the vulnerability as defined using the Common Vulnerability Scoring System (CVSS) base score. Possible values include info, low, medium, high and critical. | keyword |
 | tenable_io.vulnerability.source | The source of the scans that identified the vulnerability. Sources can include sensors, connectors, and API imports. The values in the source field correspond to the names of the sources as defined in your organization's implementation of Tenable Vulnerability Management. | keyword |
-| tenable_io.vulnerability.state | The state of the vulnerability as determined by the Tenable Vulnerability Management state service. Possible values include: open, reopen and fixed. | keyword |
+| tenable_io.vulnerability.state | The state of the vulnerability as determined by the Tenable Vulnerability Management state service. Possible values include: OPEN, REOPENED and FIXED. | keyword |
 | vulnerability.published_date |  | date |
 | vulnerability.scanner.name |  | keyword |
 | vulnerability.scanner.vendor | The name of the vulnerability scanner vendor. | constant_keyword |
 | vulnerability.scanner.version |  | keyword |
+| vulnerability.status | Lifecycle state of the vulnerability finding on the asset. Expected values: open, fixed, reopened, unknown. Package-defined field that aligns with the ECS `vulnerability.status` field added in ECS 9.5. | keyword |
 | vulnerability.title |  | keyword |
 
 
