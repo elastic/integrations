@@ -46,6 +46,7 @@ In order to ingest data from the Google Reports API you must:
   - OUs: Read
   - Users: Read
   - Chrome Management > Managed browsers: Read
+  - Chrome Management > Manage ChromeOS Devices: Read (only needed for the `chromeos_devices` data stream; *Managed browsers: Read* does not grant it)
   - View Reports
   - Alert Center: Full access
 
@@ -65,6 +66,8 @@ In order to ingest data from the Google Reports API you must:
 The Reports API data streams use the following *oauth2 scope*:
 
 - `https://www.googleapis.com/auth/admin.reports.audit.readonly`
+
+The `chromeos_devices` data stream needs a different scope. See the Google Workspace ChromeOS Devices section.
 
 The `users` data stream needs different scopes. See the Google Workspace Users section.
 
@@ -93,6 +96,16 @@ Recommended Chunk Duration values:
 | Low (for example `rules`, `saml`, `access_transparency`) | `24h` |
 
 A chunk should be small enough to be fully collected between the interruptions you expect, and must not exceed `720h` (30 days). Once the data stream has caught up, the window end is limited by `now - Lag Time`, so Chunk Duration has no effect on steady-state collection. Leaving the setting empty, or setting it to `0`, disables chunking. Existing saved positions are reused unchanged when the setting is turned on or off.
+
+### Duplicate events and index rollover
+
+The `access_transparency`, `admin`, `chat`, `context_aware_access`, `device`, `drive`, `gcp`, `group_enterprise`, `groups`, `login`, `rules`, `saml`, `token` and `user_accounts` data streams set the document `_id` to a fingerprint of the event's `id` and `events` fields, so collecting the same event twice normally produces one document. The `alert` data stream does the same with a fingerprint of the alert's identifiers and timestamps. The other data streams let Elasticsearch generate the `_id`, so every re-collected event from them is stored again.
+
+The fingerprint prevents duplicates only within one backing index. A data stream checks for an existing `_id` only in its current write index, so if the data stream rolls over between the first and second collection of an event, the second copy is stored in the new backing index. Two documents with the same `_id` in different backing indices are the sign of this. The backing index rolls over by size or by age according to the data stream's lifecycle policy, and a large replay can trigger a size-based rollover by itself within hours.
+
+For example, with Chunk Duration unset and a saved position several weeks old, the next interval requests those weeks in one window. If the agent restarts partway through, the whole window is requested again, and any events that were already indexed before a rollover are indexed a second time. With Chunk Duration set to `1h`, the same saved position produces one hour of activity per interval, and a restart re-collects at most that hour, so at most one hour of events can be duplicated if a rollover happens in between.
+
+To limit duplicates, set Chunk Duration on busy data streams, and keep Initial Interval no longer than the history you need when a data stream starts with no saved position. If you do need a long initial history, set Chunk Duration as well so it is collected one chunk at a time.
 
 # Google Workspace Gmail Logs
 
@@ -261,6 +274,70 @@ Once Service Account credentials are downloaded as a JSON file, then the integra
 
 >  NOTE: The default value of the "Page Size" is set to 1000. This option is available under 'Alert' Advance options. Set the parameter "Page Size" according to the requirement. For Alert Data Stream, The default value of "Alert Center API Host" is `https://alertcenter.googleapis.com`. The Alert Center API Host will be used for collecting alert logs only.
 
+# Google Workspace ChromeOS Devices
+
+The `chromeos_devices` data stream collects an **inventory** of the ChromeOS and ChromeOS Flex devices enrolled in your Google Workspace or Chrome Enterprise account, from the [Admin SDK Directory API](https://developers.google.com/workspace/admin/directory/reference/rest/v1/chromeosdevices/list). Each collection cycle produces one document per device, describing what exists: identity, status, organizational unit, assigned user, OS version and update state, boot mode, TPM, end of auto-updates, last known IP addresses and recent users. Documents have `event.kind: asset`.
+
+This is different from the `chrome` data stream, which contains Chrome and ChromeOS activity **events** (what happened). Changes made to devices by administrators are in the `admin` data stream.
+
+The data stream is turned off by default.
+
+## Collection
+
+The Directory API has no filter for changed devices, so each cycle reads the whole device inventory again. The default interval is `24h`. Each request returns up to 100 devices (the **Page Size** setting, which Google allows up to 300).
+
+To collect only part of the inventory, set **Organizational Unit** under the data stream's advanced options. The data stream then collects the devices in that organizational unit and all its children. Use the full path, for example `/Sales` (the leading `/` is optional), or `id:` followed by the organizational unit ID.
+
+## Requirements
+
+The `chromeos_devices` data stream uses the same service account and `Delegated Account` as the Reports API data streams. It needs this extra scope and privilege:
+
+| OAuth scope to add | Privilege the delegated account needs |
+|---|---|
+| `https://www.googleapis.com/auth/admin.directory.device.chromeos.readonly` | Services → Chrome Management → Manage ChromeOS Devices → **Manage ChromeOS Devices (read only)**, on **all** organizational units, and Organizational Units → Read |
+
+*Chrome Management → Managed browsers: Read* is a different privilege for Chrome browsers. It does not give access to ChromeOS devices. Google has merged the former "Admin console privileges" and "Admin API privileges" into one **Admin privileges** section, so one grant covers both. See [Delegate admin roles in Chrome](https://support.google.com/chrome/a/answer/2984343).
+
+To add the scope to the service account's domain-wide delegation (a super administrator must do this):
+
+1. In the Admin console go to **Security → Access and data control → API controls → Manage Domain Wide Delegation**.
+2. Find the service account's client ID and click **Edit**. Do not use **Add new** for a client ID that is already listed, and do not delete and re-add it: deleting it stops every application that uses it straight away.
+3. Add the scope. **Keep** `https://www.googleapis.com/auth/admin.reports.audit.readonly` and any other scopes already listed.
+4. Click **Authorize**, then open **View details** and check that the scope is listed.
+
+Use the exact scope string in the table. Google does not accept a broader scope in place of the one the integration requests. Scope changes can take up to 24 hours to take effect. If your organization uses multi-party approval, another super administrator must approve the change first.
+
+> NOTE: If the scope is not delegated yet, Google issues no token and the `chromeos_devices` data stream collects nothing. The other data streams of the integration are not affected.
+
+Devices only appear after they are enrolled, and enrolment needs a ChromeOS Enterprise, Education or Kiosk & Signage upgrade for each device, including ChromeOS Flex devices. An account without enrolled devices collects no documents, and this is not an error.
+
+Hardware, network and recent-user information is only reported while the *User and device reporting* policies are on. They are on by default. See [View ChromeOS device details](https://support.google.com/chrome/a/answer/1698333).
+
+The data stream calls `https://admin.googleapis.com`. You can change this with the **Directory API Host** setting under the data stream's advanced options. If your network uses an egress allowlist, add `admin.googleapis.com`.
+
+## Notes on the data
+
+- Devices in every status are included, among them deprovisioned and disabled devices. `host.entity.attributes.managed` is set from `status`:
+
+  | `status` | `host.entity.attributes.managed` |
+  |---|---|
+  | `ACTIVE`, `DISABLED` | `true` |
+  | `DEPROVISIONED`, `INACTIVE`, `DELINQUENT`, `PRE_PROVISIONED` | `false` |
+  | `RETURN_REQUESTED`, `RETURN_ARRIVED`, `SHIPPED`, `UNKNOWN`, absent or any other value | not set |
+
+- ChromeOS devices have no hostname. `host.name` is the serial number, or else the device ID. The asset ID set by an administrator goes in `host.entity.display_name`.
+- The assigned user (`google_workspace.chromeos_devices.annotated_user`) is free text that administrators can edit. It is copied to `user.email`, `user.name` and `user.domain` only when it is an email address.
+- `host.ip` holds the devices' local IP addresses. The public (WAN) addresses are shared by many devices behind the same NAT, so they are only in `related.ip` and `google_workspace.chromeos_devices.last_known_network.wan_ip_address`.
+- Google returns some values in either camelCase or upper case, for example `chromeOs` or `CHROME_OS`. They are kept as received.
+- Telemetry reports, such as CPU, memory, disk volume and active time reports, are not indexed. They are only in `event.original` when **Preserve original event** is on.
+
+## Troubleshooting
+
+- **The data stream stops with `oauth2: cannot fetch token` and the input health is Degraded.** Google rejected the token request. The error usually contains `unauthorized_client`, `access_denied`, `invalid_grant`, `invalid_scope` or `admin_policy_enforced`. Check that the scope is delegated exactly as in the table above, and that enough time has passed for the change to take effect.
+- **An error document reports HTTP 403 `Not Authorized to access this resource/api`.** The delegated account lacks the *Manage ChromeOS Devices (read only)* privilege.
+- **Fewer devices than expected.** The delegated account's Chrome privilege is probably limited to some organizational units. Grant it on all organizational units. Also check the **Organizational Unit** setting.
+- **No devices at all.** The account has no enrolled ChromeOS devices, or no ChromeOS upgrades.
+
 # Google Workspace Users
 
 The `users` data stream collects an **inventory** of the user accounts in your Google Workspace tenant from the [Admin SDK Directory API](https://developers.google.com/workspace/admin/directory/reference/rest/v1/users/list). Each collection cycle produces one document per user, describing what exists: identity, 2-Step Verification, admin, suspension and archive state, organizational unit, manager and other directory attributes. Documents have `event.kind: asset`.
@@ -318,11 +395,11 @@ The data stream calls `https://admin.googleapis.com`. You can change this with t
 - **An error document reports HTTP 403 on a roles, role assignments, groups or members request.** The delegated account lacks the privilege for that option. Users are still collected, without that information. For the roles option, the delegated account must be a super administrator.
 - **Fewer users than expected.** The delegated account's role is probably limited to some organizational units. Grant Users → Read on all organizational units.
 
-## Agentless Enabled Integration
+## Elastic Managed enabled integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ## Logs
 
@@ -468,6 +545,14 @@ This is the `chrome` dataset.
 {{event "chrome"}}
 
 {{fields "chrome"}}
+
+### ChromeOS Devices
+
+This is the `chromeos_devices` dataset. It contains an inventory of ChromeOS devices, not events. See the Google Workspace ChromeOS Devices section.
+
+{{event "chromeos_devices"}}
+
+{{fields "chromeos_devices"}}
 
 ### Data Studio
 

@@ -67,7 +67,7 @@ func main() {
 	for i, e := range events {
 		var r otellog.Record
 		r.SetTimestamp(time.Now())
-		r.SetBody(otellog.StringValue(fmt.Sprintf("claude_cowork.%s", e.name)))
+		r.SetBody(attribute.StringValue(fmt.Sprintf("claude_cowork.%s", e.name)))
 		r.AddAttributes(e.attrs...)
 		logger.Emit(ctx, r)
 		log.Printf("emitted event %d/%d: %s", i+1, len(events), e.name)
@@ -81,23 +81,23 @@ func main() {
 
 type event struct {
 	name  string
-	attrs []otellog.KeyValue
+	attrs []attribute.KeyValue
 }
 
-func kv(k, v string) otellog.KeyValue {
-	return otellog.String(k, v)
+func kv(k, v string) attribute.KeyValue {
+	return attribute.String(k, v)
 }
 
-func kvInt(k string, v int64) otellog.KeyValue {
-	return otellog.Int64(k, v)
+func kvInt(k string, v int64) attribute.KeyValue {
+	return attribute.Int64(k, v)
 }
 
-func kvFloat(k string, v float64) otellog.KeyValue {
-	return otellog.Float64(k, v)
+func kvFloat(k string, v float64) attribute.KeyValue {
+	return attribute.Float64(k, v)
 }
 
-func commonAttrs(name string, seq int64) []otellog.KeyValue {
-	return []otellog.KeyValue{
+func commonAttrs(name string, seq int64) []attribute.KeyValue {
+	return []attribute.KeyValue{
 		kv("event.name", name),
 		kvInt("event.sequence", seq),
 		kv("event.timestamp", time.Now().UTC().Format(time.RFC3339Nano)),
@@ -115,7 +115,7 @@ func commonAttrs(name string, seq int64) []otellog.KeyValue {
 func buildEvents() []event {
 	var seq int64
 
-	e := func(name string, extra ...otellog.KeyValue) event {
+	e := func(name string, extra ...attribute.KeyValue) event {
 		attrs := commonAttrs(name, seq)
 		attrs = append(attrs, extra...)
 		seq++

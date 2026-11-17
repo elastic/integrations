@@ -1,0 +1,75 @@
+{
+  "id": "gcp_cloudrun_otel-high-5xx-error-rate-by-service-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud Run OTel] High 5xx error rate by service",
+        "description": "Fast symptom alert: fires when a Cloud Run service returns more than 5% HTTP 5xx responses over a 30-minute window with at least 50 requests. Complements the availability SLO (burn rate) by catching acute error spikes. Note: 429s from the max-instances ceiling never reach request_count and are not visible here.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudrun"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "30m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudrun.otel-*\n// Services only: cloud_run_job documents have no service_name\n| WHERE `metrics.run.googleapis.com/request_count` IS NOT NULL\n  AND resource.attributes.service_name IS NOT NULL\n// request_count is a 1-minute DELTA count: SUM(SUM_OVER_TIME) gives the window total\n| STATS\n    total_requests = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/request_count`)),\n    errors_5xx = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/request_count`))\n      WHERE attributes.response_code_class == \"5xx\",\n    // Root-cause hints: 500 = app error / OOM, 503 = infra or connection failure, 504 = request timeout\n    errors_500 = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/request_count`))\n      WHERE attributes.response_code == \"500\",\n    errors_503 = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/request_count`))\n      WHERE attributes.response_code == \"503\",\n    errors_504 = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/request_count`))\n      WHERE attributes.response_code == \"504\"\n  BY resource.attributes.project_id, resource.attributes.location, resource.attributes.service_name",
+        "breach": {
+          "segment": "// Minimum traffic guard: ignore low-volume services (tune for your traffic profile)\nWHERE total_requests >= 50\n| EVAL\n    errors_5xx = COALESCE(errors_5xx, 0),\n    errors_500 = COALESCE(errors_500, 0),\n    errors_503 = COALESCE(errors_503, 0),\n    errors_504 = COALESCE(errors_504, 0)\n| EVAL error_rate_pct = ROUND(errors_5xx * 100.0 / total_requests, 2)\n// Alert threshold (percent of requests returning 5xx); the Cloud Run SLA counts >1% as downtime\n| WHERE error_rate_pct > 5.0\n| KEEP resource.attributes.project_id, resource.attributes.location, resource.attributes.service_name,\n    error_rate_pct, errors_5xx, total_requests, errors_500, errors_503, errors_504\n| SORT error_rate_pct DESC\n| LIMIT 50"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 1
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.project_id",
+          "resource.attributes.location",
+          "resource.attributes.service_name"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudrun_otel-high-5xx-error-rate-by-service-v2-overview-dashboard",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudrun_otel-a22d34c2-3c04-47a0-bf52-cf1e20a36f1d"
+          }
+        },
+        {
+          "id": "gcp_cloudrun_otel-high-5xx-error-rate-by-service-v2-details-dashboard",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudrun_otel-7d96ccf8-44dc-4987-8835-7ec93a922d04"
+          }
+        },
+        {
+          "id": "gcp_cloudrun_otel-high-5xx-error-rate-by-service-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud Run high 5xx error rate\n\nThe service returned more than 5% HTTP 5xx responses over the last 30 minutes (minimum 50 requests). The alert row includes counts of 500, 503 and 504 responses to help locate the cause.\n\n### Triage\n1. Identify the dominant code in the alert row:\n   - **500**: application error, OOM kill or startup failure. Check memory utilisation p95 for the service (near 100% suggests OOM) and container logs for crash or termination messages.\n   - **503**: Cloud Run infrastructure or connection failure. Usually transient. Check whether CPU or memory is saturated. If neither is, check the Google Cloud status page.\n   - **504**: request timeout exceeded. Compare request latency p99 with the service's configured request timeout (300 s by default).\n2. Break the 5xx count down by `resource.attributes.revision_name`. If errors are concentrated on a newly deployed revision, shift traffic back to the previous revision.\n3. Check startup latency and instance count. A 5xx spike that coincides with many new instances points to failing container starts.\n\n### Caveats\n- `request_count` excludes requests that never reached an instance. 429s from the max-instances ceiling are invisible, so this rule cannot detect that failure mode.\n- Data arrives every 5 minutes, plus up to 2 minutes of GCP delay. The 30-minute window and 2-run activation delay smooth over ingestion gaps.\n\n### Tuning\n- Raise or lower the `error_rate_pct > 5.0` threshold. Use a lower value (e.g. 1-2%) for critical services.\n- Adjust the `total_requests >= 50` guard for low- or high-traffic services.\n- Long-term availability is covered by the 5xx availability SLO. Use this rule for acute spikes."
+          }
+        }
+      ]
+    }
+  }
+}
