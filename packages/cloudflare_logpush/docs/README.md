@@ -54,7 +54,7 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 - `email_security_alerts`: Cloudflare Email Security alerts for phishing, malware, and other email-based threats. See [Email Security Alerts schema](https://developers.cloudflare.com/logs/reference/log-fields/account/email_security_alerts/).
 - `firewall_event`: Zone-level Firewall events for requests mitigated by Cloudflare security products (WAF, Rate Limiting, Firewall Rules, etc.). See [Firewall Events schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/firewall_events/).
 - `http_request`: HTTP/HTTPS request logs served at the Cloudflare edge. See [HTTP Requests schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/http_requests/).
-- `ipsec`: IPsec tunnel logs (IKE handshake and connection messages). See [IPsec Logs schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/ipsec_logs/).
+- `ipsec_logs`: IPsec tunnel logs (IKE handshake and connection messages). See [IPsec Logs schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/ipsec_logs/).
 - `magic_ids`: Magic Network Monitoring IDS detection logs. See [Magic IDS Detections schema](https://developers.cloudflare.com/logs/reference/log-fields/account/magic_ids_detections/).
 - `nel_report`: Network Error Logging (NEL) reports collected from end-user browsers. See [NEL Reports schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/nel_reports/).
 - `network_analytics`: Network Analytics (Magic Transit / Magic WAN packet-sampled flow) logs. See [Network Analytics Logs schema](https://developers.cloudflare.com/logs/reference/log-fields/account/network_analytics_logs/).
@@ -74,7 +74,7 @@ Integrating Cloudflare Logpush with Elastic provides centralized visibility acro
 - Auditing administrative activity on the Cloudflare account (`audit`).
 - Troubleshooting DNS and client-side performance issues (`dns`, `dns_firewall`, `nel_report`, `workers_trace`).
 - Monitoring Turnstile bot-challenge activity and siteverify failures (`turnstile_events`).
-- Troubleshooting IPsec tunnel connectivity and handshake issues (`ipsec`).
+- Troubleshooting IPsec tunnel connectivity and handshake issues (`ipsec_logs`).
 
 ## What do I need to use this integration?
 
@@ -91,7 +91,7 @@ To use this integration, you must be able to create and manage [Cloudflare Logpu
 Creating and managing Logpush jobs requires an API token or user role with the `Logs Write` permission (or a role that includes it, such as **Super Administrator**, **Administrator**, or **Log Share** with edit permissions). Refer to [Cloudflare Logpush permissions](https://developers.cloudflare.com/logs/logpush/permissions/) for details.
 
 - **Zone-scoped datasets** (for example, `http_requests`, `firewall_events`, `dns_logs`, `spectrum_events`, `nel_reports`, `page_shield_events`) require a **zone-scoped token**.
-- **Account-scoped datasets** (for example, `audit_logs`, `access_requests`, `casb_findings`, `device_posture_results`, `dlp_forensic_copies`, `email_security_alerts`, `gateway_*`, `dns_firewall_logs`, `ipsec`, `magic_ids_detections`, `network_analytics_logs`, `sinkhole_http_logs`, `turnstile_events`, `workers_trace_events`, `zero_trust_network_sessions`) require an **account-scoped token**.
+- **Account-scoped datasets** (for example, `audit_logs`, `access_requests`, `casb_findings`, `device_posture_results`, `dlp_forensic_copies`, `email_security_alerts`, `gateway_*`, `dns_firewall_logs`, `ipsec_logs`, `magic_ids_detections`, `network_analytics_logs`, `sinkhole_http_logs`, `turnstile_events`, `workers_trace_events`, `zero_trust_network_sessions`) require an **account-scoped token**.
 - Zero Trust datasets (Access, Gateway, DEX) additionally require `Zero Trust: PII Read`.
 
 **Destination-specific credentials**
@@ -135,7 +135,7 @@ Configure one of the following delivery pipelines before enabling the integratio
   | Gateway HTTP               | gateway_http           |
   | Gateway Network            | gateway_network        |
   | HTTP Request               | http_request           |
-  | IPsec Logs                 | ipsec                  |
+  | IPsec Logs                 | ipsec_logs             |
   | Magic IDS                  | magic_ids              |
   | NEL Report                 | nel_report             |
   | Network Analytics          | network_analytics_logs |
@@ -3225,9 +3225,9 @@ An example event for `http_request` looks as following:
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 
 
-#### ipsec
+#### ipsec_logs
 
-This is the `ipsec` dataset.
+This is the `ipsec_logs` dataset.
 
 ##### Example
 
@@ -3237,28 +3237,14 @@ An example event for `ipsec` looks as following:
 {
     "@timestamp": "2026-09-14T10:15:30.000Z",
     "agent": {
-        "ephemeral_id": "35283ff7-d38b-46c1-87ed-1b8107733805",
-        "id": "23cd0c98-b429-4173-8129-39ca43710820",
-        "name": "elastic-agent-16846",
+        "ephemeral_id": "c0e34e92-aa6b-45cb-8971-cb668d87ab26",
+        "id": "92ed9938-1d69-4744-a27a-3b3b33552ce6",
+        "name": "elastic-agent-65260",
         "type": "filebeat",
         "version": "8.17.1"
     },
-    "aws": {
-        "s3": {
-            "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-ipsec-bucket-81541",
-                "name": "elastic-package-ipsec-bucket-81541"
-            },
-            "object": {
-                "key": "test-ipsec.log"
-            }
-        }
-    },
-    "cloud": {
-        "region": "us-east-1"
-    },
     "cloudflare_logpush": {
-        "ipsec": {
+        "ipsec_logs": {
             "local": {
                 "ip": "203.0.113.10",
                 "port": 500
@@ -3270,15 +3256,15 @@ An example event for `ipsec` looks as following:
         }
     },
     "data_stream": {
-        "dataset": "cloudflare_logpush.ipsec",
-        "namespace": "86226",
+        "dataset": "cloudflare_logpush.ipsec_logs",
+        "namespace": "90741",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "23cd0c98-b429-4173-8129-39ca43710820",
+        "id": "92ed9938-1d69-4744-a27a-3b3b33552ce6",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -3287,8 +3273,8 @@ An example event for `ipsec` looks as following:
         "category": [
             "network"
         ],
-        "dataset": "cloudflare_logpush.ipsec",
-        "ingested": "2026-10-14T07:14:06Z",
+        "dataset": "cloudflare_logpush.ipsec_logs",
+        "ingested": "2026-11-16T10:13:57Z",
         "kind": "event",
         "original": "{\"Level\":\"info\",\"LocalIP\":\"203.0.113.10\",\"LocalPort\":500,\"Message\":\"IKEv2 handshake completed, negotiated ciphersuite AES_GCM_16_256/PRF_HMAC_SHA2_384/ECP_384\",\"RemoteIP\":\"198.51.100.25\",\"RemotePort\":500,\"Timestamp\":\"2026-09-14T10:15:30Z\"}",
         "type": [
@@ -3296,14 +3282,10 @@ An example event for `ipsec` looks as following:
         ]
     },
     "input": {
-        "type": "aws-s3"
+        "type": "http_endpoint"
     },
     "log": {
-        "file": {
-            "path": "https://elastic-package-ipsec-bucket-81541.s3.us-east-1.amazonaws.com/test-ipsec.log"
-        },
-        "level": "info",
-        "offset": 0
+        "level": "info"
     },
     "message": "IKEv2 handshake completed, negotiated ciphersuite AES_GCM_16_256/PRF_HMAC_SHA2_384/ECP_384",
     "related": {
@@ -3313,10 +3295,9 @@ An example event for `ipsec` looks as following:
         ]
     },
     "tags": [
-        "collect_sqs_logs",
         "preserve_original_event",
         "forwarded",
-        "cloudflare_logpush-ipsec"
+        "cloudflare_logpush-ipsec_logs"
     ]
 }
 ```
@@ -3332,10 +3313,10 @@ An example event for `ipsec` looks as following:
 | azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
 | azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
 | azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
-| cloudflare_logpush.ipsec.local.ip | The local IP address associated with the log. It can be an IPv4 or an IPv6 address. | ip |
-| cloudflare_logpush.ipsec.local.port | The local port associated with the log. | long |
-| cloudflare_logpush.ipsec.remote.ip | The remote IP address associated with the log. It can be an IPv4 or an IPv6 address. | ip |
-| cloudflare_logpush.ipsec.remote.port | The remote port associated with the log. | long |
+| cloudflare_logpush.ipsec_logs.local.ip | The local IP address associated with the log. It can be an IPv4 or an IPv6 address. | ip |
+| cloudflare_logpush.ipsec_logs.local.port | The local port associated with the log. | long |
+| cloudflare_logpush.ipsec_logs.remote.ip | The remote IP address associated with the log. It can be an IPv4 or an IPv6 address. | ip |
+| cloudflare_logpush.ipsec_logs.remote.port | The remote port associated with the log. | long |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
