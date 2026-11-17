@@ -29,19 +29,30 @@ processors:
       if: ctx.event?.original != null
   - fingerprint:
       fields:
-        - json.id
-        - json.last_seen_time
+        - event.original
       target_field: _id
       tag: fingerprint_event
       ignore_missing: true
-      description: Sets the document id from the detection id and last_seen_time so identical re-fetches from the 1 minute cursor overlap are deduplicated, while updated detections (newer last_seen_time) index as new documents.
+      description: Sets the document id from the full source detection so identical re-fetches from the cursor overlap are deduplicated, while any change, including a status update that keeps the same last_seen_time, indexes as a new document.
+  - date:
+      field: json.last_seen_time
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      tag: date_last_seen_time
+      if: ctx.json?.last_seen_time != null
+      on_failure:
+        - append:
+            tag: append_error_message_a1c4e8b2
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag ''{{{_ingest.on_failure_processor_tag}}}'' failed: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.first_seen_time
       target_field: '@timestamp'
       formats:
         - ISO8601
       tag: date_first_seen_time
-      if: ctx.json?.first_seen_time != null
+      if: ctx.json?.last_seen_time == null && ctx.json?.first_seen_time != null
       on_failure:
         - append:
             tag: append_error_message_9f5c363e
@@ -384,7 +395,8 @@ on_failure:
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
