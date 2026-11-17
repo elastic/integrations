@@ -170,15 +170,8 @@ processors:
       type: long
       ignore_missing: true
       ignore_failure: true
-      if: "ctx.azure?.signinlogs?.duration_ms != null && ctx.azure.signinlogs.duration_ms instanceof String"
-      description: 'Convert duration_ms to event.duration as long (if it is a string).'
-  - rename:
-      tag: rename_azure_signinlogs_duration_ms_to_event_duration_fffef99e
-      field: azure.signinlogs.duration_ms
-      target_field: event.duration
-      ignore_missing: true
-      if: "ctx.azure?.signinlogs?.duration_ms != null && !(ctx.azure.signinlogs.duration_ms instanceof String)"
-      description: 'Rename duration_ms to event.duration (if it is not a string).'
+      if: ctx.azure?.signinlogs?.duration_ms != null
+      description: 'Convert duration_ms (string or number) to event.duration as long, so the nanosecond scaling below does not overflow.'
   - remove:
       tag: remove_azure_signinlogs_duration_ms_448e81cf
       field: azure.signinlogs.duration_ms
