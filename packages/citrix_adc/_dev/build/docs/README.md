@@ -76,7 +76,7 @@ After the integration is successfully configured, click the Assets tab of the Ci
    - Listen Address
    - Listen Port
 
-   or if you want to collect logs via UDP, keep **Collect logs from Citrix ADC via UDP** toggle on and and then configure following parameters:
+   or if you want to collect logs via UDP, keep **Collect logs from Citrix ADC via UDP** toggle on and then configure following parameters:
    - Listen Address
    - Listen Port
 5. Save the integration.
