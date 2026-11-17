@@ -20,6 +20,7 @@ state:
   initial_interval: {{initial_interval}}
   resolution: 1
   api_key: {{api_key}}
+  connector_id: Elastic-XM-Cyber/{{#if _meta.package.version}}{{_meta.package.version}}{{else}}unknown{{/if}}
 redact:
   fields:
     - api_key
@@ -37,6 +38,7 @@ program: |
               "Header": {
                 "X-Api-Key": [state.api_key],
                 "Content-Type": ["application/json"],
+                "X-XMCYBER-CONNECTOR-NAME-VERSION": [state.connector_id],
               },
             }
           ).do_request().as(authResp,
@@ -90,6 +92,7 @@ program: |
                 "Header": {
                   "Authorization": ["Bearer " + tok.access],
                   "Content-Type": ["application/json"],
+                  "X-XMCYBER-CONNECTOR-NAME-VERSION": [state.connector_id],
                 },
               }
             ).do_request().as(scoreResp,
@@ -133,7 +136,10 @@ program: |
                   {"refreshToken": tok.refresh}.encode_json()
                 ).with(
                   {
-                    "Header": {"Content-Type": ["application/json"]},
+                    "Header": {
+                      "Content-Type": ["application/json"],
+                      "X-XMCYBER-CONNECTOR-NAME-VERSION": [state.connector_id],
+                    },
                   }
                 ).do_request().as(refResp,
                   refResp.Body.decode_json().as(ro,

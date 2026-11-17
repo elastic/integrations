@@ -2,18 +2,21 @@
 description: Pipeline for Jamf Compliance Reporter aue_session_start, aue_session_end, aue_session_update and aue_session_close audit logs.
 processors:
   - convert:
+      tag: convert_json_arguments_am_failure_to_jamf_compliance_reporter_log_arguments_am_failure_9070e193
       field: json.arguments.am_failure
       target_field: jamf_compliance_reporter.log.arguments.am_failure
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_arguments_am_success_to_jamf_compliance_reporter_log_arguments_am_success_2aaf72fd
       field: json.arguments.am_success
       target_field: jamf_compliance_reporter.log.arguments.am_success
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_arguments_sflags_to_jamf_compliance_reporter_log_arguments_sflags_5ced041d
       field: json.arguments.sflags
       target_field: jamf_compliance_reporter.log.arguments.sflags
       type: string
@@ -21,8 +24,18 @@ processors:
       ignore_failure: true
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

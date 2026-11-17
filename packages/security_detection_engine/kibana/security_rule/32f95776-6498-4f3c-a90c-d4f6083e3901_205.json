@@ -1,0 +1,119 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies attempts to masquerade as the Service Host process `svchost.exe` to evade detection and blend in with normal system activity.",
+        "from": "now-9m",
+        "interval": "8m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.name",
+                "host.id",
+                "user.name",
+                "user.id",
+                "process.name",
+                "process.entity_id",
+                "process.executable",
+                "process.command_line",
+                "process.hash.sha256",
+                "process.pe.original_file_name",
+                "process.code_signature.subject_name",
+                "process.code_signature.trusted",
+                "process.parent.executable",
+                "process.parent.command_line"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Potential Masquerading as Svchost",
+        "note": "## Triage and analysis\n\n### Investigating Potential Masquerading as Svchost\n\n#### Possible investigation steps\n\n- Does the alert confirm a service-host-like name running from a noncanonical path?\n  - Focus: `process.name`, `process.executable`, `process.command_line`, `process.parent.executable`, and `host.id`, comparing the path with `C:\\Windows\\System32\\svchost.exe` and `C:\\Windows\\SysWOW64\\svchost.exe`.\n  - Hint: use `process.entity_id`, hash, and signer fields where present; if enrichments are missing, keep the gap unresolved and scope by `host.id`, path, and alert time.\n  - Implication: escalate when svchost.exe or a near-match runs from a user-writable, temp, share-backed, or product-mismatched path; lower concern only when a recognized lab, build-test, or recovery workflow also fits later evidence.\n\n- Is the file identity or rename timing consistent with Microsoft Service Host?\n  - Focus: `process.hash.sha256`, `process.pe.original_file_name`, `process.code_signature.*`, rename timing, and file events for the same path. !{investigate{\"description\":\"\",\"label\":\"File events for the masquerading executable path\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"file.path\",\"queryType\":\"phrase\",\"value\":\"{{process.executable}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-24h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate for an unfamiliar hash, unsigned/untrusted or non-Microsoft signer, recent rename, or original filename conflict; Microsoft identity and stable name timing reduce identity concern but do not clear the noncanonical path.\n\n- Does the launch context fit service-controlled svchost.exe behavior?\n  - Focus: `process.parent.name`, `process.parent.executable`, `process.parent.command_line`, `process.command_line`, and session context, checking for services.exe and service grouping arguments such as `-k <group>` or `-s <service>`.\n  - Implication: escalate when the parent is a shell, script engine, Office process, archive tool, or user-run utility, when service-group arguments are absent, or when context is interactive; services.exe plus service grouping lowers launch-context concern, but the noncanonical path still needs explanation.\n\n- Does this process instance behave like a launcher rather than a passive service host?\n  - Focus: child starts where `process.parent.entity_id` matches `process.entity_id`, especially child `process.name`, `process.executable`, and `process.command_line`. !{investigate{\"description\":\"\",\"label\":\"Child process starts from the masquerading svchost instance\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: use `process.Ext.ancestry` only as a deeper fallback when direct parent-child lineage is missing or incomplete.\n  - Implication: escalate when it spawns shells, script engines, admin tools, installers, additional lookalikes, or short-lived command chains; absent or service-like child activity narrows launcher risk but does not close the name/path anomaly.\n\n- If local findings remain suspicious or unresolved, does related alert scope show reuse of the same masquerading path?\n  - Focus: related alerts for the same `process.executable` or `process.hash.sha256`, comparing `host.id` and `user.id` where available. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the same executable path\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.executable\",\"queryType\":\"phrase\",\"value\":\"{{process.executable}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}} !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the same executable hash\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.hash.sha256\",\"queryType\":\"phrase\",\"value\":\"{{process.hash.sha256}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden scope and raise urgency when the same path or hash appears on other hosts, users, or alert types; keep local only when related alerts are absent and all local evidence supports one recognized lab, build, or recovery workflow.\n\n- Escalate when the path anomaly plus identity, lineage, timing, child-process, or scope evidence points to masquerading or broader compromise; close only when path, identity, launch context, and bounded host/user scope prove one recognized lab, build, or recovery workflow; if telemetry cannot prove legitimacy, preserve artifacts and escalate.\n\n### False positive analysis\n\n- Controlled malware-analysis, image-build, or recovery testing can stage a service-host-like file outside canonical Windows paths. Confirm by aligning identity (`process.hash.sha256`, `process.pe.original_file_name`, signer trust/subject), launch context (`process.parent.executable`, `process.parent.command_line`, `process.command_line`), and scope (`host.id`, `host.name`, `user.id`). Without outside records, close only when process fields prove the controlled workflow.\n- Treat a noncanonical svchost.exe name as suspicious until process evidence proves one complete benign workflow; a trusted Microsoft signer, familiar parent, or single quiet execution is not enough when the path or name still mimics Service Host.\n- Before creating an exception, require recurring `process.executable`, `process.hash.sha256`, signer subject, parent executable, command-line shape, and `host.id` or controlled host cohort across prior alerts from this rule. Avoid exceptions on `process.name`, svchost.exe, `user.name`, or a host alone.\n\n### Response and remediation\n\n- If confirmed benign, reverse any temporary containment and record the exact workflow evidence: `process.executable`, `process.hash.sha256`, `process.code_signature.subject_name`, `process.parent.executable`, `process.command_line`, `host.id`, and the controlled lab, build, or recovery scope. Create an exception only after the same evidence pattern recurs.\n- If suspicious but unconfirmed, preserve the alert, source process event, recovered `process.entity_id`, `process.executable`, `process.hash.sha256`, signature metadata, parent context, command line, and related-alert results before containment. Apply reversible controls first, such as heightened monitoring or temporary network restrictions for the affected `host.id`, and avoid termination or deletion until scope is clearer.\n- If confirmed malicious, first preserve the recovered `process.entity_id`, command line, child-process list, path evidence, and forensic package for `process.executable`. Finish same-path and same-hash scoping, then isolate the endpoint when host criticality allows, terminate only the suspicious noncanonical service-host process, and remove the masquerading executable or launcher artifacts. Do not stop canonical Service Host instances unless that exact instance is proven malicious.\n- After containment, restore any affected service-host component from known-good media if a legitimate file was replaced, restrict execution from user-writable or share-backed paths where feasible, and document the recovered command-line and parent-chain pattern that separated this fake service host from normal services.exe-launched instances.\n",
+        "query": "FROM logs-endpoint.events.process-*, logs-windows.sysmon_operational-*, logs-system.security-*, logs-windows.*, winlogbeat-* metadata _id, _version, _index\n| where event.category == \"process\" and event.type == \"start\" and\n  match(process.name, \"svchost.exe\", { \"fuzziness\": 1, \"max_expansions\": 10 }) and\n  not to_lower(process.executable) in (\"c:\\\\windows\\\\syswow64\\\\svchost.exe\", \"c:\\\\windows\\\\system32\\\\svchost.exe\") and\n  not to_lower(process.executable) like \"\"\"\\\\device\\\\harddiskvolume*\\\\windows\\\\system32\\\\svchost.exe\"\"\" and\n  not to_lower(process.executable) like \"\"\"\\\\device\\\\harddiskvolume*\\\\windows\\\\syswow64\\\\svchost.exe\"\"\" \n| keep *\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": ">=9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": ">=3.0.0"
+            },
+            {
+                "package": "system",
+                "version": ">=2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "32f95776-6498-4f3c-a90c-d4f6083e3901",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [Sysmon Event ID 1 - Process Creation](https://ela.st/sysmon-event-1-setup)\n- [Windows Process Creation Logs](https://ela.st/audit-process-creation)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Defend",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Sysmon",
+            "Noise: Medium",
+            "Performance: Normal",
+            "Profile: Recommended",
+            "Threat: Masquerading",
+            "Rule Type: ES|QL",
+            "Platform: Windows",
+            "Tactic: Stealth"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Stealth",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1036",
+                        "name": "Masquerading",
+                        "reference": "https://attack.mitre.org/techniques/T1036/",
+                        "subtechnique": [
+                            {
+                                "id": "T1036.005",
+                                "name": "Match Legitimate Resource Name or Location",
+                                "reference": "https://attack.mitre.org/techniques/T1036/005/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 205
+    },
+    "id": "32f95776-6498-4f3c-a90c-d4f6083e3901_205",
+    "type": "security-rule"
+}

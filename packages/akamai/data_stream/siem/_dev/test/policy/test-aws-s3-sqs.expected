@@ -1,0 +1,42 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: akamai
+      name: test-aws-s3-sqs-akamai
+      streams:
+        - access_key_id: ${SECRET_0}
+          api_timeout: 120s
+          data_stream:
+            dataset: akamai.siem
+          default_region: us-east-1
+          file_selectors:
+            - regex: \.gz$
+          number_of_workers: 5
+          publisher_pipeline.disable_host: true
+          queue_url: https://sqs.us-east-1.amazonaws.com/123456789012/akamai-siem-queue
+          secret_access_key: ${SECRET_1}
+          tags:
+            - forwarded
+            - akamai-siem
+          visibility_timeout: 300s
+      type: aws-s3
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-akamai.siem-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}
+    - {}

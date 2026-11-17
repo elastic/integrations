@@ -154,7 +154,7 @@ An example event for `audit` looks as following:
 | kubernetes.audit.annotations.pod-security_kubernetes_io/audit-violations |  | text |
 | kubernetes.audit.apiVersion | Audit event api version | keyword |
 | kubernetes.audit.auditID | Unique audit ID, generated for each request | keyword |
-| kubernetes.audit.impersonatedUser.extra.\* | Any additional information provided by the authenticator | object |
+| kubernetes.audit.impersonatedUser.extra | Any additional information provided by the authenticator | flattened |
 | kubernetes.audit.impersonatedUser.groups | The names of groups this user is a part of | keyword |
 | kubernetes.audit.impersonatedUser.uid | A unique value that identifies this user across time. If this user is deleted and another user by the same name is added, they will have different UIDs | keyword |
 | kubernetes.audit.impersonatedUser.username | The name that uniquely identifies this user among all active users | keyword |
@@ -175,6 +175,7 @@ An example event for `audit` looks as following:
 | kubernetes.audit.operation.producer |  | keyword |
 | kubernetes.audit.protoPayload.@type |  | keyword |
 | kubernetes.audit.protoPayload.authenticationInfo.principalEmail |  | keyword |
+| kubernetes.audit.protoPayload.authenticationInfo.principalSubject |  | keyword |
 | kubernetes.audit.protoPayload.authorizationInfo.granted |  | boolean |
 | kubernetes.audit.protoPayload.authorizationInfo.permission |  | keyword |
 | kubernetes.audit.protoPayload.authorizationInfo.resource |  | keyword |
@@ -231,7 +232,7 @@ An example event for `audit` looks as following:
 | kubernetes.audit.sourceIPs | Source IPs, from where the request originated and intermediate proxies | text |
 | kubernetes.audit.stage | Stage of the request handling when this event instance was generated | keyword |
 | kubernetes.audit.stageTimestamp | Time the request reached current audit stage | date |
-| kubernetes.audit.user.extra.\* | Any additional information provided by the authenticator | object |
+| kubernetes.audit.user.extra | Any additional information provided by the authenticator | flattened |
 | kubernetes.audit.user.groups | The names of groups this user is a part of | keyword |
 | kubernetes.audit.user.uid | A unique value that identifies this user across time. If this user is deleted and another user by the same name is added, they will have different UIDs | keyword |
 | kubernetes.audit.user.username | The name that uniquely identifies this user among all active users | keyword |
@@ -257,6 +258,7 @@ An example event for `audit` looks as following:
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
+| user.email | User email address. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |

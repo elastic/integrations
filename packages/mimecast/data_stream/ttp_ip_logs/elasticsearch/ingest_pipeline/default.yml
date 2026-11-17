@@ -3,6 +3,7 @@ description: Pipeline for processing Mimecast ttp_ip_logs.
 processors:
   # Generic event/ecs fields we always want to populate.
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - remove:
@@ -12,112 +13,133 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
+      tag: json_event_original_to_mimecast_d72eb09c
       description: Parse 'message' JSON contents into a 'mimecast' object.
       field: event.original
       target_field: mimecast
   - drop:
+      tag: drop_dd4ed123
       if: ctx.mimecast?.eventTime == null || (ctx.mimecast?.data != null && ctx.mimecast.data.isEmpty())
   - fingerprint:
+      tag: fingerprint_to_id_2f1e6f7e
       fields:
         - mimecast.messageId
         - mimecast.eventTime
       target_field: "_id"
       ignore_missing: true
   - date:
+      tag: date_mimecast_eventTime_a835a222
       description: Use 'mimecast.eventTime' as the '@timestamp'
       field: mimecast.eventTime
       timezone: UTC
       formats:
         - yyyy-MM-dd'T'HH:mm:ssZ
   - set:
+      tag: set_event_category_4861796c
       field: event.category
       value: [email]
   - set:
+      tag: set_event_kind_b058344c
       field: event.kind
       value: alert
       if: ctx.mimecast?.taggedMalicious == true
 
   ###
   - rename:
+      tag: rename_mimecast_senderIpAddress_to_source_ip_6edea6c5
       field: mimecast.senderIpAddress
       target_field: source.ip
       ignore_missing: true
   - append:
+      tag: append_email_from_address_090cee64
       field: email.from.address
       value: "{{{mimecast.senderAddress}}}"
       if: "ctx?.mimecast?.senderAddress != null"
       ignore_failure: true
   - rename:
+      tag: rename_mimecast_subject_to_email_subject_3c7206f3
       field: mimecast.subject
       target_field: email.subject
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_action_to_event_action_75b859cd
       field: mimecast.action
       target_field: event.action
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_definition_to_rule_name_ce386dc9
       field: mimecast.definition
       target_field: rule.name
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_id_to_event_id_c7737d91
       field: mimecast.id
       target_field: event.id
       ignore_missing: true
   - append:
+      tag: append_email_to_address_9e646f4d
       field: email.to.address
       value: "{{{mimecast.recipientAddress}}}"
       if: "ctx?.mimecast?.recipientAddress != null"
       ignore_failure: true
   - rename:
+      tag: rename_mimecast_messageId_to_email_message_id_a8ab0b64
       field: mimecast.messageId
       target_field: email.message_id
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_similarDomain_to_source_domain_56d4058f
       field: mimecast.similarDomain
       target_field: source.domain
       ignore_missing: true
   - set:
+      tag: set_event_created_6dbfe9df
       field: event.created
       value: "{{{mimecast.eventTime}}}"
       if: 'ctx?.mimecast?.eventTime != null'
   - append:
+      tag: append_related_ip_549fa858
       field: related.ip
       value: "{{{source.ip}}}"
       allow_duplicates: false
       if: 'ctx?.source?.ip != null'
   - dissect:
+      tag: dissect_email_from_address_969e2d4f
       field: email.from.address
       pattern: "<%{email.from.address}>"
       ignore_missing: true
       ignore_failure: true
   - dissect:
+      tag: dissect_email_to_address_3f03f6e9
       field: email.to.address
       pattern: "<%{email.to.address}>"
       ignore_missing: true
       ignore_failure: true
   - lowercase:
+      tag: lowercase_email_direction_569c0270
       field: email.direction
       ignore_missing: true
   ### Cleanup
   - remove:
+      tag: remove_cleanup_repeated_unwanted_temporary_fields_cd4e5bfd
       description: Cleanup of repeated/unwanted/temporary fields.
       field:
         - mimecast.eventTime
@@ -126,7 +148,7 @@ processors:
       ignore_missing: true
   - script:
       description: Drops null/empty values recursively
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_4f3e5bd8
       lang: painless
       ignore_failure: true
       source: |
@@ -154,13 +176,16 @@ processors:
 # Error handling
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

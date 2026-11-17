@@ -1,0 +1,102 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects the three-event chain produced by tools like aws_consoler that convert exfiltrated long-term IAM access keys into browser-accessible AWS console sessions: GetFederationToken obtains temporary credentials, GetSigninToken exchanges them for a federation sign-in token via the AWS federation endpoint, and ConsoleLogin confirms the resulting console session was opened \u2014 all from the same source IP within two minutes. This sequence is a high-confidence indicator of credential abuse using stolen IAM access keys.",
+        "false_positives": [
+            "Legacy federation broker applications that call GetFederationToken and immediately redirect users to a console session from the same host may trigger this rule. Validate the source IP against known application server infrastructure and confirm the federation architecture is documented."
+        ],
+        "from": "now-6m",
+        "index": [
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "user.name",
+                "event.provider",
+                "event.action",
+                "event.outcome",
+                "source.ip",
+                "source.as.organization.name",
+                "cloud.region",
+                "cloud.account.id"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "AWS GetFederationToken Followed by Console Login via Federation Exchange",
+        "note": "## Triage and analysis\n\n### Investigating AWS GetFederationToken Followed by Console Login via Federation Exchange\n\nThis rule detects the aws_consoler attack chain: an adversary exfiltrates a long-term IAM access key (AKIA* prefix), runs aws_consoler or equivalent tooling, which calls `GetFederationToken` to obtain temporary credentials and then exchanges them at the AWS federation endpoint (`https://signin.amazonaws.com/federation`) for a signed console URL. Opening that URL triggers a `ConsoleLogin` event from the same source IP, completing the sequence.\n\nThe source IP correlation distinguishes this pattern from coincidental federation activity: both the API call and the browser-based console login originate from the same attacker machine in automated tooling scenarios.\n\n### Possible investigation steps\n\n- Identify the IAM user from `aws.cloudtrail.user_identity.arn` in the first event and confirm whether this user and access key are expected to call `GetFederationToken`.\n- Review `source.ip` against known infrastructure. A call from an unexpected geography or cloud provider IP range is a strong indicator of exfiltrated key abuse.\n- Query CloudTrail for all API calls made during the resulting console session (user identity type `FederatedUser`) in the window following the `ConsoleLogin`.\n- Check GitHub, GitLab, CI/CD pipelines, and `.env` files for exposure of the access key.\n- Determine whether any sensitive resources were accessed or modified during the console session.\n\n### Response and remediation\n\n- Immediately deactivate the long-term access key used in the `GetFederationToken` call.\n- Revoke all active sessions for the IAM user.\n- Review all actions taken during the federated console session and assess blast radius.\n- Rotate all credentials associated with the IAM user.\n- Migrate any legitimate federation use cases to IAM Identity Center or AssumeRoleWithWebIdentity.\n",
+        "query": "sequence by source.ip with maxspan=2m\n  [any where event.provider == \"sts.amazonaws.com\"\n   and event.action == \"GetFederationToken\"\n   and event.outcome == \"success\"]\n  [any where event.provider == \"signin.amazonaws.com\"\n   and event.action == \"GetSigninToken\"\n   and event.outcome == \"success\"]\n  [any where event.provider == \"signin.amazonaws.com\"\n   and event.action == \"ConsoleLogin\"\n   and event.outcome == \"success\"]\n",
+        "references": [
+            "https://docs.aws.amazon.com/STS/latest/APIReference/API_GetFederationToken.html",
+            "https://github.com/NetSPI/aws_consoler",
+            "https://www.netspi.com/blog/technical-blog/cloud-pentesting/gaining-aws-console-access-via-api-keys/",
+            "https://securitylabs.datadoghq.com/cloud-security-atlas/attacks/accessing-the-aws-console-with-getfederationtoken/"
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "065a9a1b-9e48-45a1-8fa5-72373245847c",
+        "setup": "The AWS integration must be ingesting management events into `logs-aws.cloudtrail-*`. STS and sign-in management events are logged by default.",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Platform: AWS",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS CloudTrail",
+            "Service: AWS STS",
+            "Service: AWS Sign-In",
+            "Rule Type: Event Correlation (EQL)",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1606",
+                        "name": "Forge Web Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1606/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "065a9a1b-9e48-45a1-8fa5-72373245847c_1",
+    "type": "security-rule"
+}

@@ -41,14 +41,12 @@ exec jq '[.hits.hits[]._source.user.name] | unique[]' user_docs.json
 stdout 'Administrator'
 
 # Verify device documents were routed to the device data stream.
-# NOTE: The device pipeline (device.yml) has a pre-existing bug — it references
-# activedirectory.device.* but the beats input puts device attributes under
-# activedirectory.user.*. The pipeline fails, so device.id retains the DN set
-# by the input rather than being overwritten with the SID.
+# device.id is the object SID: elastic/beats#50472 fixed the legacy provider so
+# devices emit activedirectory.device.* and device.yml resolves object_sid correctly.
 get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -timeout 2m logs-entityanalytics_ad.device-*
 cp stdout device_docs.json
 exec jq '[.hits.hits[]._source.device.id] | unique[]' device_docs.json
-stdout 'WORKSTATION-01'
+stdout 'S-1-5-21-374105552-1189110957-4047727897-1001'
 
 # Verify empty group documents were routed to the group data stream.
 get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -timeout 2m logs-entityanalytics_ad.group-*
@@ -74,6 +72,7 @@ data_stream:
     ad_user: "cn=admin,dc=testserver,dc=local"
     ad_password: "password"
     dataset: all
+    use_minimal_state: false
     include_empty_groups: true
     sync_interval: 24h
     update_interval: 15m

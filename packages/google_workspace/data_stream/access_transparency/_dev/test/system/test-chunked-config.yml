@@ -1,0 +1,24 @@
+# Exercises chunked collection (chunk_duration). The mock endpoint
+# chunked_access_transparency echoes the requested startTime as the event time, so a new
+# document is indexed only when the window start advances. With a 72h initial
+# interval and 24h chunks, three chunk windows are requested back to back
+# before the stream reaches the lag margin, so at least three documents with
+# distinct @timestamp values 24h apart must be ingested.
+input: httpjson
+service: google_workspace
+vars:
+  jwt_file: "{{SERVICE_LOGS_DIR}}/credentials.json"
+  delegated_account: test@example.com
+  api_host: http://{{Hostname}}:{{Port}}
+  initial_interval: 72h
+  enable_request_tracer: true
+data_stream:
+  vars:
+    application_name_for_url: chunked_access_transparency
+    interval: 5s
+    lag_time: 2h
+    chunk_duration: 24h
+    preserve_original_event: true
+assert:
+  min_count: 3
+wait_for_data_timeout: 1m

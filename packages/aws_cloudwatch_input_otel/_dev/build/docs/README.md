@@ -36,6 +36,9 @@ Each AWS service is available as a separate option when you add the integration.
 | AWS RDS | `AWS/RDS` |
 | AWS SQS | `AWS/SQS` |
 | AWS Application ELB | `AWS/ApplicationELB` |
+| AWS Classic ELB | `AWS/ELB` |
+| AWS Network ELB | `AWS/NetworkELB` |
+| AWS Gateway ELB | `AWS/GatewayELB` |
 | AWS ECS / Fargate | `AWS/ECS` |
 
 Each service collects a set of statistics chosen to suit that service's metrics (for example, averages for utilization metrics and sums for counters). These defaults work well out of the box and require no configuration.
@@ -71,17 +74,28 @@ Each service template exposes two settings that control how metrics are polled f
 Guidance:
 
 - Set **Period** to the metric's native publishing resolution — typically **5 minutes** for services on 5-minute resolution (for example, EC2 basic monitoring) and **1 minute** for services that publish at 1-minute resolution (for example, RDS and Application ELB).
-- In most cases, set **Collection Interval** equal to **Period**. Polling more frequently than the period just re-reads the same data point; polling less frequently can miss points.
+- Set **Collection Interval** to **Period**, or to a multiple of it. Each poll returns every data point in the elapsed window, so polling less often reduces cost proportionally without losing data — it only delays how soon the data arrives. Polling more often than Period re-reads the same data point and multiplies cost for no benefit.
 - The defaults below are pre-tuned per service, so you typically don't need to change them.
 
-| Service | Collection Interval | Period |
-|---|---------------------|-----------------|
-| AWS EC2 | 5m                  | 5m              |
-| AWS Lambda | 1m                  | 1m              |
-| AWS RDS | 1m                  | 1m              |
-| AWS SQS | 1m                  | 1m              |
-| AWS Application ELB | 1m                  | 1m              |
-| AWS ECS | 1m                  | 1m              |
+| Service             | Collection Interval | Period |
+|---------------------|---------------------|--------|
+| AWS EC2             | 5m                  | 5m     |
+| AWS Lambda          | 5m                  | 1m     |
+| AWS RDS             | 5m                  | 1m     |
+| AWS SQS             | 5m                  | 1m     |
+| AWS Application ELB | 5m                  | 1m     |
+| AWS Classic ELB     | 5m                  | 1m     |
+| AWS Network ELB     | 5m                  | 1m     |
+| AWS Gateway ELB     | 5m                  | 1m     |
+| AWS ECS             | 5m                  | 1m     |
+
+### Autodiscover Limit and impact on cost
+
+This integration automatically discovers and collects CloudWatch metrics published for the configured namespaces. The CloudWatch API bills per metric requested, so the more resources that exist in your account, the more metrics are discovered and the higher the collection cost.
+
+To avoid unexpectedly large bills, the number of metrics collected is capped by the **Autodiscover Limit**, which defaults to 10,000, high enough to capture all metrics in a typical deployment. The limit applies to each namespace separately. It is a ceiling, not a fixed value - you are billed only for the metrics that actually exist, so smaller accounts cost proportionally less. With the 10,000 limit, the maximum cost per namespace is ~$2,600 per month at the default 5-minute collection interval.
+
+If you need to reduce cost, you can lower the **Autodiscover Limit** in the integration's advanced settings. Reducing the limit below the number of metrics in your account means some metrics will not be collected, and which ones are dropped is not predictable. We recommend changing this value only if you understand the metric volume in your AWS account, and lowering it gradually while verifying that the metrics you rely on are still present.
 
 ## Authentication
 

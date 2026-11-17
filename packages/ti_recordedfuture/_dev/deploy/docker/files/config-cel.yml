@@ -555,6 +555,36 @@ rules:
         body: |-
           {{ minify_json `
           {
+            "data": [
+              {
+                "playbook_alert_id": "task:leak1",
+                "status": "New",
+                "priority": "Moderate",
+                "created": "2026-08-16T23:18:27.780Z",
+                "updated": "2026-08-16T23:18:27.780Z",
+                "category": "code_repo_leakage",
+                "title": "https://github.com/example-org/example-repo",
+                "actions_taken": []
+              }
+            ]
+          }
+          `}}
+  - path: /playbook-alert/search
+    methods: ['POST']
+    request_body: /.*"from":5,"limit":2.*/
+    request_headers:
+      Content-Type:
+        - 'application/json'
+      X-RFToken:
+        - "xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
             "data": []
           }
           `}}
@@ -2556,6 +2586,97 @@ rules:
                   ]
                 }
               ]
+            }
+          }
+          `}}
+  - path: /playbook-alert/code_repo_leakage/task:leak1
+    methods: ['POST']
+    request_headers:
+      Content-Type:
+        - 'application/json'
+      X-RFToken:
+        - "xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "playbook_alert_id": "task:leak1",
+              "panel_status": {
+                "status": "New",
+                "priority": "Moderate",
+                "created": "2026-08-16T23:18:27.780Z",
+                "updated": "2026-08-16T23:18:27.780Z",
+                "case_rule_id": "report:BOy1i59",
+                "case_rule_label": "Data Leakage on Code Repository",
+                "alert_rule": {
+                  "id": "BOy1i59",
+                  "label": "DataLeakageOnCodeRepository",
+                  "name": "Data Leakage on Code Repository"
+                },
+                "owner_id": "uhash:475AakX75w",
+                "owner_name": "Elastic-Partner",
+                "organisation_id": "abc:1234",
+                "organisation_name": "Elastic-Partner",
+                "owner_organisation_details": {
+                  "organisations": [
+                    {
+                      "organisation_id": "uhash:1234",
+                      "organisation_name": "Elastic-Partner"
+                    }
+                  ],
+                  "enterprise_id": "uhash:1234",
+                  "enterprise_name": "Elastic-Partner"
+                },
+                "entity_id": "url:https://github.com/example-org/example-repo",
+                "entity_name": "https://github.com/example-org/example-repo",
+                "risk_score": 0,
+                "targets": [
+                  {
+                    "name": "example.com"
+                  }
+                ],
+                "actions_taken": []
+              },
+              "panel_evidence_summary": {
+                "repository": {
+                  "id": "url:https://github.com/example-org/example-repo",
+                  "name": "https://github.com/example-org/example-repo",
+                  "owner": {
+                    "name": "example-user"
+                  }
+                },
+                "evidence": [
+                  {
+                    "assessments": [
+                      {
+                        "id": "attr:possibleKeyLeak",
+                        "title": "Possible Key Leak",
+                        "value": "login"
+                      },
+                      {
+                        "id": "attr:watchListEntityMention",
+                        "title": "Watch List Entity Mention on GitHub",
+                        "value": "example.com"
+                      }
+                    ],
+                    "targets": [
+                      {
+                        "name": "example.com"
+                      }
+                    ],
+                    "url": "https://github.com/example-org/example-repo/commit/abc123def456",
+                    "content": "+ id=\"login-email\"\n+ type=\"email\"\n+ placeholder=\"you@example.com\"",
+                    "published": "2026-08-16T21:59:44.096Z"
+                  }
+                ]
+              },
+              "panel_log": [],
+              "panel_log_v2": []
             }
           }
           `}}

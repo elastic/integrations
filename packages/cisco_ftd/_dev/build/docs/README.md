@@ -62,7 +62,7 @@ Refer to the Cisco instructions on how to [configure Logging on FTD via FMC](htt
 3.  Click the integration to see more details and then click **Add integration**.
 4.  Configure the integration settings. You must select the input method that matches your Cisco FTD configuration (TCP, UDP, or log file).
     *   **For TCP/UDP**: Specify the `host` and `port` where the Elastic Agent should listen for syslog messages. This must match the destination you configured on your FTD device.
-    *   **For Log File**: Provide the file `paths` that the agent should monitor.
+    *   **For Log File**: Provide the file `paths` that the agent should monitor. Use **Exclude files** to skip files that match a regular expression. The default pattern, `\.gz$`, skips compressed files. **Ignore older** and **Custom configurations** are available in the advanced options.
 5.  Click **Save and continue** to add the integration policy to an Elastic Agent.
 
 #### 3. Validate that the integration is working

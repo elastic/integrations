@@ -2,272 +2,323 @@
 description: Pipeline for processing Maltiverse Indicators
 processors:
   - set:
+      tag: set_ecs_version_6b2cef5e
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_to_event_original_a7b1f822
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_maltiverse_52154ac8
       field: event.original
       target_field: maltiverse
       ignore_failure: true
   - set:
+      tag: set_event_kind_3410a97a
       field: event.kind
       value: enrichment
   - append:
+      tag: append_event_category_4039b90d
       field: event.category
       value: threat
   - append:
+      tag: append_event_type_d4da06cc
       field: event.type
       value: indicator
-# Maltiverse specific
+  # Maltiverse specific
   - set:
+      tag: set_threat_indicator_marking_tlp_370d28ed
       field: threat.indicator.marking.tlp
       value: WHITE
-# MV to ECS conversion
+  # MV to ECS conversion
   - date:
+      tag: date_maltiverse_blacklist_last_seen_to_timestamp_a009d0ca
       field: maltiverse.blacklist.last_seen
       target_field: "@timestamp"
       formats: ["yyyy-MM-dd HH:mm:ss"]
-## Convert types Maltiverse to ECS types
+  ## Convert types Maltiverse to ECS types
   - set:
+      tag: set_threat_indicator_type_6385c1f3
       field: threat.indicator.type
       value: ipv4-addr
       if: 'ctx.maltiverse?.type == "ip"'
   - set:
+      tag: set_threat_indicator_type_87271196
       field: threat.indicator.type
       value: domain-name
       if: 'ctx.maltiverse?.type == "hostname"'
   - set:
+      tag: set_threat_indicator_type_119e4d76
       field: threat.indicator.type
       value: url
       if: 'ctx.maltiverse?.type == "url"'
   - set:
+      tag: set_threat_indicator_type_3b01f14e
       field: threat.indicator.type
       value: file
       if: 'ctx.maltiverse?.type == "sample"'
   - foreach:
+      tag: foreach_maltiverse_tag_de531b3b
       field: maltiverse.tag
       ignore_missing: true
       processor:
         append:
+          tag: append_tags_67bd0af0
           field: tags
           value: "{{{ _ingest._value }}}"
       if: 'ctx.maltiverse?.tag != null'
   - rename:
+      tag: rename__conf_feed_to_maltiverse_feed_8410f462
       field: _conf.feed
       target_field: maltiverse.feed
       ignore_missing: true
   - set:
+      tag: set_threat_feed_reference_e96309e0
       field: threat.feed.reference
       value: "https://maltiverse.com/feed/{{{ maltiverse.feed }}}"
       if: ctx.maltiverse?.feed != null
-## blacklist fields
+  ## blacklist fields
   - date:
+      tag: date_maltiverse_blacklist_first_seen_to_maltiverse_blacklist_first_seen_6c7678d0
       field: maltiverse.blacklist.first_seen
       target_field: maltiverse.blacklist.first_seen
       formats: ["yyyy-MM-dd HH:mm:ss"]
       if: 'ctx.maltiverse?.blacklist?.first_seen != null'
   - set:
+      tag: set_threat_indicator_first_seen_a87a2688
       field: threat.indicator.first_seen
       copy_from: maltiverse.blacklist.first_seen
   - date:
+      tag: date_maltiverse_blacklist_last_seen_to_maltiverse_blacklist_last_seen_3be0b1d4
       field: maltiverse.blacklist.last_seen
       target_field: maltiverse.blacklist.last_seen
       formats: ["yyyy-MM-dd HH:mm:ss"]
       if: 'ctx.maltiverse?.blacklist?.last_seen != null'
   - set:
+      tag: set_threat_indicator_last_seen_8077a40a
       field: threat.indicator.last_seen
       copy_from: maltiverse.blacklist.last_seen
   - rename:
+      tag: rename_maltiverse_blacklist_count_to_threat_indicator_sightings_8922116f
       field: maltiverse.blacklist.count
       target_field: threat.indicator.sightings
       ignore_missing: true
       if: 'ctx.maltiverse?.blacklist?.count != null'
   - set:
+      tag: set_threat_indicator_description_ddc76267
       field: threat.indicator.description
       copy_from: maltiverse.blacklist.description
       if: 'ctx.maltiverse?.blacklist?.description != null'
   - rename:
+      tag: rename_maltiverse_blacklist_source_to_threat_indicator_provider_9bb6d6f7
       field: maltiverse.blacklist.source
       target_field: threat.indicator.provider
       ignore_missing: true
       if: 'ctx.maltiverse?.blacklist?.source != null'
 
   - date:
+      tag: date_maltiverse_asn_date_to_maltiverse_asn_date_d77e1e58
       field: maltiverse.asn_date
       target_field: maltiverse.asn_date
       formats: ["yyyy-MM-dd HH:mm:ss"]
       if: 'ctx.maltiverse?.asn_date != null'
   - date:
+      tag: date_maltiverse_creation_time_to_maltiverse_creation_time_320bda69
       field: maltiverse.creation_time
       target_field: maltiverse.creation_time
       formats: ["yyyy-MM-dd HH:mm:ss"]
       if: 'ctx.maltiverse?.creation_time != null'
   - date:
+      tag: date_maltiverse_modification_time_to_maltiverse_modification_time_9d75241c
       field: maltiverse.modification_time
       target_field: maltiverse.modification_time
       formats: ["yyyy-MM-dd HH:mm:ss"]
       if: 'ctx.maltiverse?.modification_time != null'
   - date:
+      tag: date_maltiverse_last_online_time_to_maltiverse_last_online_time_396cbda1
       field: maltiverse.last_online_time
       target_field: maltiverse.last_online_time
       formats: ["yyyy-MM-dd HH:mm:ss"]
       if: 'ctx.maltiverse?.last_online_time != null'
 
-## map classification and confidence to ECS severity
+  ## map classification and confidence to ECS severity
   - set:
+      tag: set_event_severity_f0d84c5c
       field: event.severity
       value: 6
       if: 'ctx.maltiverse?.classification == "suspicious"'
   - set:
+      tag: set_threat_indicator_confidence_235559d3
       field: threat.indicator.confidence
       value: Medium
       if: 'ctx.maltiverse?.classification == "suspicious"'
   - set:
+      tag: set_event_severity_1eace7e3
       field: event.severity
       value: 9
       if: 'ctx.maltiverse?.classification == "malicious"'
   - set:
+      tag: set_threat_indicator_confidence_95e01688
       field: threat.indicator.confidence
       value: High
       if: 'ctx.maltiverse?.classification == "malicious"'
-## IP specifics
+  ## IP specifics
   - rename:
+      tag: rename_maltiverse_ip_addr_to_threat_indicator_ip_9e8084a9
       field: maltiverse.ip_addr
       target_field: threat.indicator.ip
       ignore_missing: true
       if: 'ctx.maltiverse?.type == "ip"'
   - set:
+      tag: set_threat_indicator_reference_d32466b5
       field: threat.indicator.reference
       value: "https://maltiverse.com/ip/{{{ threat.indicator.ip }}}"
       if: 'ctx.maltiverse?.type == "ip"'
-## TODO: match the AS regex
+  ## TODO: match the AS regex
   - rename:
+      tag: rename_maltiverse_city_to_threat_indicator_geo_city_name_e3e8e90a
       field: maltiverse.city
       target_field: threat.indicator.geo.city_name
       ignore_missing: true
       if: 'ctx.maltiverse?.type == "ip" && ctx.maltiverse?.city != null'
   - rename:
-      field: maltiverse.country_code
-      target_field: threat.indicator.geo.country_iso_code
-      ignore_missing: true
-      if: 'ctx.maltiverse?.type == "ip" && ctx.maltiverse?.country_code != null'
-  - rename:
+      tag: rename_maltiverse_country_code_to_threat_indicator_geo_country_iso_code_094aa3ad
       field: maltiverse.country_code
       target_field: threat.indicator.geo.country_iso_code
       ignore_missing: true
       if: 'ctx.maltiverse?.type == "ip" && ctx.maltiverse?.country_code != null'
   # IP geo fields
   - convert:
+      tag: convert_maltiverse_location_lat_to_threat_indicator_geo_location_lat_590dc3a9
       field: maltiverse.location.lat
       target_field: threat.indicator.geo.location.lat
       type: double
       if: "ctx.maltiverse?.location?.lat != null && ctx.maltiverse?.location?.lon != null"
       on_failure:
         - append:
+            tag: append_error_message_15d4a28c
             field: error.message
             value: 'Cannot convert lat field "{{{ maltiverse.lat }}}" to double'
   - convert:
+      tag: convert_maltiverse_location_lon_to_threat_indicator_geo_location_lon_8cc79e05
       field: maltiverse.location.lon
       target_field: threat.indicator.geo.location.lon
       type: double
       if: "ctx.maltiverse?.location?.lat != null && ctx.maltiverse?.location?.lon != null"
       on_failure:
         - append:
+            tag: append_error_message_affac880
             field: error.message
             value: 'Cannot convert lon field "{{{ maltiverse.lon }}}" to double'
 
-## hostname fields
+  ## hostname fields
   - rename:
+      tag: rename_maltiverse_hostname_to_threat_indicator_url_domain_1df4bc70
       field: maltiverse.hostname
       target_field: threat.indicator.url.domain
       ignore_missing: true
       if: 'ctx.maltiverse?.type == "hostname"'
   - rename:
+      tag: rename_maltiverse_domain_to_threat_indicator_url_registered_domain_88dddf4a
       field: maltiverse.domain
       target_field: threat.indicator.url.registered_domain
       ignore_missing: true
       if: 'ctx.maltiverse?.type == "hostname"'
   - rename:
+      tag: rename_maltiverse_tld_to_threat_indicator_url_top_level_domain_b8d533dd
       field: maltiverse.tld
       target_field: threat.indicator.url.top_level_domain
       ignore_missing: true
       if: 'ctx.maltiverse?.type == "hostname"'
   - set:
+      tag: set_threat_indicator_reference_39a50fdf
       field: threat.indicator.reference
       value: "https://maltiverse.com/hostname/{{{ threat.indicator.url.domain }}}"
       if: 'ctx.maltiverse?.type == "hostname"'
-## TODO: match the AS regex
-## URL fields
+  ## TODO: match the AS regex
+  ## URL fields
   - rename:
+      tag: rename_maltiverse_url_to_threat_indicator_url_full_39884043
       field: maltiverse.url
       target_field: threat.indicator.url.full
       ignore_missing: true
       if: 'ctx.maltiverse?.type == "url"'
   - rename:
+      tag: rename_maltiverse_url_to_threat_indicator_url_original_35d5a1b9
       field: maltiverse.url
       target_field: threat.indicator.url.original
       ignore_missing: true
       if: 'ctx.maltiverse?.type == "url"'
   - rename:
+      tag: rename_maltiverse_tld_to_threat_indicator_url_top_level_domain_d2943eba
       field: maltiverse.tld
       target_field: threat.indicator.url.top_level_domain
       ignore_missing: true
       if: 'ctx.maltiverse?.type == "url" && ctx.maltiverse?.tld != null'
   - rename:
+      tag: rename_maltiverse_domain_to_threat_indicator_url_registered_domain_06cee21a
       field: maltiverse.domain
       target_field: threat.indicator.url.registered_domain
       ignore_missing: true
       if: 'ctx.maltiverse?.type == "url" && ctx.maltiverse?.domain != null'
   - set:
+      tag: set_threat_indicator_reference_1f6fa3b8
       field: threat.indicator.reference
       value: "https://maltiverse.com/url/{{{ maltiverse.urlchecksum }}}"
       if: 'ctx.maltiverse?.type == "url" && ctx.maltiverse?.urlchecksum != null'
-## Sample fields
+  ## Sample fields
   - rename:
+      tag: rename_maltiverse_sha256_to_threat_indicator_file_hash_sha256_43cc936a
       field: maltiverse.sha256
       target_field: threat.indicator.file.hash.sha256
       ignore_missing: true
       if: 'ctx.maltiverse?.type == "sample"'
   - rename:
+      tag: rename_maltiverse_md5_to_threat_indicator_file_hash_md5_47b3482d
       field: maltiverse.md5
       target_field: threat.indicator.file.hash.md5
       ignore_missing: true
       if: 'ctx.maltiverse?.type == "sample" && ctx.maltiverse?.md5 != null'
   - rename:
+      tag: rename_maltiverse_sha512_to_threat_indicator_file_hash_sha512_37b167dd
       field: maltiverse.sha512
       target_field: threat.indicator.file.hash.sha512
       ignore_missing: true
       if: 'ctx.maltiverse?.type == "sample" && ctx.maltiverse?.sha512 != null'
   - rename:
+      tag: rename_maltiverse_filetype_to_threat_indicator_file_type_32ec6df0
       field: maltiverse.filetype
       target_field: threat.indicator.file.type
       ignore_missing: true
       if: 'ctx.maltiverse?.type == "sample" && ctx.maltiverse?.filetype != null'
   - rename:
+      tag: rename_maltiverse_size_to_threat_indicator_file_size_ade52eaa
       field: maltiverse.size
       target_field: threat.indicator.file.size
       ignore_missing: true
       if: 'ctx.maltiverse?.type == "sample" && ctx.maltiverse?.size != null'
   - set:
+      tag: set_threat_indicator_reference_b5fd8400
       field: threat.indicator.reference
       value: "https://maltiverse.com/sample/{{{ threat.indicator.file.hash.sha256 }}}"
       if: 'ctx.maltiverse?.type == "sample"'
 
-# Generate an event ID based on the original event
+  # Generate an event ID based on the original event
   - fingerprint:
+      tag: fingerprint_to_event_id_56a69373
       target_field: event.id
       fields: ["threat.indicator.last_seen", "threat.indicator.first_seen", "threat.indicator.provider"]
   - set:
+      tag: set__id_c14c60bd
       field: _id
       value: "{{{ event.id }}}"
       if: 'ctx.event?.id != null'
@@ -279,10 +330,11 @@ processors:
         - maltiverse.blacklist.first_seen
         - maltiverse.blacklist.last_seen
         - maltiverse.location
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_45acefdc
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - script:
+      tag: script_drops_null_empty_values_recursively_853d4e94
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -302,12 +354,15 @@ processors:
 
 on_failure:
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
       value: "{{{ _ingest.on_failure_message }}}"
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

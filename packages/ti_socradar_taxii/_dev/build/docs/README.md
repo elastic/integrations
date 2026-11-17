@@ -20,6 +20,23 @@ This integration collects a single data stream:
 
 The integration also installs a `latest_ioc` transform that deduplicates the source stream into `logs-ti_socradar_taxii_latest.indicator`, keeping the most recent state per STIX object ID for use in indicator-match detection rules.
 
+### Data retention
+
+Threat indicators are re-collected across polling intervals, and the latest transform keeps the active, deduplicated view in its destination index. The source data streams therefore hold repeated copies of the same indicators.
+
+The package bounds the growth of these source data streams with a retention that depends on the deployment type:
+
+| Data stream | Self-managed and Elastic Cloud Hosted (ILM policy) | Serverless (data stream lifecycle) |
+|---|---|---|
+| `logs-ti_socradar_taxii.indicator-*` | `logs-ti_socradar_taxii.indicator-default_policy`: roll over after 1d, delete 5d after rollover | delete 5d after rollover |
+
+On self-managed and Elastic Cloud Hosted deployments the ILM policy applies. The data stream lifecycle shipped with the package is not used there. ILM counts the delete age from the rollover of a backing index, so a document can remain for up to the rollover age plus the delete age. On Serverless, ILM is not available and the data stream lifecycle applies instead. It also works per backing index: Elasticsearch [rolls the write index over automatically](https://www.elastic.co/docs/reference/elasticsearch/configuration-reference/data-stream-lifecycle-settings#cluster-lifecycle-default-rollover) on age, size, or document count, and [deletes a backing index once the retention has passed since it rolled over](https://www.elastic.co/docs/manage-data/lifecycle/data-stream#data-streams-lifecycle-how-it-works). A document therefore stays for the retention plus up to one rollover interval. The rollover age is derived from the retention and is an implementation detail that Elasticsearch may change. Where the package installs a transform, the transform's destination indices are not affected by either.
+
+To keep data for a different period:
+
+- Self-managed and Elastic Cloud Hosted: edit the ILM policy in Kibana under **Stack Management → Index Lifecycle Policies**, or with `PUT _ilm/policy/<policy name>`. A package upgrade reinstalls the package's ILM policies, so check your change after upgrading.
+- Serverless: set the retention on the data stream, for example `PUT _data_stream/logs-ti_socradar_taxii.indicator-default/_lifecycle` with the body `{"data_retention": "90d"}`. Replace `default` with your namespace.
+
 ### Supported use cases
 
 - Enriching alerts in Elastic Security with STIX-based threat indicators.
@@ -29,7 +46,7 @@ The integration also installs a `latest_ioc` transform that deduplicates the sou
 ## What do I need to use this integration?
 
 - A self-managed or Cloud Elastic deployment with Elastic Stack 8.18.0 or later.
-- An Elastic Agent enrolled in Fleet (Fleet-managed deployment is recommended; agentless deployment is also supported).
+- An Elastic Agent enrolled in Fleet (Fleet-managed deployment is recommended; Elastic Managed deployment is also supported).
 - A SOCRadar Platform account with TAXII 2.1 access (contact SOCRadar support to enable it).
 - TAXII credentials (username and password) issued by SOCRadar.
 - The API root(s) and collection ID(s) you want to ingest from. SOCRadar provides three API roots: `radar_alpha`, `radar_gamma`, and `radar_premium`. Collection IDs can be discovered via the SOCRadar Platform UI under **Threat Intelligence → TAXII Collections**.
@@ -62,7 +79,7 @@ This integration is deployed using the Elastic Agent. See the general [Observabi
    - **Limit**: Max STIX objects per TAXII request (default `1000`). The agent paginates a single collection using the TAXII `next` cursor before round-robin advances to the next collection.
    - **Proxy URL** (optional): If you need to connect through a proxy.
    - **SSL Configuration** (optional): Custom SSL settings if needed.
-4. Both Fleet-managed and agentless deployment modes are supported.
+4. Both Fleet-managed and Elastic Managed deployment modes are supported.
 5. Click **Save and continue** to deploy the integration.
 
 ### Validation

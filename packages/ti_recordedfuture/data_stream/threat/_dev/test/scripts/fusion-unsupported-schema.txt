@@ -1,0 +1,85 @@
+# Test that a custom Fusion file whose CSV schema the pipeline does not
+# understand (no `Name`/`ip` indicator column) is ingested as a single
+# `pipeline_error` document carrying the actionable schema error, rather than
+# failing with the opaque Painless `cannot access method/field [contains] from
+# a null def reference` error.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+# 1. Connect to the running stack and install an agent.
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+# 2. Start the mock Fusion file server returning an unsupported CSV schema.
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} rf-fusion-mock
+
+# 3. Install the package and create a policy pointing at the mock custom URL.
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# 4. Exactly one document should be ingested, flagged as a pipeline error.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+# The document is marked as a pipeline error.
+exec jq -r '[.hits.hits[]._source | select(.event.kind == "pipeline_error")] | length' got_docs.json
+stdout '^1$'
+
+# The error carries the actionable, schema-specific message.
+exec jq -r '[.hits.hits[]._source.error.message // empty] | flatten | .[]' got_docs.json
+stdout 'Unsupported Recorded Future CSV schema'
+
+# The raw row is preserved for troubleshooting.
+exec jq -r '.hits.hits[0]._source.event.original' got_docs.json
+stdout 'indicator'
+
+# 5. Clean up.
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down rf-fusion-mock
+
+-- test_config.yaml --
+input: cel
+vars:
+  url: http://svc-rf-fusion-mock:8080
+  api_key: test-token
+data_stream:
+  vars:
+    list: test
+    interval: 30s
+    custom_url: http://svc-rf-fusion-mock:8080/v2/fusion/files/?path=%2Fpublic%2Funsupported.csv
+    preserve_original_event: true
+
+-- rf-fusion-mock/docker-compose.yml --
+version: '2.3'
+services:
+  rf-fusion-mock:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    hostname: rf-fusion-mock
+    ports:
+      - 8080
+    volumes:
+      - ./config.yml:/config.yml:ro
+    environment:
+      PORT: "8080"
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+
+-- rf-fusion-mock/config.yml --
+rules:
+  - path: /v2/fusion/files/
+    methods: ["GET"]
+    request_headers:
+      X-RFToken: "test-token"
+    query_params:
+      path: /public/unsupported.csv
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: "text/csv"
+        body: |-
+          indicator,score
+          203.0.113.7,10

@@ -2,78 +2,79 @@
 description: Pipeline for processing threat response logs.
 processors:
   - set:
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       field: ecs.version
       value: '8.11.0'
   - set:
-      tag: set_event_kind_default
+      tag: set_event_kind_default_d452ef2c
       field: event.kind
       value: event
   - set:
-      tag: set_event_category
+      tag: set_event_category_14959316
       field: event.category
       value: [host]
   - set:
-      tag: set_event_type
+      tag: set_event_type_8bf4a5be
       field: event.type
       value: [info]
   - rename:
-      tag: rename_message
+      tag: rename_message_a7b1f822
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - json:
-      tag: json_event_original
+      tag: json_event_original_6ef32e07
       field: event.original
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_1379d1ee
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - rename:
-      tag: rename_json_alert_id
+      tag: rename_json_alert_id_f45987a9
       field: json.Alert Id
       target_field: tanium.threat_response.alert_id
       ignore_missing: true
   - set:
-      tag: set_event_kind_alert
+      tag: set_event_kind_alert_60e63fa3
       field: event.kind
       value: alert
       if: ctx.tanium?.threat_response?.alert_id != null && ctx.tanium.threat_response.alert_id != ''
   - rename:
-      tag: rename_json_intel_id
+      tag: rename_json_intel_id_05136dc7
       field: json.Intel Id
       target_field: tanium.threat_response.intel_id
       ignore_missing: true
   - rename:
-      tag: rename_json_intel_type
+      tag: rename_json_intel_type_845fa08c
       field: json.Intel Type
       target_field: tanium.threat_response.intel_type
       ignore_missing: true
   - rename:
-      tag: rename_json_intel_name
+      tag: rename_json_intel_name_055d5004
       field: json.Intel Name
       target_field: tanium.threat_response.intel_name
       ignore_missing: true
   - rename:
-      tag: rename_json_intel_labels
+      tag: rename_json_intel_labels_86abd994
       field: json.Intel Labels
       target_field: tanium.threat_response.intel_labels
       ignore_missing: true
   - rename:
-      tag: rename_json_impact_score
+      tag: rename_json_impact_score_7e997d01
       field: json.Impact Score
       target_field: tanium.threat_response.impact_score
       ignore_missing: true
   - rename:
-      tag: rename_json_link
+      tag: rename_json_link_0d304b6d
       field: json.Link
       target_field: tanium.threat_response.link
       ignore_missing: true
   - date:
-      tag: date_json_updatedat
+      tag: date_json_updatedat_59bc051f
       field: json.updatedAt
       target_field: tanium.threat_response.updated_at
       if: ctx.json?.updatedAt != null && ctx.json.updatedAt != ''
@@ -83,78 +84,80 @@ processors:
         - yyyy-MM-dd'T'HH:mm:ss.SZ
       on_failure:
         - append:
+            tag: append_error_message_afa81f15
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - convert:
-      tag: convert_json_id
+      tag: convert_json_id_05370024
       field: json.id
       type: string
       ignore_missing: true
   - set:
-      tag: set_tanium_threat_response_id
+      tag: set_tanium_threat_response_id_9ad3bb50
       field: tanium.threat_response.id
       copy_from: json.id
       ignore_empty_value: true
   - set:
-      tag: set_event_id
+      tag: set_event_id_b6fcc4e8
       field: event.id
       copy_from: json.id
       ignore_empty_value: true
   - rename:
-      tag: rename_json_action
+      tag: rename_json_action_eaf3c2fe
       field: json.action
       target_field: tanium.threat_response.action
       ignore_missing: true
   - set:
-      tag: set_event_action
+      tag: set_event_action_f77c5da4
       field: event.action
       copy_from: tanium.threat_response.action
       ignore_empty_value: true
   - convert:
-      tag: convert_json_userid
+      tag: convert_json_userid_a613e64e
       field: json.userId
       target_field: tanium.threat_response.user.id
       type: string
       ignore_missing: true
   - rename:
-      tag: rename_json_username
+      tag: rename_json_username_d8aad559
       field: json.userName
       target_field: tanium.threat_response.user.name
       ignore_missing: true
   - rename:
-      tag: rename_json_table
+      tag: rename_json_table_be5ecce7
       field: json.table
       target_field: tanium.threat_response.table
       ignore_missing: true
   - convert:
-      tag: convert_json_rowid
+      tag: convert_json_rowid_26b5b2a9
       field: json.rowId
       target_field: tanium.threat_response.row_id
       type: string
       ignore_missing: true
   - rename:
-      tag: rename_json_revision
+      tag: rename_json_revision_e4f379e5
       field: json.revision
       target_field: tanium.threat_response.revision
       ignore_missing: true
   - rename:
-      tag: rename_json_state
+      tag: rename_json_state_a4bac34c
       field: json.state
       target_field: tanium.threat_response.state
       if: ctx.json?.state instanceof Map
   - json:
-      tag: json_json_state
+      tag: json_json_state_caf2d990
       field: json.state
       target_field: tanium.threat_response.state
       if: ctx.json?.state != null && ctx.json.state != ''
       on_failure:
         - append:
+            tag: append_error_message_718d4057
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - script:
-      tag: script_convert_state_keys_to_snake_case
+      tag: script_convert_state_keys_to_snake_case_1df1c4cd
       description: Convert state keys to snake case.
       lang: painless
       source: |
@@ -187,18 +190,18 @@ processors:
           ctx.tanium.threat_response.state = keysToSnakeCase(ctx.tanium.threat_response.state);
         }
   - set:
-      tag: set_host_name
+      tag: set_host_name_9263b05c
       field: host.name
       copy_from: tanium.threat_response.state.target.hostname
       ignore_empty_value: true
   - append:
-      tag: append_related_hosts
+      tag: append_related_hosts_6dcd7c16
       field: related.hosts
       value: '{{{host.name}}}'
       if: ctx.host?.name != null
       allow_duplicates: false
   - date:
-      tag: date_json_createdat
+      tag: date_json_createdat_f28c9260
       field: json.createdAt
       target_field: tanium.threat_response.created_at
       if: ctx.json?.createdAt != null && ctx.json.createdAt != ''
@@ -208,11 +211,12 @@ processors:
         - yyyy-MM-dd'T'HH:mm:ss.SZ
       on_failure:
         - append:
+            tag: append_error_message_cc84a685
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - convert:
-      tag: convert_json_computer_ip
+      tag: convert_json_computer_ip_28f613e2
       field: json.Computer IP
       target_field: tanium.threat_response.computer.ip
       type: ip
@@ -220,63 +224,64 @@ processors:
       if: ctx.json['Computer IP'] != ''
       on_failure:
         - append:
+            tag: append_error_message_dbb5e4bd
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - set:
-      tag: set_source_ip
+      tag: set_source_ip_9aeb791a
       field: source.ip
       copy_from: tanium.threat_response.computer.ip
       ignore_empty_value: true
   - append:
-      tag: append_related_ip
+      tag: append_related_ip_c47af1f5
       field: related.ip
       value: '{{{source.ip}}}'
       if: ctx.source?.ip != null
       allow_duplicates: false
   - rename:
-      tag: rename_json_computer_name
+      tag: rename_json_computer_name_c748b62e
       field: json.Computer Name
       target_field: tanium.threat_response.computer.name
       ignore_missing: true
   - set:
-      tag: set_host_name_2
+      tag: set_host_name_2_dab24ac7
       field: host.name
       copy_from: tanium.threat_response.computer.name
       ignore_empty_value: true
   - append:
-      tag: append_related_hosts_2
+      tag: append_related_hosts_2_66d1719f
       field: related.hosts
       value: '{{{host.name}}}'
       if: ctx.host?.name != null
       allow_duplicates: false
   - rename:
-      tag: rename_json_event_id
+      tag: rename_json_event_id_98db7333
       field: json.Event Id
       target_field: tanium.threat_response.event.id
       ignore_missing: true
   - set:
-      tag: set_event_id_2
+      tag: set_event_id_2_83ad11e6
       field: event.id
       copy_from: tanium.threat_response.event.id
       ignore_empty_value: true
   - rename:
-      tag: rename_json_event_name
+      tag: rename_json_event_name_b83e206d
       field: json.Event Name
       target_field: tanium.threat_response.event.name
       ignore_missing: true
   - rename:
-      tag: rename_json_priority
+      tag: rename_json_priority_e574fd7d
       field: json.Priority
       target_field: tanium.threat_response.priority
       ignore_missing: true
   - rename:
-      tag: rename_json_severity
+      tag: rename_json_severity_b05bf331
       field: json.Severity
       target_field: tanium.threat_response.severity
       ignore_missing: true
   - date:
-      tag: date_json_timestamp
+      tag: date_json_timestamp_1c2530c4
       field: json.Timestamp
       target_field: tanium.threat_response.timestamp
       if: ctx.json?.Timestamp != null
@@ -284,53 +289,54 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_ecfdebd1
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - set:
-      tag: set_timestamp
+      tag: set_timestamp_afd9cb30
       field: '@timestamp'
       copy_from: tanium.threat_response.timestamp
       ignore_empty_value: true
   - rename:
-      tag: rename_json_user_domain
+      tag: rename_json_user_domain_20d4ce1d
       field: json.User Domain
       target_field: tanium.threat_response.user.domain
       ignore_missing: true
   - set:
-      tag: set_user_domain
+      tag: set_user_domain_95287fe4
       field: user.domain
       copy_from: tanium.threat_response.user.domain
       ignore_empty_value: true
   - convert:
-      tag: convert_json_user_id
+      tag: convert_json_user_id_b7de1918
       field: json.User Id
       target_field: tanium.threat_response.user.id
       type: string
       ignore_missing: true
   - rename:
-      tag: rename_json_user_name
+      tag: rename_json_user_name_cac8b489
       field: json.User Name
       target_field: tanium.threat_response.user.name
       ignore_missing: true
   - set:
-      tag: set_user_id
+      tag: set_user_id_fcd7b3c4
       field: user.id
       copy_from: tanium.threat_response.user.id
       ignore_empty_value: true
   - append:
-      tag: append_related_user_id
+      tag: append_related_user_id_6c345768
       field: related.user
       value: '{{{user.id}}}'
       if: ctx.user?.id != null
       allow_duplicates: false
   - set:
-      tag: set_user_name
+      tag: set_user_name_66147345
       field: user.name
       copy_from: tanium.threat_response.user.name
       ignore_empty_value: true
   - append:
-      tag: append_related_user_name
+      tag: append_related_user_name_c32fb91b
       field: related.user
       value: '{{{user.name}}}'
       if: ctx.user?.name != null
@@ -338,7 +344,7 @@ processors:
 
   # Parse 'Other Parameters', decode any payload value and store it as match details data
   - kv:
-      tag: kv_json_other_parameters
+      tag: kv_json_other_parameters_2ef373cb
       field: json.Other Parameters
       target_field: tanium.threat_response.other_parameters
       field_split: '\|'
@@ -346,31 +352,35 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_e3c83f4e
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - script:
-      tag: script_decode_base64_json_field
+      tag: script_decode_base64_json_field_0e95d663
       description: Decode base64 json field.
       lang: painless
       if: ctx.tanium.threat_response.other_parameters?.payload != null
       source: ctx.tanium.threat_response.other_parameters.payload_json = ctx.tanium.threat_response.other_parameters.payload.decodeBase64()
       on_failure:
         - append:
+            tag: append_error_message_0a2a4e04
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - json:
-      tag: json_tanium_threat_response_other_parameters_payload_json
+      tag: json_tanium_threat_response_other_parameters_payload_json_052cad6b
       field: tanium.threat_response.other_parameters.payload_json
       target_field: tanium.threat_response.match_details
       if: ctx.tanium.threat_response.other_parameters?.payload_json instanceof String
       on_failure:
         - append:
+            tag: append_error_message_a8552ef4
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - remove:
+      tag: remove_794e5319
       field:
         - tanium.threat_response.other_parameters.payload
         - tanium.threat_response.other_parameters.payload_json
@@ -378,7 +388,7 @@ processors:
 
   # Add the data from the Match Details column to any other match details data
   - script:
-      tag: script_handle_match_details_content_the_same_as_when_it_appears_in_an_encoded_payload
+      tag: script_handle_match_details_content_the_same_as_when_it_appears_in_an_encoded_payload_5de17f61
       description: Handle 'Match Details' content the same as when it appears in an encoded payload.
       lang: painless
       if: ctx.json['Match Details'] instanceof Map
@@ -388,22 +398,22 @@ processors:
 
   # Process match details data
   - pipeline:
-      tag: pipeline_match_details
+      tag: pipeline_match_details_2c41b920
       name: '{{ IngestPipeline "match_details" }}'
       if: ctx.tanium?.threat_response?.match_details instanceof Map
 
   - append:
-      tag: append_event_kind_pipeline_error_if_error_message
+      tag: append_event_kind_pipeline_error_if_error_message_c23e36e0
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null && ctx.error.message != ''
       allow_duplicates: false
   - remove:
-      tag: remove_json
+      tag: remove_json_94dc55cd
       field: json
       ignore_missing: true
   - remove:
-      tag: remove_duplicate_custom_fields
+      tag: remove_duplicate_custom_fields_5061380c
       if: ctx.tags == null || !(ctx.tags.contains("preserve_duplicate_custom_fields"))
       field:
         - tanium.threat_response.id
@@ -418,7 +428,7 @@ processors:
         - tanium.threat_response.user.domain
       ignore_missing: true
   - script:
-      tag: script_truncate_at_a_maximum_depth
+      tag: script_truncate_at_a_maximum_depth_d9e69d1a
       description: Truncate at a maximum depth.
       lang: painless
       source: |
@@ -466,7 +476,7 @@ processors:
         truncateMap(ctx, 1, maxDepth, [], truncations);
         ctx.tanium.truncations = truncations;
   - script:
-      tag: script_drops_null_empty_values_recursively
+      tag: script_drops_null_empty_values_recursively_853d4e94
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -485,15 +495,16 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
-      tag: append_error_message
+      tag: append_error_message_8ac65503
       field: error.message
       value: >
         Processor "{{{ _ingest.on_failure_processor_type }}}"

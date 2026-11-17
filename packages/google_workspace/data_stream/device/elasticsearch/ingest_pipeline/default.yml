@@ -8,38 +8,41 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
+      tag: set_ecs_version_135371bc
       field: ecs.version
-      value: '8.16.0'
+      value: '9.5.0'
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_90c6475f
       field: event.original
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_45b808be
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - drop:
       if: ctx.json?.events == null
       description: Discard events that are missing the target during the split operation and are subsequently returned as the root object.
-      tag: drop_empty_events
-  - set:
-      field: event.kind
-      value: [event]
+      tag: drop_empty_events_ac9e0c9d
   - date:
+      tag: date_json_id_time_9350ecd5
       field: json.id.time
       if: ctx.json?.id?.time != null && ctx.json.id.time != ''
       formats:
@@ -51,13 +54,16 @@ processors:
         - yyyy/MM/dd HH:mm:ss z
       on_failure:
         - append:
+            tag: append_error_message_18a82a92
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_google_workspace_id_time_01ac69ca
       field: google_workspace.id.time
       copy_from: '@timestamp'
       ignore_empty_value: true
   - fingerprint:
+      tag: fingerprint_to_id_52623c07
       description: Hashes the ID object and uses it as the document id to avoid duplicate events.
       fields:
         - json.id
@@ -65,74 +71,91 @@ processors:
       target_field: _id
       ignore_missing: true
   - rename:
+      tag: rename_json_events_name_to_event_action_75ca640e
       field: json.events.name
       target_field: event.action
       ignore_missing: true
   - set:
+      tag: set_google_workspace_event_name_69e4d7fd
       field: google_workspace.event.name
       copy_from: event.action
       ignore_empty_value: true
   - rename:
+      tag: rename_json_id_applicationName_to_event_provider_fffca35d
       field: json.id.applicationName
       target_field: event.provider
       ignore_missing: true
   - set:
+      tag: set_google_workspace_id_application_name_8030da4a
       field: google_workspace.id.application_name
       copy_from: event.provider
       ignore_empty_value: true
   - convert:
+      tag: convert_json_id_uniqueQualifier_to_event_id_0239362e
       field: json.id.uniqueQualifier
       target_field: event.id
       type: string
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_ab6a6ac3
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_google_workspace_id_unique_qualifier_8c91fe06
       field: google_workspace.id.unique_qualifier
       copy_from: event.id
       ignore_empty_value: true
   - rename:
+      tag: rename_json_actor_email_to_source_user_email_4ee5e9ab
       field: json.actor.email
       target_field: source.user.email
       ignore_missing: true
   - set:
+      tag: set_google_workspace_actor_email_9cd77425
       field: google_workspace.actor.email
       copy_from: source.user.email
       ignore_empty_value: true
   - append:
+      tag: append_user_email_a27eecdf
       field: user.email
       value: '{{{source.user.email}}}'
       if: ctx.source?.user?.email != null
       allow_duplicates: false
   - convert:
+      tag: convert_json_actor_profileId_to_source_user_id_e10534f1
       field: json.actor.profileId
       target_field: source.user.id
       type: string
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_dc10d8d6
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_google_workspace_actor_profile_id_6b7a4346
       field: google_workspace.actor.profile.id
       copy_from: source.user.id
       ignore_empty_value: true
   - convert:
+      tag: convert_json_ipAddress_to_source_ip_6cbf48a8
       field: json.ipAddress
       target_field: source.ip
       type: ip
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_79a0c21d
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -141,59 +164,73 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - set:
+      tag: set_google_workspace_ip_address_b61dbbba
       field: google_workspace.ip_address
       copy_from: source.ip
       ignore_empty_value: true
   - rename:
+      tag: rename_json_kind_to_google_workspace_kind_8c6d9f29
       field: json.kind
       target_field: google_workspace.kind
       ignore_missing: true
   - rename:
+      tag: rename_json_etag_to_google_workspace_etag_4bd4a803
       field: json.etag
       target_field: google_workspace.etag
       ignore_missing: true
   - convert:
+      tag: convert_json_id_customerId_to_organization_id_ffd90a33
       field: json.id.customerId
       target_field: organization.id
       type: string
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_5aacea86
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_google_workspace_id_customer_id_46a3415a
       field: google_workspace.id.customer.id
       copy_from: organization.id
       ignore_empty_value: true
   - rename:
+      tag: rename_json_actor_callerType_to_google_workspace_actor_type_308eeffc
       field: json.actor.callerType
       target_field: google_workspace.actor.type
       ignore_missing: true
   - rename:
+      tag: rename_json_actor_key_to_google_workspace_actor_key_3f392d49
       field: json.actor.key
       target_field: google_workspace.actor.key
       ignore_missing: true
   - rename:
+      tag: rename_json_ownerDomain_to_google_workspace_organization_domain_6580cd7d
       field: json.ownerDomain
       target_field: google_workspace.organization.domain
       ignore_missing: true
   - rename:
+      tag: rename_json_events_type_to_google_workspace_event_type_e73f1e18
       field: json.events.type
       target_field: google_workspace.event.type
       ignore_missing: true
   - set:
+      tag: set_user_id_f89889ac
       field: user.id
       copy_from: source.user.id
       ignore_empty_value: true
   - script:
+      tag: script_extract_user_name_user_domain_a3a2cdbf
       lang: painless
       description: Extract User name and User domain from Email.
       if: ctx.source?.user?.email != null && ctx.source.user.email.contains("@")
@@ -210,31 +247,37 @@ processors:
         ctx.user.domain = splitmail[1];
         ctx.source.user.domain = splitmail[1];
   - append:
+      tag: append_related_hosts_23e97a1f
       field: related.hosts
       value: '{{{user.domain}}}'
       if: ctx.user?.domain != null
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_ea7c8eda
       field: related.hosts
       value: '{{{google_workspace.organization.domain}}}'
       if: ctx.google_workspace?.organization?.domain != null
       allow_duplicates: false
   - append:
+      tag: append_related_ip_8121c591
       field: related.ip
       value: '{{{source.ip}}}'
       if: ctx.source?.ip != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_bcb5a560
       field: related.user
       value: '{{{source.user.id}}}'
       if: ctx.source?.user?.id != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_f745a124
       field: related.user
       value: '{{{source.user.name}}}'
       if: ctx.source?.user?.name != null
       allow_duplicates: false
   - script:
+      tag: script_map_event_parameters_into_key_21e31442
       lang: painless
       description: Map Event parameters into key value pair.
       if: ctx.json?.events?.parameters != null && ctx.json.events.parameters instanceof List
@@ -306,43 +349,53 @@ processors:
           ctx.json.events.parameters = parameters;
         }
   - rename:
+      tag: rename_google_workspace_device_ACCOUNT_STATE_to_google_workspace_device_account_state_a5953012
       field: google_workspace.device.ACCOUNT_STATE
       target_field: google_workspace.device.account_state
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_ACTION_EXECUTION_STATUS_to_google_workspace_device_action_execution_status_7490f8d1
       field: google_workspace.device.ACTION_EXECUTION_STATUS
       target_field: google_workspace.device.action.execution_status
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_ACTION_ID_to_google_workspace_device_action_id_79fb3179
       field: google_workspace.device.ACTION_ID
       target_field: google_workspace.device.action.id
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_ACTION_TYPE_to_google_workspace_device_action_type_de6beb8b
       field: google_workspace.device.ACTION_TYPE
       target_field: google_workspace.device.action.type
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_APK_SHA256_HASH_to_google_workspace_device_apk_sha256_hash_460a37ea
       field: google_workspace.device.APK_SHA256_HASH
       target_field: google_workspace.device.apk_sha256_hash
       ignore_missing: true
   - append:
+      tag: append_related_hash_bf24e73b
       field: related.hash
       value: '{{{google_workspace.device.apk_sha256_hash}}}'
       if: ctx.google_workspace?.device?.apk_sha256_hash != null
       allow_duplicates: false
   - rename:
+      tag: rename_google_workspace_device_APPLICATION_ID_to_google_workspace_device_application_id_43285ce9
       field: google_workspace.device.APPLICATION_ID
       target_field: google_workspace.device.application.id
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_APPLICATION_MESSAGE_to_google_workspace_device_application_message_cf9909d7
       field: google_workspace.device.APPLICATION_MESSAGE
       target_field: google_workspace.device.application.message
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_APPLICATION_REPORT_KEY_to_google_workspace_device_application_report_key_cc27c882
       field: google_workspace.device.APPLICATION_REPORT_KEY
       target_field: google_workspace.device.application.report.key
       ignore_missing: true
   - date:
+      tag: date_google_workspace_device_APPLICATION_REPORT_TIMESTAMP_to_google_workspace_device_application_report_timestamp_299ff761
       field: google_workspace.device.APPLICATION_REPORT_TIMESTAMP
       target_field: google_workspace.device.application.report.timestamp
       if: ctx.google_workspace?.device?.APPLICATION_REPORT_TIMESTAMP != null && ctx.google_workspace.device.APPLICATION_REPORT_TIMESTAMP != ''
@@ -355,11 +408,12 @@ processors:
         - yyyy/MM/dd HH:mm:ss z
       on_failure:
         - append:
+            tag: append_error_message_eb65090e
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
       field: google_workspace.device.LAST_SYNC_AUDIT_DATE
-      tag: date_last_sync_audit_date
+      tag: date_last_sync_audit_date_c8351122
       target_field: google_workspace.device.last_sync_audit_date
       formats:
         - UNIX_MS
@@ -372,177 +426,341 @@ processors:
       if: ctx.google_workspace?.device?.LAST_SYNC_AUDIT_DATE != null && ctx.google_workspace.device.LAST_SYNC_AUDIT_DATE != ''
       on_failure:
         - append:
+            tag: append_error_message_139625b1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_google_workspace_device_APPLICATION_REPORT_SEVERITY_to_google_workspace_device_application_report_severity_299fe304
       field: google_workspace.device.APPLICATION_REPORT_SEVERITY
       target_field: google_workspace.device.application.report.severity
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_APPLICATION_STATE_to_google_workspace_device_application_state_0ae09ac3
       field: google_workspace.device.APPLICATION_STATE
       target_field: google_workspace.device.application.state
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_BASIC_INTEGRITY_to_google_workspace_device_basic_integrity_39c9b8e4
       field: google_workspace.device.BASIC_INTEGRITY
       target_field: google_workspace.device.basic_integrity
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_CTS_PROFILE_MATCH_to_google_workspace_device_cts_profile_match_d61d4c00
       field: google_workspace.device.CTS_PROFILE_MATCH
       target_field: google_workspace.device.cts_profile_match
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_DEVICE_COMPLIANCE_to_google_workspace_device_compliance_55661d89
       field: google_workspace.device.DEVICE_COMPLIANCE
       target_field: google_workspace.device.compliance
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_DEVICE_COMPROMISED_STATE_to_google_workspace_device_compromised_state_fe2bcc6d
       field: google_workspace.device.DEVICE_COMPROMISED_STATE
       target_field: google_workspace.device.compromised_state
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_DEVICE_DEACTIVATION_REASON_to_google_workspace_device_deactivation_reason_ab15eee5
       field: google_workspace.device.DEVICE_DEACTIVATION_REASON
       target_field: google_workspace.device.deactivation_reason
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_DEVICE_ID_to_google_workspace_device_id_6f0bacbd
       field: google_workspace.device.DEVICE_ID
       target_field: google_workspace.device.id
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_DEVICE_MODEL_to_google_workspace_device_model_c09b9f6b
       field: google_workspace.device.DEVICE_MODEL
       target_field: google_workspace.device.model
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_DEVICE_OWNERSHIP_to_google_workspace_device_ownership_9f193e1f
       field: google_workspace.device.DEVICE_OWNERSHIP
       target_field: google_workspace.device.ownership
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_DEVICE_PROPERTY_to_google_workspace_device_property_6795c31d
       field: google_workspace.device.DEVICE_PROPERTY
       target_field: google_workspace.device.property
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_DEVICE_SETTING_to_google_workspace_device_setting_caf78ef5
       field: google_workspace.device.DEVICE_SETTING
       target_field: google_workspace.device.setting
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_DEVICE_STATUS_ON_APPLE_PORTAL_to_google_workspace_device_status_on_apple_portal_96bfe4b1
       field: google_workspace.device.DEVICE_STATUS_ON_APPLE_PORTAL
       target_field: google_workspace.device.status_on_apple_portal
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_DEVICE_TYPE_to_google_workspace_device_type_4fca0cfd
       field: google_workspace.device.DEVICE_TYPE
       target_field: google_workspace.device.type
       ignore_missing: true
   - convert:
+      tag: convert_google_workspace_device_FAILED_PASSWD_ATTEMPTS_to_google_workspace_device_failed_passwd_attempts_53693b20
       field: google_workspace.device.FAILED_PASSWD_ATTEMPTS
       target_field: google_workspace.device.failed_passwd_attempts
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_369403e3
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_google_workspace_device_IOS_VENDOR_ID_to_google_workspace_device_ios_vendor_id_7adfce78
       field: google_workspace.device.IOS_VENDOR_ID
       target_field: google_workspace.device.ios_vendor_id
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_NEW_DEVICE_ID_to_google_workspace_device_new_device_id_c04e20ce
       field: google_workspace.device.NEW_DEVICE_ID
       target_field: google_workspace.device.new_device_id
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_NEW_VALUE_to_google_workspace_device_new_value_b285f560
       field: google_workspace.device.NEW_VALUE
       target_field: google_workspace.device.new_value
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_OLD_VALUE_to_google_workspace_device_old_value_4fbafaaa
       field: google_workspace.device.OLD_VALUE
       target_field: google_workspace.device.old_value
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_OS_EDITION_to_google_workspace_device_os_edition_3d364d43
       field: google_workspace.device.OS_EDITION
       target_field: google_workspace.device.os.edition
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_OS_PROPERTY_to_google_workspace_device_os_property_b7fb8ad1
       field: google_workspace.device.OS_PROPERTY
       target_field: google_workspace.device.os.property
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_OS_VERSION_to_google_workspace_device_os_version_8f27163b
       field: google_workspace.device.OS_VERSION
       target_field: google_workspace.device.os.version
       ignore_missing: true
   - set:
+      tag: set_host_os_version_4df4bd2c
       field: host.os.version
       copy_from: google_workspace.device.os.version
       ignore_empty_value: true
   - rename:
+      tag: rename_google_workspace_device_PHA_CATEGORY_to_google_workspace_device_pha_category_316fd108
       field: google_workspace.device.PHA_CATEGORY
       target_field: google_workspace.device.pha_category
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_POLICY_NAME_to_google_workspace_device_policy_name_10804891
       field: google_workspace.device.POLICY_NAME
       target_field: google_workspace.device.policy.name
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_POLICY_SYNC_RESULT_to_google_workspace_device_policy_sync_result_ae1504c6
       field: google_workspace.device.POLICY_SYNC_RESULT
       target_field: google_workspace.device.policy.sync.result
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_POLICY_SYNC_TYPE_to_google_workspace_device_policy_sync_type_d13c572e
       field: google_workspace.device.POLICY_SYNC_TYPE
       target_field: google_workspace.device.policy.sync.type
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_REGISTER_PRIVILEGE_to_google_workspace_device_register_privilege_a7b986b0
       field: google_workspace.device.REGISTER_PRIVILEGE
       target_field: google_workspace.device.register_privilege
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_RESOURCE_ID_to_google_workspace_device_resource_id_40b3e86d
       field: google_workspace.device.RESOURCE_ID
       target_field: google_workspace.device.resource.id
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_RISK_SIGNAL_to_google_workspace_device_risk_signal_b22ed3ec
       field: google_workspace.device.RISK_SIGNAL
       target_field: google_workspace.device.risk_signal
       ignore_missing: true
   - convert:
+      tag: convert_google_workspace_device_SECURITY_EVENT_ID_to_google_workspace_device_security_event_id_44d581a1
       field: google_workspace.device.SECURITY_EVENT_ID
       target_field: google_workspace.device.security.event_id
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_bd15c3f2
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_google_workspace_device_SECURITY_PATCH_LEVEL_to_google_workspace_device_security_patch_level_d099bf57
       field: google_workspace.device.SECURITY_PATCH_LEVEL
       target_field: google_workspace.device.security.patch_level
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_SERIAL_NUMBER_to_google_workspace_device_serial_number_e40abc28
       field: google_workspace.device.SERIAL_NUMBER
       target_field: google_workspace.device.serial_number
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_USER_EMAIL_to_google_workspace_device_user_email_192f08a8
       field: google_workspace.device.USER_EMAIL
       target_field: google_workspace.device.user_email
       ignore_missing: true
   - append:
+      tag: append_user_email_daee5827
       field: user.email
       value: '{{{google_workspace.device.user_email}}}'
       if: ctx.google_workspace?.device?.user_email != null
       allow_duplicates: false
   - rename:
+      tag: rename_google_workspace_device_VALUE_to_google_workspace_device_value_23b0d792
       field: google_workspace.device.VALUE
       target_field: google_workspace.device.value
       ignore_missing: true
   - rename:
+      tag: rename_google_workspace_device_WINDOWS_SYNCML_POLICY_STATUS_CODE_to_google_workspace_device_windows_syncml_policy_status_code_9f8183c4
       field: google_workspace.device.WINDOWS_SYNCML_POLICY_STATUS_CODE
       target_field: google_workspace.device.windows_syncml_policy_status_code
       ignore_missing: true
+  - append:
+      field: event.category
+      tag: append_host_into_event_category_5098f71a
+      value: host
+  - set:
+      field: event.kind
+      tag: set_event_kind_d452ef2c
+      value: event
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_alert_485ee5af
+      value: alert
+      if: ctx.event?.action != null && ["DEVICE_COMPROMISED_EVENT", "SUSPICIOUS_ACTIVITY_EVENT"].contains(ctx.event.action)
+  - append:
+      field: event.category
+      tag: append_authentication_into_event_category_27a6663b
+      value: authentication
+      if: ctx.event?.action != null && ctx.event.action == "FAILED_PASSWORD_ATTEMPTS_EVENT"
+  - append:
+      field: event.category
+      tag: append_malware_into_event_category_ea35b88b
+      value: malware
+      if: ctx.event?.action != null && ctx.event.action == "SUSPICIOUS_ACTIVITY_EVENT"
+  - append:
+      field: event.category
+      tag: append_threat_into_event_category_d80f12d3
+      value: threat
+      if: ctx.event?.action != null && ["DEVICE_COMPROMISED_EVENT", "SUSPICIOUS_ACTIVITY_EVENT"].contains(ctx.event.action)
+  - append:
+      field: event.category
+      tag: append_package_into_event_category_4520e574
+      value: package
+      if: ctx.event?.action != null && ctx.event.action == "APPLICATION_EVENT"
+  - append:
+      field: event.type
+      tag: append_change_into_event_type_728518bf
+      value: change
+      if: ctx.event?.action != null && ["APPLICATION_EVENT", "DEVICE_ACTION_EVENT", "DEVICE_COMPLIANCE_CHANGED_EVENT", "OS_UPDATED_EVENT", "DEVICE_OWNERSHIP_CHANGE_EVENT", "DEVICE_SETTINGS_UPDATED_EVENT", "ADVANCED_POLICY_SYNC_EVENT", "RISK_SIGNAL_UPDATED_EVENT", "ANDROID_WORK_PROFILE_SUPPORT_ENABLED_EVENT", "APPLE_DEP_DEVICE_UPDATE_ON_APPLE_PORTAL_EVENT"].contains(ctx.event.action)
+  - append:
+      field: event.type
+      tag: append_info_into_event_type_9a511461
+      value: info
+      if: ctx.event?.action != null && ["DEVICE_SYNC_EVENT", "APPLICATION_REPORT_EVENT", "SUSPICIOUS_ACTIVITY_EVENT", "FAILED_PASSWORD_ATTEMPTS_EVENT"].contains(ctx.event.action)
+  - append:
+      field: event.type
+      tag: append_indicator_into_event_type_619fe5d4
+      value: indicator
+      if: ctx.event?.action != null && ["DEVICE_COMPROMISED_EVENT", "SUSPICIOUS_ACTIVITY_EVENT"].contains(ctx.event.action)
+  - append:
+      field: event.type
+      tag: append_start_into_event_type_a27054aa
+      value: start
+      if: ctx.event?.action != null && ctx.event.action == "DEVICE_REGISTER_UNREGISTER_EVENT" && ctx.google_workspace?.device?.account_state != null && ctx.google_workspace.device.account_state.equalsIgnoreCase("REGISTERED")
+  - append:
+      field: event.type
+      tag: append_end_into_event_type_da13fd9e
+      value: end
+      if: ctx.event?.action != null && ctx.event.action == "DEVICE_REGISTER_UNREGISTER_EVENT" && ctx.google_workspace?.device?.account_state != null && !ctx.google_workspace.device.account_state.equalsIgnoreCase("REGISTERED")
+  - append:
+      field: event.type
+      tag: append_installation_into_event_type_5d47089e
+      value: installation
+      if: ctx.event?.action != null && ctx.event.action == "APPLICATION_EVENT" && ctx.google_workspace?.device?.application?.state != null && ctx.google_workspace.device.application.state.equalsIgnoreCase("INSTALLED")
+  - append:
+      field: event.type
+      tag: append_application_deletion_into_event_type_0ded2ee8
+      value: deletion
+      if: ctx.event?.action != null && ctx.event.action == "APPLICATION_EVENT" && ctx.google_workspace?.device?.application?.state != null && (ctx.google_workspace.device.application.state.equalsIgnoreCase("REMOVED") || ctx.google_workspace.device.application.state.equalsIgnoreCase("UNINSTALLED"))
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_to_success_7772d628
+      value: success
+      if: >-
+        ctx.google_workspace?.device?.action?.execution_status != null &&
+        (ctx.google_workspace.device.action.execution_status.equalsIgnoreCase('SUCCESS') ||
+         ctx.google_workspace.device.action.execution_status.equalsIgnoreCase('ACTION_SUCCESS'))
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_to_success_from_policy_sync_c3b05414
+      value: success
+      if: >-
+        ctx.google_workspace?.device?.policy?.sync?.result != null &&
+        ctx.google_workspace.device.policy.sync.result.equalsIgnoreCase('POLICY_SYNC_SUCCEEDED')
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_to_success_from_compliance_5e94c1fd
+      value: success
+      if: >-
+        ctx.google_workspace?.device?.compliance != null &&
+        ctx.google_workspace.device.compliance.equalsIgnoreCase('COMPLIANT')
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_to_failure_5dc77002
+      value: failure
+      if: >-
+        ctx.google_workspace?.device?.action?.execution_status != null &&
+        (ctx.google_workspace.device.action.execution_status.contains('REJECT') ||
+         ctx.google_workspace.device.action.execution_status.contains('FAIL'))
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_to_failure_from_policy_sync_4c70ec5c
+      value: failure
+      if: >-
+        ctx.google_workspace?.device?.policy?.sync?.result != null &&
+        (ctx.google_workspace.device.policy.sync.result.equalsIgnoreCase('POLICY_SYNC_ABORTED') ||
+         ctx.google_workspace.device.policy.sync.result.equalsIgnoreCase('POLICY_SYNC_FAILED'))
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_to_failure_from_compliance_a0356fcd
+      value: failure
+      if: >-
+        ctx.google_workspace?.device?.compliance != null &&
+        ctx.google_workspace.device.compliance.equalsIgnoreCase('NON_COMPLIANT')
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_to_failure_from_password_attempts_b847ffd3
+      value: failure
+      if: >-
+        ctx.event?.action == "FAILED_PASSWORD_ATTEMPTS_EVENT" &&
+        ctx.google_workspace?.device?.failed_passwd_attempts != null &&
+        ctx.google_workspace.device.failed_passwd_attempts > 0
   - foreach:
+      tag: foreach_user_email_88381b88
       field: user.email
       if: ctx.user?.email instanceof List
       processor:
         append:
+          tag: append_related_user_3b929e3f
           field: related.user
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
       ignore_missing: true
   - remove:
+      tag: remove_38152ac7
       field:
         - json
         - google_workspace.device.APPLICATION_REPORT_TIMESTAMP
@@ -551,6 +769,7 @@ processors:
         - google_workspace.device.LAST_SYNC_AUDIT_DATE
       ignore_missing: true
   - remove:
+      tag: remove_b2562779
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       field:
         - google_workspace.ip_address
@@ -565,6 +784,7 @@ processors:
         - google_workspace.id.time
       ignore_missing: true
   - script:
+      tag: script_drops_null_empty_values_recursively_e2ccbdd7
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -582,22 +802,30 @@ processors:
         }
         dropEmptyFields(ctx);
   - set:
+      tag: set_event_kind_92954dfa
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
+      tag: set_event_kind_f5d17843
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

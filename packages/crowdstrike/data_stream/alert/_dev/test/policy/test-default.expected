@@ -40,7 +40,11 @@ inputs:
                       ?state.?query.optMap(q, "(" + q + ")"),
                     ].join("+"),
                   }.encode_json()
-                ).do_request().as(resp, (resp.StatusCode == 200) ?
+                ).as(req, req.with(
+                  {
+                    "Header": req.Header.with({"User-Agent": [state.user_agent]}),
+                  }
+                )).do_request().as(resp, (resp.StatusCode == 200) ?
                   resp.Body.decode_json().as(body,
                     (size(body.?errors.orValue([])) > 0) ?
                       {
@@ -113,6 +117,7 @@ inputs:
           state:
             batch_size: 1000
             initial_interval: 24h
+            user_agent: Elastic-crowdstrike/unknown
           tags:
             - preserve_original_event
             - preserve_duplicate_custom_fields

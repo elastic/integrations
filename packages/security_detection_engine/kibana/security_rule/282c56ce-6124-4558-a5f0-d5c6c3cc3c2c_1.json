@@ -1,0 +1,88 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects ChatGPT Enterprise audit events that create a workspace domain boundary entry. Domain changes can expand who is allowed to join or access the tenant and may establish persistence for attacker-controlled domains.",
+        "false_positives": [
+            "Administrators add legitimate corporate domains during onboarding or M&A."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "user.id",
+                "openai_chatgpt_enterprise.audit_log.action_data.hostname",
+                "openai_chatgpt_enterprise.audit_log.action_data.domains",
+                "source.ip"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "OpenAI ChatGPT Enterprise Domain Created",
+        "note": "## Triage and analysis\n\n### Investigating OpenAI ChatGPT Enterprise Domain Created\n\nA domain was added to the workspace boundary. Domain changes can expand who is allowed to join or access the tenant.\n\nEscalate when the domain is not corporate-owned, the change lacks approval, or invites from that domain follow quickly. Close as a false positive for documented onboarding or merger-related domain additions.\n\n#### Possible investigation steps\n\n- Identify the actor and the domain value on the alert.\n- Validate ownership of the domain and whether a change request exists.\n- Search for subsequent invites, role changes, or ownership transfers involving that domain.\n- Review other IAM changes by the same actor in the surrounding window.\n\n### False positive analysis\n\n- Administrators add legitimate corporate domains during onboarding or merger activity when the request is approved.\n\n### Response and remediation\n\n- Remove unauthorized domains and audit subsequent invites associated with that domain.\n- Rotate credentials for the actor if the change appears malicious.\n",
+        "query": "from logs-openai_chatgpt_enterprise.audit_log-* metadata _id, _version, _index\n| where\n    data_stream.dataset == \"openai_chatgpt_enterprise.audit_log\" and\n    event.action == \"domain_create\"\n| keep\n    _id, _version, _index, @timestamp, event.action, user.id, user.email, source.ip,\n    openai_chatgpt_enterprise.audit_log.action_data.hostname,\n    openai_chatgpt_enterprise.audit_log.action_data.domains,\n    openai_chatgpt_enterprise.audit_log.action_data.domain_id,\n    openai_chatgpt_enterprise.audit_log.action_privilege, data_stream.*\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise",
+            "https://platform.openai.com/docs/compliance"
+        ],
+        "related_integrations": [
+            {
+                "package": "openai_chatgpt_enterprise",
+                "version": ">=0.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "282c56ce-6124-4558-a5f0-d5c6c3cc3c2c",
+        "setup": "## Setup\n\nThis rule requires the OpenAI ChatGPT Enterprise integration to collect compliance logs into Elasticsearch.\n\nhttps://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise\n",
+        "severity": "high",
+        "tags": [
+            "Domain: GenAI",
+            "Platform: OpenAI",
+            "Data Source: OpenAI ChatGPT Enterprise",
+            "Service: OpenAI ChatGPT Enterprise",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Domain: Identity",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Persistence",
+            "Mitre Atlas: AML.T0125"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "282c56ce-6124-4558-a5f0-d5c6c3cc3c2c_1",
+    "type": "security-rule"
+}

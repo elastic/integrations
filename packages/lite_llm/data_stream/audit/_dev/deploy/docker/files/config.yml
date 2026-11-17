@@ -1,0 +1,224 @@
+rules:
+  - path: /audit
+    methods: ['GET']
+    query_params:
+      page: '3'
+      page_size: '2'
+      sort_order: 'desc'
+      start_date: "{start_date:.*}"
+      end_date: "{end_date:.*}"
+    request_headers:
+      Authorization: "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "audit_logs": [
+              {
+                "id": "audit-005",
+                "table_name": "LiteLLM_UserTable",
+                "object_id": "user-uuid-005",
+                "action": "user_deleted",
+                "changed_by": "admin@company.com",
+                "changed_by_api_key": "sk-key-005",
+                "updated_at": "2026-04-08T18:15:00Z",
+                "before_value": {
+                  "user_id": "user-005",
+                  "user_role": "viewer",
+                  "teams": ["sales"],
+                  "created_at": "2026-02-01T10:00:00Z",
+                  "created_by": "hr@company.com",
+                  "spend": 100,
+                  "updated_at": "2026-04-08T18:10:00Z",
+                  "updated_by": "admin@company.com"
+                },
+                "updated_values": {
+                  "user_id": "user-005",
+                  "user_role": null,
+                  "teams": [],
+                  "created_at": "2026-02-01T10:00:00Z",
+                  "created_by": "hr@company.com",
+                  "spend": 100,
+                  "updated_at": "2026-04-08T18:15:00Z",
+                  "updated_by": "admin@company.com"
+                }
+              }
+            ],
+            "total_pages": 3,
+            "page": 3,
+            "page_size": 2
+          }
+          `}}
+  - path: /audit
+    methods: ['GET']
+    query_params:
+      page: '2'
+      page_size: '2'
+      sort_order: 'desc'
+      start_date: "{start_date:.*}"
+      end_date: "{end_date:.*}"
+    request_headers:
+      Authorization: "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "audit_logs": [
+              {
+                "id": "audit-003",
+                "table_name": "LiteLLM_TeamTable",
+                "object_id": "team-uuid-003",
+                "action": "team_created",
+                "changed_by": "john.smith@company.com",
+                "changed_by_api_key": "sk-key-003",
+                "updated_at": "2026-04-08T16:30:00Z",
+                "before_value": {
+                  "created_at": "2026-04-08T16:25:00Z",
+                  "created_by": "john.smith@company.com",
+                  "spend": 0,
+                  "max_budget": 2000,
+                  "updated_at": "2026-04-08T16:25:00Z",
+                  "updated_by": "john.smith@company.com"
+                },
+                "updated_values": {
+                  "team_id": "team-003",
+                  "created_at": "2026-04-08T16:30:00Z",
+                  "created_by": "john.smith@company.com",
+                  "spend": 0,
+                  "max_budget": 2000,
+                  "updated_at": "2026-04-08T16:30:00Z",
+                  "updated_by": "john.smith@company.com"
+                }
+              },
+              {
+                "id": "audit-004",
+                "table_name": "LiteLLM_VerificationToken",
+                "object_id": "token-uuid-004",
+                "action": "key_rotated",
+                "changed_by": "jane.doe@company.com",
+                "changed_by_api_key": "sk-key-004",
+                "updated_at": "2026-04-08T17:00:00Z",
+                "before_value": {
+                  "key_name": "rotation-key-01",
+                  "token": "sk-rotation-old-01",
+                  "rotation_count": 2,
+                  "auto_rotate": true,
+                  "created_at": "2026-03-15T09:00:00Z",
+                  "created_by": "automation@company.com",
+                  "spend": 1200,
+                  "max_budget": 5000,
+                  "updated_at": "2026-04-07T14:00:00Z",
+                  "updated_by": "jane.doe@company.com"
+                },
+                "updated_values": {
+                  "key_name": "rotation-key-01",
+                  "token": "sk-rotation-new-01",
+                  "key": "sk-rotation-new-01-full-value",
+                  "rotation_count": 3,
+                  "auto_rotate": true,
+                  "created_at": "2026-03-15T09:00:00Z",
+                  "created_by": "automation@company.com",
+                  "spend": 1200,
+                  "max_budget": 5000,
+                  "updated_at": "2026-04-08T17:00:00Z",
+                  "updated_by": "jane.doe@company.com"
+                }
+              }
+            ],
+            "total_pages": 3,
+            "page": 2,
+            "page_size": 2
+          }
+          `}}
+  - path: /audit
+    methods: ['GET']
+    query_params:
+      page: '1'
+      page_size: '2'
+      sort_order: 'desc'
+      start_date: "{start_date:.*}"
+      end_date: "{end_date:.*}"
+    request_headers:
+      Authorization: "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "audit_logs": [
+              {
+                "id": "audit-001",
+                "table_name": "LiteLLM_VerificationToken",
+                "object_id": "token-uuid-001",
+                "action": "key_created",
+                "changed_by": "john.doe@company.com",
+                "changed_by_api_key": "sk-key-001",
+                "updated_at": "2026-04-08T14:32:15Z",
+                "before_value": {
+                  "key_name": "api-key-prod",
+                  "token": "sk-old-token-001",
+                  "created_at": "2026-04-07T10:00:00Z",
+                  "created_by": "admin@company.com",
+                  "spend": 150,
+                  "max_budget": 500,
+                  "updated_at": "2026-04-07T10:00:00Z",
+                  "updated_by": "admin@company.com"
+                },
+                "updated_values": {
+                  "key_name": "api-key-prod-v2",
+                  "token": "sk-new-token-001",
+                  "key": "sk-new-token-001-full-value",
+                  "created_at": "2026-04-08T14:30:00Z",
+                  "created_by": "system@company.com",
+                  "spend": 0,
+                  "max_budget": 1000,
+                  "updated_at": "2026-04-08T14:32:15Z",
+                  "updated_by": "john.doe@company.com"
+                }
+              },
+              {
+                "id": "audit-002",
+                "table_name": "LiteLLM_UserTable",
+                "object_id": "user-uuid-002",
+                "action": "user_updated",
+                "changed_by": "admin@company.com",
+                "changed_by_api_key": "sk-key-002",
+                "updated_at": "2026-04-08T15:00:00Z",
+                "before_value": {
+                  "user_id": "user-001",
+                  "user_role": "editor",
+                  "teams": ["finance", "operations"],
+                  "created_at": "2026-01-15T08:00:00Z",
+                  "created_by": "onboarding@company.com",
+                  "spend": 500,
+                  "updated_at": "2026-04-07T12:00:00Z",
+                  "updated_by": "admin@company.com"
+                },
+                "updated_values": {
+                  "user_id": "user-001",
+                  "user_role": "admin",
+                  "teams": ["finance", "operations", "security"],
+                  "created_at": "2026-01-15T08:00:00Z",
+                  "created_by": "onboarding@company.com",
+                  "spend": 500,
+                  "updated_at": "2026-04-08T15:00:00Z",
+                  "updated_by": "admin@company.com"
+                }
+              }
+            ],
+            "total_pages": 3,
+            "page": 1,
+            "page_size": 2
+          }
+          `}}

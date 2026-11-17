@@ -1,5 +1,8 @@
 config_version: 2
 interval: {{interval}}
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
 resource.tracer:
   enabled: {{enable_request_tracer}}
   filename: "../../logs/cel/http-request-trace-*.ndjson"
@@ -25,11 +28,16 @@ state:
   {{!--
     max_page_limit: 3000 — Cato EventsFeed API returns at most 3000 records per call.
     want_more is true when a full page is returned, indicating more data may be available.
+    With filters, Cato scans the event queue until it finds matches or hits a search limit, so a
+    page can be short while more events are pending. A short page still ends the cycle. For
+    unfiltered requests Cato documents an empty marker when there are no new events (API
+    changelog, 2025-04-27). For filtered requests it documents only that the marker is where the
+    scan stopped, not how to tell that from the end of the queue, so the marker is not relied on.
   --}}
   max_page_limit: 3000
   query: >-
-    query EventsFeed($accountIDs: [ID!] $marker: String) {
-      eventsFeed(accountIDs: $accountIDs marker: $marker) {
+    query EventsFeed($accountIDs: [ID!] $marker: String $filters: [EventFeedFieldFilterInput!]) {
+      eventsFeed(accountIDs: $accountIDs marker: $marker filters: $filters) {
         fetchedCount
         marker
         accounts {
@@ -40,6 +48,9 @@ state:
         }
       }
     }
+{{#if filters}}
+state.filters: {{filters}}
+{{/if}}
 redact:
   fields:
     - api_key
@@ -59,6 +70,21 @@ program: |
           "variables": {
             "accountIDs": state.account_ids,
             ?"marker": state.?cursor.marker,
+            // filters is a list, or a single mapping that is wrapped into a list. Fleet parses the
+            // YAML, so unquoted numbers and booleans in values are converted to the strings that
+            // the API expects. The variable has no default, so state.filters is absent unless it is
+            // set. A null, for example a value that only contains comments, sends no filters.
+            ?"filters": (state.?filters.orValue(null) == null) ?
+              optional.none()
+            :
+              optional.of(
+                ((type(state.filters) == list) ? state.filters : [state.filters]).map(f,
+                  f.?values.hasValue() ?
+                    f.with({"values": ((type(f.values) == list) ? f.values : [f.values]).map(v, string(v))})
+                  :
+                    f
+                )
+              ),
           },
         }.encode_json(),
       }
@@ -67,24 +93,36 @@ program: |
         resp.Body.decode_json().as(body,
           // in case of rate limit and wrong API key, StatusCode will be 200 and eventsFeed will be null
           (body.?data.eventsFeed.orValue(null) != null) ?
-            {
-              "events": (body.data.eventsFeed.?accounts.orValue(null) != null) ?
-                body.data.eventsFeed.accounts.map(account, (account.?records.orValue(null) != null) ?
-                  account.records.map(record,
-                    {
-                      "message": record.fieldsMap.encode_json(),
-                    }
-                  )
-                :
-                  []
-                ).flatten()
+            (body.data.eventsFeed.?accounts.orValue([]).filter(account, account.?errorString.orValue("") != "").map(account, account.errorString)).as(account_errors,
+              (size(account_errors) > 0) ?
+                {
+                  "events": {
+                    "error": {
+                      "message": "POST " + state.url.trim_right("/") + "/api/v1/graphql2" + ": " + account_errors.join("; "),
+                    },
+                  },
+                  "want_more": false,
+                }
               :
-                [],
-              "cursor": {
-                ?"marker": body.?data.eventsFeed.marker,
-              },
-              "want_more": body.data.eventsFeed.fetchedCount >= state.max_page_limit,
-            }
+                {
+                  "events": (body.data.eventsFeed.?accounts.orValue(null) != null) ?
+                    body.data.eventsFeed.accounts.map(account, (account.?records.orValue(null) != null) ?
+                      account.records.map(record,
+                        {
+                          "message": record.fieldsMap.encode_json(),
+                        }
+                      )
+                    :
+                      []
+                    ).flatten()
+                  :
+                    [],
+                  "cursor": {
+                    ?"marker": body.?data.eventsFeed.marker,
+                  },
+                  "want_more": body.data.eventsFeed.fetchedCount >= state.max_page_limit,
+                }
+            )
           :
             {
               "events": {

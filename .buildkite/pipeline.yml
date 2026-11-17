@@ -27,6 +27,8 @@ env:
   ELASTIC_PACKAGE_TEST_ENABLE_INDEPENDENT_AGENT: "true"
   # Set maximum number of parallel tests to run if package allows it
   ELASTIC_PACKAGE_MAXIMUM_NUMBER_PARALLEL_TESTS: "5"
+  # Re-attempt once system tests failing during setup (policy creation, agent enrollment, service startup)
+  ELASTIC_PACKAGE_TEST_SETUP_REATTEMPTS: "1"
   # Enable/Disable the usage of wolfi images for Elastic Agent
   ELASTIC_PACKAGE_DISABLE_ELASTIC_AGENT_WOLFI: "${ELASTIC_PACKAGE_DISABLE_ELASTIC_AGENT_WOLFI:-false}"
   # Disable checking for newer versions
@@ -38,6 +40,9 @@ env:
   # All steps will have the same value, since it always gets the value
   # "BUILDKITE_STEP_ID" from the first "Upload pipeline" step.
   ELASTIC_PACKAGE_CUSTOMIZE_SERVICE_TEST_RUN_ID: "true"
+  # Enable the setting to skip the package validation in Kibana when
+  # uploading a package.
+  ELASTIC_PACKAGE_KIBANA_SKIP_UPLOAD_PACKAGE_VALIDATION: "true"
 
 steps:
   - label: "Get reference from target branch"
@@ -73,6 +78,14 @@ steps:
     key: "check-dev-scripts"
     command: ".buildkite/scripts/run_dev_scripts_tests.sh"
 
+  - label: ":golang: Backport tool tests"
+    key: "check-backport-tool"
+    command: ".buildkite/scripts/check_backport_tool.sh"
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+    if_changed:
+      - "cmd/backport/**"
+
   - label: ":ballot_box_with_check: Backports inventory validation"
     key: "check-backports-inventory"
     command: ".buildkite/scripts/check_backports_inventory.sh"
@@ -82,7 +95,7 @@ steps:
       - ".backports.yml"
       - ".buildkite/scripts/run_dev_scripts_tests.sh"
       - "dev/scripts/**.sh"
-      - "dev/backports/**"
+      - "cmd/backport/**"
     if: |
       build.env('BUILDKITE_PULL_REQUEST') != "false" &&
       build.env('BUILDKITE_PULL_REQUEST_BASE_BRANCH') == "main"
@@ -179,6 +192,7 @@ steps:
     command: ".buildkite/scripts/trigger_integrations_in_parallel.sh"
     env:
       UPLOAD_SAFE_LOGS: 1
+      MAX_STEPS_PER_UPLOAD: 400
     depends_on:
       - step: "check"
         allow_failure: false

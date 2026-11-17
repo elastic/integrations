@@ -11,7 +11,7 @@ set -euo pipefail
 main() {
     add_bin_path
     with_yq
-    with_mage
+    with_backport
 
     local dry_run old_inventory_ref diff_from diff_to pr_number="" label
     local new_entry_msg new_entry_hint

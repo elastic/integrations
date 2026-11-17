@@ -3,29 +3,36 @@ description: Pipeline for processing publication markers.
 processors:
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_50075a0b
       value: asset
   - set:
       field: event.category
-      tag: set_event_category
+      tag: set_event_category_5b3c8dc9
       value: ['iam']
   - set:
       field: event.type
-      tag: set_event_type
+      tag: set_event_type_8bf4a5be
       value: ['info']
   - set:
       field: asset.category
-      tag: set_asset_category
+      tag: set_asset_category_3ebede69
       value: entity
   - set:
       field: asset.type
-      tag: set_asset_type
+      tag: set_asset_type_3b1716d3
       value: activedirectory_user
 
 on_failure:
   - append:
+      tag: append_error_message_0841b325
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

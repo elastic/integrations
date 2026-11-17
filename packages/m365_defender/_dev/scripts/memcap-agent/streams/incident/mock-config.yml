@@ -1,0 +1,49 @@
+# elastic/stream mock for the incident (httpjson) memory harness.
+#   - token endpoint: client_credentials -> a fixed bearer token
+#   - incidents endpoint: returns ONE page of incidents, each expanded with its
+#     alerts[] array (the corpus records already contain the nested alerts).
+# We do not match on $top/$skip/$filter/$orderby/$expand so any params are
+# accepted. len(value) != batch_size (batch_size in the agent config is huge), so
+# httpjson does not paginate: the whole page is decoded, then split on body.value
+# and body.alerts (keep_parent) and held in memory (output unreachable).
+rules:
+  - path: /tenant_id/oauth2/v2.0/token
+    methods: [POST]
+    query_params:
+      grant_type: client_credentials
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "access_token": "MEMCAPtoken",
+            "token_type": "Bearer",
+            "expires_in": 3600,
+            "ext_expires_in": 3600
+          }
+          `}}
+  - path: /v1.0/security/incidents
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer MEMCAPtoken"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {"value":[
+          {{- $g := glob "/var/log/incident/corpus-*" -}}
+          {{- range $g -}}
+            {{- file . -}}
+          {{- end -}}
+          {{/* Final hard-coded record closes the array (no trailing comma). */}}
+          {"id":"memcap-tail-1","incidentWebUrl":"https://security.microsoft.com/incidents/0","tenantId":"tenant_id","displayName":"tail","createdDateTime":"2023-10-20T09:53:09.8839373Z","lastUpdateDateTime":"2023-10-20T09:54:07.5033333Z","status":"active","severity":"informational","alerts":[]}
+          ]}

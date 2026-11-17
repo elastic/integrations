@@ -1,0 +1,19 @@
+dynamic_fields:
+  "event.ingested": ".*"
+fields:
+  tags:
+    - preserve_original_event
+  _conf:
+    # Left at the package default so the expected timestamps read as UTC: any line
+    # whose @timestamp is not its literal clock time proves the zone in the log was
+    # applied in preference to this setting.
+    tz_offset: "UTC"
+    tz_map:
+      - tz_short: SGT
+        tz_long: Asia/Singapore
+      # IST is ambiguous (India, Ireland, Israel) and what Java resolves it to on its
+      # own depends on the JVM default zone (Asia/Jerusalem, +03:00, on this stack).
+      # Mapping it to Asia/Kolkata gives a +05:30 result that only appears if tz_map
+      # beat the abbreviation in the log.
+      - tz_short: IST
+        tz_long: Asia/Kolkata

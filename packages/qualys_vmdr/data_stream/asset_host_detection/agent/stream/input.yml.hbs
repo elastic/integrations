@@ -21,6 +21,7 @@ state:
   batch_size: {{batch_size}}
   params: {{input_parameters}}
   show_igs: {{show_igs}}
+  show_qds: {{show_qds}}
   keep_xml: {{preserve_original_event}}
   query_limit: {{host_qid_list_query_limit}}
 redact:
@@ -47,9 +48,9 @@ program: |
               "action": ["list"],
               "show_igs": [state.show_igs? "1" : "0"],
               "host_metadata": ["all"],
-              "show_qds": ["1"],
-              "show_qds_factors": ["1"],
               "truncation_limit": [string(state.batch_size)],
+              ?"show_qds": state.show_qds ? optional.of(["1"]) : optional.none(),
+              ?"show_qds_factors": state.show_qds ? optional.of(["1"]) : optional.none(),
             }).format_query()
         ).with({
             "Header":{
@@ -216,10 +217,9 @@ program: |
                                   })
                                 )
                               ).flatten().map(e, {
-                                "message": e.with({
-                                  "interval_start": state.interval.start,
-                                  "interval_id": state.interval.id,
-                                }).encode_json()
+                                "message": e.encode_json(),
+                                "interval_start": state.interval.start,
+                                "interval_id": state.interval.id,
                               })
                             ),
                             "worklist": {},
@@ -243,9 +243,9 @@ program: |
                           "KNOWLEDGE_BASE": {
                             "response_error": "response IDs values are missing: " + kb_body.?doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.ID_SET.orValue([]).join(" "),
                           },
-                          "interval_start": state.interval.start,
-                          "interval_id": state.interval.id,
-                        }.encode_json()
+                        }.encode_json(),
+                        "interval_start": state.interval.start,
+                        "interval_id": state.interval.id,
                       }],
                       "worklist": {},
                       "want_more": false,

@@ -29,6 +29,7 @@ state:
   want_more: false
   offset: 0
   batch_size: {{batch_size}}
+  user_agent: Elastic-crowdstrike/{{#if _meta.package.version}}{{_meta.package.version}}{{else}}unknown{{/if}}
 redact:
   fields: ~
 program: |
@@ -51,7 +52,11 @@ program: |
           ],
         }
     ).format_query())
-  ).do_request().as(resp,
+  ).as(req, req.with(
+    {
+      "Header": req.Header.with({"User-Agent": [state.user_agent]}),
+    }
+  )).do_request().as(resp,
     resp.StatusCode == 200 ?
       bytes(resp.Body).decode_json().as(body, {
         "events": body.resources.map(e, {
@@ -63,6 +68,7 @@ program: |
         :
           0,
         "url": state.url,
+        "user_agent": state.user_agent,
         "batch_size": state.batch_size,
         "initial_interval": state.initial_interval,
         "cursor": {
@@ -95,6 +101,7 @@ program: |
         "want_more": false,
         "offset": 0,
         "url": state.url,
+        "user_agent": state.user_agent,
         "batch_size": state.batch_size,
         "initial_interval": state.initial_interval,
       }

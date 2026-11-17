@@ -1,0 +1,53 @@
+{
+    "id": "supabase_otel-postgres-deadlocks",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Fires when PostgreSQL records any deadlock. Deadlocks are application or schema bugs rather than capacity problems, so the remediation owner differs from every other rule in this package and the threshold is any occurrence.",
+        "name": "[Supabase OTel] PostgreSQL deadlocks detected",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "supabase",
+            "postgresql",
+            "errors"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 1
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "supabase_otel-591c7a1f-6ac7-43cb-8ade-9c5684d47f5b"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## PostgreSQL Deadlocks\n\nA deadlock means two transactions each held a lock the other needed, and PostgreSQL aborted one of them to break the cycle. The aborted transaction failed from the application's point of view.\n\n### Triage Steps\n1. Treat this as a code or schema problem, not a capacity problem. Enlarging the pool or the compute tier will not help and may make it worse by increasing concurrency.\n2. Correlate with the transaction rollback rate (`pg_stat_database_xact_rollback_total`) to size the user-visible impact.\n3. Look for lock contention around long-running transactions: `pg_stat_activity_xact_runtime`. A transaction that holds locks for minutes turns occasional contention into reliable deadlocks.\n4. Identify the statements involved from the PostgreSQL logs, which record both sides of each deadlock. Metrics tell you it happened, not what collided.\n5. The usual fix is consistent lock ordering in the application, or shortening the transactions that hold the contended rows.\n\n### Tuning\n`pg_stat_database_conflicts_confl_deadlock_total` is a different metric that only occurs on replicas, and is charted on the dashboard rather than alerted on here. Raise the threshold above zero only if your workload has a known, tolerated deadlock baseline."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-supabase.metrics.otel-*\n// Counter, cumulative since the last pg_stat_reset(); INCREASE() gives how many deadlocks\n// actually occurred inside the window and is reset-safe.\n| STATS\n    `Deadlocks` = SUM(INCREASE(pg_stat_database_deadlocks_total)),\n    `Rollbacks` = SUM(INCREASE(pg_stat_database_xact_rollback_total))\n  BY resource.attributes.supabase_project_ref\n// Deadlocks are application bugs, so any occurrence is worth surfacing. Raise to a small\n// positive number only if your workload has a known, tolerated baseline.\n| WHERE `Deadlocks` > 0\n| SORT `Deadlocks` DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "resource.attributes.supabase_project_ref",
+            "termSize": 50
+        }
+    }
+}

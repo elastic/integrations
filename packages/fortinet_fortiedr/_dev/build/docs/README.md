@@ -130,6 +130,8 @@ Select the **Collecting logs from Fortinet FortiEDR instances (input: tcp)** inp
 * **Keep raw parser fields** (`keep_raw_fields`): If `true`, the integration keeps the original fields from the parser. Default: `false`.
 * **Enable debug logging** (`debug`): Enable debug logging for the input. Default: `false`.
 * **Processors** (`processors`): Add custom processors to reduce fields or enhance metadata.
+* **SSL Configuration** (`ssl`): YAML SSL/TLS options for the TCP listener (server `certificate` and `key`). Required when FortiEDR syslog **TLS** is enabled. See the [Filebeat SSL documentation](https://www.elastic.co/docs/reference/beats/filebeat/configuration-ssl#ssl-common-config).
+* **Custom TCP Options** (`tcp_options`): Extra TCP input settings such as `framing`, `max_message_size`, and `max_connections`. See the [Filebeat TCP input documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-tcp).
 
 #### UDP input configuration
 

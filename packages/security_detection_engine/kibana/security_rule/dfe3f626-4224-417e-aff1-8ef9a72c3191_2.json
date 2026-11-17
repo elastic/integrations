@@ -1,0 +1,87 @@
+{
+    "attributes": {
+        "alert_suppression": {
+            "duration": {
+                "unit": "h",
+                "value": 2
+            },
+            "group_by": [
+                "data_stream.namespace",
+                "observer.ip"
+            ],
+            "missing_fields_strategy": "doNotSuppress"
+        },
+        "author": [
+            "Elastic"
+        ],
+        "building_block_type": "default",
+        "description": "Identifies a NetFlow, IPFIX, or sFlow exporter IP that has not previously sent decoded flow records in the same data stream namespace during the prior 2 hours. This low-risk building-block signal records exporter novelty for correlation with later detection alerts in which the same address is the source of suspicious activity.",
+        "false_positives": [
+            "Newly deployed routers, switches, firewalls, packet brokers, collector migrations, disaster-recovery activation, exporter address changes, and integration re-onboarding can trigger this rule."
+        ],
+        "from": "now-125m",
+        "interval": "5m",
+        "investigation_fields": {
+            "field_names": [
+                "data_stream.namespace",
+                "observer.ip",
+                "Esql.data_stream_dataset_values",
+                "Esql.event_count",
+                "Esql.first_time_seen",
+                "Esql.recent"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "First Seen Network Flow Exporter",
+        "note": "## Triage and analysis\n\n### Investigating First Seen Network Flow Exporter\n\nThis building-block rule detects a newly observed exporter identity from decoded NetFlow, IPFIX, or sFlow records. In\nthese datasets, `observer.ip` identifies the exporter or sampler. The `source.ip` and `destination.ip` fields identify\nendpoints in the exported flow and must not be treated as the exporter transport connection.\n\nThis signal establishes novelty only. It does not prove that the exporter is unauthorized or that the exporter itself\nperformed the activity represented by the flow records. The signal is intended for correlation with later detection\nalerts whose `source.ip` equals this alert's `observer.ip`.\n\n### Possible investigation steps\n\n- Identify the device assigned to `observer.ip` and verify its owner, model, location, and change record.\n- Confirm the expected collector, data stream namespace, export protocol, observation domain, and template behavior.\n- Compare `netflow.exporter.source_id`, `netflow.exporter.version`, sequence values, interfaces, sampling rate, and flow\n  volume with established exporters.\n- Check for template churn, malformed records, implausible addresses or byte counts, and conflicting telemetry from\n  independent sensors.\n\n### False positive analysis\n\n- Validate recent network-device onboarding, collector migrations, disaster-recovery activation, NAT changes, and\n  integration re-onboarding.\n\n### Response and remediation\n\n- If unauthorized, block the exporter at the collector boundary and preserve the received records for investigation.\n- Review collector authentication, network ACLs, and exporter configuration to prevent further telemetry injection.\n",
+        "query": "FROM logs-netflow.log-*, logs-goflow2.sflow-*\n| WHERE observer.ip IS NOT NULL AND data_stream.namespace IS NOT NULL\n| STATS\n    Esql.event_count = COUNT(*),\n    Esql.first_time_seen = MIN(@timestamp),\n    Esql.data_stream_dataset_values = VALUES(data_stream.dataset)\n  BY data_stream.namespace, observer.ip\n| EVAL Esql.recent = DATE_DIFF(\"minute\", Esql.first_time_seen, NOW())\n| WHERE Esql.recent <= 6\n| KEEP\n    data_stream.namespace,\n    observer.ip,\n    Esql.event_count,\n    Esql.first_time_seen,\n    Esql.data_stream_dataset_values,\n    Esql.recent\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/netflow",
+            "https://www.elastic.co/docs/reference/integrations/goflow2",
+            "https://datatracker.ietf.org/doc/html/rfc7011",
+            "https://sflow.org/sflow_version_5.txt"
+        ],
+        "related_integrations": [
+            {
+                "package": "netflow",
+                "version": ">=2.22.0"
+            },
+            {
+                "package": "goflow2",
+                "version": ">=0.4.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.namespace",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "observer.ip",
+                "type": "ip"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "dfe3f626-4224-417e-aff1-8ef9a72c3191",
+        "setup": "## Setup\n\nThis rule requires at least one decoded flow-export data source:\n\n- Elastic NetFlow integration (`netflow.log`) for NetFlow or IPFIX records.\n- Elastic GoFlow2 integration (`goflow2.sflow`) for sFlow records processed by GoFlow2.\n\nVerify that `observer.ip` contains the exporter or sampler address. Do not broaden this rule to generic firewall or\n`network_traffic.flow` events: in those records, `source.ip` and `destination.ip` describe the observed traffic and do\nnot reliably identify the device exporting telemetry.\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Network",
+            "Use Case: Network Security Monitoring",
+            "Use Case: Threat Detection",
+            "Rule Type: BBR",
+            "Data Source: NetFlow",
+            "Data Source: GoFlow2",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL"
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 2
+    },
+    "id": "dfe3f626-4224-417e-aff1-8ef9a72c3191_2",
+    "type": "security-rule"
+}

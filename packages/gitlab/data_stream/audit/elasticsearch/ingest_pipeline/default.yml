@@ -2,28 +2,31 @@
 description: Pipeline for processing audit logs
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - rename:
       field: message
       target_field: event.original
-      tag: rename_message
+      tag: rename_message_a7b1f822
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
       field: message
       ignore_missing: true
-      tag: remove_message
+      tag: remove_message_319421e7
       if: ctx.event?.original != null
-  - drop: 
+  - drop:
+      tag: drop_logline_contains_header_s_3b0973c1
       if: ctx.event.original.startsWith('#')
       description: Drop if logline contains header(s), which startswith `#`.
   - json:
       field: event.original
-      tag: 'json_decoding'
+      tag: json_decoding_a8a120ca
       target_field: gitlab.audit
   - date:
       field: gitlab.audit.time
@@ -31,138 +34,153 @@ processors:
         - "ISO8601"
       target_field: "@timestamp"
       timezone: "UTC"
-      tag: date_event_created_time_epoch
+      tag: date_event_created_time_epoch_69cd0f3e
       on_failure:
         - append:
+            tag: append_error_message_e407d4e7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       if: ctx.gitlab?.audit?.time != null
   - remove:
+      tag: remove_gitlab_audit_time_e9f0736f
       field: gitlab.audit.time
       ignore_missing: true
   - set:
       field: event.severity
       value: 0
       if: ctx.gitlab?.audit?.severity == 'DEBUG'
-      tag: set_severity_0
+      tag: set_severity_0_61122f80
   - set:
       field: event.severity
       value: 1
       if: ctx.gitlab?.audit?.severity == 'INFO'
-      tag: set_severity_1
+      tag: set_severity_1_49b76931
   - set:
       field: event.severity
       value: 2
       if: ctx.gitlab?.audit?.severity == 'WARN'
-      tag: set_severity_2
+      tag: set_severity_2_60326c95
   - set:
       field: event.severity
       value: 3
       if: ctx.gitlab?.audit?.severity == 'ERROR'
-      tag: set_severity_3
+      tag: set_severity_3_91297549
   - set:
       field: event.severity
       value: 4
       if: ctx.gitlab?.audit?.severity == 'FATAL'
-      tag: set_severity_4
+      tag: set_severity_4_4f68e464
   - set:
       field: event.severity
       value: 5
       if: ctx.gitlab?.audit?.severity == 'UNKNOWN'
-      tag: set_severity_5
+      tag: set_severity_5_75f74392
   - remove:
+      tag: remove_gitlab_audit_severity_a34e6fe9
       field: gitlab.audit.severity
       ignore_missing: true
   - rename:
+      tag: rename_gitlab_audit_correlation_id_to_event_id_b0cdaaa3
       field: gitlab.audit.correlation_id
       target_field: event.id
       ignore_missing: true
   - rename:
       field: gitlab.audit.details.custom_message
-      tag: rename_custom_message_to_custom_message_object
+      tag: rename_custom_message_to_custom_message_object_8473fa81
       target_field: gitlab.audit.details.custom_message_object
       ignore_missing: true
       if: ctx.gitlab?.audit?.details?.custom_message instanceof Map
   - rename:
       field: gitlab.audit.details.custom_message
-      tag: rename_custom_message_to_custom_message_string
+      tag: rename_custom_message_to_custom_message_string_70fddcb5
       target_field: gitlab.audit.details.custom_message_string
       ignore_missing: true
       if: ctx.gitlab?.audit?.details?.custom_message instanceof String
   - set:
       field: network.protocol
-      tag: set_network_protocol
+      tag: set_network_protocol_2e33628d
       copy_from: gitlab.audit.details.custom_message_object.protocol
       ignore_empty_value: true
   - set:
       field: event.action
-      tag: set_event_action
+      tag: set_event_action_b4cbc0c3
       copy_from: gitlab.audit.details.custom_message_object.action
       ignore_empty_value: true
   - dot_expander:
+      tag: dot_expander_*_df8292b5
       path: gitlab.audit
       field: "*"
   - convert:
+      tag: convert_gitlab_audit_meta_remote_ip_be914348
       field: gitlab.audit.meta.remote_ip
       type: ip
       ignore_missing: true
       on_failure:
           - remove:
+              tag: remove_gitlab_audit_meta_remote_ip_461c171a
               field: gitlab.audit.meta.remote_ip
               ignore_missing: true
           - append:
+              tag: append_error_message_1633f4c3
               field: error.message
               value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_gitlab_audit_meta_remote_ip_to_client_ip_10f614c1
       field: gitlab.audit.meta.remote_ip
       target_field: client.ip
       ignore_missing: true
   - geoip:
       field: client.ip
-      tag: geoip_client_address
+      tag: geoip_client_address_0dfab7ac
       target_field: client.geo
       ignore_missing: true
   - geoip:
       ignore_missing: true
       database_file: GeoLite2-ASN.mmdb
       field: client.ip
-      tag: geoip_client_asn
+      tag: geoip_client_asn_0eb1e59f
       target_field: client.as
       properties:
       - asn
       - organization_name
   - rename:
       field: client.as.asn
-      tag: rename_client_as_asn
+      tag: rename_client_as_asn_f9002c6d
       target_field: client.as.number
       ignore_missing: true
   - rename:
       field: client.as.organization_name
-      tag: rename_client_as_organization_name
+      tag: rename_client_as_organization_name_2d607f74
       target_field: client.as.organization.name
       ignore_missing: true
   - set:
+      tag: set_client_address_7c2df43a
       field: client.address
       copy_from: client.ip
       if: ctx.client?.ip != null
   - set:
+      tag: set_source_f7fb1ee5
       field: source
       copy_from: client
       if: ctx.client?.ip != null
   - append:
+      tag: append_related_ip_3726c45d
       field: related.ip
       value: '{{{client.ip}}}'
       if: ctx.client?.ip != null
       allow_duplicates: false
   - convert:
+      tag: convert_gitlab_audit_author_id_bb0cb421
       field: gitlab.audit.author_id
       type: string
       ignore_missing: true
   - rename:
+      tag: rename_gitlab_audit_author_id_to_user_id_e136c633
       field: gitlab.audit.author_id
       target_field: user.id
       ignore_missing: true
   - rename:
+      tag: rename_gitlab_audit_author_name_to_user_name_a80973eb
       field: gitlab.audit.author_name
       target_field: user.name
       ignore_missing: true
@@ -172,47 +190,55 @@ processors:
         - "ISO8601"
       target_field: "@timestamp"
       timezone: "UTC"
-      tag: date_event_created_time_epoch
+      tag: date_event_created_time_epoch_536ccf2d
       on_failure:
         - append:
+            tag: append_error_message_9473d7cd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       if: ctx.gitlab?.audit?.created_at != null
   - append:
+      tag: append_related_user_7f407fef
       field: related.user
       value: '{{{user.id}}}'
       if: ctx.user?.id != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_837e080f
       field: related.user
       value: '{{{user.name}}}'
       if: ctx.user?.name != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_6a3b5808
       field: related.user
       value: '{{{gitlab.audit.target_id}}}'
       if: ctx.gitlab?.audit?.target_id != null && ctx.gitlab.audit.target_type == "User"
       allow_duplicates: false
   - append:
+      tag: append_related_user_da886592
       field: related.user
       value: '{{{gitlab.audit.target_details}}}'
       if: ctx.gitlab?.audit?.target_details != null && ctx.gitlab.audit.target_type == "User"
       allow_duplicates: false
   - append:
+      tag: append_related_user_038455c2
       field: related.user
       value: '{{{gitlab.audit.entity_id}}}'
       if: ctx.gitlab?.audit?.entity_id != null && ctx.gitlab.audit.entity_type == "User"
       allow_duplicates: false
   - append:
+      tag: append_event_category_59b4d911
       field: event.category
       value: web
       allow_duplicates: false
   - append:
+      tag: append_event_type_3f43a39d
       field: event.type
       value: info
       allow_duplicates: false
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_50c8d6aa
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -230,23 +256,28 @@ processors:
         }
         drop(ctx);
   - append:
+      tag: append_event_kind_d2f25e35
       field: event.kind
       value: pipeline_error
       allow_duplicates: false
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_0841b325
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

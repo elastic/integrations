@@ -6,8 +6,14 @@ event_id: {{event_id}}
 {{#if ignore_older}}
 ignore_older: {{ignore_older}}
 {{/if}}
+{{#if start_position}}
+start_position: {{start_position}}
+{{/if}}
 {{#if language}}
 language: {{language}}
+{{/if}}
+{{#if preserve_original_event}}
+include_xml: true
 {{/if}}
 tags:
 {{#each tags as |tag i|}}
@@ -19,8 +25,11 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-include_xml: true
 processors:
+- add_fields:
+    target: event
+    fields:
+      module: system
 - decode_xml:
     when:
       and:

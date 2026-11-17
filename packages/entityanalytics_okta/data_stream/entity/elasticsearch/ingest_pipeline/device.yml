@@ -16,6 +16,7 @@ processors:
         }
   - remove:
       field: event.action
+      tag: remove_event_action
       if: ctx.event?.action != "started" && ctx.event?.action != "completed"
       ignore_missing: true
   - set:
@@ -73,8 +74,10 @@ processors:
       on_failure:
         - remove:
             field: okta.created
+            tag: remove_okta_created_on_failure
         - append:
             field: error.message
+            tag: append_error_message_date_created
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: asset.create_date
@@ -91,8 +94,10 @@ processors:
       on_failure:
         - remove:
             field: okta.activated
+            tag: remove_okta_activated_on_failure
         - append:
             field: error.message
+            tag: append_error_message_date_activated
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: okta.statusChanged
@@ -104,8 +109,10 @@ processors:
       on_failure:
         - remove:
             field: okta.statusChanged
+            tag: remove_okta_status_changed_on_failure
         - append:
             field: error.message
+            tag: append_error_message_date_status_changed
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: asset.last_status_change_date
@@ -122,8 +129,10 @@ processors:
       on_failure:
         - remove:
             field: okta.lastUpdated
+            tag: remove_okta_last_updated_on_failure
         - append:
             field: error.message
+            tag: append_error_message_date_last_updated
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: asset.last_updated
@@ -142,6 +151,7 @@ processors:
       ignore_failure: true
       processor:
         append:
+          tag: append_okta_user_id_into_related_user
           field: related.user
           value: '{{{_ingest._value.id}}}'
           allow_duplicates: false
@@ -153,6 +163,7 @@ processors:
       ignore_failure: true
       processor:
         append:
+          tag: append_okta_user_login_into_related_user
           field: related.user
           value: '{{{_ingest._value.profile.login}}}'
           allow_duplicates: false
@@ -164,6 +175,7 @@ processors:
       ignore_failure: true
       processor:
         append:
+          tag: append_okta_user_nickName_into_related_user
           field: related.user
           value: '{{{_ingest._value.profile.nickName}}}'
           allow_duplicates: false
@@ -175,6 +187,7 @@ processors:
       ignore_failure: true
       processor:
         append:
+          tag: append_okta_user_displayName_into_related_user
           field: related.user
           value: '{{{_ingest._value.profile.displayName}}}'
           allow_duplicates: false
@@ -207,7 +220,7 @@ processors:
   - rename:
       field: okta.profile.diskEncryptionType
       target_field: entityanalytics_okta.device.profile.disk_encryption_type
-      tag: rename_device_profile_display_name
+      tag: rename_device_profile_disk_encryption_type
       ignore_missing: true
   - convert:
       field: okta.profile.registered
@@ -218,8 +231,10 @@ processors:
       on_failure:
         - remove:
             field: okta.profile.registered
+            tag: remove_okta_profile_registered_on_failure
         - append:
             field: error.message
+            tag: append_error_message_convert_registered
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: okta.profile.secureHardwarePresent
@@ -230,8 +245,10 @@ processors:
       on_failure:
         - remove:
             field: okta.profile.secure_hardware_present
+            tag: remove_okta_profile_secure_hardware_on_failure
         - append:
             field: error.message
+            tag: append_error_message_convert_secure_hardware
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: okta.profile.managed
@@ -242,8 +259,10 @@ processors:
       on_failure:
         - remove:
             field: okta.profile.managed
+            tag: remove_okta_profile_managed_on_failure
         - append:
             field: error.message
+            tag: append_error_message_convert_managed
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: asset.name
@@ -275,3 +294,17 @@ processors:
       tag: remove_duplicate_custom_fields
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+on_failure:
+  - append:
+      tag: pipeline_error
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: pipeline_error_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: pipeline_error_preserve_original_event
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

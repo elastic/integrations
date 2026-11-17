@@ -22,11 +22,11 @@ The Sublime Security integration collects three types of logs:
 
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
-## Agentless-enabled integration
+## Elastic Managed enabled integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it.
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ## Setup
 
@@ -85,67 +85,50 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-07-30T05:33:47.725Z",
+    "@timestamp": "2024-08-12T06:04:03.714Z",
     "agent": {
-        "ephemeral_id": "432eaa29-8cc1-4524-8b66-ac16ba18781b",
-        "id": "6840d1b4-c8b0-4520-a1fc-669e9bfee96d",
-        "name": "elastic-agent-27648",
+        "ephemeral_id": "8e6eda80-4486-4b87-9073-d66d3c84a625",
+        "id": "a0c4e994-ec73-49cb-83eb-6ecb9baf45f7",
+        "name": "elastic-agent-91904",
         "type": "filebeat",
         "version": "8.18.0"
     },
-    "aws": {
-        "s3": {
-            "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-sublime-audit-bucket-83544",
-                "name": "elastic-package-sublime-audit-bucket-83544"
-            },
-            "object": {
-                "key": "test-audit.log"
-            }
-        }
-    },
-    "cloud": {
-        "region": "us-east-1"
-    },
     "data_stream": {
         "dataset": "sublime_security.audit",
-        "namespace": "58929",
+        "namespace": "40350",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "6840d1b4-c8b0-4520-a1fc-669e9bfee96d",
+        "id": "a0c4e994-ec73-49cb-83eb-6ecb9baf45f7",
         "snapshot": false,
         "version": "8.18.0"
     },
     "event": {
         "action": "search",
         "agent_id_status": "verified",
+        "category": [
+            "email"
+        ],
         "dataset": "sublime_security.audit",
-        "id": "26704b44-d1b0-4362-8221-579e604f40cb",
-        "ingested": "2025-10-24T12:38:49Z",
+        "id": "bd49af79-0cfb-4184-bd18-b0401d69ac61",
+        "ingested": "2026-07-29T03:43:39Z",
         "kind": "event",
-        "original": "{\"id\":\"26704b44-d1b0-4362-8221-579e604f40cb\",\"type\":\"message_group.search\",\"created_at\":\"2024-07-30T05:33:47.725649Z\",\"data\":{\"request\":{\"id\":\"ca817b01-cfaa-40ea-ab80-30b6a8e6ef08\",\"path\":\"/v1/messages/groups/search\",\"method\":\"GET\",\"query\":{},\"body\":\"\",\"api_key_name\":\"demo mode key\",\"authentication_method\":\"api_key\",\"ip\":\"81.2.69.142\",\"user_agent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36\"}},\"created_by\":{\"id\":\"6e6eca05-4fea-406b-86d4-b40177e25474\",\"active\":true,\"first_name\":\"Bob\",\"last_name\":\"User\",\"email_address\":\"bob@example.com\",\"phone_number\":null,\"created_at\":\"2024-07-12T05:13:47.879426Z\",\"updated_at\":\"2024-07-12T05:13:47.879426Z\",\"role\":\"admin\",\"is_enrolled\":true,\"google_oauth_user_id\":\"\",\"microsoft_oauth_user_id\":\"\"}}",
+        "original": "{\"created_at\":\"2024-08-12T06:04:03.714126Z\",\"created_by\":{\"active\":true,\"created_at\":\"2024-07-12T05:13:47.879426Z\",\"email_address\":\"demo@example.com\",\"first_name\":\"Demo\",\"google_oauth_user_id\":\"d83rb8et4-refe-fe7t4f8efe\",\"id\":\"6e6eca05-4fea-406b-86d4-b40177e25474\",\"is_enrolled\":true,\"last_name\":\"User\",\"microsoft_oauth_user_id\":\"fhe7t4bgf8-freu-ebfur94ref\",\"phone_number\":null,\"role\":\"admin\",\"updated_at\":\"2024-07-12T05:13:47.879426Z\"},\"data\":{\"request\":{\"api_key_name\":\"demo mode local\",\"authentication_method\":\"api_key\",\"body\":\"\",\"id\":\"6ad202de-0def-423d-a0f2-549402e1a9c9\",\"ip\":\"1.128.0.0\",\"method\":\"GET\",\"path\":\"/v0/message-groups\",\"user_agent\":\"Go-http-client/1.1\"}},\"id\":\"bd49af79-0cfb-4184-bd18-b0401d69ac61\",\"type\":\"message_group.search\"}",
         "type": [
             "info"
         ]
     },
     "http": {
         "request": {
-            "id": "ca817b01-cfaa-40ea-ab80-30b6a8e6ef08",
+            "id": "6ad202de-0def-423d-a0f2-549402e1a9c9",
             "method": "GET"
         }
     },
     "input": {
-        "type": "aws-s3"
-    },
-    "log": {
-        "file": {
-            "path": "https://elastic-package-sublime-audit-bucket-83544.s3.us-east-1.amazonaws.com/test-audit.log"
-        },
-        "offset": 1
+        "type": "cel"
     },
     "observer": {
         "product": "Sublime Security",
@@ -153,63 +136,65 @@ An example event for `audit` looks as following:
     },
     "related": {
         "ip": [
-            "81.2.69.142"
+            "1.128.0.0"
         ],
         "user": [
-            "bob@example.com",
-            "Bob",
-            "6e6eca05-4fea-406b-86d4-b40177e25474"
+            "demo@example.com",
+            "Demo",
+            "d83rb8et4-refe-fe7t4f8efe",
+            "6e6eca05-4fea-406b-86d4-b40177e25474",
+            "fhe7t4bgf8-freu-ebfur94ref"
         ]
     },
     "source": {
-        "geo": {
-            "city_name": "London",
-            "continent_name": "Europe",
-            "country_iso_code": "GB",
-            "country_name": "United Kingdom",
-            "location": {
-                "lat": 51.5142,
-                "lon": -0.0931
-            },
-            "region_iso_code": "GB-ENG",
-            "region_name": "England"
-        },
-        "ip": "81.2.69.142"
+        "ip": "1.128.0.0"
     },
     "sublime_security": {
         "audit": {
+            "created_at": "2024-08-12T06:04:03.714Z",
             "created_by": {
                 "active": true,
                 "created_at": "2024-07-12T05:13:47.879Z",
-                "first_name": "Bob",
+                "email_address": "demo@example.com",
+                "first_name": "Demo",
+                "google_oauth_user_id": "d83rb8et4-refe-fe7t4f8efe",
+                "id": "6e6eca05-4fea-406b-86d4-b40177e25474",
                 "is_enrolled": true,
                 "last_name": "User",
+                "microsoft_oauth_user_id": "fhe7t4bgf8-freu-ebfur94ref",
+                "role": "admin",
                 "updated_at": "2024-07-12T05:13:47.879Z"
             },
             "data": {
                 "request": {
-                    "api_key_name": "demo mode key",
-                    "authentication_method": "api_key"
+                    "api_key_name": "demo mode local",
+                    "authentication_method": "api_key",
+                    "id": "6ad202de-0def-423d-a0f2-549402e1a9c9",
+                    "ip": "1.128.0.0",
+                    "method": "GET",
+                    "path": "/v0/message-groups",
+                    "user_agent": "Go-http-client/1.1"
                 }
             },
+            "id": "bd49af79-0cfb-4184-bd18-b0401d69ac61",
             "type": "message_group.search"
         }
     },
     "tags": [
-        "collect_sqs_logs",
         "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "sublime_security-audit"
     ],
     "url": {
-        "path": "/v1/messages/groups/search"
+        "path": "/v0/message-groups"
     },
     "user": {
         "domain": "example.com",
-        "email": "bob@example.com",
-        "full_name": "Bob User",
+        "email": "demo@example.com",
+        "full_name": "Demo User",
         "id": "6e6eca05-4fea-406b-86d4-b40177e25474",
-        "name": "bob",
+        "name": "demo",
         "roles": [
             "admin"
         ]
@@ -218,14 +203,9 @@ An example event for `audit` looks as following:
         "device": {
             "name": "Other"
         },
-        "name": "Chrome",
-        "original": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
-        "os": {
-            "full": "Windows 10",
-            "name": "Windows",
-            "version": "10"
-        },
-        "version": "126.0.0.0"
+        "name": "Go-http-client",
+        "original": "Go-http-client/1.1",
+        "version": "1.1"
     }
 }
 ```
@@ -1405,17 +1385,17 @@ An example event for `message_event` looks as following:
 {
     "@timestamp": "2023-05-04T01:06:50.738Z",
     "agent": {
-        "ephemeral_id": "2ebcdcee-21e4-4c4a-878d-0fbdb3f18f46",
-        "id": "8930423a-231a-4254-8d2c-7905f049d045",
-        "name": "elastic-agent-41694",
+        "ephemeral_id": "10dce2f7-384a-4cfb-8851-6957304d6cc0",
+        "id": "5e034f6d-5a96-4800-8d11-759be7c357b1",
+        "name": "elastic-agent-29608",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "aws": {
         "s3": {
             "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-sublime-message-bucket-24476",
-                "name": "elastic-package-sublime-message-bucket-24476"
+                "arn": "arn:aws:s3:::elastic-package-sublime-message-bucket-39881",
+                "name": "elastic-package-sublime-message-bucket-39881"
             },
             "object": {
                 "key": "test-message.log"
@@ -1427,14 +1407,14 @@ An example event for `message_event` looks as following:
     },
     "data_stream": {
         "dataset": "sublime_security.message_event",
-        "namespace": "39020",
+        "namespace": "12490",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8930423a-231a-4254-8d2c-7905f049d045",
+        "id": "5e034f6d-5a96-4800-8d11-759be7c357b1",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -1445,7 +1425,7 @@ An example event for `message_event` looks as following:
         ],
         "dataset": "sublime_security.message_event",
         "id": "089b2e97-2107-4d1e-83e1-1920314dbb80",
-        "ingested": "2025-10-24T12:34:48Z",
+        "ingested": "2026-10-26T10:15:38Z",
         "kind": "event",
         "original": "{\"created_at\":\"2023-05-04T01:06:50.73801Z\",\"data\":{\"flagged_rules\":[{\"id\":\"958ad820-767f-4c83-ac44-94032151574f\",\"name\":\"Test rule1\",\"severity\":\"high\",\"tags\":[\"Testing\"]},{\"id\":\"2483da42-6905-4eca-bc8e-a5475ab906a4\",\"name\":\"Test rule2\",\"severity\":\"high\",\"tags\":[\"Testing\"]},{\"id\":\"9f95f7bb-b1f1-465a-a7a4-23266792c000\",\"name\":\"Test rule3\",\"severity\":\"low\",\"tags\":[\"Testing\"]},{\"id\":\"862b4f5b-c0f7-4e36-89b2-3091f9ac492b\",\"name\":\"Test rule4\",\"severity\":\"medium\",\"tags\":[\"Testing\"]}],\"message\":{\"canonical_id\":\"8fdb3acd8441b18478b7e80927c732f44e9086dcf7cfa6c1186ed21637427ef8\",\"external_id\":\"187e44c2288f2e8d\",\"id\":\"089b2e97-2107-4d1e-83e1-1920314dbb80\",\"mailbox\":{\"external_id\":\"100712120249161713725\",\"id\":\"3142d2f8-ac0d-4e37-bb1f-d5e4ff5f7f96\"},\"message_source_id\":\"d76ce576-4687-4182-b8e3-a220d6878b21\"},\"triggered_actions\":[{\"id\":\"9f95f7bb-b1f1-465a-a7a4-23266792c000\",\"name\":\"test\",\"type\":\"alert\"},{\"id\":\"9f95f7bb-b1f1-465a-a7a4-23266792c001\",\"name\":\"test 1\",\"type\":\"rule\"}]},\"type\":\"message.flagged\"}",
         "type": [
@@ -1457,7 +1437,7 @@ An example event for `message_event` looks as following:
     },
     "log": {
         "file": {
-            "path": "https://elastic-package-sublime-message-bucket-24476.s3.us-east-1.amazonaws.com/test-message.log"
+            "path": "https://elastic-package-sublime-message-bucket-39881.s3.us-east-1.amazonaws.com/test-message.log"
         },
         "offset": 643
     },
@@ -1555,6 +1535,7 @@ An example event for `message_event` looks as following:
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
+| sublime_security.message_event.attack_score_verdict | Attack Score verdict for the message. Possible values are malicious, spam, graymail, suspicious, unknown, error, or likely_benign. | keyword |
 | sublime_security.message_event.canonical_id | Canonical ID of the message. | keyword |
 | sublime_security.message_event.created_at | Time this message was added to sublime_security. | date |
 | sublime_security.message_event.data.flagged_rules.id | ID of the flagged rule. | keyword |

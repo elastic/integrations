@@ -34,7 +34,11 @@ inputs:
                     :
                       {"query": string(state.domains_query)}
                   ).encode_json()
-                ).do_request().as(resp, (resp.StatusCode == 200) ?
+                ).as(req, req.with(
+                  {
+                    "Header": req.Header.with({"User-Agent": [state.user_agent]}),
+                  }
+                )).do_request().as(resp, (resp.StatusCode == 200) ?
                   resp.Body.decode_json().as(body,
                     (size(body.?errors.orValue([])) > 0) ?
                       state.with(
@@ -130,7 +134,11 @@ inputs:
                       "domain": string(state.worklist[int(state.next)]),
                     },
                   }.encode_json()
-                ).do_request().as(resp, (resp.StatusCode == 200) ?
+                ).as(req, req.with(
+                  {
+                    "Header": req.Header.with({"User-Agent": [state.user_agent]}),
+                  }
+                )).do_request().as(resp, (resp.StatusCode == 200) ?
                   resp.Body.decode_json().as(body,
                     (size(body.?errors.orValue([])) > 0) ?
                       state.with(
@@ -213,6 +221,7 @@ inputs:
                     - AWS
             initial_interval: 24h
             min_remaining_points: 100
+            user_agent: Elastic-crowdstrike/unknown
           tags:
             - preserve_original_event
             - forwarded

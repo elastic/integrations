@@ -1,0 +1,141 @@
+{
+    "attributes": {
+        "alert_suppression": {
+            "duration": {
+                "unit": "h",
+                "value": 1
+            },
+            "group_by": [
+                "user.email"
+            ],
+            "missing_fields_strategy": "suppress"
+        },
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects at least five failed Anthropic authentication events for the same user email within one hour. Failures are matched by authentication category and failure outcome (for example magic-link or SSO login failures). That pattern fits repeated guessing, stale magic link abuse, or automated login attempts against one account.",
+        "false_positives": [
+            "A user repeatedly clicking an expired or invalid magic link from the same browser session can produce several failures before requesting a new link or signing in successfully.",
+            "IdP or SSO cutover testing against a pilot account can generate a short burst of failed attempts for one email during maintenance windows."
+        ],
+        "from": "now-60m",
+        "interval": "15m",
+        "investigation_fields": {
+            "field_names": [
+                "user.email",
+                "Esql.event_count",
+                "Esql.event_id_values",
+                "Esql.event_action_values",
+                "Esql.source_ip_values",
+                "Esql.source_ip_distinct_count",
+                "Esql.user_agent_original_values",
+                "Esql.anthropic_audit_actor_type_values",
+                "Esql.timestamp_first_seen",
+                "Esql.timestamp_last_seen"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Anthropic Multiple Authentication Failures",
+        "note": "## Triage and analysis\n\n### Investigating Anthropic Multiple Authentication Failures\n\nOne mailbox produced a burst of authentication failures (magic-link, SSO, or other auth failures) within an hour.\nUse IP diversity on the alert to separate focused retries from distributed automation.\n\nEscalate when many distinct IPs hit one email, failures precede a successful login from an unfamiliar IP, or SSO /\nmagic-link second-factor weakening sits nearby. Close as FP for expired magic-link retries from one IP/UA or IdP\npilot testing with a ticket.\n\n#### Possible investigation steps\n\n- Read `Esql.event_count`, `Esql.event_action_values`, `Esql.source_ip_values`, and\n  `Esql.source_ip_distinct_count`.\n- Low IP diversity \u2192 one device/egress (typos, expired links, focused guessing). High diversity \u2192 distributed\n  automation or proxy rotation \u2014 higher priority.\n- Inspect UA / actor-type values for automation. Search for successful `magic_link_login_succeeded` /\n  `sso_login_succeeded` for the same email or IPs in the window.\n- Correlate with **Anthropic SSO Disabled or Connection Removed** or magic-link second-factor disablement when\n  org-scoped admin events are present.\n\n### False positive analysis\n\n- Expired magic-link click storms from one IP and named IdP cutover tests are common FPs.\n\n### Response and remediation\n\n- On suspected stuffing/takeover: invalidate sessions, reset credentials/MFA, and review successful logins from new\n  IPs. If failures precede a successful unfamiliar login, expand to data access and admin changes.\n",
+        "query": "from logs-anthropic.audit-*\n| where\n    data_stream.dataset == \"anthropic.audit\" and\n    mv_contains(event.category, \"authentication\") and\n    event.outcome == \"failure\" and\n    user.email is not null\n| stats\n    Esql.event_count = count(*),\n    Esql.event_id_values = values(event.id),\n    Esql.event_action_values = values(event.action),\n    Esql.source_ip_values = values(source.ip),\n    Esql.source_ip_distinct_count = count_distinct(source.ip),\n    Esql.user_agent_original_values = values(user_agent.original),\n    Esql.anthropic_audit_actor_type_values = values(anthropic.audit.actor.type),\n    Esql.timestamp_first_seen = min(@timestamp),\n    Esql.timestamp_last_seen = max(@timestamp)\n  by user.email\n| where Esql.event_count >= 5\n| keep user.email, Esql.*\n",
+        "references": [
+            "https://platform.claude.com/docs/en/api/compliance/activities/list"
+        ],
+        "related_integrations": [
+            {
+                "package": "anthropic",
+                "version": ">=1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "anthropic.audit.actor.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "25647990-cc37-430c-9a4e-2793bb5445f5",
+        "severity": "medium",
+        "tags": [
+            "Domain: GenAI",
+            "Domain: Identity",
+            "Platform: Anthropic",
+            "Data Source: Anthropic Audit Logs",
+            "Use Case: Identity and Access Audit",
+            "Use Case: Threat Detection",
+            "Use Case: UEBA",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Tactic: Credential Access"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1110",
+                        "name": "Brute Force",
+                        "reference": "https://attack.mitre.org/techniques/T1110/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "25647990-cc37-430c-9a4e-2793bb5445f5_1",
+    "type": "security-rule"
+}

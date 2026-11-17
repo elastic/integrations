@@ -3,32 +3,38 @@ description: Build ECS fields from an OpenCTI directory observable
 processors:
 
   - set:
+      tag: set__tmp_file_accessed_2d48fd07
       field: _tmp_file.accessed
       value: "{{{_ingest._value.atime}}}"
       ignore_empty_value: true
 
   - set:
+      tag: set__tmp_file_created_95003868
       field: _tmp_file.created
       value: "{{{_ingest._value.ctime}}}"
       ignore_empty_value: true
 
   - set:
+      tag: set__tmp_file_mtime_76198baa
       field: _tmp_file.mtime
       value: "{{{_ingest._value.mtime}}}"
       ignore_empty_value: true
 
   - append:
+      tag: append__tmp_file_path_cf32c374
       field: _tmp_file.path
       value: "{{{_ingest._value.path}}}"
       allow_duplicates: false
 
   - set:
+      tag: set__tmp_file_type_6a6681f6
       field: _tmp_file.type
       value: "dir"
       ignore_empty_value: true
 
   # append object
   - script:
+      tag: script_append_to_destination_bd11ba93
       description: Append to the destination
       lang: painless
       source: |
@@ -38,4 +44,5 @@ processors:
         ctx.threat.indicator.file.add(ctx._tmp_file);
 
   - remove:
+      tag: remove__tmp_file_8fed12c0
       field: _tmp_file

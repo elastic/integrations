@@ -1,0 +1,54 @@
+{
+    "id": "vercel_otel-sensitive-audit-activity-spike",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when a single actor performs more than 5 sensitive audit actions (env variable reads, drain/webhook/token/domain/team configuration changes, project transfers) within a 1-hour window. Unusual volumes of sensitive actions from a given actor may indicate automated abuse, a compromised credential, or unintentional misconfiguration.",
+        "name": "[Vercel OTel] Sensitive audit activity spike by actor",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "vercel",
+            "security",
+            "governance"
+        ],
+        "schedule": {
+            "interval": "15m"
+        },
+        "alertDelay": {
+            "active": 1
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "vercel_otel-audit-logs"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## Sensitive Audit Activity Spike\n\n### Triage Steps\n1. The alert context identifies the affected `actor` (user email/name/id, or actor type for non-user actors such as `app`, `system`, `integration`).\n2. Review the actor's full activity in the window: `FROM logs-vercel.auditlog.v1.otel-default | WHERE user.email == \"<actor>\" OR user.name == \"<actor>\" OR user.id == \"<actor>\" | KEEP @timestamp, event_name, vercel.project.id, client.address, user_agent.original | SORT @timestamp DESC | LIMIT 50`\n3. Check whether the actor and IP address/user agent are consistent with the actor's normal working pattern \u2014 an unfamiliar `client.address` or automation-style `user_agent.original` (e.g. a script rather than a browser or the Vercel CLI) alongside sensitive actions warrants immediate follow-up.\n4. For `env-variable-read` events specifically, confirm the actor had a legitimate reason to pull secrets (e.g. local development, CI setup) \u2014 bulk reads of production environment variables are a common exfiltration pattern.\n5. For `drain-created`/`drain-updated`/`webhook`-related events, verify no unauthorized log/webhook destination was added (a classic technique for exfiltrating logs or intercepting data).\n\n### Note\nThis rule uses a keyword-based classification of `event_name` (matching `env-variable`, `drain`, `webhook`, `token`, `team-`, `domain`, `project-transfer`). Review the full Vercel Activity Log event taxonomy periodically and extend the `LIKE` patterns below if new sensitive event categories are introduced.\n\n### Escalation\nIf the actor is unrecognized, the actions are inconsistent with their role, or a token/integration actor is involved, escalate to the security team immediately and consider revoking the associated token."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM logs-vercel.auditlog.v1.otel-default\n// Fall back through identifying fields since non-user actors (app/system/integration) lack user.* fields\n| EVAL actor = COALESCE(user.email, user.name, user.id, vercel.actor.type)\n// Sensitive action categories: env var access, drain/webhook config (log exfiltration risk), token issuance,\n// team/domain configuration, and project ownership transfers. Extend this list as needed.\n| WHERE event_name LIKE \"*env-variable*\"\n    OR event_name LIKE \"*drain*\"\n    OR event_name LIKE \"*webhook*\"\n    OR event_name LIKE \"*token*\"\n    OR event_name LIKE \"*team-*\"\n    OR event_name LIKE \"*domain*\"\n    OR event_name LIKE \"*project-transfer*\"\n| STATS sensitive_events = COUNT(*) BY actor\n// Alert threshold: tune based on your team's normal operational volume of sensitive actions\n| WHERE sensitive_events > 5\n| SORT sensitive_events DESC\n| LIMIT 20"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 60,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "actor",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

@@ -3,33 +3,40 @@ description: Build ECS fields from an OpenCTI file observable
 processors:
 
   - set:
+      tag: set__tmp_file_accessed_2d48fd07
       field: _tmp_file.accessed
       value: "{{{_ingest._value.atime}}}"
       ignore_empty_value: true
 
   - set:
+      tag: set__tmp_file_created_95003868
       field: _tmp_file.created
       value: "{{{_ingest._value.ctime}}}"
       ignore_empty_value: true
 
   - set:
+      tag: set__tmp_file_mtime_76198baa
       field: _tmp_file.mtime
       value: "{{{_ingest._value.mtime}}}"
       ignore_empty_value: true
 
   - append:
+      tag: append__tmp_file_name_9aae3c4f
       field: _tmp_file.name
       value: "{{{_ingest._value.name}}}"
       allow_duplicates: false
   - foreach:
+      tag: foreach__ingest__value_additional_names_ef8f87e3
       field: _ingest._value.additional_names
       ignore_missing: true
       processor:
         append:
+          tag: append_tmp_file_name_c8aa2d2f
           field: _tmp_file.name
           value: "{{{_ingest._value}}}"
           allow_duplicates: false
   - script:
+      tag: script_remove_null_empty_names_remove_6df6b566
       description: Remove null or empty names, remove name field if no names
       lang: painless
       source: |
@@ -48,6 +55,7 @@ processors:
         }
 
   - script:
+      tag: script_get_file_extensions_from_file_fd7d579f
       description: Get file extensions from file names
       lang: painless
       source: |
@@ -71,27 +79,32 @@ processors:
         }
 
   - set:
+      tag: set__tmp_file_mime_type_f53c01af
       field: _tmp_file.mime_type
       value: "{{{_ingest._value.mime_type}}}"
       ignore_empty_value: true
 
   - set:
+      tag: set__tmp_file_size_97c32fd5
       field: _tmp_file.size
       value: "{{{_ingest._value.size}}}"
       ignore_empty_value: true
 
   - set:
+      tag: set__tmp_file_type_d6bb197c
       field: _tmp_file.type
       value: "file"
       ignore_empty_value: true
 
   - set:
+      tag: set__tmp_file_hash_b2782542
       field: _tmp_file.hash
       copy_from: _ingest._value.hash
       ignore_empty_value: true
 
   # append object
   - script:
+      tag: script_append_to_destination_bd11ba93
       description: Append to the destination
       lang: painless
       source: |
@@ -101,4 +114,5 @@ processors:
         ctx.threat.indicator.file.add(ctx._tmp_file);
 
   - remove:
+      tag: remove__tmp_file_8fed12c0
       field: _tmp_file

@@ -1,4 +1,20 @@
 # newer versions go on top
+- version: "2.2.0"
+  changes:
+    - description: Fix `dns.question.*` extraction for NIOS 9 `named` log lines by accepting the logging-category prefix on notify, zone-transfer and DNSSEC validation patterns; allow the EDNS Client Subnet suffix on `queries` lines; normalise `dns.question.name` to lower case (DNS names are case-insensitive).
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/21004
+    - description: Add `infoblox_nios.log.dns.ecs_client_subnet.*`, `failure_reason`, `query_context`, `action` and `transfer.*` fields for the NIOS 9 `query-errors`, `security` and `xfer-in` categories, and set an ECS-valid `event.outcome` and `dns.response_code` from them.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21004
+- version: "2.1.2"
+  changes:
+    - description: Reorder the `pipeline_dns` grok alternatives so high-volume client query and response lines are matched before lower-volume administrative events, reducing average per-document ingest time. Parsed output is unchanged.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/20445
+    - description: Only run the RPZ `dissect` processor in `pipeline_dns` for messages that actually start with `rpz `, instead of for every branch that populates `infoblox_nios.log.dns.message`.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20445
 - version: "2.1.1"
   changes:
     - description: Update Grok pattern to handle the log format that includes LAN_IP HOSTNAME MGMT_IP prefix.

@@ -3,791 +3,801 @@ description: Pipeline for processing Knowledge Base data.
 processors:
   - rename:
       field: json.KNOWLEDGE_BASE
-      tag: rename_json_KNOWLEDGE_BASE
+      tag: rename_json_KNOWLEDGE_BASE_99c5a93f
       target_field: qualys_vmdr.asset_host_detection.knowledge_base
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.ID_RANGE
-      tag: rename_ID_RANGE
+      tag: rename_ID_RANGE_c30942a3
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.id_range
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.ID
-      tag: rename_ID
+      tag: rename_ID_78465ba3
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.ids
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CONSEQUENCE
-      tag: rename_CONSEQUENCE
+      tag: rename_CONSEQUENCE_ac543f8e
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.consequence.value
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CONSEQUENCE_COMMENT
-      tag: rename_CONSEQUENCE_COMMENT
+      tag: rename_CONSEQUENCE_COMMENT_48dbe672
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.consequence.comment
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.DETECTION_INFO
-      tag: rename_DETECTION_INFO
+      tag: rename_DETECTION_INFO_f7dca517
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.detection_info
       ignore_missing: true
   # Handle case when COMPLIANCE_LIST.COMPLIANCE is an object
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.COMPLIANCE_LIST.COMPLIANCE.TYPE
-      tag: rename_COMPLIANCE_LIST_COMPLIANCE_TYPE
+      tag: rename_COMPLIANCE_LIST_COMPLIANCE_TYPE_de0513cf
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.compliance_list.type
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.COMPLIANCE_LIST.COMPLIANCE.SECTION
-      tag: rename_COMPLIANCE_LIST_COMPLIANCE_SECTION
+      tag: rename_COMPLIANCE_LIST_COMPLIANCE_SECTION_46df8946
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.compliance_list.section
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.COMPLIANCE_LIST.COMPLIANCE.DESCRIPTION
-      tag: rename_COMPLIANCE_LIST_COMPLIANCE_DESCRIPTION
+      tag: rename_COMPLIANCE_LIST_COMPLIANCE_DESCRIPTION_ff63dab1
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.compliance_list.description
       ignore_missing: true
-# Handle case when COMPLIANCE_LIST.COMPLIANCE is an array
+  # Handle case when COMPLIANCE_LIST.COMPLIANCE is an array
   - foreach:
       field: qualys_vmdr.asset_host_detection.knowledge_base.COMPLIANCE_LIST.COMPLIANCE
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.COMPLIANCE_LIST?.COMPLIANCE instanceof List
-      tag: foreach_rename_COMPLIANCE_LIST_COMPLIANCE_TYPE
+      tag: foreach_rename_COMPLIANCE_LIST_COMPLIANCE_TYPE_600bcb2c
       processor:
         rename:
           field: _ingest._value.TYPE
-          tag: rename_COMPLIANCE_LIST_COMPLIANCE_TYPE_1
+          tag: rename_COMPLIANCE_LIST_COMPLIANCE_TYPE_1_f0b7057b
           target_field: _ingest._value.type
           ignore_missing: true
   - foreach:
       field: qualys_vmdr.asset_host_detection.knowledge_base.COMPLIANCE_LIST.COMPLIANCE
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.COMPLIANCE_LIST?.COMPLIANCE instanceof List
-      tag: foreach_rename_COMPLIANCE_LIST_COMPLIANCE_SECTION
+      tag: foreach_rename_COMPLIANCE_LIST_COMPLIANCE_SECTION_bc8fffaa
       processor:
         rename:
           field: _ingest._value.SECTION
-          tag: rename_COMPLIANCE_LIST_COMPLIANCE_SECTION_1
+          tag: rename_COMPLIANCE_LIST_COMPLIANCE_SECTION_1_19d435e6
           target_field: _ingest._value.section
           ignore_missing: true
   - foreach:
       field: qualys_vmdr.asset_host_detection.knowledge_base.COMPLIANCE_LIST.COMPLIANCE
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.COMPLIANCE_LIST?.COMPLIANCE instanceof List
-      tag: foreach_rename_COMPLIANCE_LIST_COMPLIANCE_DESCRIPTION
+      tag: foreach_rename_COMPLIANCE_LIST_COMPLIANCE_DESCRIPTION_17885bd2
       processor:
         rename:
           field: _ingest._value.DESCRIPTION
-          tag: rename_COMPLIANCE_LIST_COMPLIANCE_DESCRIPTION_1
+          tag: rename_COMPLIANCE_LIST_COMPLIANCE_DESCRIPTION_1_8e7990bc
           target_field: _ingest._value.description
           ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.COMPLIANCE_LIST.COMPLIANCE
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.COMPLIANCE_LIST?.COMPLIANCE instanceof List
-      tag: rename_COMPLIANCE_LIST_COMPLIANCE
+      tag: rename_COMPLIANCE_LIST_COMPLIANCE_0df7ba61
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.compliance_list
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CATEGORY
-      tag: rename_CATEGORY
+      tag: rename_CATEGORY_a7a59230
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.category
       ignore_missing: true
   - append:
       field: vulnerability.category
-      tag: append_vulnerability_category
+      tag: append_vulnerability_category_76fe2175
       value: '{{{qualys_vmdr.asset_host_detection.knowledge_base.category}}}'
       allow_duplicates: false
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.category != null
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.DIAGNOSIS
-      tag: rename_DIAGNOSIS
+      tag: rename_DIAGNOSIS_f7f32424
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.diagnosis.value
       ignore_missing: true
   - set:
       field: vulnerability.description
-      tag: set_vulnerability_description
+      tag: set_vulnerability_description_76025aa2
       copy_from: qualys_vmdr.asset_host_detection.knowledge_base.diagnosis.value
       ignore_empty_value: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.DIAGNOSIS_COMMENT
-      tag: rename_DIAGNOSIS_COMMENT
+      tag: rename_DIAGNOSIS_COMMENT_3531e812
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.diagnosis.comment
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.PCI_REASONS.PCI_REASON
-      tag: rename_PCI_REASONS_PCI_REASON
+      tag: rename_PCI_REASONS_PCI_REASON_0879cced
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.pci_reasons.value
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.QID
-      tag: rename_QID
+      tag: rename_QID_cd0f106c
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.qid
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.SOLUTION
-      tag: rename_SOLUTION
+      tag: rename_SOLUTION_482c9763
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.solution.value
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.SOLUTION_COMMENT
-      tag: rename_SOLUTION_COMMENT
+      tag: rename_SOLUTION_COMMENT_aa2e4ba7
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.solution.comment
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.SUPPORTED_MODULES
-      tag: rename_SUPPORTED_MODULES
+      tag: rename_SUPPORTED_MODULES_1f4f674b
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.supported_modules
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.TITLE
-      tag: rename_TITLE
+      tag: rename_TITLE_22909310
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.title
       ignore_missing: true
   - set:
       field: vulnerability.title
-      tag: set_vulnerability_title
+      tag: set_vulnerability_title_ee5fd4d0
       copy_from: qualys_vmdr.asset_host_detection.knowledge_base.title
       ignore_empty_value: true
-# Handle case when BUGTRAQ_LIST.BUGTRAQ is an object
+  # Handle case when BUGTRAQ_LIST.BUGTRAQ is an object
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.BUGTRAQ_LIST.BUGTRAQ.ID
-      tag: rename_BUGTRAQ_LIST_BUGTRAQ_ID
+      tag: rename_BUGTRAQ_LIST_BUGTRAQ_ID_f43b376d
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.bugtraq_list.id
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.BUGTRAQ_LIST.BUGTRAQ.URL
-      tag: rename_BUGTRAQ_LIST_BUGTRAQ_URL
+      tag: rename_BUGTRAQ_LIST_BUGTRAQ_URL_1b95f5b9
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.bugtraq_list.url
       ignore_missing: true
-# Handle case when BUGTRAQ_LIST.BUGTRAQ is an array
+  # Handle case when BUGTRAQ_LIST.BUGTRAQ is an array
   - foreach:
       field: qualys_vmdr.asset_host_detection.knowledge_base.BUGTRAQ_LIST.BUGTRAQ
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.BUGTRAQ_LIST?.BUGTRAQ instanceof List
-      tag: foreach_rename_BUGTRAQ_LIST_BUGTRAQ_ID
+      tag: foreach_rename_BUGTRAQ_LIST_BUGTRAQ_ID_57fb3fd8
       processor:
         rename:
           field: _ingest._value.ID
-          tag: rename_BUGTRAQ_LIST_BUGTRAQ_ID_1
+          tag: rename_BUGTRAQ_LIST_BUGTRAQ_ID_1_f949f4f6
           target_field: _ingest._value.id
           ignore_missing: true
   - foreach:
       field: qualys_vmdr.asset_host_detection.knowledge_base.BUGTRAQ_LIST.BUGTRAQ
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.BUGTRAQ_LIST?.BUGTRAQ instanceof List
-      tag: foreach_rename_BUGTRAQ_LIST_BUGTRAQ_URL
+      tag: foreach_rename_BUGTRAQ_LIST_BUGTRAQ_URL_570ddff0
       processor:
         rename:
           field: _ingest._value.URL
-          tag: rename_BUGTRAQ_LIST_BUGTRAQ_URL_1
+          tag: rename_BUGTRAQ_LIST_BUGTRAQ_URL_1_1427344a
           target_field: _ingest._value.url
           ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.BUGTRAQ_LIST.BUGTRAQ
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.BUGTRAQ_LIST?.BUGTRAQ instanceof List
-      tag: rename_BUGTRAQ_LIST_BUGTRAQ
+      tag: rename_BUGTRAQ_LIST_BUGTRAQ_d48938e2
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.bugtraq_list
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.VULN_TYPE
-      tag: rename_VULN_TYPE
+      tag: rename_VULN_TYPE_3d8adbb4
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.vuln_type
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVE_LIST
-      tag: rename_CVE_LIST
+      tag: rename_CVE_LIST_162c661f
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cve_list
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVSS.BASE
-      tag: rename_CVSS_BASE
+      tag: rename_CVSS_BASE_37041e3c
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cvss.base
       ignore_missing: true
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.CVSS?.BASE instanceof String
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVSS.BASE
-      tag: rename_CVSS_BASE
+      tag: rename_CVSS_BASE_9beb0a26
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cvss.base_obj
       ignore_missing: true
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.CVSS?.BASE instanceof Object
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVSS.TEMPORAL
-      tag: rename_CVSS_TEMPORAL
+      tag: rename_CVSS_TEMPORAL_6a7cd20e
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cvss.temporal
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVSS.VECTOR_STRING
-      tag: rename_CVSS_VECTOR_STRING
+      tag: rename_CVSS_VECTOR_STRING_6e7a803f
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cvss.vector_string
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVSS.ACCESS.VECTOR
-      tag: rename_CVSS_ACCESS_VECTOR
+      tag: rename_CVSS_ACCESS_VECTOR_642a7efd
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cvss.access.vector
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVSS.ACCESS.COMPLEXITY
-      tag: rename_CVSS_ACCESS_COMPLEXITY
+      tag: rename_CVSS_ACCESS_COMPLEXITY_0addb26b
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cvss.access.complexity
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVSS.IMPACT.CONFIDENTIALITY
-      tag: rename_CVSS_IMPACT_CONFIDENTIALITY
+      tag: rename_CVSS_IMPACT_CONFIDENTIALITY_5a319a5b
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cvss.impact.confidentiality
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVSS.IMPACT.INTEGRITY
-      tag: rename_CVSS_IMPACT_INTEGRITY
+      tag: rename_CVSS_IMPACT_INTEGRITY_dc6fad53
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cvss.impact.integrity
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVSS.IMPACT.AVAILABILITY
-      tag: rename_CVSS_IMPACT_AVAILABILITY
+      tag: rename_CVSS_IMPACT_AVAILABILITY_4054d1bc
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cvss.impact.availability
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVSS.AUTHENTICATION
-      tag: rename_CVSS_AUTHENTICATION
+      tag: rename_CVSS_AUTHENTICATION_d30fa7fa
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cvss.authentication
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVSS.EXPLOITABILITY
-      tag: rename_CVSS_EXPLOITABILITY
+      tag: rename_CVSS_EXPLOITABILITY_5b1a9cc9
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cvss.exploitability
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVSS.REMEDIATION_LEVEL
-      tag: rename_CVSS_REMEDIATION_LEVEL
+      tag: rename_CVSS_REMEDIATION_LEVEL_32758d52
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cvss.remediation_level
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVSS.REPORT_CONFIDENCE
-      tag: rename_CVSS_REPORT_CONFIDENCE
+      tag: rename_CVSS_REPORT_CONFIDENCE_6824bac2
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cvss.report_confidence
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVSS_V3.BASE
-      tag: rename_CVSS_V3.BASE
+      tag: rename_CVSS_V3.BASE_44bcdc34
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.base
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVSS_V3.TEMPORAL
-      tag: rename_CVSS_V3_TEMPORAL
+      tag: rename_CVSS_V3_TEMPORAL_089de166
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.temporal
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVSS_V3.VECTOR_STRING
-      tag: rename_CVSS_V3_VECTOR_STRING
+      tag: rename_CVSS_V3_VECTOR_STRING_13433296
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.vector_string
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVSS_V3.CVSS3_VERSION
-      tag: rename_CVSS_V3_CVSS3_VERSION
+      tag: rename_CVSS_V3_CVSS3_VERSION_1c9af6f3
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.version
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVSS_V3.ATTACK.VECTOR
-      tag: rename_CVSS_V3_ATTACK_VECTOR
+      tag: rename_CVSS_V3_ATTACK_VECTOR_6a8ff8d2
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.attack.vector
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVSS_V3.ATTACK.COMPLEXITY
-      tag: rename_CVSS_V3_ATTACK_COMPLEXITY
+      tag: rename_CVSS_V3_ATTACK_COMPLEXITY_9182165a
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.attack.complexity
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVSS_V3.IMPACT.CONFIDENTIALITY
-      tag: rename_CVSS_V3_IMPACT_CONFIDENTIALITY
+      tag: rename_CVSS_V3_IMPACT_CONFIDENTIALITY_c7514119
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.impact.confidentiality
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVSS_V3.IMPACT.INTEGRITY
-      tag: rename_CVSS_V3_IMPACT_INTEGRITY
+      tag: rename_CVSS_V3_IMPACT_INTEGRITY_f941a70e
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.impact.integrity
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVSS_V3.IMPACT.AVAILABILITY
-      tag: rename_CVSS_V3_IMPACT_AVAILABILITY
+      tag: rename_CVSS_V3_IMPACT_AVAILABILITY_f40e7d58
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.impact.availability
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVSS_V3.PRIVILEGES_REQUIRED
-      tag: rename_CVSS_V3_PRIVILEGES_REQUIRED
+      tag: rename_CVSS_V3_PRIVILEGES_REQUIRED_379efd2e
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.privileges_required
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVSS_V3.USER_INTERACTION
-      tag: rename_CVSS_V3_USER_INTERACTION
+      tag: rename_CVSS_V3_USER_INTERACTION_af32b5dd
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.user_interaction
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVSS_V3.SCOPE
-      tag: rename_CVSS_V3_SCOPE
+      tag: rename_CVSS_V3_SCOPE_8ed0b318
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.scope
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVSS_V3.EXPLOIT_CODE_MATURITY
-      tag: rename_CVSS_V3_EXPLOIT_CODE_MATURITY
+      tag: rename_CVSS_V3_EXPLOIT_CODE_MATURITY_7652ceac
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.exploit_code_maturity
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVSS_V3.REMEDIATION_LEVEL
-      tag: rename_CVSS_V3_REMEDIATION_LEVEL
+      tag: rename_CVSS_V3_REMEDIATION_LEVEL_4ce4b9fe
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.remediation_level
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVSS_V3.REPORT_CONFIDENCE
-      tag: rename_CVSS_V3_REPORT_CONFIDENCE
+      tag: rename_CVSS_V3_REPORT_CONFIDENCE_a38c601a
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.report_confidence
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.AUTOMATIC_PCI_FAIL
-      tag: rename_AUTOMATIC_PCI_FAIL
+      tag: rename_AUTOMATIC_PCI_FAIL_26f5a9a6
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.automatic_pci_fail
       ignore_missing: true
   - set:
       field: vulnerability.id
-      tag: set_vulnerability_id
+      tag: set_vulnerability_id_18ef6a2f
       copy_from: qualys_vmdr.asset_host_detection.knowledge_base.cve_list
       ignore_empty_value: true
   - set:
       field: vulnerability.reference
-      tag: set_vulnerability_reference
+      tag: set_vulnerability_reference_c416b950
       if: ctx.vulnerability?.id != null && !(ctx.vulnerability.id instanceof List)
       value: 'https://cve.mitre.org/cgi-bin/cvename.cgi?name={{{ vulnerability.id }}}'
       ignore_empty_value: true
   - foreach:
       field: vulnerability.id
       if: ctx.vulnerability?.id instanceof List
-      tag: foreach_vulnerability_id_if_list
+      tag: foreach_vulnerability_id_if_list_db4c0bb3
       processor:
         append:
           field: vulnerability.reference
-          tag: append_vulnerability_reference
+          tag: append_vulnerability_reference_e2319801
           value: 'https://cve.mitre.org/cgi-bin/cvename.cgi?name={{{ _ingest._value }}}'
           allow_duplicates: false
   - set:
       field: vulnerability.enumeration
-      tag: set_vulnerability_enumeration
+      tag: set_vulnerability_enumeration_5c3d94fd
       value: CVE
       ignore_empty_value: true
   - uri_parts:
       field: vulnerability.reference
-      tag: 'uri_parts_to_split_vulnerability_reference'
+      tag: uri_parts_to_split_vulnerability_reference_743e96da
       if: ctx.vulnerability?.reference != null && !(ctx.vulnerability.reference instanceof List)
       on_failure:
         - append:
+            tag: append_error_message_ccfa865f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   # Handle case when EXPLT_SRC and EXPLT_LIST.EXPLT is an object
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CORRELATION.EXPLOITS.EXPLT_SRC.EXPLT_LIST.EXPLT.DESC
-      tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_DESC
+      tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_DESC_81e827c7
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.correlation.exploits.explt_src.list.explt.desc
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CORRELATION.EXPLOITS.EXPLT_SRC.EXPLT_LIST.EXPLT.LINK
-      tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_LINK
+      tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_LINK_ae8c2433
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.correlation.exploits.explt_src.list.explt.link
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CORRELATION.EXPLOITS.EXPLT_SRC.EXPLT_LIST.EXPLT.REF
-      tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_REF
+      tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_REF_bfbf085f
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.correlation.exploits.explt_src.list.explt.ref
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CORRELATION.EXPLOITS.EXPLT_SRC.SRC_NAME
-      tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_SRC_NAME
+      tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_SRC_NAME_42ef971c
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.correlation.exploits.explt_src.name
       ignore_missing: true
     # Handle case when EXPLT_SRC and EXPLT_LIST.EXPLT is an array
   - foreach:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CORRELATION.EXPLOITS.EXPLT_SRC
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.CORRELATION?.EXPLOITS?.EXPLT_SRC instanceof List
-      tag: foreach_rename_CORRELATION_EXPLOITS_EXPLT_SRC_SRC_NAME
+      tag: foreach_rename_CORRELATION_EXPLOITS_EXPLT_SRC_SRC_NAME_ee09c6a5
       processor:
         rename:
           field: _ingest._value.SRC_NAME
-          tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_SRC_NAME
+          tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_SRC_NAME_f97595d8
           target_field: _ingest._value.name
           ignore_missing: true
   - foreach:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CORRELATION.EXPLOITS.EXPLT_SRC
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.CORRELATION?.EXPLOITS?.EXPLT_SRC instanceof List
-      tag: foreach_foreach_rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_DESC
+      tag: foreach_foreach_rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_DESC_57c826ee
       processor:
         foreach:
           field: _ingest._value.EXPLT_LIST.EXPLT
-          tag: foreach_rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_DESC
+          tag: foreach_rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_DESC_eb47c9e7
           ignore_failure: true
           processor:
             rename:
               field: _ingest._value.DESC
-              tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_DESC
+              tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_DESC_7e11a598
               target_field: _ingest._value.desc
               ignore_missing: true
   - foreach:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CORRELATION.EXPLOITS.EXPLT_SRC
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.CORRELATION?.EXPLOITS?.EXPLT_SRC instanceof List
-      tag: foreach_foreach_rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_LINK
+      tag: foreach_foreach_rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_LINK_633a0d44
       processor:
         foreach:
           field: _ingest._value.EXPLT_LIST.EXPLT
-          tag: foreach_rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_LINK
+          tag: foreach_rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_LINK_89cfb0c5
           ignore_failure: true
           processor:
             rename:
               field: _ingest._value.LINK
-              tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_LINK
+              tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_LINK_60ff45ab
               target_field: _ingest._value.link
               ignore_missing: true
   - foreach:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CORRELATION.EXPLOITS.EXPLT_SRC
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.CORRELATION?.EXPLOITS?.EXPLT_SRC instanceof List
-      tag: foreach_foreach_rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_REF
+      tag: foreach_foreach_rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_REF_de6f3de2
       processor:
         foreach:
           field: _ingest._value.EXPLT_LIST.EXPLT
-          tag: foreach_rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_REF
+          tag: foreach_rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_REF_31ab2ba4
           ignore_failure: true
           processor:
             rename:
               field: _ingest._value.REF
-              tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_REF
+              tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_REF_7fe7362a
               target_field: _ingest._value.ref
               ignore_missing: true
   - foreach:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CORRELATION.EXPLOITS.EXPLT_SRC
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.CORRELATION?.EXPLOITS?.EXPLT_SRC instanceof List
-      tag: foreach_rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT
+      tag: foreach_rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_83d09dc0
       processor:
         rename:
           field: _ingest._value.EXPLT_LIST.EXPLT
-          tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT
+          tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_3d7a8371
           target_field: _ingest._value.list.explt
           ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CORRELATION.EXPLOITS.EXPLT_SRC
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.CORRELATION?.EXPLOITS?.EXPLT_SRC instanceof List
-      tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC
+      tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_5825236f
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.correlation.exploits.explt_src
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CORRELATION.MALWARE.MW_SRC.MW_LIST.MW_INFO.MW_ID
-      tag: rename_CORRELATION_MALWARE_MW_SRC_MW_LIST_MW_INFO_MW_ID
+      tag: rename_CORRELATION_MALWARE_MW_SRC_MW_LIST_MW_INFO_MW_ID_4a5891e4
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.correlation.malware.src.list.info.id
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CORRELATION.MALWARE.MW_SRC.SRC_NAME
-      tag: rename_CORRELATION_MALWARE_MW_SRC_SRC_NAME
+      tag: rename_CORRELATION_MALWARE_MW_SRC_SRC_NAME_e72b9641
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.correlation.malware.src.name
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CORRELATION.MALWARE.MW_SRC.MW_LIST.MW_INFO.MW_TYPE
-      tag: rename_CORRELATION_MALWARE_MW_SRC_MW_LIST_MW_INFO_MW_TYPE
+      tag: rename_CORRELATION_MALWARE_MW_SRC_MW_LIST_MW_INFO_MW_TYPE_f9511595
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.correlation.malware.src.list.info.type
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CORRELATION.MALWARE.MW_SRC.MW_LIST.MW_INFO.MW_PLATFORM
-      tag: rename_CORRELATION_MALWARE_MW_SRC_MW_LIST_MW_INFO_MW_PLATFORM
+      tag: rename_CORRELATION_MALWARE_MW_SRC_MW_LIST_MW_INFO_MW_PLATFORM_7ad5abd2
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.correlation.malware.src.list.info.platform
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CORRELATION.MALWARE.MW_SRC.MW_LIST.MW_INFO.MW_ALIAS
-      tag: rename_CORRELATION_MALWARE_MW_SRC_MW_LIST_MW_INFO_MW_ALIAS
+      tag: rename_CORRELATION_MALWARE_MW_SRC_MW_LIST_MW_INFO_MW_ALIAS_86c0f115
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.correlation.malware.src.list.info.alias
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CORRELATION.MALWARE.MW_SRC.MW_LIST.MW_INFO.MW_RATING
-      tag: rename_CORRELATION_MALWARE_MW_SRC_MW_LIST_MW_INFO_MW_RATING
+      tag: rename_CORRELATION_MALWARE_MW_SRC_MW_LIST_MW_INFO_MW_RATING_821fb972
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.correlation.malware.src.list.info.rating
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CORRELATION.MALWARE.MW_SRC.MW_LIST.MW_INFO.MW_LINK
-      tag: rename_CORRELATION_MALWARE_MW_SRC_MW_LIST_MW_INFO_MW_LINK
+      tag: rename_CORRELATION_MALWARE_MW_SRC_MW_LIST_MW_INFO_MW_LINK_e4001add
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.correlation.malware.src.list.info.link
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.DISCOVERY.ADDITIONAL_INFO
-      tag: rename_DISCOVERY_ADDITIONAL_INFO
+      tag: rename_DISCOVERY_ADDITIONAL_INFO_dd6c41ec
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.discovery.additional_info
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.DISCOVERY.AUTH_TYPE_LIST.AUTH_TYPE
-      tag: rename_DISCOVERY_AUTH_TYPE_LIST_AUTH_TYPE
+      tag: rename_DISCOVERY_AUTH_TYPE_LIST_AUTH_TYPE_adc0b0ce
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.discovery.auth_type_list.value
       ignore_missing: true
   - convert:
       field: qualys_vmdr.asset_host_detection.knowledge_base.DISCOVERY.REMOTE
-      tag: convert_DISCOVERY_REMOTE_to_long
+      tag: convert_DISCOVERY_REMOTE_to_long_cfd00db1
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.discovery.remote
       type: long
       ignore_missing: true
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.DISCOVERY?.REMOTE != ''
       on_failure:
         - append:
+            tag: append_error_message_b50b9071
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   # Handle case when SOFTWARE_LIST.SOFTWARE is an object
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.SOFTWARE_LIST.SOFTWARE.PRODUCT
-      tag: rename_SOFTWARE_LIST_SOFTWARE_PRODUCT
+      tag: rename_SOFTWARE_LIST_SOFTWARE_PRODUCT_c13d0579
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.software_list.product
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.SOFTWARE_LIST.SOFTWARE.VENDOR
-      tag: rename_SOFTWARE_LIST_SOFTWARE_VENDOR
+      tag: rename_SOFTWARE_LIST_SOFTWARE_VENDOR_d6463593
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.software_list.vendor
       ignore_missing: true
   # Handle case when SOFTWARE_LIST.SOFTWARE is an array
   - foreach:
       field: qualys_vmdr.asset_host_detection.knowledge_base.SOFTWARE_LIST.SOFTWARE
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.SOFTWARE_LIST?.SOFTWARE instanceof List
-      tag: foreach_rename_SOFTWARE_LIST_SOFTWARE_PRODUCT
+      tag: foreach_rename_SOFTWARE_LIST_SOFTWARE_PRODUCT_b018d33d
       processor:
         rename:
           field: _ingest._value.PRODUCT
-          tag: rename_SOFTWARE_LIST_SOFTWARE_PRODUCT_1
+          tag: rename_SOFTWARE_LIST_SOFTWARE_PRODUCT_1_275dbe9e
           target_field: _ingest._value.product
           ignore_missing: true
   - foreach:
       field: qualys_vmdr.asset_host_detection.knowledge_base.SOFTWARE_LIST.SOFTWARE
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.SOFTWARE_LIST?.SOFTWARE instanceof List
-      tag: foreach_rename_SOFTWARE_LIST_SOFTWARE_VENDOR
+      tag: foreach_rename_SOFTWARE_LIST_SOFTWARE_VENDOR_4c9a58e1
       processor:
         rename:
           field: _ingest._value.VENDOR
-          tag: rename_SOFTWARE_LIST_SOFTWARE_VENDOR_1
+          tag: rename_SOFTWARE_LIST_SOFTWARE_VENDOR_1_3ffc4e2e
           target_field: _ingest._value.vendor
           ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.SOFTWARE_LIST.SOFTWARE
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.SOFTWARE_LIST?.SOFTWARE instanceof List
-      tag: rename_SOFTWARE_LIST_SOFTWARE
+      tag: rename_SOFTWARE_LIST_SOFTWARE_205ec91b
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.software_list
       ignore_missing: true
   # Handle case when VENDOR_REFERENCE_LIST.VENDOR_REFERENCE is an object
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.VENDOR_REFERENCE_LIST.VENDOR_REFERENCE.ID
-      tag: rename_VENDOR_REFERENCE_LIST_VENDOR_REFERENCE_ID
+      tag: rename_VENDOR_REFERENCE_LIST_VENDOR_REFERENCE_ID_71065442
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.vendor_reference_list.id
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.VENDOR_REFERENCE_LIST.VENDOR_REFERENCE.URL
-      tag: rename_VENDOR_REFERENCE_LIST_VENDOR_REFERENCE_URL
+      tag: rename_VENDOR_REFERENCE_LIST_VENDOR_REFERENCE_URL_50a40cd0
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.vendor_reference_list.url
       ignore_missing: true
   # Handle case when VENDOR_REFERENCE_LIST.VENDOR_REFERENCE is an array
   - foreach:
       field: qualys_vmdr.asset_host_detection.knowledge_base.VENDOR_REFERENCE_LIST.VENDOR_REFERENCE
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.VENDOR_REFERENCE_LIST?.VENDOR_REFERENCE instanceof List
-      tag: foreach_rename_VENDOR_REFERENCE_LIST_VENDOR_REFERENCE_ID
+      tag: foreach_rename_VENDOR_REFERENCE_LIST_VENDOR_REFERENCE_ID_dd501cf6
       processor:
         rename:
           field: _ingest._value.ID
-          tag: rename_VENDOR_REFERENCE_LIST_VENDOR_REFERENCE_ID_1
+          tag: rename_VENDOR_REFERENCE_LIST_VENDOR_REFERENCE_ID_1_7b6dbad0
           target_field: _ingest._value.id
           ignore_missing: true
   - foreach:
       field: qualys_vmdr.asset_host_detection.knowledge_base.VENDOR_REFERENCE_LIST.VENDOR_REFERENCE
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.VENDOR_REFERENCE_LIST?.VENDOR_REFERENCE instanceof List
-      tag: foreach_rename_VENDOR_REFERENCE_LIST_VENDOR_REFERENCE_URL
+      tag: foreach_rename_VENDOR_REFERENCE_LIST_VENDOR_REFERENCE_URL_e8abd94d
       processor:
         rename:
           field: _ingest._value.URL
-          tag: rename_VENDOR_REFERENCE_LIST_VENDOR_REFERENCE_URL_1
+          tag: rename_VENDOR_REFERENCE_LIST_VENDOR_REFERENCE_URL_1_6d063a12
           target_field: _ingest._value.url
           ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.VENDOR_REFERENCE_LIST.VENDOR_REFERENCE
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.VENDOR_REFERENCE_LIST?.VENDOR_REFERENCE instanceof List
-      tag: rename_VENDOR_REFERENCE_LIST_VENDOR_REFERENCE
+      tag: rename_VENDOR_REFERENCE_LIST_VENDOR_REFERENCE_0d50946e
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.vendor_reference_list
       ignore_missing: true
   - date:
       field: qualys_vmdr.asset_host_detection.knowledge_base.LAST_SERVICE_MODIFICATION_DATETIME
-      tag: date_LAST_SERVICE_MODIFICATION_DATETIME
+      tag: date_LAST_SERVICE_MODIFICATION_DATETIME_68aeea70
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.last.service_modification_datetime
       formats:
         - ISO8601
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.LAST_SERVICE_MODIFICATION_DATETIME != null && ctx.qualys_vmdr.asset_host_detection.knowledge_base.LAST_SERVICE_MODIFICATION_DATETIME != ''
       on_failure:
         - append:
+            tag: append_error_message_c400757d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: qualys_vmdr.asset_host_detection.knowledge_base.LAST_CUSTOMIZATION.DATETIME
-      tag: date_LAST_CUSTOMIZATION_DATETIME
+      tag: date_LAST_CUSTOMIZATION_DATETIME_d066df84
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.last.customization.datetime
       formats:
         - ISO8601
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.LAST_CUSTOMIZATION?.DATETIME != null && ctx.qualys_vmdr.asset_host_detection.knowledge_base.LAST_CUSTOMIZATION.DATETIME != ''
       on_failure:
         - append:
+            tag: append_error_message_04594c67
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.LAST_CUSTOMIZATION.USER_LOGIN
-      tag: rename_LAST_CUSTOMIZATION_USER_LOGIN
+      tag: rename_LAST_CUSTOMIZATION_USER_LOGIN_df61bf13
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.last.customization.user_login
       ignore_missing: true
   - date:
       field: qualys_vmdr.asset_host_detection.knowledge_base.PUBLISHED_DATETIME
-      tag: date_PUBLISHED_DATETIME
+      tag: date_PUBLISHED_DATETIME_a434abb1
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.published_datetime
       formats:
         - ISO8601
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.PUBLISHED_DATETIME != null && ctx.qualys_vmdr.asset_host_detection.knowledge_base.PUBLISHED_DATETIME != ''
       on_failure:
         - append:
+            tag: append_error_message_a8d87209
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: qualys_vmdr.asset_host_detection.knowledge_base.PATCH_PUBLISHED_DATE
-      tag: date_PATCH_PUBLISHED_DATE
+      tag: date_PATCH_PUBLISHED_DATE_e7262586
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.patch_published_date
       formats:
         - ISO8601
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.PATCH_PUBLISHED_DATE != null && ctx.qualys_vmdr.asset_host_detection.knowledge_base.PATCH_PUBLISHED_DATE != ''
       on_failure:
         - append:
+            tag: append_error_message_a59d94f7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   # Handle case when CHANGE_LOG_LIST.CHANGE_LOG_INFO is an object
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CHANGE_LOG_LIST.CHANGE_LOG_INFO
-      tag: rename_CHANGE_LOG_LIST_CHANGE_LOG_INFO
+      tag: rename_CHANGE_LOG_LIST_CHANGE_LOG_INFO_9b988736
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.changelog_list.info
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.changelog_list.info.COMMENTS
-      tag: rename_qualys_vmdr_knowledge_base_changelog_list_info_COMMENTS_1
+      tag: rename_qualys_vmdr_knowledge_base_changelog_list_info_COMMENTS_1_37c51b9e
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.changelog_list.info.comments
       ignore_missing: true
   - date:
       field: qualys_vmdr.asset_host_detection.knowledge_base.changelog_list.info.CHANGE_DATE
-      tag: date_qualys_vmdr_knowledge_base_changelog_list_info_CHANGE_DATE_1
+      tag: date_qualys_vmdr_knowledge_base_changelog_list_info_CHANGE_DATE_1_2354908c
       if: (!(ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.changelog_list?.info instanceof List)) && ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.changelog_list?.info?.CHANGE_DATE != null && ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.changelog_list?.info?.CHANGE_DATE != ''
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.changelog_list.info.change_date
       formats:
       - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_1a644f5a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   # Handle case when CHANGE_LOG_LIST.CHANGE_LOG_INFO is an array
   - foreach:
       field: qualys_vmdr.asset_host_detection.knowledge_base.changelog_list.info
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.changelog_list?.info instanceof List
-      tag: foreach_rename_COMMENTS
+      tag: foreach_rename_COMMENTS_b870a9cb
       processor:
         rename:
           field: _ingest._value.COMMENTS
-          tag: rename_qualys_vmdr_knowledge_base_changelog_list_info_COMMENTS_2
+          tag: rename_qualys_vmdr_knowledge_base_changelog_list_info_COMMENTS_2_f3178d8e
           target_field: _ingest._value.comments
           ignore_missing: true
   - foreach:
       field: qualys_vmdr.asset_host_detection.knowledge_base.changelog_list.info
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.changelog_list?.info instanceof List
-      tag: foreach_date_CHANGE_DATE
+      tag: foreach_date_CHANGE_DATE_6df16f80
       processor:
         date:
           field: _ingest._value.CHANGE_DATE
-          tag: date_qualys_vmdr_knowledge_base_changelog_list_info_CHANGE_DATE_2
+          tag: date_qualys_vmdr_knowledge_base_changelog_list_info_CHANGE_DATE_2_ab1525f0
           target_field: _ingest._value.change_date
           formats:
             - ISO8601
           ignore_failure: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.THREAT_INTELLIGENCE.THREAT_INTEL
-      tag: rename_THREAT_INTELLIGENCE_THREAT_INTEL
+      tag: rename_THREAT_INTELLIGENCE_THREAT_INTEL_07c997bc
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.threat_intelligence.intel
       ignore_missing: true
   - foreach:
       field: qualys_vmdr.asset_host_detection.knowledge_base.threat_intelligence.intel
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.threat_intelligence?.intel instanceof List
-      tag: foreach_rename_#text
+      tag: foreach_rename_#text_49a02f55
       processor:
         rename:
           field: _ingest._value.#text
-          tag: rename_qualys_vmdr_knowledge_base_threat_intelligence_intel_#text_1
+          tag: rename_qualys_vmdr_knowledge_base_threat_intelligence_intel_#text_1_d23dce8b
           target_field: _ingest._value.text
           ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.threat_intelligence.intel.#text
-      tag: rename_qualys_vmdr_knowledge_base_threat_intelligence_intel_#text_2
+      tag: rename_qualys_vmdr_knowledge_base_threat_intelligence_intel_#text_2_de60866b
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.threat_intelligence.intel.text
       ignore_missing: true
   - foreach:
       field: qualys_vmdr.asset_host_detection.knowledge_base.changelog_list.info
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.changelog_list?.info instanceof List
-      tag: foreach_remove_CHANGE_DATE
+      tag: foreach_remove_CHANGE_DATE_8cba37b3
       processor:
         remove:
           field: _ingest._value.CHANGE_DATE
-          tag: remove_qualys_vmdr_knowledge_base_changelog_list_info_CHANGE_DATE
+          tag: remove_qualys_vmdr_knowledge_base_changelog_list_info_CHANGE_DATE_ec8a6697
           ignore_missing: true
   - set:
       field: qualys_vmdr.asset_host_detection.knowledge_base.IS_DISABLED
-      tag: set_IS_DISABLED_true
+      tag: set_IS_DISABLED_true_e1aad984
       value: true
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.IS_DISABLED == '1'
   - set:
       field: qualys_vmdr.asset_host_detection.knowledge_base.IS_DISABLED
-      tag: set_IS_DISABLED_false
+      tag: set_IS_DISABLED_false_ba24c8a4
       value: false
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.IS_DISABLED == '0'
   - convert:
       field: qualys_vmdr.asset_host_detection.knowledge_base.IS_DISABLED
-      tag: convert_IS_DISABLED_to_boolean
+      tag: convert_IS_DISABLED_to_boolean_05b99df5
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.is_disabled
       type: boolean
       ignore_missing: true
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.IS_DISABLED != ''
       on_failure:
         - append:
+            tag: append_error_message_eb552e7d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: qualys_vmdr.asset_host_detection.knowledge_base.PATCHABLE
-      tag: set_PATCHABLE_true
+      tag: set_PATCHABLE_true_2914de6b
       value: true
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.PATCHABLE == '1'
   - set:
       field: qualys_vmdr.asset_host_detection.knowledge_base.PATCHABLE
-      tag: set_PATCHABLE_false
+      tag: set_PATCHABLE_false_a3ff6182
       value: false
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.PATCHABLE == '0'
   - convert:
       field: qualys_vmdr.asset_host_detection.knowledge_base.PATCHABLE
-      tag: convert_PATCHABLE_to_boolean
+      tag: convert_PATCHABLE_to_boolean_344a9bb4
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.patchable
       type: boolean
       ignore_missing: true
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.PATCHABLE != ''
       on_failure:
         - append:
+            tag: append_error_message_293678bd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: qualys_vmdr.asset_host_detection.knowledge_base.PCI_FLAG
-      tag: set_PCI_FLAG_true
+      tag: set_PCI_FLAG_true_d9605dae
       value: true
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.PCI_FLAG == '1'
   - set:
       field: qualys_vmdr.asset_host_detection.knowledge_base.PCI_FLAG
-      tag: set_PCI_FLAG_false
+      tag: set_PCI_FLAG_false_ef65b7cc
       value: false
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.PCI_FLAG == '0'
   - convert:
       field: qualys_vmdr.asset_host_detection.knowledge_base.PCI_FLAG
-      tag: convert_PCI_FLAG_to_boolean
+      tag: convert_PCI_FLAG_to_boolean_bbe08c8c
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.pci_flag
       type: boolean
       ignore_missing: true
       if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.PCI_FLAG != ''
       on_failure:
         - append:
+            tag: append_error_message_b0e6a94d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
-      tag: script_to_set_SEVERITY_LEVEL
+      tag: script_to_set_SEVERITY_LEVEL_d62ac01f
       description: Script to set SEVERITY_LEVEL for different ranges.
       params:
         vuln_level:
@@ -816,15 +826,16 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_7e49dfaa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.SEVERITY_LEVEL
-      tag: set_qualys_vmdr_knowledge_base_SEVERITY_LEVEL
+      tag: rename_qualys_vmdr_knowledge_base_SEVERITY_LEVEL_4325ce6e
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.severity_level
       ignore_missing: true
   - remove:
-      tag: remove_json
+      tag: remove_json_d7af3ab2
       field:
         - qualys_vmdr.asset_host_detection.knowledge_base.changelog_list.info.CHANGE_DATE
         - qualys_vmdr.asset_host_detection.knowledge_base.CODE_MODIFIED_DATETIME
@@ -841,12 +852,12 @@ processors:
       field:
         - qualys_vmdr.asset_host_detection.knowledge_base.category
         - qualys_vmdr.asset_host_detection.knowledge_base.cve_list
-      tag: remove_preserve_duplicate_custom_fields
+      tag: remove_preserve_duplicate_custom_fields_7ed4877d
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       ignore_missing: true
   - script:
       lang: painless
-      tag: script_to_remove_null_values
+      tag: script_to_remove_null_values_0f064478
       description: Drops null/empty values recursively.
       source: |-
         boolean drop(Object object) {
@@ -864,28 +875,31 @@ processors:
         drop(ctx);
       on_failure:
         - append:
+            tag: append_error_message_2dc525b4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_event_kind_3
+      tag: set_event_kind_3_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
       field: tags
-      tag: append_tags_preserve_original_event_3
+      tag: append_tags_preserve_original_event_3_b6c08950
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
       field: tags
-      tag: append_tags_preserve_original_event_4
+      tag: append_tags_preserve_original_event_4_279d5a5c
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_0841b325
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error

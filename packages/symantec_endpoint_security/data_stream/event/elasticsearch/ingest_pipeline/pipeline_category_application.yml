@@ -3,329 +3,357 @@ description: Pipeline for processing Application category logs.
 processors:
   - set:
       field: ses.category_name
-      tag: set_category_name
+      tag: set_category_name_b9a84b90
       value: Application Activity
   - append:
       field: event.category
-      tag: append_event_category_file
+      tag: append_event_category_file_140e7b16
       value: file
       if: ctx.ses?.type_id == '5'
   - append:
       field: event.category
-      tag: append_event_category_configuration
+      tag: append_event_category_configuration_991ff37f
       value: configuration
       if: ctx.ses?.type_id != null && ['3', '4'].contains(ctx.ses.type_id)
   - append:
       field: event.type
-      tag: append_event_type_change
+      tag: append_event_type_change_9fd8229d
       value: change
       if: ctx.ses?.type_id == '4'
   - append:
       field: event.type
-      tag: append_event_type_info
+      tag: append_event_type_info_12a63146
       value: info
       if: ctx.ses?.type_id != null && ['3', '5'].contains(ctx.ses.type_id)
   - convert:
       field: ses.change_type_id
-      tag: convert_change_type_id_to_string
+      tag: convert_change_type_id_to_string_041a6c8b
       type: string
       if: ctx.ses?.change_type_id != ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_2c3db10f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_ses_change_type_id_90341f1c
             field: ses.change_type_id
             ignore_missing: true
   - convert:
       field: ses.channel_id
-      tag: convert_channel_id_to_string
+      tag: convert_channel_id_to_string_6bf35a88
       type: string
       if: ctx.ses?.channel_id != ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_8c4b6a4f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_ses_channel_id_443c724d
             field: ses.channel_id
             ignore_missing: true
   - convert:
       field: ses.content_type_id
-      tag: convert_content_type_id_to_string
+      tag: convert_content_type_id_to_string_7f420653
       type: string
       if: ctx.ses?.content_type_id != ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_763ab99c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_ses_content_type_id_4fb08239
             field: ses.content_type_id
             ignore_missing: true
   - foreach:
       field: ses.curr_location.coordinates
       if: ctx.ses?.curr_location?.coordinates instanceof List
-      tag: foreach_curr_location_coordinates
+      tag: foreach_curr_location_coordinates_0bd2f227
       processor:
         convert:
           field: _ingest._value
-          tag: convert_curr_location_coordinates_to_float
+          tag: convert_curr_location_coordinates_to_float_7b19c4ab
           type: float
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_12062244
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_1bcc2100
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ses.curr_location.on_premises
-      tag: convert_curr_location_on_premises_to_boolean
+      tag: convert_curr_location_on_premises_to_boolean_f2a53bf8
       type: boolean
       if: ctx.ses?.curr_location?.on_premises != ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_5f8fea86
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_ses_curr_location_on_premises_0d2bbbdb
             field: ses.curr_location.on_premises
             ignore_missing: true
   - convert:
       field: ses.http_status
-      tag: convert_http_status_to_long
+      tag: convert_http_status_to_long_37f689e8
       type: long
       if: ctx.ses?.http_status != ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_9b78021f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_ses_http_status_83746074
             field: ses.http_status
             ignore_missing: true
   - append:
       field: http.response.status_code
-      tag: append_http_response_status_code_from_http_status
+      tag: append_http_response_status_code_from_http_status_d44b1fbf
       value: '{{{ses.http_status}}}'
       allow_duplicates: false
       if: ctx.ses?.http_status != null
       on_failure:
         - append:
+            tag: append_error_message_19f33fcb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_ses_type_id_fc2a0e09
             field: ses.type_id
             ignore_missing: true
   - convert:
       field: http.response.status_code
-      tag: convert_http_response_status_code_to_long
+      tag: convert_http_response_status_code_to_long_27573f69
       type: long
       if: ctx.http?.response?.status_code != ''
       ignore_missing: true
   - foreach:
       field: ses.prev_location.coordinates
       if: ctx.ses?.prev_location?.coordinates instanceof List
-      tag: foreach_prev_location_coordinates
+      tag: foreach_prev_location_coordinates_d2923c5b
       processor:
         convert:
           field: _ingest._value
-          tag: convert_prev_location_coordinates_to_float
+          tag: convert_prev_location_coordinates_to_float_301a5640
           type: float
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_6cab0717
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_129fbe4e
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ses.prev_location.on_premises
-      tag: convert_prev_location_on_premises_to_boolean
+      tag: convert_prev_location_on_premises_to_boolean_90cd72fa
       type: boolean
       if: ctx.ses?.prev_location?.on_premises != ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_257821b6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_ses_prev_location_on_premises_7d9a6007
             field: ses.prev_location.on_premises
             ignore_missing: true
   - convert:
       field: ses.sender_ip
-      tag: convert_sender_ip_to_ip
+      tag: convert_sender_ip_to_ip_f6e0ce6b
       type: ip
       ignore_missing: true
       if: ctx.ses?.sender_ip != ''
       on_failure:
         - append:
+            tag: append_error_message_c6bc222e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_ses_sender_ip_f5f9fef1
             field: ses.sender_ip
             ignore_missing: true
   - append:
       field: related.ip
-      tag: append_related_ip_from_sender_ip
+      tag: append_related_ip_from_sender_ip_16194007
       value: '{{{ses.sender_ip}}}'
       allow_duplicates: false
       if: ctx.ses?.sender_ip != null
   - set:
       field: source.ip
-      tag: set_source_ip_from_sender_ip
+      tag: set_source_ip_from_sender_ip_6de22ca6
       copy_from: ses.sender_ip
       ignore_empty_value: true
   - foreach:
       field: ses.url.category_ids
       if: ctx.ses?.url?.category_ids instanceof List
-      tag: foreach_url_category_ids
+      tag: foreach_url_category_ids_d59bc07d
       processor:
         convert:
           field: _ingest._value
-          tag: convert_url_category_ids_to_string
+          tag: convert_url_category_ids_to_string_90ca7c00
           type: string
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_453eb18b
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_946da0f6
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: url.domain
-      tag: append_url_domain_from_url_host
+      tag: append_url_domain_from_url_host_da435a6b
       value: '{{{ses.url.host}}}'
       allow_duplicates: false
       if: ctx.ses?.url?.host != null
   - append:
       field: http.request.method
-      tag: append_http_request_method_from_url_method
+      tag: append_http_request_method_from_url_method_51551683
       value: '{{{ses.url.method}}}'
       allow_duplicates: false
       if: ctx.ses?.url?.method != null
   - append:
       field: url.path
-      tag: append_url_path_from_url_path
+      tag: append_url_path_from_url_path_40f6df2d
       value: '{{{ses.url.path}}}'
       allow_duplicates: false
       if: ctx.ses?.url?.path != null
   - convert:
       field: ses.url.port
-      tag: convert_url_port_to_long
+      tag: convert_url_port_to_long_9ec15f5c
       type: long
       if: ctx.ses?.url?.port != ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c33c0a1d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_ses_url_port_3815734e
             field: ses.url.port
             ignore_missing: true
   - append:
       field: url.port
-      tag: append_url_port_from_url_port
+      tag: append_url_port_from_url_port_db50e43c
       value: '{{{ses.url.port}}}'
       allow_duplicates: false
       if: ctx.ses?.url?.port != null
   - append:
       field: url.query
-      tag: append_url_query_from_url_query
+      tag: append_url_query_from_url_query_668cd9d5
       value: '{{{ses.url.query}}}'
       allow_duplicates: false
       if: ctx.ses?.url?.query != null
   - foreach:
       field: ses.url.referrer_category_ids
       if: ctx.ses?.url?.referrer_category_ids instanceof List
-      tag: foreach_url_referrer_category_ids
+      tag: foreach_url_referrer_category_ids_74d38033
       processor:
         convert:
           field: _ingest._value
-          tag: convert_url_referrer_category_ids_to_string
+          tag: convert_url_referrer_category_ids_to_string_02b40f0a
           type: string
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_8d1900b5
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_e30ef504
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ses.url.rep_score_id
-      tag: convert_url_rep_score_id_to_string
+      tag: convert_url_rep_score_id_to_string_34eba18b
       type: string
       if: ctx.ses?.url?.rep_score_id != ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_480482e9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_ses_url_rep_score_id_e3597081
             field: ses.url.rep_score_id
             ignore_missing: true
   - append:
       field: url.scheme
-      tag: append_url_scheme_from_url_scheme
+      tag: append_url_scheme_from_url_scheme_803f71c6
       value: '{{{ses.url.scheme}}}'
       allow_duplicates: false
       if: ctx.ses?.url?.scheme != null
   - append:
       field: url.full
-      tag: append_url_full_from_url_text
+      tag: append_url_full_from_url_text_008e5e78
       value: '{{{ses.url.text}}}'
       allow_duplicates: false
       if: ctx.ses?.url?.text != null
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_container" }}'
       if: ctx.ses?.type_id != null && ['2', '3', '4', '5', '11', '12', '13', '42'].contains(ctx.ses.type_id) && ctx.ses?.container != null
-      tag: pipeline_object_container
+      tag: pipeline_object_container_ac4294c8
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_cybox" }}'
       if: ctx.ses?.type_id != null && ['2', '3', '4', '5', '11', '12', '13', '42'].contains(ctx.ses.type_id) && ctx.ses?.cybox != null
-      tag: pipeline_object_cybox
+      tag: pipeline_object_cybox_98fb42c7
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_device" }}'
       if: ctx.ses?.type_id != null && ['2', '3', '4', '5', '11', '12', '13', '42'].contains(ctx.ses.type_id) && (ctx.ses?.device_cloud_vm != null || ctx.ses?.device_location != null || ctx.ses?.device_networks != null)
-      tag: pipeline_object_device
+      tag: pipeline_object_device_1d0e371c
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_file" }}'
       if: ctx.ses?.type_id != null && ['5'].contains(ctx.ses.type_id) && (ctx.ses?.file != null || ctx.ses?.file_result != null)
-      tag: pipeline_object_file
+      tag: pipeline_object_file_68367067
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_parent" }}'
       if: ctx.ses?.type_id != null && ['5', '42'].contains(ctx.ses.type_id) && ctx.ses?.parent != null
-      tag: pipeline_object_parent
+      tag: pipeline_object_parent_4fe5bc64
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_policy" }}'
       if: ctx.ses?.type_id != null && ['4'].contains(ctx.ses.type_id) && ctx.ses?.policy != null
-      tag: pipeline_object_policy
+      tag: pipeline_object_policy_b892b278
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_session" }}'
       if: ctx.ses?.type_id != null && ['2', '3', '4', '5', '11', '12', '13', '42'].contains(ctx.ses.type_id) && (ctx.ses?.session != null || ctx.ses?.sessions != null)
-      tag: pipeline_object_session
+      tag: pipeline_object_session_304d574a
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_source" }}'
       if: ctx.ses?.type_id != null && ['2', '3', '4', '5', '11', '12', '13', '42'].contains(ctx.ses.type_id) && ctx.ses?.source != null
-      tag: pipeline_object_source
+      tag: pipeline_object_source_c7ba8d19
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_user" }}'
       if: ctx.ses?.type_id != null && ['2', '3', '4', '5', '11', '12', '13', '42'].contains(ctx.ses.type_id) && ctx.ses?.user != null
-      tag: pipeline_object_user
+      tag: pipeline_object_user_e994766f
       ignore_missing_pipeline: true
   - remove:
       field:
@@ -338,14 +366,20 @@ processors:
         - ses.url.query
         - ses.url.scheme
         - ses.url.text
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_d7ada182
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

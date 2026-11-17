@@ -1,0 +1,1596 @@
+{
+    "attributes": {
+        "description": "GKE Deployments, StatefulSets and DaemonSets from kube state metrics: a hexagon map colored by replica shortfall or rollout, the list of workloads, and replica counts over time. Click a hexagon or a namespace to open the namespace detail.",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": []
+            }
+        },
+        "optionsJSON": {
+            "autoApplyFilters": true,
+            "hidePanelBorders": false,
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "description": "Tabs that open the GKE dashboards for each entity type, keeping the time range and filters.",
+                    "layout": "horizontal",
+                    "links": [
+                        {
+                            "destinationRefName": "link_4d48dbb9-0290-4723-bbfb-d6262fa5ba42_dashboard",
+                            "label": "Overview",
+                            "options": {
+                                "open_in_new_tab": false,
+                                "use_filters": true,
+                                "use_time_range": true
+                            },
+                            "type": "dashboardLink"
+                        },
+                        {
+                            "destinationRefName": "link_cab53f1f-6ddb-4ec9-ab50-c727e51b91f0_dashboard",
+                            "label": "Clusters",
+                            "options": {
+                                "open_in_new_tab": false,
+                                "use_filters": true,
+                                "use_time_range": true
+                            },
+                            "type": "dashboardLink"
+                        },
+                        {
+                            "destinationRefName": "link_82884aa9-ff42-4b87-a6e3-b628938eb522_dashboard",
+                            "label": "Nodes",
+                            "options": {
+                                "open_in_new_tab": false,
+                                "use_filters": true,
+                                "use_time_range": true
+                            },
+                            "type": "dashboardLink"
+                        },
+                        {
+                            "destinationRefName": "link_5382e67c-fd0a-4989-b06e-fb6a573e6db2_dashboard",
+                            "label": "Namespaces",
+                            "options": {
+                                "open_in_new_tab": false,
+                                "use_filters": true,
+                                "use_time_range": true
+                            },
+                            "type": "dashboardLink"
+                        },
+                        {
+                            "destinationRefName": "link_25b47861-0e55-47b4-97c7-40a02216f548_dashboard",
+                            "label": "Workload resources",
+                            "options": {
+                                "open_in_new_tab": false,
+                                "use_filters": true,
+                                "use_time_range": true
+                            },
+                            "type": "dashboardLink"
+                        },
+                        {
+                            "destinationRefName": "link_1e36790d-b991-4f02-bd0c-c9233ed90d86_dashboard",
+                            "label": "Pods",
+                            "options": {
+                                "open_in_new_tab": false,
+                                "use_filters": true,
+                                "use_time_range": true
+                            },
+                            "type": "dashboardLink"
+                        }
+                    ],
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 2,
+                    "i": "89b9a4de-8173-4f61-ab6f-85d1277cf46f",
+                    "w": 48,
+                    "x": 0,
+                    "y": 2
+                },
+                "panelIndex": "89b9a4de-8173-4f61-ab6f-85d1277cf46f",
+                "type": "links"
+            },
+            {
+                "embeddableConfig": {
+                    "content": "## ![GCP GKE](data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2732%27%20height%3D%2732%27%20viewBox%3D%270%200%2048%2048%27%3E%3Crect%20width%3D%2748%27%20height%3D%2748%27%20rx%3D%278%27%20fill%3D%27%234285F4%27%2F%3E%3Cpath%20d%3D%27M24%208.5%2037.4%2016.25v15.5L24%2039.5%2010.6%2031.75v-15.5z%27%20fill%3D%27none%27%20stroke%3D%27%23fff%27%20stroke-width%3D%273%27%20stroke-linejoin%3D%27round%27%2F%3E%3Cpath%20d%3D%27M24%2017.5%2029.6%2020.75v6.5L24%2030.5l-5.6-3.25v-6.5z%27%20fill%3D%27%23fff%27%2F%3E%3C%2Fsvg%3E)&nbsp;&nbsp;[GCP OTel] GKE Workloads",
+                    "description": "GKE Deployments, StatefulSets and DaemonSets in the selected projects and locations.",
+                    "settings": {
+                        "open_links_in_new_tab": false
+                    }
+                },
+                "gridData": {
+                    "h": 2,
+                    "i": "eb654a47-14bc-4626-afa3-073a6aae21cf",
+                    "w": 42,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "eb654a47-14bc-4626-afa3-073a6aae21cf",
+                "type": "markdown"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "gke-nav-browse": {
+                                    "allowNoIndex": false,
+                                    "id": "gke-nav-browse",
+                                    "name": "",
+                                    "sourceFilters": [],
+                                    "title": "",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "value",
+                                                    "label": "Browse other GCP OTel dashboards",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "gke-nav-browse",
+                                            "query": {
+                                                "esql": "SET unmapped_fields = \"nullify\";\nROW value = \"GCP-GKE\""
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "gke-nav-browse",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "SET unmapped_fields = \"nullify\";\nROW value = \"GCP-GKE\""
+                            },
+                            "visualization": {
+                                "applyColorTo": "background",
+                                "color": "#61a2ff00",
+                                "density": "compact",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "primaryAlign": "left",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "fit",
+                                "icon": "empty",
+                                "colorMode": "background",
+                                "titlesTextSize": "xxs",
+                                "valuesTextSize": "xs"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "description": "Navigation tile — clicking opens the Kibana Dashboards library searched for GCP OTel dashboards in the same tab, carrying the current panel time range to the destination.",
+                    "drilldowns": [
+                        {
+                            "encode_url": false,
+                            "label": "Browse GCP OTel dashboards",
+                            "open_in_new_tab": false,
+                            "trigger": "on_click_value",
+                            "type": "url_drilldown",
+                            "url": "{{kibanaUrl}}/app/dashboards#/list?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:{{context.panel.timeRange.from}},to:{{context.panel.timeRange.to}}))&s=GCP%20OTel"
+                        }
+                    ],
+                    "hide_border": true
+                },
+                "gridData": {
+                    "h": 2,
+                    "i": "4055244a-d0f9-4194-b973-9219e1660558",
+                    "w": 6,
+                    "x": 42,
+                    "y": 0
+                },
+                "panelIndex": "4055244a-d0f9-4194-b973-9219e1660558",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-gcp.gke.otel-default-24fa3da0f4a2b7cedc0dcddcb2771f333a6da63a2a618881922e16af1b6dcab1": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-gcp.gke.otel-default-24fa3da0f4a2b7cedc0dcddcb2771f333a6da63a2a618881922e16af1b6dcab1",
+                                    "name": "metrics-gcp.gke.otel-default",
+                                    "sourceFilters": [],
+                                    "title": "metrics-gcp.gke.otel-default",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "datatable_accessor_row_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "Name",
+                                                    "label": "Name",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_row_1",
+                                                    "customLabel": true,
+                                                    "fieldName": "Kind",
+                                                    "label": "Kind",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_row_2",
+                                                    "customLabel": true,
+                                                    "fieldName": "Namespace",
+                                                    "label": "Namespace",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_row_3",
+                                                    "customLabel": true,
+                                                    "fieldName": "Cluster",
+                                                    "label": "Cluster",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_row_4",
+                                                    "customLabel": true,
+                                                    "fieldName": "Location",
+                                                    "label": "Location",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_row_5",
+                                                    "customLabel": true,
+                                                    "fieldName": "Project",
+                                                    "label": "Project",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "Shortfall",
+                                                    "inMetricDimension": true,
+                                                    "label": "Shortfall",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_1",
+                                                    "customLabel": true,
+                                                    "fieldName": "Desired",
+                                                    "inMetricDimension": true,
+                                                    "label": "Desired",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_2",
+                                                    "customLabel": true,
+                                                    "fieldName": "Ready or available",
+                                                    "inMetricDimension": true,
+                                                    "label": "Ready or available",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_3",
+                                                    "customLabel": true,
+                                                    "fieldName": "Updated",
+                                                    "inMetricDimension": true,
+                                                    "label": "Updated",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_4",
+                                                    "customLabel": true,
+                                                    "fieldName": "Misscheduled",
+                                                    "inMetricDimension": true,
+                                                    "label": "Misscheduled",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-gcp.gke.otel-default-24fa3da0f4a2b7cedc0dcddcb2771f333a6da63a2a618881922e16af1b6dcab1",
+                                            "query": {
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND (attributes.deployment IS NOT NULL OR attributes.statefulset IS NOT NULL OR attributes.daemonset IS NOT NULL)\n| STATS deployment_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_spec_replicas/gauge`)),\n        deployment_avail = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_status_replicas_available/gauge`)),\n        deployment_updated = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_status_replicas_updated/gauge`)),\n        statefulset_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_replicas/gauge`)),\n        statefulset_ready = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_status_replicas_ready/gauge`)),\n        statefulset_updated = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_status_replicas_updated/gauge`)),\n        daemonset_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_desired_number_scheduled/gauge`)),\n        daemonset_ready = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_number_ready/gauge`)),\n        daemonset_updated = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_updated_number_scheduled/gauge`)),\n        daemonset_misscheduled = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_number_misscheduled/gauge`))\n    BY Kind = CASE(attributes.deployment IS NOT NULL, \"Deployment\", attributes.statefulset IS NOT NULL, \"StatefulSet\", \"DaemonSet\"),\n       Name = COALESCE(attributes.deployment, attributes.statefulset, attributes.daemonset),\n       Cluster = resource.attributes.cluster, Namespace = TO_STRING(resource.attributes.namespace),\n       Location = resource.attributes.location, Project = resource.attributes.project_id\n| EVAL Desired = COALESCE(TO_DOUBLE(deployment_desired), TO_DOUBLE(statefulset_desired), TO_DOUBLE(daemonset_desired)),\n       `Ready or available` = COALESCE(TO_DOUBLE(deployment_avail), TO_DOUBLE(statefulset_ready), TO_DOUBLE(daemonset_ready)),\n       Updated = COALESCE(TO_DOUBLE(deployment_updated), TO_DOUBLE(statefulset_updated), TO_DOUBLE(daemonset_updated)),\n       Misscheduled = TO_DOUBLE(daemonset_misscheduled),\n       Shortfall = Desired - `Ready or available`\n| KEEP Name, Kind, Namespace, Cluster, Location, Project, Shortfall, Desired, `Ready or available`, Updated, Misscheduled\n| SORT Shortfall DESC NULLS LAST, Misscheduled DESC NULLS LAST, Name ASC\n| LIMIT 1000"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-gcp.gke.otel-default-24fa3da0f4a2b7cedc0dcddcb2771f333a6da63a2a618881922e16af1b6dcab1",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND (attributes.deployment IS NOT NULL OR attributes.statefulset IS NOT NULL OR attributes.daemonset IS NOT NULL)\n| STATS deployment_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_spec_replicas/gauge`)),\n        deployment_avail = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_status_replicas_available/gauge`)),\n        deployment_updated = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_status_replicas_updated/gauge`)),\n        statefulset_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_replicas/gauge`)),\n        statefulset_ready = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_status_replicas_ready/gauge`)),\n        statefulset_updated = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_status_replicas_updated/gauge`)),\n        daemonset_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_desired_number_scheduled/gauge`)),\n        daemonset_ready = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_number_ready/gauge`)),\n        daemonset_updated = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_updated_number_scheduled/gauge`)),\n        daemonset_misscheduled = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_number_misscheduled/gauge`))\n    BY Kind = CASE(attributes.deployment IS NOT NULL, \"Deployment\", attributes.statefulset IS NOT NULL, \"StatefulSet\", \"DaemonSet\"),\n       Name = COALESCE(attributes.deployment, attributes.statefulset, attributes.daemonset),\n       Cluster = resource.attributes.cluster, Namespace = TO_STRING(resource.attributes.namespace),\n       Location = resource.attributes.location, Project = resource.attributes.project_id\n| EVAL Desired = COALESCE(TO_DOUBLE(deployment_desired), TO_DOUBLE(statefulset_desired), TO_DOUBLE(daemonset_desired)),\n       `Ready or available` = COALESCE(TO_DOUBLE(deployment_avail), TO_DOUBLE(statefulset_ready), TO_DOUBLE(daemonset_ready)),\n       Updated = COALESCE(TO_DOUBLE(deployment_updated), TO_DOUBLE(statefulset_updated), TO_DOUBLE(daemonset_updated)),\n       Misscheduled = TO_DOUBLE(daemonset_misscheduled),\n       Shortfall = Desired - `Ready or available`\n| KEEP Name, Kind, Namespace, Cluster, Location, Project, Shortfall, Desired, `Ready or available`, Updated, Misscheduled\n| SORT Shortfall DESC NULLS LAST, Misscheduled DESC NULLS LAST, Name ASC\n| LIMIT 1000"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "datatable_accessor_row_0",
+                                        "hidden": false,
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "oneClickFilter": true
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "datatable_accessor_row_1",
+                                        "hidden": false,
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "oneClickFilter": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "datatable_accessor_row_2",
+                                        "hidden": false,
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "oneClickFilter": true
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "datatable_accessor_row_3",
+                                        "hidden": false,
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "oneClickFilter": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "datatable_accessor_row_4",
+                                        "hidden": false,
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "oneClickFilter": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "datatable_accessor_row_5",
+                                        "hidden": false,
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "oneClickFilter": false
+                                    },
+                                    {
+                                        "alignment": "right",
+                                        "columnId": "datatable_accessor_metric_0",
+                                        "hidden": false,
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "right",
+                                        "columnId": "datatable_accessor_metric_1",
+                                        "hidden": false,
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "right",
+                                        "columnId": "datatable_accessor_metric_2",
+                                        "hidden": false,
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "right",
+                                        "columnId": "datatable_accessor_metric_3",
+                                        "hidden": false,
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "right",
+                                        "columnId": "datatable_accessor_metric_4",
+                                        "hidden": false,
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "density": "compact",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                },
+                                "showRowNumbers": true
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "description": "Every Deployment, StatefulSet and DaemonSet from kube state metrics, largest replica shortfall first, then misscheduled DaemonSet pods. Shortfall is desired minus available replicas for Deployments and desired minus ready for StatefulSets and DaemonSets; 0 is healthy. Click a name to filter this dashboard by it or to open its metrics in Discover, or a namespace to filter by it or to open its detail or Discover, matched by name in every cluster; the row menu (⋮) opens the workload in the Google Cloud console. Empty without kube state metrics.",
+                    "drilldowns": [
+                        {
+                            "encode_url": true,
+                            "label": "1. Filter in current view",
+                            "open_in_new_tab": false,
+                            "trigger": "on_click_value",
+                            "type": "url_drilldown",
+                            "url": "{{#if (replace (concat \"<\" event.key \">\") \"<Name>\" \"\")}}{{else}}{{kibanaUrl}}/app/dashboards#/view/gcp_gke_otel-a3f8f035-4f7d-4977-a112-e6ad46c6c8ea?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(filters:!({{#each context.panel.filters}}{{#unless (lookup meta \"controlledBy\")}}{{rison this}},{{/unless}}{{/each}}(meta:(alias:'workload: {{event.value}}',disabled:!f,index:'metrics-gcp.gke.otel-default',negate:!f,params:!((meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'attributes.deployment',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(attributes.deployment:'{{event.value}}'))),(meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'attributes.statefulset',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(attributes.statefulset:'{{event.value}}'))),(meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'attributes.daemonset',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(attributes.daemonset:'{{event.value}}')))),relation:OR,type:combined),query:(bool:(minimum_should_match:1,should:!((match_phrase:(attributes.deployment:'{{event.value}}')),(match_phrase:(attributes.statefulset:'{{event.value}}')),(match_phrase:(attributes.daemonset:'{{event.value}}'))))))){{#if (lookup context.panel \"query\")}},query:{{rison context.panel.query}}{{/if}}){{/if}}"
+                        },
+                        {
+                            "encode_url": true,
+                            "label": "2. View metrics in Discover",
+                            "open_in_new_tab": false,
+                            "trigger": "on_click_value",
+                            "type": "url_drilldown",
+                            "url": "{{#if (replace (concat \"<\" event.key \">\") \"<Name>\" \"\")}}{{else}}{{kibanaUrl}}/app/discover#/?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(dataSource:(type:esql),query:(esql:'SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE attributes.deployment == \"{{event.value}}\" OR attributes.statefulset == \"{{event.value}}\" OR attributes.daemonset == \"{{event.value}}\"')){{/if}}"
+                        },
+                        {
+                            "encode_url": true,
+                            "label": "1. Filter in current view",
+                            "open_in_new_tab": false,
+                            "trigger": "on_click_value",
+                            "type": "url_drilldown",
+                            "url": "{{#if (replace (concat \"<\" event.key \">\") \"<Namespace>\" \"\")}}{{else}}{{kibanaUrl}}/app/dashboards#/view/gcp_gke_otel-a3f8f035-4f7d-4977-a112-e6ad46c6c8ea?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(filters:!({{#each context.panel.filters}}{{#unless (lookup meta \"controlledBy\")}}{{rison this}},{{/unless}}{{/each}}(meta:(alias:'namespace: {{event.value}}',disabled:!f,index:'metrics-gcp.gke.otel-default',negate:!f,params:!((meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'resource.attributes.namespace_name',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.namespace_name:'{{event.value}}'))),(meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'resource.attributes.namespace',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.namespace:'{{event.value}}')))),relation:OR,type:combined),query:(bool:(minimum_should_match:1,should:!((match_phrase:(resource.attributes.namespace_name:'{{event.value}}')),(match_phrase:(resource.attributes.namespace:'{{event.value}}'))))))){{#if (lookup context.panel \"query\")}},query:{{rison context.panel.query}}{{/if}}){{/if}}"
+                        },
+                        {
+                            "encode_url": true,
+                            "label": "2. View namespace detail",
+                            "open_in_new_tab": false,
+                            "trigger": "on_click_value",
+                            "type": "url_drilldown",
+                            "url": "{{#if (replace (concat \"<\" event.key \">\") \"<Namespace>\" \"\")}}{{else}}{{kibanaUrl}}/app/dashboards#/view/gcp_gke_otel-05487b8b-c21b-4898-a513-716e39b7c702?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(filters:!((meta:(alias:'namespace: {{event.value}}',disabled:!f,index:'metrics-gcp.gke.otel-default',negate:!f,params:!((meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'resource.attributes.namespace_name',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.namespace_name:'{{event.value}}'))),(meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'resource.attributes.namespace',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.namespace:'{{event.value}}')))),relation:OR,type:combined),query:(bool:(minimum_should_match:1,should:!((match_phrase:(resource.attributes.namespace_name:'{{event.value}}')),(match_phrase:(resource.attributes.namespace:'{{event.value}}')))))))){{/if}}"
+                        },
+                        {
+                            "encode_url": true,
+                            "label": "3. View metrics in Discover",
+                            "open_in_new_tab": false,
+                            "trigger": "on_click_value",
+                            "type": "url_drilldown",
+                            "url": "{{#if (replace (concat \"<\" event.key \">\") \"<Namespace>\" \"\")}}{{else}}{{kibanaUrl}}/app/discover#/?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(dataSource:(type:esql),query:(esql:'SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.namespace_name == \"{{event.value}}\" OR resource.attributes.namespace == \"{{event.value}}\"')){{/if}}"
+                        },
+                        {
+                            "encode_url": true,
+                            "label": "View in Google Cloud console ↗",
+                            "open_in_new_tab": true,
+                            "trigger": "on_click_row",
+                            "type": "url_drilldown",
+                            "url": "https://console.cloud.google.com/kubernetes/{{lowercase (lookup event.values 1)}}/{{lookup event.values 4}}/{{lookup event.values 3}}/{{lookup event.values 2}}/{{lookup event.values 0}}/overview?project={{lookup event.values 5}}"
+                        }
+                    ],
+                    "title": "List of workloads"
+                },
+                "gridData": {
+                    "h": 13,
+                    "i": "4436b63c-fdf0-4092-bd4c-dbd3f19b148c",
+                    "w": 48,
+                    "x": 0,
+                    "y": 18
+                },
+                "panelIndex": "4436b63c-fdf0-4092-bd4c-dbd3f19b148c",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-gcp.gke.otel-default-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
+                                    "name": "metrics-gcp.gke.otel-default",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-gcp.gke.otel-default",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "deployments",
+                                                    "label": " ",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
+                                            "query": {
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND attributes.deployment IS NOT NULL AND @timestamp >= ?_tstart AND @timestamp <= ?_tend | STATS BY cluster = resource.attributes.cluster, namespace = resource.attributes.namespace, attributes.deployment | STATS deployments = COUNT(*)"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND attributes.deployment IS NOT NULL AND @timestamp >= ?_tstart AND @timestamp <= ?_tend | STATS BY cluster = resource.attributes.cluster, namespace = resource.attributes.namespace, attributes.deployment | STATS deployments = COUNT(*)"
+                            },
+                            "visualization": {
+                                "density": "default",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "description": "Number of Deployments per cluster and namespace reported in the time range, from kube-state-metrics. Empty without kube-state-metrics.",
+                    "title": "Deployments"
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "274f3f52-34e1-4203-ba73-9d15a4f0f5d8",
+                    "sectionId": "cb9e86f8-2647-48fa-8ef1-cce51c61dc6f",
+                    "w": 5,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "274f3f52-34e1-4203-ba73-9d15a4f0f5d8",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-gcp.gke.otel-default-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
+                                    "name": "metrics-gcp.gke.otel-default",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-gcp.gke.otel-default",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "statefulsets",
+                                                    "label": " ",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
+                                            "query": {
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND attributes.statefulset IS NOT NULL AND @timestamp >= ?_tstart AND @timestamp <= ?_tend | STATS BY cluster = resource.attributes.cluster, namespace = resource.attributes.namespace, attributes.statefulset | STATS statefulsets = COUNT(*)"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND attributes.statefulset IS NOT NULL AND @timestamp >= ?_tstart AND @timestamp <= ?_tend | STATS BY cluster = resource.attributes.cluster, namespace = resource.attributes.namespace, attributes.statefulset | STATS statefulsets = COUNT(*)"
+                            },
+                            "visualization": {
+                                "density": "default",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "description": "Number of StatefulSets per cluster and namespace reported in the time range, from kube-state-metrics. Empty without kube-state-metrics.",
+                    "title": "StatefulSets"
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "5d2266aa-38fa-46d6-919a-d366f438b557",
+                    "sectionId": "cb9e86f8-2647-48fa-8ef1-cce51c61dc6f",
+                    "w": 5,
+                    "x": 5,
+                    "y": 0
+                },
+                "panelIndex": "5d2266aa-38fa-46d6-919a-d366f438b557",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-gcp.gke.otel-default-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
+                                    "name": "metrics-gcp.gke.otel-default",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-gcp.gke.otel-default",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "line_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "line_0_x",
+                                                    "fieldName": "bucket",
+                                                    "meta": {
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "line_0_y_0",
+                                                    "fieldName": "desired",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "line_0_y_1",
+                                                    "fieldName": "available",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "line_0_y_2",
+                                                    "fieldName": "updated",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
+                                            "query": {
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND attributes.deployment IS NOT NULL AND @timestamp >= ?_tstart AND @timestamp <= ?_tend | STATS desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_spec_replicas/gauge`)), available = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_status_replicas_available/gauge`)), updated = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_status_replicas_updated/gauge`)) BY resource.attributes.project_id, resource.attributes.cluster, resource.attributes.namespace, attributes.deployment, bucket = TBUCKET(75, ?_tstart, ?_tend) | STATS desired = SUM(desired), available = SUM(available), updated = SUM(updated) BY bucket | SORT bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
+                                    "name": "indexpattern-datasource-layer-line_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND attributes.deployment IS NOT NULL AND @timestamp >= ?_tstart AND @timestamp <= ?_tend | STATS desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_spec_replicas/gauge`)), available = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_status_replicas_available/gauge`)), updated = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_status_replicas_updated/gauge`)) BY resource.attributes.project_id, resource.attributes.cluster, resource.attributes.namespace, attributes.deployment, bucket = TBUCKET(75, ?_tstart, ?_tend) | STATS desired = SUM(desired), available = SUM(available), updated = SUM(updated) BY bucket | SORT bucket ASC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "line_0_y_0",
+                                            "line_0_y_1",
+                                            "line_0_y_2"
+                                        ],
+                                        "layerId": "line_0",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "line_0_x",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "line_0_y_0"
+                                            },
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "line_0_y_1"
+                                            },
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "line_0_y_2"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "layout": "list",
+                                    "position": "bottom"
+                                },
+                                "pointVisibility": "auto",
+                                "preferredSeriesType": "line",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
+                                "yLeftExtent": {
+                                    "mode": "full",
+                                    "niceValues": true
+                                },
+                                "yLeftScale": "linear"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Desired, available and updated replicas summed over all Deployments in each time bucket (kube-state-metrics). Available below desired means pods fail to start or to be scheduled; updated below desired means a rollout is in progress or stuck.",
+                    "title": "Deployment replicas over time"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "bf054b64-44da-45c8-8a93-c9751f90912c",
+                    "sectionId": "cb9e86f8-2647-48fa-8ef1-cce51c61dc6f",
+                    "w": 12,
+                    "x": 10,
+                    "y": 0
+                },
+                "panelIndex": "bf054b64-44da-45c8-8a93-c9751f90912c",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-gcp.gke.otel-default-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
+                                    "name": "metrics-gcp.gke.otel-default",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-gcp.gke.otel-default",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "line_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "line_0_x",
+                                                    "fieldName": "bucket",
+                                                    "meta": {
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "line_0_y_0",
+                                                    "fieldName": "desired",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "line_0_y_1",
+                                                    "fieldName": "ready",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "line_0_y_2",
+                                                    "fieldName": "updated",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "line_0_y_3",
+                                                    "fieldName": "misscheduled",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
+                                            "query": {
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND attributes.daemonset IS NOT NULL AND @timestamp >= ?_tstart AND @timestamp <= ?_tend | STATS desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_desired_number_scheduled/gauge`)), ready = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_number_ready/gauge`)), updated = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_updated_number_scheduled/gauge`)), misscheduled = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_number_misscheduled/gauge`)) BY resource.attributes.project_id, resource.attributes.cluster, resource.attributes.namespace, attributes.daemonset, bucket = TBUCKET(75, ?_tstart, ?_tend) | STATS desired = SUM(desired), ready = SUM(ready), updated = SUM(updated), misscheduled = SUM(misscheduled) BY bucket | SORT bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
+                                    "name": "indexpattern-datasource-layer-line_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND attributes.daemonset IS NOT NULL AND @timestamp >= ?_tstart AND @timestamp <= ?_tend | STATS desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_desired_number_scheduled/gauge`)), ready = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_number_ready/gauge`)), updated = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_updated_number_scheduled/gauge`)), misscheduled = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_number_misscheduled/gauge`)) BY resource.attributes.project_id, resource.attributes.cluster, resource.attributes.namespace, attributes.daemonset, bucket = TBUCKET(75, ?_tstart, ?_tend) | STATS desired = SUM(desired), ready = SUM(ready), updated = SUM(updated), misscheduled = SUM(misscheduled) BY bucket | SORT bucket ASC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "line_0_y_0",
+                                            "line_0_y_1",
+                                            "line_0_y_2",
+                                            "line_0_y_3"
+                                        ],
+                                        "layerId": "line_0",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "line_0_x",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "line_0_y_0"
+                                            },
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "line_0_y_1"
+                                            },
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "line_0_y_2"
+                                            },
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "line_0_y_3"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "layout": "list",
+                                    "position": "bottom"
+                                },
+                                "pointVisibility": "auto",
+                                "preferredSeriesType": "line",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
+                                "yLeftExtent": {
+                                    "mode": "full",
+                                    "niceValues": true
+                                },
+                                "yLeftScale": "linear"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Desired, ready, updated and misscheduled pods summed over all DaemonSets in each time bucket (kube-state-metrics). Ready below desired means some nodes lack their DaemonSet pod; misscheduled above 0 means pods run on nodes where they should not.",
+                    "title": "DaemonSet scheduling over time"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "289efc47-f9cf-41bd-8e9a-99dd8c5e0bc9",
+                    "sectionId": "cb9e86f8-2647-48fa-8ef1-cce51c61dc6f",
+                    "w": 13,
+                    "x": 22,
+                    "y": 0
+                },
+                "panelIndex": "289efc47-f9cf-41bd-8e9a-99dd8c5e0bc9",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-gcp.gke.otel-default-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
+                                    "name": "metrics-gcp.gke.otel-default",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-gcp.gke.otel-default",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "bar_horizontal_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "bar_horizontal_0_x",
+                                                    "fieldName": "cluster",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_horizontal_0_y_0",
+                                                    "fieldName": "total_shortfall",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
+                                            "query": {
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND (attributes.deployment IS NOT NULL OR attributes.statefulset IS NOT NULL) AND @timestamp >= ?_tstart AND @timestamp <= ?_tend | STATS d_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_spec_replicas/gauge`)), d_avail = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_status_replicas_available/gauge`)), s_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_replicas/gauge`)), s_ready = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_status_replicas_ready/gauge`)) BY cluster = resource.attributes.cluster, namespace = resource.attributes.namespace, name = COALESCE(attributes.deployment, attributes.statefulset) | EVAL shortfall = CASE(d_desired IS NOT NULL, d_desired - d_avail, s_desired - s_ready) | WHERE shortfall > 0 | STATS total_shortfall = SUM(shortfall) BY cluster | SORT total_shortfall DESC | LIMIT 10"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
+                                    "name": "indexpattern-datasource-layer-bar_horizontal_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND (attributes.deployment IS NOT NULL OR attributes.statefulset IS NOT NULL) AND @timestamp >= ?_tstart AND @timestamp <= ?_tend | STATS d_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_spec_replicas/gauge`)), d_avail = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_status_replicas_available/gauge`)), s_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_replicas/gauge`)), s_ready = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_status_replicas_ready/gauge`)) BY cluster = resource.attributes.cluster, namespace = resource.attributes.namespace, name = COALESCE(attributes.deployment, attributes.statefulset) | EVAL shortfall = CASE(d_desired IS NOT NULL, d_desired - d_avail, s_desired - s_ready) | WHERE shortfall > 0 | STATS total_shortfall = SUM(shortfall) BY cluster | SORT total_shortfall DESC | LIMIT 10"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bar_horizontal_0_y_0"
+                                        ],
+                                        "layerId": "bar_horizontal_0",
+                                        "layerType": "data",
+                                        "seriesType": "bar_horizontal",
+                                        "xAccessor": "bar_horizontal_0_x",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "bar_horizontal_0_y_0"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "layout": "list",
+                                    "position": "bottom"
+                                },
+                                "minBarHeight": 1,
+                                "preferredSeriesType": "bar_horizontal",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
+                                "yLeftExtent": {
+                                    "mode": "full",
+                                    "niceValues": true
+                                },
+                                "yLeftScale": "linear"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "The 10 clusters with the largest total replica shortfall, using the latest values in the time range: desired minus available for Deployments and desired minus ready for StatefulSets (kube-state-metrics). Any shortfall means workloads run below their planned capacity. Empty when every workload is at its desired count.",
+                    "title": "Top 10 clusters by replica shortfall"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "2f888a8b-aff3-492a-9c0c-8625b3800afb",
+                    "sectionId": "cb9e86f8-2647-48fa-8ef1-cce51c61dc6f",
+                    "w": 13,
+                    "x": 35,
+                    "y": 0
+                },
+                "panelIndex": "2f888a8b-aff3-492a-9c0c-8625b3800afb",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-gcp.gke.otel-default-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
+                                    "name": "metrics-gcp.gke.otel-default",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-gcp.gke.otel-default",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "daemonsets",
+                                                    "label": " ",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
+                                            "query": {
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND attributes.daemonset IS NOT NULL AND @timestamp >= ?_tstart AND @timestamp <= ?_tend | STATS BY cluster = resource.attributes.cluster, namespace = resource.attributes.namespace, attributes.daemonset | STATS daemonsets = COUNT(*)"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND attributes.daemonset IS NOT NULL AND @timestamp >= ?_tstart AND @timestamp <= ?_tend | STATS BY cluster = resource.attributes.cluster, namespace = resource.attributes.namespace, attributes.daemonset | STATS daemonsets = COUNT(*)"
+                            },
+                            "visualization": {
+                                "density": "default",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "description": "Number of DaemonSets per cluster and namespace reported in the time range, from kube-state-metrics. Empty without kube-state-metrics.",
+                    "title": "DaemonSets"
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "e89d0877-f584-4e78-946d-a2ee828fb2d3",
+                    "sectionId": "cb9e86f8-2647-48fa-8ef1-cce51c61dc6f",
+                    "w": 5,
+                    "x": 0,
+                    "y": 6
+                },
+                "panelIndex": "e89d0877-f584-4e78-946d-a2ee828fb2d3",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-gcp.gke.otel-default-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
+                                    "name": "metrics-gcp.gke.otel-default",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-gcp.gke.otel-default",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "workloads_short",
+                                                    "label": " ",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
+                                            "query": {
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND (attributes.deployment IS NOT NULL OR attributes.statefulset IS NOT NULL OR attributes.daemonset IS NOT NULL) AND @timestamp >= ?_tstart AND @timestamp <= ?_tend | STATS d_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_spec_replicas/gauge`)), d_avail = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_status_replicas_available/gauge`)), s_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_replicas/gauge`)), s_ready = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_status_replicas_ready/gauge`)), ds_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_desired_number_scheduled/gauge`)), ds_ready = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_number_ready/gauge`)), ds_missched = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_number_misscheduled/gauge`)) BY cluster = resource.attributes.cluster, namespace = resource.attributes.namespace, name = COALESCE(attributes.deployment, attributes.statefulset, attributes.daemonset) | EVAL shortfall = CASE(d_desired IS NOT NULL, d_desired - d_avail, s_desired IS NOT NULL, s_desired - s_ready, ds_desired - ds_ready) | WHERE shortfall > 0 OR ds_missched > 0 | STATS workloads_short = COUNT(*)"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND (attributes.deployment IS NOT NULL OR attributes.statefulset IS NOT NULL OR attributes.daemonset IS NOT NULL) AND @timestamp >= ?_tstart AND @timestamp <= ?_tend | STATS d_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_spec_replicas/gauge`)), d_avail = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_status_replicas_available/gauge`)), s_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_replicas/gauge`)), s_ready = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_status_replicas_ready/gauge`)), ds_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_desired_number_scheduled/gauge`)), ds_ready = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_number_ready/gauge`)), ds_missched = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_number_misscheduled/gauge`)) BY cluster = resource.attributes.cluster, namespace = resource.attributes.namespace, name = COALESCE(attributes.deployment, attributes.statefulset, attributes.daemonset) | EVAL shortfall = CASE(d_desired IS NOT NULL, d_desired - d_avail, s_desired IS NOT NULL, s_desired - s_ready, ds_desired - ds_ready) | WHERE shortfall > 0 OR ds_missched > 0 | STATS workloads_short = COUNT(*)"
+                            },
+                            "visualization": {
+                                "applyColorTo": "value",
+                                "density": "default",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "palette": {
+                                    "name": "custom",
+                                    "params": {
+                                        "colorStops": [
+                                            {
+                                                "color": "#24c292",
+                                                "stop": 0
+                                            },
+                                            {
+                                                "color": "#f6726a",
+                                                "stop": 1
+                                            }
+                                        ],
+                                        "continuity": "above",
+                                        "name": "custom",
+                                        "rangeMax": null,
+                                        "rangeMin": 0,
+                                        "rangeType": "number",
+                                        "reverse": false,
+                                        "stops": [
+                                            {
+                                                "color": "#24c292",
+                                                "stop": 1
+                                            },
+                                            {
+                                                "color": "#f6726a",
+                                                "stop": null
+                                            }
+                                        ]
+                                    },
+                                    "type": "palette"
+                                },
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "description": "Deployments, StatefulSets and DaemonSets with fewer available or ready replicas than desired, or with misscheduled DaemonSet pods, using the latest values in the time range (kube-state-metrics). Should be 0; anything higher means a workload runs with less capacity than planned. Empty without kube-state-metrics.",
+                    "title": "Short of desired"
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "d2d168b3-8494-4aef-b8e8-ce71a71960e1",
+                    "sectionId": "cb9e86f8-2647-48fa-8ef1-cce51c61dc6f",
+                    "w": 5,
+                    "x": 5,
+                    "y": 6
+                },
+                "panelIndex": "d2d168b3-8494-4aef-b8e8-ce71a71960e1",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "description": "One hexagon per Deployment, StatefulSet and DaemonSet, from kube state metrics. Shortfall: red when fewer replicas are ready or available than desired, amber when DaemonSet pods are misscheduled, green at the desired count. Rollout: amber while fewer replicas are updated than desired. Hover a hexagon for its values and the selected measure's trend over the time range. Click a hexagon to open its namespace detail or Discover. Empty without kube state metrics.",
+                    "hide_title": false,
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "One hexagon per Deployment, StatefulSet and DaemonSet, from kube state metrics. Shortfall: red when fewer replicas are ready or available than desired, amber when DaemonSet pods are misscheduled, green at the desired count. Rollout: amber while fewer replicas are updated than desired. Hover a hexagon for its values and the selected measure's trend over the time range. Click a hexagon to open its namespace detail or Discover. Empty without kube state metrics.",
+                        "params": {
+                            "spec": "{\"$schema\": \"https://vega.github.io/schema/vega/v5.json\", \"description\": \"One hexagon per Deployment, StatefulSet and DaemonSet, colored by replica shortfall or rollout. Click a hexagon to open its namespace detail or Discover.\", \"usermeta\": {\"x_gke_hexmap\": \"workloads\"}, \"padding\": {\"top\": 10, \"left\": 10, \"right\": 10, \"bottom\": 15}, \"data\": [{\"name\": \"ts_probe\", \"url\": {\"%type%\": \"esql\", \"%context%\": true, \"%timefield%\": \"@timestamp\", \"query\": \"SET unmapped_fields = \\\"nullify\\\";\\nROW round_key = CONCAT(TO_STRING(?_tstart), \\\"|\\\", TO_STRING(?_tend)), fetched_at = NOW()\"}}, {\"name\": \"raw_main\", \"url\": {\"%type%\": \"esql\", \"%context%\": true, \"%timefield%\": \"@timestamp\", \"query\": \"SET unmapped_fields = \\\"nullify\\\";\\nTS metrics-gcp.gke.otel-default\\n| WHERE @timestamp >= ?_tstart AND @timestamp <= ?_tend\\n    AND resource.attributes.gcp.resource_type == \\\"prometheus_target\\\"\\n    AND (attributes.deployment IS NOT NULL OR attributes.statefulset IS NOT NULL OR attributes.daemonset IS NOT NULL)\\n| STATS deployment_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_spec_replicas/gauge`)),\\n        deployment_avail = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_status_replicas_available/gauge`)),\\n        deployment_updated = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_status_replicas_updated/gauge`)),\\n        statefulset_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_replicas/gauge`)),\\n        statefulset_ready = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_status_replicas_ready/gauge`)),\\n        statefulset_updated = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_status_replicas_updated/gauge`)),\\n        daemonset_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_desired_number_scheduled/gauge`)),\\n        daemonset_ready = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_number_ready/gauge`)),\\n        daemonset_updated = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_updated_number_scheduled/gauge`)),\\n        daemonset_misscheduled = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_number_misscheduled/gauge`))\\n    BY kind = CASE(attributes.deployment IS NOT NULL, \\\"Deployment\\\", attributes.statefulset IS NOT NULL, \\\"StatefulSet\\\", \\\"DaemonSet\\\"),\\n       name = COALESCE(attributes.deployment, attributes.statefulset, attributes.daemonset),\\n       cluster = resource.attributes.cluster, namespace = resource.attributes.namespace,\\n       loc = resource.attributes.location, proj = resource.attributes.project_id\\n| EVAL desired = COALESCE(TO_DOUBLE(deployment_desired), TO_DOUBLE(statefulset_desired), TO_DOUBLE(daemonset_desired)),\\n       ready = COALESCE(TO_DOUBLE(deployment_avail), TO_DOUBLE(statefulset_ready), TO_DOUBLE(daemonset_ready)),\\n       updated = COALESCE(TO_DOUBLE(deployment_updated), TO_DOUBLE(statefulset_updated), TO_DOUBLE(daemonset_updated)),\\n       misscheduled = TO_DOUBLE(daemonset_misscheduled),\\n       shortfall = desired - ready,\\n       round_key = CONCAT(TO_STRING(?_tstart), \\\"|\\\", TO_STRING(?_tend)),\\n       fetched_at = NOW()\\n| WHERE desired IS NOT NULL\\n| KEEP kind, name, namespace, cluster, loc, proj, desired, ready, updated, misscheduled, shortfall, round_key, fetched_at\\n| LIMIT 10000\"}}, {\"name\": \"raw_all\", \"source\": \"raw_main\", \"transform\": [{\"type\": \"formula\", \"as\": \"key\", \"expr\": \"datum.proj + '|' + datum.loc + '|' + datum.cluster + '|' + datum.namespace + '|' + datum.kind + '|' + datum.name\"}, {\"type\": \"formula\", \"as\": \"name\", \"expr\": \"datum.name\"}, {\"type\": \"formula\", \"as\": \"subtitle\", \"expr\": \"datum.kind + ' \\u00b7 ' + datum.namespace + ' \\u00b7 ' + datum.cluster\"}, {\"type\": \"formula\", \"as\": \"b_short\", \"expr\": \"datum.shortfall == null ? 'none' : datum.shortfall > 0 ? 'bad' : datum.misscheduled > 0 ? 'warn' : 'ok'\"}, {\"type\": \"formula\", \"as\": \"s_short\", \"expr\": \"datum.shortfall == null ? 1e12 : datum.shortfall > 0 ? -1e6 * datum.shortfall : datum.misscheduled > 0 ? -datum.misscheduled : 0\"}, {\"type\": \"formula\", \"as\": \"t_short\", \"expr\": \"datum.shortfall == null ? 'no replica data' : format(datum.ready, ',d') + ' of ' + format(datum.desired, ',d') + ' ready' + (datum.misscheduled > 0 ? ' \\u00b7 ' + format(datum.misscheduled, ',d') + ' misscheduled' : '')\"}, {\"type\": \"formula\", \"as\": \"col_short\", \"expr\": \"datum.b_short === 'bad' ? '#EE4C48' : (datum.b_short === 'warn' ? '#FCD883' : (datum.b_short === 'ok' ? '#24C292' : (datum.b_short === 'none' ? '#838C99' : ('#838C99'))))\"}, {\"type\": \"formula\", \"as\": \"b_rollout\", \"expr\": \"datum.desired == null || datum.updated == null ? 'none' : datum.updated < datum.desired ? 'warn' : 'ok'\"}, {\"type\": \"formula\", \"as\": \"s_rollout\", \"expr\": \"datum.desired == null || datum.updated == null ? 1e12 : datum.updated < datum.desired ? datum.updated - datum.desired : 0\"}, {\"type\": \"formula\", \"as\": \"t_rollout\", \"expr\": \"datum.desired == null || datum.updated == null ? 'no replica data' : format(datum.updated, ',d') + ' of ' + format(datum.desired, ',d') + ' updated'\"}, {\"type\": \"formula\", \"as\": \"col_rollout\", \"expr\": \"datum.b_rollout === 'warn' ? '#FCD883' : (datum.b_rollout === 'ok' ? '#24C292' : (datum.b_rollout === 'none' ? '#838C99' : ('#838C99')))\"}]}, {\"name\": \"active\", \"values\": [], \"on\": [{\"trigger\": \"ts_round !== '' && active_round !== '' && active_round !== ts_round\", \"remove\": \"true\"}, {\"trigger\": \"len_raw > 0 && raw_round === ts_round && ts_round !== ''\", \"remove\": \"true\", \"insert\": \"data('raw_all')\"}]}, {\"name\": \"scored\", \"source\": \"active\", \"transform\": [{\"type\": \"formula\", \"as\": \"bucket\", \"expr\": \"datum['b_' + color_by]\"}, {\"type\": \"formula\", \"as\": \"color\", \"expr\": \"datum['col_' + color_by]\"}, {\"type\": \"formula\", \"as\": \"sort_key\", \"expr\": \"datum['s_' + color_by]\"}]}, {\"name\": \"ranked\", \"source\": \"scored\", \"transform\": [{\"type\": \"window\", \"sort\": {\"field\": [\"sort_key\", \"name\", \"key\"], \"order\": [\"ascending\", \"ascending\", \"ascending\"]}, \"ops\": [\"row_number\"], \"as\": [\"rank\"]}]}, {\"name\": \"cells\", \"source\": \"ranked\", \"transform\": [{\"type\": \"formula\", \"as\": \"index0\", \"expr\": \"datum.rank - 1\"}, {\"type\": \"formula\", \"as\": \"col\", \"expr\": \"datum.index0 % gridCols\"}, {\"type\": \"formula\", \"as\": \"row\", \"expr\": \"floor(datum.index0 / gridCols)\"}, {\"type\": \"formula\", \"as\": \"x\", \"expr\": \"datum.col * gapX + (datum.row % 2 == 1 ? gapX / 2 : 0) + hexR + 5\"}, {\"type\": \"formula\", \"as\": \"y\", \"expr\": \"datum.row * gapY + hexR + 5 + hexOffsetY\"}, {\"type\": \"formula\", \"as\": \"hexSize\", \"expr\": \"hexR * hexR * 3.46\"}]}, {\"name\": \"counts\", \"source\": \"scored\", \"transform\": [{\"type\": \"aggregate\", \"groupby\": [\"bucket\"], \"ops\": [\"count\"], \"as\": [\"count\"]}]}, {\"name\": \"legend_stops\", \"values\": [{\"measure\": \"short\", \"key\": \"bad\", \"label\": \"Short of desired\", \"color\": \"#EE4C48\", \"ord\": 0}, {\"measure\": \"short\", \"key\": \"warn\", \"label\": \"Misscheduled\", \"color\": \"#FCD883\", \"ord\": 1}, {\"measure\": \"short\", \"key\": \"ok\", \"label\": \"At desired\", \"color\": \"#24C292\", \"ord\": 2}, {\"measure\": \"short\", \"key\": \"none\", \"label\": \"No replica data\", \"color\": \"#838C99\", \"ord\": 3}, {\"measure\": \"rollout\", \"key\": \"warn\", \"label\": \"Updating\", \"color\": \"#FCD883\", \"ord\": 0}, {\"measure\": \"rollout\", \"key\": \"ok\", \"label\": \"Up to date\", \"color\": \"#24C292\", \"ord\": 1}, {\"measure\": \"rollout\", \"key\": \"none\", \"label\": \"No replica data\", \"color\": \"#838C99\", \"ord\": 2}], \"transform\": [{\"type\": \"filter\", \"expr\": \"datum.measure === color_by\"}, {\"type\": \"lookup\", \"from\": \"counts\", \"key\": \"bucket\", \"fields\": [\"key\"], \"values\": [\"count\"], \"as\": [\"count\"], \"default\": 0}, {\"type\": \"window\", \"sort\": {\"field\": \"ord\", \"order\": \"ascending\"}, \"ops\": [\"row_number\"], \"as\": [\"idx\"]}]}, {\"name\": \"spinner_dots\", \"values\": [{\"i\": 0}, {\"i\": 1}, {\"i\": 2}, {\"i\": 3}, {\"i\": 4}, {\"i\": 5}, {\"i\": 6}, {\"i\": 7}]}, {\"name\": \"pills\", \"values\": [{\"id\": \"short\", \"label\": \"Shortfall\", \"x\": 75, \"w\": 79}, {\"id\": \"rollout\", \"label\": \"Rollout\", \"x\": 160, \"w\": 65}]}, {\"name\": \"menu_items_data\", \"values\": [{\"id\": \"details\", \"label\": \"1. View namespace detail\", \"idx\": 0}, {\"id\": \"metrics\", \"label\": \"2. View metrics in Discover\", \"idx\": 1}]}, {\"name\": \"menu_visible\", \"values\": [{\"_\": 0}], \"transform\": [{\"type\": \"filter\", \"expr\": \"sel != null\"}]}, {\"name\": \"menu_items_visible\", \"source\": \"menu_items_data\", \"transform\": [{\"type\": \"filter\", \"expr\": \"sel != null\"}]}, {\"name\": \"spark_raw\", \"url\": {\"%type%\": \"esql\", \"%context%\": true, \"%timefield%\": \"@timestamp\", \"query\": \"SET unmapped_fields = \\\"nullify\\\";\\nTS metrics-gcp.gke.otel-default\\n| WHERE @timestamp >= ?_tstart AND @timestamp <= ?_tend\\n    AND resource.attributes.gcp.resource_type == \\\"prometheus_target\\\"\\n    AND (attributes.deployment IS NOT NULL OR attributes.statefulset IS NOT NULL OR attributes.daemonset IS NOT NULL)\\n| STATS deployment_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_spec_replicas/gauge`)),\\n        deployment_avail = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_status_replicas_available/gauge`)),\\n        deployment_updated = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_status_replicas_updated/gauge`)),\\n        statefulset_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_replicas/gauge`)),\\n        statefulset_ready = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_status_replicas_ready/gauge`)),\\n        statefulset_updated = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_status_replicas_updated/gauge`)),\\n        daemonset_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_desired_number_scheduled/gauge`)),\\n        daemonset_ready = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_number_ready/gauge`)),\\n        daemonset_updated = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_updated_number_scheduled/gauge`))\\n    BY kind = CASE(attributes.deployment IS NOT NULL, \\\"Deployment\\\", attributes.statefulset IS NOT NULL, \\\"StatefulSet\\\", \\\"DaemonSet\\\"),\\n       name = COALESCE(attributes.deployment, attributes.statefulset, attributes.daemonset),\\n       cluster = resource.attributes.cluster, namespace = resource.attributes.namespace,\\n       loc = resource.attributes.location, proj = resource.attributes.project_id,\\n       t = TBUCKET(40, ?_tstart, ?_tend)\\n| EVAL desired = COALESCE(TO_DOUBLE(deployment_desired), TO_DOUBLE(statefulset_desired), TO_DOUBLE(daemonset_desired)),\\n       ready = COALESCE(TO_DOUBLE(deployment_avail), TO_DOUBLE(statefulset_ready), TO_DOUBLE(daemonset_ready)),\\n       updated = COALESCE(TO_DOUBLE(deployment_updated), TO_DOUBLE(statefulset_updated), TO_DOUBLE(daemonset_updated)),\\n       shortfall = desired - ready,\\n       behind = desired - updated\\n| WHERE desired IS NOT NULL\\n| EVAL point = CONCAT(TO_STRING(t), \\\"|\\\", COALESCE(TO_STRING(shortfall), \\\"\\\"), \\\"|\\\", COALESCE(TO_STRING(behind), \\\"\\\"))\\n| STATS points = VALUES(point) BY kind, name, namespace, cluster, loc, proj\\n| EVAL points = MV_SORT(points)\\n| LIMIT 10000\"}, \"transform\": [{\"type\": \"formula\", \"as\": \"key\", \"expr\": \"datum.proj + '|' + datum.loc + '|' + datum.cluster + '|' + datum.namespace + '|' + datum.kind + '|' + datum.name\"}]}, {\"name\": \"spark_series\", \"source\": \"spark_raw\", \"transform\": [{\"type\": \"filter\", \"expr\": \"spark_on && tooltip.key && datum.key === tooltip.key\"}, {\"type\": \"formula\", \"as\": \"pts\", \"expr\": \"isArray(datum.points) ? datum.points : [datum.points]\"}, {\"type\": \"flatten\", \"fields\": [\"pts\"], \"as\": [\"p\"]}, {\"type\": \"filter\", \"expr\": \"isString(datum.p)\"}, {\"type\": \"formula\", \"as\": \"parts\", \"expr\": \"split(datum.p, '|')\"}, {\"type\": \"formula\", \"as\": \"t\", \"expr\": \"datum.parts[0]\"}, {\"type\": \"formula\", \"as\": \"shortfall\", \"expr\": \"toNumber(datum.parts[1])\"}, {\"type\": \"formula\", \"as\": \"behind\", \"expr\": \"toNumber(datum.parts[2])\"}, {\"type\": \"formula\", \"as\": \"v\", \"expr\": \"color_by === 'short' ? (datum.shortfall) : (color_by === 'rollout' ? (datum.behind) : (null))\"}, {\"type\": \"collect\", \"sort\": {\"field\": \"t\", \"order\": \"ascending\"}}]}, {\"name\": \"spark_valid\", \"source\": \"spark_series\", \"transform\": [{\"type\": \"filter\", \"expr\": \"datum.v != null\"}, {\"type\": \"collect\", \"sort\": {\"field\": \"t\", \"order\": \"ascending\"}}]}, {\"name\": \"spark_stat\", \"source\": \"spark_valid\", \"transform\": [{\"type\": \"aggregate\", \"fields\": [\"v\", \"v\", \"v\", \"v\"], \"ops\": [\"min\", \"max\", \"mean\", \"count\"], \"as\": [\"vmin\", \"vmax\", \"vavg\", \"vn\"]}]}], \"signals\": [{\"name\": \"color_by\", \"value\": \"short\", \"on\": [{\"events\": \"@pill_bg:click\", \"update\": \"datum.id\"}]}, {\"name\": \"len_raw\", \"update\": \"length(data('raw_all'))\"}, {\"name\": \"len_active\", \"update\": \"length(data('active'))\"}, {\"name\": \"ts_round\", \"update\": \"data('ts_probe')[0] ? data('ts_probe')[0].round_key : ''\"}, {\"name\": \"time_from\", \"update\": \"ts_round !== '' && indexof(ts_round, '|') > 0 ? slice(ts_round, 0, indexof(ts_round, '|')) : ''\"}, {\"name\": \"time_to\", \"update\": \"ts_round !== '' && indexof(ts_round, '|') > 0 ? slice(ts_round, indexof(ts_round, '|') + 1) : ''\"}, {\"name\": \"g_param\", \"update\": \"time_from !== '' && time_to !== '' ? '_g=(time:(from:%27' + time_from + '%27,to:%27' + time_to + '%27))&' : ''\"}, {\"name\": \"raw_round\", \"update\": \"data('raw_all')[0] ? data('raw_all')[0].round_key : ''\"}, {\"name\": \"active_round\", \"update\": \"raw_round\"}, {\"name\": \"raw_fetched_str\", \"update\": \"data('raw_all')[0] ? data('raw_all')[0].fetched_at : ''\"}, {\"name\": \"active_fetched\", \"update\": \"raw_fetched_str !== '' ? toDate(raw_fetched_str) : 0\"}, {\"name\": \"tick\", \"value\": 0, \"on\": [{\"events\": {\"type\": \"timer\", \"throttle\": 100}, \"update\": \"now()\"}]}, {\"name\": \"url_change_at\", \"value\": 0, \"on\": [{\"events\": {\"source\": \"window\", \"type\": \"hashchange\"}, \"update\": \"now()\"}, {\"events\": {\"source\": \"window\", \"type\": \"popstate\"}, \"update\": \"now()\"}]}, {\"name\": \"fetch_tracker\", \"init\": \"{seen: 0, arrived_at: 0}\", \"on\": [{\"events\": {\"signal\": \"tick\"}, \"update\": \"active_fetched > 0 && active_fetched !== fetch_tracker.seen ? {seen: active_fetched, arrived_at: tick} : fetch_tracker\"}]}, {\"name\": \"loading_raw\", \"update\": \"len_active === 0 || ts_round === '' || active_round === '' || active_round !== ts_round || (url_change_at > 0 && fetch_tracker.arrived_at < url_change_at)\"}, {\"name\": \"loading_started_at\", \"value\": 0, \"on\": [{\"events\": {\"signal\": \"tick\"}, \"update\": \"loading_raw ? (loading_started_at === 0 ? tick : loading_started_at) : 0\"}]}, {\"name\": \"loading_elapsed\", \"update\": \"loading_started_at > 0 ? tick - loading_started_at : 0\"}, {\"name\": \"no_data\", \"update\": \"loading_raw && ts_round !== '' && len_raw === 0 && loading_elapsed > 2000\"}, {\"name\": \"loading\", \"update\": \"loading_raw && !no_data\"}, {\"name\": \"loading_timeout\", \"update\": \"loading && loading_elapsed > 15000\"}, {\"name\": \"total_all\", \"update\": \"length(data('active'))\"}, {\"name\": \"total_shown\", \"update\": \"length(data('ranked'))\"}, {\"name\": \"legendW\", \"value\": 170}, {\"name\": \"buttonsH\", \"value\": 34}, {\"name\": \"availW\", \"update\": \"width - 20 - legendW\"}, {\"name\": \"availH\", \"update\": \"height - 20 - buttonsH\"}, {\"name\": \"hexOffsetY\", \"update\": \"buttonsH\"}, {\"name\": \"idealCols\", \"update\": \"total_shown > 0 && availH > 0 ? max(1, round(sqrt(total_shown * (availW / availH)))) : 1\"}, {\"name\": \"idealRows\", \"update\": \"max(1, ceil(total_shown / idealCols))\"}, {\"name\": \"hexRInitial\", \"update\": \"min(availW / (idealCols * 2), availH / (idealRows * 2))\"}, {\"name\": \"maxColsAtHexR\", \"update\": \"max(idealCols, floor(availW / (max(3, hexRInitial) * 2)))\"}, {\"name\": \"maxColsAtMinR\", \"update\": \"max(1, floor(availW / (3 * 2)))\"}, {\"name\": \"gridCols\", \"update\": \"max(1, min(total_shown, min(maxColsAtHexR, maxColsAtMinR)))\"}, {\"name\": \"gridRows\", \"update\": \"max(1, ceil(total_shown / gridCols))\"}, {\"name\": \"rByWidth\", \"update\": \"availW / (gridCols * 1.76 + 0.88)\"}, {\"name\": \"rByHeight\", \"update\": \"availH / (gridRows * 1.54 + 0.92)\"}, {\"name\": \"hexR\", \"update\": \"max(3, min(90, min(rByWidth, rByHeight)))\"}, {\"name\": \"gapX\", \"update\": \"hexR * 1.76\"}, {\"name\": \"gapY\", \"update\": \"hexR * 1.54\"}, {\"name\": \"legendX\", \"update\": \"width - legendW + 4\"}, {\"name\": \"tooltip\", \"value\": {}, \"on\": [{\"events\": \"@hexagons:mouseover\", \"update\": \"datum\"}, {\"events\": \"@hexagons:mouseout\", \"update\": \"{}\"}, {\"events\": \"@hexagons:click\", \"update\": \"{}\"}]}, {\"name\": \"sel\", \"value\": null, \"on\": [{\"events\": \"@hexagons:click\", \"update\": \"datum\"}, {\"events\": \"@menu_backdrop:click\", \"update\": \"null\"}, {\"events\": \"@menu_item_bg:click\", \"update\": \"null\"}]}, {\"name\": \"menu_hoff\", \"update\": \"sel ? (length(sel.name) > 36 ? 14 : 0) : 0\"}, {\"name\": \"menu_x\", \"update\": \"sel ? (sel.x + 18 + 290 > width - legendW - 10 ? max(sel.x - 18 - 290, 5) : sel.x + 18) : 0\"}, {\"name\": \"menu_y\", \"update\": \"sel ? max(5, min(sel.y - 30, height - (108 + menu_hoff) - 6)) : 0\"}, {\"name\": \"tt_off\", \"update\": \"tooltip.name ? (length(tooltip.name) <= 36 ? 0 : 14) : 0\"}, {\"name\": \"spark_on\", \"update\": \"indexof([\\\"short\\\", \\\"rollout\\\"], color_by) >= 0\"}, {\"name\": \"sel_idx\", \"update\": \"indexof([\\\"short\\\", \\\"rollout\\\"], color_by)\"}, {\"name\": \"spark_n\", \"update\": \"length(data('spark_stat')) && data('spark_stat')[0].vn ? data('spark_stat')[0].vn : 0\"}, {\"name\": \"spark_min\", \"update\": \"spark_n ? min(0, data('spark_stat')[0].vmin) : 0\"}, {\"name\": \"spark_max\", \"update\": \"spark_n && data('spark_stat')[0].vmax > spark_min ? data('spark_stat')[0].vmax : spark_min + 1\"}, {\"name\": \"spark_avg\", \"update\": \"spark_n ? data('spark_stat')[0].vavg : null\"}, {\"name\": \"spark_last\", \"update\": \"spark_n ? data('spark_valid')[length(data('spark_valid')) - 1].v : null\"}, {\"name\": \"spark_delta\", \"update\": \"spark_avg != null && spark_avg != 0 && spark_last != null ? (spark_last - spark_avg) / abs(spark_avg) * 100 : null\"}, {\"name\": \"sel_tip\", \"update\": \"tooltip.key ? (color_by === 'short' ? \\\"Shortfall: \\\" + tooltip.t_short : (color_by === 'rollout' ? \\\"Rollout: \\\" + tooltip.t_rollout : (''))) : ''\"}, {\"name\": \"delta_text\", \"update\": \"spark_on && tooltip.key && spark_delta != null ? 'last vs avg ' + (spark_delta >= 0 ? '+' : '') + format(spark_delta, '.1f') + '%' : ''\"}, {\"name\": \"delta_wrap\", \"update\": \"delta_text !== '' && length(sel_tip) * 7 + length(delta_text) * 6.5 > 250 ? 14 : 0\"}, {\"name\": \"spark_top\", \"update\": \"tt_off + 88 + delta_wrap\"}, {\"name\": \"spark_bottom\", \"update\": \"tt_off + 118 + delta_wrap\"}, {\"name\": \"tt_h\", \"update\": \"(spark_on ? 156 + delta_wrap : 102) + tt_off\"}], \"scales\": [{\"name\": \"sparkX\", \"type\": \"point\", \"range\": [14, 276], \"domain\": {\"data\": \"spark_series\", \"field\": \"t\"}}, {\"name\": \"sparkY\", \"type\": \"linear\", \"nice\": false, \"zero\": false, \"range\": [{\"signal\": \"spark_bottom\"}, {\"signal\": \"spark_top\"}], \"domain\": {\"signal\": \"[spark_min, spark_max]\"}}], \"marks\": [{\"type\": \"text\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"value\": 5}, \"y\": {\"value\": 17}, \"text\": {\"value\": \"Color by:\"}, \"align\": {\"value\": \"left\"}, \"baseline\": {\"value\": \"middle\"}, \"fontSize\": {\"value\": 12}, \"fontWeight\": {\"value\": 600}, \"fill\": {\"value\": \"#838C99\"}}}}, {\"name\": \"pill_bg\", \"type\": \"rect\", \"from\": {\"data\": \"pills\"}, \"encode\": {\"enter\": {\"cursor\": {\"value\": \"pointer\"}}, \"update\": {\"x\": {\"field\": \"x\"}, \"x2\": {\"signal\": \"datum.x + datum.w\"}, \"y\": {\"value\": 6}, \"y2\": {\"value\": 28}, \"cornerRadius\": {\"value\": 4}, \"fill\": {\"signal\": \"datum.id === color_by ? '#0077CC' : 'transparent'\"}, \"stroke\": {\"signal\": \"datum.id === color_by ? '#0064B0' : '#98A2B3'\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"name\": \"pill_label\", \"type\": \"text\", \"interactive\": false, \"from\": {\"data\": \"pills\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"datum.x + datum.w / 2\"}, \"y\": {\"value\": 17}, \"text\": {\"field\": \"label\"}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"fontSize\": {\"value\": 12}, \"fontWeight\": {\"value\": 500}, \"fill\": {\"signal\": \"datum.id === color_by ? '#FFFFFF' : '#838C99'\"}}}}, {\"type\": \"text\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"value\": 241}, \"y\": {\"value\": 17}, \"text\": {\"signal\": \"color_by === 'short' ? \\\"Red when fewer replicas are ready or available than desired \\\\u00b7 amber when DaemonSet pods are misscheduled\\\" : (color_by === 'rollout' ? \\\"Amber while fewer replicas are updated than desired\\\" : (''))\"}, \"align\": {\"value\": \"left\"}, \"baseline\": {\"value\": \"middle\"}, \"fontSize\": {\"value\": 12}, \"fontWeight\": {\"value\": 400}, \"fill\": {\"value\": \"#838C99\"}}}}, {\"type\": \"text\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"signal\": \"legendX\"}, \"y\": {\"signal\": \"buttonsH + 30 + 22 * length(data('legend_stops'))\"}, \"text\": {\"signal\": \"total_all === 0 ? [''] : total_shown < total_all ? ['Showing the ' + format(total_shown, ',d') + ' worst', 'of ' + (total_all >= 10000 ? '10,000+' : format(total_all, ',d')) + ' workloads'] : total_all >= 10000 ? ['Showing the first', '10,000 workloads', '(query limit reached)'] : ['Showing ' + format(total_all, ',d') + (total_all === 1 ? ' workload' : ' workloads')]\"}, \"align\": {\"value\": \"left\"}, \"baseline\": {\"value\": \"top\"}, \"fontSize\": {\"value\": 12}, \"fontWeight\": {\"value\": 400}, \"fill\": {\"value\": \"#838C99\"}, \"lineHeight\": {\"value\": 15}}}, \"name\": \"showing\"}, {\"name\": \"hexagons\", \"type\": \"symbol\", \"from\": {\"data\": \"cells\"}, \"encode\": {\"enter\": {\"cursor\": {\"value\": \"pointer\"}}, \"update\": {\"x\": {\"field\": \"x\"}, \"y\": {\"field\": \"y\"}, \"size\": {\"field\": \"hexSize\"}, \"shape\": {\"value\": \"M0,-1L0.866,-0.5L0.866,0.5L0,1L-0.866,0.5L-0.866,-0.5Z\"}, \"fill\": {\"field\": \"color\"}, \"fillOpacity\": {\"value\": 0.92}, \"strokeWidth\": [{\"test\": \"sel && sel.key === datum.key\", \"value\": 3.5}, {\"value\": 1}], \"stroke\": [{\"test\": \"sel && sel.key === datum.key\", \"value\": \"#4B5563\"}, {\"value\": \"#FFFFFF\"}], \"strokeOpacity\": [{\"test\": \"sel && sel.key === datum.key\", \"value\": 1}, {\"value\": 0.3}]}}}, {\"name\": \"hex_hover\", \"type\": \"symbol\", \"interactive\": false, \"from\": {\"data\": \"cells\"}, \"encode\": {\"update\": {\"x\": {\"field\": \"x\"}, \"y\": {\"field\": \"y\"}, \"size\": {\"field\": \"hexSize\"}, \"shape\": {\"value\": \"M0,-1L0.866,-0.5L0.866,0.5L0,1L-0.866,0.5L-0.866,-0.5Z\"}, \"fill\": {\"value\": \"#FFFFFF\"}, \"fillOpacity\": {\"signal\": \"tooltip.key === datum.key && !sel ? 0.22 : 0\"}}}}, {\"type\": \"group\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"signal\": \"legendX\"}, \"y\": {\"signal\": \"buttonsH + 8\"}}}, \"marks\": [{\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"y\": {\"value\": 0}, \"align\": {\"value\": \"left\"}, \"baseline\": {\"value\": \"top\"}, \"fontSize\": {\"value\": 12}, \"fontWeight\": {\"value\": \"bold\"}, \"fill\": {\"value\": \"#838C99\"}, \"text\": {\"signal\": \"color_by === 'short' ? \\\"Shortfall\\\" : (color_by === 'rollout' ? \\\"Rollout\\\" : (''))\"}}}}, {\"name\": \"legend_symbol\", \"type\": \"symbol\", \"from\": {\"data\": \"legend_stops\"}, \"encode\": {\"update\": {\"x\": {\"value\": 6}, \"y\": {\"signal\": \"28 + (datum.idx - 1) * 22\"}, \"size\": {\"value\": 110}, \"shape\": {\"value\": \"circle\"}, \"fill\": {\"field\": \"color\"}}}}, {\"name\": \"legend_label\", \"type\": \"text\", \"from\": {\"data\": \"legend_stops\"}, \"encode\": {\"update\": {\"x\": {\"value\": 18}, \"y\": {\"signal\": \"28 + (datum.idx - 1) * 22\"}, \"align\": {\"value\": \"left\"}, \"baseline\": {\"value\": \"middle\"}, \"fontSize\": {\"value\": 12}, \"fill\": {\"value\": \"#838C99\"}, \"text\": {\"signal\": \"datum.label + ' (' + format(datum.count, ',d') + ')'\"}}}}]}, {\"type\": \"group\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"signal\": \"tooltip.x + 18 + 290 > width - legendW - 10 ? max(tooltip.x - 18 - 290, 5) : tooltip.x + 18\"}, \"y\": {\"signal\": \"max(5, min(tooltip.y - 30, height - tt_h - 6))\"}, \"width\": {\"value\": 290}, \"height\": {\"signal\": \"tt_h\"}, \"opacity\": [{\"test\": \"tooltip.key && !sel\", \"value\": 1}, {\"value\": 0}], \"fill\": {\"value\": \"#0E1728\"}, \"stroke\": {\"value\": \"#2A3144\"}, \"strokeWidth\": {\"value\": 1}, \"cornerRadius\": {\"value\": 8}}}, \"marks\": [{\"type\": \"text\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"value\": 12}, \"y\": {\"value\": 12}, \"text\": {\"signal\": \"tooltip.name ? (length(tooltip.name) <= 36 ? [tooltip.name] : [slice(tooltip.name, 0, 36), slice(tooltip.name, 36)]) : ['']\"}, \"fontSize\": {\"value\": 12}, \"lineHeight\": {\"value\": 14}, \"baseline\": {\"value\": \"top\"}, \"fontWeight\": {\"value\": \"bold\"}, \"fill\": {\"value\": \"#fff\"}}}}, {\"type\": \"text\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"value\": 12}, \"y\": {\"signal\": \"tt_off + 32\"}, \"text\": {\"signal\": \"tooltip.key ? tooltip.subtitle : ''\"}, \"fontSize\": {\"value\": 11}, \"baseline\": {\"value\": \"top\"}, \"fill\": {\"value\": \"#7d8494\"}}}}, {\"type\": \"rule\", \"encode\": {\"update\": {\"x\": {\"value\": 12}, \"x2\": {\"value\": 278}, \"y\": {\"signal\": \"tt_off + 50\"}, \"stroke\": {\"value\": \"#39415a\"}, \"strokeWidth\": {\"value\": 1}, \"opacity\": {\"signal\": \"tooltip.key ? 0.5 : 0\"}}}}, {\"name\": \"spark_hl\", \"type\": \"rect\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"value\": 8}, \"width\": {\"value\": 274}, \"y\": {\"signal\": \"tt_off + 59\"}, \"height\": {\"signal\": \"63 + delta_wrap\"}, \"fill\": {\"value\": \"#5A6B8C\"}, \"fillOpacity\": {\"value\": 0.16}, \"cornerRadius\": {\"value\": 6}, \"opacity\": {\"signal\": \"spark_on && tooltip.key ? 1 : 0\"}}}}, {\"name\": \"tip_short\", \"type\": \"text\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"value\": 12}, \"y\": {\"signal\": \"spark_on ? (color_by === 'short' ? tt_off + 64 : tt_off + delta_wrap + 130 + 18 * (0 - (sel_idx < 0 ? 1 : 0))) : tt_off + 58\"}, \"text\": {\"signal\": \"tooltip.key ? \\\"Shortfall: \\\" + tooltip.t_short : ''\"}, \"fontSize\": {\"value\": 12}, \"baseline\": {\"value\": \"top\"}, \"fontWeight\": {\"signal\": \"color_by === 'short' ? 'bold' : 'normal'\"}, \"fill\": {\"signal\": \"tooltip.key ? tooltip.col_short : '#9da4b3'\"}}}}, {\"name\": \"tip_rollout\", \"type\": \"text\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"value\": 12}, \"y\": {\"signal\": \"spark_on ? (color_by === 'rollout' ? tt_off + 64 : tt_off + delta_wrap + 130 + 18 * (1 - (sel_idx < 1 ? 1 : 0))) : tt_off + 76\"}, \"text\": {\"signal\": \"tooltip.key ? \\\"Rollout: \\\" + tooltip.t_rollout : ''\"}, \"fontSize\": {\"value\": 12}, \"baseline\": {\"value\": \"top\"}, \"fontWeight\": {\"signal\": \"color_by === 'rollout' ? 'bold' : 'normal'\"}, \"fill\": {\"signal\": \"tooltip.key ? tooltip.col_rollout : '#9da4b3'\"}}}}, {\"name\": \"spark_delta_text\", \"type\": \"text\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"value\": 276}, \"y\": {\"signal\": \"tt_off + 64 + delta_wrap\"}, \"align\": {\"value\": \"right\"}, \"baseline\": {\"value\": \"top\"}, \"text\": {\"signal\": \"delta_text\"}, \"fontSize\": {\"value\": 12}, \"fill\": {\"value\": \"#c3c8d4\"}}}}, {\"name\": \"spark_area\", \"type\": \"area\", \"interactive\": false, \"from\": {\"data\": \"spark_series\"}, \"encode\": {\"update\": {\"x\": {\"scale\": \"sparkX\", \"field\": \"t\"}, \"y\": {\"scale\": \"sparkY\", \"field\": \"v\"}, \"y2\": {\"scale\": \"sparkY\", \"value\": 0}, \"fill\": {\"signal\": \"tooltip.key ? tooltip['col_' + color_by] : '#838C99'\"}, \"fillOpacity\": {\"signal\": \"spark_max > spark_min ? 0.18 : 0\"}, \"interpolate\": {\"value\": \"monotone\"}, \"defined\": {\"signal\": \"datum.v != null\"}}}}, {\"name\": \"spark_line\", \"type\": \"line\", \"interactive\": false, \"from\": {\"data\": \"spark_series\"}, \"encode\": {\"update\": {\"x\": {\"scale\": \"sparkX\", \"field\": \"t\"}, \"y\": {\"scale\": \"sparkY\", \"field\": \"v\"}, \"stroke\": {\"signal\": \"tooltip.key ? tooltip['col_' + color_by] : '#838C99'\"}, \"strokeWidth\": {\"value\": 1.75}, \"interpolate\": {\"value\": \"monotone\"}, \"defined\": {\"signal\": \"datum.v != null\"}}}}, {\"name\": \"spark_dot\", \"type\": \"symbol\", \"interactive\": false, \"from\": {\"data\": \"spark_series\"}, \"encode\": {\"update\": {\"x\": {\"scale\": \"sparkX\", \"field\": \"t\"}, \"y\": {\"scale\": \"sparkY\", \"field\": \"v\"}, \"size\": {\"value\": 18}, \"fill\": {\"signal\": \"tooltip.key ? tooltip['col_' + color_by] : '#838C99'\"}, \"opacity\": {\"signal\": \"spark_n === 1 && datum.v != null ? 1 : 0\"}}}}, {\"name\": \"spark_none\", \"type\": \"text\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"value\": 145.0}, \"y\": {\"signal\": \"(spark_top + spark_bottom) / 2\"}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"text\": {\"value\": \"No trend data\"}, \"fontSize\": {\"value\": 11}, \"fill\": {\"value\": \"#7d8494\"}, \"opacity\": {\"signal\": \"spark_on && tooltip.key && spark_n === 0 ? 1 : 0\"}}}}]}, {\"type\": \"rect\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"signal\": \"(width - legendW) / 2 - 120\"}, \"x2\": {\"signal\": \"(width - legendW) / 2 + 120\"}, \"y\": {\"signal\": \"buttonsH + (height - buttonsH) / 2 - 45\"}, \"y2\": {\"signal\": \"buttonsH + (height - buttonsH) / 2 + 45\"}, \"fill\": {\"value\": \"#1A1C21\"}, \"fillOpacity\": {\"signal\": \"(loading || loading_timeout) ? 0.92 : 0\"}, \"stroke\": {\"value\": \"#838C99\"}, \"strokeOpacity\": {\"signal\": \"(loading || loading_timeout) ? 0.4 : 0\"}, \"strokeWidth\": {\"value\": 1}, \"cornerRadius\": {\"value\": 12}}}}, {\"type\": \"symbol\", \"interactive\": false, \"from\": {\"data\": \"spinner_dots\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"(width - legendW) / 2 + 18 * cos(datum.i * PI / 4 - PI / 2)\"}, \"y\": {\"signal\": \"buttonsH + (height - buttonsH) / 2 - 8 + 18 * sin(datum.i * PI / 4 - PI / 2)\"}, \"size\": {\"value\": 70}, \"shape\": {\"value\": \"circle\"}, \"fill\": {\"value\": \"#0077CC\"}, \"opacity\": {\"signal\": \"loading ? 0.15 + 0.85 * (1 - (((floor(tick / 100) % 8) - datum.i + 8) % 8) / 7) : 0\"}}}}, {\"type\": \"text\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"signal\": \"(width - legendW) / 2\"}, \"y\": {\"signal\": \"buttonsH + (height - buttonsH) / 2 + 28\"}, \"text\": {\"value\": \"Loading data\\u2026\"}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"fontSize\": {\"value\": 12}, \"fontWeight\": {\"value\": 500}, \"fill\": {\"value\": \"#FFFFFF\"}, \"opacity\": {\"signal\": \"loading && !loading_timeout ? 1 : 0\"}}}}, {\"type\": \"text\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"signal\": \"(width - legendW) / 2\"}, \"y\": {\"signal\": \"buttonsH + (height - buttonsH) / 2 + 28\"}, \"text\": {\"value\": \"Still loading\\u2026 (taking longer than usual)\"}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"fontSize\": {\"value\": 12}, \"fontWeight\": {\"value\": 500}, \"fill\": {\"value\": \"#FFFFFF\"}, \"opacity\": {\"signal\": \"loading_timeout ? 1 : 0\"}}}}, {\"type\": \"text\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"signal\": \"(width - legendW) / 2\"}, \"y\": {\"signal\": \"buttonsH + (height - buttonsH) / 2\"}, \"text\": {\"value\": \"No workloads for the selected time range \\u00b7 this map needs kube state metrics\"}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"fontSize\": {\"value\": 13}, \"fontWeight\": {\"value\": 500}, \"fill\": {\"value\": \"#838C99\"}, \"opacity\": {\"signal\": \"no_data ? 1 : 0\"}}}}, {\"name\": \"menu_backdrop\", \"type\": \"rect\", \"from\": {\"data\": \"menu_visible\"}, \"encode\": {\"enter\": {\"cursor\": {\"value\": \"default\"}}, \"update\": {\"x\": {\"value\": 0}, \"y\": {\"value\": 0}, \"x2\": {\"signal\": \"width\"}, \"y2\": {\"signal\": \"height\"}, \"fill\": {\"value\": \"#000000\"}, \"fillOpacity\": {\"value\": 0}}}}, {\"name\": \"menu_box\", \"type\": \"rect\", \"from\": {\"data\": \"menu_visible\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"menu_x\"}, \"y\": {\"signal\": \"menu_y\"}, \"width\": {\"value\": 290}, \"height\": {\"signal\": \"108 + menu_hoff\"}, \"fill\": {\"value\": \"#0E1728\"}, \"stroke\": {\"value\": \"#2A3144\"}, \"strokeWidth\": {\"value\": 1}, \"cornerRadius\": {\"value\": 8}}}}, {\"name\": \"menu_header\", \"type\": \"text\", \"interactive\": false, \"from\": {\"data\": \"menu_visible\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"menu_x + 12\"}, \"y\": {\"signal\": \"menu_y + 8\"}, \"text\": {\"signal\": \"sel ? (length(sel.name) <= 36 ? [sel.name] : [slice(sel.name, 0, 36), slice(sel.name, 36)]) : ['']\"}, \"align\": {\"value\": \"left\"}, \"baseline\": {\"value\": \"top\"}, \"fontSize\": {\"value\": 12}, \"fontWeight\": {\"value\": \"bold\"}, \"fill\": {\"value\": \"#FFFFFF\"}, \"lineHeight\": {\"value\": 15}}}}, {\"name\": \"menu_id\", \"type\": \"text\", \"interactive\": false, \"from\": {\"data\": \"menu_visible\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"menu_x + 12\"}, \"y\": {\"signal\": \"menu_y + 26 + menu_hoff\"}, \"text\": {\"signal\": \"sel ? sel.subtitle : ''\"}, \"align\": {\"value\": \"left\"}, \"baseline\": {\"value\": \"top\"}, \"fontSize\": {\"value\": 11}, \"fill\": {\"value\": \"#7d8494\"}}}}, {\"name\": \"menu_separator\", \"type\": \"rule\", \"from\": {\"data\": \"menu_visible\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"menu_x + 8\"}, \"x2\": {\"signal\": \"menu_x + 282\"}, \"y\": {\"signal\": \"menu_y + 44 + menu_hoff\"}, \"stroke\": {\"value\": \"#2A3144\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"name\": \"menu_item_bg\", \"type\": \"rect\", \"from\": {\"data\": \"menu_items_visible\"}, \"encode\": {\"enter\": {\"cursor\": {\"value\": \"pointer\"}}, \"update\": {\"x\": {\"signal\": \"menu_x\"}, \"y\": {\"signal\": \"menu_y + 48 + menu_hoff + datum.idx * 30\"}, \"width\": {\"value\": 290}, \"height\": {\"value\": 30}, \"fill\": {\"value\": \"#0E1728\"}, \"href\": {\"signal\": \"sel ? (datum.id === 'details' ? ('/app/dashboards#/view/gcp_gke_otel-05487b8b-c21b-4898-a513-716e39b7c702?' + g_param + '_a=(filters:!((meta:(alias:%27cluster:%20' + sel.cluster + '%27,disabled:!f,index:%27metrics-gcp.gke.otel-default%27,negate:!f,params:!((meta:(disabled:!f,index:%27metrics-gcp.gke.otel-default%27,key:%27resource.attributes.cluster_name%27,negate:!f,params:(query:%27' + sel.cluster + '%27),type:phrase),query:(match_phrase:(resource.attributes.cluster_name:%27' + sel.cluster + '%27))),(meta:(disabled:!f,index:%27metrics-gcp.gke.otel-default%27,key:%27resource.attributes.cluster%27,negate:!f,params:(query:%27' + sel.cluster + '%27),type:phrase),query:(match_phrase:(resource.attributes.cluster:%27' + sel.cluster + '%27)))),relation:OR,type:combined),query:(bool:(minimum_should_match:1,should:!((match_phrase:(resource.attributes.cluster_name:%27' + sel.cluster + '%27)),(match_phrase:(resource.attributes.cluster:%27' + sel.cluster + '%27)))))),(meta:(alias:%27namespace:%20' + sel.namespace + '%27,disabled:!f,index:%27metrics-gcp.gke.otel-default%27,negate:!f,params:!((meta:(disabled:!f,index:%27metrics-gcp.gke.otel-default%27,key:%27resource.attributes.namespace_name%27,negate:!f,params:(query:%27' + sel.namespace + '%27),type:phrase),query:(match_phrase:(resource.attributes.namespace_name:%27' + sel.namespace + '%27))),(meta:(disabled:!f,index:%27metrics-gcp.gke.otel-default%27,key:%27resource.attributes.namespace%27,negate:!f,params:(query:%27' + sel.namespace + '%27),type:phrase),query:(match_phrase:(resource.attributes.namespace:%27' + sel.namespace + '%27)))),relation:OR,type:combined),query:(bool:(minimum_should_match:1,should:!((match_phrase:(resource.attributes.namespace_name:%27' + sel.namespace + '%27)),(match_phrase:(resource.attributes.namespace:%27' + sel.namespace + '%27))))))),query:(language:kuery,query:%27%27))') : (datum.id === 'metrics' ? ('/app/discover#/?_g=(filters:!(),time:(from:%27' + time_from + '%27,to:%27' + time_to + '%27))&_a=(dataSource:(type:esql),query:(esql:%27SET%20unmapped_fields%20%3D%20%22nullify%22%3B%0ATS%20metrics-gcp.gke.otel-default%0A%7C%20WHERE%20resource.attributes.cluster_name%20%3D%3D%20%22' + sel.cluster + '%22%20OR%20resource.attributes.cluster%20%3D%3D%20%22' + sel.cluster + '%22%0A%7C%20WHERE%20resource.attributes.namespace_name%20%3D%3D%20%22' + sel.namespace + '%22%20OR%20resource.attributes.namespace%20%3D%3D%20%22' + sel.namespace + '%22%27))') : (''))) : ''\"}, \"cornerRadiusBottomLeft\": {\"signal\": \"datum.idx === 1 ? 8 : 0\"}, \"cornerRadiusBottomRight\": {\"signal\": \"datum.idx === 1 ? 8 : 0\"}}, \"hover\": {\"fill\": {\"value\": \"#1A2640\"}}}}, {\"name\": \"menu_item_label\", \"type\": \"text\", \"interactive\": false, \"from\": {\"data\": \"menu_items_visible\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"menu_x + 14\"}, \"y\": {\"signal\": \"menu_y + 63 + menu_hoff + datum.idx * 30\"}, \"text\": {\"field\": \"label\"}, \"align\": {\"value\": \"left\"}, \"baseline\": {\"value\": \"middle\"}, \"fontSize\": {\"value\": 12}, \"fill\": {\"value\": \"#DFE5EF\"}}}}], \"background\": \"transparent\", \"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}"
+                        },
+                        "title": "Workload map",
+                        "type": "vega",
+                        "uiState": {}
+                    },
+                    "title": "Workload map"
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "60930d43-3f71-4ce6-a40d-5ed8378d7327",
+                    "w": 48,
+                    "x": 0,
+                    "y": 4
+                },
+                "panelIndex": "60930d43-3f71-4ce6-a40d-5ed8378d7327",
+                "type": "legacy_vis"
+            }
+        ],
+        "pinned_panels": {
+            "panels": {
+                "aac40221-aa32-4d14-9237-4c4982484ba6": {
+                    "config": {
+                        "esql_query": "FROM metrics-gcp.gke.otel-default | STATS BY `resource.attributes.project_id`",
+                        "exclude": false,
+                        "exists_selected": false,
+                        "ignore_validations": false,
+                        "run_past_timeout": false,
+                        "search_technique": "wildcard",
+                        "selected_options": [],
+                        "single_select": false,
+                        "sort": {
+                            "by": "_key",
+                            "direction": "asc"
+                        },
+                        "title": "Project",
+                        "use_global_filters": true,
+                        "values_source": "esql"
+                    },
+                    "grow": true,
+                    "order": 0,
+                    "type": "options_list_control",
+                    "width": "medium"
+                },
+                "cd935bc1-ae56-4cce-b745-46209dc626e8": {
+                    "config": {
+                        "esql_query": "FROM metrics-gcp.gke.otel-default | STATS BY `resource.attributes.location`",
+                        "exclude": false,
+                        "exists_selected": false,
+                        "ignore_validations": false,
+                        "run_past_timeout": false,
+                        "search_technique": "wildcard",
+                        "selected_options": [],
+                        "single_select": false,
+                        "sort": {
+                            "by": "_key",
+                            "direction": "asc"
+                        },
+                        "title": "Location",
+                        "use_global_filters": true,
+                        "values_source": "esql"
+                    },
+                    "grow": true,
+                    "order": 1,
+                    "type": "options_list_control",
+                    "width": "medium"
+                }
+            }
+        },
+        "sections": [
+            {
+                "collapsed": false,
+                "gridData": {
+                    "i": "cb9e86f8-2647-48fa-8ef1-cce51c61dc6f",
+                    "y": 31
+                },
+                "title": "Workload metrics"
+            }
+        ],
+        "timeFrom": "now-1h",
+        "timeRestore": true,
+        "timeTo": "now",
+        "title": "[GCP OTel] GKE Workloads"
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2026-10-22T12:40:01.736Z",
+    "id": "gcp_gke_otel-a3f8f035-4f7d-4977-a112-e6ad46c6c8ea",
+    "references": [
+        {
+            "id": "gcp_gke_otel-e870661f-f53e-4a1d-b614-827bb2a3bcf2",
+            "name": "89b9a4de-8173-4f61-ab6f-85d1277cf46f:link_4d48dbb9-0290-4723-bbfb-d6262fa5ba42_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "gcp_gke_otel-e045e040-ce0b-4057-986c-ecd534a569b7",
+            "name": "89b9a4de-8173-4f61-ab6f-85d1277cf46f:link_cab53f1f-6ddb-4ec9-ab50-c727e51b91f0_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "gcp_gke_otel-b3188cbe-aa34-4bbe-8384-a089fcf9c6d0",
+            "name": "89b9a4de-8173-4f61-ab6f-85d1277cf46f:link_82884aa9-ff42-4b87-a6e3-b628938eb522_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "gcp_gke_otel-af2e90f0-abec-4756-91d7-542cdc2c41d3",
+            "name": "89b9a4de-8173-4f61-ab6f-85d1277cf46f:link_5382e67c-fd0a-4989-b06e-fb6a573e6db2_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "gcp_gke_otel-a3f8f035-4f7d-4977-a112-e6ad46c6c8ea",
+            "name": "89b9a4de-8173-4f61-ab6f-85d1277cf46f:link_25b47861-0e55-47b4-97c7-40a02216f548_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "gcp_gke_otel-31ed370d-b0bd-4e83-821d-c7b1481edcc9",
+            "name": "89b9a4de-8173-4f61-ab6f-85d1277cf46f:link_1e36790d-b991-4f02-bd0c-c9233ed90d86_dashboard",
+            "type": "dashboard"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.3.0"
+}

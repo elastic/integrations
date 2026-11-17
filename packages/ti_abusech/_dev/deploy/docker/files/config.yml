@@ -21,14 +21,17 @@ rules:
         - "Bearer test-commercial-token"
     responses:
       - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
         body: |-
           {
             "items": [
               {
                 "anonymous": false,
-                "comment": "Commercial API test sample",
+                "comment": "Before token refresh",
                 "delivery_method": "email_attachment",
-                "file_name": "7a6c03013a2f2ab8b9e8e7e5d226ea89e75da72c1519e78fd28b2253ea755c28.exe",
+                "file_name": "before-refresh.exe",
                 "file_size": 432640,
                 "file_type": "exe",
                 "file_type_mime": "application/x-dosexec",
@@ -52,8 +55,10 @@ rules:
                 "tlsh": "T13794242864BFC05994E3EEA12DDCA8FBD99A55E3640C743301B4633B8B52B84DE4F479"
               },
               {
-                "anonymous": true,
-                "file_name": "657edf01cd9100a52abd7a9d8e585a28",
+                "anonymous": false,
+                "comment": "After token refresh",
+                "delivery_method": "web_download",
+                "file_name": "after-refresh.exe",
                 "file_size": 414720,
                 "file_type": "exe",
                 "file_type_mime": "application/x-dosexec",
@@ -76,6 +81,7 @@ rules:
               },
               {
                 "anonymous": false,
+                "delivery_method": "web_download",
                 "file_name": "dummy_malware.exe",
                 "file_size": 512345,
                 "file_type": "exe",
@@ -108,18 +114,16 @@ rules:
     request_headers:
       Content-Type: "application/json"
       Auth-Key: "test_auth_key"
-    body:
-      query: "get_iocs"
-      days: /[1-7]+/
+    request_body: '/.*"query": "get_iocs".*"days": [1-7]+.*/'
     responses:
       - status_code: 200
         body: |-
           {
             "query_status": "ok",
             "data": [
-              {"id":"841537","ioc":"wizzy.hopto.org","threat_type":"botnet_cc","threat_type_desc":"Indicator that identifies a botnet command&control server (C&C)","ioc_type":"domain","ioc_type_desc":"Domain that is used for botnet Command&control (C&C)","malware":"win.asyncrat","malware_printable":"AsyncRAT","malware_alias":null,"malware_malpedia":"https://malpedia.caad.fkie.fraunhofer.de/details/win.asyncrat","confidence_level":100,"first_seen":"2022-08-05 19:43:08 UTC","last_seen":null,"reference":"https://tria.ge/220805-w57pxsgae2","reporter":"AndreGironda","tags":["asyncrat"]},
-              {"id":"839586","ioc":"872ff530d50579ae6bdc7cb4d658324b1d0e7a3e","threat_type":"payload","threat_type_desc":"Indicator that identifies a malware sample (payload)","ioc_type":"sha1_hash","ioc_type_desc":"SHA1 hash of a malware sample (payload)","malware":"win.vidar","malware_printable":"Vidar","malware_alias":null,"malware_malpedia":"https://malpedia.caad.fkie.fraunhofer.de/details/win.vidar","confidence_level":75,"first_seen":"2022-07-25 22:27:09 UTC","last_seen":null,"reference":"","reporter":"crep1x","tags":["Vidar"]},
-              {"id":"839587","ioc":"a3b5c6d7e8f9g0h1i2j3k4l5m6n7o8p9q0r1s2t3","threat_type":"payload","threat_type_desc":"Indicator that identifies a malware sample (payload)","ioc_type":"sha1_hash","ioc_type_desc":"SHA1 hash of a malware sample (payload)","malware":"win.redline","malware_printable":"RedLine","malware_alias":null,"malware_malpedia":"https://malpedia.caad.fkie.fraunhofer.de/details/win.redline","confidence_level":80,"first_seen":"2025-03-15 10:15:00 UTC","last_seen":null,"reference":"","reporter":"cyberhunter","tags":["RedLine"]}
+              {"id":"841537","ioc":"wizzy.hopto.org","threat_type":"botnet_cc","threat_type_desc":"Indicator that identifies a botnet command&control server (C&C)","ioc_type":"domain","ioc_type_desc":"Domain that is used for botnet Command&control (C&C)","malware":"win.asyncrat","malware_printable":"AsyncRAT","malware_alias":null,"malware_malpedia":"https://malpedia.caad.fkie.fraunhofer.de/details/win.asyncrat","confidence_level":100,"first_seen":"2022-08-05 19:43:08 UTC","last_seen":null,"reference":"https://tria.ge/220805-w57pxsgae2","reporter":"test_reporter","tags":["asyncrat"]},
+              {"id":"839586","ioc":"872ff530d50579ae6bdc7cb4d658324b1d0e7a3e","threat_type":"payload","threat_type_desc":"Indicator that identifies a malware sample (payload)","ioc_type":"sha1_hash","ioc_type_desc":"SHA1 hash of a malware sample (payload)","malware":"win.vidar","malware_printable":"Vidar","malware_alias":null,"malware_malpedia":"https://malpedia.caad.fkie.fraunhofer.de/details/win.vidar","confidence_level":75,"first_seen":"2022-07-25 22:27:09 UTC","last_seen":null,"reference":"","reporter":"test_reporter_2","tags":["Vidar"]},
+              {"id":"839587","ioc":"a3b5c6d7e8f9g0h1i2j3k4l5m6n7o8p9q0r1s2t3","threat_type":"payload","threat_type_desc":"Indicator that identifies a malware sample (payload)","ioc_type":"sha1_hash","ioc_type_desc":"SHA1 hash of a malware sample (payload)","malware":"win.redline","malware_printable":"RedLine","malware_alias":null,"malware_malpedia":"https://malpedia.caad.fkie.fraunhofer.de/details/win.redline","confidence_level":80,"first_seen":"2025-03-15 10:15:00 UTC","last_seen":null,"reference":"","reporter":"test_reporter_3","tags":["RedLine"]}
             ]
           }
   - path: /v1/payloads/recent/
@@ -195,7 +199,7 @@ rules:
                   "spamhaus_dbl": "not listed",
                   "surbl": "not listed"
                 },
-                "reporter": "tammeto",
+                "reporter": "test_reporter",
                 "larted": "true",
                 "tags": null
               },
@@ -211,7 +215,7 @@ rules:
                   "spamhaus_dbl": "not listed",
                   "surbl": "not listed"
                 },
-                "reporter": "geenensp",
+                "reporter": "test_reporter_2",
                 "larted": "true",
                 "tags": [
                   "32-bit",
@@ -237,8 +241,8 @@ rules:
       Content-Type: "application/x-www-form-urlencoded"
       Auth-Key: "test_auth_key"
     query_params:
-      query: "get_recent"
-      selector: "time"
+      query: ["get_recent"]
+      selector: ["time"]
     responses:
       - status_code: 200
         body: |-
@@ -287,7 +291,7 @@ rules:
                 "file_size": 414720,
                 "file_type_mime": "application/x-dosexec",
                 "file_type": "exe",
-                "reporter": "zbetcheckin",
+                "reporter": "test_reporter_2",
                 "origin_country": "FR",
                 "anonymous": 0,
                 "signature": "Loki",
@@ -395,3 +399,212 @@ rules:
           d6f04b5a910115f4b50ecec09d40a1df,2017-07-15 19:42:24,2018-10-14 08:12:51,Dridex
           35c0a31c481927f022a3b530255ac080,2017-07-15 19:43:19,2021-04-10 12:54:04,Tofsee
           e330bca99c8a5256ae126a55c4c725c5,2017-07-15 19:59:29,2021-01-13 00:29:37,Adware
+  - path: /threatfox/v1/iocs
+    methods: ["GET"]
+    query_params:
+      since: ["{since:.*}"]
+      page_size: ["{page_size:.*}"]
+    request_headers:
+      Authorization:
+        - "Bearer test-commercial-token"
+    responses:
+      - status_code: 200
+        body: |-
+          {
+            "items": [
+              {"id":841537,"ioc":"wizzy.hopto.org","threat_type":"botnet_cc","threat_type_desc":"Indicator that identifies a botnet command&control server (C&C)","ioc_type":"domain","ioc_type_desc":"Domain that is used for botnet Command&control (C&C)","malware":"win.asyncrat","malware_printable":"AsyncRAT","malware_alias":null,"malware_malpedia":"https://malpedia.caad.fkie.fraunhofer.de/details/win.asyncrat","confidence_level":100,"first_seen":"2022-08-05T19:43:08Z","last_seen":"2022-08-05T19:43:08Z","reference":"https://example.com/ref/1","reporter":"test_reporter","tags":["asyncrat"]},
+              {"id":839586,"ioc":"872ff530d50579ae6bdc7cb4d658324b1d0e7a3e","threat_type":"payload","threat_type_desc":"Indicator that identifies a malware sample (payload)","ioc_type":"sha1_hash","ioc_type_desc":"SHA1 hash of a malware sample (payload)","malware":"win.vidar","malware_printable":"Vidar","malware_alias":null,"malware_malpedia":"https://malpedia.caad.fkie.fraunhofer.de/details/win.vidar","confidence_level":75,"first_seen":"2022-07-25T22:27:09Z","last_seen":"2022-07-25T22:27:09Z","reference":"","reporter":"test_reporter_2","tags":["Vidar"]},
+              {"id":839587,"ioc":"a3b5c6d7e8f9g0h1i2j3k4l5m6n7o8p9q0r1s2t3","threat_type":"payload","threat_type_desc":"Indicator that identifies a malware sample (payload)","ioc_type":"sha1_hash","ioc_type_desc":"SHA1 hash of a malware sample (payload)","malware":"win.redline","malware_printable":"RedLine","malware_alias":null,"malware_malpedia":"https://malpedia.caad.fkie.fraunhofer.de/details/win.redline","confidence_level":80,"first_seen":"2025-03-15T10:15:00Z","last_seen":"2025-03-15T10:15:00Z","reference":"","reporter":"test_reporter_3","tags":["RedLine"]}
+            ],
+            "meta": {
+              "page_size": 100,
+              "total_items": 3
+            }
+          }
+  - path: /yaraify/v1/rules
+    methods: ["GET"]
+    query_params:
+      since: ["{since:.*}"]
+      page_size: ["{page_size:.*}"]
+      after: ["id%3D171112915"]
+    request_headers:
+      Authorization:
+        - "Bearer test-commercial-token"
+    responses:
+      - status_code: 200
+        body: |-
+          {
+            "items": [
+              {
+                "author": "Third Author",
+                "description": "detects SampleMalware",
+                "first_seen": "2024-01-15T11:16:40Z",
+                "malpedia_family": "win.samplemw",
+                "rule_name": "win_samplemw",
+                "yarahub_license": "CC BY-SA 4.0",
+                "yarahub_rule_matching_tlp": "TLP:WHITE",
+                "yarahub_rule_sharing_tlp": "TLP:WHITE",
+                "yarahub_uuid": "33333333-3333-4333-8333-333333333333"
+              }
+            ],
+            "meta": {
+              "page_size": 2,
+              "total_items": 3
+            }
+          }
+  - path: /yaraify/v1/rules
+    methods: ["GET"]
+    query_params:
+      since: ["{since:.*}"]
+      page_size: ["{page_size:.*}"]
+    request_headers:
+      Authorization:
+        - "Bearer test-commercial-token"
+    responses:
+      - status_code: 200
+        body: |-
+          {
+            "items": [
+              {
+                "author": "Example Author",
+                "date_written": "2024-01-10",
+                "description": "detects ExampleBot",
+                "first_seen": "2024-01-15T11:16:44Z",
+                "malpedia_family": "win.examplebot",
+                "rule_name": "win_examplebot",
+                "yarahub_author_twitter": "@example_author",
+                "yarahub_license": "CC BY-SA 4.0",
+                "yarahub_reference_link": "https://example.com/research/examplebot",
+                "yarahub_reference_md5": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "yarahub_rule_matching_tlp": "TLP:WHITE",
+                "yarahub_rule_sharing_tlp": "TLP:WHITE",
+                "yarahub_uuid": "11111111-1111-4111-8111-111111111111"
+              },
+              {
+                "author": "Second Author",
+                "description": "detects OtherMalware",
+                "first_seen": "2024-01-15T11:16:42Z",
+                "malpedia_family": "win.othermw",
+                "rule_name": "win_othermw",
+                "yarahub_license": "CC0 1.0",
+                "yarahub_rule_matching_tlp": "TLP:WHITE",
+                "yarahub_rule_sharing_tlp": "TLP:GREEN",
+                "yarahub_uuid": "22222222-2222-4222-8222-222222222222"
+              }
+            ],
+            "meta": {
+              "next_cursor": "id%3D171112915",
+              "next_page": "/yaraify/v1/rules?after=id%253D171112915&page_size=2",
+              "page_size": 2,
+              "total_items": 3
+            }
+          }
+  - path: /urlhaus/v1/urls
+    methods: ["GET"]
+    query_params:
+      since: ["{since:.*}"]
+      page_size: ["{page_size:.*}"]
+    request_headers:
+      Authorization:
+        - "Bearer test-commercial-token"
+    responses:
+      - status_code: 200
+        body: |-
+          {
+            "items": [
+              {
+                "blacklists": {
+                  "spamhaus_dbl": "not listed"
+                },
+                "first_seen": "2021-10-05T13:57:05Z",
+                "host": "81.2.69.142",
+                "id": 1656008,
+                "larted": true,
+                "last_online": "2021-10-05T14:30:00Z",
+                "reporter": "tammeto",
+                "tags": null,
+                "threat": "malware_download",
+                "url": "http://81.2.69.142:55871/mozi.m",
+                "url_status": "offline",
+                "urlhaus_reference": "https://urlhaus.abuse.ch/url/1656008/"
+              },
+              {
+                "blacklists": {
+                  "spamhaus_dbl": "not listed"
+                },
+                "first_seen": "2021-10-05T13:54:10Z",
+                "host": "89.160.20.128",
+                "id": 1656007,
+                "larted": true,
+                "reporter": "geenensp",
+                "tags": [
+                  "32-bit",
+                  "elf",
+                  "mips",
+                  "Mozi"
+                ],
+                "takedown_time_seconds": 6831,
+                "threat": "malware_download",
+                "url": "http://89.160.20.128:42989/i",
+                "url_status": "online",
+                "urlhaus_reference": "https://urlhaus.abuse.ch/url/1656007/"
+              }
+            ],
+            "meta": {
+              "page_size": 100,
+              "total_items": 2
+            }
+          }
+  - path: /api/v1/
+    methods: ["POST"]
+    request_headers:
+      Content-Type: "application/json"
+      Auth-Key: "test_auth_key"
+    request_body: /recent_yararules/
+    responses:
+      - status_code: 200
+        body: |-
+          {
+            "query_status": "ok",
+            "data": [
+              {
+                "time_stamp": "2024-01-15 11:16:44 UTC",
+                "yarahub_uuid": "11111111-1111-4111-8111-111111111111",
+                "rule_name": "win_examplebot",
+                "author": "Example Author",
+                "description": "detects ExampleBot",
+                "date": "2024-01-10",
+                "yarahub_license": "CC BY-SA 4.0",
+                "yarahub_author_twitter": "@example_author",
+                "yarahub_reference_link": "https://example.com/research/examplebot",
+                "yarahub_reference_md5": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "yarahub_rule_matching_tlp": "TLP:WHITE",
+                "yarahub_rule_sharing_tlp": "TLP:WHITE",
+                "malpedia_family": "win.examplebot"
+              },
+              {
+                "time_stamp": "2024-01-15 11:16:42 UTC",
+                "yarahub_uuid": "22222222-2222-4222-8222-222222222222",
+                "rule_name": "win_othermw",
+                "author": "Second Author",
+                "description": "detects OtherMalware",
+                "date": "2024-01-09",
+                "yarahub_license": "CC0 1.0",
+                "yarahub_rule_matching_tlp": "TLP:WHITE",
+                "yarahub_rule_sharing_tlp": "TLP:GREEN",
+                "malpedia_family": "win.othermw"
+              },
+              {
+                "time_stamp": "2024-01-15 11:16:40 UTC",
+                "yarahub_uuid": "33333333-3333-4333-8333-333333333333",
+                "rule_name": "win_samplemw",
+                "author": "Third Author",
+                "description": "detects SampleMalware",
+                "date": "2024-01-08",
+                "yarahub_license": "CC BY-SA 4.0",
+                "yarahub_rule_matching_tlp": "TLP:WHITE",
+                "yarahub_rule_sharing_tlp": "TLP:WHITE",
+                "malpedia_family": "win.samplemw"
+              }
+            ]
+          }

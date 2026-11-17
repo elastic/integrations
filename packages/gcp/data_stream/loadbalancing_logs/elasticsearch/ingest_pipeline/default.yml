@@ -3,71 +3,87 @@ description: Pipeline for Google Cloud DNS logs
 
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_2c5cae23
       field: event.category
       value: ["network"]
       allow_duplicates: false
   - append:
+      tag: append_event_type_6adea021
       field: event.type
       value: ["info"]
       allow_duplicates: false
   - date:
+      tag: date_json_timestamp_e111e976
       field: json.timestamp
       timezone: UTC
       formats:
         - ISO8601
   - date:
+      tag: date_json_receiveTimestamp_to_event_created_fd746809
       field: json.receiveTimestamp
       target_field: event.created
       timezone: UTC
       formats:
         - ISO8601
   - rename:
+      tag: rename_json_logName_to_log_logger_73f0a6eb
       field: json.logName
       target_field: log.logger
       ignore_missing: true
-  - set: 
+  - set:
+      tag: set_event_id_efd37a25
       field: event.id
       copy_from: json.insertId
       ignore_empty_value: true
       ignore_failure: true
-  - convert: 
+  - convert:
+      tag: convert_json_resource_labels_project_id_to_cloud_project_id_a91d4841
       field: json.resource.labels.project_id
       target_field: cloud.project.id
       type: string
       ignore_failure: true
-  - convert: 
+  - convert:
+      tag: convert_json_resource_labels_zone_to_cloud_region_2857d2fa
       field: json.resource.labels.zone
       target_field: cloud.region
       type: string
       ignore_failure: true
   - grok:
+      tag: grok_json_httpRequest_remoteIp_57caf45b
       field: json.httpRequest.remoteIp
       ignore_missing: true
       patterns:
       - ^%{IP:source.address}(:%{POSINT:source.port:long})?$
   - convert:
+      tag: convert_source_address_to_source_ip_0a89ba51
       field: source.address
       target_field: source.ip
       type: ip
       ignore_failure: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_0494c6b1
       field: source.ip
       target_field: source.geo
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -76,141 +92,181 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - rename:
+      tag: rename_json_httpRequest_requestMethod_to_http_request_method_04af1619
       field: json.httpRequest.requestMethod
       target_field: http.request.method
       ignore_missing: true
   - convert:
+      tag: convert_json_httpRequest_requestSize_to_http_request_bytes_edcd4360
       field: json.httpRequest.requestSize
       target_field: http.request.bytes
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_json_httpRequest_responseSize_to_http_response_bytes_6ab6bb76
       field: json.httpRequest.responseSize
       target_field: http.response.bytes
       type: long
       ignore_missing: true
   - rename:
+      tag: rename_json_httpRequest_status_to_http_response_status_code_5fa5c66a
       field: json.httpRequest.status
       target_field: http.response.status_code
       ignore_missing: true
   - dissect:
+      tag: dissect_json_httpRequest_protocol_a1a3bd33
       field: json.httpRequest.protocol
       pattern: "%{network.protocol}/%{http.version}"
       ignore_failure: true
       if: ctx.json?.httpRequest?.protocol != null
   - lowercase:
+      tag: lowercase_network_protocol_49872259
       field: network.protocol
       ignore_missing: true
   - user_agent:
+      tag: user_agent_json_httpRequest_userAgent_to_user_agent_bc3f8b77
       field: json.httpRequest.userAgent
       target_field: user_agent
       ignore_missing: true
   - uri_parts:
+      tag: uri_parts_json_httpRequest_requestUrl_to_url_6132c0a8
       field: json.httpRequest.requestUrl
       target_field: url
       if: ctx.json?.httpRequest?.requestUrl != null
   - rename:
+      tag: rename_json_httpRequest_referer_to_http_request_referrer_67907f66
       field: json.httpRequest.referer
       target_field: http.request.referrer
       ignore_missing: true
   - grok:
+      tag: grok_json_httpRequest_serverIp_be0d27c1
       field: json.httpRequest.serverIp
       ignore_missing: true
       patterns:
       - ^%{IP:destination.nat.ip}(:%{POSINT:destination.nat.port:long})?$
-  - set: 
+  - set:
+      tag: set_destination_address_e3fe5355
       field: destination.address
       copy_from: url.domain
       ignore_empty_value: true
       ignore_failure: true
-  - set: 
+  - set:
+      tag: set_destination_port_e5981b43
       field: destination.port
       copy_from: url.port
       ignore_empty_value: true
       ignore_failure: true
   - convert:
+      tag: convert_destination_address_to_destination_ip_602d8632
       field: destination.address
       target_field: destination.ip
       type: ip
       ignore_missing: true
       on_failure:
-        - rename: 
+        - rename:
+            tag: rename_url_domain_to_destination_domain_33ca3ed3
             field: url.domain
             target_field: destination.domain
-            ignore_missing: true 
+            ignore_missing: true
             ignore_failure: true
   - rename:
+      tag: rename_json_severity_to_log_level_db5923df
       field: json.severity
       target_field: log.level
       ignore_missing: true
   - rename:
+      tag: rename_json_jsonPayload_cacheId_to_gcp_load_balancer_cache_id_9a294e58
       field: json.jsonPayload.cacheId
       target_field: gcp.load_balancer.cache_id
       ignore_missing: true
   - rename:
+      tag: rename_json_jsonPayload_statusDetails_to_gcp_load_balancer_status_details_84210076
       field: json.jsonPayload.statusDetails
       target_field: gcp.load_balancer.status_details
       ignore_missing: true
   - rename:
+      tag: rename_json_httpRequest_cacheHit_to_gcp_load_balancer_cache_hit_9f52461f
       field: json.httpRequest.cacheHit
       target_field: gcp.load_balancer.cache_hit
       ignore_missing: true
   - rename:
+      tag: rename_json_httpRequest_cacheLookup_to_gcp_load_balancer_cache_lookup_a949b333
       field: json.httpRequest.cacheLookup
       target_field: gcp.load_balancer.cache_lookup
       ignore_missing: true
   - rename:
+      tag: rename_json_resource_labels_url_map_name_to_gcp_load_balancer_url_map_name_0aca1d08
       field: json.resource.labels.url_map_name
       target_field: gcp.load_balancer.url_map_name
       ignore_missing: true
   - rename:
+      tag: rename_json_resource_labels_forwarding_rule_name_to_gcp_load_balancer_forwarding_rule_name_0a2ca280
       field: json.resource.labels.forwarding_rule_name
       target_field: gcp.load_balancer.forwarding_rule_name
       ignore_missing: true
   - rename:
+      tag: rename_json_resource_labels_target_proxy_name_to_gcp_load_balancer_target_proxy_name_c7835324
       field: json.resource.labels.target_proxy_name
       target_field: gcp.load_balancer.target_proxy_name
       ignore_missing: true
   - rename:
+      tag: rename_json_resource_labels_backend_service_name_to_gcp_load_balancer_backend_service_name_75d06e38
       field: json.resource.labels.backend_service_name
       target_field: gcp.load_balancer.backend_service_name
       ignore_missing: true
   - append:
+      tag: append_related_ip_a2836bfa
       field: related.ip
       value: "{{source.ip}}"
       allow_duplicates: false
       if: ctx?.source?.ip != null
   - append:
+      tag: append_related_ip_bd4aa684
       field: related.ip
       value: "{{destination.ip}}"
       allow_duplicates: false
       if: ctx?.destination?.ip != null
   - append:
+      tag: append_related_ip_2c2fa2bf
       field: related.ip
       value: "{{destination.nat.ip}}"
       allow_duplicates: false
       if: ctx?.destination?.nat?.ip != null
   - append:
+      tag: append_related_hosts_c4bb4f1e
       field: related.hosts
       value: "{{destination.domain}}"
       allow_duplicates: false
       if: ctx?.destination?.domain != null
   - remove:
-      field: 
+      tag: remove_e5a80934
+      field:
         - json
       ignore_missing: true
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

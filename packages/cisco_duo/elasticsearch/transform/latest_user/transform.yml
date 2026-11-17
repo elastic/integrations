@@ -1,0 +1,42 @@
+source:
+  index:
+    - "logs-cisco_duo.user-*"
+  query:
+    bool:
+      must_not:
+        - term:
+            event.kind: pipeline_error
+        - exists:
+            field: error.message
+        - terms:
+            _tier:
+              - data_frozen
+              - data_cold
+dest:
+  index: "logs-cisco_duo_latest.dest_user-1"
+  aliases:
+    - alias: "logs-cisco_duo_latest.user"
+      move_on_creation: true
+latest:
+  unique_key:
+    - cisco_duo.user.id
+  sort: "@timestamp"
+description: >-
+  Latest user state from the Cisco Duo Admin API. Retains only the most recent
+  record per user for up-to-date correlation.
+frequency: 1m
+settings:
+  deduce_mappings: false
+  unattended: true
+sync:
+  time:
+    field: "event.ingested"
+    delay: 120s
+retention_policy:
+  time:
+    field: "event.ingested"
+    max_age: 30d
+_meta:
+  managed: true
+  fleet_transform_version: 0.1.0
+  run_as_kibana_system: false

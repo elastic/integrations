@@ -1,0 +1,50 @@
+{
+    "id": "vercel_otel-elevated-ttfb-p75",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when the site-wide p75 Time to First Byte (TTFB) exceeds the 'poor' threshold (1800ms) over a 1-hour window. TTFB reflects edge/server responsiveness and directly drives LCP, so a sustained elevation is an early signal of cold starts or edge congestion before it fully manifests as an LCP regression.",
+        "name": "[Vercel OTel] Elevated TTFB p75 (edge/server latency)",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "vercel",
+            "latency"
+        ],
+        "schedule": {
+            "interval": "15m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "vercel_otel-speed-insights"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## Elevated TTFB p75\n\n### Triage Steps\n1. TTFB measures the time from navigation start to the first byte of the response \u2014 elevation here points to backend/edge responsiveness rather than client-side rendering.\n2. Check for cold-start patterns: a spike right after a new deployment often means lambda cold starts are dominating; this should resolve as the deployment warms up.\n3. Check the Logs data stream for elevated latency or errors around the same time window, broken down by `vercel.execution.region` \u2014 regional edge congestion or an overloaded lambda pool would explain a broad TTFB elevation.\n4. Segment by geography (`geo.country.iso_code`) in the Speed Insights dashboard to see if the elevation is global or localized to users served by a specific edge region.\n5. If TTFB is elevated but LCP/INP look fine, this may be an early warning \u2014 investigate before it becomes user-visible.\n\n### Escalation\nIf TTFB p75 remains above the poor threshold for more than one hour, or if it is trending upward alongside the regional error-rate-skew rule, escalate to the on-call engineer to investigate edge/lambda capacity."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-vercel.speedinsights.v1.otel-default\n| WHERE deployment.environment.name == \"production\"\n    AND metrics.TTFB IS NOT NULL\n| STATS\n    ttfb_p75 = PERCENTILE(metrics.TTFB, 75),\n    samples = COUNT(metrics.TTFB)\n// Minimum sample size, since Speed Insights data is sampled\n| WHERE samples >= 20\n// \"Poor\" threshold per the Web Vitals spec table (milliseconds); lower toward 800-1800 for a stricter,\n// earlier-warning threshold aligned with the \"needs improvement\" boundary\n| WHERE ttfb_p75 > 1800.0"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 60,
+            "timeWindowUnit": "m",
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

@@ -1,0 +1,53 @@
+{
+    "id": "supabase_otel-filesystem-read-only",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Fires when a filesystem on the project node has been remounted read-only. PostgreSQL cannot write, so this is terminal for the project until the volume is recovered.",
+        "name": "[Supabase OTel] Filesystem is read-only",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "supabase",
+            "host",
+            "errors"
+        ],
+        "schedule": {
+            "interval": "1m"
+        },
+        "alertDelay": {
+            "active": 1
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "supabase_otel-7c6a2004-c517-4b50-b70a-2682b7a79228"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## Filesystem Read-Only\n\nThe kernel remounted a filesystem read-only, which it does to protect data after an IO error or when the volume is unrecoverably full. PostgreSQL cannot write, so writes fail and the database will usually shut down or refuse connections shortly afterwards.\n\n### Triage Steps\n1. Note the mountpoint. The data volume going read-only stops all database writes; the root volume going read-only breaks the platform services around it.\n2. Check whether this followed the volume filling up — the `[Supabase OTel] Filesystem nearly full` alert firing beforehand points at capacity rather than hardware.\n3. Check `node_filesystem_device_error` and the disk IO error counters for an underlying device fault.\n4. Expect the availability rules for PostgreSQL, PgBouncer and Auth to follow. Treat this as the root cause rather than three separate incidents.\n\n### Escalation\nThis requires platform intervention to remount or replace the volume. Escalate immediately.\n\n### Tuning\nMatches the `Filesystem Read-Only Status` dashboard panel exactly, including the aggregation, so the alert and dashboard agree."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-supabase.metrics.otel-*\n// node_filesystem_readonly is a gauge: 1 = the kernel remounted the filesystem read-only.\n// Same metric and aggregation as the \"Filesystem Read-Only Status\" dashboard panel.\n| STATS\n    `Read Only` = MAX(LAST_OVER_TIME(node_filesystem_readonly)),\n    `Device Error` = MAX(LAST_OVER_TIME(node_filesystem_device_error))\n  BY resource.attributes.supabase_project_ref, attributes.mountpoint, attributes.device\n| WHERE `Read Only` == 1\n// One row per mounted filesystem, so the alert instance key includes it.\n| EVAL alert_instance = CONCAT(resource.attributes.supabase_project_ref, \" / \", attributes.mountpoint, \" / \", attributes.device)"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "alert_instance",
+            "termSize": 50
+        }
+    }
+}

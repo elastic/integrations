@@ -1,0 +1,170 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+  maxsize: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+auth.oauth2:
+  provider: google
+  google:
+    jwt_file: {{jwt_file}}
+    jwt_json: {{jwt_json}}
+    delegated_account: {{delegated_account}}
+  scopes:
+    - https://www.googleapis.com/auth/admin.reports.audit.readonly
+resource.url: {{api_host}}
+state:
+  user_key: {{user_key}}
+  initial_interval: {{initial_interval}}
+  lag_time: {{lag_time}}
+  batch_size: {{batch_size}}
+  page_token_ttl: 30m
+  application_name_for_url: {{application_name_for_url}}
+redact:
+  fields: ~
+program: |-
+  // Resume the open window saved in the cursor if it has a page token. After a
+  // restart only the cursor is left, and a token older than page_token_ttl is
+  // not used. While the input is still running with more pages to read
+  // (want_more), the token is used whatever its age: the input keeps its state
+  // while it waits for the next interval after reaching max_executions, and
+  // that wait can be longer than the TTL. A token only fits the query it was
+  // issued for, so the cursor also holds the user key, application name and
+  // batch size, and a policy change to any of them ends the resume. Otherwise
+  // begin a new window at the last timestamp.
+  state.?cursor.orValue({}).as(c,
+    (
+      (
+        has(c.page_token) && has(c.expires) && c.?query.orValue({}) == {
+          "user_key": state.user_key,
+          "application": state.application_name_for_url,
+          "batch_size": string(int(state.batch_size)),
+        } && (state.?want_more.orValue(false) || timestamp(c.expires) > now)
+      ) ?
+        {
+          "start_time": c.start_time,
+          "end_time": c.end_time,
+          "page_token": c.page_token,
+        }
+      :
+        {
+          "start_time": c.?last_timestamp.orValue(
+            (now - duration(state.initial_interval) - duration(state.lag_time)).format(time_layout.RFC3339)
+          ),
+          "end_time": (now - duration(state.lag_time)).format(time_layout.RFC3339),
+        }
+    ).as(w,
+      state.with(
+        request(
+          "GET",
+          state.url.trim_right("/") + "/admin/reports/v1/activity/users/" + state.user_key + "/applications/" + state.application_name_for_url + "?" + {
+            "maxResults": [string(int(state.batch_size))],
+            "endTime": [w.end_time],
+            "startTime": [w.start_time],
+            ?"pageToken": w.?page_token.optMap(v, [v]),
+          }.format_query()
+        ).do_request().as(resp, (resp.StatusCode == 200) ?
+          resp.Body.decode_json().as(body,
+            {
+              // A single activity record can hold multiple events, so emit one document
+              // per event while retaining the shared activity envelope.
+              "events": has(body.items) ?
+                body.items.map(item,
+                  item.events.map(event,
+                    {
+                      "message": item.drop(
+                        "events"
+                      ).with({"events": event}).encode_json(),
+                    }
+                  )
+                ).flatten()
+              :
+                [],
+              // Records are returned newest first, so the timestamp cursor can only
+              // move once the last page of the window has been read. Until then keep
+              // the window bounds and the next page token in the cursor, so that an
+              // interruption (such as a restart) resumes at the last published page
+              // instead of reading the whole window again. After a restart the token
+              // is ignored when it is older than page_token_ttl, in which case the
+              // window is read again from last_timestamp. The query the token was
+              // issued for is saved with it, so that it is not sent with a different
+              // user key, application name or batch size after a policy change.
+              "cursor": has(body.nextPageToken) ?
+                {
+                  "last_timestamp": w.start_time,
+                  "start_time": w.start_time,
+                  "end_time": w.end_time,
+                  "page_token": body.nextPageToken,
+                  "expires": (now + duration(state.page_token_ttl)).format(time_layout.RFC3339),
+                  "query": {
+                    "user_key": state.user_key,
+                    "application": state.application_name_for_url,
+                    "batch_size": string(int(state.batch_size)),
+                  },
+                }
+              :
+                {"last_timestamp": w.end_time},
+              "want_more": has(body.nextPageToken),
+            }
+          )
+        :
+          // Report any non-200 response as a single error object. This
+          // degrades the input and leaves the cursor at the last published
+          // page, so the same request is tried again at the next interval.
+          //
+          // After a restart a saved page token is only used while it is younger
+          // than page_token_ttl, so a rejected token is not expected. If one is
+          // rejected, the TTL is longer than Google keeps tokens, and the
+          // degraded status with the status code and body in the error
+          // message is the signal we want. The same can happen after a long
+          // wait between intervals, when the token is used whatever its age.
+          // The cursor is deliberately not reset here: the status code Google
+          // returns for an expired token is not yet known, and resetting on
+          // any error would also discard the page position after unrelated
+          // failures. This branch sets want_more to false, so the next
+          // evaluation applies the TTL: the saved token is tried again until it
+          // reaches its expiry, and then the window is read again from
+          // last_timestamp.
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": resp.Status,
+                "message": "GET " + state.url.trim_right("/") + "/admin/reports/v1/activity/users/" + state.user_key + "/applications/" + state.application_name_for_url + ":" + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    resp.Status + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "want_more": false,
+          }
+        )
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

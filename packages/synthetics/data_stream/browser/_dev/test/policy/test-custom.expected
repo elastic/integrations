@@ -1,0 +1,44 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: synthetics
+      name: test-custom-synthetics
+      streams:
+        - data_stream:
+            dataset: browser
+            elasticsearch:
+                privileges:
+                    indices:
+                        - auto_configure
+                        - create_doc
+                        - read
+          ignore_https_errors: true
+          max_attempts: 2
+          name: null
+          run_from.geo.name: Fleet managed
+          run_from.id: fleet_managed
+          schedule: '@every 3m'
+          source.inline.script: step('load homepage', async () => {})
+          throttling: null
+          timeout: 60s
+          type: browser
+      type: synthetics/browser
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - synthetics-browser-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+                    - read
+secret_references: []

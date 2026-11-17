@@ -7,15 +7,15 @@ processors:
   - append:
       field: event.category
       value: malware
-      tag: append_malware_category
+      tag: append_malware_category_00df95f0
   - append:
       field: event.type
       value: info
-      tag: append_info_type
+      tag: append_info_type_5eab37e6
   - append:
       field: event.action
       value: incident
-      tag: append_incident_action
+      tag: append_incident_action_f18fc600
   - grok:
       tag: grok_crowdstrike_event_UserId_70ae09b7
       field: crowdstrike.event.UserId
@@ -27,7 +27,7 @@ processors:
   - set:
       field: user.email
       copy_from: crowdstrike.event.UserId
-      tag: copy_user_email
+      tag: copy_user_email_185a04c9
       if: ctx.crowdstrike?.event?.UserId != null && ctx.crowdstrike.event.UserId.indexOf("@") > 0
   - date:
       field: crowdstrike.event.IncidentStartTime
@@ -35,7 +35,7 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_incident_start_time_ms
+      tag: date_incident_start_time_ms_9df7e9f6
       if: 'ctx.crowdstrike?.event?.IncidentStartTime != null && String.valueOf(ctx.crowdstrike.event.IncidentStartTime).length() >= 12'
   - date:
       field: crowdstrike.event.IncidentStartTime
@@ -43,7 +43,7 @@ processors:
       timezone: UTC
       formats:
         - UNIX
-      tag: date_incident_start_time
+      tag: date_incident_start_time_ae441dfc
       if: 'ctx.crowdstrike?.event?.IncidentStartTime != null && String.valueOf(ctx.crowdstrike.event.IncidentStartTime).length() <= 11'
   - date:
       field: crowdstrike.event.IncidentEndTime
@@ -51,7 +51,7 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_incident_end_time_ms
+      tag: date_incident_end_time_ms_aefc80c9
       if: 'ctx.crowdstrike?.event?.IncidentEndTime != null && String.valueOf(ctx.crowdstrike.event.IncidentEndTime).length() >= 12'
   - date:
       field: crowdstrike.event.IncidentEndTime
@@ -59,38 +59,41 @@ processors:
       timezone: UTC
       formats:
         - UNIX
-      tag: date_incident_end_time
+      tag: date_incident_end_time_539bd4a1
       if: 'ctx.crowdstrike?.event?.IncidentEndTime != null && String.valueOf(ctx.crowdstrike.event.IncidentEndTime).length() <= 11'
   - rename:
       field: crowdstrike.event.FalconHostLink
       target_field: event.reference
       ignore_missing: true
-      tag: rename_falcon_host_link
+      tag: rename_falcon_host_link_7d3b772f
   - rename:
       field: crowdstrike.event.HostID
       target_field: host.id
       ignore_missing: true
-      tag: rename_host_id
+      tag: rename_host_id_4d63d281
   - rename:
       field: crowdstrike.event.IncidentID
       target_field: event.id
       ignore_missing: true
-      tag: rename_incident_id
+      tag: rename_incident_id_a058aa79
   - set:
       field: message
       value: "Incident score {{{crowdstrike.event.FineScore}}}"
-      tag: set_message
+      tag: set_message_ae575dda
       if: ctx.crowdstrike?.event?.FineScore != null
 
 on_failure:
   - append:
+      tag: append_error_message_9c9ce5dc
       field: error.message
       value: |-
         Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

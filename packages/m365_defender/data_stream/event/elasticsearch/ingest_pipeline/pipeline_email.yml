@@ -5,17 +5,17 @@ processors:
   # Rather than checking it in every processor we check it once here.
   - fail:
       message: 'Event does not contain a valid category.'
-      tag: fail_event_category
+      tag: fail_event_category_75e579a8
       if: ctx.m365_defender.event.category == null || ctx.m365_defender.event.category == ''
   # Event Categorization
   - set:
       field: event.kind
       value: event
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
   - append:
       field: event.category
       value: email
-      tag: append_event_category
+      tag: append_event_category_dff4db3f
       if: '!ctx.m365_defender.event.category.toLowerCase().contains("urlclickevents")'
   - append:
       field: event.category
@@ -25,7 +25,7 @@ processors:
   - append:
       field: event.type
       value: info
-      tag: append_event_type
+      tag: append_event_type_445aff28
       if: '!ctx.m365_defender.event.category.toLowerCase().contains("urlclickevents")'
   - append:
       field: event.type
@@ -36,7 +36,7 @@ processors:
   # JSON Processors
   - json:
       field: json.properties.DetectionMethods
-      tag: json_detection_methods
+      tag: json_detection_methods_104181d5
       if: ctx.json?.properties?.DetectionMethods != null && ctx.json.properties.DetectionMethods instanceof String && ctx.json.properties.DetectionMethods != ''
       on_failure:
         - append:
@@ -45,7 +45,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - json:
       field: json.properties.ConfidenceLevel
-      tag: json_confidence_level
+      tag: json_confidence_level_41134278
       if: ctx.json?.properties?.ConfidenceLevel != null && ctx.json.properties.ConfidenceLevel instanceof String && ctx.json.properties.ConfidenceLevel != ''
       on_failure:
         - append:
@@ -54,7 +54,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - json:
       field: json.properties.AdditionalFields
-      tag: json_additional_fields
+      tag: json_additional_fields_20005e7c
       if: ctx.json?.properties?.AdditionalFields != null && ctx.json.properties.AdditionalFields instanceof String && ctx.json.properties.AdditionalFields != ''
       on_failure:
         - append:
@@ -101,7 +101,7 @@ processors:
   - convert:
       field: json.properties.EmailClusterId
       target_field: m365_defender.event.email.cluster_id
-      tag: convert_email_cluster_id
+      tag: convert_email_cluster_id_cd0a41e9
       if: ctx.json?.properties?.EmailClusterId != ''
       type: string
       ignore_missing: true
@@ -113,7 +113,7 @@ processors:
   - convert:
       field: json.properties.IPAddress
       target_field: m365_defender.event.ip_address
-      tag: convert_ip_address
+      tag: convert_ip_address_4ff878d0
       if: ctx.json?.properties?.IPAddress != ''
       type: ip
       ignore_missing: true
@@ -125,7 +125,7 @@ processors:
   - convert:
       field: json.properties.FileSize
       target_field: m365_defender.event.file.size
-      tag: convert_file_size
+      tag: convert_file_size_865a7189
       if: ctx.json?.properties?.FileSize != ''
       type: long
       ignore_missing: true
@@ -137,7 +137,7 @@ processors:
   - convert:
       field: json.properties.SenderIPv4
       target_field: m365_defender.event.sender.ipv4
-      tag: convert_sender_ipv4
+      tag: convert_sender_ipv4_4db72ee7
       if: ctx.json?.properties?.SenderIPv4 != ''
       type: ip
       ignore_missing: true
@@ -149,7 +149,7 @@ processors:
   - convert:
       field: json.properties.SenderIPv6
       target_field: m365_defender.event.sender.ipv6
-      tag: convert_sender_ipv6
+      tag: convert_sender_ipv6_f8b1c222
       if: ctx.json?.properties?.SenderIPv6 != ''
       type: ip
       ignore_missing: true
@@ -161,7 +161,7 @@ processors:
   - convert:
       field: json.properties.AttachmentCount
       target_field: m365_defender.event.attachment_count
-      tag: convert_attachment_count
+      tag: convert_attachment_count_a5f8c4fc
       if: ctx.json?.properties?.AttachmentCount != ''
       type: long
       ignore_missing: true
@@ -173,7 +173,7 @@ processors:
   - convert:
       field: json.properties.BulkComplaintLevel
       target_field: m365_defender.event.bulk_complaint_level
-      tag: convert_bulk_complaint_level
+      tag: convert_bulk_complaint_level_658a5eee
       if: ctx.json?.properties?.BulkComplaintLevel != ''
       type: long
       ignore_missing: true
@@ -185,7 +185,7 @@ processors:
   - convert:
       field: json.properties.ReportId
       target_field: m365_defender.event.report_id
-      tag: convert_json_properties_ReportId
+      tag: convert_json_properties_ReportId_7906ace4
       if: ctx.json?.properties?.ReportId != ''
       type: string
       ignore_missing: true
@@ -197,7 +197,7 @@ processors:
   - convert:
       field: json.properties.UrlCount
       target_field: m365_defender.event.url_count
-      tag: convert_url_count
+      tag: convert_url_count_df2d6a14
       if: ctx.json?.properties?.UrlCount != ''
       type: long
       ignore_missing: true
@@ -208,7 +208,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.properties.IsExternalThread
-      tag: convert_IsExternalThread_to_boolean
+      tag: convert_IsExternalThread_to_boolean_9f95f3af
       target_field: m365_defender.event.is_external_thread
       type: boolean
       ignore_missing: true
@@ -219,7 +219,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.properties.IsOwnedThread
-      tag: convert_IsOwnedThread_to_boolean
+      tag: convert_IsOwnedThread_to_boolean_54bdcb0d
       target_field: m365_defender.event.is_owned_thread
       type: boolean
       ignore_missing: true
@@ -243,172 +243,172 @@ processors:
   - rename:
       field: json.properties.SenderFromAddress
       target_field: m365_defender.event.sender.from_address
-      tag: rename_sender_from_address
+      tag: rename_sender_from_address_25a0aace
       ignore_missing: true
   - rename:
       field: json.properties.NetworkMessageId
       target_field: m365_defender.event.network.message_id
-      tag: rename_network_message_id
+      tag: rename_network_message_id_3c5bebac
       ignore_missing: true
   - rename:
       field: json.properties.FileType
       target_field: m365_defender.event.file.type
-      tag: rename_file_type
+      tag: rename_file_type_e5a3dba9
       ignore_missing: true
   - rename:
       field: json.properties.RecipientEmailAddress
       target_field: m365_defender.event.recipient.email_address
-      tag: rename_recipient_email_address
+      tag: rename_recipient_email_address_f56c0700
       ignore_missing: true
   - rename:
       field: json.properties.ActionType
       target_field: m365_defender.event.action.type
-      tag: rename_action_type
+      tag: rename_action_type_d396ef4d
       ignore_missing: true
   - rename:
       field: json.properties.SHA256
       target_field: m365_defender.event.sha256
-      tag: rename_sha256
+      tag: rename_sha256_346a1d44
       ignore_missing: true
   - rename:
       field: json.properties.FileName
       target_field: m365_defender.event.file.name
-      tag: rename_file_name
+      tag: rename_file_name_74a99622
       ignore_missing: true
   - rename:
       field: json.properties.EmailDirection
       target_field: m365_defender.event.email.direction
-      tag: rename_email_direction
+      tag: rename_email_direction_d2ce2c49
       ignore_missing: true
   - rename:
       field: json.properties.Subject
       target_field: m365_defender.event.subject
-      tag: rename_subject
+      tag: rename_subject_05ad02d6
       ignore_missing: true
   - rename:
       field: json.properties.DetectionMethods
       target_field: m365_defender.event.detection.methods
-      tag: rename_detection_methods
+      tag: rename_detection_methods_4d7204b7
       ignore_missing: true
   - rename:
       field: json.properties.RecipientObjectId
       target_field: m365_defender.event.recipient.object_id
-      tag: rename_recipient_object_id
+      tag: rename_recipient_object_id_16db0d4c
       ignore_missing: true
   - rename:
       field: json.properties.SenderDisplayName
       target_field: m365_defender.event.sender.display_name
-      tag: rename_sender_display_name
+      tag: rename_sender_display_name_1d208110
       ignore_missing: true
   - rename:
       field: json.properties.SenderObjectId
       target_field: m365_defender.event.sender.object_id
-      tag: rename_sender_object_id
+      tag: rename_sender_object_id_c896bbf9
       ignore_missing: true
   - rename:
       field: json.properties.ThreatNames
       target_field: m365_defender.event.threat.names
-      tag: rename_threat_names
+      tag: rename_threat_names_b39ff1c0
       ignore_missing: true
   - rename:
       field: json.properties.ThreatTypes
       target_field: m365_defender.event.threat.types
-      tag: rename_threat_types
+      tag: rename_threat_types_e0342385
       ignore_missing: true
   - rename:
       field: json.properties.ConfidenceLevel
       target_field: m365_defender.event.confidence_level
-      tag: rename_confidence_level
+      tag: rename_confidence_level_e2432290
       ignore_missing: true
   - rename:
       field: json.properties.AuthenticationDetails
       target_field: m365_defender.event.authentication_details
-      tag: rename_authentication_details
+      tag: rename_authentication_details_43db9351
       ignore_missing: true
   - rename:
       field: json.properties.AdditionalFields
       target_field: m365_defender.event.additional_fields
-      tag: rename_additional_fields
+      tag: rename_additional_fields_946d5eb4
       ignore_missing: true
   - rename:
       field: json.properties.Connectors
       target_field: m365_defender.event.connectors
-      tag: rename_connectors
+      tag: rename_connectors_ed741bd7
       ignore_missing: true
   - rename:
       field: json.properties.DeliveryAction
       target_field: m365_defender.event.delivery.action
-      tag: rename_delivery_action
+      tag: rename_delivery_action_47d4f167
       ignore_missing: true
   - rename:
       field: json.properties.DeliveryLocation
       target_field: m365_defender.event.delivery.location
-      tag: rename_delivery_location
+      tag: rename_delivery_location_81b39659
       ignore_missing: true
   - rename:
       field: json.properties.EmailAction
       target_field: m365_defender.event.email.action
-      tag: rename_email_action
+      tag: rename_email_action_2d6b7bc9
       ignore_missing: true
   - rename:
       field: json.properties.EmailActionPolicy
       target_field: m365_defender.event.email.action_policy
-      tag: rename_email_action_policy
+      tag: rename_email_action_policy_8b2497c1
       ignore_missing: true
   - rename:
       field: json.properties.EmailActionPolicyGuid
       target_field: m365_defender.event.email.action_policy_guid
-      tag: rename_email_action_policy_guid
+      tag: rename_email_action_policy_guid_272fec47
       ignore_missing: true
   - rename:
       field: json.properties.EmailLanguage
       target_field: m365_defender.event.email.language
-      tag: rename_email_language
+      tag: rename_email_language_60893f18
       ignore_missing: true
   - rename:
       field: json.properties.InternetMessageId
       target_field: m365_defender.event.internet_message_id
-      tag: rename_internet_message_id
+      tag: rename_internet_message_id_ea6bdb25
       ignore_missing: true
   - rename:
       field: json.properties.OrgLevelAction
       target_field: m365_defender.event.org_level.action
-      tag: rename_org_level_action
+      tag: rename_org_level_action_3771d8ed
       ignore_missing: true
   - rename:
       field: json.properties.OrgLevelPolicy
       target_field: m365_defender.event.org_level.policy
-      tag: rename_org_level_policy
+      tag: rename_org_level_policy_98db2818
       ignore_missing: true
   - rename:
       field: json.properties.SenderFromDomain
       target_field: m365_defender.event.sender.from_domain
-      tag: rename_sender_from_domain
+      tag: rename_sender_from_domain_30e10861
       ignore_missing: true
   - rename:
       field: json.properties.SenderMailFromAddress
       target_field: m365_defender.event.sender.mail_from_address
-      tag: rename_sender_mail_from_address
+      tag: rename_sender_mail_from_address_dc53c018
       ignore_missing: true
   - rename:
       field: json.properties.SenderMailFromDomain
       target_field: m365_defender.event.sender.mail_from_domain
-      tag: rename_sender_mail_from_domain
+      tag: rename_sender_mail_from_domain_2052817a
       ignore_missing: true
   - rename:
       field: json.properties.UserLevelAction
       target_field: m365_defender.event.user_level_action
-      tag: rename_user_level_action
+      tag: rename_user_level_action_ca49fee2
       ignore_missing: true
   - rename:
       field: json.properties.UserLevelPolicy
       target_field: m365_defender.event.user_level_policy
-      tag: rename_user_level_policy
+      tag: rename_user_level_policy_82fb9db2
       ignore_missing: true
   - rename:
       field: json.properties.ActionResult
       target_field: m365_defender.event.action.result
-      tag: rename_action_result
+      tag: rename_action_result_6448d665
       ignore_missing: true
   - rename:
       tag: rename_json_properties_ActionTrigger_to_m365_defender_event_action_trigger_5917d9e4
@@ -418,116 +418,116 @@ processors:
   - rename:
       field: json.properties.Action
       target_field: m365_defender.event.action.value
-      tag: rename_action
+      tag: rename_action_5e270c23
       ignore_missing: true
   - rename:
       field: json.properties.Url
       target_field: m365_defender.event.url
-      tag: rename_url
+      tag: rename_url_a62150cf
       ignore_missing: true
   - rename:
       field: json.properties.UrlDomain
       target_field: m365_defender.event.url_domain
-      tag: rename_url_domain
+      tag: rename_url_domain_d27a5ad1
       ignore_missing: true
   - rename:
       field: json.properties.UrlLocation
       target_field: m365_defender.event.url_location
-      tag: rename_url_location
+      tag: rename_url_location_c43a51a0
       ignore_missing: true
   - rename:
       field: json.properties.AccountUpn
       target_field: m365_defender.event.account.upn
-      tag: rename_account_upn
+      tag: rename_account_upn_b52305b0
       ignore_missing: true
   - rename:
       field: json.properties.UrlChain
       target_field: m365_defender.event.url_chain
-      tag: rename_url_chain
+      tag: rename_url_chain_423c2d40
       ignore_missing: true
   - rename:
       field: json.properties.Workload
       target_field: m365_defender.event.workload
-      tag: rename_workload
+      tag: rename_workload_c5dbba02
       ignore_missing: true
   - rename:
       field: json.properties.GroupId
-      tag: rename_GroupId
+      tag: rename_GroupId_99a2b3bf
       target_field: m365_defender.event.group_id
       ignore_missing: true
   - rename:
       field: json.properties.GroupName
-      tag: rename_GroupName
+      tag: rename_GroupName_f717c9c2
       target_field: m365_defender.event.group_name
       ignore_missing: true
   - rename:
       field: json.properties.LastEditedTime
-      tag: rename_LastEditedTime
+      tag: rename_LastEditedTime_3a2ad831
       target_field: m365_defender.event.last_edited_time
       ignore_missing: true
   - rename:
       field: json.properties.MessageFormatSubtype
-      tag: rename_MessageFormatSubtype
+      tag: rename_MessageFormatSubtype_494f7139
       target_field: m365_defender.event.message_format_subtype
       ignore_missing: true
   - rename:
       field: json.properties.MessageFormatType
-      tag: rename_MessageFormatType
+      tag: rename_MessageFormatType_d94ee5f6
       target_field: m365_defender.event.message_format_type
       ignore_missing: true
   - rename:
       field: json.properties.MessageId
-      tag: rename_MessageId
+      tag: rename_MessageId_554f1511
       target_field: m365_defender.event.message_id
       ignore_missing: true
   - rename:
       field: json.properties.MessageSubject
-      tag: rename_MessageSubject
+      tag: rename_MessageSubject_e9467325
       target_field: m365_defender.event.message_subject
       ignore_missing: true
   - rename:
       field: json.properties.MessageVersion
-      tag: rename_MessageVersion
+      tag: rename_MessageVersion_5bcb7970
       target_field: m365_defender.event.message_version
       ignore_missing: true
   - rename:
       field: json.properties.ParentMessageId
-      tag: rename_ParentMessageId
+      tag: rename_ParentMessageId_1afbe8f3
       target_field: m365_defender.event.parent_message_id
       ignore_missing: true
   - rename:
       field: json.properties.SenderType
-      tag: rename_SenderType
+      tag: rename_SenderType_89d218c9
       target_field: m365_defender.event.sender_type
       ignore_missing: true
   - rename:
       field: json.properties.TeamsMessageId
-      tag: rename_TeamsMessageId
+      tag: rename_TeamsMessageId_96943078
       target_field: m365_defender.event.teams_message_id
       ignore_missing: true
   - rename:
       field: json.properties.ThreadId
-      tag: rename_ThreadId
+      tag: rename_ThreadId_7bd144c5
       target_field: m365_defender.event.thread_id
       ignore_missing: true
   - rename:
       field: json.properties.ThreadSubtype
-      tag: rename_ThreadSubtype
+      tag: rename_ThreadSubtype_7866d479
       target_field: m365_defender.event.thread_subtype
       ignore_missing: true
   - rename:
       field: json.properties.SenderEmailAddress
-      tag: rename_SenderEmailAddress
+      tag: rename_SenderEmailAddress_4dfa26e0
       target_field: m365_defender.event.sender_email_address
       ignore_missing: true
   - rename:
       field: json.properties.LatestDeliveryLocation
-      tag: rename_LatestDeliveryLocation
+      tag: rename_LatestDeliveryLocation_e95db48d
       target_field: m365_defender.event.latest_delivery_location
       ignore_missing: true
   - rename:
       field: json.properties.SafetyTip
-      tag: rename_SafetyTip
+      tag: rename_SafetyTip_ef65b5c4
       target_field: m365_defender.event.safety_tip
       ignore_missing: true
 
@@ -535,87 +535,87 @@ processors:
   - set:
       field: file.extension
       copy_from: m365_defender.event.file.type
-      tag: set_file_extension
+      tag: set_file_extension_6391447f
       ignore_empty_value: true
   - set:
       field: file.hash.sha256
       copy_from: m365_defender.event.sha256
-      tag: set_file_hash_sha256
+      tag: set_file_hash_sha256_4b32dd73
       ignore_empty_value: true
   - set:
       field: file.name
       copy_from: m365_defender.event.file.name
-      tag: set_file_name
+      tag: set_file_name_3570fd38
       ignore_empty_value: true
   - set:
       field: file.size
       copy_from: m365_defender.event.file.size
-      tag: set_file_size
+      tag: set_file_size_daa28add
       ignore_empty_value: true
 
   # Event Outcome/Action mappings
   - set:
       field: event.action
       copy_from: m365_defender.event.action.type
-      tag: set_event_action
+      tag: set_event_action_4fef7a91
       ignore_empty_value: true
   - lowercase:
       field: event.action
-      tag: lowercase_event_action
+      tag: lowercase_event_action_945f0fcf
       ignore_missing: true
   - gsub:
       field: event.action
       pattern: ' '
       replacement: '-'
-      tag: gsub_event_action
+      tag: gsub_event_action_b77b9c95
       ignore_missing: true
 
   # Email mappings
   - append:
       field: email.from.address
       value: '{{{m365_defender.event.sender.from_address}}}'
-      tag: append_email_from_address
+      tag: append_email_from_address_f8f1ab50
       if: ctx.m365_defender?.event?.sender?.from_address != null
       allow_duplicates: false
   - append:
       field: email.to.address
       value: '{{{m365_defender.event.recipient.email_address}}}'
-      tag: append_email_to_address
+      tag: append_email_to_address_4fe2271c
       if: ctx.m365_defender?.event?.recipient?.email_address != null
       allow_duplicates: false
   - set:
       field: email.local_id
       copy_from: m365_defender.event.network.message_id
-      tag: set_email_message_id
+      tag: set_email_message_id_50b3ae54
       ignore_empty_value: true
   - set:
       field: email.direction
       copy_from: m365_defender.event.email.direction
-      tag: set_email_direction
+      tag: set_email_direction_75de8519
       ignore_empty_value: true
   - set:
       field: email.subject
       copy_from: m365_defender.event.subject
-      tag: set_email_subject
+      tag: set_email_subject_27edf9c5
       ignore_empty_value: true
   - set:
       field: email.message_id
       copy_from: m365_defender.event.internet_message_id
-      tag: set_email_local_id
+      tag: set_email_local_id_a43a113c
       ignore_empty_value: true
   - set:
       field: email.message_id
-      tag: set_email_message_id_from_event_message_id
+      tag: set_email_message_id_from_event_message_id_ad15493a
       copy_from: m365_defender.event.message_id
       ignore_empty_value: true
   - set:
       field: email.subject
-      tag: set_email_subject_from_event_message_subject
+      tag: set_email_subject_from_event_message_subject_4b97a59f
       copy_from: m365_defender.event.message_subject
       ignore_empty_value: true
   - append:
       field: email.from.address
-      tag: append_m365_defender_event_sender_email_address_into_email_from_address
+      tag: append_m365_defender_event_sender_email_address_into_email_from_address_193cb1ec
       value: '{{{m365_defender.event.sender_email_address}}}'
       allow_duplicates: false
       if: ctx.m365_defender?.event?.sender_email_address != null
@@ -624,7 +624,7 @@ processors:
   - append:
       field: source.ip
       value: '{{{m365_defender.event.sender.ipv4}}}'
-      tag: append_source_ip
+      tag: append_source_ip_09738ffe
       if: ctx.m365_defender?.event?.sender?.ipv4 != null
       allow_duplicates: false
   - append:
@@ -638,13 +638,13 @@ processors:
   - set:
       field: host.ip
       copy_from: m365_defender.event.ip_address
-      tag: set_host_ip
+      tag: set_host_ip_f768b8a8
       ignore_empty_value: true
 
   # URL mappings
   - uri_parts:
       if: ctx.m365_defender?.event?.url != null
-      tag: uri_parts_url
+      tag: uri_parts_url_516d6720
       field: m365_defender.event.url
       on_failure:
       - set:
@@ -656,17 +656,17 @@ processors:
   # User mapping
   - set:
       field: user.group.name
-      tag: set_user_group_name_from_event_group_name
+      tag: set_user_group_name_from_event_group_name_aad35eba
       copy_from: m365_defender.event.group_name
       ignore_empty_value: true
   - set:
       field: user.group.id
-      tag: set_user_group_id_from_event_group_id
+      tag: set_user_group_id_from_event_group_id_b93ce05a
       copy_from: m365_defender.event.group_id
       ignore_empty_value: true
   - set:
       field: user.email
-      tag: set_user_email_from_event_sender_email_address
+      tag: set_user_email_from_event_sender_email_address_561f19d0
       copy_from: m365_defender.event.sender_email_address
       ignore_empty_value: true
 
@@ -674,7 +674,7 @@ processors:
   - append:
       field: related.user
       value: '{{{m365_defender.event.sender.from_address}}}'
-      tag: append_related_user
+      tag: append_related_user_08065920
       if: ctx.m365_defender?.event?.sender?.from_address != null
       allow_duplicates: false
   - append:
@@ -686,13 +686,13 @@ processors:
   - append:
       field: related.hash
       value: '{{{file.hash.sha256}}}'
-      tag: append_related_hash
+      tag: append_related_hash_1921faec
       if: ctx.file?.hash?.sha256 != null
       allow_duplicates: false
   - append:
       field: related.ip
       value: '{{{m365_defender.event.sender.ipv4}}}'
-      tag: append_related_ip
+      tag: append_related_ip_b8042c1f
       if: ctx.m365_defender?.event?.sender?.ipv4 != null
       allow_duplicates: false
   - append:
@@ -710,7 +710,7 @@ processors:
   - append:
       field: related.hosts
       value: '{{{m365_defender.event.sender.from_domain}}}'
-      tag: append_related_hosts
+      tag: append_related_hosts_ba3e30af
       if: ctx.m365_defender?.event?.sender?.from_domain != null
       allow_duplicates: false
   - append:
@@ -727,7 +727,7 @@ processors:
       allow_duplicates: false
   - append:
       field: related.user
-      tag: append_event_sender_email_address_into_related_user
+      tag: append_event_sender_email_address_into_related_user_37f9d964
       value: '{{{m365_defender.event.sender_email_address}}}'
       allow_duplicates: false
       if: ctx.m365_defender?.event?.sender_email_address != null
@@ -736,7 +736,7 @@ processors:
   # Can be enabled in the UI when configuring the integration.
   - remove:
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
-      tag: remove_duplicate_custom_fields
+      tag: remove_duplicate_custom_fields_bb5b4fad
       field:
         - m365_defender.event.sender.from_address
         - m365_defender.event.network.message_id
@@ -760,9 +760,18 @@ processors:
       ignore_missing: true
 on_failure:
   - append:
+      tag: append_error_message_9c9ce5dc
       field: error.message
-      value: |-
-        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
+      tag: set_event_kind_74e1e75e
       field: event.kind
       value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

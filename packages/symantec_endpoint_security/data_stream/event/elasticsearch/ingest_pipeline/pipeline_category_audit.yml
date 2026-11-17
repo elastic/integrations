@@ -3,88 +3,96 @@ description: Pipeline for processing Audit category logs.
 processors:
   - set:
       field: ses.category_name
-      tag: set_category_name
+      tag: set_category_name_1b31b2ef
       value: Audit
   - append:
       field: event.category
-      tag: append_event_category_session
+      tag: append_event_category_session_497c96a9
       value: session
       if: ctx.ses?.type_id == '20'
   - append:
       field: event.category
-      tag: append_event_category_configuration
+      tag: append_event_category_configuration_9bd2bbb0
       value: configuration
       if: ctx.ses?.type_id == '22'
   - append:
       field: event.type
-      tag: append_event_type_info
+      tag: append_event_type_info_7b2169c1
       value: info
       if: ctx.ses?.type_id != null && ['20', '22'].contains(ctx.ses.type_id)
   - convert:
       field: ses.session_id
-      tag: convert_session_id_to_string
+      tag: convert_session_id_to_string_530f4fc9
       type: string
       if: ctx.ses?.session_id != ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_d260a78d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ses.override_duration
-      tag: convert_override_duration_to_long
+      tag: convert_override_duration_to_long_4e93821b
       type: long
       if: ctx.ses?.override_duration != ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_add39085
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_container" }}'
       if: ctx.ses?.type_id != null && ['20', '21', '22'].contains(ctx.ses.type_id) && ctx.ses?.container != null
-      tag: pipeline_object_container
+      tag: pipeline_object_container_fc162526
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_cybox" }}'
       if: ctx.ses?.type_id != null && ['20', '21', '22'].contains(ctx.ses.type_id) && ctx.ses?.cybox != null
-      tag: pipeline_object_cybox
+      tag: pipeline_object_cybox_90321dcc
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_device" }}'
       if: ctx.ses?.type_id != null && ['20', '21', '22'].contains(ctx.ses.type_id) && (ctx.ses?.device_cloud_vm != null || ctx.ses?.device_location != null || ctx.ses?.device_networks != null)
-      tag: pipeline_object_device
+      tag: pipeline_object_device_3046ce3d
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_file" }}'
       if: ctx.ses?.type_id != null && ['22'].contains(ctx.ses.type_id) && (ctx.ses?.file != null || ctx.ses?.file_result != null)
-      tag: pipeline_object_file
+      tag: pipeline_object_file_05f43b9b
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_policy" }}'
       if: ctx.ses?.type_id != null && ['22'].contains(ctx.ses.type_id) && ctx.ses?.policy != null
-      tag: pipeline_object_policy
+      tag: pipeline_object_policy_5ff6db96
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_session" }}'
       if: ctx.ses?.type_id != null && ['20', '21', '22'].contains(ctx.ses.type_id) && (ctx.ses?.session != null || ctx.ses?.sessions != null)
-      tag: pipeline_object_session
+      tag: pipeline_object_session_374540f6
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_source" }}'
       if: ctx.ses?.type_id != null && ['20', '21', '22'].contains(ctx.ses.type_id) && ctx.ses?.source != null
-      tag: pipeline_object_source
+      tag: pipeline_object_source_6bacc430
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_user" }}'
       if: ctx.ses?.type_id != null && ['20', '21', '22'].contains(ctx.ses.type_id) && ctx.ses?.user != null
-      tag: pipeline_object_user
+      tag: pipeline_object_user_13ba31ab
       ignore_missing_pipeline: true
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

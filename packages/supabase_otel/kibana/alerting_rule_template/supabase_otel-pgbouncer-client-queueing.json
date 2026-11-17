@@ -1,0 +1,56 @@
+{
+    "id": "supabase_otel-pgbouncer-client-queueing",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Fires when clients spend a sustained amount of time waiting for a server connection in a PgBouncer pool. A pool can be fully checked out and perfectly healthy provided nothing is queueing behind it, so wait time rather than pool occupancy is the definitive pressure signal.",
+        "name": "[Supabase OTel] PgBouncer clients queueing for connections",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "supabase",
+            "pgbouncer",
+            "saturation"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "supabase_otel-591c7a1f-6ac7-43cb-8ade-9c5684d47f5b"
+                },
+                {
+                    "id": "supabase_otel-7c6a2004-c517-4b50-b70a-2682b7a79228"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## PgBouncer Clients Queueing\n\n`pgbouncer_pools_client_maxwait_seconds` is the longest a client has currently been waiting for a server connection in this pool. Any sustained non-zero value means clients are blocked on the pool rather than on the database, and that wait is added directly to end-user latency.\n\n### Triage Steps\n1. Note the pool from the alert (`attributes.database` and `attributes.user`). Queueing confined to one role is usually one misbehaving workload.\n2. Compare pool capacity against demand: `pgbouncer_databases_pool_size`, `pgbouncer_databases_max_connections` and `pgbouncer_config_max_client_connections`.\n3. Separate execution time from queue time. `pgbouncer_stats_queries_duration_seconds_total / pgbouncer_stats_queries_pooled_total` is mean pooled query time; if that is flat while wait time climbs, the pool is too small for the arrival rate. If both climb, the database is slow and the pool is a symptom.\n4. Check disk IO utilisation and long-running transactions — both hold backends and starve the pool.\n\n### Tuning\nThe threshold is on the average wait over the window, which matches the `PgBouncer Avg Max Client Wait Time` dashboard panel; the peak is reported alongside for context. Lower to 0.5 seconds for latency-sensitive workloads. PgBouncer series only exist when the dedicated pooler is enabled.\n\n### Related content\nThis is the single pooler-queueing rule. `pgrst_db_pool_waiting` and `connection_stats_connection_count` rise during the same incident and are covered by the PostgREST timeout rule and the connection budget rule respectively, so they are not duplicated here."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-supabase.metrics.otel-*\n// pgbouncer_pools_client_maxwait_seconds is a gauge: the longest a client has currently\n// been waiting for a server connection in this pool. AVG(AVG_OVER_TIME()) matches the\n// dashboard panel; the peak and the waiting-client count are carried as context.\n| STATS\n    `Avg Client Wait (s)` = AVG(AVG_OVER_TIME(pgbouncer_pools_client_maxwait_seconds)),\n    `Peak Client Wait (s)` = MAX(MAX_OVER_TIME(pgbouncer_pools_client_maxwait_seconds)),\n    `Clients Waiting` = MAX(MAX_OVER_TIME(pgbouncer_pools_client_waiting_connections))\n  BY resource.attributes.supabase_project_ref, attributes.database, attributes.user\n// One second of average wait across the window means clients are blocked on the pool,\n// not on the database. Lower to 0.5 for latency-sensitive workloads.\n| WHERE `Avg Client Wait (s)` > 1\n// One row per pool, so the alert instance key includes database and user.\n| EVAL alert_instance = CONCAT(resource.attributes.supabase_project_ref, \" / \", attributes.database, \" / \", attributes.user)\n| SORT `Avg Client Wait (s)` DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "alert_instance",
+            "termSize": 50
+        }
+    }
+}

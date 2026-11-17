@@ -5,218 +5,232 @@ processors:
   - set:
       field: host.domain
       copy_from: ocsf.device.domain
-      tag: set_host_domain
+      tag: set_host_domain_e99cd8c0
       ignore_empty_value: true
   - append:
       field: related.hosts
       value: '{{{ocsf.device.domain}}}'
-      tag: append_device_domain_into_related_hosts
+      tag: append_device_domain_into_related_hosts_57a9eee9
       allow_duplicates: false
       if: ctx.ocsf?.device?.domain != null
   - set:
       field: host.geo.city_name
       copy_from: ocsf.device.location.city
-      tag: set_host_geo_city_name
+      tag: set_host_geo_city_name_05e6c065
       ignore_empty_value: true
   - set:
       field: host.geo.continent_name
       copy_from: ocsf.device.location.continent
-      tag: set_host_geo_continent_name
+      tag: set_host_geo_continent_name_2aa6b760
       ignore_empty_value: true
   - set:
       field: host.geo.country_iso_code
       copy_from: ocsf.device.location.country
-      tag: set_host_geo_country_iso_code
+      tag: set_host_geo_country_iso_code_9556b2a2
       ignore_empty_value: true
   - convert:
       field: ocsf.device.location.coordinates
-      tag: convert_device_location_coordinates_to_double
+      tag: convert_device_location_coordinates_to_double_ea1043b5
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ocsf_device_location_coordinates_7ed12b67
             field: ocsf.device.location.coordinates
             ignore_missing: true
         - append:
+            tag: append_error_message_a258b603
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: host.geo.location
       copy_from: ocsf.device.location.coordinates
-      tag: set_host_geo_location
+      tag: set_host_geo_location_ec1f2e0b
       ignore_empty_value: true
   - set:
       field: host.geo.name
       copy_from: ocsf.device.location.desc
-      tag: set_host_geo_name
+      tag: set_host_geo_name_f7d5fc12
       ignore_empty_value: true
   - set:
       field: host.geo.postal_code
       copy_from: ocsf.device.location.postal_code
-      tag: set_host_geo_postal_code
+      tag: set_host_geo_postal_code_c6dcaeaa
       ignore_empty_value: true
   - set:
       field: host.geo.region_iso_code
       copy_from: ocsf.device.location.region
-      tag: set_host_geo_region_iso_code
+      tag: set_host_geo_region_iso_code_0f5b4e3f
       ignore_empty_value: true
   - set:
       field: host.hostname
       copy_from: ocsf.device.hostname
-      tag: set_host_hostname
+      tag: set_host_hostname_01efdfca
       ignore_empty_value: true
   - append:
       field: related.hosts
       value: '{{{ocsf.device.hostname}}}'
-      tag: append_device_hostname_into_related_hosts
+      tag: append_device_hostname_into_related_hosts_a2b6a916
       allow_duplicates: false
       if: ctx.ocsf?.device?.hostname != null
   - set:
       field: host.id
       copy_from: ocsf.device.uid
-      tag: set_host_id
+      tag: set_host_id_9b1ec7af
       ignore_empty_value: true
   - remove:
       field: ocsf.device.ip
-      tag: remove_empty_device_ip
+      tag: remove_empty_device_ip_718855b6
       if: ctx.ocsf?.device?.ip == '' || ctx.ocsf?.device?.ip == '-'
   - convert:
       field: ocsf.device.ip
-      tag: convert_device_ip_to_ip
+      tag: convert_device_ip_to_ip_6067721e
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ocsf_device_ip_1343c968
             field: ocsf.device.ip
             ignore_missing: true
         - append:
+            tag: append_error_message_b6f28e0d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: host.ip
       value: '{{{ocsf.device.ip}}}'
-      tag: append_device_ip_into_host_ip
+      tag: append_device_ip_into_host_ip_18ddb444
       allow_duplicates: false
       if: ctx.ocsf?.device?.ip != null
   - append:
       field: related.ip
       value: '{{{ocsf.device.ip}}}'
-      tag: append_device_ip_into_related_ip
+      tag: append_device_ip_into_related_ip_6b5d32f7
       allow_duplicates: false
       if: ctx.ocsf?.device?.ip != null
   - gsub:
       field: ocsf.device.mac
       pattern: '[:.]'
       replacement: '-'
-      tag: gsub_device_mac
+      tag: gsub_device_mac_8b3a8be1
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ocsf_device_mac_4ced43ac
             field: ocsf.device.mac
             ignore_missing: true
         - append:
+            tag: append_error_message_8562cb63
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - uppercase:
       field: ocsf.device.mac
-      tag: uppercase_device_mac
+      tag: uppercase_device_mac_a4615f04
       ignore_missing: true
       if: ctx.ocsf?.device?.mac != ''
       on_failure:
         - remove:
+            tag: remove_ocsf_device_mac_9fc3eef3
             field: ocsf.device.mac
             ignore_missing: true
         - append:
+            tag: append_error_message_d580455c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: host.mac
       value: '{{{ocsf.device.mac}}}'
-      tag: append_device_ip_into_host_mac
+      tag: append_device_ip_into_host_mac_1b310a88
       allow_duplicates: false
       if: ctx.ocsf?.device?.mac != null
   - lowercase:
       field: ocsf.device.name
       target_field: host.name
-      tag: lowercase_host_name
+      tag: lowercase_host_name_e45c68ce
       ignore_missing: true
       if: ctx.ocsf?.device?.name != ''
       on_failure:
         - remove:
+            tag: remove_ocsf_device_name_31d21cfa
             field: ocsf.device.name
             ignore_missing: true
         - append:
+            tag: append_error_message_ac684c1b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.hosts
       value: '{{{ocsf.device.name}}}'
-      tag: append_device_name_into_related_hosts
+      tag: append_device_name_into_related_hosts_66a13699
       allow_duplicates: false
       if: ctx.ocsf?.device?.name != null
   - set:
       field: host.os.name
       copy_from: ocsf.device.os.name
-      tag: set_host_os_name
+      tag: set_host_os_name_f1e903fd
       ignore_empty_value: true
   - set:
       field: host.os.type
       copy_from: ocsf.device.os.type
-      tag: set_host_os_type
+      tag: set_host_os_type_a1031e65
       ignore_empty_value: true
       if: ctx.ocsf?.device?.os?.type != null && ['Linux','Windows','Android','macOS','iOS'].contains(ctx.ocsf.device.os.type)
   - lowercase:
       field: host.os.type
-      tag: lowercase_host_os_type
+      tag: lowercase_host_os_type_ab686d22
       ignore_missing: true
       if: ctx.host?.os?.type != ''
       on_failure:
         - remove:
+            tag: remove_host_os_type_8e8c6d79
             field: host.os.type
             ignore_missing: true
         - append:
+            tag: append_error_message_df92bd92
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: host.os.version
       copy_from: ocsf.device.os.build
-      tag: set_host_os_version
+      tag: set_host_os_version_84e7dd92
       ignore_empty_value: true
   - set:
       field: host.risk.static_level
       copy_from: ocsf.device.risk_level
-      tag: set_host_risk_static_level
+      tag: set_host_risk_static_level_0d6536e4
       ignore_empty_value: true
   - convert:
       field: ocsf.device.risk_score
-      tag: convert_device_risk_score_to_long
+      tag: convert_device_risk_score_to_long_8d15499e
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ocsf_device_risk_score_390b8d68
             field: ocsf.device.risk_score
             ignore_missing: true
         - append:
+            tag: append_error_message_0ca3e8bc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: host.risk.static_score
       copy_from: ocsf.device.risk_score
-      tag: set_host_risk_static_score
+      tag: set_host_risk_static_score_1749d371
       ignore_empty_value: true
   - set:
       field: host.type
       copy_from: ocsf.device.type
-      tag: set_host_type
+      tag: set_host_type_8a16e6dd
       ignore_empty_value: true
   - set:
       field: network.vlan.id
       copy_from: ocsf.device.vlan_uid
-      tag: set_network_vlan_id
+      tag: set_network_vlan_id_0db556a3
       ignore_empty_value: true
   - date:
       field: ocsf.device.created_time_dt
-      tag: date_device_created_time_dt
+      tag: date_device_created_time_dt_31cc2a57
       target_field: ocsf.device.created_time_dt
       formats:
         - ISO8601
@@ -225,28 +239,32 @@ processors:
       if: ctx.ocsf?.device?.created_time_dt != null && ctx.ocsf.device.created_time_dt != ''
       on_failure:
         - remove:
+            tag: remove_ocsf_device_created_time_dt_374e3aa0
             field: ocsf.device.created_time_dt
             ignore_missing: true
         - append:
+            tag: append_error_message_68ae3feb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: ocsf.device.created_time
-      tag: date_device_created_time
+      tag: date_device_created_time_420fe110
       target_field: ocsf.device.created_time
       formats:
         - UNIX_MS
       if: ctx.ocsf?.device?.created_time != null && ctx.ocsf.device.created_time != ''
       on_failure:
         - remove:
+            tag: remove_ocsf_device_created_time_1d6b0e74
             field: ocsf.device.created_time
             ignore_missing: true
         - append:
+            tag: append_error_message_f47737a2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: ocsf.device.first_seen_time_dt
-      tag: date_device_first_seen_time_dt
+      tag: date_device_first_seen_time_dt_0a6650b6
       target_field: ocsf.device.first_seen_time_dt
       formats:
         - ISO8601
@@ -255,220 +273,256 @@ processors:
       if: ctx.ocsf?.device?.first_seen_time_dt != null && ctx.ocsf.device.first_seen_time_dt != ''
       on_failure:
         - remove:
+            tag: remove_ocsf_device_first_seen_time_dt_a1e08e6a
             field: ocsf.device.first_seen_time_dt
             ignore_missing: true
         - append:
+            tag: append_error_message_9ed2e259
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: ocsf.device.first_seen_time
-      tag: date_device_first_seen_time
+      tag: date_device_first_seen_time_2fcc2d29
       target_field: ocsf.device.first_seen_time
       formats:
         - UNIX_MS
       if: ctx.ocsf?.device?.first_seen_time != null && ctx.ocsf.device.first_seen_time != ''
       on_failure:
         - remove:
+            tag: remove_ocsf_device_first_seen_time_79be5112
             field: ocsf.device.first_seen_time
             ignore_missing: true
         - append:
+            tag: append_error_message_df098b8c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.device.hw_info.cpu_bits
-      tag: convert_device_hw_info_cpu_bits_to_long
+      tag: convert_device_hw_info_cpu_bits_to_long_728ff943
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ocsf_device_hw_info_cpu_bits_9a1f39e9
             field: ocsf.device.hw_info.cpu_bits
             ignore_missing: true
         - append:
+            tag: append_error_message_92858286
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.device.hw_info.cpu_cores
-      tag: convert_device_hw_info_cpu_cores_to_long
+      tag: convert_device_hw_info_cpu_cores_to_long_71841893
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ocsf_device_hw_info_cpu_cores_4ebae43b
             field: ocsf.device.hw_info.cpu_cores
             ignore_missing: true
         - append:
+            tag: append_error_message_bec99a34
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.device.hw_info.cpu_count
-      tag: convert_device_hw_info_cpu_count_to_long
+      tag: convert_device_hw_info_cpu_count_to_long_3e5f5df6
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ocsf_device_hw_info_cpu_count_2436ca8b
             field: ocsf.device.hw_info.cpu_count
             ignore_missing: true
         - append:
+            tag: append_error_message_0fa2b7f7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.device.hw_info.cpu_speed
-      tag: convert_device_hw_info_cpu_speed_to_long
+      tag: convert_device_hw_info_cpu_speed_to_long_1a05fd98
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ocsf_device_hw_info_cpu_speed_d9c3da9b
             field: ocsf.device.hw_info.cpu_speed
             ignore_missing: true
         - append:
+            tag: append_error_message_ad553cfb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.device.hw_info.desktop_display.color_depth
-      tag: convert_device_hw_info_desktop_display_color_depth_to_long
+      tag: convert_device_hw_info_desktop_display_color_depth_to_long_9c68a254
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ocsf_device_hw_info_desktop_display_color_depth_0590b990
             field: ocsf.device.hw_info.desktop_display.color_depth
             ignore_missing: true
         - append:
+            tag: append_error_message_16d8de44
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.device.hw_info.desktop_display.physical_height
-      tag: convert_device_hw_info_desktop_display_physical_height_to_long
+      tag: convert_device_hw_info_desktop_display_physical_height_to_long_da071617
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ocsf_device_hw_info_desktop_display_physical_height_6fed5f24
             field: ocsf.device.hw_info.desktop_display.physical_height
             ignore_missing: true
         - append:
+            tag: append_error_message_5ba309fc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.device.hw_info.desktop_display.physical_orientation
-      tag: convert_device_hw_info_desktop_display_physical_orientation_to_long
+      tag: convert_device_hw_info_desktop_display_physical_orientation_to_long_d429fbc1
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ocsf_device_hw_info_desktop_display_physical_orientation_18209574
             field: ocsf.device.hw_info.desktop_display.physical_orientation
             ignore_missing: true
         - append:
+            tag: append_error_message_5edd13a5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.device.hw_info.desktop_display.physical_width
-      tag: convert_device_hw_info_desktop_display_physical_width_to_long
+      tag: convert_device_hw_info_desktop_display_physical_width_to_long_1518acfb
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ocsf_device_hw_info_desktop_display_physical_width_a0cca5b0
             field: ocsf.device.hw_info.desktop_display.physical_width
             ignore_missing: true
         - append:
+            tag: append_error_message_a80df2cb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.device.hw_info.desktop_display.scale_factor
-      tag: convert_device_hw_info_desktop_display_scale_factor_to_long
+      tag: convert_device_hw_info_desktop_display_scale_factor_to_long_3d45e933
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ocsf_device_hw_info_desktop_display_scale_factor_8334da68
             field: ocsf.device.hw_info.desktop_display.scale_factor
             ignore_missing: true
         - append:
+            tag: append_error_message_4ee67509
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.device.hw_info.keyboard_info.function_keys
-      tag: convert_device_hw_info_keyboard_info_function_keys_to_long
+      tag: convert_device_hw_info_keyboard_info_function_keys_to_long_259a3d85
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ocsf_device_hw_info_keyboard_info_function_keys_45a70a7c
             field: ocsf.device.hw_info.keyboard_info.function_keys
             ignore_missing: true
         - append:
+            tag: append_error_message_93a82463
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.device.hw_info.keyboard_info.keyboard_subtype
-      tag: convert_device_hw_info_keyboard_info_keyboard_subtype_to_long
+      tag: convert_device_hw_info_keyboard_info_keyboard_subtype_to_long_9a182b74
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ocsf_device_hw_info_keyboard_info_keyboard_subtype_480f8d90
             field: ocsf.device.hw_info.keyboard_info.keyboard_subtype
             ignore_missing: true
         - append:
+            tag: append_error_message_b0fb420a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.device.hw_info.ram_size
-      tag: convert_device_hw_info_ram_size_to_long
+      tag: convert_device_hw_info_ram_size_to_long_588d5b2e
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ocsf_device_hw_info_ram_size_6460452d
             field: ocsf.device.hw_info.ram_size
             ignore_missing: true
         - append:
+            tag: append_error_message_3a89acbf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.device.is_compliant
-      tag: convert_device_is_compliant_to_boolean
+      tag: convert_device_is_compliant_to_boolean_96e46df7
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ocsf_device_is_compliant_e6df6930
             field: ocsf.device.is_compliant
             ignore_missing: true
         - append:
+            tag: append_error_message_58dd9fc4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.device.is_managed
-      tag: convert_device_is_managed_to_boolean
+      tag: convert_device_is_managed_to_boolean_3f505171
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ocsf_device_is_managed_c295f3ec
             field: ocsf.device.is_managed
             ignore_missing: true
         - append:
+            tag: append_error_message_b950d260
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.device.is_personal
-      tag: convert_device_is_personal_to_boolean
+      tag: convert_device_is_personal_to_boolean_bee0a13e
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ocsf_device_is_personal_9b8bab68
             field: ocsf.device.is_personal
             ignore_missing: true
         - append:
+            tag: append_error_message_b3be341b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.device.is_trusted
-      tag: convert_device_is_trusted_to_boolean
+      tag: convert_device_is_trusted_to_boolean_482a789e
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ocsf_device_is_trusted_6705f740
             field: ocsf.device.is_trusted
             ignore_missing: true
         - append:
+            tag: append_error_message_cb3b27ea
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: ocsf.device.last_seen_time_dt
-      tag: date_device_last_seen_time_dt
+      tag: date_device_last_seen_time_dt_f85a3c46
       target_field: ocsf.device.last_seen_time_dt
       formats:
         - ISO8601
@@ -477,40 +531,46 @@ processors:
       if: ctx.ocsf?.device?.last_seen_time_dt != null && ctx.ocsf.device.last_seen_time_dt != ''
       on_failure:
         - remove:
+            tag: remove_ocsf_device_last_seen_time_dt_dec578a6
             field: ocsf.device.last_seen_time_dt
             ignore_missing: true
         - append:
+            tag: append_error_message_d308f2b7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: ocsf.device.last_seen_time
-      tag: date_device_last_seen_time
+      tag: date_device_last_seen_time_db62eeee
       target_field: ocsf.device.last_seen_time
       formats:
         - UNIX_MS
       if: ctx.ocsf?.device?.last_seen_time != null && ctx.ocsf.device.last_seen_time != ''
       on_failure:
         - remove:
+            tag: remove_ocsf_device_last_seen_time_37d6387a
             field: ocsf.device.last_seen_time
             ignore_missing: true
         - append:
+            tag: append_error_message_5ef950ba
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.device.location.is_on_premises
-      tag: convert_device_location_is_on_premises_to_boolean
+      tag: convert_device_location_is_on_premises_to_boolean_b654286b
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ocsf_device_location_is_on_premises_1248d8d5
             field: ocsf.device.location.is_on_premises
             ignore_missing: true
         - append:
+            tag: append_error_message_893b7251
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: ocsf.device.modified_time_dt
-      tag: date_device_modified_time_dt
+      tag: date_device_modified_time_dt_7fefffff
       target_field: ocsf.device.modified_time_dt
       formats:
         - ISO8601
@@ -519,26 +579,31 @@ processors:
       if: ctx.ocsf?.device?.modified_time_dt != null && ctx.ocsf.device.modified_time_dt != ''
       on_failure:
         - remove:
+            tag: remove_ocsf_device_modified_time_dt_b3dc1f3f
             field: ocsf.device.modified_time_dt
             ignore_missing: true
         - append:
+            tag: append_error_message_ba01eaaf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: ocsf.device.modified_time
-      tag: date_device_modified_time
+      tag: date_device_modified_time_38aeec44
       target_field: ocsf.device.modified_time
       formats:
         - UNIX_MS
       if: ctx.ocsf?.device?.modified_time != null && ctx.ocsf.device.modified_time != ''
       on_failure:
         - remove:
+            tag: remove_ocsf_device_modified_time_139c574f
             field: ocsf.device.modified_time
             ignore_missing: true
         - append:
+            tag: append_error_message_577ee152
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_ocsf_device_network_interfaces_de16e2c8
       field: ocsf.device.network_interfaces
       if: ctx.ocsf?.device?.network_interfaces instanceof List
       ignore_failure: true
@@ -546,26 +611,30 @@ processors:
         append:
           field: related.hosts
           value: '{{{_ingest._value.hostname}}}'
-          tag: append_device_network_interfaces_hostname_into_related_hosts
+          tag: append_device_network_interfaces_hostname_into_related_hosts_3c70c5fe
           allow_duplicates: false
   - foreach:
+      tag: foreach_ocsf_device_network_interfaces_022f73e2
       field: ocsf.device.network_interfaces
       if: ctx.ocsf?.device?.network_interfaces instanceof List
       ignore_failure: true
       processor:
         convert:
           field: _ingest._value.ip
-          tag: convert_device_network_interfaces_ip_to_ip
+          tag: convert_device_network_interfaces_ip_to_ip_e71207dc
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_ip_d4ef44f4
                 field: _ingest._value.ip
                 ignore_missing: true
             - append:
+                tag: append_error_message_a40c2d93
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_ocsf_device_network_interfaces_98a5abec
       field: ocsf.device.network_interfaces
       if: ctx.ocsf?.device?.network_interfaces instanceof List
       ignore_failure: true
@@ -573,9 +642,10 @@ processors:
         append:
           field: related.ip
           value: '{{{_ingest._value.ip}}}'
-          tag: append_device_network_interfaces_ip_into_related_ip
+          tag: append_device_network_interfaces_ip_into_related_ip_95079b19
           allow_duplicates: false
   - foreach:
+      tag: foreach_ocsf_device_network_interfaces_0d488eee
       field: ocsf.device.network_interfaces
       if: ctx.ocsf?.device?.network_interfaces instanceof List
       ignore_failure: true
@@ -584,94 +654,112 @@ processors:
           field: _ingest._value.mac
           pattern: '[:.]'
           replacement: '-'
-          tag: gsub_device_network_interfaces_mac
+          tag: gsub_device_network_interfaces_mac_d1350fbc
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_mac_3caa7b4b
                 field: _ingest._value.mac
                 ignore_missing: true
             - append:
+                tag: append_error_message_6f5c4dfc
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_ocsf_device_network_interfaces_7b5c5c71
       field: ocsf.device.network_interfaces
       if: ctx.ocsf?.device?.network_interfaces instanceof List
       ignore_failure: true
       processor:
         uppercase:
           field: _ingest._value.mac
-          tag: uppercase_device_network_interfaces_mac
+          tag: uppercase_device_network_interfaces_mac_d25cac5e
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_mac_213727e4
                 field: _ingest._value.mac
                 ignore_missing: true
             - append:
+                tag: append_error_message_5cde9f9c
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_ocsf_device_network_interfaces_dbd73f57
       field: ocsf.device.network_interfaces
       if: ctx.ocsf?.device?.network_interfaces instanceof List
       ignore_failure: true
       processor:
         convert:
           field: _ingest._value.type_id
-          tag: convert_device_network_interfaces_type_id_to_string
+          tag: convert_device_network_interfaces_type_id_to_string_9c70b0f6
           type: string
           ignore_missing: true
   - foreach:
+      tag: foreach_ocsf_device_network_interfaces_f571a973
       field: ocsf.device.network_interfaces
       if: ctx.ocsf?.device?.network_interfaces instanceof List
       ignore_failure: true
       processor:
         convert:
           field: _ingest._value.subnet_prefix
-          tag: convert_device_network_interfaces_subnet_prefix_to_long
+          tag: convert_device_network_interfaces_subnet_prefix_to_long_bd7c4b6a
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_subnet_prefix_60538780
                 field: _ingest._value.subnet_prefix
                 ignore_missing: true
             - append:
+                tag: append_error_message_93d79a5d
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.device.os.cpu_bits
-      tag: convert_device_os_cpu_bits_to_long
+      tag: convert_device_os_cpu_bits_to_long_9520aa23
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ocsf_device_os_cpu_bits_05b91059
             field: ocsf.device.os.cpu_bits
             ignore_missing: true
         - append:
+            tag: append_error_message_8e3a50d4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.device.os.sp_ver
-      tag: convert_device_os_sp_ver_to_string
+      tag: convert_device_os_sp_ver_to_string_73db684b
       type: string
       ignore_missing: true
   - convert:
       field: ocsf.device.os.type_id
-      tag: convert_device_os_type_id_to_string
+      tag: convert_device_os_type_id_to_string_90443a1e
       type: string
       ignore_missing: true
   - convert:
       field: ocsf.device.risk_level_id
-      tag: convert_device_risk_level_id_to_string
+      tag: convert_device_risk_level_id_to_string_9a74248a
       type: string
       ignore_missing: true
   - convert:
       field: ocsf.device.type_id
-      tag: convert_device_type_id_to_string
+      tag: convert_device_type_id_to_string_03002424
       type: string
       ignore_missing: true
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

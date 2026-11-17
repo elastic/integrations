@@ -100,6 +100,81 @@ If the same data stream name is used for both metrics and logs, differentiate th
 {{ fields "elb_metrics" }}
 ```
 
+### AI-assisted documentation generation [ai-assisted-documentation]
+
+As an alternative to writing the README template manually, `elastic-package update documentation` uses an LLM to generate documentation that follows the [documentation guidelines](documentation-guidelines.md).
+
+To generate documentation for your integration, run:
+
+```bash
+elastic-package update documentation
+```
+
+::::{note}
+This command requires a Gemini API key. Run `elastic-package update documentation --help` for details.
+::::
+
+The command reads package metadata and existing field definitions, then generates or updates the README template at `_dev/build/docs/README.md`. After running it, review the generated content, then run `elastic-package build` to produce the final `docs/README.md`.
+
+An optional but recommended service info file can be added at:
+```
+<package-name>/docs/knowledge_base/service_info.md
+```
+
+The service info file is the authoritative source of information about the service. It provides the LLM with service-specific context used when generating the integration documentation. The tool draws on the information in this file, not its formatting or style — generated content will reflect the meaning described here but may not preserve exact phrasing.
+
+The service info file should follow this template. All sections are optional:
+```
+# Service Info
+
+## Common use cases
+<Typical scenarios and goals that motivate use of this integration>
+
+## Data types collected
+<The types of data collected, the supported protocols, and the fields or information each data type contains>
+
+## Compatibility
+<Minimum or tested vendor product versions and any other compatibility requirements>
+
+## Scaling and performance
+<Known performance limits, resource requirements, and recommendations for optimizing throughput>
+
+# Set up instructions
+
+## Vendor prerequisites
+<Required configuration or state of the vendor system before data collection can begin. For example, syslog configured with UDP output>
+
+## Elastic prerequisites
+<Required Elastic configuration before setting up this integration. For example, a deployment running Fleet or specific ports open on the Elastic Agent host>
+
+## Vendor set up steps
+<Steps required in the vendor product to establish the data flow to Elastic Agent. For example, configuring syslog to send data to the host running Elastic Agent>
+
+### Vendor set up resources
+<Vendor documentation or other resources relevant to configuring the data flow>
+
+## Kibana set up steps
+<Steps to install and configure the integration in Kibana>
+
+# Validation steps
+<Steps to confirm the integration is working correctly, including triggering data flow in the vendor product and verifying data arrives in Kibana>
+
+# Troubleshooting
+<Known issues and their solutions, organized under the appropriate subheading below>
+
+## Common configuration issues
+
+## Ingestion errors
+
+## API authentication errors
+
+# Documentation sites
+<Vendor and third-party documentation that provides useful reference information about the service>
+
+```
+
+Using this command is optional — the manual authoring workflow described above remains fully supported.
+
 ### Documentation structure validation [documentation-structure-validation]
 
 To ensure your README follows the recommended structure, you can enable documentation structure validation. When enabled, `elastic-package check` verifies that all required sections from the [documentation guidelines](documentation-guidelines.md) are present in your README.

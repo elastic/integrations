@@ -13,11 +13,11 @@ The Elastic Security integration collects the following events:
 
 ## Requirements
 
-### Agentless-enabled integration
+### Elastic Managed enabled integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it.
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ### Agent-based deployment
 
@@ -141,7 +141,7 @@ An example event for `alert` looks as following:
     },
     "data_stream": {
         "dataset": "elastic_security.alert",
-        "namespace": "59901",
+        "namespace": "26200",
         "type": "logs"
     },
     "ecs": {
@@ -153,9 +153,9 @@ An example event for `alert` looks as following:
         }
     },
     "elastic_agent": {
-        "id": "a99b9d4d-01aa-4fee-b044-d3e25555d1e6",
+        "id": "28870b7e-2a76-4fb1-a0de-0297b760c364",
         "snapshot": false,
-        "version": "9.1.1"
+        "version": "9.4.0"
     },
     "event": {
         "action": "rule_detection",
@@ -168,7 +168,7 @@ An example event for `alert` looks as following:
         "created": "2024-06-09T13:52:07.402Z",
         "dataset": "elastic_security.alert",
         "id": "Na7UF0/g6Q++++3Y96",
-        "ingested": "2026-01-12T11:31:45Z",
+        "ingested": "2026-07-14T10:42:47Z",
         "kind": "alert",
         "module": "elastic_security",
         "outcome": "success",

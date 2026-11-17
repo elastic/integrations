@@ -108,9 +108,12 @@ streams:
       - name: paging_size
         type: integer
         title: Paging Size
-        description: Paging size for the directory responses (no limit if not set).
+        description: >-
+          Number of entries to request in each page of directory search results. Active Directory rejects a search without
+          paging that returns more entries than its MaxPageSize, which is 1,000 by default.
         multi: false
         required: false
+        default: 500
         show_user: false
       - name: user_attributes
         type: text
@@ -174,6 +177,23 @@ streams:
         show_user: false
         description: >-
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: use_minimal_state
+        type: bool
+        title: Use minimal state
+        description: >-
+          Use the minimal-state sync implementation. Required for agentless
+          deployments. Uses reduced local storage and supports ES-backed state.
+        multi: false
+        required: false
+        show_user: false
+        default: true
+        # Hidden in both modes: this is a platform-managed implementation detail.
+        # Minimal-state sync is required for agentless and is the standard path
+        # for all new deployments. The legacy path (use_minimal_state: false) is
+        # still supported but not exposed in Fleet.
+        hide_in_deployment_modes:
+          - default
+          - agentless
 elasticsearch:
   dynamic_dataset: true
   dynamic_namespace: true

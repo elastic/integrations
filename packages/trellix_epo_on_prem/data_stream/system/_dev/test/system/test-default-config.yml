@@ -1,0 +1,17 @@
+deployer: docker
+wait_for_data_timeout: 1m
+input: cel
+service: trellix_epo_on_prem
+vars:
+  url: http://{{Hostname}}:{{Port}}
+  username: temp_user
+  password: temp_password
+data_stream:
+  vars:
+    page_size: 2
+    preserve_original_event: true
+assert:
+  # 3 distinct AutoIDs across three pages: 2 rows seeded by newerThan, then 2
+  # more under the inclusive ge cursor (the boundary record repeats), then the
+  # short page that ends the cycle. Fingerprint _id collapses the repeat.
+  hit_count: 3

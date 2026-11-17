@@ -1,4 +1,9 @@
 provider: azure-ad
+{{#if use_minimal_state}}
+{{#semverSatisfies _meta.agent.version ">=9.5.0"}}
+use_minimal_state: true
+{{/semverSatisfies}}
+{{/if}}
 {{#if enable_request_tracer}}
 tracer.filename: "../../logs/azure-ad/http-request-trace-*.ndjson"
 tracer.maxbackups: 5
@@ -19,10 +24,15 @@ login_scopes:
 {{#if custom_options}}
 {{custom_options}}
 {{/if}}
-{{#if enrich_with_mfa}}
 enrich_with:
+{{#if enrich_with_mfa}}
   - mfa
 {{/if}}
+{{#semverSatisfies _meta.agent.version ">=9.5.0"}}
+{{#if user_sign_in_activity}}
+  - sign_in_activity
+{{/if}}
+{{/semverSatisfies}}
 {{#if user_direct_reports}}
 expand.users:
   - directReports

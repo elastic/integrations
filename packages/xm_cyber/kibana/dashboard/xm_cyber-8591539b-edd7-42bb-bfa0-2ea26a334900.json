@@ -13,7 +13,9 @@
                 "33a0c6e8-2840-42e4-a30c-c062794054d3": {
                     "explicitInput": {
                         "dataViewId": "logs-*",
-                        "fieldName": "xm_cyber.product.product_operating_systems",
+                        "exclude": false,
+                        "existsSelected": false,
+                        "fieldName": "xm_cyber.product.product_operating_system",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
@@ -30,6 +32,8 @@
                 "5e9a6a6e-9c26-474c-afe5-3583d90882cb": {
                     "explicitInput": {
                         "dataViewId": "logs-*",
+                        "exclude": false,
+                        "existsSelected": false,
                         "fieldName": "xm_cyber.product.vendor",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
@@ -47,6 +51,8 @@
                 "a545fdb7-7c16-488c-868d-5d99761f0bb2": {
                     "explicitInput": {
                         "dataViewId": "logs-*",
+                        "exclude": false,
+                        "existsSelected": false,
                         "fieldName": "xm_cyber.product.product_name",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
@@ -181,6 +187,18 @@
                                 },
                                 "order": 5,
                                 "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_c9f1a2b3-4d5e-6789-0abc-def123456789_dashboard",
+                                "id": "c9f1a2b3-4d5e-6789-0abc-def123456789",
+                                "label": "Vulnerability Instances",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 6,
+                                "type": "dashboardLink"
                             }
                         ]
                     },
@@ -255,12 +273,11 @@
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Count",
-                                                    "operationType": "count",
+                                                    "operationType": "unique_count",
                                                     "params": {
                                                         "emptyAsNull": false
                                                     },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "xm_cyber.product.product_name"
                                                 },
                                                 "df3c70be-bb04-4022-92e3-b27e3b079939": {
                                                     "customLabel": true,
@@ -333,6 +350,28 @@
                                             "data_stream.dataset": "xm_cyber.product"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "event.kind",
+                                        "index": "logs-*",
+                                        "key": "event.kind",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "event"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.kind": "event"
+                                        }
+                                    }
                                 }
                             ],
                             "internalReferences": [],
@@ -357,9 +396,11 @@
                                                     "color": {
                                                         "type": "loop"
                                                     },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
                                                     "touched": false
                                                 }
                                             ]
@@ -415,6 +456,28 @@
                                     "data_stream.dataset": "xm_cyber.product"
                                 }
                             }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "event.kind",
+                                "index": "logs-*",
+                                "key": "event.kind",
+                                "negate": false,
+                                "params": {
+                                    "query": "event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "event.kind": "event"
+                                }
+                            }
                         }
                     ],
                     "query": {
@@ -423,7 +486,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": "Vulnerable Products by Vendor"
                 },
                 "gridData": {
                     "h": 15,
@@ -433,7 +497,6 @@
                     "y": 25
                 },
                 "panelIndex": "9ed22739-5452-4b6e-b482-e2bab51edda0",
-                "title": "Vulnerable Products by Vendor",
                 "type": "lens"
             },
             {
@@ -488,7 +551,6 @@
                                                 "71552fd8-1efa-44d0-ab27-ba0ec55b0edf": {
                                                     "customLabel": true,
                                                     "dataType": "number",
-                                                    "filter": null,
                                                     "isBucketed": false,
                                                     "label": "Devices Found On",
                                                     "operationType": "sum",
@@ -521,7 +583,6 @@
                                             "title": "logs-*"
                                         }
                                     ],
-                                    "initialContext": null,
                                     "layers": {}
                                 }
                             },
@@ -545,6 +606,28 @@
                                     "query": {
                                         "match_phrase": {
                                             "data_stream.dataset": "xm_cyber.product"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "event.kind",
+                                        "index": "logs-*",
+                                        "key": "event.kind",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "event"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.kind": "event"
                                         }
                                     }
                                 }
@@ -636,7 +719,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": "Products by Count of Devices Found on"
                 },
                 "gridData": {
                     "h": 15,
@@ -646,7 +730,6 @@
                     "y": 25
                 },
                 "panelIndex": "d4ad5093-460c-4c8f-af6b-761f737cbc15",
-                "title": "Products by Count of Devices Found on",
                 "type": "lens"
             },
             {
@@ -657,17 +740,13 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-4294e47f-f288-40d2-8abd-6733f368b914",
                                 "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "c1972e8e-2162-4727-b70b-102feb86b74f",
-                                "type": "index-pattern"
                             }
                         ],
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "4294e47f-f288-40d2-8abd-6733f368b914": {
                                             "columnOrder": [
@@ -717,14 +796,23 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {}
                                 },
                                 "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
                                     "layers": {}
                                 }
                             },
@@ -737,7 +825,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "data_stream.dataset",
-                                        "index": "c1972e8e-2162-4727-b70b-102feb86b74f",
+                                        "index": "logs-*",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -748,6 +836,28 @@
                                     "query": {
                                         "match_phrase": {
                                             "data_stream.dataset": "xm_cyber.product"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "event.kind",
+                                        "index": "logs-*",
+                                        "key": "event.kind",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "event"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.kind": "event"
                                         }
                                     }
                                 }
@@ -839,7 +949,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": "Products by Count of Choke Points Found on"
                 },
                 "gridData": {
                     "h": 15,
@@ -849,7 +960,6 @@
                     "y": 40
                 },
                 "panelIndex": "437fd13a-d7f7-4d08-baff-ea3ef52c1c91",
-                "title": "Products by Count of Choke Points Found on",
                 "type": "lens"
             },
             {
@@ -911,12 +1021,11 @@
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Count",
-                                                    "operationType": "count",
+                                                    "operationType": "unique_count",
                                                     "params": {
                                                         "emptyAsNull": false
                                                     },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "xm_cyber.product.product_name"
                                                 },
                                                 "b46a2316-dbc9-4254-aea5-cdd72f914019": {
                                                     "customLabel": true,
@@ -942,7 +1051,7 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "xm_cyber.product.product_operating_systems"
+                                                    "sourceField": "xm_cyber.product.product_operating_system"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -989,6 +1098,28 @@
                                             "data_stream.dataset": "xm_cyber.product"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "event.kind",
+                                        "index": "logs-*",
+                                        "key": "event.kind",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "event"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.kind": "event"
+                                        }
+                                    }
                                 }
                             ],
                             "internalReferences": [],
@@ -1013,9 +1144,11 @@
                                                     "color": {
                                                         "type": "loop"
                                                     },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
                                                     "touched": false
                                                 }
                                             ]
@@ -1071,6 +1204,28 @@
                                     "data_stream.dataset": "xm_cyber.product"
                                 }
                             }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "event.kind",
+                                "index": "logs-*",
+                                "key": "event.kind",
+                                "negate": false,
+                                "params": {
+                                    "query": "event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "event.kind": "event"
+                                }
+                            }
                         }
                     ],
                     "query": {
@@ -1079,7 +1234,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": "Vulnerable Products by Operating System"
                 },
                 "gridData": {
                     "h": 15,
@@ -1089,7 +1245,6 @@
                     "y": 40
                 },
                 "panelIndex": "9b9e0c91-f4fe-4c81-b437-2fbf7cf1f145",
-                "title": "Vulnerable Products by Operating System",
                 "type": "lens"
             },
             {
@@ -1210,6 +1365,28 @@
                                             "data_stream.dataset": "xm_cyber.product"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "event.kind",
+                                        "index": "logs-*",
+                                        "key": "event.kind",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "event"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.kind": "event"
+                                        }
+                                    }
                                 }
                             ],
                             "internalReferences": [],
@@ -1264,7 +1441,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": ""
                 },
                 "gridData": {
                     "h": 10,
@@ -1274,147 +1452,6 @@
                     "y": 2
                 },
                 "panelIndex": "ec243de5-d057-44be-8dc3-688f3eed9bf4",
-                "title": "",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-7d7a51c3-a665-4e72-bc0d-3c0793bcd571",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "38980937-c23d-4434-85a3-3df58f586fad",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "7d7a51c3-a665-4e72-bc0d-3c0793bcd571": {
-                                            "columnOrder": [
-                                                "96df7ab9-c862-4bbc-af83-0a2fd2050c07"
-                                            ],
-                                            "columns": {
-                                                "96df7ab9-c862-4bbc-af83-0a2fd2050c07": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Total Products",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "data_stream.dataset",
-                                        "index": "38980937-c23d-4434-85a3-3df58f586fad",
-                                        "key": "data_stream.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "xm_cyber.product"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": "xm_cyber.product"
-                                        }
-                                    }
-                                }
-                            ],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "color": "#6092C0",
-                                "layerId": "7d7a51c3-a665-4e72-bc0d-3c0793bcd571",
-                                "layerType": "data",
-                                "metricAccessor": "96df7ab9-c862-4bbc-af83-0a2fd2050c07"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "data_stream.dataset",
-                                "index": "logs-*",
-                                "key": "data_stream.dataset",
-                                "negate": false,
-                                "params": {
-                                    "query": "xm_cyber.product"
-                                },
-                                "type": "phrase"
-                            },
-                            "query": {
-                                "match_phrase": {
-                                    "data_stream.dataset": "xm_cyber.product"
-                                }
-                            }
-                        }
-                    ],
-                    "hidePanelTitles": true,
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
-                },
-                "gridData": {
-                    "h": 10,
-                    "i": "0eed2f10-c5f9-4a5d-a22e-57e142821c6c",
-                    "w": 12,
-                    "x": 24,
-                    "y": 2
-                },
-                "panelIndex": "0eed2f10-c5f9-4a5d-a22e-57e142821c6c",
-                "title": "",
                 "type": "lens"
             },
             {
@@ -1441,7 +1478,194 @@
                                                 "96df7ab9-c862-4bbc-af83-0a2fd2050c07": {
                                                     "customLabel": true,
                                                     "dataType": "number",
-                                                    "filter": null,
+                                                    "isBucketed": false,
+                                                    "label": "Total Products",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "sourceField": "xm_cyber.product.product_name"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "logs-*",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "xm_cyber.product"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "xm_cyber.product"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "event.kind",
+                                        "index": "logs-*",
+                                        "key": "event.kind",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "event"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.kind": "event"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "7d7a51c3-a665-4e72-bc0d-3c0793bcd571",
+                                "layerType": "data",
+                                "metricAccessor": "96df7ab9-c862-4bbc-af83-0a2fd2050c07"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "xm_cyber.product"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "xm_cyber.product"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "event.kind",
+                                "index": "logs-*",
+                                "key": "event.kind",
+                                "negate": false,
+                                "params": {
+                                    "query": "event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "event.kind": "event"
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": true,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "0eed2f10-c5f9-4a5d-a22e-57e142821c6c",
+                    "w": 12,
+                    "x": 24,
+                    "y": 2
+                },
+                "panelIndex": "0eed2f10-c5f9-4a5d-a22e-57e142821c6c",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-7d7a51c3-a665-4e72-bc0d-3c0793bcd571",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "7d7a51c3-a665-4e72-bc0d-3c0793bcd571": {
+                                            "columnOrder": [
+                                                "96df7ab9-c862-4bbc-af83-0a2fd2050c07"
+                                            ],
+                                            "columns": {
+                                                "96df7ab9-c862-4bbc-af83-0a2fd2050c07": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Total Products Critical Assets at Risk",
                                                     "operationType": "sum",
@@ -1474,7 +1698,6 @@
                                             "title": "logs-*"
                                         }
                                     ],
-                                    "initialContext": null,
                                     "layers": {}
                                 }
                             },
@@ -1498,6 +1721,28 @@
                                     "query": {
                                         "match_phrase": {
                                             "data_stream.dataset": "xm_cyber.product"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "event.kind",
+                                        "index": "logs-*",
+                                        "key": "event.kind",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "event"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.kind": "event"
                                         }
                                     }
                                 }
@@ -1554,7 +1799,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": ""
                 },
                 "gridData": {
                     "h": 10,
@@ -1564,7 +1810,6 @@
                     "y": 2
                 },
                 "panelIndex": "8c45b013-7a36-4689-ba26-bab832ca93aa",
-                "title": "",
                 "type": "lens"
             },
             {
@@ -1598,12 +1843,11 @@
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Count",
-                                                    "operationType": "count",
+                                                    "operationType": "unique_count",
                                                     "params": {
                                                         "emptyAsNull": false
                                                     },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "xm_cyber.product.product_name"
                                                 },
                                                 "ba0a568d-b10c-4003-8c5a-9044850a3e71": {
                                                     "dataType": "date",
@@ -1663,6 +1907,28 @@
                                             "data_stream.dataset": "xm_cyber.product"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "event.kind",
+                                        "index": "logs-*",
+                                        "key": "event.kind",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "event"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.kind": "event"
+                                        }
+                                    }
                                 }
                             ],
                             "internalReferences": [],
@@ -1687,9 +1953,11 @@
                                                     "color": {
                                                         "type": "loop"
                                                     },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
                                                     "touched": false
                                                 }
                                             ]
@@ -1743,6 +2011,28 @@
                                     "data_stream.dataset": "xm_cyber.product"
                                 }
                             }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "event.kind",
+                                "index": "logs-*",
+                                "key": "event.kind",
+                                "negate": false,
+                                "params": {
+                                    "query": "event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "event.kind": "event"
+                                }
+                            }
                         }
                     ],
                     "query": {
@@ -1751,7 +2041,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": "Vulnerable Products over Time"
                 },
                 "gridData": {
                     "h": 13,
@@ -1761,7 +2052,6 @@
                     "y": 12
                 },
                 "panelIndex": "9b6df5dc-5230-4873-be1f-31f9775b4bb0",
-                "title": "Vulnerable Products over Time",
                 "type": "lens"
             }
         ],
@@ -1770,79 +2060,9 @@
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-07-07T09:44:43.353Z",
+    "created_at": "2026-09-23T06:43:59.499Z",
     "id": "xm_cyber-8591539b-edd7-42bb-bfa0-2ea26a334900",
     "references": [
-        {
-            "id": "logs-*",
-            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "9ed22739-5452-4b6e-b482-e2bab51edda0:indexpattern-datasource-layer-4294e47f-f288-40d2-8abd-6733f368b914",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "d4ad5093-460c-4c8f-af6b-761f737cbc15:indexpattern-datasource-layer-4294e47f-f288-40d2-8abd-6733f368b914",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "437fd13a-d7f7-4d08-baff-ea3ef52c1c91:indexpattern-datasource-layer-4294e47f-f288-40d2-8abd-6733f368b914",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "437fd13a-d7f7-4d08-baff-ea3ef52c1c91:c1972e8e-2162-4727-b70b-102feb86b74f",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "9b9e0c91-f4fe-4c81-b437-2fbf7cf1f145:indexpattern-datasource-layer-4294e47f-f288-40d2-8abd-6733f368b914",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "ec243de5-d057-44be-8dc3-688f3eed9bf4:indexpattern-datasource-layer-7d7a51c3-a665-4e72-bc0d-3c0793bcd571",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "0eed2f10-c5f9-4a5d-a22e-57e142821c6c:indexpattern-datasource-layer-7d7a51c3-a665-4e72-bc0d-3c0793bcd571",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "0eed2f10-c5f9-4a5d-a22e-57e142821c6c:38980937-c23d-4434-85a3-3df58f586fad",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "8c45b013-7a36-4689-ba26-bab832ca93aa:indexpattern-datasource-layer-7d7a51c3-a665-4e72-bc0d-3c0793bcd571",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "9b6df5dc-5230-4873-be1f-31f9775b4bb0:indexpattern-datasource-layer-5ebb0180-4bf4-47b4-b303-2172b248b089",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "controlGroup_5e9a6a6e-9c26-474c-afe5-3583d90882cb:optionsListDataView",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "controlGroup_33a0c6e8-2840-42e4-a30c-c062794054d3:optionsListDataView",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "controlGroup_a545fdb7-7c16-488c-868d-5d99761f0bb2:optionsListDataView",
-            "type": "index-pattern"
-        },
         {
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
@@ -1877,6 +2097,71 @@
             "id": "xm_cyber-8591539b-edd7-42bb-bfa0-2ea26a334900",
             "name": "f582ab5e-8be3-44ba-8e98-ad7e3b2f7016:link_91542e0e-8bdd-4803-8e80-2711749f4f74_dashboard",
             "type": "dashboard"
+        },
+        {
+            "id": "xm_cyber-b7e4c1a2-9d83-4f5e-a6b1-2c8d0e4f7a91",
+            "name": "f582ab5e-8be3-44ba-8e98-ad7e3b2f7016:link_c9f1a2b3-4d5e-6789-0abc-def123456789_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "logs-*",
+            "name": "9ed22739-5452-4b6e-b482-e2bab51edda0:indexpattern-datasource-layer-4294e47f-f288-40d2-8abd-6733f368b914",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "d4ad5093-460c-4c8f-af6b-761f737cbc15:indexpattern-datasource-layer-4294e47f-f288-40d2-8abd-6733f368b914",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "437fd13a-d7f7-4d08-baff-ea3ef52c1c91:indexpattern-datasource-layer-4294e47f-f288-40d2-8abd-6733f368b914",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "9b9e0c91-f4fe-4c81-b437-2fbf7cf1f145:indexpattern-datasource-layer-4294e47f-f288-40d2-8abd-6733f368b914",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "ec243de5-d057-44be-8dc3-688f3eed9bf4:indexpattern-datasource-layer-7d7a51c3-a665-4e72-bc0d-3c0793bcd571",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "0eed2f10-c5f9-4a5d-a22e-57e142821c6c:indexpattern-datasource-layer-7d7a51c3-a665-4e72-bc0d-3c0793bcd571",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "8c45b013-7a36-4689-ba26-bab832ca93aa:indexpattern-datasource-layer-7d7a51c3-a665-4e72-bc0d-3c0793bcd571",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "9b6df5dc-5230-4873-be1f-31f9775b4bb0:indexpattern-datasource-layer-5ebb0180-4bf4-47b4-b303-2172b248b089",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_5e9a6a6e-9c26-474c-afe5-3583d90882cb:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_33a0c6e8-2840-42e4-a30c-c062794054d3:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_a545fdb7-7c16-488c-868d-5d99761f0bb2:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
         }
     ],
     "type": "dashboard",

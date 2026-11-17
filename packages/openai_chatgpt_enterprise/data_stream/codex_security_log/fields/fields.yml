@@ -1,0 +1,119 @@
+- name: openai_chatgpt_enterprise.codex_security_log
+  type: group
+  description: OpenAI ChatGPT Enterprise Codex Security Logs event fields.
+  fields:
+    - name: actor
+      type: group
+      fields:
+        - name: type
+          type: keyword
+          description: Type of actor that performed the action (e.g. ACCOUNT_USER, API_KEY).
+    - name: client_id
+      type: keyword
+      description: Codex client identifier associated with the event (e.g. CODEX_CLI, CODEX_WEB, CODEX_IDE_VSCODE).
+    - name: event_details
+      type: group
+      description: Codex security event details, discriminated by detail_type.
+      fields:
+        - name: detail_type
+          type: keyword
+          description: Discriminator identifying the specific Codex security event-details schema.
+        - name: scan_configuration_fields
+          type: group
+          fields:
+            - name: environment_id
+              type: keyword
+              description: Environment the scan configuration targets.
+            - name: lookback_days
+              type: long
+              description: Scan lookback window in days.
+            - name: notification_rules_created_count
+              type: long
+              description: Count of notification rules created.
+            - name: notification_rules_deleted_count
+              type: long
+              description: Count of notification rules deleted.
+            - name: notification_rules_updated_count
+              type: long
+              description: Count of notification rules updated.
+            - name: owner_id
+              type: keyword
+              description: Owner (auth user ID) of the scan configuration.
+            - name: repo_id
+              type: keyword
+              description: Repository identifier scanned.
+            - name: repo_url
+              type: keyword
+              description: Repository URL scanned.
+            - name: scan_type
+              type: keyword
+              description: Type of scan (e.g. secrets).
+            - name: state
+              type: keyword
+              description: Scan configuration state (e.g. active).
+            - name: workspace_id
+              type: keyword
+              description: Workspace of the scan configuration.
+        - name: scan_configuration_id
+          type: keyword
+          description: Scan configuration identifier.
+        - name: updated_fields
+          type: group
+          fields:
+            - name: assignee_user_email
+              type: keyword
+              description: Email of the finding assignee after update.
+            - name: criticality_reason
+              type: keyword
+              description: Reason for the criticality.
+            - name: criticality_reason_updated
+              type: boolean
+              description: Whether criticality_reason changed in this update.
+            - name: environment_id
+              type: keyword
+              description: Environment identifier (updated field).
+            - name: lookback_days
+              type: long
+              description: Lookback days (updated field).
+            - name: notification_rules_created_count
+              type: long
+              description: Notification rules created count (updated field).
+            - name: notification_rules_deleted_count
+              type: long
+              description: Notification rules deleted count (updated field).
+            - name: notification_rules_updated_count
+              type: long
+              description: Notification rules updated count (updated field).
+            - name: owner_id
+              type: keyword
+              description: Owner id (updated field).
+            - name: project_overview_length
+              type: long
+              description: Length of the project overview text (updated).
+            - name: project_overview_updated
+              type: boolean
+              description: Whether the project overview changed.
+            - name: resolution_reason
+              type: keyword
+              description: Reason recorded when resolving the finding.
+            - name: resolution_reason_updated
+              type: boolean
+              description: Whether resolution_reason changed.
+            - name: state
+              type: keyword
+              description: State (updated field).
+            - name: status
+              type: keyword
+              description: Finding status after update (e.g. wontfix).
+    - name: principal
+      type: group
+      fields:
+        - name: type
+          type: keyword
+          description: Principal that owns the event (e.g. CHATGPT_WORKSPACE).
+    - name: type
+      type: keyword
+      description: Top-level event category (CODEX_SECURITY_LOG).
+    - name: workspace_id
+      type: keyword
+      description: Workspace identifier associated with the event.

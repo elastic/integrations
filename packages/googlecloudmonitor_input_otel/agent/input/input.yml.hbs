@@ -1,0 +1,33 @@
+receivers:
+  googlecloudmonitoring:
+    project_id: {{project_id}}
+    metrics_list:
+{{#each metrics_list}}
+      - metric_name: {{this}}
+{{/each}}
+{{#each metric_descriptor_filters}}
+      - metric_descriptor_filter: {{this}}
+{{/each}}
+{{#if collection_interval}}
+    collection_interval: {{collection_interval}}
+{{/if}}
+{{#if initial_delay}}
+    initial_delay: {{initial_delay}}
+{{/if}}
+{{#if timeout}}
+    timeout: {{timeout}}
+{{/if}}
+{{#if endpoint}}
+    endpoint: {{endpoint}}
+{{/if}}
+{{#if universe_domain}}
+    universe_domain: {{universe_domain}}
+{{/if}}
+processors:
+  resourcedetection/system:
+    detectors: ["system"]
+service:
+  pipelines:
+    metrics:
+      receivers: [googlecloudmonitoring]
+      processors: [resourcedetection/system]

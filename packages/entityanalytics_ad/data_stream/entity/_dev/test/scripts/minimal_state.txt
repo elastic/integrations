@@ -1,0 +1,69 @@
+# Verify the minimal-state sync path routes entity documents to per-type data
+# streams without producing marker events in the entity data stream.
+#
+# This test explicitly sets use_minimal_state: true.
+#
+# The mock LDAP server provides:
+#   - 1 user (Administrator)        → entityanalytics_ad.user
+#   - 1 device (WORKSTATION-01)     → entityanalytics_ad.device
+#   - 2 empty groups (Decommissioned, Contractors) → entityanalytics_ad.group
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+exec ln -s ${PACKAGE_ROOT}/_dev/deploy/docker ldap-mock-service
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} ldap-mock-service
+
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml ENTITY_DS
+
+# Verify user documents arrive in the user data stream.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -timeout 5m logs-entityanalytics_ad.user-*
+cp stdout user_docs.json
+exec jq '[.hits.hits[]._source.user.id] | unique[]' user_docs.json
+stdout 'S-1-5-21-374105552-1189110957-4047727897-500'
+exec jq '[.hits.hits[]._source.user.name] | unique[]' user_docs.json
+stdout 'Administrator'
+
+# Verify device documents arrive in the device data stream.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -timeout 2m logs-entityanalytics_ad.device-*
+cp stdout device_docs.json
+exec jq '[.hits.hits[]._source.device.id] | unique[]' device_docs.json
+stdout 'S-1-5-21-374105552-1189110957-4047727897-1001'
+
+# Verify empty group documents arrive in the group data stream.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -timeout 2m logs-entityanalytics_ad.group-*
+cp stdout group_docs.json
+exec jq '[.hits.hits[]._source.group.id] | unique | sort[]' group_docs.json
+stdout 'S-1-5-21-374105552-1189110957-4047727897-1101'
+stdout 'S-1-5-21-374105552-1189110957-4047727897-1102'
+exec jq '[.hits.hits[]._source.group.name] | unique | sort[]' group_docs.json
+stdout 'Contractors'
+stdout 'Decommissioned'
+
+# The entity data stream should have no documents (no markers in minimal mode).
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 0 -confirm 30s -timeout 1m ${ENTITY_DS}
+
+# Clean up.
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${ENTITY_DS}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down ldap-mock-service
+
+-- test_config.yaml --
+input: entity-analytics
+data_stream:
+  vars:
+    ad_base_dn: "DC=testserver,DC=local"
+    ad_url: "ldap://svc-ldap-mock-service:10389"
+    ad_user: "cn=admin,dc=testserver,dc=local"
+    ad_password: "password"
+    dataset: all
+    use_minimal_state: true
+    include_empty_groups: true
+    sync_interval: 24h
+    update_interval: 15m

@@ -1,0 +1,295 @@
+---
+description: Pipeline for processing SailPoint Identity Security Cloud machine identity records.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.4.0'
+
+  # --- CEL input only ---
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  # --- end CEL-only ---
+
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+
+  # Parse JSON from event.original
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_json
+      if: ctx.event?.original != null
+
+  # --- ECS categorization (static for all machine identity records) ---
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: asset
+  - append:
+      field: event.category
+      tag: append_event_category_iam
+      value: iam
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type_info
+      value: info
+      allow_duplicates: false
+
+  # --- Timestamps ---
+  - date:
+      field: json.modified
+      tag: parse_timestamp_modified
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      if: ctx.json?.modified != null
+      on_failure:
+        - remove:
+            field: json.modified
+            ignore_missing: true
+            tag: remove_invalid_modified
+        - append:
+            field: error.message
+            tag: append_error_modified
+            value: >-
+              Processor {{{_ingest.on_failure_processor_type}}}
+              with tag '{{{_ingest.on_failure_processor_tag}}}'
+              failed: {{{_ingest.on_failure_message}}}
+  - date:
+      field: json.created
+      tag: parse_timestamp_created_fallback
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      if: ctx.json?.modified == null && ctx.json?.created != null
+      on_failure:
+        - remove:
+            field: json.created
+            ignore_missing: true
+            tag: remove_invalid_created_fallback
+        - append:
+            field: error.message
+            tag: append_error_created_fallback
+            value: >-
+              Processor {{{_ingest.on_failure_processor_type}}}
+              with tag '{{{_ingest.on_failure_processor_tag}}}'
+              failed: {{{_ingest.on_failure_message}}}
+  - date:
+      field: json.created
+      tag: parse_machine_identity_created
+      target_field: sailpoint_identity_sc.machine_identity.created
+      formats:
+        - ISO8601
+      if: ctx.json?.created != null
+      on_failure:
+        - remove:
+            field: json.created
+            ignore_missing: true
+            tag: remove_invalid_created
+        - append:
+            field: error.message
+            tag: append_error_created
+            value: >-
+              Processor {{{_ingest.on_failure_processor_type}}}
+              with tag '{{{_ingest.on_failure_processor_tag}}}'
+              failed: {{{_ingest.on_failure_message}}}
+
+  # --- Core service ECS fields ---
+  - rename:
+      field: json.id
+      target_field: service.id
+      tag: rename_service_id
+      ignore_missing: true
+  - rename:
+      field: json.name
+      target_field: service.name
+      tag: rename_service_name
+      if: ctx.json?.name != null
+      ignore_missing: true
+  - rename:
+      field: json.subtype
+      target_field: service.type
+      tag: rename_service_type
+      ignore_missing: true
+
+  # --- Entity fields ---
+  - set:
+      field: service.entity.id
+      tag: set_entity_id
+      copy_from: service.id
+      if: ctx.service?.id != null
+  - set:
+      field: service.entity.name
+      tag: set_entity_name
+      copy_from: service.name
+      if: ctx.service?.name != null
+  - append:
+      field: service.entity.type
+      tag: append_entity_type
+      value: service
+      allow_duplicates: false
+
+  # --- related.user ---
+  - append:
+      field: related.user
+      tag: append_related_user_primary_owner
+      value: '{{{json.owners.primaryIdentity.name}}}'
+      allow_duplicates: false
+      if: ctx.json?.owners?.primaryIdentity?.name != null
+  - foreach:
+      field: json.owners.secondaryIdentities
+      tag: foreach_secondary_owner_related_user
+      if: ctx.json?.owners?.secondaryIdentities instanceof List
+      ignore_missing: true
+      processor:
+        append:
+          field: related.user
+          tag: append_related_user_secondary_owner
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+
+  # --- Custom namespace fields: sailpoint_identity_sc.machine_identity.* ---
+  - rename:
+      field: json.nativeIdentity
+      target_field: sailpoint_identity_sc.machine_identity.native_identity
+      tag: rename_native_identity
+      ignore_missing: true
+  - rename:
+      field: json.description
+      target_field: sailpoint_identity_sc.machine_identity.description
+      tag: rename_description
+      ignore_missing: true
+  - rename:
+      field: json.attributes
+      target_field: sailpoint_identity_sc.machine_identity.attributes
+      tag: rename_attributes
+      ignore_missing: true
+  - rename:
+      field: json.source.id
+      target_field: sailpoint_identity_sc.machine_identity.source.id
+      tag: rename_source_id
+      ignore_missing: true
+  - rename:
+      field: json.source.name
+      target_field: sailpoint_identity_sc.machine_identity.source.name
+      tag: rename_source_name
+      ignore_missing: true
+  - rename:
+      field: json.sourceId
+      target_field: sailpoint_identity_sc.machine_identity.source_id
+      tag: rename_source_id_plain
+      ignore_missing: true
+  - rename:
+      field: json.uuid
+      target_field: sailpoint_identity_sc.machine_identity.uuid
+      tag: rename_uuid
+      ignore_missing: true
+  - rename:
+      field: json.datasetId
+      target_field: sailpoint_identity_sc.machine_identity.dataset_id
+      tag: rename_dataset_id
+      ignore_missing: true
+  - rename:
+      field: json.manuallyEdited
+      target_field: sailpoint_identity_sc.machine_identity.manually_edited
+      tag: rename_manually_edited
+      ignore_missing: true
+  - rename:
+      field: json.manuallyCreated
+      target_field: sailpoint_identity_sc.machine_identity.manually_created
+      tag: rename_manually_created
+      ignore_missing: true
+  - set:
+      field: sailpoint_identity_sc.machine_identity.modified
+      tag: set_custom_modified
+      copy_from: '@timestamp'
+      if: ctx.json?.modified != null
+  - rename:
+      field: json.owners.primaryIdentity.id
+      target_field: sailpoint_identity_sc.machine_identity.owners.primary.id
+      tag: rename_primary_owner_id
+      ignore_missing: true
+  - rename:
+      field: json.owners.primaryIdentity.name
+      target_field: sailpoint_identity_sc.machine_identity.owners.primary.name
+      tag: rename_primary_owner_name
+      ignore_missing: true
+  - rename:
+      field: json.owners.secondaryIdentities
+      target_field: sailpoint_identity_sc.machine_identity.owners.secondary
+      tag: rename_secondary_owners
+      ignore_missing: true
+  - foreach:
+      field: json.userEntitlements
+      tag: foreach_user_entitlements_snake_case
+      if: ctx.json?.userEntitlements instanceof List
+      ignore_missing: true
+      processor:
+        append:
+          field: sailpoint_identity_sc.machine_identity.user_entitlements
+          tag: append_user_entitlement
+          allow_duplicates: false
+          value:
+            source_id: '{{{_ingest._value.sourceId}}}'
+            entitlement_id: '{{{_ingest._value.entitlementId}}}'
+            display_name: '{{{_ingest._value.displayName}}}'
+            source:
+              id: '{{{_ingest._value.source.id}}}'
+              name: '{{{_ingest._value.source.name}}}'
+              type: '{{{_ingest._value.source.type}}}'
+
+  # --- Cleanup ---
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
+on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_failure
+      value: preserve_original_event
+      allow_duplicates: false

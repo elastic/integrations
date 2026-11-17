@@ -1,0 +1,39 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: filestream
+      name: test-true-defaults-filestream
+      streams:
+        - clean_inactive: -1
+          clean_removed: true
+          data_stream:
+            dataset: filestream.generic
+          file_identity.fingerprint: null
+          parsers: null
+          paths:
+            - /var/log/*.log
+          prospector.scanner.exclude_files:
+            - \.gz$
+          prospector.scanner.fingerprint.enabled: true
+          prospector.scanner.fingerprint.length: 1024
+          prospector.scanner.fingerprint.offset: 0
+          prospector.scanner.recursive_glob: true
+      type: filestream
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-*-*
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []

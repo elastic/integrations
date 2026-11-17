@@ -1,0 +1,226 @@
+title: 'LiteLLM Audit Logs'
+type: logs
+streams:
+  - input: aws-s3
+    title: 'LiteLLM audit logs via AWS S3'
+    description: 'Collect LiteLLM audit logs (StandardAuditLogPayload) from an S3 bucket.'
+    enabled: false
+    template_path: aws-s3.yml.hbs
+    vars:
+      - name: bucket_arn
+        type: text
+        title: '[S3] Bucket ARN'
+        description: ARN of the AWS S3 bucket that will be polled for list operation. Required for collecting logs via AWS S3.
+        multi: false
+        required: false
+        show_user: true
+        secret: false
+      - name: bucket_list_prefix
+        type: text
+        title: '[S3] Bucket Prefix'
+        description: Prefix to apply for the list request to the S3 bucket.
+        multi: false
+        required: false
+        show_user: true
+        secret: false
+      - name: interval
+        type: text
+        title: '[S3] Interval'
+        description: Listing of the S3 bucket will be polled according to this interval. Supported units for this parameter are h/m/s.
+        multi: false
+        required: false
+        show_user: true
+        default: 120s
+        secret: false
+      - name: number_of_workers
+        type: integer
+        title: '[S3] Number of Workers'
+        description: Number of workers that will process the S3 objects listed.
+        multi: false
+        required: false
+        show_user: false
+        default: 5
+        secret: false
+      - name: start_timestamp
+        type: text
+        title: '[S3] Start Timestamp'
+        description: If set, only read S3 objects with last modified timestamp newer than the given timestamp. Accepts a timestamp in `YYYY-MM-DDTHH:MM:SSZ` format. For example, '2020-10-10T10:30:00Z' (UTC) or '2020-10-10T10:30:00Z+02:30' (with zone offset).
+        multi: false
+        required: false
+        show_user: false
+        secret: false
+      - name: ignore_older
+        type: text
+        title: '[S3] Ignore Older Timespan'
+        description: If set, ignore S3 objects whose Last-Modified time is before the ignore older timespan. Timespan is checked from the current time to S3 object's Last-Modified time. Accepts a duration like `48h`, `2h30m`.
+        multi: false
+        required: false
+        show_user: false
+        secret: false
+      - name: access_point_arn
+        type: text
+        title: '[S3] Access Point ARN'
+        description: ARN of the AWS S3 Access Point that will be polled for list operation. Use this instead of bucket_arn if needed.
+        multi: false
+        required: false
+        show_user: true
+        secret: false
+      - name: queue_url
+        type: text
+        title: '[SQS] Queue URL'
+        description: URL of the AWS SQS queue that messages will be received from. Required for collecting logs via AWS SQS.
+        multi: false
+        required: false
+        show_user: true
+        secret: false
+      - name: visibility_timeout
+        type: text
+        title: '[SQS] Visibility Timeout'
+        default: 300s
+        description: The duration that received messages are hidden from subsequent retrieve requests. Supported units are h/m/s.
+        multi: false
+        required: false
+        show_user: true
+        secret: false
+      - name: api_timeout
+        type: text
+        title: '[SQS] API Timeout'
+        default: 120s
+        description: The maximum duration of AWS API calls. The maximum is half of the visibility timeout value. Supported units are h/m/s.
+        multi: false
+        required: false
+        show_user: true
+        secret: false
+      - name: max_number_of_messages
+        type: integer
+        title: '[SQS] Maximum Concurrent SQS Messages'
+        default: 5
+        description: Maximum number of SQS messages that can be inflight at any time.
+        multi: false
+        required: false
+        show_user: true
+        secret: false
+      - name: file_selectors
+        type: yaml
+        title: '[SQS] File Selectors'
+        description: Regex patterns to limit which S3 files are processed from SQS messages. Uses RE2 syntax.
+        multi: false
+        required: false
+        show_user: false
+        secret: false
+      - name: external_id
+        type: text
+        title: External ID
+        description: External ID to use when assuming a role in another AWS account.
+        multi: false
+        required: false
+        show_user: false
+        secret: false
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags for the data stream.
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - litellm-audit
+        secret: false
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        multi: false
+        required: true
+        show_user: true
+        default: false
+        secret: false
+      - name: processors
+        type: yaml
+        title: Processors
+        description: Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+        multi: false
+        required: false
+        show_user: false
+        secret: false
+  - input: cel
+    title: 'LiteLLM audit logs via API (CEL polling)'
+    description: "Collect LiteLLM audit logs (StandardAuditLogPayload) by polling the LiteLLM proxy's own `/audit` REST API directly with the CEL input."
+    enabled: false
+    template_path: cel.yml.hbs
+    vars:
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        description: How far back to pull the logs from the audit API. Supported units for this parameter are h/m/s.
+        multi: false
+        required: true
+        show_user: true
+        default: 24h
+        secret: false
+      - name: interval
+        type: text
+        title: Interval
+        description: Duration between audit log collection requests from the LiteLLM Audit API. Supported units for this parameter are h/m/s.
+        multi: false
+        required: true
+        show_user: true
+        default: 24h
+        secret: false
+      - name: batch_size
+        type: integer
+        title: Batch Size
+        description: Number of audit log records fetched per API request. Maps to the page_size parameter.
+        multi: false
+        required: true
+        show_user: false
+        default: 100
+        secret: false
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Supported time units are ns, us, ms, s, m, h.
+        multi: false
+        required: true
+        show_user: false
+        default: 60s
+        secret: false
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        description: >-
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. Disabling the request tracer will delete any stored traces. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable) for details.
+        multi: false
+        required: false
+        show_user: false
+        default: false
+        secret: false
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        multi: false
+        required: true
+        show_user: true
+        default: false
+        secret: false
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags for the data stream.
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - litellm-audit
+        secret: false
+      - name: processors
+        type: yaml
+        title: Processors
+        description: Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+        multi: false
+        required: false
+        show_user: false
+        secret: false

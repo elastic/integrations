@@ -2,25 +2,30 @@
 description: Pipeline for processing Atlassian Confluence audit logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - drop:
+      tag: drop_3b8f7055
       if: (ctx.json?.entities instanceof List && ctx.json.entities.length == 0) || (ctx.json?.results instanceof List && ctx.json.results.length == 0)
   - script:
+      tag: script_processor_iterates_over_whole_document_813978ed
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -45,22 +50,33 @@ processors:
           list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
         }
         handleMap(ctx.json);
+  - set:
+      tag: set_config_atlassian_cloud_from_content
+      field: _config.atlassian_cloud
+      value: true
+      description: Route Cloud-format documents (identified by `creationDate` and the absence of the self-hosted `timestamp` field) to the cloud pipeline even when the input did not set `_config.atlassian_cloud`, for example when the document arrived via Logstash or a misconfigured policy.
+      if: ctx._config?.atlassian_cloud == null && ctx.json?.creationDate != null && ctx.json?.timestamp == null
   - pipeline:
+      tag: pipeline_cloud_a9467602
       name: '{{ IngestPipeline "cloud" }}'
       if: "ctx._config?.atlassian_cloud != null"
   - pipeline:
+      tag: pipeline_self_hosted_601611b9
       name: '{{ IngestPipeline "self-hosted" }}'
       if: "ctx._config?.atlassian_cloud == null"
   - convert:
+      tag: convert_source_address_to_source_ip_48c76f83
       field: source.address
       target_field: source.ip
       type: ip
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -69,14 +85,17 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - script:
+      tag: script_add_ecs_categorization_321eb5ed
       lang: painless
       description: Add ECS categorization
       params:
@@ -298,6 +317,7 @@ processors:
         def hm = new HashMap(params.get(ctx.event.action));
         hm.forEach((k, v) -> ctx.event[k] = v);
   - script:
+      tag: script_add_ecs_user_fields_a2f1bb87
       lang: painless
       description: Add ECS User fields
       if: "['audit.logging.category.user.management','audit.logging.category.auth'].contains(ctx.confluence?.audit?.type?.categoryI18nKey) || ['Users and groups'].contains(ctx.confluence?.audit?.type?.category)"
@@ -330,11 +350,38 @@ processors:
             if(ctx.confluence?.audit?.affected_objects[j]?.type == 'Group') {
               String group_name = ctx.confluence?.audit?.affected_objects[j]?.name;
               String group_id = ctx.confluence?.audit?.affected_objects[j]?.id;
-              if(ctx._config?.atlassian_cloud != null) {
-                  def m = /(.+):(\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b)$/.matcher(group_name);
-                  if (m.find()) {
-                    group_name = m.group(1);
-                    group_id = m.group(2);
+              String target_user_id = null;
+              if(ctx._config?.atlassian_cloud != null && group_name != null) {
+                  // Some Cloud membership events carry no group name, only
+                  // '<groupId>; User: <accountId>' (observed, undocumented). Extract both IDs
+                  // and drop the name, which does not exist in the source. This runs before the
+                  // '<groupName>:<groupId>' split below because a legacy account ID of the form
+                  // '557058:<uuid>' also ends in ':<uuid>' and would otherwise be truncated.
+                  int marker = group_name.indexOf('; User: ');
+                  if (marker == 36) {
+                    String gid = group_name.substring(0, 36);
+                    String uid = group_name.substring(marker + 8);
+                    if (gid ==~ /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/ && uid ==~ /[a-zA-Z0-9:_-]+/) {
+                      group_id = gid;
+                      group_name = null;
+                      target_user_id = uid;
+                    }
+                  }
+                  // Cloud renders groups as '<groupName>:<groupId>'
+                  // (https://community.developer.atlassian.com/t/adding-groupid-to-audit-logs/45177).
+                  // Split on the last ':' only when a 36-char UUID follows; checking length and
+                  // suffix first keeps the regex work bounded (avoids the Painless regex limit
+                  // that unanchored patterns can hit on long names). Skipped when the
+                  // '; User: ' form above consumed the name.
+                  if (group_name != null) {
+                    int sep = group_name.lastIndexOf(':');
+                    if (sep > 0 && group_name.length() - sep - 1 == 36) {
+                      String suffix = group_name.substring(sep + 1);
+                      if (suffix ==~ /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/) {
+                        group_name = group_name.substring(0, sep);
+                        group_id = suffix;
+                      }
+                    }
                   }
               }
               if(['audit.logging.summary.group.created', 'audit.logging.summary.group.deleted', 'Group created', 'Group deleted'].contains(ctx.event.action)) {
@@ -344,6 +391,11 @@ processors:
               if(['audit.logging.summary.group.membership.added', 'audit.logging.summary.group.membership.removed', 'User added to group','User removed from group'].contains(ctx.event.action)) {
                 ctx.user.target.group.put("name", group_name);
                 ctx.user.target.group.put("id", group_id);
+                // Account ID recovered from a '<groupId>; User: <accountId>' group name; a
+                // User-typed affected object, when present, takes precedence below.
+                if (target_user_id != null && ctx.user.target.id == null) {
+                  ctx.user.target.put("id", target_user_id);
+                }
               }
             }
             if(ctx.confluence?.audit?.affected_objects[j]?.type == 'User') {
@@ -408,32 +460,38 @@ processors:
           }
         }
   - append:
+      tag: append_related_user_837e080f
       field: related.user
       value: '{{{user.name}}}'
       allow_duplicates: false
       if: ctx.user?.name != null
   - append:
+      tag: append_related_user_be5e9d5c
       field: related.user
       value: '{{{user.target.name}}}'
       allow_duplicates: false
       if: ctx.user?.target?.name != null
   - append:
+      tag: append_related_user_d2acb44a
       field: related.user
       value: '{{{user.changes.name}}}'
       allow_duplicates: false
       if: ctx.user?.changes?.name != null
   - append:
+      tag: append_related_ip_8121c591
       field: related.ip
       value: '{{{source.ip}}}'
       allow_duplicates: false
       if: ctx.source?.ip != null
   - remove:
+      tag: remove_66a033dd
       field:
         - json
         - _tmp
         - _config
       ignore_missing: true
   - script:
+      tag: script_processor_iterates_over_whole_document_4d6993cb
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -460,18 +518,22 @@ processors:
         handleMap(ctx);
 on_failure:
   - remove:
+      tag: remove_8c4a443b
       field:
         - _config
         - _tmp
       ignore_failure: true
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_8ac65503
       field: error.message
       value: >
         Processor "{{{ _ingest.on_failure_processor_type }}}"

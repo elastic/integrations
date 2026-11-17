@@ -1,145 +1,6 @@
 type: logs
 title: Akamai SIEM Logs
 streams:
-  - input: cel
-    template_path: cel.yml.hbs
-    title: Akamai SIEM logs
-    description: Collect Akamai logs via the SIEM API
-    vars:
-      - name: api_host
-        type: text
-        title: API Host
-        description: API Hostname in the form of http(s)://akzz-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.luna.akamaiapis.net without path
-        multi: false
-        required: true
-        show_user: true
-        default: https://akzz-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.luna.akamaiapis.net
-      - name: client_token
-        type: password
-        title: Client Token
-        description: Client token provided by "Credentials" ui
-        multi: false
-        required: true
-        show_user: true
-        secret: true
-      - name: client_secret
-        type: password
-        title: Client Secret
-        description: Client secret provided by "Credentials" ui
-        multi: false
-        required: true
-        show_user: true
-        secret: true
-      - name: access_token
-        type: password
-        title: Access Token
-        description: Access token provided by "Authorizations" ui
-        multi: false
-        required: true
-        show_user: true
-        secret: true
-      - name: config_ids
-        type: text
-        title: Zone ID
-        multi: false
-        required: true
-        show_user: true
-        description: Unique identifier for each security configuration. To report on more than one configuration, separate integer identifiers with semicolons. ex. 12892;29182;82912
-      - name: http_client_timeout
-        type: text
-        title: HTTP Client Timeout
-        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
-        multi: false
-        required: false
-        show_user: true
-        default: 60s
-      - name: interval
-        type: text
-        title: Interval
-        multi: false
-        required: true
-        show_user: true
-        description: Interval at which the logs will be pulled. The value must be between 2m and 1h. Supported units for this parameter are h/m/s.
-        default: 1h
-      - name: initial_interval
-        type: text
-        title: Initial Interval
-        multi: false
-        required: true
-        show_user: true
-        default: 12h
-        description: Initial interval to poll for events. Default is the maximum allowed value of 12 hours. Supported units for this parameter are h/m/s.
-      - name: recovery_interval
-        type: text
-        title: Recovery Interval
-        multi: false
-        required: true
-        show_user: false
-        default: 12h
-        description: Lookback period for data retrieval when the integration enters recovery mode. Default and maximum allowed value is 12 hours. Supported units for this parameter are h/m/s.
-      - name: event_limit
-        type: integer
-        multi: false
-        required: false
-        show_user: false
-        title: Event Limit
-        description: Defines the approximate maximum number of security events each fetch returns, in both offset and time-based modes. The default limit is 10000 and the maximum limit available is 600000. Listing an unlimited number of logs isn't possible. Expect requests to return a slightly higher number of security events than you set in the limit parameter, because data is stored in different buckets.
-        default: 10000
-      - name: max_executions
-        type: integer
-        title: Maximum Pages Per Interval
-        description: Maximum Pages Per Interval is the maximum number of pages that can be collected at each interval.
-        multi: false
-        required: false
-        show_user: false
-        default: 5000
-      - name: proxy_url
-        type: text
-        title: Proxy URL
-        multi: false
-        required: false
-        show_user: false
-        description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
-      - name: ssl
-        type: yaml
-        title: SSL Configuration
-        multi: false
-        required: false
-        show_user: false
-        description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
-      - name: tags
-        type: text
-        title: Tags
-        multi: true
-        required: true
-        show_user: true
-        default:
-          - akamai-siem
-          - forwarded
-      - name: preserve_original_event
-        required: true
-        show_user: true
-        title: Preserve original event
-        description: Preserves a raw copy of the original event, added to the field `event.original`
-        type: bool
-        multi: false
-        default: false
-      - name: processors
-        type: yaml
-        title: Processors
-        multi: false
-        required: false
-        show_user: false
-        description: "Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. \nThis executes in the agent before the logs are parsed. \nSee [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.\n"
-      - name: enable_request_tracer
-        type: bool
-        title: Enable request tracing
-        multi: false
-        required: false
-        show_user: false
-        description: >
-          The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
-
   - input: gcs
     title: Collect Akamai SIEM logs via Google Cloud Storage
     description: Collecting SIEM logs from Akamai via Google Cloud Storage.
@@ -240,3 +101,164 @@ streams:
         default:
           - forwarded
           - akamai-siem
+
+  - input: aws-s3
+    title: Collect Akamai SIEM logs via AWS S3 / SQS
+    description: Collect Akamai SIEM JSON files from Amazon S3 using SQS notifications or direct polling.
+    template_path: aws-s3.yml.hbs
+    enabled: false
+    vars:
+      - name: collect_s3_logs
+        type: bool
+        title: Collect via direct S3 bucket polling
+        description: Turn on for direct S3 listing, or leave off for SQS notifications.
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: queue_url
+        type: text
+        title: SQS Queue URL
+        description: Required in SQS mode. S3 event notifications must reach this queue.
+        multi: false
+        required: false
+        show_user: true
+        default: ''
+      - name: bucket_arn
+        type: text
+        title: S3 Bucket ARN
+        description: Required in direct S3 polling mode. For example, arn:aws:s3:::your-bucket.
+        multi: false
+        required: false
+        show_user: true
+        default: ''
+      - name: bucket_list_prefix
+        type: text
+        title: S3 Bucket Prefix
+        description: Optional prefix for direct S3 listing.
+        multi: false
+        required: false
+        show_user: true
+        default: ''
+      - name: bucket_list_interval
+        type: text
+        title: S3 Bucket List Interval
+        description: Direct S3 polling frequency.
+        multi: false
+        required: false
+        show_user: true
+        default: 1m
+      - name: number_of_workers
+        type: integer
+        title: Workers
+        description: Number of workers processing S3 objects.
+        multi: false
+        required: false
+        show_user: true
+        default: 5
+      - name: visibility_timeout
+        type: text
+        title: SQS Visibility Timeout
+        description: Configure long enough to process an object. SQS mode only.
+        multi: false
+        required: false
+        show_user: true
+        default: 300s
+      - name: api_timeout
+        type: text
+        title: SQS API Timeout
+        description: Must not exceed half the visibility timeout.
+        multi: false
+        required: false
+        show_user: true
+        default: 120s
+      - name: access_key_id
+        type: password
+        title: AWS Access Key ID
+        description: Optional, use AWS credentials chain or IAM role instead when possible.
+        multi: false
+        required: false
+        show_user: true
+        secret: true
+      - name: secret_access_key
+        type: password
+        title: AWS Secret Access Key
+        description: Optional AWS secret access key.
+        multi: false
+        required: false
+        show_user: true
+        secret: true
+      - name: session_token
+        type: password
+        title: AWS Session Token
+        description: Optional temporary credential session token.
+        multi: false
+        required: false
+        show_user: true
+        secret: true
+      - name: role_arn
+        type: text
+        title: AWS Role ARN
+        description: Optional IAM role to assume.
+        multi: false
+        required: false
+        show_user: true
+      - name: shared_credential_file
+        type: text
+        title: Shared Credential File
+        description: Optional AWS shared credentials path.
+        multi: false
+        required: false
+        show_user: false
+      - name: credential_profile_name
+        type: text
+        title: Credential Profile Name
+        description: Optional profile in the shared credentials file.
+        multi: false
+        required: false
+        show_user: false
+      - name: default_region
+        type: text
+        title: AWS Region
+        description: Default AWS region if not provided by environment or credentials.
+        multi: false
+        required: false
+        show_user: true
+      - name: endpoint
+        type: text
+        title: AWS Endpoint Override
+        description: Optional custom AWS endpoint.
+        multi: false
+        required: false
+        show_user: false
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        description: Optional HTTP proxy.
+        multi: false
+        required: false
+        show_user: false
+      - name: file_selectors
+        type: yaml
+        title: File Selectors
+        description: Optional RE2 selectors to include only Akamai object keys.
+        multi: false
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to add to ingested events.
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - forwarded
+          - akamai-siem
+      - name: processors
+        type: yaml
+        title: Processors
+        description: Optional Filebeat processors applied before Elasticsearch parsing.
+        multi: false
+        required: false
+        show_user: false

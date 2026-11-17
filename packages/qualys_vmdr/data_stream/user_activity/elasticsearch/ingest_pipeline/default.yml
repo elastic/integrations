@@ -2,10 +2,11 @@
 description: Pipeline for processing Qualys User Activity Log data.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: 8.11.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - remove:
@@ -15,26 +16,29 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_691cf1d4
       if: ctx.event?.original != null
       field: message
       ignore_missing: true
   - json:
+      tag: json_event_original_to_qualys_vmdr_user_activity_7d6ad8d0
       field: event.original
       target_field: qualys_vmdr.user_activity
   - script:
       lang: painless
       description: Replace spaces and dashes in field names under qualys_vmdr.user_activity.
-      tag: painless_purge_spaces_and_dashes
+      tag: painless_purge_spaces_and_dashes_833dd458
       if: ctx.qualys_vmdr?.user_activity instanceof Map
       source: |
         String underscore(String s) {
@@ -47,50 +51,62 @@ processors:
         }
         ctx.qualys_vmdr.user_activity = out;
   - fingerprint:
+      tag: fingerprint_to_id_eaed5dd9
       fields:
         - event.original
       target_field: _id
   - date:
+      tag: date_qualys_vmdr_user_activity_Date_ee34d4e3
       field: qualys_vmdr.user_activity.Date
       formats:
         - ISO8601
   - set:
+      tag: set_event_action_71826743
       field: event.action
       copy_from: qualys_vmdr.user_activity.Action
       ignore_empty_value: true
   - set:
+      tag: set_event_provider_dfe42be4
       field: event.provider
       copy_from: qualys_vmdr.user_activity.Module
       ignore_empty_value: true
   - set:
+      tag: set_message_f0ade48a
       field: message
       copy_from: qualys_vmdr.user_activity.Details
       ignore_empty_value: true
   - set:
+      tag: set_user_name_4ff0b4e0
       field: user.name
       copy_from: qualys_vmdr.user_activity.User_Name
       ignore_empty_value: true
   - append:
+      tag: append_related_user_c036eec2
       if: ctx.user?.name != null
       field: related.user
       value: '{{{user.name}}}'
   - append:
+      tag: append_user_roles_fbe29edc
       field: user.roles
       value: '{{{qualys_vmdr.user_activity.User_Role}}}'
   - convert:
+      tag: convert_qualys_vmdr_user_activity_User_IP_to_source_ip_a1df5e65
       field: qualys_vmdr.user_activity.User_IP
       target_field: source.ip
       type: ip
       ignore_failure: true
   - append:
+      tag: append_related_ip_86933b04
       if: ctx.source?.ip != null
       field: related.ip
       value: '{{{source.ip}}}'
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -99,10 +115,12 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
@@ -115,45 +133,54 @@ processors:
         - qualys_vmdr.user_activity.User_Name
         - qualys_vmdr.user_activity.User_Role
         - qualys_vmdr.user_activity.User_IP
-      tag: remove_preserve_duplicate_custom_fields
+      tag: remove_preserve_duplicate_custom_fields_5b2ca656
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       ignore_missing: true
   - remove:
+      tag: remove_qualys_vmdr_user_activity_e2016f02
       if: ctx?.qualys_vmdr?.user_activity instanceof Map && ctx.qualys_vmdr.user_activity.isEmpty()
       field: qualys_vmdr.user_activity
   - remove:
+      tag: remove_qualys_vmdr_e6196be2
       if: ctx?.qualys_vmdr instanceof Map && ctx.qualys_vmdr.isEmpty()
       field: qualys_vmdr
   - remove:
+      tag: remove_metadata_unrelated_to_user_activity_a7d4f1b2
       description: Remove metadata unrelated to the user activity log.
       field:
         - cloud
         - host
       ignore_missing: true
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_baca8d41
       if: ctx.event?.action == "login"
       field: event.category
       value: authentication
       allow_duplicates: false
   - append:
+      tag: append_event_type_23a63b39
       if: ctx.event?.action == "login"
       field: event.type
       value: info
       allow_duplicates: false
   - append:
+      tag: append_event_category_0de26197
       if: ctx.event?.action == "request"
       field: event.category
       value: api
       allow_duplicates: false
   - append:
+      tag: append_event_type_945ac10d
       if: ctx.event?.action == "request"
       field: event.type
       value: info
       allow_duplicates: false
   - append:
+      tag: append_event_category_c7e1f7cd
       if: >
         ctx.event?.action == 'add'
         || ctx.event?.action == 'create'
@@ -162,6 +189,7 @@ processors:
       value: configuration
       allow_duplicates: false
   - append:
+      tag: append_event_type_09e4c29d
       if: >
         ctx.event?.action == 'add'
         || ctx.event?.action == 'set'
@@ -169,21 +197,25 @@ processors:
       value: change
       allow_duplicates: false
   - append:
+      tag: append_event_type_82284c0b
       if: ctx.event?.action == 'create'
       field: event.type
       value: creation
       allow_duplicates: false
 on_failure:
   - append:
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

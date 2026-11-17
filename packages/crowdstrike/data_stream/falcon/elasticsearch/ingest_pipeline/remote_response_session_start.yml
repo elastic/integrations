@@ -9,15 +9,15 @@ processors:
       value:
         - network
         - session
-      tag: append_network_category
+      tag: append_network_category_900f899c
   - append:
       field: event.action
       value: remote_response_session_start_event
-      tag: append_remote_action
+      tag: append_remote_action_93faa780
   - append:
       field: event.type
       value: start
-      tag: append_start_type
+      tag: append_start_type_68ebddb4
   - grok:
       tag: grok_crowdstrike_event_UserName_6c9dafb5
       field: crowdstrike.event.UserName
@@ -29,7 +29,7 @@ processors:
   - set:
       field: user.email
       copy_from: crowdstrike.event.UserName
-      tag: copy_user_email
+      tag: copy_user_email_79093eaf
       if: ctx.crowdstrike?.event?.UserName != null && ctx.crowdstrike.event.UserName.indexOf("@") > 0
   - date:
       field: crowdstrike.event.StartTimestamp
@@ -37,7 +37,7 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_start_timestamp_ms
+      tag: date_start_timestamp_ms_c3f1f89b
       if: 'ctx.crowdstrike?.event?.StartTimestamp != null && String.valueOf(ctx.crowdstrike.event.StartTimestamp).length() >= 12'
   - date:
       field: crowdstrike.event.StartTimestamp
@@ -45,27 +45,30 @@ processors:
       timezone: UTC
       formats:
         - UNIX
-      tag: date_start_timestamp
+      tag: date_start_timestamp_a9fdbcd7
       if: 'ctx.crowdstrike?.event?.StartTimestamp != null && String.valueOf(ctx.crowdstrike.event.StartTimestamp).length() <= 11'
   - set:
       field: message
       value: Remote response session started.
-      tag: set_message
+      tag: set_message_0a33fa61
   - rename:
       field: crowdstrike.event.HostnameField
       target_field: host.name
       ignore_missing: true
-      tag: rename_hostname_field
+      tag: rename_hostname_field_2ba02124
 
 on_failure:
   - append:
+      tag: append_error_message_9c9ce5dc
       field: error.message
       value: |-
         Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

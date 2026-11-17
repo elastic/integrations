@@ -1,0 +1,40 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: mysql
+      name: test-multiple-hosts-mysql
+      streams:
+        - data_stream:
+            dataset: mysql.replica_status
+          driver: mysql
+          hosts:
+            - mydb_replica_user:${SECRET_0}@tcp(127.0.0.1:3306)/
+            - mydb_replica_user:${SECRET_0}@tcp(10.0.0.2:3306)/
+          metricsets:
+            - query
+          period: 10m
+          sql_queries:
+            - query: SHOW REPLICA STATUS;
+              response_format: table
+          tags:
+            - mysql-replica_status
+      type: sql/metrics
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - metrics-mysql.replica_status-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

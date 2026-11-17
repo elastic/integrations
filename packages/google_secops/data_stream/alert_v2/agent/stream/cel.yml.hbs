@@ -1,0 +1,121 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+auth.oauth2.provider: google
+auth.oauth2.google.{{credentials_type}}: {{credentials}}
+auth.oauth2.scopes:
+  - {{oauth_scope}}
+state:
+  url: {{url}}
+  project_id: {{project_id}}
+  location: {{location}}
+  instance_id: {{instance_id}}
+  initial_interval: {{initial_interval}}
+  page_size: {{batch_size}}
+redact:
+  fields: ~
+program: |
+  (
+    state.?want_more.orValue(false) ?
+      state
+    :
+      state.with({
+        "cursor": {
+          "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
+          "end_time": now.format(time_layout.RFC3339),
+          ?"last_timestamp": state.?cursor.last_timestamp,
+        },
+      })
+  ).as(state,
+    request(
+      "GET",
+      state.url.trim_right("/") + "/v1alpha/projects/" + state.project_id + "/locations/" + state.location + "/instances/" + state.instance_id + "/legacy:legacySearchDetections?" + {
+        "ruleId": ["-"],
+        "startTime": [state.cursor.start_time],
+        "endTime": [state.cursor.end_time],
+        "pageSize": [string(int(state.page_size))],
+        "listBasis": ["DETECTION_TIME"],
+        ?"pageToken": state.?cursor.next_page.token.optMap(v, [v]),
+      }.format_query()
+    ).do_request().as(resp, resp.StatusCode == 200 ?
+      resp.Body.decode_json().as(body,
+        state.with({
+          "events": (
+            has(body.detections) ?
+              body.detections.map(d,
+                d.?collectionElements.orValue([]).map(ce, has(ce.references),
+                  ce.references.map(result, {
+                    "message":{
+                      ?"type": d.?type,
+                      ?"detection": d.?detection,
+                      ?"createdTime": d.?createdTime,
+                      ?"detectionTime": d.?detectionTime,
+                      ?"id": d.?id,
+                      ?"timeWindow": d.?timeWindow,
+                      ?"label": ce.?label,
+                      ?"event": result.?event
+                    }.encode_json()
+                  })
+                )
+              ).flatten()
+            :
+              []
+          ),
+          "want_more": has(body.nextPageToken),
+          "cursor": {
+            "start_time": state.cursor.start_time,
+            "end_time": state.cursor.end_time,
+            ?"last_timestamp": (
+              has(body.nextPageToken) ?
+                state.?cursor.last_timestamp
+              :
+                optional.of(state.cursor.end_time)
+            ),
+            ?"next_page": body.?nextPageToken.optMap(t, {"token": t}),
+          },
+        })
+      )
+    :
+      state.with({
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": resp.Status,
+            "message": "GET " + state.url.trim_right("/") + "/v1alpha/projects/" + state.project_id + "/locations/" + state.location + "/instances/" + state.instance_id + "/legacy:legacySearchDetections: " + (
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                resp.Status + ' (' + string(resp.StatusCode) + ')'
+            ),
+          },
+        },
+        "want_more": false,
+      })
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

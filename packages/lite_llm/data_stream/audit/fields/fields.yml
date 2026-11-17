@@ -1,0 +1,219 @@
+- name: lite_llm
+  type: group
+  fields:
+    - name: audit
+      type: group
+      description: LiteLLM audit log event data.
+      fields:
+        - name: before_value
+          type: group
+          description: Snapshot of entity state before the change.
+          fields:
+            - name: access_group_ids
+              type: keyword
+              description: List of access group IDs.
+            - name: aliases
+              type: flattened
+              description: Aliases mapping.
+            - name: allowed_cache_controls
+              type: keyword
+              description: List of allowed cache controls.
+            - name: allowed_routes
+              type: keyword
+              description: List of allowed routes (VerificationToken only).
+            - name: auto_rotate
+              type: boolean
+              description: Auto rotation flag (VerificationToken only).
+            - name: config
+              type: flattened
+              description: Configuration object.
+            - name: created_at
+              type: date
+              description: Creation timestamp.
+            - name: created_by
+              type: keyword
+              description: Created by user.
+            - name: key_alias
+              type: keyword
+              description: Key alias (VerificationToken only).
+            - name: key_name
+              type: keyword
+              description: Key name (VerificationToken only).
+            - name: max_budget
+              type: long
+              description: Maximum budget for the team.
+            - name: metadata
+              type: flattened
+              description: Custom metadata.
+            - name: model_max_budget
+              type: flattened
+              description: Per-model max budget.
+            - name: model_spend
+              type: flattened
+              description: Per-model spend tracking.
+            - name: models
+              type: keyword
+              description: List of models.
+            - name: permissions
+              type: flattened
+              description: Permissions mapping (VerificationToken only).
+            - name: policies
+              type: keyword
+              description: List of policies.
+            - name: rotation_count
+              type: long
+              description: Number of rotations (VerificationToken only).
+            - name: router_settings
+              type: flattened
+              description: Router settings (VerificationToken only).
+            - name: soft_budget_cooldown
+              type: boolean
+              description: Soft budget cooldown flag (VerificationToken only).
+            - name: spend
+              type: double
+              description: Spend value.
+            - name: teams
+              type: keyword
+              description: List of teams (UserTable only).
+            - name: token
+              type: keyword
+              description: Token identifier (VerificationToken only).
+            - name: updated_at
+              type: date
+              description: Last update timestamp.
+            - name: updated_by
+              type: keyword
+              description: Updated by user.
+            - name: user_id
+              type: keyword
+              description: User ID (UserTable only).
+            - name: user_role
+              type: keyword
+              description: User role (UserTable only).
+        - name: changed_by_api_key
+          type: keyword
+          description: API key that was used to perform the action.
+        - name: object_id
+          type: keyword
+          description: >-
+            ID of the affected entity (team, user, key, or model UUID). No single ECS entity fits across all `table_name` values, so this is kept as a custom field rather than mapped to a `*.id` field.
+        - name: table_name
+          type: keyword
+          description: Table where the change occurred (LiteLLM_UserTable or LiteLLM_VerificationToken).
+        - name: updated_values
+          type: group
+          description: Snapshot of fields changed after the update.
+          fields:
+            - name: access_group_ids
+              type: keyword
+              description: List of access group IDs.
+            - name: aliases
+              type: flattened
+              description: Aliases mapping.
+            - name: allowed_cache_controls
+              type: keyword
+              description: List of allowed cache controls.
+            - name: allowed_routes
+              type: keyword
+              description: List of allowed routes (VerificationToken only).
+            - name: auto_rotate
+              type: boolean
+              description: Auto rotation flag (VerificationToken only).
+            - name: config
+              type: flattened
+              description: Configuration object.
+            - name: created_at
+              type: date
+              description: Creation timestamp.
+            - name: created_by
+              type: keyword
+              description: Created by user (set when action is created).
+            - name: key
+              type: keyword
+              description: API key value (VerificationToken only).
+            - name: key_alias
+              type: keyword
+              description: Key alias (VerificationToken only).
+            - name: key_name
+              type: keyword
+              description: Key name (VerificationToken only).
+            - name: max_budget
+              type: long
+              description: Maximum budget for the team.
+            - name: metadata
+              type: flattened
+              description: Custom metadata.
+            - name: model_max_budget
+              type: flattened
+              description: Per-model max budget.
+            - name: model_spend
+              type: flattened
+              description: Per-model spend tracking.
+            - name: models
+              type: keyword
+              description: List of models.
+            - name: object_permission
+              type: group
+              description: Object permission details (VerificationToken only).
+              fields:
+                - name: agent_access_groups
+                  type: keyword
+                  description: List of agent access group IDs.
+                - name: agents
+                  type: keyword
+                  description: List of agent IDs.
+                - name: mcp_access_groups
+                  type: keyword
+                  description: List of MCP access group IDs.
+                - name: mcp_servers
+                  type: keyword
+                  description: List of MCP server IDs.
+                - name: mcp_toolsets
+                  type: keyword
+                  description: List of MCP toolset IDs.
+            - name: permissions
+              type: flattened
+              description: Permissions mapping (VerificationToken only).
+            - name: policies
+              type: keyword
+              description: List of policies.
+            - name: rotation_count
+              type: long
+              description: Number of rotations (VerificationToken only).
+            - name: router_settings
+              type: group
+              description: Router settings (VerificationToken only).
+              fields:
+                - name: model_group_alias
+                  type: flattened
+                  description: Model group alias mapping.
+            - name: soft_budget_cooldown
+              type: boolean
+              description: Soft budget cooldown flag (VerificationToken only).
+            - name: spend
+              type: double
+              description: Spend value.
+            - name: team_id
+              type: keyword
+              description: ID of the team (TeamTable only).
+            - name: teams
+              type: keyword
+              description: List of teams (UserTable only).
+            - name: token
+              type: keyword
+              description: Token identifier (VerificationToken only).
+            - name: token_id
+              type: keyword
+              description: Token ID (VerificationToken only).
+            - name: updated_at
+              type: date
+              description: Last update timestamp.
+            - name: updated_by
+              type: keyword
+              description: Updated by user (set when action is created).
+            - name: user_id
+              type: keyword
+              description: User ID (UserTable only).
+            - name: user_role
+              type: keyword
+              description: User role (UserTable only).

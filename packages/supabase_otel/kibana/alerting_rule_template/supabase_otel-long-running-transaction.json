@@ -1,0 +1,56 @@
+{
+    "id": "supabase_otel-long-running-transaction",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Fires when the oldest open transaction exceeds a duration threshold. Long-lived transactions hold locks, block vacuum and pin WAL, so this is simultaneously a latency signal, a saturation signal and a disk-space risk.",
+        "name": "[Supabase OTel] Long-running transaction",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "supabase",
+            "postgresql",
+            "saturation"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "supabase_otel-591c7a1f-6ac7-43cb-8ade-9c5684d47f5b"
+                },
+                {
+                    "id": "supabase_otel-7c6a2004-c517-4b50-b70a-2682b7a79228"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## Long-Running Transaction\n\n`pg_stat_activity_xact_runtime` is the age of the oldest open transaction. A transaction left open does three separate kinds of damage: it holds its locks, it prevents vacuum from reclaiming dead tuples newer than its snapshot, and it pins the WAL its snapshot depends on.\n\n### Triage Steps\n1. Decide whether this is a legitimate long job (a migration, a bulk load, an analytical query) or a leaked transaction — an application that opened a transaction and never committed, which is the more common cause.\n2. Check the knock-on effects that make this urgent rather than merely untidy: deadlock count, pool wait times, and WAL size growth.\n3. Check whether it is consuming a connection from a nearly exhausted budget. One pinned backend matters much more at 90% utilisation than at 20%.\n4. Identify the session from `pg_stat_activity` directly; these metrics report the age of the oldest transaction but not which query it is running.\n\n### Tuning\nThe default threshold is 900 seconds (15 minutes). Lower to 300 for projects that only run OLTP traffic, where nothing should legitimately stay open that long. Raise it if you run scheduled batch jobs, or pair a higher threshold with a longer window so that a nightly job does not page anyone."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-supabase.metrics.otel-*\n// Gauge, in seconds: the age of the longest running transaction. MAX_OVER_TIME() catches\n// the peak within the window rather than whatever happened to be open at the last scrape.\n| STATS\n    `Longest Transaction (s)` = MAX(MAX_OVER_TIME(pg_stat_activity_xact_runtime)),\n    `WAL Size (MB)` = MAX(LAST_OVER_TIME(pg_wal_size_mb))\n  BY resource.attributes.supabase_project_ref\n// 900s = 15 minutes. Lower to 300 for OLTP-only projects; raise if you run batch jobs.\n| WHERE `Longest Transaction (s)` > 900\n| SORT `Longest Transaction (s)` DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "resource.attributes.supabase_project_ref",
+            "termSize": 50
+        }
+    }
+}

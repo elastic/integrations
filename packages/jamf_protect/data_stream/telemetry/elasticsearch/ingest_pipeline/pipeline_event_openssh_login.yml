@@ -2,22 +2,27 @@
 description: Pipeline for parsing specific fields related to openssh login events in Jamf Protect
 processors:
 
-##########################
-## ECS Event Specific ##
-##########################
+    ##########################
+    ## ECS Event Specific ##
+    ##########################
     - set:
+        tag: set_event_reason_e1452e22
         field: event.reason
         value: A user has logged into the system via OpenSSH
     - append:
+        tag: append_event_type_fffb7a5a
         field: event.type
         value: start
     - append:
+        tag: append_event_category_109b4d72
         field: event.category
-        value: authentication  
+        value: authentication
     - append:
+        tag: append_event_category_d21db9a2
         field: event.category
-        value: session 
+        value: session
     - script:
+        tag: script_ce789f5f
         lang: painless
         source: |
             ctx.event = ctx.event != null ? ctx.event : new HashMap();
@@ -32,19 +37,23 @@ processors:
               ctx.event.outcome = 'unknown';
             }
     - convert:
+        tag: convert_jamf_protect_telemetry_event_openssh_login_graphical_session_id_to_jamf_protect_telemetry_graphical_authentication_username_bbb900db
         field: jamf_protect.telemetry.event.openssh_login.graphical_session_id
         target_field: jamf_protect.telemetry.graphical_authentication_username
         type: string
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_openssh_login_source_address_to_source_ip_8e1ab69f
         field: jamf_protect.telemetry.event.openssh_login.source_address
         target_field: source.ip
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_openssh_login_username_to_user_name_fad5dbb5
         field: jamf_protect.telemetry.event.openssh_login.username
         target_field: user.name
         ignore_missing: true
     - script:
+        tag: script_8a6776b6
         lang: painless
         params:
             itemTypeMap:
@@ -60,6 +69,7 @@ processors:
                 ctx.jamf_protect.telemetry.source_address_type = itemTypeString;
             }
     - script:
+        tag: script_4340498e
         lang: painless
         params:
             itemTypeMap:
@@ -80,8 +90,9 @@ processors:
                 ctx.jamf_protect = ctx.jamf_protect != null ? ctx.jamf_protect : new HashMap();
                 ctx.jamf_protect.telemetry.authentication_result_type = itemTypeString;
             }
-##########################
-## ECS Process ##
-##########################
+    ##########################
+    ## ECS Process ##
+    ##########################
     - pipeline:
+        tag: pipeline_object_process_0d75fa7a
         name: '{{ IngestPipeline "pipeline_object_process" }}'

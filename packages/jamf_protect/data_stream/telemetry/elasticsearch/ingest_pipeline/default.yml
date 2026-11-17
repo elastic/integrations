@@ -2,69 +2,85 @@
 description: Pipeline for Jamf Protect Telemetry logs.
 processors:
     - set:
+        tag: set_ecs_version_f5923549
         field: ecs.version
         value: '8.17.0'
     - json:
+        tag: json_message_to_jamf_protect_telemetry_9dae2753
         field: message
         target_field: jamf_protect.telemetry
         if: ctx.message != null
     - rename:
+        tag: rename_json_to_jamf_protect_telemetry_1146a989
         field: json
         target_field: jamf_protect.telemetry
         if: ctx.json != null
 
-##########################
-## ECS Observer Mapping ##
-##########################
+    ##########################
+    ## ECS Observer Mapping ##
+    ##########################
     - set:
+        tag: set_observer_product_e40a396c
         field: observer.product
         value: Jamf Protect
     - set:
+        tag: set_observer_vendor_6a522e0a
         field: observer.vendor
         value: Jamf
     - set:
+        tag: set_observer_type_ae54f4bd
         field: observer.type
         value: Endpoint Security
     - rename:
+        tag: rename_jamf_protect_telemetry_host_protectVersion_to_observer_version_0472c50c
         field: jamf_protect.telemetry.host.protectVersion
         target_field: observer.version
         ignore_missing: true
 
-#######################
-## ECS Event Mapping ##
-#######################
+    #######################
+    ## ECS Event Mapping ##
+    #######################
     - set:
+        tag: set_event_kind_de80643c
         field: event.kind
         value: event
     - append:
+        tag: append_event_type_8a66ccaa
         field: event.type
         value: info
     - append:
+        tag: append_event_category_8a525c81
         field: event.category
         value: process
     - set:
+        tag: set_event_provider_7e881320
         field: event.provider
         value: Jamf Protect
     - date:
+        tag: date_jamf_protect_telemetry_time_to_event_start_4eab876b
         field: jamf_protect.telemetry.time
         target_field: event.start
-        formats: 
+        formats:
         - date_optional_time
         if: ctx.jamf_protect?.telemetry?.time != null
     - rename:
+        tag: rename_jamf_protect_telemetry_uuid_to_event_id_b6cdc923
         field: jamf_protect.telemetry.uuid
         target_field: event.id
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_glob_seq_num_to_event_sequence_9b2ce931
         field: jamf_protect.telemetry.glob_seq_num
         target_field: event.sequence
         ignore_missing: true
     - convert:
+        tag: convert_jamf_protect_telemetry_event_type_to_event_code_692889d5
         field: jamf_protect.telemetry.event_type
         target_field: event.code
         type: string
         ignore_missing: true
     - script:
+        tag: script_populates_event_action_name_event_86b62266
         description: Populates event.action with the name of the event
         lang: painless
         source: >
@@ -82,6 +98,7 @@ processors:
           }
         ignore_failure: true
     - script:
+        tag: script_1e0e4d20
         lang: painless
         params:
             authTypeMap:
@@ -94,255 +111,326 @@ processors:
                 ctx.jamf_protect.telemetry = ctx.jamf_protect.telemetry != null ? ctx.jamf_protect.telemetry : new HashMap();
                 ctx.jamf_protect.telemetry.event_allowed_by_esclient = authTypeBoolean;
             }
-#######################
-## ECS Host Mapping ##
-#######################
+    #######################
+    ## ECS Host Mapping ##
+    #######################
     - rename:
+        tag: rename_jamf_protect_telemetry_host_hostname_to_host_hostname_c3e1e88f
         field: jamf_protect.telemetry.host.hostname
         target_field: host.hostname
         ignore_missing: true
     - lowercase:
+        tag: lowercase_host_hostname_to_host_name_019f94e7
         field: host.hostname
         target_field: host.name
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_host_provisioningUDID_to_host_id_0d0c735f
         field: jamf_protect.telemetry.host.provisioningUDID
         target_field: host.id
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_host_ips_to_host_ip_2ad85343
         field: jamf_protect.telemetry.host.ips
         target_field: host.ip
         if: ctx.jamf_protect?.telemetry?.host?.ips != null && ctx.jamf_protect?.telemetry?.host?.ips != ""
     - rename:
+        tag: rename_jamf_protect_telemetry_host_os_to_host_os_full_54d0a856
         field: jamf_protect.telemetry.host.os
         target_field: host.os.full
         ignore_missing: true
     - gsub:
+        tag: gsub_host_os_full_ba560804
         field: host.os.full
         pattern: '^Version\s*'
         replacement: ""
         if: ctx.host?.os?.full != null
     - gsub:
+        tag: gsub_host_os_full_to_host_os_version_7562aa23
         field: host.os.full
         pattern: ^([^\s]+).*
         replacement: "$1"
         target_field: host.os.version
         if: ctx.host?.os?.full != null
     - set:
+        tag: set_host_os_family_9d799ed3
         field: host.os.family
         value: macos
     - set:
+        tag: set_host_os_type_074dd92b
         field: host.os.type
         value: macos
     - set:
+        tag: set_host_os_name_9a719836
         field: host.os.name
         value: macOS
-#######################
-## ECS Device Mapping ##
-#######################
+    #######################
+    ## ECS Device Mapping ##
+    #######################
     - rename:
+        tag: rename_jamf_protect_telemetry_host_serial_to_device_serial_number_b10070af
         field: jamf_protect.telemetry.host.serial
         target_field: device.serial_number
         ignore_missing: true
     - set:
+        tag: set_device_id_49c80c98
         field: device.id
         value: '{{{ device.serial_number }}}'
         if: ctx.device?.serial_number != null
         ignore_failure: true
     - set:
+        tag: set_device_manufacturer_6c63de55
         field: device.manufacturer
         value: Apple
-########################
-# ECS Related Mapping ##
-########################
+    ########################
+    # ECS Related Mapping ##
+    ########################
     - append:
+        tag: append_related_hosts_122a4356
         field: related.hosts
         value: '{{{ host.hostname }}}'
         if: ctx.host?.hostname != null
         allow_duplicates: false
         ignore_failure: true
     - append:
+        tag: append_related_user_981c7fa7
         field: related.user
         value: "{{{ user.name }}}"
         if: ctx.user?.name != null
         allow_duplicates: false
     - foreach:
+        tag: foreach_host_ip_232e838f
         field: host.ip
         if: ctx.host?.ip instanceof List
         processor:
-            append: 
+            append:
+                tag: append_related_ip_cc4d8a3d
                 field: related.ip
                 value: '{{{_ingest._value}}}'
                 allow_duplicates: false
-#######################
-## ECS Pipelines ##
-#######################
+    #######################
+    ## ECS Pipelines ##
+    #######################
     - pipeline:
+        tag: pipeline_event_exec_253d06b8
         name: '{{ IngestPipeline "pipeline_event_exec" }}'
         if: ctx.event.action == "exec"
     - pipeline:
+        tag: pipeline_event_kextload_1b7c268e
         name: '{{ IngestPipeline "pipeline_event_kextload" }}'
         if: ctx.event.action == "kextload"
     - pipeline:
+        tag: pipeline_event_kextunload_f32dc118
         name: '{{ IngestPipeline "pipeline_event_kextunload" }}'
         if: ctx.event.action == "kextunload"
     - pipeline:
+        tag: pipeline_event_mount_58d559d0
         name: '{{ IngestPipeline "pipeline_event_mount" }}'
         if: ctx.event.action == "mount"
     - pipeline:
+        tag: pipeline_event_unmount_9fbbbcb4
         name: '{{ IngestPipeline "pipeline_event_unmount" }}'
         if: ctx.event.action == "unmount"
     - pipeline:
+        tag: pipeline_event_chroot_31719978
         name: '{{ IngestPipeline "pipeline_event_chroot" }}'
         if: ctx.event.action == "chroot"
     - pipeline:
+        tag: pipeline_event_settime_fb757fd8
         name: '{{ IngestPipeline "pipeline_event_settime" }}'
         if: ctx.event.action == "settime"
     - pipeline:
+        tag: pipeline_event_cs_invalidated_1e960e92
         name: '{{ IngestPipeline "pipeline_event_cs_invalidated" }}'
         if: ctx.event.action == "cs_invalidated"
     - pipeline:
+        tag: pipeline_event_remount_aa4f9c08
         name: '{{ IngestPipeline "pipeline_event_remount" }}'
         if: ctx.event.action == "remount"
     - pipeline:
+        tag: pipeline_event_xp_malware_detected_71a1cd2c
         name: '{{ IngestPipeline "pipeline_event_xp_malware_detected" }}'
         if: ctx.event.action == "xp_malware_detected"
     - pipeline:
+        tag: pipeline_event_xp_malware_remediated_75dbb530
         name: '{{ IngestPipeline "pipeline_event_xp_malware_remediated" }}'
         if: ctx.event.action == "xp_malware_remediated"
     - pipeline:
+        tag: pipeline_event_lw_session_login_b94bf586
         name: '{{ IngestPipeline "pipeline_event_lw_session_login" }}'
         if: ctx.event.action == "lw_session_login"
     - pipeline:
+        tag: pipeline_event_lw_session_logout_8bc6bc18
         name: '{{ IngestPipeline "pipeline_event_lw_session_logout" }}'
         if: ctx.event.action == "lw_session_logout"
     - pipeline:
+        tag: pipeline_event_lw_session_lock_2393f0dc
         name: '{{ IngestPipeline "pipeline_event_lw_session_lock" }}'
         if: ctx.event.action == "lw_session_lock"
     - pipeline:
+        tag: pipeline_event_lw_session_unlock_45b23da8
         name: '{{ IngestPipeline "pipeline_event_lw_session_unlock" }}'
         if: ctx.event.action == "lw_session_unlock"
     - pipeline:
+        tag: pipeline_event_screensharing_attach_ab9c67ae
         name: '{{ IngestPipeline "pipeline_event_screensharing_attach" }}'
         if: ctx.event.action == "screensharing_attach"
     - pipeline:
+        tag: pipeline_event_screensharing_detach_fc30f536
         name: '{{ IngestPipeline "pipeline_event_screensharing_detach" }}'
         if: ctx.event.action == "screensharing_detach"
     - pipeline:
+        tag: pipeline_event_openssh_login_789af360
         name: '{{ IngestPipeline "pipeline_event_openssh_login" }}'
         if: ctx.event.action == "openssh_login"
     - pipeline:
+        tag: pipeline_event_openssh_logout_3ea21b1c
         name: '{{ IngestPipeline "pipeline_event_openssh_logout" }}'
         if: ctx.event.action == "openssh_logout"
     - pipeline:
+        tag: pipeline_event_login_login_0258c114
         name: '{{ IngestPipeline "pipeline_event_login_login" }}'
         if: ctx.event.action == "login_login"
     - pipeline:
+        tag: pipeline_event_login_logout_72a3a90e
         name: '{{ IngestPipeline "pipeline_event_login_logout" }}'
         if: ctx.event.action == "login_logout"
     - pipeline:
+        tag: pipeline_event_btm_launch_item_add_d81048d8
         name: '{{ IngestPipeline "pipeline_event_btm_launch_item_add" }}'
         if: ctx.event.action == "btm_launch_item_add"
     - pipeline:
+        tag: pipeline_event_btm_launch_item_remove_d739e7da
         name: '{{ IngestPipeline "pipeline_event_btm_launch_item_remove" }}'
         if: ctx.event.action == "btm_launch_item_remove"
     - pipeline:
+        tag: pipeline_event_profile_add_7ee10378
         name: '{{ IngestPipeline "pipeline_event_profile_add" }}'
         if: ctx.event.action == "profile_add"
     - pipeline:
+        tag: pipeline_event_profile_remove_5f3c960a
         name: '{{ IngestPipeline "pipeline_event_profile_remove" }}'
         if: ctx.event.action == "profile_remove"
     - pipeline:
+        tag: pipeline_event_su_3620bcd6
         name: '{{ IngestPipeline "pipeline_event_su" }}'
         if: ctx.event.action == "su"
     - pipeline:
+        tag: pipeline_event_authentication_f4da84f2
         name: '{{ IngestPipeline "pipeline_event_authentication" }}'
         if: ctx.event.action == "authentication"
     - pipeline:
+        tag: pipeline_event_sudo_0d68c9ac
         name: '{{ IngestPipeline "pipeline_event_sudo" }}'
         if: ctx.event.action == "sudo"
     - pipeline:
+        tag: pipeline_event_od_group_add_ea4e9b28
         name: '{{ IngestPipeline "pipeline_event_od_group_add" }}'
         if: ctx.event.action == "od_group_add"
     - pipeline:
+        tag: pipeline_event_od_group_remove_0c635268
         name: '{{ IngestPipeline "pipeline_event_od_group_remove" }}'
         if: ctx.event.action == "od_group_remove"
     - pipeline:
+        tag: pipeline_event_od_group_set_3fc1dd8a
         name: '{{ IngestPipeline "pipeline_event_od_group_set" }}'
         if: ctx.event.action == "od_group_set"
     - pipeline:
+        tag: pipeline_event_od_modify_password_4af15172
         name: '{{ IngestPipeline "pipeline_event_od_modify_password" }}'
         if: ctx.event.action == "od_modify_password"
     - pipeline:
+        tag: pipeline_event_od_disable_user_a80e3e68
         name: '{{ IngestPipeline "pipeline_event_od_disable_user" }}'
         if: ctx.event.action == "od_disable_user"
     - pipeline:
+        tag: pipeline_event_od_enable_user_73f9bf38
         name: '{{ IngestPipeline "pipeline_event_od_enable_user" }}'
         if: ctx.event.action == "od_enable_user"
     - pipeline:
+        tag: pipeline_event_od_attribute_value_add_990b48d6
         name: '{{ IngestPipeline "pipeline_event_od_attribute_value_add" }}'
         if: ctx.event.action == "od_attribute_value_add"
     - pipeline:
+        tag: pipeline_event_od_attribute_value_remove_f68e9568
         name: '{{ IngestPipeline "pipeline_event_od_attribute_value_remove" }}'
         if: ctx.event.action == "od_attribute_value_remove"
     - pipeline:
+        tag: pipeline_event_od_attribute_set_204bdc28
         name: '{{ IngestPipeline "pipeline_event_od_attribute_set" }}'
         if: ctx.event.action == "od_attribute_set"
     - pipeline:
+        tag: pipeline_event_od_create_user_2f7f782a
         name: '{{ IngestPipeline "pipeline_event_od_create_user" }}'
         if: ctx.event.action == "od_create_user"
     - pipeline:
+        tag: pipeline_event_od_create_group_e17140c4
         name: '{{ IngestPipeline "pipeline_event_od_create_group" }}'
         if: ctx.event.action == "od_create_group"
     - pipeline:
+        tag: pipeline_event_od_delete_user_3d32af60
         name: '{{ IngestPipeline "pipeline_event_od_delete_user" }}'
         if: ctx.event.action == "od_delete_user"
     - pipeline:
+        tag: pipeline_event_od_delete_group_442914e8
         name: '{{ IngestPipeline "pipeline_event_od_delete_group" }}'
         if: ctx.event.action == "od_delete_group"
     - pipeline:
+        tag: pipeline_event_log_collection_37190c98
         name: '{{ IngestPipeline "pipeline_event_log_collection" }}'
         if: ctx.event.action == "log_collection"
     - pipeline:
+        tag: pipeline_event_file_collection_ed2f8654
         name: '{{ IngestPipeline "pipeline_event_file_collection" }}'
         if: ctx.event.action == "file_collection"
     - pipeline:
+        tag: pipeline_event_system_performance_c97d1942
         name: '{{ IngestPipeline "pipeline_event_system_performance" }}'
         if: ctx.event.action == "system_performance"
     - pipeline:
+        tag: pipeline_event_bios_uefi_b51c0114
         name: '{{ IngestPipeline "pipeline_event_bios_uefi" }}'
         if: ctx.event.action == "bios_uefi"
     - pipeline:
+        tag: pipeline_event_gatekeeper_user_override_ea04e202
         name: '{{ IngestPipeline "pipeline_event_gatekeeper_user_override" }}'
         if: ctx.event.action == "gatekeeper_user_override"
     - pipeline:
+        tag: pipeline_event_network_connect_fcbe207c
         name: '{{ IngestPipeline "pipeline_event_network_connect" }}'
         if: ctx.event.action == "network_connect"
     - pipeline:
+        tag: pipeline_event_tcc_modify_d0d08af0
         name: '{{ IngestPipeline "pipeline_event_tcc_modify" }}'
         if: ctx.event.action == "tcc_modify"
     - pipeline:
+        tag: pipeline_event_pty_grant_6e20b148
         name: '{{ IngestPipeline "pipeline_event_pty_grant" }}'
         if: ctx.event.action == "pty_grant"
     - pipeline:
+        tag: pipeline_event_pty_close_4a7d80a8
         name: '{{ IngestPipeline "pipeline_event_pty_close" }}'
         if: ctx.event.action == "pty_close"
     - convert:
+        tag: convert_process_code_signature_flags_11d61406
         field: process.code_signature.flags
         type: string
         ignore_missing: true
     - convert:
+        tag: convert_process_parent_code_signature_flags_c94f4f42
         field: process.parent.code_signature.flags
         type: string
         ignore_missing: true
     - convert:
+        tag: convert_process_responsible_code_signature_flags_8dc74a2c
         field: process.responsible.code_signature.flags
         type: string
         ignore_missing: true
-#############
-## Cleanup ##
-#############
+    #############
+    ## Cleanup ##
+    #############
     - remove:
+        tag: remove_cleanup_3870c653
         field:
         # - jamf_protect.telemetry
         - jamf_protect.telemetry.event
@@ -367,6 +455,7 @@ processors:
         - message
         ignore_missing: true
     - script:
+        tag: script_drops_null_empty_values_recursively_e2ccbdd7
         description: Drops null/empty values recursively.
         lang: painless
         source: |
@@ -385,13 +474,16 @@ processors:
           dropEmptyFields(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

@@ -66,7 +66,7 @@ generate_trigger_pipeline() {
         return 1
     fi
 
-    if ! mage ValidateBackportsInventory; then
+    if ! backport validate-inventory; then
         echo "ERROR: new inventory failed schema validation" >&2
         return 1
     fi
@@ -91,7 +91,7 @@ generate_trigger_pipeline() {
         fi
 
         local active_exit=0
-        mage CheckBackportBranchActive "${branch}" || active_exit=$?
+        backport check-active "${branch}" || active_exit=$?
         if [[ "${active_exit}" -eq 2 ]]; then
             echo "ERROR: failed to check active status for branch '${branch}'" >&2
             return 1

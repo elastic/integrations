@@ -61,13 +61,13 @@ For more details, check [Documentation](https://docs.extrahop.com/current/rx360-
 
 ## How do I deploy this integration?
 
-This integration supports both Elastic Agentless-based and Agent-based installations.
+This integration supports both Elastic Managed and Agent-based installations.
 
-### Agentless-based installation
+### Elastic Managed enabled integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it.
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ### Agent-based installation
 
@@ -500,6 +500,21 @@ This integration datasets use the following APIs:
 - `Detections`: [RevealX 360 API](https://docs.extrahop.com/current/rx360-rest-api/#detections).
 - `Investigation`: [RevealX 360 API](https://docs.extrahop.com/current/rx360-rest-api/#investigations).
 
-#### ILM Policy
+#### Data retention
 
-To facilitate investigation data, source data stream-backed indices `.ds-logs-extrahop.investigation-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-extrahop.investigation-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
+The data streams below collect a full snapshot of ExtraHop investigations on every polling interval, so their backing indices hold one copy of each record per interval. The package-level data stream lifecycle also covers the `detection` data stream on Serverless, although it collects incrementally.
+
+The package bounds the growth of these source data streams with a retention that depends on the deployment type:
+
+| Data stream | Self-managed and Elastic Cloud Hosted (ILM policy) | Serverless (data stream lifecycle) |
+|---|---|---|
+| `logs-extrahop.investigation-*` | `logs-extrahop.investigation-default_policy`: roll over after 30d, delete 30d after rollover | delete 30d after rollover |
+| `logs-extrahop.detection-*` | none, so the default `logs` policy applies (no deletion) | delete 30d after rollover |
+
+On self-managed and Elastic Cloud Hosted deployments the ILM policy applies. The data stream lifecycle shipped with the package is not used there. ILM counts the delete age from the rollover of a backing index, so a document can remain for up to the rollover age plus the delete age. On Serverless, ILM is not available and the data stream lifecycle applies instead. It also works per backing index: Elasticsearch [rolls the write index over automatically](https://www.elastic.co/docs/reference/elasticsearch/configuration-reference/data-stream-lifecycle-settings#cluster-lifecycle-default-rollover) on age, size, or document count, and [deletes a backing index once the retention has passed since it rolled over](https://www.elastic.co/docs/manage-data/lifecycle/data-stream#data-streams-lifecycle-how-it-works). A document therefore stays for the retention plus up to one rollover interval. The rollover age is derived from the retention and is an implementation detail that Elasticsearch may change. Where the package installs a transform, the transform's destination indices are not affected by either.
+
+To keep data for a different period:
+
+- Self-managed and Elastic Cloud Hosted: edit the ILM policy in Kibana under **Stack Management → Index Lifecycle Policies**, or with `PUT _ilm/policy/<policy name>`. A package upgrade reinstalls the package's ILM policies, so check your change after upgrading.
+- Self-managed and Elastic Cloud Hosted: no package policy is attached to `logs-extrahop.detection-*`, so the default `logs` policy applies. To set a retention, create an ILM policy and add `index.lifecycle.name: <policy name>` to the `logs-extrahop.detection@custom` component template. Fleet keeps `@custom` templates across package upgrades, and the change applies from the next rollover.
+- Serverless: set the retention on the data stream, for example `PUT _data_stream/logs-extrahop.investigation-default/_lifecycle` with the body `{"data_retention": "90d"}`. Replace `default` with your namespace.

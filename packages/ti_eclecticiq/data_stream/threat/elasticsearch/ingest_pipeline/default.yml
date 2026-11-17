@@ -3,78 +3,94 @@ description: Pipeline for processing Device logs.
 processors:
   # hard coded fields
   - set:
+      tag: set_ecs_version_6b2cef5e
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_kind_3410a97a
       field: event.kind
       value: enrichment
   - set:
+      tag: set_event_category_4675e36d
       field: event.category
       value: [threat]
   - set:
+      tag: set_event_type_acbc82af
       field: event.type
       value: [indicator]
 
   # pre-processing
   - rename:
+      tag: rename_message_to_event_original_a7b1f822
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
-      tag: 'json_decoding'
+      tag: json_decoding_c3a1053e
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_09c9e9da
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - drop:
+      tag: drop_extract_type_not_mapped_bc0836c2
       description: Drop if extract type is not mapped.
       if: "!['asn', 'domain', 'email', 'file', 'file-size', 'hash-md5', 'hash-md5', 'hash-sha1', 'hash-sha256', 'hash-sha384', 'hash-sha512', 'hash-ssdeep', 'ipv4', 'ipv4-cidr', 'ipv6', 'ipv6-cidr', 'mac-48', 'mutex', 'port', 'process', 'process-name', 'uri', 'winregistry', 'certificate-serial-number', 'malware', 'rule', 'user-agent', 'organization', 'email-subject', 'host', 'cve'].contains(ctx.json.type)"
 
   # expand collapsed fields
   - dot_expander:
+      tag: dot_expander_source_names_d2e17a57
       path: json
       field: source.names
       if: 'ctx.json["source.names"] != null && ctx.json["source.names"] != ""'
   - dot_expander:
+      tag: dot_expander_meta_tags_85c0582d
       path: json
       field: meta.tags
       if: 'ctx.json["meta.tags"] != null && ctx.json["meta.tags"] != ""'
   - dot_expander:
+      tag: dot_expander_meta_estimated_observed_time_9f175c61
       path: json
       field: meta.estimated_observed_time
       if: 'ctx.json["meta.estimated_observed_time"] != null && ctx.json["meta.estimated_observed_time"] != ""'
   - dot_expander:
+      tag: dot_expander_meta_estimated_threat_start_time_eaed1445
       path: json
       field: meta.estimated_threat_start_time
       if: 'ctx.json["meta.estimated_threat_start_time"] != null && ctx.json["meta.estimated_threat_start_time"] != ""'
   - dot_expander:
+      tag: dot_expander_meta_estimated_threat_end_time_dc0e54f0
       path: json
       field: meta.estimated_threat_end_time
       if: 'ctx.json["meta.estimated_threat_end_time"] != null && ctx.json["meta.estimated_threat_end_time"] != ""'
   - dot_expander:
+      tag: dot_expander_meta_ingest_time_a8cbc7fe
       path: json
       field: meta.ingest_time
       if: 'ctx.json["meta.ingest_time"] != null && ctx.json["meta.ingest_time"] != ""'
 
   # base event fields
   - set:
+      tag: set_event_provider_830b563b
       field: event.provider
       value: '{{{json.source.names}}}'
       if: "ctx.json.source?.names != null && ctx.json.source.names != ''"
   - set:
+      tag: set_event_url_444d5e89
       field: event.url
       value: '{{{json.value_url}}}'
   - date:
+      tag: date_json_meta_ingest_time_to_event_created_633bb6fc
       field: json.meta.ingest_time
       target_field: event.created
       formats:
@@ -84,6 +100,7 @@ processors:
         - "yyyy-MM-dd'T'HH:mm:ssz"
       if: "ctx.json.meta?.ingest_time != null && ctx.json.meta.ingest_time != ''"
   - date:
+      tag: date_json_meta_estimated_threat_start_time_to_event_start_81eec7a8
       field: json.meta.estimated_threat_start_time
       target_field: event.start
       formats:
@@ -93,6 +110,7 @@ processors:
         - "yyyy-MM-dd'T'HH:mm:ssz"
       if: "ctx.json.meta?.estimated_threat_start_time != null && ctx.json.meta.estimated_threat_start_time != ''"
   - date:
+      tag: date_json_meta_estimated_threat_end_time_to_event_end_3fcdb9f8
       field: json.meta.estimated_threat_end_time
       target_field: event.end
       formats:
@@ -102,6 +120,7 @@ processors:
         - "yyyy-MM-dd'T'HH:mm:ssz"
       if: "ctx.json.meta?.estimated_threat_end_time != null && ctx.json.meta.estimated_threat_end_time != ''"
   - date:
+      tag: date_json_timestamp_to_timestamp_8d8951cd
       field: json.timestamp
       target_field: "@timestamp"
       formats:
@@ -110,6 +129,7 @@ processors:
         - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSz"
         - "yyyy-MM-dd'T'HH:mm:ssz"
   - split:
+      tag: split_json_meta_tags_to_tags_1f244412
       field: json.meta.tags
       target_field: tags
       separator: ';'
@@ -118,9 +138,11 @@ processors:
 
   # populate threat.indicator fields
   - set:
+      tag: set_threat_indicator_name_185303d8
       field: threat.indicator.name
       value: '{{{json.value}}}'
   - date:
+      tag: date_json_meta_estimated_observed_time_to_threat_indicator_first_seen_7e9a9780
       field: json.meta.estimated_observed_time
       target_field: threat.indicator.first_seen
       formats:
@@ -132,210 +154,260 @@ processors:
 
   # map extract classification and confidence to threat.indicator.confidence
   - set:
+      tag: set_threat_indicator_confidence_46642070
       field: threat.indicator.confidence
       value: Not Specified
       if: 'ctx.json["meta.classification"] == "unknown"'
   - set:
+      tag: set_threat_indicator_confidence_9e52b61c
       field: threat.indicator.confidence
       value: None
       if: 'ctx.json["meta.classification"] == "good"'
   - set:
+      tag: set_event_severity_10856a94
       field: event.severity
       value: 1
       if: 'ctx.json["meta.classification"] == "good"'
   - set:
+      tag: set_threat_indicator_confidence_c7ba5d8a
       field: threat.indicator.confidence
       value: Low
       if: 'ctx.json["meta.confidence"] == "low"'
   - set:
+      tag: set_event_severity_4b29a085
       field: event.severity
       value: 2
       if: 'ctx.json["meta.confidence"] == "low"'
   - set:
+      tag: set_threat_indicator_confidence_54535829
       field: threat.indicator.confidence
       value: Medium
       if: 'ctx.json["meta.confidence"] == "medium"'
   - set:
+      tag: set_event_severity_67a60e5e
       field: event.severity
       value: 3
       if: 'ctx.json["meta.confidence"] == "medium"'
   - set:
+      tag: set_threat_indicator_confidence_1dcefe36
       field: threat.indicator.confidence
       value: High
       if: 'ctx.json["meta.confidence"] == "high"'
   - set:
+      tag: set_event_severity_4d54d65a
       field: event.severity
       value: 4
       if: 'ctx.json["meta.confidence"] == "high"'
 
   # map extract TLP to threat.indicator.marking.tlp
   - set:
+      tag: set_threat_indicator_marking_tlp_7136a59e
       field: threat.indicator.marking.tlp
       value: WHITE
       if: 'ctx.json["meta.tlp"] == "WHITE"'
   - set:
+      tag: set_threat_indicator_marking_tlp_268bc57a
       field: threat.indicator.marking.tlp
       value: CLEAR
       if: 'ctx.json["meta.tlp"] == "NONE"'
   - set:
+      tag: set_threat_indicator_marking_tlp_1956f6e8
       field: threat.indicator.marking.tlp
       value: GREEN
       if: 'ctx.json["meta.tlp"] == "GREEN"'
   - set:
+      tag: set_threat_indicator_marking_tlp_872cc303
       field: threat.indicator.marking.tlp
       value: AMBER
       if: 'ctx.json["meta.tlp"] == "AMBER"'
   - set:
+      tag: set_threat_indicator_marking_tlp_3d6c36fe
       field: threat.indicator.marking.tlp
       value: RED
       if: 'ctx.json["meta.tlp"] == "RED"'
 
   # map extract type and value to threat.indicator fields
   - set:
+      tag: set_threat_indicator_type_c2ef17b7
       field: threat.indicator.type
       value: autonomous-system
       if: 'ctx.json.type == "asn"'
   - set:
+      tag: set_threat_indicator_as_number_260ee8d7
       field: threat.indicator.as.number
       value: '{{{json.value}}}'
       if: 'ctx.json.type == "asn"'
   - convert:
+      tag: convert_threat_indicator_as_number_55184257
       field: threat.indicator.as.number
       type: long
       if: 'ctx.json.type == "asn"'
   - set:
+      tag: set_threat_indicator_type_33e9ea92
       field: threat.indicator.type
       value: domain-name
       if: 'ctx.json.type == "domain"'
   - set:
+      tag: set_threat_indicator_url_domain_0e8dd2ef
       field: threat.indicator.url.domain
       value: '{{{json.value}}}'
       if: 'ctx.json.type == "domain"'
   - set:
+      tag: set_threat_indicator_type_98c3c6c0
       field: threat.indicator.type
       value: email-addr
       if: 'ctx.json.type == "email"'
   - set:
+      tag: set_threat_indicator_email_address_420717a2
       field: threat.indicator.email.address
       value: '{{{json.value}}}'
       if: 'ctx.json.type == "email"'
   - set:
+      tag: set_threat_indicator_type_44317836
       field: threat.indicator.type
       value: file
       if: 'ctx.json.type == "file" || ctx.json.type == "file-size" || ctx.json.type == "hash-md5" || ctx.json.type == "hash-sha1" || ctx.json.type == "hash-sha256" || ctx.json.type == "hash-sha384" || ctx.json.type == "hash-sha512" || ctx.json.type == "hash-ssdeep"'
   - set:
+      tag: set_threat_indicator_file_path_7f97e9da
       field: threat.indicator.file.path
       value: '{{{json.value}}}'
       if: 'ctx.json.type == "file"'
   - set:
+      tag: set_threat_indicator_file_size_01ca6285
       field: threat.indicator.file.size
       value: '{{{json.value}}}'
       if: 'ctx.json.type == "file-size"'
   - convert:
+      tag: convert_threat_indicator_file_size_3023c03b
       field: threat.indicator.file.size
       type: long
       if: 'ctx.json.type == "file-size"'
   - set:
+      tag: set_threat_indicator_file_hash_md5_c0f1563b
       field: threat.indicator.file.hash.md5
       value: '{{{json.value}}}'
       if: 'ctx.json.type == "hash-md5"'
   - set:
+      tag: set_threat_indicator_file_hash_sha1_2aca9935
       field: threat.indicator.file.hash.sha1
       value: '{{{json.value}}}'
       if: 'ctx.json.type == "hash-sha1"'
   - set:
+      tag: set_threat_indicator_file_hash_sha256_3087c354
       field: threat.indicator.file.hash.sha256
       value: '{{{json.value}}}'
       if: 'ctx.json.type == "hash-sha256"'
   - set:
+      tag: set_threat_indicator_file_hash_sha384_60aa4eae
       field: threat.indicator.file.hash.sha384
       value: '{{{json.value}}}'
       if: 'ctx.json.type == "hash-sha384"'
   - set:
+      tag: set_threat_indicator_file_hash_sha512_ae4141fb
       field: threat.indicator.file.hash.sha512
       value: '{{{json.value}}}'
       if: 'ctx.json.type == "hash-sha512"'
   - set:
+      tag: set_threat_indicator_file_hash_ssdeep_601ca240
       field: threat.indicator.file.hash.ssdeep
       value: '{{{json.value}}}'
       if: 'ctx.json.type == "hash-ssdeep"'
   - set:
+      tag: set_threat_indicator_type_eea990ac
       field: threat.indicator.type
       value: ipv4-addr
       if: 'ctx.json.type == "ipv4" || ctx.json.type == "ipv4-cidr"'
   - set:
+      tag: set_threat_indicator_type_2264876e
       field: threat.indicator.type
       value: ipv6-addr
       if: 'ctx.json.type == "ipv6" || ctx.json.type == "ipv6-cidr"'
   - set:
+      tag: set_threat_indicator_ip_0fa1c417
       field: threat.indicator.ip
       value: '{{{json.value}}}'
       if: 'ctx.json.type == "ipv4" || ctx.json.type == "ipv6"'
   - set:
+      tag: set_threat_indicator_type_d6f9b630
       field: threat.indicator.type
       value: mac-addr
       if: 'ctx.json.type == "mac-48"'
   - set:
+      tag: set_threat_indicator_type_bfe98133
       field: threat.indicator.type
       value: mutex
       if: 'ctx.json.type == "mutex"'
   - set:
+      tag: set_threat_indicator_type_da284cb2
       field: threat.indicator.type
       value: port
       if: 'ctx.json.type == "port"'
   - set:
+      tag: set_threat_indicator_url_port_a9e746e2
       field: threat.indicator.url.port
       value: '{{{json.value}}}'
       if: 'ctx.json.type == "port"'
   - convert:
+      tag: convert_threat_indicator_url_port_65201d1c
       field: threat.indicator.url.port
       type: long
       if: 'ctx.json.type == "port"'
   - set:
+      tag: set_threat_indicator_type_c273276d
       field: threat.indicator.type
       value: process
       if: 'ctx.json.type == "process"'
   - set:
+      tag: set_threat_indicator_type_6aa7cccd
       field: threat.indicator.type
       value: process
       if: 'ctx.json.type == "process-name"'
   - set:
+      tag: set_threat_indicator_type_673e8b19
       field: threat.indicator.type
       value: url
       if: 'ctx.json.type == "uri"'
   - set:
+      tag: set_threat_indicator_url_full_b4221750
       field: threat.indicator.url.full
       value: '{{{json.value}}}'
       if: 'ctx.json.type == "uri"'
   - set:
+      tag: set_threat_indicator_type_572fc5fa
       field: threat.indicator.type
       value: windows-registry-key
       if: 'ctx.json.type == "winregistry"'
   - set:
+      tag: set_threat_indicator_registry_value_6ef422b2
       field: threat.indicator.registry.value
       value: '{{{json.value}}}'
       if: 'ctx.json.type == "winregistry"'
   - set:
+      tag: set_threat_indicator_type_cd44e26e
       field: threat.indicator.type
       value: x509-certificate
       if: 'ctx.json.type == "certificate-serial-number"'
   - set:
+      tag: set_threat_indicator_x509_serial_number_11388a6f
       field: threat.indicator.x509.serial_number
       value: '{{{json.value}}}'
       if: 'ctx.json.type == "certificate-serial-number"'
 
   # related fields
   - append:
+      tag: append_related_hash_a8a37e63
       field: related.hash
       value: '{{{json.value}}}'
       if: 'ctx.json.type == "file" || ctx.json.type == "file-size" || ctx.json.type == "hash-md5" || ctx.json.type == "hash-sha1" || ctx.json.type == "hash-sha256" || ctx.json.type == "hash-sha384" || ctx.json.type == "hash-sha512" || ctx.json.type == "hash-ssdeep"'
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_d0f47e53
       field: related.hosts
       value: '{{{json.value}}}'
       if: 'ctx.json.type == "host"'
       allow_duplicates: false
   - append:
+      tag: append_related_ip_2034c30e
       field: related.ip
       value: '{{{json.value}}}'
       if: 'ctx.json.type == "ipv4" || ctx.json.type == "ipv6"'
@@ -343,12 +415,14 @@ processors:
 
   # custom fields used for transformation
   - fingerprint:
+      tag: fingerprint_to_eclecticiq_threat_observable_id_49406a2d
       target_field: eclecticiq.threat.observable_id
       fields:
         - json.type
         - json.value
   # if observable is deleted from outgoing feed dataset, set deleted_at to anything to exclude it from transform result
   - date:
+      tag: date_json_timestamp_to_eclecticiq_threat_deleted_at_01be8af8
       field: json.timestamp
       target_field: eclecticiq.threat.deleted_at
       formats:
@@ -360,82 +434,103 @@ processors:
 
   # other
   - set:
+      tag: set_threat_software_name_1178ce47
       field: threat.software.name
       value: '{{{json.value}}}'
       if: 'ctx.json.type == "malware"'
   - set:
+      tag: set_threat_software_type_3b218d8e
       field: threat.software.type
       value: Malware
       if: 'ctx.json.type == "malware"'
   - set:
+      tag: set_server_mac_2f971b0f
       field: server.mac
       value: '{{{json.value}}}'
       if: 'ctx.json.type == "mac-48"'
   - gsub:
+      tag: gsub_server_mac_08acbf30
       field: server.mac
       pattern: ":"
       replacement: "-"
       if: 'ctx.json.type == "mac-48"'
   - uppercase:
+      tag: uppercase_server_mac_b31984f2
       field: server.mac
       if: 'ctx.json.type == "mac-48"'
   - set:
+      tag: set_rule_name_82d99627
       field: rule.name
       value: '{{{json.value}}}'
       if: 'ctx.json.type == "rule"'
   - set:
+      tag: set_user_agent_original_841e0f6d
       field: user_agent.original
       value: '{{{json.value}}}'
       if: 'ctx.json.type == "user-agent"'
   - set:
+      tag: set_organization_name_bd27e0a7
       field: organization.name
       value: '{{{json.value}}}'
       if: 'ctx.json.type == "organization"'
   - set:
+      tag: set_process_command_line_9ecbd54c
       field: process.command_line
       value: '{{{json.value}}}'
       if: 'ctx.json.type == "process"'
   - set:
+      tag: set_process_name_777baf88
       field: process.name
       value: '{{{json.value}}}'
       if: 'ctx.json.type == "process-name"'
   - set:
+      tag: set_email_subject_61e5266b
       field: email.subject
       value: '{{{json.value}}}'
       if: 'ctx.json.type == "email-subject"'
   - set:
+      tag: set_host_hostname_51a6eb11
       field: host.hostname
       value: '{{{json.value}}}'
       if: 'ctx.json.type == "host"'
   - set:
+      tag: set_vulnerability_id_bdf47ac8
       field: vulnerability.id
       value: '{{{json.value}}}'
       if: 'ctx.json.type == "cve"'
   - fingerprint:
+      tag: fingerprint_to_event_id_99222855
       target_field: event.id
       fields:
         - json.type
         - json.value
         - json.timestamp
   - set:
+      tag: set__id_4ddcbcbf
       field: _id
       value: "{{{ event.id }}}"
   - remove:
+      tag: remove_threat_indicator_889ac944
       field: threat.indicator
       if: 'ctx.threat.indicator?.type == null'
   - remove:
+      tag: remove_threat_0f93ef95
       field: threat
       if: 'ctx.threat.indicator == null && ctx.threat.software == null'
   - remove:
+      tag: remove_json_09f4114c
       field: json
 on_failure:
   - append:
+      tag: append_error_message_9b078312
       field: error.message
       value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

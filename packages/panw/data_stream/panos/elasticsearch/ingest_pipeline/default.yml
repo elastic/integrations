@@ -35,14 +35,25 @@ processors:
       target_field: _temp_.message
   - grok:
       tag: grok__temp__message_76115aa2
+      description: >-
+        Capture the log type that the pipeline processors below route on. Three header
+        shapes reach this processor. Audit logs are the only type that omits the leading
+        FUTURE_USE and Receive Time fields, so they cannot match the first pattern, and
+        the tcp and udp inputs run the syslog processor on the agent, which consumes the
+        header the second pattern requires. The third pattern is the audit CSV as it
+        arrives once that header has been consumed, and its AUDIT token is limited to the
+        spellings the audit router below accepts so that a header which parses here is
+        always routed.
       field: _temp_.message
       patterns:
         - "^%{DATA},%{TIMESTAMP:_temp_.received_time},%{FIELD:observer.serial_number},%{FIELD:panw.panos.type},(?:%{FIELD:panw.panos.sub_type})?,%{FIELD:_temp_.config_version},%{TIMESTAMP:_temp_.generated_time},%{GREEDYDATA:message}$"
         - "^(?:<\\d+>)?%{SYSLOGTIMESTAMP:_temp_.syslog_time} %{IPORHOST:observer.hostname} %{NOTSPACE:observer.serial_number},%{PANW_DATE:_temp_.generated_time},%{FIELD:panw.panos.type},%{GREEDYDATA:message}$"
+        - "^%{NOTSPACE:observer.serial_number},%{PANW_DATE:_temp_.generated_time},%{AUDIT:panw.panos.type},%{GREEDYDATA:message}$"
       pattern_definitions:
         TIMESTAMP: "%{PANW_DATE}|%{TIMESTAMP_ISO8601}"
         PANW_DATE: "%{YEAR}/%{MONTHNUM}/%{MONTHDAY} %{TIME}"
         FIELD: "[^,]*"
+        AUDIT: "(?:AUDIT|audit)"
 
   ## TRAFFIC
   - pipeline:

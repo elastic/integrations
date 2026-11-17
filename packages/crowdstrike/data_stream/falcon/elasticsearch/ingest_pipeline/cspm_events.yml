@@ -7,13 +7,13 @@ processors:
   - append:
       field: event.category
       value: configuration
-      tag: append_configuration_category
+      tag: append_configuration_category_5bc3dda0
   - append:
       field: event.type
       value:
         - info
         - change
-      tag: append_info_change_type
+      tag: append_info_change_type_a254fd0f
   - set:
       tag: set_event_outcome_312fe321
       field: event.outcome
@@ -28,79 +28,79 @@ processors:
       field: crowdstrike.event.EventAction
       target_field: event.action
       ignore_missing: true
-      tag: rename_event_action
+      tag: rename_event_action_bf2ffbd7
   - rename:
       field: crowdstrike.event.ReportUrl
       target_field: event.reference
       ignore_missing: true
-      tag: rename_event_resource_url
+      tag: rename_event_resource_url_abbe1b90
   - json:
       field: crowdstrike.event.ResourceAttributes
-      tag: decode_json_resource_attributes
+      tag: decode_json_resource_attributes_af32e404
       if: ctx.crowdstrike?.event?.ResourceAttributes != null
   - rename:
       field: crowdstrike.event.EventSource
       target_field: event.provider
       ignore_missing: true
-      tag: rename_event_source
+      tag: rename_event_source_e08ea94f
   - rename:
       field: crowdstrike.event.AccountId
       target_field: cloud.account.id
       ignore_missing: true
       if: ctx.cloud?.account?.id == null
-      tag: rename_cloud_account_id
+      tag: rename_cloud_account_id_ae38e498
   - rename:
       field: crowdstrike.event.Region
       target_field: cloud.region
       ignore_missing: true
       if: ctx.cloud?.region == null
-      tag: rename_cloud_region
+      tag: rename_cloud_region_3aadd99f
   #CSPMS uses Platform, CSPMIOA uses Provider
   - rename:
       field: crowdstrike.event.CloudProvider
       target_field: cloud.provider
       ignore_missing: true
       if: ctx.cloud?.provider == null
-      tag: rename_cloud_provider
+      tag: rename_cloud_provider_f5f64b3d
   - rename:
       field: crowdstrike.event.CloudPlatform
       target_field: cloud.provider
       ignore_missing: true
       if: ctx.cloud?.provider == null
-      tag: rename_cloud_platform
+      tag: rename_cloud_platform_3bb0a56e
   - rename:
       field: crowdstrike.event.CloudService
       target_field: cloud.service.name
       ignore_missing: true
       if: ctx.cloud?.service?.name == null
-      tag: rename_cloud_service
+      tag: rename_cloud_service_df4a04aa
   - rename:
       field: crowdstrike.event.PolicyStatement
       target_field: message
       ignore_missing: true
-      tag: rename_policy_statement
+      tag: rename_policy_statement_f15bf9ca
   - rename:
       field: crowdstrike.event.UserName
       target_field: user.name
       ignore_missing: true
-      tag: rename_user_name
+      tag: rename_user_name_ab44b1da
   - rename:
       field: crowdstrike.event.UserId
       target_field: user.id
       ignore_missing: true
-      tag: rename_user_id
+      tag: rename_user_id_c2b79b35
   - rename:
       field: crowdstrike.event.UserSourceIp
       target_field: source.ip
       ignore_missing: true
-      tag: rename_user_source_ip
+      tag: rename_user_source_ip_c87c62ef
   - date:
       field: crowdstrike.event.Timestamp
       target_field: "@timestamp"
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_timestamp_ms
+      tag: date_timestamp_ms_c642ec89
       if: "ctx.crowdstrike?.event?.Timestamp != null && String.valueOf(ctx.crowdstrike.event.Timestamp).length() >= 12"
   - date:
       field: crowdstrike.event.Timestamp
@@ -108,7 +108,7 @@ processors:
       timezone: UTC
       formats:
         - UNIX
-      tag: date_timestamp
+      tag: date_timestamp_0432d64c
       if: 'ctx.crowdstrike?.event?.Timestamp != null && String.valueOf(ctx.crowdstrike.event.Timestamp).length() <= 11'
   - date:
       field: crowdstrike.event.EventCreatedTimestamp
@@ -116,7 +116,7 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_event_created_timestamp_ms
+      tag: date_event_created_timestamp_ms_b0187051
       if: "ctx.crowdstrike?.event?.EventCreatedTimestamp != null && String.valueOf(ctx.crowdstrike.event.EventCreatedTimestamp).length() >= 12"
   - date:
       field: crowdstrike.event.EventCreatedTimestamp
@@ -124,12 +124,12 @@ processors:
       timezone: UTC
       formats:
         - UNIX
-      tag: date_event_created_timestamp
+      tag: date_event_created_timestamp_984de17a
       if: 'ctx.crowdstrike?.event?.EventCreatedTimestamp != null && String.valueOf(ctx.crowdstrike.event.EventCreatedTimestamp).length() <= 11'
   - remove:
       field: crowdstrike.event.ResourceCreateTime
       ignore_missing: true
-      tag: remove_resource_create_time
+      tag: remove_resource_create_time_6dfd97a1
       if: ctx.crowdstrike?.event?.ResourceCreateTime != null && ctx.crowdstrike.event.ResourceCreateTime == 0
   - date:
       field: crowdstrike.event.ResourceCreateTime
@@ -137,7 +137,7 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_resource_create_time_ms
+      tag: date_resource_create_time_ms_1f434f05
       if: "ctx.crowdstrike?.event?.ResourceCreateTime != null && ctx.crowdstrike.event.ResourceCreateTime != 0 && String.valueOf(ctx.crowdstrike.event.ResourceCreateTime).length() >= 12"
   - date:
       field: crowdstrike.event.ResourceCreateTime
@@ -145,27 +145,30 @@ processors:
       timezone: UTC
       formats:
         - UNIX
-      tag: date_resource_create_time
+      tag: date_resource_create_time_b418d4ac
       if: 'ctx.crowdstrike?.event?.ResourceCreateTime != null && ctx.crowdstrike.event.ResourceCreateTime != 0 && String.valueOf(ctx.crowdstrike.event.ResourceCreateTime).length() <= 11'
   - append:
       field: threat.tactic.name
       value: "{{{crowdstrike.event.Tactic}}}"
-      tag: append_tactic_name
+      tag: append_tactic_name_369a6cb5
       if: ctx.crowdstrike?.event?.Tactic != null
   - append:
       field: threat.technique.name
       value: "{{{crowdstrike.event.Technique}}}"
-      tag: append_technique_name
+      tag: append_technique_name_a3e26449
       if: ctx.crowdstrike?.event?.Technique != null
 on_failure:
   - append:
+      tag: append_error_message_9c9ce5dc
       field: error.message
       value: |-
         Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

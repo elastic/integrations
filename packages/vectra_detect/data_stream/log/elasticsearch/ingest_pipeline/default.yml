@@ -2,162 +2,193 @@
 description: Pipeline for processing Vectra Detect logs.
 processors:
   - set:
+      tag: set_ecs_version_6b2cef5e
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_observer_vendor_ad9b23ff
       field: observer.vendor
       value: Vectra
   - set:
+      tag: set_observer_product_97244854
       field: observer.product
       value: Detect
   - set:
+      tag: set_observer_type_b9aa0873
       field: observer.type
       value: sensor
   - rename:
+      tag: rename_message_to_event_original_a7b1f822
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - set:
+      tag: set_event_created_e5970280
       field: event.created
       copy_from: '@timestamp'
   - set:
+      tag: set_vectra_detect_log_event_created_6f3ff4bb
       field: vectra_detect.log.event_created
       copy_from: '@timestamp'
   - set:
+      tag: set_observer_serial_number_50272c27
       field: observer.serial_number
       copy_from: log.syslog.hostname
       ignore_empty_value: true
   - set:
+      tag: set_vectra_detect_log_syslog_45bdab1a
       field: vectra_detect.log.syslog
       copy_from: log.syslog
       ignore_empty_value: true
   - dissect:
       field: event.original
-      tag: 'dissect_event_original'
+      tag: dissect_event_original_748fba8c
       pattern: '%{vectra_detect.log.event_type} -: %{_tmp.message}'
       on_failure:
         - append:
+            tag: append_error_message_2a6a5061
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - trim:
       field: _tmp.message
-      tag: 'trim_message'
+      tag: trim_message_fc536bad
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_ba9f7ecb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       if: ctx._tmp?.message != null
   - json:
       field: _tmp.message
-      tag: 'json_to_split_message'
+      tag: json_to_split_message_008b71e4
       target_field: json
       if: ctx._tmp?.message != null
       on_failure:
         - append:
+            tag: append_error_message_b2cf18d5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.vectra_timestamp
-      tag: 'date_set_vectra_timestamp_into_timestamp'
+      tag: date_set_vectra_timestamp_into_timestamp_85cb6399
       formats:
         - UNIX
       if: ctx.json?.vectra_timestamp != null && ctx.json.vectra_timestamp != ''
       on_failure:
         - append:
+            tag: append_error_message_239e172a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.vectra_timestamp
-      tag: 'date_rename_vectra_timestamp_to_custom_name'
+      tag: date_rename_vectra_timestamp_to_custom_name_6e49a7ff
       target_field: vectra_detect.log.vectra_timestamp
       formats:
         - UNIX
       if: ctx.json?.vectra_timestamp != null && ctx.json.vectra_timestamp != ''
       on_failure:
         - append:
+            tag: append_error_message_2960983d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.headend_addr
-      tag: 'convert_headend_addr_to_ip'
+      tag: convert_headend_addr_to_ip_d86c0650
       target_field: vectra_detect.log.headend_addr
       type: ip
       ignore_missing: true
       if: ctx.json?.headend_addr != ''
       on_failure:
         - append:
+            tag: append_error_message_47ce8a88
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_observer_ip_9d92fc75
       field: observer.ip
       value: '{{{vectra_detect.log.headend_addr}}}'
       allow_duplicates: false
       if: ctx.vectra_detect?.log?.headend_addr != null
   - append:
+      tag: append_related_ip_8a7ecf7e
       field: related.ip
       value: '{{{vectra_detect.log.headend_addr}}}'
       allow_duplicates: false
       if: ctx.vectra_detect?.log?.headend_addr != null
   - rename:
+      tag: rename_json_version_to_vectra_detect_log_version_40a5828c
       field: json.version
       target_field: vectra_detect.log.version
       ignore_missing: true
   - set:
+      tag: set_observer_version_37927fd5
       field: observer.version
       copy_from: vectra_detect.log.version
       ignore_empty_value: true
   - pipeline:
+      tag: pipeline_host_detection_9a7d1113
       name: '{{ IngestPipeline "pipeline-host-detection" }}'
       if: "['vectra_json_v2', 'vectra_json'].contains(ctx.vectra_detect?.log?.event_type) && ctx.json?.category != 'HOST SCORING'"
   - pipeline:
+      tag: pipeline_host_scoring_94b01ac9
       name: '{{ IngestPipeline "pipeline-host-scoring" }}'
       if: "['vectra_json_v2', 'vectra_json'].contains(ctx.vectra_detect?.log?.event_type) && ctx.json?.category == 'HOST SCORING'"
   - pipeline:
+      tag: pipeline_account_scoring_af121a56
       name: '{{ IngestPipeline "pipeline-account-scoring" }}'
       if: ctx.vectra_detect?.log?.event_type == 'vectra_json_account_v2'
   - pipeline:
+      tag: pipeline_account_detection_0b472ef3
       name: '{{ IngestPipeline "pipeline-account-detection" }}'
       if: ctx.vectra_detect?.log?.event_type == 'vectra_json_account_detection'
   - pipeline:
+      tag: pipeline_host_lockdown_448772b4
       name: '{{ IngestPipeline "pipeline-host-lockdown" }}'
       if: ctx.vectra_detect?.log?.event_type == 'vectra_json_host_lockdown'
   - pipeline:
+      tag: pipeline_account_lockdown_09fe1f64
       name: '{{ IngestPipeline "pipeline-account-lockdown" }}'
       if: ctx.vectra_detect?.log?.event_type == 'vectra_json_lockdown'
   - pipeline:
+      tag: pipeline_campaign_bbf92e81
       name: '{{ IngestPipeline "pipeline-campaign" }}'
       if: ctx.vectra_detect?.log?.event_type == 'vectra_json_campaigns'
   - pipeline:
+      tag: pipeline_audit_2de5c5a5
       name: '{{ IngestPipeline "pipeline-audit" }}'
       if: ctx.vectra_detect?.log?.event_type == 'vectra_json_audit'
   - pipeline:
+      tag: pipeline_health_9e8a6f9c
       name: '{{ IngestPipeline "pipeline-health" }}'
       if: ctx.vectra_detect?.log?.event_type == 'vectra_json_health'
   - pipeline:
+      tag: pipeline_alert_bb3a0768
       name: '{{ IngestPipeline "pipeline-alert" }}'
       if: ctx.vectra_detect?.log?.event_type == 'vectra_json_vectra_match_v2'
   # Normalize user fields and append to related fields
   - rename:
       field: user.name
       target_field: user.email
-      tag: rename_user_email
+      tag: rename_user_email_91712953
       if: ctx.user?.email == null && ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
   - dissect:
       field: user.email
       pattern: '%{user.name}@%{user.domain}'
-      tag: dissect_user_email
+      tag: dissect_user_email_d5fb5c7e
       ignore_missing: true
       ignore_failure: true
       if: ctx.user?.name == null
   - append:
+      tag: append_related_user_736bc21b
       field: related.user
       value: "{{{user.name}}}"
       if: ctx.user?.name != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_5d0d8db5
       field: related.user
       value: "{{{user.email}}}"
       if: ctx.user?.email != null
@@ -166,33 +197,37 @@ processors:
   - rename:
       field: user.target.name
       target_field: user.target.email
-      tag: rename_user_target_email
+      tag: rename_user_target_email_c9c8beac
       if: ctx.user?.target?.email == null && ctx.user?.target?.name != null && ctx.user.target?.name.indexOf("@") > 0
   - dissect:
       field: user.target.email
       pattern: '%{user.target.name}@%{user.target.domain}'
-      tag: dissect_user_target_email
+      tag: dissect_user_target_email_660ba767
       ignore_missing: true
       ignore_failure: true
       if: ctx.user?.target?.name == null
   - append:
+      tag: append_related_user_b65edd5e
       field: related.user
       value: "{{{user.target.name}}}"
       if: ctx.user?.target?.name != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_7d7b9e0b
       field: related.user
       value: "{{{user.target.email}}}"
       if: ctx.user?.target?.email != null
       allow_duplicates: false
       ignore_failure: true
   - remove:
+      tag: remove_ccf7707c
       field:
         - json
         - _tmp
       ignore_missing: true
   - remove:
+      tag: remove_f958ddde
       if: ctx.tags?.contains('preserve_duplicate_custom_fields') != true
       field:
         - vectra_detect.log.account.id
@@ -248,6 +283,7 @@ processors:
         - vectra_detect.log.timestamp
       ignore_missing: true
   - script:
+      tag: script_drops_null_empty_values_recursively_32b50a2a
       lang: painless
       source: |-
         boolean drop(Object object) {
@@ -265,22 +301,27 @@ processors:
         drop(ctx);
       description: Drops null/empty values recursively.
   - set:
+      tag: set_event_kind_4fd8ffa8
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_9b078312
       field: error.message
       value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

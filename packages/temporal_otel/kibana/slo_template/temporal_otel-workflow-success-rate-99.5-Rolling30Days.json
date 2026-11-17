@@ -1,0 +1,66 @@
+{
+  "attributes": {
+    "name": "[Temporal OTel] Workflow success rate 99.5% rolling 30 days",
+    "description": "Measures the fraction of 1-minute timeslices in which the workflow success rate — successful completions divided by all terminal outcomes (success, failure, and timeout) — exceeds 95%. A breach indicates that a meaningful portion of durable workflow executions are failing or timing out, which directly impairs business processes that rely on Temporal for orchestration. Target: 99.5% of timeslices are healthy over a rolling 30-day window, grouped by namespace to surface per-tenant degradation.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"temporal.cloud_metrics.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "avg",
+              "field": "metrics.temporal_cloud_v1_workflow_success_count",
+              "filter": ""
+            },
+            {
+              "name": "B",
+              "aggregation": "avg",
+              "field": "metrics.temporal_cloud_v1_workflow_failed_count",
+              "filter": ""
+            },
+            {
+              "name": "C",
+              "aggregation": "avg",
+              "field": "metrics.temporal_cloud_v1_workflow_timeout_count",
+              "filter": ""
+            }
+          ],
+          "equation": "A/(A+B+C)",
+          "comparator": "GT",
+          "threshold": 0.95
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "temporal",
+      "temporal-cloud",
+      "otel"
+    ],
+    "groupBy": [
+      "attributes.temporal_namespace"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "temporal_otel-5e3e5a3c-5eaf-4556-af1e-72a001264380"
+        }
+      ]
+    }
+  },
+  "id": "temporal_otel-workflow-success-rate-99.5-Rolling30Days",
+  "type": "slo_template"
+}
