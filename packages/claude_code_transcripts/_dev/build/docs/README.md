@@ -80,6 +80,7 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 - No data is collected: check that the agent is healthy in Fleet, that the configured paths match where Claude Desktop writes its logs on that host, and that the agent can read them.
 - Events are tagged `claude_desktop_unparsed_line`: the line has no recognised timestamp. The line is kept as it is in `message`.
 - Events have `event.kind: pipeline_error`: the ingest pipeline failed on the line, and the reason is in `error.message`. These events are tagged `preserve_original_event`.
+- Events are tagged `claude_desktop_redaction_failed` and have no `message`: the pipeline failed before the line could be scanned for credentials, so the line and the MCP, `gen_ai` and `log.logger` fields taken from it were dropped rather than stored unredacted. `error.message` names the processor that failed, without the failure message, which can quote the line.
 - MCP messages are counted twice: each MCP message is written to both `mcp.log` and `mcp-server-<name>.log`. Filter on one `claude_desktop.log_file` when counting.
 - Tool names are missing: current Claude Desktop builds log only a summary of each MCP message, so `gen_ai.tool.name` is set only for older builds that logged the full JSON-RPC message.
 - Times are off by hours: `main.log` uses local time, and the agent adds the host's offset as `event.timezone`. Check the host's time zone settings.
@@ -115,7 +116,8 @@ The `desktop_log` data stream provides events from the Claude Desktop log files 
 
 - `log.logger` holds the app component (`oauth-v2`, `RemotePluginManager`, ...) or the MCP server name. `claude_desktop.log_file` is the file name without `.log`.
 - `event.action` is `log`, `mcp-request`, `mcp-server-request`, `mcp-response` or `mcp-notification`. `event.outcome` is set on responses.
-- For older builds that logged the full JSON-RPC message, the message is kept, after redaction and without being indexed, in `claude_desktop.mcp.payload`, and a JSON-RPC error is copied to `claude_desktop.mcp.error`.
+- For older builds that logged the full JSON-RPC message, the message is kept, after redaction and without being indexed, in `claude_desktop.mcp.payload`, and a JSON-RPC error is copied to `claude_desktop.mcp.error`. Parts of the message nested more than 25 levels deep are not scanned, so they are replaced with `[TRUNCATED:depth]`.
+- Redaction covers every field taken from the line: `message`, `claude_desktop.mcp.*` (including the request ID), `gen_ai.*` and `log.logger`. A JSON value under a credential key, such as `"password"` or `"Authorization"`, is redacted whole, including when it contains spaces or escapes.
 
 ##### Desktop logs fields
 

@@ -228,7 +228,8 @@ processors:
         id = mi.group(1);
         mcp.id = id;
       }
-      def mb = /result\((\d+) blocks?\)/.matcher(body);
+      // At most 9 digits, so the count always fits in an int.
+      def mb = /result\((\d{1,9}) blocks?\)/.matcher(body);
       if (mb.find()) {
         mcp.result_blocks = Integer.parseInt(mb.group(1));
       }
@@ -326,10 +327,12 @@ processors:
     tag: redact-secrets
     lang: painless
     description: >-
-      Find credentials in message, claude_desktop.mcp.payload, claude_desktop.mcp.error and
-      error.*, and replace each with [REDACTED:<type>]. Only the type and length of each
-      finding are recorded, in claude_desktop.secrets; the values themselves are never
-      stored. scan() below explains what is detected and how.
+      Find credentials in every field that holds text from the line (message,
+      claude_desktop.mcp.*, gen_ai.*, log.logger and error.*) and replace each, in every
+      written form, with [REDACTED:<type>]. Only the type and length of each finding are
+      recorded, in claude_desktop.secrets; the values themselves are never stored. scan()
+      below explains what is detected and how. If the script fails, its handler drops those
+      fields instead of storing them unredacted.
     source: |
       // plausible() decides whether a captured value looks like a real secret rather than a
       // placeholder or prose: stop words ("required", "your", ...), template variables ($VAR,
@@ -388,11 +391,17 @@ processors:
       // hit() records one finding. Values are de-duplicated, so the first (most specific)
       // type to claim a value wins. The value itself is kept only in memory, in seen, for
       // the replacement step; the finding records its type and length.
+      // hit() trims trailing punctuation from values found in free text; hitExact() is used
+      // when the value's boundaries are known, as for a JSON string.
       void hit(List f, List seen, String type, String raw) {
         String val = raw.trim();
         while (val.length() > 0 && ".,;:!?)]}'\"`".indexOf(val.substring(val.length() - 1)) >= 0) {
           val = val.substring(0, val.length() - 1);
         }
+        hitExact(f, seen, type, val);
+      }
+
+      void hitExact(List f, List seen, String type, String val) {
         // Weak, context-free types need longer values.
         int minLen = (type == 'password' || type == 'sudo_password') ? 4 : 6;
         if (val.length() < minLen || seen.contains(val)) {
@@ -403,6 +412,118 @@ processors:
         m.put('type', type);
         m.put('length', val.length());
         f.add(m);
+      }
+
+      // variant() adds another written form of a found value (such as its raw, escaped JSON
+      // text) to the values to replace. It is marked as a variant so that it is not counted
+      // as a separate finding.
+      void variant(List f, List seen, String type, String val) {
+        if (val.length() < 4 || seen.contains(val)) {
+          return;
+        }
+        seen.add(val);
+        Map m = new HashMap();
+        m.put('type', type);
+        m.put('variant', true);
+        f.add(m);
+      }
+
+      // unescapeOne() decodes the JSON escape sequence that starts with the backslash at
+      // t[i], appends the decoded character to sb, and returns the index after the sequence.
+      int unescapeOne(String t, int i, StringBuilder sb) {
+        char e = t.charAt(i + 1);
+        if (e == (char) 110) {
+          sb.append((char) 10);
+        } else if (e == (char) 116) {
+          sb.append((char) 9);
+        } else if (e == (char) 114) {
+          sb.append((char) 13);
+        } else if (e == (char) 98) {
+          sb.append((char) 8);
+        } else if (e == (char) 102) {
+          sb.append((char) 12);
+        } else if (e == (char) 117 && i + 5 < t.length()) {
+          try {
+            sb.append((char) Integer.parseInt(t.substring(i + 2, i + 6), 16));
+            return i + 6;
+          } catch (NumberFormatException x) {
+            sb.append(e);
+          }
+        } else {
+          // \" \\ \/ and anything else: the character itself.
+          sb.append(e);
+        }
+        return i + 2;
+      }
+
+      // jsonString() reads a JSON string value from t, starting at i (just after its opening
+      // quote) and following escapes up to the closing quote, or to the end of t when the
+      // line was cut short. It returns the decoded value and the index of the closing quote.
+      List jsonString(String t, int i) {
+        StringBuilder sb = new StringBuilder();
+        int n = t.length();
+        while (i < n) {
+          char c = t.charAt(i);
+          if (c == (char) 34) {
+            break;
+          }
+          if (c == (char) 92 && i + 1 < n) {
+            i = unescapeOne(t, i, sb);
+          } else {
+            sb.append(c);
+            i++;
+          }
+        }
+        return [sb.toString(), i];
+      }
+
+      // unescape() undoes one level of JSON string escaping, for JSON that was itself
+      // written inside a JSON string (\"key\": \"value\").
+      String unescape(String s) {
+        StringBuilder sb = new StringBuilder();
+        int n = s.length();
+        int i = 0;
+        while (i < n) {
+          if (s.charAt(i) == (char) 92 && i + 1 < n) {
+            i = unescapeOne(s, i, sb);
+          } else {
+            sb.append(s.charAt(i));
+            i++;
+          }
+        }
+        return sb.toString();
+      }
+
+      // jsonEscape() escapes a value the way JSON.stringify does: quote, backslash and
+      // control characters. A value found decoded (in the parsed payload) is written escaped
+      // in message, so both forms must be replaced.
+      String jsonEscape(String s) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < s.length(); i++) {
+          char c = s.charAt(i);
+          if (c == (char) 34 || c == (char) 92) {
+            sb.append((char) 92);
+            sb.append(c);
+          } else if (c == (char) 10) {
+            sb.append('\\n');
+          } else if (c == (char) 13) {
+            sb.append('\\r');
+          } else if (c == (char) 9) {
+            sb.append('\\t');
+          } else if (c == (char) 8) {
+            sb.append('\\b');
+          } else if (c == (char) 12) {
+            sb.append('\\f');
+          } else if (c < (char) 32) {
+            String h = Integer.toHexString((int) c);
+            sb.append('\\u');
+            sb.append('0000'.substring(h.length()));
+            sb.append(h);
+          } else {
+            sb.append(c);
+          }
+        }
+        return sb.toString();
       }
 
       // findAll() records every match of a fixed-format pattern. Each pattern runs in its own
@@ -449,11 +570,12 @@ processors:
         if (!(v instanceof String) || !sensitiveKey(k, params)) {
           return;
         }
+        // The whole value is the secret, whatever its length.
         String s = (String) v;
-        if (s.length() > 512 || !plausible(s, params.stop, false)) {
+        if (!plausible(s, params.stop, false)) {
           return;
         }
-        hit(f, seen, keyType(k), s);
+        hitExact(f, seen, keyType(k), s);
       }
 
       // scan() finds credentials in one string and records each one with hit().
@@ -514,12 +636,35 @@ processors:
         findAll(text, /(?i)authorization\s?[:=]\s?['"]?(?:apikey|bearer|basic) ([A-Za-z0-9+\/=._\-]{16,})/, 1,
             'auth_header', 'auth_header', f, seen, errs);
 
-        // 2. "key": "value" in JSON text where the key names a credential.
+        // 2. "key": "value" in JSON text where the key names a credential, including JSON
+        // that is itself escaped inside a string (\"key\": \"value\"). The regex finds only the
+        // key and the opening quote of the value; jsonString() then reads the value up to its
+        // closing quote, following escapes, so a value with spaces, escaped quotes or any
+        // length is redacted whole.
         try {
-          m = /\\?"([A-Za-z0-9_.\-]{1,64})\\?" ?: ?\\?"([^"\\\s]{4,512})/.matcher(text);
+          m = /\\?"([A-Za-z0-9_.\-]{1,64})\\?"\s{0,8}:\s{0,8}(\\?)"/.matcher(text);
           while (m.find()) {
-            if (sensitiveKey(m.group(1), params) && plausible(m.group(2), stop, false)) {
-              hit(f, seen, keyType(m.group(1)), m.group(2));
+            String key = m.group(1);
+            if (!sensitiveKey(key, params)) {
+              continue;
+            }
+            int vs = m.end();
+            String val;
+            String raw = null;
+            if (m.group(2).isEmpty()) {
+              List r = jsonString(text, vs);
+              val = (String) r.get(0);
+              raw = text.substring(vs, (int) r.get(1));
+            } else {
+              // Escaped JSON: undo one level of escaping, then read the value.
+              val = (String) jsonString(unescape(text.substring(vs)), 0).get(0);
+            }
+            if (plausible(val, stop, false)) {
+              hitExact(f, seen, keyType(key), val);
+              // The value as written in the line, which may use escapes such as A.
+              if (raw != null) {
+                variant(f, seen, keyType(key), raw);
+              }
             }
           }
         } catch (Exception e) {
@@ -730,9 +875,14 @@ processors:
       }
 
       // walkReplace() replaces every found value with its [REDACTED:<type>] tag, in place.
+      // Anything nested deeper than walkScan() reads was never scanned, so it is replaced
+      // with [TRUNCATED:depth] rather than kept.
       def walkReplace(def o, List vals, List tags, int depth) {
-        if (o == null || depth > 25) {
+        if (o == null) {
           return o;
+        }
+        if (depth > 25) {
+          return '[TRUNCATED:depth]';
         }
         if (o instanceof String) {
           String s = (String) o;
@@ -761,22 +911,87 @@ processors:
         return o;
       }
 
-      // Main: scan the log text, the MCP payload and error, and error.*, then redact them all.
+      // Main: scan every field that holds text from the log line, then redact them all.
+      // Besides message, these are claude_desktop.mcp (server name, method, id, payload and
+      // error), gen_ai (tool name and call id), log.logger (the component) and error.*.
       List f = new ArrayList();
       List seen = new ArrayList();
       List errs = new ArrayList();
       def cd = ctx.claude_desktop;
       walkScan(ctx.message, f, seen, errs, params, 0);
-      if (cd?.mcp?.payload != null) {
-        walkScan(cd.mcp.payload, f, seen, errs, params, 0);
+      if (cd?.mcp != null) {
+        walkScan(cd.mcp, f, seen, errs, params, 0);
       }
-      if (cd?.mcp?.error != null) {
-        walkScan(cd.mcp.error, f, seen, errs, params, 0);
+      if (ctx.gen_ai != null) {
+        walkScan(ctx.gen_ai, f, seen, errs, params, 0);
+      }
+      if (ctx.log?.logger != null) {
+        walkScan(ctx.log.logger, f, seen, errs, params, 0);
       }
       if (ctx.error != null) {
         walkScan(ctx.error, f, seen, errs, params, 0);
       }
-      if (f.isEmpty() && errs.isEmpty()) {
+
+      // The values to replace: each found value, plus its JSON-escaped forms. A value found
+      // in the parsed payload is written escaped once in message, or twice when the JSON was
+      // itself inside a string. Longer values are replaced first, so a value that contains
+      // another is replaced whole.
+      List rv = new ArrayList();
+      List rt = new ArrayList();
+      for (int i = 0; i < seen.size(); i++) {
+        String v = (String) seen.get(i);
+        String tag = '[REDACTED:' + f.get(i).type + ']';
+        String e1 = jsonEscape(v);
+        String e2 = jsonEscape(e1);
+        rv.add(v);
+        rt.add(tag);
+        if (e1 != v) {
+          rv.add(e1);
+          rt.add(tag);
+        }
+        if (e2 != e1) {
+          rv.add(e2);
+          rt.add(tag);
+        }
+      }
+      List order = new ArrayList();
+      for (int i = 0; i < rv.size(); i++) {
+        order.add(i);
+      }
+      order.sort((a, b) -> ((String) rv.get(b)).length() - ((String) rv.get(a)).length());
+      List vals = new ArrayList();
+      List tags = new ArrayList();
+      for (def i : order) {
+        vals.add(rv.get(i));
+        tags.add(rt.get(i));
+      }
+
+      // Replace even when nothing was found, so that payload subtrees too deep to scan are
+      // always cut.
+      if (ctx.message != null) {
+        ctx.message = walkReplace(ctx.message, vals, tags, 0);
+      }
+      if (cd?.mcp != null) {
+        cd.mcp = walkReplace(cd.mcp, vals, tags, 0);
+      }
+      if (ctx.gen_ai != null) {
+        ctx.gen_ai = walkReplace(ctx.gen_ai, vals, tags, 0);
+      }
+      if (ctx.log?.logger != null) {
+        ctx.log.logger = walkReplace(ctx.log.logger, vals, tags, 0);
+      }
+      if (ctx.error != null) {
+        ctx.error = walkReplace(ctx.error, vals, tags, 0);
+      }
+
+      // Findings, without the variants (other written forms of the same values).
+      List found = new ArrayList();
+      for (def x : f) {
+        if (x.variant != true) {
+          found.add(x);
+        }
+      }
+      if (found.isEmpty() && errs.isEmpty()) {
         return;
       }
 
@@ -792,42 +1007,16 @@ processors:
         }
         sec.put('errors', el);
       }
-      if (!f.isEmpty()) {
-        // Replace longer values first, so a value that contains another is replaced whole.
-        List order = new ArrayList();
-        for (int i = 0; i < f.size(); i++) {
-          order.add(i);
-        }
-        order.sort((a, b) -> ((String) seen.get(b)).length() - ((String) seen.get(a)).length());
-        List vals = new ArrayList();
-        List tags = new ArrayList();
-        for (def i : order) {
-          vals.add(seen.get(i));
-          tags.add('[REDACTED:' + f.get(i).type + ']');
-        }
-
-        if (ctx.message != null) {
-          ctx.message = walkReplace(ctx.message, vals, tags, 0);
-        }
-        if (cd.mcp?.payload != null) {
-          cd.mcp.payload = walkReplace(cd.mcp.payload, vals, tags, 0);
-        }
-        if (cd.mcp?.error != null) {
-          cd.mcp.error = walkReplace(cd.mcp.error, vals, tags, 0);
-        }
-        if (ctx.error != null) {
-          ctx.error = walkReplace(ctx.error, vals, tags, 0);
-        }
-
+      if (!found.isEmpty()) {
         List types = new ArrayList();
-        for (def x : f) {
+        for (def x : found) {
           if (!types.contains(x.type)) {
             types.add(x.type);
           }
         }
-        sec.put('count', f.size());
+        sec.put('count', found.size());
         sec.put('types', types);
-        sec.put('findings', f);
+        sec.put('findings', found);
         sec.put('redacted', true);
       }
       cd.secrets = sec;
@@ -955,10 +1144,38 @@ processors:
       - client secret
       - client_secret
     on_failure:
+    - remove:
+        description: >-
+          Fail closed: the line could not be scanned for credentials, so drop every field that
+          holds text from it. The event is kept, as a pipeline_error, to show that a line was
+          dropped.
+        field:
+        - message
+        - claude_desktop.mcp
+        - gen_ai
+        - log.logger
+        - error
+        ignore_missing: true
+        tag: redact-secrets_on_failure_remove_unredacted_fields
+    - append:
+        description: >-
+          The failure message is left out, because a Painless error message can quote the
+          text it was working on.
+        field: error.message
+        value: >-
+          Processor '{{{ _ingest.on_failure_processor_type }}}'
+          {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+          {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+          failed; the line was dropped because it could not be scanned for credentials
+        tag: redact-secrets_on_failure_append_error_message
     - append:
         field: claude_desktop.secrets.errors
         value: redaction script failed
         tag: redact-secrets_on_failure_append_claude_desktop_secrets_errors
+    - append:
+        field: tags
+        value: claude_desktop_redaction_failed
+        tag: redact-secrets_on_failure_append_tags
 - remove:
     description: claude_desktop.tmp holds the unredacted line; message keeps the redacted text
     field:
@@ -977,6 +1194,19 @@ processors:
     allow_duplicates: false
     tag: append_tags_preserve_original_event_on_error_message
 on_failure:
+# A processor without its own handler failed, which can only happen before the
+# redact-secrets script has run. Fail closed: drop every field that holds text from the
+# line, and cut the failure message out of error.message, because it can quote the line
+# (for example, a NumberFormatException quotes the number it could not parse). The
+# processor type, tag and pipeline are kept for troubleshooting.
+- remove:
+    tag: remove_unredacted_fields_on_failure
+    field:
+    - message
+    - claude_desktop.mcp
+    - gen_ai
+    - log.logger
+    ignore_missing: true
 - append:
     tag: append_error_message_on_failure
     field: error.message
@@ -985,6 +1215,17 @@ on_failure:
       {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
       {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
       failed with message '{{{ _ingest.on_failure_message }}}'
+- gsub:
+    tag: gsub_error_message_drop_unscanned_text_on_failure
+    field: error.message
+    pattern: (?s)failed with message '.*'$
+    replacement: >-
+      failed; the failure message and the line were dropped because they had not been
+      scanned for credentials
+- append:
+    tag: append_tags_redaction_failed_on_failure
+    field: tags
+    value: claude_desktop_redaction_failed
 - set:
     tag: set_event_kind_pipeline_error
     field: event.kind
