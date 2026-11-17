@@ -18,7 +18,7 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "content": "## Synthetic Validation · TEST ONLY\n[Operational dashboard](/app/dashboards#/view/ti_criminalip-firewall-overview) · [Explore events](/app/discover) · [Investigate alerts](/app/security/alerts)\n\nOnly `synthetic`-tagged traffic and alerts are shown; never relabel production data. Clear inherited filters and select the test period. Verify source/destination matches in alert enrichments; a match is not proof of compromise.",
+                    "content": "## Synthetic Validation · TEST ONLY\nOnly `synthetic`-tagged traffic and alerts are shown; never relabel production data. Clear inherited filters and select the test period. Verify source/destination matches in alert enrichments; a match is not proof of compromise.",
                     "enhancements": {},
                     "hidePanelTitles": true
                 },
@@ -34,6 +34,48 @@
             },
             {
                 "embeddableConfig": {
+                    "attributes": {
+                        "layout": "horizontal",
+                        "links": [
+                            {
+                                "destinationRefName": "link_criminalip-link-0_dashboard",
+                                "id": "criminalip-link-0",
+                                "label": "Firewall Threat Detection",
+                                "order": 0,
+                                "type": "dashboardLink",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                }
+                            },
+                            {
+                                "destinationRefName": "link_criminalip-link-1_dashboard",
+                                "id": "criminalip-link-1",
+                                "label": "IP Intelligence Overview",
+                                "order": 1,
+                                "type": "dashboardLink",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                }
+                            }
+                        ]
+                    }
+                },
+                "gridData": {
+                    "h": 3,
+                    "i": "criminalip-dashboard-links",
+                    "w": 48,
+                    "x": 0,
+                    "y": 9
+                },
+                "panelIndex": "criminalip-dashboard-links",
+                "type": "links"
+            },
+            {
+                "embeddableConfig": {
                     "content": "## 01 · Firewall Traffic\nReview communications across supported ECS firewall datasets. Vendor collectors must be configured separately; one listener does not automatically recognize every raw log format.",
                     "enhancements": {},
                     "hidePanelTitles": true
@@ -43,7 +85,7 @@
                     "i": "criminalip-firewall-heading",
                     "w": 48,
                     "x": 0,
-                    "y": 9
+                    "y": 12
                 },
                 "panelIndex": "criminalip-firewall-heading",
                 "type": "markdown"
@@ -158,7 +200,7 @@
                     "i": "criminalip-log-summary",
                     "w": 48,
                     "x": 0,
-                    "y": 13
+                    "y": 16
                 },
                 "panelIndex": "criminalip-log-summary",
                 "title": "Firewall Log Summary",
@@ -276,7 +318,7 @@
                     "i": "criminalip-decisions",
                     "w": 24,
                     "x": 0,
-                    "y": 20
+                    "y": 23
                 },
                 "panelIndex": "criminalip-decisions",
                 "title": "Firewall Events by Action and Session State",
@@ -394,7 +436,7 @@
                     "i": "criminalip-top-sources",
                     "w": 24,
                     "x": 24,
-                    "y": 20
+                    "y": 23
                 },
                 "panelIndex": "criminalip-top-sources",
                 "title": "Top 10 Source IPs",
@@ -525,7 +567,7 @@
                     "i": "criminalip-vendor-trend",
                     "w": 48,
                     "x": 0,
-                    "y": 33
+                    "y": 36
                 },
                 "panelIndex": "criminalip-vendor-trend",
                 "title": "Firewall Log Trends by Vendor",
@@ -656,7 +698,7 @@
                     "i": "criminalip-product-actions",
                     "w": 48,
                     "x": 0,
-                    "y": 45
+                    "y": 48
                 },
                 "panelIndex": "criminalip-product-actions",
                 "title": "Raw Actions by Firewall Vendor and Product",
@@ -874,7 +916,7 @@
                     "i": "criminalip-recent-traffic",
                     "w": 48,
                     "x": 0,
-                    "y": 57
+                    "y": 60
                 },
                 "panelIndex": "criminalip-recent-traffic",
                 "title": "Recent Firewall Events · Details",
@@ -892,7 +934,7 @@
                     "i": "criminalip-ti-heading",
                     "w": 48,
                     "x": 0,
-                    "y": 73
+                    "y": 76
                 },
                 "panelIndex": "criminalip-ti-heading",
                 "type": "markdown"
@@ -909,11 +951,11 @@
                                     "fieldFormats": {},
                                     "id": "26d0b4d79d079b9b275fdc1da1fc9de22db4d7b46c3254c151d4d7e397c08cf5",
                                     "managed": false,
-                                    "name": ".alerts-security.alerts-default",
+                                    "name": ".alerts-security.alerts-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": ".alerts-security.alerts-default",
+                                    "title": ".alerts-security.alerts-*",
                                     "type": "esql"
                                 }
                             },
@@ -923,7 +965,7 @@
                                         {
                                             "id": "26d0b4d79d079b9b275fdc1da1fc9de22db4d7b46c3254c151d4d7e397c08cf5",
                                             "timeField": "@timestamp",
-                                            "title": ".alerts-security.alerts-default"
+                                            "title": ".alerts-security.alerts-*"
                                         }
                                     ],
                                     "layers": {
@@ -976,7 +1018,7 @@
                                             ],
                                             "index": "26d0b4d79d079b9b275fdc1da1fc9de22db4d7b46c3254c151d4d7e397c08cf5",
                                             "query": {
-                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM .alerts-security.alerts-default\n| WHERE kibana.alert.rule.rule_id == \"66f68655-8d93-4f42-824e-e6048b386207\"\n| WHERE COALESCE(MV_CONTAINS(tags, \"synthetic\"), false)\n| STATS alert_count = COUNT(*), open_count = COUNT(*) WHERE kibana.alert.workflow_status == \"open\", investigating_count = COUNT(*) WHERE kibana.alert.workflow_status == \"acknowledged\", closed_count = COUNT(*) WHERE kibana.alert.workflow_status == \"closed\""
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM .alerts-security.alerts-*\n| WHERE kibana.alert.rule.rule_id == \"66f68655-8d93-4f42-824e-e6048b386207\"\n| WHERE COALESCE(MV_CONTAINS(tags, \"synthetic\"), false)\n| STATS alert_count = COUNT(*), open_count = COUNT(*) WHERE kibana.alert.workflow_status == \"open\", investigating_count = COUNT(*) WHERE kibana.alert.workflow_status == \"acknowledged\", closed_count = COUNT(*) WHERE kibana.alert.workflow_status == \"closed\""
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -986,7 +1028,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "SET unmapped_fields = \"nullify\";\nFROM .alerts-security.alerts-default\n| WHERE kibana.alert.rule.rule_id == \"66f68655-8d93-4f42-824e-e6048b386207\"\n| WHERE COALESCE(MV_CONTAINS(tags, \"synthetic\"), false)\n| STATS alert_count = COUNT(*), open_count = COUNT(*) WHERE kibana.alert.workflow_status == \"open\", investigating_count = COUNT(*) WHERE kibana.alert.workflow_status == \"acknowledged\", closed_count = COUNT(*) WHERE kibana.alert.workflow_status == \"closed\""
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM .alerts-security.alerts-*\n| WHERE kibana.alert.rule.rule_id == \"66f68655-8d93-4f42-824e-e6048b386207\"\n| WHERE COALESCE(MV_CONTAINS(tags, \"synthetic\"), false)\n| STATS alert_count = COUNT(*), open_count = COUNT(*) WHERE kibana.alert.workflow_status == \"open\", investigating_count = COUNT(*) WHERE kibana.alert.workflow_status == \"acknowledged\", closed_count = COUNT(*) WHERE kibana.alert.workflow_status == \"closed\""
                             },
                             "visualization": {
                                 "columns": [
@@ -1021,7 +1063,7 @@
                     "i": "criminalip-alert-summary",
                     "w": 48,
                     "x": 0,
-                    "y": 77
+                    "y": 80
                 },
                 "panelIndex": "criminalip-alert-summary",
                 "title": "Indicator Match Alert Summary",
@@ -1040,11 +1082,11 @@
                                     "fieldFormats": {},
                                     "id": "26d0b4d79d079b9b275fdc1da1fc9de22db4d7b46c3254c151d4d7e397c08cf5",
                                     "managed": false,
-                                    "name": ".alerts-security.alerts-default",
+                                    "name": ".alerts-security.alerts-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": ".alerts-security.alerts-default",
+                                    "title": ".alerts-security.alerts-*",
                                     "type": "esql"
                                 }
                             },
@@ -1054,7 +1096,7 @@
                                         {
                                             "id": "26d0b4d79d079b9b275fdc1da1fc9de22db4d7b46c3254c151d4d7e397c08cf5",
                                             "timeField": "@timestamp",
-                                            "title": ".alerts-security.alerts-default"
+                                            "title": ".alerts-security.alerts-*"
                                         }
                                     ],
                                     "layers": {
@@ -1084,7 +1126,7 @@
                                             ],
                                             "index": "26d0b4d79d079b9b275fdc1da1fc9de22db4d7b46c3254c151d4d7e397c08cf5",
                                             "query": {
-                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM .alerts-security.alerts-default\n| WHERE kibana.alert.rule.rule_id == \"66f68655-8d93-4f42-824e-e6048b386207\"\n| WHERE COALESCE(MV_CONTAINS(tags, \"synthetic\"), false)\n| STATS alert_count = COUNT(*) BY alert_hour = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| SORT alert_hour DESC\n| LIMIT 1000\n| SORT alert_hour ASC"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM .alerts-security.alerts-*\n| WHERE kibana.alert.rule.rule_id == \"66f68655-8d93-4f42-824e-e6048b386207\"\n| WHERE COALESCE(MV_CONTAINS(tags, \"synthetic\"), false)\n| STATS alert_count = COUNT(*) BY alert_hour = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| SORT alert_hour DESC\n| LIMIT 1000\n| SORT alert_hour ASC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1094,7 +1136,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "SET unmapped_fields = \"nullify\";\nFROM .alerts-security.alerts-default\n| WHERE kibana.alert.rule.rule_id == \"66f68655-8d93-4f42-824e-e6048b386207\"\n| WHERE COALESCE(MV_CONTAINS(tags, \"synthetic\"), false)\n| STATS alert_count = COUNT(*) BY alert_hour = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| SORT alert_hour DESC\n| LIMIT 1000\n| SORT alert_hour ASC"
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM .alerts-security.alerts-*\n| WHERE kibana.alert.rule.rule_id == \"66f68655-8d93-4f42-824e-e6048b386207\"\n| WHERE COALESCE(MV_CONTAINS(tags, \"synthetic\"), false)\n| STATS alert_count = COUNT(*) BY alert_hour = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| SORT alert_hour DESC\n| LIMIT 1000\n| SORT alert_hour ASC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1139,7 +1181,7 @@
                     "i": "criminalip-alert-trend",
                     "w": 24,
                     "x": 0,
-                    "y": 84
+                    "y": 87
                 },
                 "panelIndex": "criminalip-alert-trend",
                 "title": "Indicator Match Alerts over Time",
@@ -1161,7 +1203,7 @@
                             }
                         },
                         "params": {
-                            "spec": "{\n  \"$schema\": \"https://vega.github.io/schema/vega/v5.json\",\n  \"description\": \"Actual IP match evidence from this rule's threat.enrichments; not endpoint IP guesses.\",\n  \"autosize\": {\n    \"type\": \"fit\",\n    \"contains\": \"padding\"\n  },\n  \"padding\": {\n    \"left\": 150,\n    \"right\": 20,\n    \"top\": 15,\n    \"bottom\": 45\n  },\n  \"data\": [\n    {\n      \"name\": \"matched_ips\",\n      \"url\": {\n        \"index\": \".alerts-security.alerts-default\",\n        \"body\": {\n          \"size\": 0,\n          \"query\": {\n            \"bool\": {\n              \"must\": [\n                \"%dashboard_context-must_clause%\"\n              ],\n              \"filter\": [\n                \"%dashboard_context-filter_clause%\",\n                {\n                  \"term\": {\n                    \"kibana.alert.rule.rule_id\": \"66f68655-8d93-4f42-824e-e6048b386207\"\n                  }\n                },\n                {\n                  \"range\": {\n                    \"@timestamp\": {\n                      \"%timefilter%\": true\n                    }\n                  }\n                },\n                {\n                  \"term\": {\n                    \"tags\": \"synthetic\"\n                  }\n                }\n              ],\n              \"must_not\": [\n                \"%dashboard_context-must_not_clause%\"\n              ]\n            }\n          },\n          \"aggs\": {\n            \"enrichments\": {\n              \"nested\": {\n                \"path\": \"threat.enrichments\"\n              },\n              \"aggs\": {\n                \"ip_matches\": {\n                  \"filter\": {\n                    \"bool\": {\n                      \"filter\": [\n                        {\n                          \"terms\": {\n                            \"threat.enrichments.matched.field\": [\n                              \"source.ip\",\n                              \"destination.ip\"\n                            ]\n                          }\n                        },\n                        {\n                          \"term\": {\n                            \"threat.enrichments.matched.type\": \"indicator_match_rule\"\n                          }\n                        }\n                      ]\n                    }\n                  },\n                  \"aggs\": {\n                    \"ips\": {\n                      \"terms\": {\n                        \"field\": \"threat.enrichments.matched.atomic\",\n                        \"size\": 10,\n                        \"shard_size\": 100,\n                        \"order\": {\n                          \"alerts\": \"desc\"\n                        }\n                      },\n                      \"aggs\": {\n                        \"alerts\": {\n                          \"reverse_nested\": {}\n                        }\n                      }\n                    }\n                  }\n                }\n              }\n            }\n          }\n        }\n      },\n      \"format\": {\n        \"property\": \"aggregations.enrichments.ip_matches.ips.buckets\"\n      },\n      \"transform\": [\n        {\n          \"type\": \"formula\",\n          \"expr\": \"datum.alerts.doc_count\",\n          \"as\": \"alert_count\"\n        },\n        {\n          \"type\": \"collect\",\n          \"sort\": {\n            \"field\": \"alert_count\",\n            \"order\": \"descending\"\n          }\n        }\n      ]\n    }\n  ],\n  \"scales\": [\n    {\n      \"name\": \"y\",\n      \"type\": \"band\",\n      \"domain\": {\n        \"data\": \"matched_ips\",\n        \"field\": \"key\"\n      },\n      \"range\": \"height\",\n      \"padding\": 0.2\n    },\n    {\n      \"name\": \"x\",\n      \"type\": \"linear\",\n      \"range\": \"width\",\n      \"zero\": true,\n      \"nice\": true,\n      \"domain\": {\n        \"signal\": \"length(data('matched_ips')) ? [0, max(1, extent(pluck(data('matched_ips'), 'alert_count'))[1])] : [0, 1]\"\n      }\n    }\n  ],\n  \"axes\": [\n    {\n      \"orient\": \"left\",\n      \"scale\": \"y\",\n      \"title\": \"Matched IP\",\n      \"labelLimit\": 145\n    },\n    {\n      \"orient\": \"bottom\",\n      \"scale\": \"x\",\n      \"title\": \"Related Alerts\",\n      \"tickMinStep\": 1\n    }\n  ],\n  \"marks\": [\n    {\n      \"type\": \"rect\",\n      \"from\": {\n        \"data\": \"matched_ips\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"scale\": \"x\",\n            \"value\": 0\n          },\n          \"x2\": {\n            \"scale\": \"x\",\n            \"field\": \"alert_count\"\n          },\n          \"y\": {\n            \"scale\": \"y\",\n            \"field\": \"key\"\n          },\n          \"height\": {\n            \"scale\": \"y\",\n            \"band\": 1\n          },\n          \"fill\": {\n            \"value\": \"#5487e0\"\n          },\n          \"tooltip\": {\n            \"signal\": \"{'Matched IP': datum.key, 'Related Alerts': datum.alert_count}\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width / 2\"\n          },\n          \"y\": {\n            \"signal\": \"height / 2\"\n          },\n          \"align\": {\n            \"value\": \"center\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 14\n          },\n          \"text\": {\n            \"signal\": \"length(data('matched_ips')) ? '' : 'No alerts with matched IP evidence'\"\n          }\n        }\n      }\n    }\n  ]\n}"
+                            "spec": "{\n  \"$schema\": \"https://vega.github.io/schema/vega/v5.json\",\n  \"description\": \"Actual IP match evidence from this rule's threat.enrichments; not endpoint IP guesses.\",\n  \"autosize\": {\n    \"type\": \"fit\",\n    \"contains\": \"padding\"\n  },\n  \"padding\": {\n    \"left\": 150,\n    \"right\": 20,\n    \"top\": 15,\n    \"bottom\": 45\n  },\n  \"data\": [\n    {\n      \"name\": \"matched_ips\",\n      \"url\": {\n        \"index\": \".alerts-security.alerts-*\",\n        \"body\": {\n          \"size\": 0,\n          \"query\": {\n            \"bool\": {\n              \"must\": [\n                \"%dashboard_context-must_clause%\"\n              ],\n              \"filter\": [\n                \"%dashboard_context-filter_clause%\",\n                {\n                  \"term\": {\n                    \"kibana.alert.rule.rule_id\": \"66f68655-8d93-4f42-824e-e6048b386207\"\n                  }\n                },\n                {\n                  \"range\": {\n                    \"@timestamp\": {\n                      \"%timefilter%\": true\n                    }\n                  }\n                },\n                {\n                  \"term\": {\n                    \"tags\": \"synthetic\"\n                  }\n                }\n              ],\n              \"must_not\": [\n                \"%dashboard_context-must_not_clause%\"\n              ]\n            }\n          },\n          \"aggs\": {\n            \"enrichments\": {\n              \"nested\": {\n                \"path\": \"threat.enrichments\"\n              },\n              \"aggs\": {\n                \"ip_matches\": {\n                  \"filter\": {\n                    \"bool\": {\n                      \"filter\": [\n                        {\n                          \"terms\": {\n                            \"threat.enrichments.matched.field\": [\n                              \"source.ip\",\n                              \"destination.ip\"\n                            ]\n                          }\n                        },\n                        {\n                          \"term\": {\n                            \"threat.enrichments.matched.type\": \"indicator_match_rule\"\n                          }\n                        }\n                      ]\n                    }\n                  },\n                  \"aggs\": {\n                    \"ips\": {\n                      \"terms\": {\n                        \"field\": \"threat.enrichments.matched.atomic\",\n                        \"size\": 10,\n                        \"shard_size\": 100,\n                        \"order\": {\n                          \"alerts\": \"desc\"\n                        }\n                      },\n                      \"aggs\": {\n                        \"alerts\": {\n                          \"reverse_nested\": {}\n                        }\n                      }\n                    }\n                  }\n                }\n              }\n            }\n          }\n        }\n      },\n      \"format\": {\n        \"property\": \"aggregations.enrichments.ip_matches.ips.buckets\"\n      },\n      \"transform\": [\n        {\n          \"type\": \"formula\",\n          \"expr\": \"datum.alerts.doc_count\",\n          \"as\": \"alert_count\"\n        },\n        {\n          \"type\": \"collect\",\n          \"sort\": {\n            \"field\": \"alert_count\",\n            \"order\": \"descending\"\n          }\n        }\n      ]\n    }\n  ],\n  \"scales\": [\n    {\n      \"name\": \"y\",\n      \"type\": \"band\",\n      \"domain\": {\n        \"data\": \"matched_ips\",\n        \"field\": \"key\"\n      },\n      \"range\": \"height\",\n      \"padding\": 0.2\n    },\n    {\n      \"name\": \"x\",\n      \"type\": \"linear\",\n      \"range\": \"width\",\n      \"zero\": true,\n      \"nice\": true,\n      \"domain\": {\n        \"signal\": \"length(data('matched_ips')) ? [0, max(1, extent(pluck(data('matched_ips'), 'alert_count'))[1])] : [0, 1]\"\n      }\n    }\n  ],\n  \"axes\": [\n    {\n      \"orient\": \"left\",\n      \"scale\": \"y\",\n      \"title\": \"Matched IP\",\n      \"labelLimit\": 145\n    },\n    {\n      \"orient\": \"bottom\",\n      \"scale\": \"x\",\n      \"title\": \"Related Alerts\",\n      \"tickMinStep\": 1\n    }\n  ],\n  \"marks\": [\n    {\n      \"type\": \"rect\",\n      \"from\": {\n        \"data\": \"matched_ips\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"scale\": \"x\",\n            \"value\": 0\n          },\n          \"x2\": {\n            \"scale\": \"x\",\n            \"field\": \"alert_count\"\n          },\n          \"y\": {\n            \"scale\": \"y\",\n            \"field\": \"key\"\n          },\n          \"height\": {\n            \"scale\": \"y\",\n            \"band\": 1\n          },\n          \"fill\": {\n            \"value\": \"#5487e0\"\n          },\n          \"tooltip\": {\n            \"signal\": \"{'Matched IP': datum.key, 'Related Alerts': datum.alert_count}\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width / 2\"\n          },\n          \"y\": {\n            \"signal\": \"height / 2\"\n          },\n          \"align\": {\n            \"value\": \"center\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 14\n          },\n          \"text\": {\n            \"signal\": \"length(data('matched_ips')) ? '' : 'No alerts with matched IP evidence'\"\n          }\n        }\n      }\n    }\n  ]\n}"
                         },
                         "title": "Top 10 Matched IPs · Alert Evidence",
                         "type": "vega",
@@ -1174,7 +1216,7 @@
                     "i": "criminalip-ti-matched-ips-validation",
                     "w": 24,
                     "x": 24,
-                    "y": 84
+                    "y": 87
                 },
                 "panelIndex": "criminalip-ti-matched-ips-validation",
                 "title": "Top 10 Matched IPs · Alert Evidence",
@@ -1193,11 +1235,11 @@
                                     "fieldFormats": {},
                                     "id": "26d0b4d79d079b9b275fdc1da1fc9de22db4d7b46c3254c151d4d7e397c08cf5",
                                     "managed": false,
-                                    "name": ".alerts-security.alerts-default",
+                                    "name": ".alerts-security.alerts-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": ".alerts-security.alerts-default",
+                                    "title": ".alerts-security.alerts-*",
                                     "type": "esql"
                                 }
                             },
@@ -1207,7 +1249,7 @@
                                         {
                                             "id": "26d0b4d79d079b9b275fdc1da1fc9de22db4d7b46c3254c151d4d7e397c08cf5",
                                             "timeField": "@timestamp",
-                                            "title": ".alerts-security.alerts-default"
+                                            "title": ".alerts-security.alerts-*"
                                         }
                                     ],
                                     "layers": {
@@ -1326,7 +1368,7 @@
                                             ],
                                             "index": "26d0b4d79d079b9b275fdc1da1fc9de22db4d7b46c3254c151d4d7e397c08cf5",
                                             "query": {
-                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM .alerts-security.alerts-default\n| WHERE kibana.alert.rule.rule_id == \"66f68655-8d93-4f42-824e-e6048b386207\"\n| WHERE COALESCE(MV_CONTAINS(tags, \"synthetic\"), false)\n| EVAL traffic_result = CASE(MV_CONTAINS(event.type, \"allowed\") AND MV_CONTAINS(event.type, \"denied\"), \"Unclassified\", MV_CONTAINS(event.type, \"denied\"), \"Denied\", MV_CONTAINS(event.type, \"allowed\"), \"Allowed\", event.dataset == \"ti_criminalip.fortigate\" AND event.action IN (\"deny\", \"block\"), \"Denied\", event.dataset == \"ti_criminalip.fortigate\" AND event.action IN (\"accept\", \"allow\"), \"Allowed\", event.action IN (\"start\", \"flow_started\"), \"Session Started\", event.action IN (\"close\", \"end\", \"flow_terminated\"), \"Session Ended\", event.action == \"timeout\", \"Timed Out\", \"Unclassified\")\n| EVAL firewall_vendor = COALESCE(observer.vendor, CASE(event.dataset IN (\"ti_criminalip.fortigate\", \"fortinet_fortigate.log\"), \"Fortinet\", event.dataset == \"panw.panos\", \"Palo Alto Networks\", event.dataset == \"juniper_srx.log\", \"Juniper\", event.dataset IN (\"cisco_asa.log\", \"cisco_ftd.log\"), \"Cisco\", \"Unknown\")), firewall_product = COALESCE(observer.product, CASE(event.dataset IN (\"ti_criminalip.fortigate\", \"fortinet_fortigate.log\"), \"FortiGate\", event.dataset == \"panw.panos\", \"PAN-OS\", event.dataset == \"juniper_srx.log\", \"SRX\", event.dataset == \"cisco_asa.log\", \"ASA\", event.dataset == \"cisco_ftd.log\", \"FTD\", \"Unknown\"))\n| EVAL firewall = CONCAT(firewall_vendor, \" / \", firewall_product)\n| SORT @timestamp DESC\n| KEEP @timestamp, kibana.alert.original_time, source.ip, source.port, destination.ip, destination.port, firewall, traffic_result, event.action, network.transport, kibana.alert.workflow_status\n| LIMIT 50"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM .alerts-security.alerts-*\n| WHERE kibana.alert.rule.rule_id == \"66f68655-8d93-4f42-824e-e6048b386207\"\n| WHERE COALESCE(MV_CONTAINS(tags, \"synthetic\"), false)\n| EVAL traffic_result = CASE(MV_CONTAINS(event.type, \"allowed\") AND MV_CONTAINS(event.type, \"denied\"), \"Unclassified\", MV_CONTAINS(event.type, \"denied\"), \"Denied\", MV_CONTAINS(event.type, \"allowed\"), \"Allowed\", event.dataset == \"ti_criminalip.fortigate\" AND event.action IN (\"deny\", \"block\"), \"Denied\", event.dataset == \"ti_criminalip.fortigate\" AND event.action IN (\"accept\", \"allow\"), \"Allowed\", event.action IN (\"start\", \"flow_started\"), \"Session Started\", event.action IN (\"close\", \"end\", \"flow_terminated\"), \"Session Ended\", event.action == \"timeout\", \"Timed Out\", \"Unclassified\")\n| EVAL firewall_vendor = COALESCE(observer.vendor, CASE(event.dataset IN (\"ti_criminalip.fortigate\", \"fortinet_fortigate.log\"), \"Fortinet\", event.dataset == \"panw.panos\", \"Palo Alto Networks\", event.dataset == \"juniper_srx.log\", \"Juniper\", event.dataset IN (\"cisco_asa.log\", \"cisco_ftd.log\"), \"Cisco\", \"Unknown\")), firewall_product = COALESCE(observer.product, CASE(event.dataset IN (\"ti_criminalip.fortigate\", \"fortinet_fortigate.log\"), \"FortiGate\", event.dataset == \"panw.panos\", \"PAN-OS\", event.dataset == \"juniper_srx.log\", \"SRX\", event.dataset == \"cisco_asa.log\", \"ASA\", event.dataset == \"cisco_ftd.log\", \"FTD\", \"Unknown\"))\n| EVAL firewall = CONCAT(firewall_vendor, \" / \", firewall_product)\n| SORT @timestamp DESC\n| KEEP @timestamp, kibana.alert.original_time, source.ip, source.port, destination.ip, destination.port, firewall, traffic_result, event.action, network.transport, kibana.alert.workflow_status\n| LIMIT 50"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1336,7 +1378,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "SET unmapped_fields = \"nullify\";\nFROM .alerts-security.alerts-default\n| WHERE kibana.alert.rule.rule_id == \"66f68655-8d93-4f42-824e-e6048b386207\"\n| WHERE COALESCE(MV_CONTAINS(tags, \"synthetic\"), false)\n| EVAL traffic_result = CASE(MV_CONTAINS(event.type, \"allowed\") AND MV_CONTAINS(event.type, \"denied\"), \"Unclassified\", MV_CONTAINS(event.type, \"denied\"), \"Denied\", MV_CONTAINS(event.type, \"allowed\"), \"Allowed\", event.dataset == \"ti_criminalip.fortigate\" AND event.action IN (\"deny\", \"block\"), \"Denied\", event.dataset == \"ti_criminalip.fortigate\" AND event.action IN (\"accept\", \"allow\"), \"Allowed\", event.action IN (\"start\", \"flow_started\"), \"Session Started\", event.action IN (\"close\", \"end\", \"flow_terminated\"), \"Session Ended\", event.action == \"timeout\", \"Timed Out\", \"Unclassified\")\n| EVAL firewall_vendor = COALESCE(observer.vendor, CASE(event.dataset IN (\"ti_criminalip.fortigate\", \"fortinet_fortigate.log\"), \"Fortinet\", event.dataset == \"panw.panos\", \"Palo Alto Networks\", event.dataset == \"juniper_srx.log\", \"Juniper\", event.dataset IN (\"cisco_asa.log\", \"cisco_ftd.log\"), \"Cisco\", \"Unknown\")), firewall_product = COALESCE(observer.product, CASE(event.dataset IN (\"ti_criminalip.fortigate\", \"fortinet_fortigate.log\"), \"FortiGate\", event.dataset == \"panw.panos\", \"PAN-OS\", event.dataset == \"juniper_srx.log\", \"SRX\", event.dataset == \"cisco_asa.log\", \"ASA\", event.dataset == \"cisco_ftd.log\", \"FTD\", \"Unknown\"))\n| EVAL firewall = CONCAT(firewall_vendor, \" / \", firewall_product)\n| SORT @timestamp DESC\n| KEEP @timestamp, kibana.alert.original_time, source.ip, source.port, destination.ip, destination.port, firewall, traffic_result, event.action, network.transport, kibana.alert.workflow_status\n| LIMIT 50"
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM .alerts-security.alerts-*\n| WHERE kibana.alert.rule.rule_id == \"66f68655-8d93-4f42-824e-e6048b386207\"\n| WHERE COALESCE(MV_CONTAINS(tags, \"synthetic\"), false)\n| EVAL traffic_result = CASE(MV_CONTAINS(event.type, \"allowed\") AND MV_CONTAINS(event.type, \"denied\"), \"Unclassified\", MV_CONTAINS(event.type, \"denied\"), \"Denied\", MV_CONTAINS(event.type, \"allowed\"), \"Allowed\", event.dataset == \"ti_criminalip.fortigate\" AND event.action IN (\"deny\", \"block\"), \"Denied\", event.dataset == \"ti_criminalip.fortigate\" AND event.action IN (\"accept\", \"allow\"), \"Allowed\", event.action IN (\"start\", \"flow_started\"), \"Session Started\", event.action IN (\"close\", \"end\", \"flow_terminated\"), \"Session Ended\", event.action == \"timeout\", \"Timed Out\", \"Unclassified\")\n| EVAL firewall_vendor = COALESCE(observer.vendor, CASE(event.dataset IN (\"ti_criminalip.fortigate\", \"fortinet_fortigate.log\"), \"Fortinet\", event.dataset == \"panw.panos\", \"Palo Alto Networks\", event.dataset == \"juniper_srx.log\", \"Juniper\", event.dataset IN (\"cisco_asa.log\", \"cisco_ftd.log\"), \"Cisco\", \"Unknown\")), firewall_product = COALESCE(observer.product, CASE(event.dataset IN (\"ti_criminalip.fortigate\", \"fortinet_fortigate.log\"), \"FortiGate\", event.dataset == \"panw.panos\", \"PAN-OS\", event.dataset == \"juniper_srx.log\", \"SRX\", event.dataset == \"cisco_asa.log\", \"ASA\", event.dataset == \"cisco_ftd.log\", \"FTD\", \"Unknown\"))\n| EVAL firewall = CONCAT(firewall_vendor, \" / \", firewall_product)\n| SORT @timestamp DESC\n| KEEP @timestamp, kibana.alert.original_time, source.ip, source.port, destination.ip, destination.port, firewall, traffic_result, event.action, network.transport, kibana.alert.workflow_status\n| LIMIT 50"
                             },
                             "visualization": {
                                 "columns": [
@@ -1399,7 +1441,7 @@
                     "i": "criminalip-recent-alerts",
                     "w": 48,
                     "x": 0,
-                    "y": 97
+                    "y": 100
                 },
                 "panelIndex": "criminalip-recent-alerts",
                 "title": "Matched Communications · Alert Details",
@@ -1408,7 +1450,7 @@
             },
             {
                 "embeddableConfig": {
-                    "content": "### Validation scope and reading notes\n- Every traffic/alert panel shows only `tags: synthetic`, including the matched-IP chart.\n- Namespace alone is not sufficient; tag dedicated lab inputs `synthetic`.\n- Original-log counts and alert counts are different. Nonmatching logs need not create alerts.\n- Missing allowed/denied evidence remains Unclassified; FTD info is not proof of allowance.\n- Times follow Kibana's time zone. Alert time differs from original event time.\n- Comparison charts exclude IPv6 multicast destinations; totals may differ.\n- TI panels use `.alerts-security.alerts-default` (default Space).\n- The rule must be installed/enabled separately. No auto blocking or notifications are added.\n- Cortex and configured IP lookups are separate optional investigation paths, not test traffic.",
+                    "content": "### Validation scope and reading notes\n- Every traffic/alert panel shows only `tags: synthetic`, including the matched-IP chart.\n- Namespace alone is not sufficient; tag dedicated lab inputs `synthetic`.\n- Original-log counts and alert counts are different. Nonmatching logs need not create alerts.\n- Missing allowed/denied evidence remains Unclassified; FTD info is not proof of allowance.\n- Times follow Kibana's time zone. Alert time differs from original event time.\n- Comparison charts exclude IPv6 multicast destinations; totals may differ.\n- TI panels use `.alerts-security.alerts-*` (default Space).\n- The rule must be installed/enabled separately. No auto blocking or notifications are added.\n- Cortex and configured IP lookups are separate optional investigation paths, not test traffic.",
                     "enhancements": {},
                     "hidePanelTitles": true
                 },
@@ -1417,7 +1459,7 @@
                     "i": "criminalip-install-help",
                     "w": 48,
                     "x": 0,
-                    "y": 110
+                    "y": 113
                 },
                 "panelIndex": "criminalip-install-help",
                 "type": "markdown"
@@ -1431,7 +1473,18 @@
     "coreMigrationVersion": "8.8.0",
     "created_at": "2026-10-28T05:23:48.049Z",
     "id": "ti_criminalip-firewall-validation",
-    "references": [],
+    "references": [
+        {
+            "id": "ti_criminalip-firewall-overview",
+            "name": "criminalip-dashboard-links:link_criminalip-link-0_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "ti_criminalip-ip-report-overview",
+            "name": "criminalip-dashboard-links:link_criminalip-link-1_dashboard",
+            "type": "dashboard"
+        }
+    ],
     "type": "dashboard",
     "typeMigrationVersion": "10.3.0"
 }

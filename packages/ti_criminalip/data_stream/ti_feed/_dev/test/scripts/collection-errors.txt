@@ -6,6 +6,21 @@ use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
 
 add_package -profile ${CONFIG_PROFILES}/${PROFILE}
 
+# A non-200 response can echo a query-string key. It must not reach events or logs.
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 3m -container_name AGENT_CONTAINER -network_name AGENT_NETWORK
+exec docker run -d --rm --name ${AGENT_CONTAINER}-mock --network ${AGENT_NETWORK} --network-alias mock --mount type=bind,source=${PACKAGE_ROOT}/_dev/deploy/docker/api.yml,target=/config/api.yml,readonly docker.elastic.co/observability/stream:v0.25.0 http-server --addr=:8080 --config=/config/api.yml
+date LOG_START
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} secret-echo.yaml ECHO_STREAM
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -timeout 2m ${ECHO_STREAM}
+stdout '"error.code":\s*\[\s*"403"'
+! stdout 'SYNTHETIC-SECRET-ECHO-KEY|secret-echo-error\?key|pipeline_error'
+exec docker logs --since ${LOG_START} ${AGENT_CONTAINER}
+! stdout 'SYNTHETIC-SECRET-ECHO-KEY|secret-echo-error\?key|->FAILED'
+! stderr 'SYNTHETIC-SECRET-ECHO-KEY|secret-echo-error\?key|->FAILED'
+exec docker stop ${AGENT_CONTAINER}-mock
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${ECHO_STREAM}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE}
+
 # A valid HTTP response with an invalid feed body must emit sanitized errors,
 # degrade the input, and keep polling rather than losing its URL/secret state.
 install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 3m -container_name AGENT_CONTAINER -network_name AGENT_NETWORK
@@ -52,6 +67,16 @@ data_stream:
   vars:
     api_key: unit-test-key
     feed_url: http://mock:8080/ti/v1/feed/response-error
+    interval: 5s
+    tags:
+      - synthetic
+
+-- secret-echo.yaml --
+input: cel
+data_stream:
+  vars:
+    api_key: SYNTHETIC-SECRET-ECHO-KEY
+    feed_url: http://mock:8080/ti/v1/feed/secret-echo-error
     interval: 5s
     tags:
       - synthetic

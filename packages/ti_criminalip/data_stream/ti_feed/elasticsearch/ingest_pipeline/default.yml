@@ -144,20 +144,11 @@ processors:
         - append:
             tag: flag_invalid_indicator_ip
             field: error.message
-            value: TI Feed indicator IP is not a valid IPv4 or IPv6 address.
-        - append:
-            tag: preserve_invalid_indicator_ip_event
-            field: tags
-            value: preserve_original_event
-            allow_duplicates: false
+            value: "Processor '{{{ _ingest.on_failure_processor_type }}}' with tag '{{{ _ingest.on_failure_processor_tag }}}' in pipeline '{{{ _ingest.pipeline }}}' failed: {{{ _ingest.on_failure_message }}}"
         - set:
-            tag: mark_invalid_indicator_ip_outcome
-            field: event.outcome
-            value: failure
-        - set:
-            tag: mark_invalid_indicator_ip_kind
-            field: event.kind
-            value: pipeline_error
+            tag: mark_invalid_indicator_ip_error
+            field: _temp.pipeline_error
+            value: true
   - append:
       tag: append_event_category
       field: event.category
@@ -212,6 +203,11 @@ processors:
       field: event.kind
       value: pipeline_error
       if: 'ctx._temp?.pipeline_error == true'
+  - set:
+      tag: set_invalid_indicator_outcome
+      field: event.outcome
+      value: failure
+      if: 'ctx._temp?.pipeline_error == true && ctx.threat?.indicator?.ip == null'
   - remove:
       tag: remove_feed_temporary_fields
       field: _temp

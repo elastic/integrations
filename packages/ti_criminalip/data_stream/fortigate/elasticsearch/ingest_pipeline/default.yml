@@ -441,6 +441,16 @@ processors:
       field: _temp.fortigate_fields.vd
       target_field: criminalip.fortigate.vd
       ignore_missing: true
+  - rename:
+      tag: rename_fortigate_service
+      field: _temp.fortigate_fields.service
+      target_field: criminalip.fortigate.service
+      ignore_missing: true
+  - rename:
+      tag: rename_fortigate_message
+      field: _temp.fortigate_fields.msg
+      target_field: criminalip.fortigate.msg
+      ignore_missing: true
   - convert:
       tag: convert_fortigate_sent_bytes
       field: _temp.fortigate_fields.sentbyte
@@ -532,7 +542,8 @@ processors:
       allow_duplicates: false
       if: >-
         (ctx.criminalip?.fortigate?.type == "traffic" || ctx.criminalip?.fortigate?.type == "utm") &&
-        ['accept', 'allow', 'close', 'timeout', 'client-rst', 'server-rst'].contains(ctx.event?.action) &&
+        (['accept', 'allow', 'close', 'timeout', 'client-rst', 'server-rst'].contains(ctx.event?.action) ||
+        (ctx.criminalip?.fortigate?.type == "utm" && ['pass', 'passthrough'].contains(ctx.event?.action))) &&
         ctx.event?.outcome != 'failure' && !(ctx.event?.type instanceof List && ctx.event.type.contains("denied"))
 
   - set:
@@ -545,7 +556,7 @@ processors:
       tag: set_event_outcome_success
       field: event.outcome
       value: success
-      if: '(ctx.criminalip?.fortigate?.type == "traffic" || ctx.criminalip?.fortigate?.type == "utm") && ["accept", "allow", "close", "timeout", "client-rst", "server-rst"].contains(ctx.event?.action) && ctx.event?.outcome != "failure" && !(ctx.event?.type instanceof List && ctx.event.type.contains("denied"))'
+      if: '(ctx.criminalip?.fortigate?.type == "traffic" || ctx.criminalip?.fortigate?.type == "utm") && (["accept", "allow", "close", "timeout", "client-rst", "server-rst"].contains(ctx.event?.action) || (ctx.criminalip?.fortigate?.type == "utm" && ["pass", "passthrough"].contains(ctx.event?.action))) && ctx.event?.outcome != "failure" && !(ctx.event?.type instanceof List && ctx.event.type.contains("denied"))'
 
   - convert:
       tag: convert_source_port

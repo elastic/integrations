@@ -93,7 +93,7 @@ Configure the features you selected below. Installing package assets and applyin
 
 For events without a timezone, set **Default timezone** to the firewall timezone; the default is UTC. A timezone supplied by the event takes precedence.
 
-The pipeline maps selected FortiGate fields, including device identity, interfaces and byte counts. Other unrecognized key-value fields are not retained separately. Enable **Preserve original event** if you need the raw message for further investigation; it can contain sensitive information.
+The pipeline maps selected FortiGate fields, including device identity, interfaces, byte counts, service and message. Other unrecognized key-value fields are not retained separately to avoid uncontrolled dynamic mappings. Enable **Preserve original event** if you need the raw message for further investigation; it can contain sensitive information.
 
 #### Configure the FortiGate sender
 
@@ -156,72 +156,9 @@ Review the rule's source indices before enabling it: the packaged default is `lo
 
 The packaged rule is disabled by default with no external actions. Collection or Cortex analysis success alone does not create match alerts. Zero alerts can be expected when no firewall event matches a feed indicator in the search windows.
 
-### 4. Connect TheHive/Cortex (optional investigation)
+### 4. TheHive/Cortex (optional investigation)
 
-**Already using Cortex?** Keep your existing services, organizations, and users. Install the separate Criminal IP analyzer, enter its four connection settings, and use your existing TheHive connection. There is no need to deploy another TheHive/Cortex stack or install Docker if you use host execution.
-
-**No Cortex environment?** Use the firewall/TI workflow or optional IP Report collection first. Building a case-management/analysis platform is optional. Follow StrangeBee's supported deployment and license guidance if you need those platforms.
-
-#### Prepare the services and analyzer
-
-Run TheHive, Cortex, and their dependencies with versions and roles supported by your organization. Docker deployments require the related containers and services to be running. WSL is one way to run Linux on Windows; it is not required.
-
-The custom Criminal IP analyzer is distributed separately. It is not included in this package or automatically registered in the official Cortex catalog. Contact the package maintainer for the analyzer's distribution and deployment documentation before enabling this optional path.
-
-Reload Cortex while retaining existing analyzers and enable `CriminalIP_2_0` in the intended organization. Consult the separate analyzer README for deployment details.
-
-References: [Cortex with Docker](https://docs.strangebee.com/cortex/installation-and-configuration/run-cortex-with-docker/), [Docker analyzer parameters](https://docs.strangebee.com/cortex/installation-and-configuration/parameters-docker/).
-
-#### Configure the analyzer in Cortex
-
-| Setting | Value |
-| --- | --- |
-| `key` | Criminal IP API key with IP Report access |
-| `timeout` | Request timeout in seconds; default `20`, range `1–120` |
-| `elastic_url` | Elasticsearch HTTPS root endpoint, not a Kibana dashboard or Cloud management URL |
-| `elastic_api_key` | Elasticsearch API key's **encoded value**, with result-index write permissions |
-
-Use the following Elasticsearch role descriptor. The issuing user must also have the relevant permissions.
-
-To prepare the Elastic connection:
-
-1. Copy the **Elasticsearch endpoint** from your deployment's connection details.
-2. Open **API Keys** in Kibana and create a key. Enable custom security privileges and enter the role descriptor below.
-3. Copy the new key's **encoded value** when it is displayed. The key ID alone cannot authenticate requests.
-4. Save the endpoint and encoded key in the Criminal IP analyzer's organization configuration in Cortex.
-
-```json
-{
-  "cortex_criminalip_writer": {
-    "cluster": [],
-    "indices": [
-      {
-        "names": ["criminalip-cortex-results"],
-        "privileges": ["auto_configure", "create_doc"],
-        "allow_restricted_indices": false
-      }
-    ]
-  }
-}
-```
-
-The first successful write can create the result index. Dashboard users need separate read permissions. Keep the writer scoped to the result index and leave restricted index access disabled in Serverless. Store actual keys in secret configuration fields.
-
-#### Connect TheHive and run an analysis
-
-1. Prepare a Cortex organization user/API key with analyzer execution permissions.
-2. Connect TheHive to the Cortex URL with that Cortex key and assign the intended organization, following your TheHive version's configuration procedure. TheHive must reach Cortex; `localhost` inside one container does not address another container.
-3. Add the **public IP you want to investigate** as an `ip` observable in a TheHive case and run the Criminal IP analyzer.
-4. Check the report's `elastic_delivery.status`: `created` confirms document creation; `failed` means delivery failed. An analyzer job can succeed and retain its report even when delivery to Elasticsearch fails.
-5. For automatic analysis of newly created observables, configure a supported `CaseObservableCreated` trigger and `RunAnalyzer` notifier in TheHive after verifying manual execution. Check analyzer selection, organization, permissions, and TLP/PAP limits.
-
-The analyzer rejects private, reserved, loopback, and other non-public addresses. Queries send the investigated IP to Criminal IP and consume API usage.
-
-The result path is:
-
-`TheHive observable → Cortex → Criminal IP API → configured Elasticsearch results index`
-
-The integration does not automatically forward Elastic alerts or TI Feed entries to TheHive. Cortex result delivery does not create firewall match alerts.
+The separately distributed Criminal IP analyzer is not included in or maintained by this Elastic integration. Configure and validate that analyzer independently before using its results.
 
 ### 5. Optional configured IP Report lookups
 
@@ -322,7 +259,7 @@ The recent-alert table also shows available original event time, reporting vendo
 
 Matched IPs come from `threat.enrichments.matched.atomic` and source/destination match evidence. Duplicate indicators for one IP in one alert count once. One alert can match multiple IPs, so IP-specific totals can exceed total alerts.
 
-The alert panels use the **default Space** alias, `.alerts-security.alerts-default`. For another Space, duplicate the managed Criminal IP dashboard in the target Space and edit the copy; managed package dashboards are read-only. In the copy, update every alert ES|QL `FROM` to `.alerts-security.alerts-<space-id>`. Also edit the embedded Vega matched-IP chart and change its `data[].url.index` to the same Space-specific alias; this chart is not a referenced saved visualization. Duplicate or replace any referenced alert visualization so it uses that alias as well. Use the customized dashboard afterward. Before the first alert, a missing alert index can produce a panel error.
+The alert panels query `.alerts-security.alerts-*`. Index permissions determine which alert data can be read; verify access and the intended Space scope. Before the first alert, a missing alert index can produce a panel error.
 
 #### Cortex results
 
