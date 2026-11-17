@@ -3,21 +3,13 @@ type: logs
 streams:
   - input: cel
     title: Upwind configuration findings
-    description: Collect configuration findings from the Upwind Management API.
+    description: Collect full configuration findings posture from the Upwind Management API. Each run lists all current passed and failed findings.
     template_path: cel.yml.hbs
     vars:
       - name: interval
         type: text
         title: Interval
-        description: Duration between requests to the Upwind Management API. Supported units for this parameter are h/m/s.
-        multi: false
-        required: true
-        show_user: true
-        default: 1h
-      - name: initial_interval
-        type: text
-        title: Initial Interval
-        description: How far back to look for configuration findings on the first run. Supported units for this parameter are h/m/s.
+        description: Do not modify. The duration between runs of full posture synchronization.
         multi: false
         required: true
         show_user: false
@@ -30,14 +22,14 @@ streams:
         required: true
         show_user: false
         default: 100
-      - name: status
-        type: text
-        title: Finding Status
-        description: 'Filter collected findings by evaluation status. Supported values: PASS, FAIL, ALL. The Upwind API defaults to FAIL when unset; the integration collects ALL by default so passing checks are available for compliance reporting.'
+      - name: max_executions
+        type: integer
+        title: Maximum Pages Per Interval
+        description: Maximum number of pages that can be collected at each interval.
         multi: false
-        required: true
-        show_user: true
-        default: ALL
+        required: false
+        show_user: false
+        default: 1000
       - name: http_client_timeout
         type: text
         title: HTTP Client Timeout

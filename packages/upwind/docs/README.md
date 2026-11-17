@@ -12,7 +12,7 @@ This integration is compatible with the Upwind Management REST API v1 list endpo
 
 ### How it works
 
-This integration periodically queries the Upwind Management API using OAuth2 client credentials. Each data stream polls its own list endpoint and keeps a cursor between polls. Threat detections and configuration findings use a time bookmark on `last_seen_time`. Vulnerability findings page through the full list with a page token.
+This integration periodically queries the Upwind Management API using OAuth2 client credentials. Each data stream polls its own list endpoint. Threat detections use a time bookmark on `last_seen_time`. Vulnerability findings and configuration findings page through the full current list with a page token. Configuration findings run on a fixed 24-hour interval and collect the complete posture, including passed and failed checks.
 
 ## What data does this integration collect?
 
@@ -20,11 +20,11 @@ The Upwind integration collects log messages of the following types:
 
 * `Threat detections`: Runtime, API security, and CloudTrail-correlated detections.
 * `Vulnerability findings`: CVE findings with runtime reachability and exploitability context.
-* `Configuration findings`: Cloud security posture findings (CSPM), including compliance framework context. The API returns FAIL findings unless a status filter is set.
+* `Configuration findings`: Full cloud security posture findings (CSPM), including passed and failed checks and compliance framework context. Each run lists all current findings.
 
 ### Supported use cases
 
-Use threat detections to investigate runtime and cloud-control-plane alerts in Elastic Security. Use vulnerability findings to prioritize CVEs that are present on running workloads. Use configuration findings to track failed posture checks and the frameworks they map to.
+Use threat detections to investigate runtime and cloud-control-plane alerts in Elastic Security. Use vulnerability findings to prioritize CVEs that are present on running workloads. Use configuration findings to review the current cloud configuration posture, including passed and failed checks and the frameworks they map to.
 
 ## What do I need to use this integration?
 
@@ -64,7 +64,7 @@ Use the values collected in [From Upwind](#from-upwind).
 4. Enter the **API URL** for your region. The OAuth audience uses this same URL.
 5. Leave **Token URL** as `https://auth.upwind.io/oauth/token` unless Upwind provides a different token endpoint.
 6. Enter the **Client ID**, **Client Secret**, and **Organization ID**.
-7. Enable **Threat detections**, **Vulnerability findings**, and/or **Configuration findings**, and set each interval.
+7. Enable **Threat detections**, **Vulnerability findings**, and/or **Configuration findings**. Set the interval for threat detections and vulnerability findings. Configuration findings synchronize the full posture every 24 hours.
 8. Click **Save and continue**.
 
 ### Validation
@@ -79,11 +79,11 @@ Use the values collected in [From Upwind](#from-upwind).
 - 429 Rate limit exceeded: Upwind returned HTTP 429. Increase the polling interval for the affected data stream.
 - No threat detections: Confirm detections exist in the lookback window (Initial interval). The list is filtered by last seen time.
 - No vulnerability findings: The vulnerability list has no documented time filter and returns pages until the Link header has no rel="next". Confirm the credential can read vulnerabilities and that findings exist in the organization.
-- Configuration findings show only failures: The configuration list defaults to status FAIL. Set the status filter to ALL or PASS when a broader posture set is required.
+- No configuration findings: Confirm the credential can read configuration findings and that posture checks exist in the organization. Each run lists all current PASS and FAIL findings.
 
 ## Performance and scaling
 
-Threat detections are collected with a time window rather than page tokens. Vulnerability and configuration findings page with `per-page` (default 100). Prefer a shorter interval for threat detections than for a full vulnerability sync. Tokens last 24 hours and are refreshed on each poll.
+Threat detections are collected with a time window rather than page tokens. Vulnerability findings and configuration findings page with `per-page` (default 100). Configuration findings re-list the full posture every 24 hours. Prefer a shorter interval for threat detections than for a full vulnerability or configuration posture sync. Tokens last 24 hours and are refreshed on each poll.
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
@@ -491,7 +491,7 @@ An example event for `vulnerability_findings` looks as following:
 
 #### Configuration findings
 
-The `configuration_findings` data stream collects CSPM findings from `GET /v1/organizations/{organization-id}/configuration-findings`.
+The `configuration_findings` data stream collects the current CSPM posture from `GET /v1/organizations/{organization-id}/configuration-findings`. Each run lists all current passed and failed findings.
 
 ##### Configuration findings fields
 
@@ -636,3 +636,7 @@ An example event for `configuration_findings` looks as following:
     }
 }
 ```
+
+
+
+

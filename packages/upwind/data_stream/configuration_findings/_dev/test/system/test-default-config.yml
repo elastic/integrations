@@ -10,12 +10,10 @@ vars:
 data_stream:
   vars:
     interval: 2s
-    initial_interval: 24h
     batch_size: 2
     http_client_timeout: 60s
     preserve_original_event: true
 assert:
-  # Initial window pages (2 + 1) plus the cursor-resume poll (1).
-  # Later polls use the caught-up bookmark and return an empty page.
-  # A regressed cursor re-requests the lookback and indexes three extra events.
+  # Round 1 pages (FAIL + PASS, then FAIL) plus the round 2 full re-list (PASS).
+  # Later rounds return the empty steady-state page and index nothing.
   hit_count: 4

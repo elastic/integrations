@@ -24,82 +24,41 @@ resource.headers:
   Accept:
     - application/json
 state:
-  initial_interval: {{initial_interval}}
   batch_size: {{batch_size}}
-  status: {{status}}
 redact:
   fields: ~
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
 program: |-
   // The list operation returns an envelope { resourceFindings, pagination } with
   // token pagination: per-page and page-token query parameters, the next token in
   // pagination.nextPageToken, terminating when pagination.hasMoreData is false.
-  // Incremental collection is a time bookmark: min-last-seen-time is the previous
-  // max(last_seen_time) minus a 1 minute overlap. While a round is paginating the
-  // transient state lives under cursor.next (token, fixed window start, running
-  // max); the bookmark only advances when the round completes, and only forward.
-  {
-    "token": state.?cursor.next.token.orValue(""),
-    "start": state.?cursor.next.start.orValue(
-      state.?cursor.last_seen_time.orValue(
-        (now - duration(state.initial_interval)).format(time_layout.RFC3339)
-      )
-    ),
-    "max": state.?cursor.next.max.orValue(""),
-  }.as(page,
+  // Every interval is a full posture re-list of current PASS and FAIL findings.
+  // The page token lives in state for want_more only and is not persisted in
+  // cursor, so a later interval or a restart always starts from page 1.
+  state.?next_token.orValue("").as(token,
     state.with(
       request(
         "GET",
         state.url.trim_right("/") + "?" + {
           "per-page": [string(int(state.batch_size))],
-          "status": [state.status],
-          "min-last-seen-time": [page.start],
-          ?"page-token": (page.token != "") ? optional.of([page.token]) : optional.none(),
+          "status": ["ALL"],
+          ?"page-token": (token != "") ? optional.of([token]) : optional.none(),
         }.format_query()
       ).do_request().as(resp,
         (resp.StatusCode == 200) ?
           try(resp.Body.decode_json()).as(decoded,
             (!is_error(decoded) && type(decoded) == type({})) ?
-              decoded.?resourceFindings.orValue([]).map(e, string(e.?last_seen_time.orValue(""))).filter(t, t != "").as(seen,
+              {
+                "tok": string(decoded.?pagination.nextPageToken[0].orValue("")),
+                "more": decoded.?pagination.hasMoreData.orValue(false),
+              }.as(page,
                 {
-                  "tok": string(decoded.?pagination.nextPageToken[0].orValue("")),
-                  "max": (size(seen) == 0) ?
-                    page.max
-                  : (page.max == "" || seen.max() > page.max) ? seen.max() : page.max,
-                }.as(round,
-                  (decoded.?pagination.hasMoreData.orValue(false) && round.tok != "") ?
-                    {
-                      "events": decoded.?resourceFindings.orValue([]).map(e, {"message": e.encode_json()}),
-                      "want_more": true,
-                      "cursor": {
-                        ?"last_seen_time": state.?cursor.last_seen_time,
-                        "next": {
-                          "token": round.tok,
-                          "start": page.start,
-                          "max": round.max,
-                        },
-                      },
-                    }
-                  :
-                    {
-                      "events": decoded.?resourceFindings.orValue([]).map(e, {"message": e.encode_json()}),
-                      "want_more": false,
-                      "cursor": (round.max == "") ?
-                        {
-                          ?"last_seen_time": state.?cursor.last_seen_time,
-                        }
-                      :
-                        (round.max.parse_time(time_layout.RFC3339) - duration("1m")).format(time_layout.RFC3339).as(candidate,
-                          {
-                            "last_seen_time": (
-                              state.?cursor.last_seen_time.orValue("") != "" && state.?cursor.last_seen_time.orValue("") > candidate
-                            ) ?
-                              state.?cursor.last_seen_time.orValue("")
-                            :
-                              candidate,
-                          }
-                        ),
-                    }
-                )
+                  "events": decoded.?resourceFindings.orValue([]).map(e, {"message": e.encode_json()}),
+                  "want_more": page.more && page.tok != "",
+                  "next_token": (page.more && page.tok != "") ? page.tok : "",
+                }
               )
             :
               {
@@ -111,6 +70,7 @@ program: |-
                   },
                 },
                 "want_more": false,
+                "next_token": "",
               }
           )
         :
@@ -123,6 +83,7 @@ program: |-
               },
             },
             "want_more": false,
+            "next_token": "",
           }
       )
     )
