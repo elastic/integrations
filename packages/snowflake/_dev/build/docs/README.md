@@ -7,7 +7,7 @@ The Snowflake integration for Elastic collects security telemetry from [Snowflak
 
 ### Compatibility
 
-This integration queries Snowflake `ACCOUNT_USAGE` historical views and the account event table through SQL API v2 (`/api/v2/statements`). Those views retain about one year of data and are delayed (about 45 minutes to 3 hours depending on the view). It is compatible with Snowflake accounts on AWS, Azure, and Google Cloud, including PrivateLink hosts. China region hosts (`.snowflakecomputing.cn`) are supported when the account URL is set accordingly. The `access_history` data stream requires Snowflake Enterprise Edition or later.
+This integration queries Snowflake `ACCOUNT_USAGE` historical views and the account event table through SQL API v2 (`/api/v2/statements`). Those views retain about one year of data and are delayed (about 45 minutes to 3 hours depending on the view). It is compatible with Snowflake accounts on AWS, Azure, and Google Cloud. PrivateLink hosts (`*.privatelink.snowflakecomputing.com`) are valid. China region hosts (`.snowflakecomputing.cn`) are supported when the account URL is set accordingly. The `access_history` data stream requires Snowflake Enterprise Edition or later.
 
 ## What data does this integration collect?
 
@@ -50,9 +50,9 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ### Set up steps in Snowflake
 
-Run the statements in a Snowflake worksheet as `ACCOUNTADMIN`. Replace `ELASTIC_AGENT_ROLE` and `ELASTIC_WH` with an existing role and a warehouse. Use those same names for **Role** and **Warehouse** in Kibana.
+Run the statements in a Snowflake worksheet as `ACCOUNTADMIN`. The statements create `ELASTIC_AGENT_ROLE` if it does not already exist. Replace `ELASTIC_WH` with an existing warehouse. Use those same names for **Role** and **Warehouse** in Kibana.
 
-#### 1. Grant the privileges
+#### 1. Create the role and grant the privileges
 
 The integration role needs `USAGE` on a warehouse, plus the SNOWFLAKE database roles for the data streams you enable. Only `ACCOUNTADMIN` can grant those database roles.
 
@@ -67,6 +67,9 @@ The integration role needs `USAGE` on a warehouse, plus the SNOWFLAKE database r
 
 ```sql
 USE ROLE ACCOUNTADMIN;
+
+CREATE ROLE IF NOT EXISTS ELASTIC_AGENT_ROLE
+  COMMENT = 'Role for the Elastic Snowflake integration';
 
 GRANT USAGE ON WAREHOUSE ELASTIC_WH TO ROLE ELASTIC_AGENT_ROLE;
 
@@ -133,7 +136,7 @@ ALTER USER IF EXISTS ELASTIC_AGENT_USER
 
 1. In Kibana go to **Management → Integrations**.
 2. Search for **Snowflake** and add the integration.
-3. Set the account URL (for example `https://myorg-myaccount.snowflakecomputing.com`), the role, and the warehouse from the grant statements.
+3. Set the account URL (for example `https://myorg-myaccount.snowflakecomputing.com`). PrivateLink hosts (`*.privatelink.snowflakecomputing.com`) are valid. Set the role and the warehouse from the statements above.
 4. Paste the `token_secret` value into **Token**. Username/password, OAuth access tokens, and key-pair JWT are not accepted.
 5. Enable the data streams you want and save the policy.
 
