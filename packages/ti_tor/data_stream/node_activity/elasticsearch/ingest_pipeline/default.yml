@@ -318,13 +318,27 @@ processors:
       target_field: ti_tor.node_activity.routing.ipv6.geo
       ignore_missing: true
       ignore_failure: true
+  - script:
+      tag: script_set_fingerprint_day
+      description: >-
+        Day (UTC) of the relay's last_seen, included in the fingerprint so that every
+        relay still in the consensus gets at least one document per day.
+      lang: painless
+      if: ctx.ti_tor?.node_activity?.last_seen instanceof String && ctx.ti_tor.node_activity.last_seen.length() >= 10
+      source: |-
+        if (!(ctx._tmp instanceof Map)) {
+          ctx._tmp = new HashMap();
+        }
+        ctx._tmp.fingerprint_day = ctx.ti_tor.node_activity.last_seen.substring(0, 10);
   - fingerprint:
       tag: fingerprint_relay_state
       description: >-
-        Hash of the relay attributes that indicate a state change, written to _id.
-        Measured values that vary on every Onionoo refresh (observed and advertised
-        bandwidth) are excluded so that unchanged relays are not re-indexed.
+        Hash of the relay attributes that indicate a state change, plus the day the
+        relay was last seen, written to _id. Measured values that vary on every Onionoo
+        refresh (observed and advertised bandwidth) are excluded, so an unchanged relay
+        is indexed at most once per day.
       fields:
+        - _tmp.fingerprint_day
         - ti_tor.node_activity.fingerprint
         - ti_tor.node_activity.name
         - ti_tor.node_activity.description
@@ -344,8 +358,10 @@ processors:
       method: MD5
       ignore_missing: true
   - remove:
-      tag: remove_routing_addresses
-      field: ti_tor.node_activity.routing.addresses
+      tag: remove_routing_addresses_and_tmp
+      field:
+        - ti_tor.node_activity.routing.addresses
+        - _tmp
       ignore_missing: true
   - script:
       tag: script_flag_details

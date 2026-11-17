@@ -14,13 +14,13 @@ The integration works with the public Onionoo service at `https://onionoo.torpro
 
 Elastic Agent uses the CEL input to request the Onionoo `details` document on a configurable interval (default `3h`; Onionoo refreshes hourly). Each relay in the response becomes one event. The ingest pipeline maps each relay to `ti_tor.node_activity.*`, parses timestamps and AS numbers, splits OR addresses into IPv4 and IPv6 address and port, adds GeoIP and ASN enrichment, and populates the ECS `threat.indicator.*` fields.
 
-The pipeline writes an MD5 fingerprint of the relay's state (flags, addresses, version, configured bandwidth, contact and platform) to `_id`. A relay whose state hasn't changed since the last poll is not indexed again, so Elastic Agent reports version conflicts for unchanged relays. These are expected.
+The pipeline writes an MD5 fingerprint of the relay's state (flags, addresses, version, configured bandwidth, contact and platform) and the day the relay was last seen to `_id`. An unchanged relay is indexed at most once per day, and a state change creates a new document. Elastic Agent reports version conflicts for relays that were already indexed that day. These are expected.
 
 ## What data does this integration collect?
 
 The integration collects one data stream:
 
-- **Node activity** (`logs-ti_tor.node_activity-*`): one document per relay state change. Each document includes the relay nickname, fingerprint, flags (for example, `Exit`, `Guard` and `BadExit`), OR and exit addresses, AS, bandwidth, platform and Tor version, contact, and first and last seen times.
+- **Node activity** (`logs-ti_tor.node_activity-*`): one document per relay per day, plus one for each state change. Each document includes the relay nickname, fingerprint, flags (for example, `Exit`, `Guard` and `BadExit`), OR and exit addresses, AS, bandwidth, platform and Tor version, contact, and first and last seen times.
 
 ### Supported use cases
 
@@ -67,7 +67,7 @@ The relay count should be close to the number of relays listed by [Tor Metrics](
 ## Troubleshooting
 
 - **No data**: check that the agent can reach `onionoo.torproject.org` over HTTPS. Errors from the API are indexed with `error.message` set. To inspect requests and responses, turn on **Enable request tracing** temporarily. Traces are written to the agent's `logs/cel` directory.
-- **Version conflict errors in the agent logs**: these are expected. Unchanged relays produce the same `_id` and are not indexed again.
+- **Version conflict errors in the agent logs**: these are expected. A relay that is unchanged since its last poll that day produces the same `_id` and is not indexed again.
 - **Missing geo or AS fields**: check that the GeoIP databases are available in Elasticsearch.
 
 For problems with the Onionoo service, refer to the [Onionoo documentation](https://metrics.torproject.org/onionoo.html).
@@ -110,7 +110,7 @@ Your copies are not managed, so integration upgrades won't overwrite your key.
 
 ### Node activity
 
-The `node_activity` data stream stores one document per TOR relay state change, as reported by the Onionoo `details` document.
+The `node_activity` data stream stores one document per TOR relay per day, plus one for each state change, as reported by the Onionoo `details` document.
 
 #### Example
 
