@@ -4,48 +4,102 @@
 
 ## Overview
 
-This integration polls the [Onionoo](https://metrics.torproject.org/onionoo.html) `details` API run by the Tor Project and indexes every TOR relay as a threat intelligence indicator (`event.kind: enrichment`, `event.type: indicator`).
+The TOR Node Activity integration collects relay data from the Tor Project's [Onionoo](https://metrics.torproject.org/onionoo.html) `details` API and indexes every TOR relay as a threat intelligence indicator. Use it to enrich events with TOR relay context and to detect traffic to or from TOR exit and relay addresses, for example with indicator match rules.
 
-Each document describes one relay: nickname, fingerprint, flags (Exit, Guard, BadExit, ...), OR (routing) and exit addresses, bandwidth, platform/version, contact, and first/last seen times. Exit and OR addresses get GeoIP and ASN enrichment, and are copied into the ECS `threat.indicator.*` fields so they can be used in indicator match rules.
+### Compatibility
 
-## Data streams
+The integration works with the public Onionoo service at `https://onionoo.torproject.org` and with any Onionoo instance that serves the same `details` document (protocol version 9.0 or later).
 
-**node_activity** (`logs-ti_tor.node_activity-*`) holds one document per relay per change. The pipeline writes an MD5 fingerprint of the relay's state to `_id`, so a relay whose attributes have not changed since the last poll is not indexed again. Elastic Agent reports these as version conflicts, which is expected.
+### How it works
 
-## Requirements
+Elastic Agent uses the CEL input to request the Onionoo `details` document on a configurable interval (default `3h`; Onionoo refreshes hourly). Each relay in the response becomes one event. The ingest pipeline maps each relay to `ti_tor.node_activity.*`, parses timestamps and AS numbers, splits OR addresses into IPv4 and IPv6 address and port, adds GeoIP and ASN enrichment, and populates the ECS `threat.indicator.*` fields.
 
-- Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). The agent needs outbound HTTPS access to `onionoo.torproject.org` (directly or through the proxy setting).
-- The built-in GeoIP databases (`GeoLite2-City`, `GeoLite2-ASN`) for geo/ASN enrichment.
+The pipeline writes an MD5 fingerprint of the relay's state (flags, addresses, version, configured bandwidth, contact and platform) to `_id`. A relay whose state hasn't changed since the last poll is not indexed again, so Elastic Agent reports version conflicts for unchanged relays. These are expected.
 
-## Setup
+## What data does this integration collect?
 
-1. Add the **TOR Node Activity** integration to an agent policy.
-2. Optional: change the polling interval (default `3h`; Onionoo refreshes hourly) or the list of Onionoo `fields` requested.
+The integration collects one data stream:
+
+- **Node activity** (`logs-ti_tor.node_activity-*`): one document per relay state change. Each document includes the relay nickname, fingerprint, flags (for example, `Exit`, `Guard` and `BadExit`), OR and exit addresses, AS, bandwidth, platform and Tor version, contact, and first and last seen times.
+
+### Supported use cases
+
+- Match network, firewall, proxy or authentication events against TOR exit and relay addresses with indicator match rules.
+- Track relay state changes, such as relays gaining or losing the `Exit` or `BadExit` flag.
+- Review TOR exit capacity by country and AS, and Tor version adoption, with the included dashboard and map.
+
+## What do I need to use this integration?
+
+- Elastic Agent with outbound HTTPS access to `onionoo.torproject.org`, directly or through a proxy. The Onionoo API needs no credentials.
+- The Elasticsearch GeoIP databases (`GeoLite2-City` and `GeoLite2-ASN`) for geographic and ASN enrichment. These are downloaded by default.
+
+## How do I deploy this integration?
+
+### Agent-based deployment
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
+
+Elastic Agent is required to stream data from the Onionoo API and ship it to Elastic, where the events are processed by the integration's ingest pipeline.
+
+### Onboard and configure
+
+1. In Kibana, go to **Management > Integrations** and search for **TOR Node Activity**.
+2. Click **Add TOR Node Activity**.
+3. Optional: change the settings:
+   - **Onionoo details URL**: the `details` endpoint. Defaults to `https://onionoo.torproject.org/details`.
+   - **Interval**: how often to poll. Defaults to `3h`.
+   - **Onionoo fields** (advanced): the relay fields to request, sent as the `fields` query parameter. Leave empty to request every field.
+   - **Proxy URL**, **SSL configuration** and **HTTP client timeout** (advanced) for restricted networks.
+4. Add the integration to an agent policy and save.
 
 To add your own processing, create the `logs-ti_tor.node_activity@custom` ingest pipeline. It runs after the integration pipeline.
+
+### Validation
+
+After the first poll, open the **[TOR Node Activity] Overview** dashboard, or run this ES|QL query in Discover:
+
+```
+FROM logs-ti_tor.node_activity-* | STATS relays = COUNT_DISTINCT(ti_tor.node_activity.fingerprint)
+```
+
+The relay count should be close to the number of relays listed by [Tor Metrics](https://metrics.torproject.org/networksize.html).
+
+## Troubleshooting
+
+- **No data**: check that the agent can reach `onionoo.torproject.org` over HTTPS. Errors from the API are indexed with `error.message` set. To inspect requests and responses, turn on **Enable request tracing** temporarily. Traces are written to the agent's `logs/cel` directory.
+- **Version conflict errors in the agent logs**: these are expected. Unchanged relays produce the same `_id` and are not indexed again.
+- **Missing geo or AS fields**: check that the GeoIP databases are available in Elasticsearch.
+
+For problems with the Onionoo service, refer to the [Onionoo documentation](https://metrics.torproject.org/onionoo.html).
+
+## Performance and scaling
+
+A full `details` response describes about 10,000 relays, which yields up to the same number of events per poll. Requesting only the default set of fields keeps the response small. Onionoo updates hourly, so an interval shorter than `1h` adds load without adding data. One agent is enough for this integration.
+
+For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
 ## Dashboard and map
 
 The integration installs:
 
-- **[TOR Node Activity] Overview** dashboard: relay, exit, BadExit and country counts; exit relays by country; relays by AS organization; relay state changes over time; Tor version status and top versions; and a table of exit relays by observed bandwidth.
-- **TOR-Threat Intel Country Activity** map, embedded in the dashboard. It shows exit/indicator IPs (`threat.indicator.geo.location`) and shades countries by indicator count.
+- **[TOR Node Activity] Overview** dashboard: relay, exit, `BadExit` and country counts; exit relays by country; relays by AS organization; relay state changes over time; Tor version status and top versions; and a table of exit relays by observed bandwidth.
+- **TOR-Threat Intel Country Activity** map, embedded in the dashboard. It shows indicator IPs (`threat.indicator.geo.location`) and shades countries by indicator count.
 
-The map uses the Elastic Maps Service basemap by default. It also has four optional [MapTiler](https://www.maptiler.com/) raster base layers (Street Map, Black & White Map, Street Map - Colored, Satellite Map). These need your own MapTiler API key. They ship with the placeholder `YOUR_MAPTILER_API_KEY` and are hidden.
+The map uses the Elastic Maps Service basemap by default. It also has four optional [MapTiler](https://www.maptiler.com/) raster base layers (Street Map, Black & White Map, Street Map - Colored and Satellite Map). These need your own MapTiler API key. They ship hidden, with the placeholder `YOUR_MAPTILER_API_KEY`.
 
-### Getting a MapTiler API key
+### Get a MapTiler API key
 
-1. Go to <https://cloud.maptiler.com/> and sign up for a free account (the free tier is for non-commercial use with a monthly request quota; see <https://www.maptiler.com/cloud/pricing/>).
-2. Sign in to MapTiler Cloud and open **Account → API keys** (<https://cloud.maptiler.com/account/keys/>). A default key is created for you; click **New key** to make a dedicated one, e.g. "Kibana TOR map".
-3. Recommended: restrict the key. In the key's settings, under **Allowed HTTP origins**, add your Kibana origin (e.g. `https://kibana.example.com:5601`). Map tiles are fetched by each viewer's browser, so anyone who can open the map can see the key; the origin restriction stops it from being reused elsewhere.
+1. Go to <https://cloud.maptiler.com/> and sign up for a free account. The free tier is for non-commercial use with a monthly request quota. For details, check <https://www.maptiler.com/cloud/pricing/>.
+2. Sign in to MapTiler Cloud and open **Account > API keys** (<https://cloud.maptiler.com/account/keys/>). A default key is created for you. Click **New key** to make a dedicated one, for example `Kibana TOR map`.
+3. Recommended: restrict the key. In the key's settings, under **Allowed HTTP origins**, add your Kibana origin, for example `https://kibana.example.com:5601`. Each viewer's browser fetches the map tiles, so anyone who can open the map can see the key. The origin restriction stops it from being reused elsewhere.
 4. Copy the key.
 
-### Adding the key to the map
+### Add the key to the map
 
-Maps installed by the integration are managed by Fleet, so Kibana saves your changes as a new map:
+Fleet manages the maps installed by the integration, so Kibana saves your changes as a new map:
 
-1. In Kibana, open **Analytics → Maps → TOR-Threat Intel Country Activity**.
-2. In the layer list, for each MapTiler layer (Street Map, Black & White Map, Street Map - Colored, Satellite Map), click the layer → **Edit layer settings**, and in the **Url** field replace `YOUR_MAPTILER_API_KEY` with your key.
+1. In Kibana, open **Analytics > Maps > TOR-Threat Intel Country Activity**.
+2. In the layer list, for each MapTiler layer, click the layer, then **Edit layer settings**. In the **Url** field, replace `YOUR_MAPTILER_API_KEY` with your key.
 3. Make the layer you want visible (for example **Satellite Map**) using the eye icon.
 4. Click **Save as** and save the copy under a new name.
 5. To show it on the dashboard, open **[TOR Node Activity] Overview**, choose **Save as** to make an editable copy, remove the existing map panel, and use **Add from library** to add your new map.
@@ -83,7 +137,7 @@ An example event for `node_activity` looks as following:
         "version": "9.5.6"
     },
     "input": {
-        "type": "httpjson"
+        "type": "cel"
     },
     "ecs": {
         "version": "9.4.0"
@@ -137,81 +191,50 @@ An example event for `node_activity` looks as following:
             "type": "ipv4-addr"
         }
     },
-    "tor": {
-        "as": {
-            "number": 29518,
-            "organization": {
-                "name": "Bredband2 AB"
-            }
-        },
-        "bandwidth": {
-            "advertised": 8916992,
-            "burst": 1073741824,
-            "observed": 8916992,
-            "rate": 1073741824
-        },
-        "contact": {
-            "original": "email:abuse[]example.net"
-        },
-        "description": [
-            "Exit",
-            "Fast",
-            "Guard",
-            "HSDir",
-            "Running",
-            "Stable",
-            "V2Dir",
-            "Valid"
-        ],
-        "detail": {
-            "Exit": "Relay allows traffic to exit the Tor network.",
-            "Fast": "Relay has high bandwidth, based on observed performance.",
-            "Guard": "Relay is suitable for use as an entry node.",
-            "HSDir": "Relay stores hidden service descriptors (used in onion services).",
-            "Running": "Relay is currently running.",
-            "Stable": "Relay has been up for a long time consistently.",
-            "Valid": "Relay is considered \"valid\" by directory authorities."
-        },
-        "exit": {
+    "ti_tor": {
+        "node_activity": {
             "as": {
-                "network": "89.160.0.0/17",
                 "number": 29518,
                 "organization": {
                     "name": "Bredband2 AB"
                 }
             },
-            "geo": {
-                "city_name": "Linköping",
-                "continent_name": "Europe",
-                "country_iso_code": "SE",
-                "country_name": "Sweden",
-                "location": {
-                    "lat": 58.4167,
-                    "lon": 15.6167
-                },
-                "region_iso_code": "SE-E",
-                "region_name": "Östergötland County"
+            "bandwidth": {
+                "advertised": 8916992,
+                "burst": 1073741824,
+                "observed": 8916992,
+                "rate": 1073741824
             },
-            "ip": [
-                "89.160.20.112"
-            ]
-        },
-        "fingerprint": "0011223344556677889900AABBCCDDEEFF001122",
-        "first_seen": "2014-03-05T10:00:00.000Z",
-        "hibernating": false,
-        "hostname": {
-            "verified": [
-                "exit01.example.net"
-            ]
-        },
-        "last_changed": "2026-04-06T23:00:00.000Z",
-        "last_restarted": "2026-11-01T20:40:47.000Z",
-        "last_seen": "2026-11-14T19:00:00.000Z",
-        "name": "ExampleExit01",
-        "platform": "Tor 0.4.9.17 on Linux",
-        "recommended_version": true,
-        "routing": {
-            "ipv4": {
+            "contact": {
+                "original": "email:abuse[]example.net"
+            },
+            "description": [
+                "Exit",
+                "Fast",
+                "Guard",
+                "HSDir",
+                "Running",
+                "Stable",
+                "V2Dir",
+                "Valid"
+            ],
+            "detail": {
+                "Exit": "Relay allows traffic to exit the Tor network.",
+                "Fast": "Relay has high bandwidth, based on observed performance.",
+                "Guard": "Relay is suitable for use as an entry node.",
+                "HSDir": "Relay stores hidden service descriptors (used in onion services).",
+                "Running": "Relay is currently running.",
+                "Stable": "Relay has been up for a long time consistently.",
+                "Valid": "Relay is considered \"valid\" by directory authorities."
+            },
+            "exit": {
+                "as": {
+                    "network": "89.160.0.0/17",
+                    "number": 29518,
+                    "organization": {
+                        "name": "Bredband2 AB"
+                    }
+                },
                 "geo": {
                     "city_name": "Linköping",
                     "continent_name": "Europe",
@@ -224,29 +247,64 @@ An example event for `node_activity` looks as following:
                     "region_iso_code": "SE-E",
                     "region_name": "Östergötland County"
                 },
-                "ip": "89.160.20.128",
-                "port": 9001
+                "ip": [
+                    "89.160.20.112"
+                ]
             },
-            "ipv6": {
-                "geo": {
-                    "continent_name": "Europe",
-                    "country_iso_code": "NO",
-                    "country_name": "Norway",
-                    "location": {
-                        "lat": 62.0,
-                        "lon": 10.0
-                    }
+            "fingerprint": "0011223344556677889900AABBCCDDEEFF001122",
+            "first_seen": "2014-03-05T10:00:00.000Z",
+            "hibernating": false,
+            "hostname": {
+                "verified": [
+                    "exit01.example.net"
+                ]
+            },
+            "last_changed": "2026-04-06T23:00:00.000Z",
+            "last_restarted": "2026-11-01T20:40:47.000Z",
+            "last_seen": "2026-11-14T19:00:00.000Z",
+            "name": "ExampleExit01",
+            "platform": "Tor 0.4.9.17 on Linux",
+            "recommended_version": true,
+            "routing": {
+                "ipv4": {
+                    "geo": {
+                        "city_name": "Linköping",
+                        "continent_name": "Europe",
+                        "country_iso_code": "SE",
+                        "country_name": "Sweden",
+                        "location": {
+                            "lat": 58.4167,
+                            "lon": 15.6167
+                        },
+                        "region_iso_code": "SE-E",
+                        "region_name": "Östergötland County"
+                    },
+                    "ip": "89.160.20.128",
+                    "port": 9001
                 },
-                "ip": "2a02:cf40::1",
-                "port": 9001
-            }
-        },
-        "running": true,
-        "version": "0.4.9.17",
-        "version_status": "recommended"
+                "ipv6": {
+                    "geo": {
+                        "continent_name": "Europe",
+                        "country_iso_code": "NO",
+                        "country_name": "Norway",
+                        "location": {
+                            "lat": 62.0,
+                            "lon": 10.0
+                        }
+                    },
+                    "ip": "2a02:cf40::1",
+                    "port": 9001
+                }
+            },
+            "running": true,
+            "version": "0.4.9.17",
+            "version_status": "recommended"
+        }
     }
 }
 ```
+
+#### Exported fields
 
 **Exported fields**
 
@@ -283,85 +341,97 @@ An example event for `node_activity` looks as following:
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
 | threat.indicator.name | The display name indicator in an UI friendly format URL, IP address, email address, registry key, port number, hash value, or other relevant name can serve as the display name. | keyword |
 | threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
-| tor.as.number | Relay autonomous system number as reported by Onionoo. | long |
-| tor.as.organization.name | Relay autonomous system name as reported by Onionoo. | keyword |
-| tor.bandwidth.advertised | Advertised bandwidth in bytes per second. | long |
-| tor.bandwidth.burst | Burst bandwidth in bytes per second. | long |
-| tor.bandwidth.observed | Observed bandwidth in bytes per second. | long |
-| tor.bandwidth.rate | Average bandwidth in bytes per second the relay is willing to sustain. | long |
-| tor.consensus.weight | Consensus weight. | long |
-| tor.consensus.weight_fraction | Fraction of the consensus weight. | double |
-| tor.contact.original | Operator contact information. | match_only_text |
-| tor.description | Relay flags assigned by the directory authorities (Onionoo `flags`). | keyword |
-| tor.detail.Authority | Description of the Authority flag, present when the relay has it. | keyword |
-| tor.detail.BadExit | Description of the BadExit flag, present when the relay has it. | keyword |
-| tor.detail.Exit | Description of the Exit flag, present when the relay has it. | keyword |
-| tor.detail.Fast | Description of the Fast flag, present when the relay has it. | keyword |
-| tor.detail.Guard | Description of the Guard flag, present when the relay has it. | keyword |
-| tor.detail.HSDir | Description of the HSDir flag, present when the relay has it. | keyword |
-| tor.detail.NoEdConsensus | Description of the NoEdConsensus flag, present when the relay has it. | keyword |
-| tor.detail.Running | Description of the Running flag, present when the relay has it. | keyword |
-| tor.detail.Stable | Description of the Stable flag, present when the relay has it. | keyword |
-| tor.detail.Unnamed | Description of the Unnamed flag, present when the relay has it. | keyword |
-| tor.detail.Valid | Description of the Valid flag, present when the relay has it. | keyword |
-| tor.exit.as.network | AS network of the exit address. | ip_range |
-| tor.exit.as.number | ASN of the exit address. | long |
-| tor.exit.as.organization.name | AS organization of the exit address. | keyword |
-| tor.exit.geo.city_name |  | keyword |
-| tor.exit.geo.continent_name |  | keyword |
-| tor.exit.geo.country_iso_code |  | keyword |
-| tor.exit.geo.country_name |  | keyword |
-| tor.exit.geo.location |  | geo_point |
-| tor.exit.geo.region_iso_code |  | keyword |
-| tor.exit.geo.region_name |  | keyword |
-| tor.exit.ip | Exit addresses. | ip |
-| tor.exit.policy.ipv4.accept | IPv4 exit policy summary: accepted ports. | keyword |
-| tor.exit.policy.ipv4.reject | IPv4 exit policy summary: rejected ports. | keyword |
-| tor.exit.policy.ipv6.accept | IPv6 exit policy summary: accepted ports. | keyword |
-| tor.exit.policy.ipv6.reject | IPv6 exit policy summary: rejected ports. | keyword |
-| tor.exit.probability | Probability of the relay being selected as exit. | half_float |
-| tor.exit_policy | Exit policy lines. | keyword |
-| tor.family.alleged | Relays this relay claims as family members. | keyword |
-| tor.family.effective | Relays in a mutual family relationship. | keyword |
-| tor.family.indirect | Relays indirectly in this relay's family. | keyword |
-| tor.fingerprint | Relay fingerprint (40 upper-case hex characters). | keyword |
-| tor.first_seen | When the relay was first seen in a consensus. | date |
-| tor.guard.probability | Probability of the relay being selected as guard. | half_float |
-| tor.hibernating | Whether the relay reported being hibernating. | boolean |
-| tor.hostname.unverified | Unverified reverse DNS host names. | keyword |
-| tor.hostname.verified | Verified reverse DNS host names. | keyword |
-| tor.last_changed | When the relay last changed its OR address or port. | date |
-| tor.last_restarted | When the relay was last (re-)started. | date |
-| tor.last_seen | When the relay was last seen in a consensus. | date |
-| tor.measured | Whether the relay's consensus weight is based on bandwidth measurements. | boolean |
-| tor.middle.probability | Probability of the relay being selected as middle. | half_float |
-| tor.name | Relay nickname. | keyword |
-| tor.overload | When the relay last reported being overloaded. | date |
-| tor.platform | Platform string (Tor version and operating system). | keyword |
-| tor.recommended_version | Whether the Tor version is recommended by the directory authorities. | boolean |
-| tor.routing.ipv4.geo.city_name |  | keyword |
-| tor.routing.ipv4.geo.continent_name |  | keyword |
-| tor.routing.ipv4.geo.country_iso_code |  | keyword |
-| tor.routing.ipv4.geo.country_name |  | keyword |
-| tor.routing.ipv4.geo.location |  | geo_point |
-| tor.routing.ipv4.geo.region_iso_code |  | keyword |
-| tor.routing.ipv4.geo.region_name |  | keyword |
-| tor.routing.ipv4.ip | First IPv4 OR address. | ip |
-| tor.routing.ipv4.port | First IPv4 OR port. | long |
-| tor.routing.ipv6.geo.city_name |  | keyword |
-| tor.routing.ipv6.geo.continent_name |  | keyword |
-| tor.routing.ipv6.geo.country_iso_code |  | keyword |
-| tor.routing.ipv6.geo.country_name |  | keyword |
-| tor.routing.ipv6.geo.location |  | geo_point |
-| tor.routing.ipv6.geo.region_iso_code |  | keyword |
-| tor.routing.ipv6.geo.region_name |  | keyword |
-| tor.routing.ipv6.ip | First IPv6 OR address. | ip |
-| tor.routing.ipv6.port | First IPv6 OR port. | long |
-| tor.running | Whether the relay was listed as running in the last consensus. | boolean |
-| tor.version | Tor software version. | keyword |
-| tor.version_status | Status of the Tor version (recommended, obsolete, experimental...). | keyword |
+| ti_tor.node_activity.as.number | Relay autonomous system number as reported by Onionoo. | long |
+| ti_tor.node_activity.as.organization.name | Relay autonomous system name as reported by Onionoo. | keyword |
+| ti_tor.node_activity.bandwidth.advertised | Advertised bandwidth in bytes per second. | long |
+| ti_tor.node_activity.bandwidth.burst | Burst bandwidth in bytes per second. | long |
+| ti_tor.node_activity.bandwidth.observed | Observed bandwidth in bytes per second. | long |
+| ti_tor.node_activity.bandwidth.rate | Average bandwidth in bytes per second the relay is willing to sustain. | long |
+| ti_tor.node_activity.consensus.weight | Consensus weight. | long |
+| ti_tor.node_activity.consensus.weight_fraction | Fraction of the consensus weight. | double |
+| ti_tor.node_activity.contact.original | Operator contact information. | match_only_text |
+| ti_tor.node_activity.description | Relay flags assigned by the directory authorities (Onionoo `flags`). | keyword |
+| ti_tor.node_activity.detail.Authority | Description of the Authority flag, present when the relay has it. | keyword |
+| ti_tor.node_activity.detail.BadExit | Description of the BadExit flag, present when the relay has it. | keyword |
+| ti_tor.node_activity.detail.Exit | Description of the Exit flag, present when the relay has it. | keyword |
+| ti_tor.node_activity.detail.Fast | Description of the Fast flag, present when the relay has it. | keyword |
+| ti_tor.node_activity.detail.Guard | Description of the Guard flag, present when the relay has it. | keyword |
+| ti_tor.node_activity.detail.HSDir | Description of the HSDir flag, present when the relay has it. | keyword |
+| ti_tor.node_activity.detail.NoEdConsensus | Description of the NoEdConsensus flag, present when the relay has it. | keyword |
+| ti_tor.node_activity.detail.Running | Description of the Running flag, present when the relay has it. | keyword |
+| ti_tor.node_activity.detail.Stable | Description of the Stable flag, present when the relay has it. | keyword |
+| ti_tor.node_activity.detail.Unnamed | Description of the Unnamed flag, present when the relay has it. | keyword |
+| ti_tor.node_activity.detail.Valid | Description of the Valid flag, present when the relay has it. | keyword |
+| ti_tor.node_activity.exit.as.network | AS network of the exit address. | ip_range |
+| ti_tor.node_activity.exit.as.number | ASN of the exit address. | long |
+| ti_tor.node_activity.exit.as.organization.name | AS organization of the exit address. | keyword |
+| ti_tor.node_activity.exit.geo.city_name |  | keyword |
+| ti_tor.node_activity.exit.geo.continent_name |  | keyword |
+| ti_tor.node_activity.exit.geo.country_iso_code |  | keyword |
+| ti_tor.node_activity.exit.geo.country_name |  | keyword |
+| ti_tor.node_activity.exit.geo.location |  | geo_point |
+| ti_tor.node_activity.exit.geo.region_iso_code |  | keyword |
+| ti_tor.node_activity.exit.geo.region_name |  | keyword |
+| ti_tor.node_activity.exit.ip | Exit addresses. | ip |
+| ti_tor.node_activity.exit.policy.ipv4.accept | IPv4 exit policy summary: accepted ports. | keyword |
+| ti_tor.node_activity.exit.policy.ipv4.reject | IPv4 exit policy summary: rejected ports. | keyword |
+| ti_tor.node_activity.exit.policy.ipv6.accept | IPv6 exit policy summary: accepted ports. | keyword |
+| ti_tor.node_activity.exit.policy.ipv6.reject | IPv6 exit policy summary: rejected ports. | keyword |
+| ti_tor.node_activity.exit.probability | Probability of the relay being selected as exit. | half_float |
+| ti_tor.node_activity.exit_policy | Exit policy lines. | keyword |
+| ti_tor.node_activity.family.alleged | Relays this relay claims as family members. | keyword |
+| ti_tor.node_activity.family.effective | Relays in a mutual family relationship. | keyword |
+| ti_tor.node_activity.family.indirect | Relays indirectly in this relay's family. | keyword |
+| ti_tor.node_activity.fingerprint | Relay fingerprint (40 upper-case hex characters). | keyword |
+| ti_tor.node_activity.first_seen | When the relay was first seen in a consensus. | date |
+| ti_tor.node_activity.guard.probability | Probability of the relay being selected as guard. | half_float |
+| ti_tor.node_activity.hibernating | Whether the relay reported being hibernating. | boolean |
+| ti_tor.node_activity.hostname.unverified | Unverified reverse DNS host names. | keyword |
+| ti_tor.node_activity.hostname.verified | Verified reverse DNS host names. | keyword |
+| ti_tor.node_activity.last_changed | When the relay last changed its OR address or port. | date |
+| ti_tor.node_activity.last_restarted | When the relay was last (re-)started. | date |
+| ti_tor.node_activity.last_seen | When the relay was last seen in a consensus. | date |
+| ti_tor.node_activity.measured | Whether the relay's consensus weight is based on bandwidth measurements. | boolean |
+| ti_tor.node_activity.middle.probability | Probability of the relay being selected as middle. | half_float |
+| ti_tor.node_activity.name | Relay nickname. | keyword |
+| ti_tor.node_activity.overload | When the relay last reported being overloaded. | date |
+| ti_tor.node_activity.platform | Platform string (Tor version and operating system). | keyword |
+| ti_tor.node_activity.recommended_version | Whether the Tor version is recommended by the directory authorities. | boolean |
+| ti_tor.node_activity.routing.ipv4.geo.city_name |  | keyword |
+| ti_tor.node_activity.routing.ipv4.geo.continent_name |  | keyword |
+| ti_tor.node_activity.routing.ipv4.geo.country_iso_code |  | keyword |
+| ti_tor.node_activity.routing.ipv4.geo.country_name |  | keyword |
+| ti_tor.node_activity.routing.ipv4.geo.location |  | geo_point |
+| ti_tor.node_activity.routing.ipv4.geo.region_iso_code |  | keyword |
+| ti_tor.node_activity.routing.ipv4.geo.region_name |  | keyword |
+| ti_tor.node_activity.routing.ipv4.ip | First IPv4 OR address. | ip |
+| ti_tor.node_activity.routing.ipv4.port | First IPv4 OR port. | long |
+| ti_tor.node_activity.routing.ipv6.geo.city_name |  | keyword |
+| ti_tor.node_activity.routing.ipv6.geo.continent_name |  | keyword |
+| ti_tor.node_activity.routing.ipv6.geo.country_iso_code |  | keyword |
+| ti_tor.node_activity.routing.ipv6.geo.country_name |  | keyword |
+| ti_tor.node_activity.routing.ipv6.geo.location |  | geo_point |
+| ti_tor.node_activity.routing.ipv6.geo.region_iso_code |  | keyword |
+| ti_tor.node_activity.routing.ipv6.geo.region_name |  | keyword |
+| ti_tor.node_activity.routing.ipv6.ip | First IPv6 OR address. | ip |
+| ti_tor.node_activity.routing.ipv6.port | First IPv6 OR port. | long |
+| ti_tor.node_activity.running | Whether the relay was listed as running in the last consensus. | boolean |
+| ti_tor.node_activity.version | Tor software version. | keyword |
+| ti_tor.node_activity.version_status | Status of the Tor version (recommended, obsolete, experimental...). | keyword |
 
+
+### Inputs used
+
+These inputs can be used with this integration:
+
+- [CEL](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
+
+### API usage
+
+This integration uses the following API:
+
+- [Onionoo `details` document](https://metrics.torproject.org/onionoo.html#details)
 
 ## Credits
 
-Icon: "Tor Icon Flat" by The Tor Project, Inc., [CC BY 3.0 US](https://creativecommons.org/licenses/by/3.0/us/), via [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Tor_Icon_Flat.svg); Inkscape metadata removed and padded to a square viewBox.
+Icon: "Tor Icon Flat" by The Tor Project, Inc., [CC BY 3.0 US](https://creativecommons.org/licenses/by/3.0/us/), via [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Tor_Icon_Flat.svg). Inkscape metadata removed and padded to a square viewBox.
