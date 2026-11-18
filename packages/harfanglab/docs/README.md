@@ -51,7 +51,7 @@ When adding the integration to an Agent policy, enable the input for your chosen
 
 | Setting | Type | Default | Description |
 | --- | --- | --- | --- |
-| Listen address | text | `0.0.0.0` | Bind address the HTTP endpoint listens on. |
+| Listen address | text | `localhost` | Bind address the HTTP endpoint listens on. Defaults to loopback, so the endpoint is not reachable from the network until it is deliberately exposed. When HarfangLab agents push from other hosts, bind to a reachable address and authenticate the senders with the secret header, TLS client authentication, or both. |
 | Listen port | integer | `8080` | Port the HTTP endpoint listens on. |
 | Secret header name | text | `Authorization` | Name of the HTTP request header used to authenticate incoming requests. |
 | Secret header value | password | _(none)_ | Expected value of the secret header. When set, requests without a matching header value are rejected. Leave empty to disable header authentication. |
