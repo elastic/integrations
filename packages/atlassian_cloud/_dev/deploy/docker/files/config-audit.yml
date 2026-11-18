@@ -470,9 +470,10 @@ rules:
             }
           }
           ` }}
-  # Round 3, page 2 — only Ivy, still too recent: nothing is collected, the CEL
-  # program publishes a placeholder that the agent drops, and last_timestamp =
-  # Henry's processedAt (1779185402000 ms).
+  # Round 3, page 2 — the head of the stream: no events, but a next cursor, as
+  # Atlassian returns on the last page. The CEL program ends the poll, publishes
+  # a placeholder that the agent drops, and does not keep the token, so the next
+  # poll queries from Henry's processedAt (1779185402000 ms) again.
   - path: /admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream
     methods: ["GET"]
     query_params:
@@ -491,31 +492,7 @@ rules:
         body: |-
           {{ minify_json `
           {
-            "data": [
-              {
-                "type": "events",
-                "id": "a1000010-0000-4000-8000-000000000010",
-                "attributes": {
-                  "time": "2099-01-01T00:00:00.000Z",
-                  "processedAt": "2099-01-01T00:00:00.000Z",
-                  "action": "user_login",
-                  "actor": {
-                    "id": "712020:77777777-aaaa-bbbb-cccc-dddddddddddd",
-                    "name": "Ivy Chen",
-                    "email": "ivy.chen@example.com"
-                  },
-                  "location": {
-                    "ip": "198.51.100.80",
-                    "countryName": "Example Country",
-                    "city": "Example City"
-                  }
-                },
-                "message": {
-                  "content": "Ivy Chen logged in",
-                  "format": "simple"
-                }
-              }
-            ],
+            "data": [],
             "links": {
               "next": "https://api.atlassian.com/admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream?cursor=canary-round-3"
             },
@@ -604,9 +581,9 @@ rules:
             }
           }
           ` }}
-  # Canary — the next cursor of a page that reached Ivy. The CEL program must not
-  # request it; if it does, the canary event is collected and the hit count no
-  # longer matches.
+  # Canary — the next cursor of a page that reached Ivy, or of an empty page. The
+  # CEL program must not request it; if it does, the canary event is collected
+  # and the hit count no longer matches.
   - path: /admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream
     methods: ["GET"]
     query_params:

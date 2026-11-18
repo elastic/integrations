@@ -74,46 +74,44 @@ program: |-
         }).do_request().as(resp,
           (resp.StatusCode == 200) ?
             resp.Body.decode_json().as(body,
-              (
-                (has(body.meta) && has(body.meta.next) && body.meta.next != null) ?
+              body.?data.orValue([]).map(e, {
+                "event": e,
+                "ms": timestamp(e.attributes.processedAt).as(t, int(t) * 1000 + t.getMilliseconds()),
+              }).as(page, {
+                "page": page,
+                // Pages are in processedAt order, and pages after the first are not
+                // limited by to. Stop at the first event after the cutoff and leave
+                // the rest for a later poll.
+                "ready": page.filter(p, p.ms <= cutoff),
+                "next": (has(body.meta) && has(body.meta.next) && body.meta.next != null) ?
                   string(body.meta.next)
                 :
-                  ""
-              ).as(next,
-                body.?data.orValue([]).map(e, {
-                  "event": e,
-                  "ms": timestamp(e.attributes.processedAt).as(t, int(t) * 1000 + t.getMilliseconds()),
-                }).as(page,
-                  // Pages are in processedAt order, and pages after the first are not
-                  // limited by to. Stop at the first event after the cutoff and leave
-                  // the rest for a later poll.
-                  page.filter(p, p.ms <= cutoff).as(ready,
-                    ready.filter(p, !(p.ms == int(from_millis) && p.event.id in last_ids)).as(unseen,
-                      // Only advance to a collected event. A last page with no events does
-                      // not mean that no event before the current time remains to be read.
-                      ((size(ready) > 0) ? ready[size(ready) - 1].ms : int(from_millis)).as(last,
-                        (next != "" && size(ready) == size(page)).as(keep_next, {
-                          // Publish a placeholder, which the agent drops, when nothing is new,
-                          // so that the cursor is stored and paging is not cut short.
-                          "events": (size(unseen) > 0) ?
-                            unseen.map(p, {"message": p.event.encode_json()})
-                          :
-                            [{"message": "retry"}],
-                          "cursor": {
-                            ?"token": keep_next ? optional.of(next) : optional.none(),
-                            "last_timestamp": string(last),
-                            "last_ids": ((last == int(from_millis)) ? last_ids : []) +
-                              unseen.map(p, p.ms == last, p.event.id),
-                          },
-                          // The last page of the stream has a next cursor for later polls, so
-                          // an empty page with one is kept for the next poll, not requested now.
-                          "want_more": keep_next && size(page) > 0,
-                        })
-                      )
-                    )
-                  )
-                )
-              )
+                  "",
+              }).as(r, {
+                "unseen": r.ready.filter(p, !(p.ms == int(from_millis) && p.event.id in last_ids)),
+                // Only advance to a collected event. A last page with no events does
+                // not mean that no event before the current time remains to be read.
+                "last": (size(r.ready) > 0) ? r.ready[size(r.ready) - 1].ms : int(from_millis),
+                // Follow next only from a page whose events are all before the cutoff.
+                // An empty page ends the poll even with a next cursor, which Atlassian
+                // returns on the last page, so the next poll queries from last_timestamp.
+                "more": r.next != "" && size(r.page) > 0 && size(r.ready) == size(r.page),
+                "next": r.next,
+              }).as(v, {
+                // Publish a placeholder, which the agent drops, when nothing is new, so
+                // that the cursor is stored and paging is not cut short.
+                "events": (size(v.unseen) > 0) ?
+                  v.unseen.map(p, {"message": p.event.encode_json()})
+                :
+                  [{"message": "retry"}],
+                "cursor": {
+                  ?"token": v.more ? optional.of(v.next) : optional.none(),
+                  "last_timestamp": string(v.last),
+                  "last_ids": ((v.last == int(from_millis)) ? last_ids : []) +
+                    v.unseen.map(p, p.ms == v.last, p.event.id),
+                },
+                "want_more": v.more,
+              })
             )
           :
             {
