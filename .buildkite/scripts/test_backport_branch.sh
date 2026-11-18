@@ -701,7 +701,32 @@ assert_equals "existing key → not duplicated" \
     "1" \
     "$(grep -cE '^\s*ELASTIC_PACKAGE_KIBANA_SKIP_UPLOAD_PACKAGE_VALIDATION:' "${pipeline}")"
 
-# 3. Empty line (base commit did not define the variable) → file untouched
+# 3. pipeline.serverless.yml shape: blank line before env:, step-level env: blocks
+pipeline="${TMPDIR_PIPELINE}/serverless.yml"
+{
+    printf '# yaml-language-server: $schema=https://example.invalid/schema.json\n'
+    printf '\n'
+    printf 'env:\n'
+    printf '  SETUP_GVM_VERSION: "v0.6.0"\n'
+    printf '\n'
+    printf 'steps:\n'
+    printf '  - label: "noop"\n'
+    printf '    command: "true"\n'
+    printf '    env:\n'
+    printf '      SERVERLESS: "true"\n'
+} > "${pipeline}"
+restore_pipeline_env_line "${pipeline}" '  ELASTIC_PACKAGE_KIBANA_SKIP_UPLOAD_PACKAGE_VALIDATION: "true"'
+assert_equals "serverless shape → inserted in the top-level env block" \
+    "true" \
+    "$(yq -r '.env.ELASTIC_PACKAGE_KIBANA_SKIP_UPLOAD_PACKAGE_VALIDATION' "${pipeline}")"
+assert_equals "serverless shape → step-level env block is left untouched" \
+    "null" \
+    "$(yq -r '.steps[0].env.ELASTIC_PACKAGE_KIBANA_SKIP_UPLOAD_PACKAGE_VALIDATION' "${pipeline}")"
+assert_equals "serverless shape → step-level env entries are kept" \
+    "true" \
+    "$(yq -r '.steps[0].env.SERVERLESS' "${pipeline}")"
+
+# 4. Empty line (base commit did not define the variable) → file untouched
 pipeline="${TMPDIR_PIPELINE}/empty.yml"
 make_pipeline "${pipeline}"
 cp "${pipeline}" "${TMPDIR_PIPELINE}/empty.yml.orig"
@@ -710,7 +735,7 @@ assert_equals "empty env line → file is left untouched" \
     "true" \
     "$(cmp -s "${pipeline}" "${TMPDIR_PIPELINE}/empty.yml.orig" && echo true || echo false)"
 
-# 4. Pipeline file without a top-level env block → error, file untouched
+# 5. Pipeline file without a top-level env block → error, file untouched
 pipeline="${TMPDIR_PIPELINE}/no_env.yml"
 printf 'steps:\n  - label: "noop"\n    command: "true"\n' > "${pipeline}"
 set +e
@@ -722,7 +747,7 @@ assert_equals "no env block → file is left untouched" \
     "false" \
     "$(grep -q 'FOO' "${pipeline}" && echo true || echo false)"
 
-# 5. Missing pipeline file → error
+# 6. Missing pipeline file → error
 set +e
 restore_pipeline_env_line "${TMPDIR_PIPELINE}/does_not_exist.yml" '  FOO: "true"' 2>/dev/null
 rc=$?
