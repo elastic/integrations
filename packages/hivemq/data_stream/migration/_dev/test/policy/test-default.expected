@@ -1,0 +1,46 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: hivemq
+      name: test-default-hivemq
+      streams:
+        - data_stream:
+            dataset: hivemq.migration
+          parsers:
+            - multiline:
+                match: after
+                max_lines: 500
+                negate: true
+                pattern: '^\d{4}-\d{2}-\d{2} '
+                timeout: 5s
+                type: pattern
+          paths:
+            - /opt/hivemq/log/migration.log
+          processors:
+            - add_locale: null
+          prospector.scanner.exclude_files:
+            - \.gz$
+            - \.zip$
+          prospector.scanner.fingerprint.length: 64
+          prospector.scanner.fingerprint.offset: 0
+          tags:
+            - hivemq-migration
+      type: filestream
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-hivemq.migration-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []

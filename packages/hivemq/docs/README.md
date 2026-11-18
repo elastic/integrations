@@ -81,8 +81,7 @@ Elastic Agent reads the HiveMQ log files with the `filestream` input, scrapes th
 
 ## Troubleshooting
 
-- No data is being collected: Confirm that the user running Elastic Agent can read the HiveMQ log folder and the files in it. Elastic Agent identifies files by a fingerprint of their first 1024 bytes, so a new and almost empty `event.log` is only collected once it has grown beyond that size.
-- No migration events are collected: After the first start of a new installation, `migration.log` is smaller than 1024 bytes. HiveMQ appends its migration checks on every start, so the file is collected after one or two further restarts.
+- No data is being collected: Confirm that the user running Elastic Agent can read the HiveMQ log folder and the files in it. Elastic Agent identifies files by a fingerprint of their first 1024 bytes. Elastic Agent 9.4 only starts collecting a new and almost empty `event.log` once it has grown to that size. Elastic Agent 9.5 and later collects smaller files right away. The migration data stream uses a fingerprint of the first 64 bytes, so a fresh `migration.log` is collected right away on all supported versions.
 - No client events are collected: The default `logback.xml` writes client events only to `event.log`. Check that the paths of the client events point at this file and not at the container's standard output.
 - Timestamps are off by a whole number of hours: HiveMQ writes local time without an offset. Set the **Timezone Offset** option to the timezone of the HiveMQ Java virtual machine.
 - Authentication events are missing: HiveMQ logs enhanced authentication (`AUTH`) events at DEBUG level, and the default `logback.xml` has no logger for them. Add the following logger to `logback.xml`. Without `additivity="false"` and the `EVENT-FILE` appender, the events go to `hivemq.log` instead of `event.log`.
