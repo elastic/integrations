@@ -1,0 +1,173 @@
+---
+description: >-
+  Resolve the latest user and assistant text, then run encoding, word-obfuscation, refusal, and instruction-override detection.
+processors:
+  - script:
+      tag: ml_prompt_detect_entry_resolve_text
+      description: >-
+        Resolve the last user text and the last assistant
+        text from gen_ai.input.messages and gen_ai.output.messages. Messages can
+        be a list of message objects whose text is in content blocks
+        (AWS Bedrock, including guardContent) or in parts[].content (OpenAI
+        ChatGPT Enterprise), or a role/content.text map with scalar or
+        parallel-array values.
+      lang: painless
+      source: |-
+        boolean hasReadableText(String value) {
+          value = value.trim();
+          boolean blank = /[\x00-\x20\x85\p{javaWhitespace}\p{javaSpaceChar}]*+/.matcher(value).matches();
+          return !blank;
+        }
+
+        boolean isTextType(def type) {
+          return type == null || type == 'text' || type == 'input_text' || type == 'output_text';
+        }
+
+        List messageTexts(def msg) {
+          List texts = new ArrayList();
+          if (!(msg instanceof Map)) { return texts; }
+          def content = msg.content;
+          if (content instanceof String) {
+            if (hasReadableText((String) content)) { texts.add((String) content); }
+          } else if (content instanceof List) {
+            for (def block : (List) content) {
+              if (!(block instanceof Map) || !isTextType(block.type)) { continue; }
+              def text = block.text;
+              def guard = block.guardContent;
+              if (!(text instanceof String) && guard instanceof Map && guard.text instanceof Map) {
+                text = ((Map) guard.text).text;
+              }
+              if (text instanceof String && hasReadableText((String) text)) { texts.add((String) text); }
+            }
+          }
+          def parts = msg.parts;
+          if (parts instanceof List) {
+            for (def part : (List) parts) {
+              if (part instanceof Map && isTextType(part.type)
+                  && part.content instanceof String && hasReadableText((String) part.content)) {
+                texts.add((String) part.content);
+              }
+            }
+          }
+          return texts;
+        }
+
+        String lastListRole(List messages, String want) {
+          for (int i = messages.size() - 1; i >= 0; i--) {
+            def msg = messages.get(i);
+            if (msg instanceof Map) {
+              def role = msg.role instanceof String ? ((String) msg.role).toLowerCase() : '';
+              if (role == want) {
+                List texts = messageTexts(msg);
+                if (!texts.isEmpty()) { return String.join(' ', texts); }
+              }
+            }
+          }
+          return null;
+        }
+
+        String textAt(def value) {
+          if (value instanceof String && hasReadableText((String) value)) { return (String) value; }
+          if (value instanceof List) {
+            List parts = new ArrayList();
+            for (def item : (List) value) {
+              if (item instanceof String && hasReadableText((String) item)) { parts.add((String) item); }
+            }
+            if (!parts.isEmpty()) { return String.join(' ', parts); }
+          }
+          return null;
+        }
+
+        String lastMapRole(Map messages, String want) {
+          def roles = messages.role;
+          def texts = messages['content.text'];
+          if (texts == null && messages.content instanceof Map) {
+            texts = ((Map) messages.content).text;
+          }
+          if (roles == null && texts instanceof String) { roles = want; }
+          if (roles instanceof String) { roles = [roles]; }
+          if (texts instanceof String) { texts = [texts]; }
+          if (!(roles instanceof List) || !(texts instanceof List)) { return null; }
+          int n = ((List) roles).size() < ((List) texts).size()
+              ? ((List) roles).size() : ((List) texts).size();
+          for (int i = n - 1; i >= 0; i--) {
+            def role = ((List) roles).get(i);
+            if (role instanceof String && ((String) role).toLowerCase() == want) {
+              String text = textAt(((List) texts).get(i));
+              if (text != null) { return text; }
+            }
+          }
+          return null;
+        }
+
+        String resolve(def messages, String want) {
+          if (messages instanceof Map) { return lastMapRole((Map) messages, want); }
+          if (messages instanceof List) { return lastListRole((List) messages, want); }
+          return null;
+        }
+
+        def gen_ai = ctx.gen_ai instanceof Map ? (Map) ctx.gen_ai : null;
+
+        def inputMessages = null;
+        if (gen_ai != null && gen_ai.input instanceof Map) {
+          inputMessages = ((Map) gen_ai.input).messages;
+        }
+        if (inputMessages == null) { inputMessages = ctx['gen_ai.input.messages']; }
+
+        def outputMessages = null;
+        if (gen_ai != null && gen_ai.output instanceof Map) {
+          outputMessages = ((Map) gen_ai.output).messages;
+        }
+        if (outputMessages == null) { outputMessages = ctx['gen_ai.output.messages']; }
+
+        String prompt = resolve(inputMessages, 'user');
+        if (prompt != null) { ctx._ml_prompt_text = prompt; }
+
+        String completion = resolve(outputMessages, 'assistant');
+        if (completion != null) { ctx._ml_completion_text = completion; }
+
+  - set:
+      tag: ml_prompt_detect_entry_model_version
+      description: Version copied onto each model result.
+      field: _ml_model_version
+      value: "0.0.1"
+  - pipeline:
+      tag: ml_prompt_detect_route_encoding
+      if: ctx._ml_prompt_text != null || ctx._ml_completion_text != null
+      name: '{{ IngestPipeline "security_ai_inference_pipeline" }}'
+  - pipeline:
+      tag: ml_prompt_detect_route_word
+      if: ctx._ml_prompt_text != null || ctx._ml_completion_text != null
+      name: '{{ IngestPipeline "security_ai_word_inference_pipeline" }}'
+  - pipeline:
+      tag: ml_prompt_detect_route_refusal
+      if: ctx._ml_completion_text != null
+      name: '{{ IngestPipeline "security_ai_refusal_pipeline" }}'
+  - pipeline:
+      tag: ml_prompt_detect_route_instruction_override
+      if: ctx._ml_prompt_text != null
+      name: '{{ IngestPipeline "security_ai_instruction_override_inference_pipeline" }}'
+
+  - remove:
+      tag: ml_prompt_detect_entry_cleanup
+      field:
+        - _ml_prompt_text
+        - _ml_completion_text
+        - _ml_model_version
+      ignore_missing: true
+on_failure:
+  - remove:
+      field:
+        - _ml_prompt_text
+        - _ml_completion_text
+        - _ml_model_version
+      ignore_missing: true
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        {{{ _ingest.on_failure_message }}} [pipeline: {{{ _ingest.pipeline }}},
+        processor_type: {{{ _ingest.on_failure_processor_type }}},
+        processor_tag: {{{ _ingest.on_failure_processor_tag }}}]
