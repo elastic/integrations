@@ -142,6 +142,9 @@ Notes and trade-offs:
 
 - Only events that carry `process.entity_id` are relabeled; the original value is preserved in
   `labels.agent_type` (e.g. `hurukai`).
+- Those events also get `event.kind: event` when the agent did not set a kind, because the
+  process tree only queries documents that have one. Detections keep `event.kind: alert`, so
+  they still reach the `harfanglab.detection` data stream but are not drawn as tree nodes.
 - The Sysmon schema resolves ancestors by walking `process.parent.entity_id` across documents,
   so the tree goes back as far as the matching process events exist in the index.
 - This source is treated as ingested logs (not a managed agent), so it does not appear as an
