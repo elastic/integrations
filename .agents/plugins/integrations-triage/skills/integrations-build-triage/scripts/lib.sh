@@ -8,6 +8,10 @@ SCHED=.buildkite/pipeline.schedule-daily.yml
 CACHE=${TRIAGE_CACHE:-build/triage/cache}
 mkdir -p "$CACHE"
 
+# Build states that can't change any more. Only these get cached: "failing" means a job failed while others still run.
+FINAL_STATES='passed|failed|canceled|skipped|not_run'
+build_finished() { [[ $1 =~ ^($FINAL_STATES)$ ]]; }
+
 # Strip Buildkite log noise: ESC _ timestamps, ANSI, CR, leading "_" left by timestamps.
 clean_log() { perl -pe 's/\e_[^\a]*\a//g; s/\e_//g; s/\e\[[0-9;]*[a-zA-Z]//g; s/\r//g; s/^_//'; }
 
@@ -50,28 +54,36 @@ title_job() {
   printf '%s|%s|%s|%s|%s|%s\n' "$kind" "$pipe" "$label" "$st" "${cur//$'\t'/|}" "$pkg"
 }
 
-# daily_builds <pipeline> <days> -> TSV: number, state, date, label   (main-branch builds triggered by the scheduler), cached per day
+# daily_builds <pipeline> <days> -> TSV: number, state, date, label   (main-branch builds triggered by the scheduler)
+#   Cached per day, refetched while any build in it is unfinished.
 daily_builds() {
   local p=$1 d=${2:-30} f="$CACHE/builds-${1//\//_}-$(date -u +%F)-$2d.tsv"
-  [ -s "$f" ] || bk build list -p "$p" --branch main --since "$((d*24))h" --limit 500 -o json 2>/dev/null |
-    jq -r '.[] | select(.source=="trigger_job") | [.number, .state, .created_at[:10], ((.message // "") | split("\n")[0])] | @tsv' | sort -n > "$f"
+  if [ ! -s "$f" ] || awk -F'\t' -v re="^($FINAL_STATES)$" '$2 !~ re {u=1} END {exit !u}' "$f"; then
+    bk build list -p "$p" --branch main --since "$((d*24))h" --limit 500 -o json 2>/dev/null |
+      jq -r '.[] | select(.source=="trigger_job") | [.number, .state, .created_at[:10], ((.message // "") | split("\n")[0])] | @tsv' | sort -n > "$f"
+  fi
   cat "$f"
 }
 
-# build_jobs <pipeline> <number> -> TSV: package, state  (package check jobs only), cached forever once finished
+# build_jobs <pipeline> <number> -> TSV: package, state  (package check jobs only), cached forever once the build is finished
 build_jobs() {
-  local f="$CACHE/jobs-${1//\//_}-$2.tsv"
-  [ -s "$f" ] || bk build view "$2" -p "$1" -o json 2>/dev/null |
-    jq -r 'select(.state != "running" and .state != "scheduled") | .jobs[] | select(.name // "" | startswith("Check integrations ")) | [(.name | split(" ") | last), .state] | @tsv' > "$f"
-  cat "$f"
+  local f="$CACHE/jobs-${1//\//_}-$2.tsv" j rows
+  [ -s "$f" ] && { cat "$f"; return; }
+  j=$(bk build view "$2" -p "$1" -o json 2>/dev/null) || return 0
+  rows=$(jq -r '.jobs[] | select(.name // "" | startswith("Check integrations ")) | [(.name | split(" ") | last), .state] | @tsv' <<<"$j")
+  [ -n "$rows" ] || return 0
+  build_finished "$(jq -r .state <<<"$j")" && printf '%s\n' "$rows" > "$f"
+  printf '%s\n' "$rows"
 }
 
-# reported_issues <pipeline> <number> -> TSV: mode, issue_url, title   (what the report step did for that build), cached
-#   mode: too-many | updated | created | none | no-report-step
+# reported_issues <pipeline> <number> -> TSV: mode, issue_url, title   (what the report step did for that build)
+#   mode: too-many | updated | created | none | no-report-step | running (build unfinished: not cached)
 reported_issues() {
   local f="$CACHE/report-${1//\//_}-$2.tsv"
   if [ ! -s "$f" ]; then
-    local job; job=$(bk build view "$2" -p "$1" -o json 2>/dev/null | jq -r '.jobs[] | select((.name // "") | test("Report failed tests")) | .id' | head -1)
+    local j job; j=$(bk build view "$2" -p "$1" -o json 2>/dev/null) || j='{}'
+    if ! build_finished "$(jq -r '.state // ""' <<<"$j")"; then printf 'running\t\t\n'; return; fi
+    job=$(jq -r '.jobs[] | select((.name // "") | test("Report failed tests")) | .id' <<<"$j" | head -1)
     if [ -z "$job" ]; then printf 'no-report-step\t\t\n' > "$f"
     else
       bk job log "$job" -p "$1" -b "$2" --no-timestamps --no-pager -q 2>/dev/null | clean_log |

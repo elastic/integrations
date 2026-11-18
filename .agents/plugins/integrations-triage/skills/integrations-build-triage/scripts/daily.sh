@@ -4,7 +4,7 @@
 # Writes builds.tsv (label, pipeline, build, state, failed_pkgs, report_mode, issues) and issues.tsv
 # (build, pipeline, mode, issue, title), and prints a compact table. Read-only. See references/auto-issues.md.
 #   report_mode: too-many (one "Too many" issue) | per-package (Failing test daily issues) | none (failed, nothing
-#   filed: failures outside JUnit) | no-report-step | - (passed/not run)
+#   filed: failures outside JUnit) | no-report-step | running (build unfinished, re-run later) | - (passed/not run)
 set -euo pipefail
 . "$(dirname "$0")/lib.sh"
 D=${1:-$(date -u +%F)}

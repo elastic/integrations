@@ -28,6 +28,7 @@ If it says there were no scheduler runs, reply "no daily run on <date>" and stop
 | `per-package` | 30 or fewer: one `Failing test daily` issue per failing test | **The build**, with the per-build flow below; its issues are in `issues.tsv` |
 | `none` | Failed, but nothing in JUnit: setup/infra error or timeout | One line per failed job from `collect.sh` (`no-test-block` rows); no investigator unless the same job failed this way 3+ nights (`history.sh`) |
 | `no-report-step` | The report step didn't run | Note it; propose checking the build |
+| `running` | The build hasn't finished yet (nothing is cached) | Re-run `daily.sh` once it finishes; don't triage it before then |
 | serverless `single-job:timed_out` | All packages run in one job, which timed out | Note it; per-package triage doesn't apply |
 
 ## 2. Triage the failing builds

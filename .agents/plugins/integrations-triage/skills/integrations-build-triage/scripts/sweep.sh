@@ -29,7 +29,7 @@ echo "open auto-filed issues: $(wc -l < "$OUT/base.tsv" | tr -d ' ')"
 for p in elastic/integrations elastic/integrations-serverless; do
   daily_builds "$p" "$DAYS" | awk -F'\t' -v OFS='\t' -v p="$p" '{print p, $0}' >> "$OUT/window.tsv"
 done
-export -f reported_issues clean_log; export R CACHE
+export -f reported_issues clean_log build_finished; export R CACHE FINAL_STATES
 awk -F'\t' '$3!="passed" {print $1, $2}' "$OUT/window.tsv" |
   xargs -P 6 -n 2 bash -c 'reported_issues "$0" "$1" >/dev/null 2>&1 || true'
 # window rows: pipeline, number, state, date, label, mode (passed | too-many | per-package | none | no-report-step)
