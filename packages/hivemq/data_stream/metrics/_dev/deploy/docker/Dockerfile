@@ -2,7 +2,7 @@ ARG HIVEMQ_VERSION=2026.5
 
 # The HiveMQ image ships without unzip, so the extension is fetched,
 # verified and unpacked in a separate stage.
-FROM alpine:3.24 AS extension
+FROM alpine:3.24.3 AS extension
 ARG EXTENSION_VERSION=4.1.1
 ARG EXTENSION_SHA256=6f1ceb3ac6c75caff21a4d502b1ba4bde26922f746eb406ad94be06cf1e83dc0
 RUN wget -q -O /tmp/extension.zip "https://github.com/hivemq/hivemq-prometheus-extension/releases/download/${EXTENSION_VERSION}/hivemq-prometheus-extension-${EXTENSION_VERSION}.zip" \

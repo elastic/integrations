@@ -8,7 +8,7 @@
 
 ### Compatibility
 
-This integration has been tested against HiveMQ Community Edition 2026.5 and, for the metrics, the HiveMQ Prometheus Extension 4.1.1. The client event log has had the same wording since at least HiveMQ Community Edition 2024.3.
+This integration is tested against HiveMQ Community Edition 2026.5 and, for the metrics, the HiveMQ Prometheus Extension 4.1.1. The client event log has had the same wording since at least HiveMQ Community Edition 2024.3.
 
 It is built for the log format of HiveMQ Community Edition. It does not parse HiveMQ Enterprise logs, such as the audit log.
 
@@ -579,7 +579,7 @@ An example event for `migration` looks as following:
 
 #### metrics
 
-The `metrics` data stream provides the broker metrics that the HiveMQ Prometheus Extension exports. Each document holds all metrics of one collection from one broker under `hivemq.metrics.*`. The field names follow the HiveMQ metric names, for example `hivemq.metrics.messages.incoming.publish.count` for `com.hivemq.messages.incoming.publish.count`. Cumulative counts are mapped as counters and current values as gauges. The data stream uses the time series index mode, with `agent.id` and `service.address` as dimensions.
+The `metrics` data stream provides the broker metrics that the HiveMQ Prometheus Extension exports. Each document holds all metrics of one collection from one broker under `hivemq.metrics.*`. The field names follow the HiveMQ metric names, for example `hivemq.metrics.messages.incoming.publish.count` for `com.hivemq.messages.incoming.publish.count`. Cumulative counts are mapped as counters and current values as gauges. The data stream uses the time series index mode, with `agent.id` and `service.address` as dimensions. List each broker only once in **Hosts**: the same broker under two URLs is collected as two series and counted twice.
 
 ##### metrics fields
 
