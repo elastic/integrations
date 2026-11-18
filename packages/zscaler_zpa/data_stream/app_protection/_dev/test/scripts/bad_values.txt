@@ -1,0 +1,59 @@
+# Values that cannot be converted are dropped and reported in error.message by
+# the processor that failed, while the rest of the record is still processed.
+# The pipeline test runner fails any document with error.message, so these
+# cases cannot be pipeline tests.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+install_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+! stderr .
+
+# 0: non-numeric response timestamp and status code, invalid client IP,
+#    numeric user ID, unrecognised flag value and zero certificate ID.
+# 1: unparseable log timestamp, non-numeric client port and paranoia level.
+exec jq -cR '{message: ., tags: ["forwarded"], data_stream: {type: "logs", dataset: "zscaler_zpa.app_protection", namespace: "ep"}, _conf: {strict_fields: true}}' records.ndjson
+cp stdout data.json
+
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default data.json
+! stderr .
+cp stdout got.json
+
+exec jq -s 'length' got.json
+stdout '^2$'
+
+# These are processing errors, not pipeline failures.
+exec jq -s -r '.[].event.kind' got.json
+stdout -count=2 '^event$'
+
+exec jq -s -r '.[0].error.message | length, .[]' got.json
+stdout '^4\ncould not parse timestamp_response_receive_finish value .soon. as epoch microseconds\nProcessor convert with tag convert_json_client_public_ip_to_client_ip failed with message: .not-an-ip. is not an IP string literal\.\ncould not parse upgrade_header_present value .2. as a 0/1 flag\nProcessor convert with tag convert_json_status_code_to_http_response_status_code failed with message: For input string: "abc"$'
+
+exec jq -s -r '.[0] | [has("client"), (.http.response | has("status_code")), (.zscaler_zpa.app_protection | has("timestamp_response_receive_finish")), (.zscaler_zpa.app_protection | has("upgrade_header_present"))] | map(tostring) | join(",")' got.json
+stdout '^false,false,false,false$'
+
+# The rest of the record is processed.
+exec jq -s -r '.[0] | [.["@timestamp"], .user.name, (.related.user | join(" ")), .event.duration, .http.response.body.bytes, .zscaler_zpa.app_protection.client_port, .zscaler_zpa.app_protection.certificate_id, .zscaler_zpa.app_protection.double_encryption] | map(tostring) | join(",")' got.json
+stdout '^2026-11-04T10:00:02\.000Z,10000004,10000004,4200000,1520,443,0,true$'
+
+exec jq -s -r '.[1].error.message | length, .[]' got.json
+stdout '^3\nProcessor date with tag date_json_log_timestamp_to_timestamp failed with message: Text .yesterday. could not be parsed at index 0\nProcessor convert with tag convert_json_client_port_to_long failed with message: For input string: "https"\nProcessor convert with tag convert_json_paranoia_level_to_long failed with message: For input string: "high"$'
+
+exec jq -s -r '.[1] | [has("@timestamp"), (.zscaler_zpa.app_protection | has("client_port")), (.zscaler_zpa.app_protection | has("paranoia_level")), .client.ip, .http.response.status_code, .user.email] | map(tostring) | join(",")' got.json
+stdout '^false,false,false,198\.51\.100\.25,200,alice@example\.com$'
+
+# Records with errors keep the original event.
+exec jq -s 'map((.tags | index("preserve_original_event") != null) and (.event.original | type == "string")) | all' got.json
+stdout '^true$'
+
+exec jq -s 'map(has("_conf") or has("json")) | any' got.json
+stdout '^false$'
+
+uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+! stderr .
+
+-- records.ndjson --
+{"version": "v1","sourcetype": "zscaler_zpa.app_protection","LogTimestamp": "Wed Nov  4 10:00:02 2026","Customer": "Example Corp","ConnectionID": "Aa1Bb2Cc3Dd4Ee5Ff6Gg,Hh7Ii8Jj9Kk0Ll+Mm1N","UserID": 10000004,"AssistantID": "Example Connector-1700000000002","ExchangeSequenceIndex": 0,"TimestampRequestReceiveStart": 1793786402100000,"TimestampRequestReceiveHeaderFinish": 1793786402100021,"TimestampRequestReceiveFinish": 1793786402100840,"TimestampRequestTransmitStart": 1793786402100900,"TimestampRequestTransmitFinish": 1793786402100950,"TimestampResponseReceiveFinish": "soon","TimestampResponseTransmitStart": 1793786402104150,"TimestampResponseTransmitFinish": 1793786402104200,"TotalTimeRequestReceive": 819,"TotalTimeRequestTransmit": 50,"TotalTimeResponseReceive": 61,"TotalTimeResponseTransmit": 50,"Domain": "app.example.com","Method": "GET","Protocol": "HTTP","ProtocolVersion": "1.1","ContentType": "text/html","ContentEncoding": "gzip","TransferEncoding": "chunked","Host": "app.example.com","Destination": "app.example.com","OriginDomain": "https://portal.example.com","URL": "/index.html","UserAgent": "curl/8.5.0","HTTPError": "success","ClientPublicIp": "not-an-ip","ClientPort": 443,"UpgradeHeaderPresent": 2,"StatusCode": "abc","RequestHdrSize": 98,"ResponseHdrSize": 240,"RequestBodySize": 0,"ResponseBodySize": 1520,"Application": 216172782113784101,"ApplicationGroup": 216172782113784102,"InspectionPolicy": 216172782113784110,"InspectionProfile": 216172782113784108,"ParanoiaLevel": 2,"InspectionControlsHitCount": 0,"InspectionRuleProcessingTime": 1200,"InspectionReqHeadersProcessingTime": 400,"InspectionReqBodyProcessingTime": 700,"InspectionRespHeadersProcessingTime": 30,"InspectionRespBodyProcessingTime": 70,"CertificateId": 0,"DoubleEncryption": 1,"SSLInspection": 1,"TotalBytesProcessed": 1858,"InspectionControls": [],"InspectionControlTypes": [],"InspectionControlCategories": [],"Actions": [],"Severities": [],"Descriptions": []}
+{"version": "v1","sourcetype": "zscaler_zpa.app_protection","LogTimestamp": "yesterday","Customer": "Example Corp","ConnectionID": "Aa1Bb2Cc3Dd4Ee5Ff6Gg,Hh7Ii8Jj9Kk0Ll+Mm1N","UserID": "alice@example.com","AssistantID": "Example Connector-1700000000002","ExchangeSequenceIndex": 0,"TimestampRequestReceiveStart": 1793952007100000,"TimestampRequestReceiveHeaderFinish": 1793952007100021,"TimestampRequestReceiveFinish": 1793952007100840,"TimestampRequestTransmitStart": 1793952007100900,"TimestampRequestTransmitFinish": 1793952007100950,"TimestampResponseReceiveFinish": 1793952007104100,"TimestampResponseTransmitStart": 1793952007104150,"TimestampResponseTransmitFinish": 1793952007104200,"TotalTimeRequestReceive": 819,"TotalTimeRequestTransmit": 50,"TotalTimeResponseReceive": 61,"TotalTimeResponseTransmit": 50,"Domain": "app.example.com","Method": "GET","Protocol": "HTTP","ProtocolVersion": "1.1","ContentType": "text/html","ContentEncoding": "gzip","TransferEncoding": "chunked","Host": "app.example.com","Destination": "app.example.com","OriginDomain": "https://portal.example.com","URL": "/index.html","UserAgent": "curl/8.5.0","HTTPError": "success","ClientPublicIp": "198.51.100.25","ClientPort": "https","UpgradeHeaderPresent": 0,"StatusCode": 200,"RequestHdrSize": 98,"ResponseHdrSize": 240,"RequestBodySize": 0,"ResponseBodySize": 1520,"Application": 216172782113784101,"ApplicationGroup": 216172782113784102,"InspectionPolicy": 216172782113784110,"InspectionProfile": 216172782113784108,"ParanoiaLevel": "high","InspectionControlsHitCount": 0,"InspectionRuleProcessingTime": 1200,"InspectionReqHeadersProcessingTime": 400,"InspectionReqBodyProcessingTime": 700,"InspectionRespHeadersProcessingTime": 30,"InspectionRespBodyProcessingTime": 70,"CertificateId": 216172782113784120,"DoubleEncryption": 1,"SSLInspection": 1,"TotalBytesProcessed": 1858,"InspectionControls": [],"InspectionControlTypes": [],"InspectionControlCategories": [],"Actions": [],"Severities": [],"Descriptions": []}

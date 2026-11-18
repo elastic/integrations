@@ -1,0 +1,65 @@
+# Keys the pipeline doesn't map are kept under zscaler_zpa.app_protection.*,
+# with their names converted to snake_case. These fields aren't
+# defined in the field files, so the pipeline test runner would reject them.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+install_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+! stderr .
+
+exec jq -cR '{message: ., tags: ["forwarded"], data_stream: {type: "logs", dataset: "zscaler_zpa.app_protection", namespace: "ep"}, _conf: {strict_fields: true}}' records.ndjson
+cp stdout data.json
+
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default data.json
+! stderr .
+cp stdout got.json
+
+exec jq -s 'length' got.json
+stdout '^1$'
+
+# Records from the Elastic template are only checked by sourcetype and
+# version, so the extra key isn't an error.
+exec jq -s 'map(has("error")) | any' got.json
+stdout '^false$'
+
+# An unknown key is kept, under its snake_case name.
+exec jq -s -r '.[0].zscaler_zpa.app_protection | [has("RequestId"), .request_id] | map(tostring) | join(",")' got.json
+stdout '^false,req-0001$'
+exec jq -s -r '.[0].zscaler_zpa.app_protection | [.traffic_classfication, .ssl_cipher_suite, .http2_stream_id] | map(tostring) | join(",")' got.json
+stdout '^INTERNAL,TLS_AES_128_GCM_SHA256,3$'
+
+# The rest of the record is processed.
+exec jq -s -r '.[0] | [.client.ip, .url.domain, (.http.response.status_code | tostring), .event.kind] | join(",")' got.json
+stdout '^203\.0\.113\.11,dvwa\.example\.com,302,event$'
+
+# Upstream empty values are dropped before mapping, so they aren't kept.
+exec jq -s '.[0].zscaler_zpa.app_protection | has("empty_list")' got.json
+stdout '^false$'
+
+exec jq -s 'map(has("_conf") or has("json")) | any' got.json
+stdout '^false$'
+
+# Keys with the same snake_case name: the first in sorted order is kept, and the
+# other is dropped and reported.
+exec jq -cR '{message: ., tags: ["forwarded"], data_stream: {type: "logs", dataset: "zscaler_zpa.app_protection", namespace: "ep"}, _conf: {strict_fields: true}}' collision.ndjson
+cp stdout collision.json
+
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default collision.json
+! stderr .
+cp stdout got_collision.json
+
+exec jq -s -r '.[0].error.message | length, .[]' got_collision.json
+stdout '^1\ndropped key .foo_bar. because its snake_case name .foo_bar. is already used by key .FooBar.$'
+exec jq -s -r '.[0] | [.zscaler_zpa.app_protection.foo_bar, .client.ip, (.tags | index("preserve_original_event") != null)] | map(tostring) | join(",")' got_collision.json
+stdout '^upper,203\.0\.113\.11,true$'
+
+uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+! stderr .
+
+-- records.ndjson --
+{"version":"v1","sourcetype":"zscaler_zpa.app_protection","LogTimestamp": "Mon Nov  2 15:32:26 2026","Customer": "Example Corp","ConnectionID": "q7Rk2LmXw9TfB4vNe1Hs,Zp3YdG8uKc+Wj0aQxE5n","UserID": "10000001","AssistantID": "Example Connector-1700000000001","ExchangeSequenceIndex": 0,"TimestampRequestReceiveStart": 1793633546400202,"TimestampRequestReceiveHeaderFinish": 1793633546400227,"TimestampRequestReceiveFinish": 1793633546401233,"TimestampRequestTransmitStart": 0,"TimestampRequestTransmitFinish": 0,"TimestampResponseReceiveStart": 1793633546404520,"TimestampResponseReceiveFinish": 1793633546404612,"TimestampResponseTransmitStart": 0,"TimestampResponseTransmitFinish": 1793633546404684,"TotalTimeRequestReceive": 0,"TotalTimeRequestTransmit": 0,"TotalTimeResponseReceive": 92,"TotalTimeResponseTransmit": 0,"Domain": "dvwa.example.com","Method": "GET","Protocol": "HTTP","ProtocolVersion": "1.1","ContentType": "","ContentEncoding": "","TransferEncoding": "","Host": "dvwa.example.com","Destination": "dvwa.example.com","OriginDomain": "","URL": "/","UserAgent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36","HTTPError": "success","ClientPublicIp": "203.0.113.11","ClientPort": 80,"UpgradeHeaderPresent": 0,"StatusCode": 302,"RequestHdrSize": 364,"ResponseHdrSize": 405,"RequestBodySize": 0,"ResponseBodySize": 0,"Application": 216172782113784001,"ApplicationGroup": 216172782113783942,"InspectionPolicy": 216172782113784010,"InspectionProfile": 216172782113784008,"ParanoiaLevel": 4,"InspectionControlsHitCount": 0,"InspectionRuleProcessingTime": 2798,"InspectionReqHeadersProcessingTime": 964,"InspectionReqBodyProcessingTime": 1758,"InspectionRespHeadersProcessingTime": 34,"InspectionRespBodyProcessingTime": 42,"CertificateId": 0,"DoubleEncryption": 0,"SSLInspection": 0,"TotalBytesProcessed": 0,"InspectionControls": [],"InspectionControlTypes": [],"InspectionControlCategories": [],"Actions": [],"Severities": [],"Descriptions": [],"RequestId": "req-0001","TrafficClassfication": "INTERNAL","SSLCipherSuite": "TLS_AES_128_GCM_SHA256","Http2StreamID": 3,"EmptyList": []}
+-- collision.ndjson --
+{"version":"v1","sourcetype":"zscaler_zpa.app_protection","LogTimestamp": "Mon Nov  2 15:32:26 2026","Customer": "Example Corp","ConnectionID": "q7Rk2LmXw9TfB4vNe1Hs,Zp3YdG8uKc+Wj0aQxE5n","UserID": "10000001","AssistantID": "Example Connector-1700000000001","ExchangeSequenceIndex": 0,"TimestampRequestReceiveStart": 1793633546400202,"TimestampRequestReceiveHeaderFinish": 1793633546400227,"TimestampRequestReceiveFinish": 1793633546401233,"TimestampRequestTransmitStart": 0,"TimestampRequestTransmitFinish": 0,"TimestampResponseReceiveStart": 1793633546404520,"TimestampResponseReceiveFinish": 1793633546404612,"TimestampResponseTransmitStart": 0,"TimestampResponseTransmitFinish": 1793633546404684,"TotalTimeRequestReceive": 0,"TotalTimeRequestTransmit": 0,"TotalTimeResponseReceive": 92,"TotalTimeResponseTransmit": 0,"Domain": "dvwa.example.com","Method": "GET","Protocol": "HTTP","ProtocolVersion": "1.1","ContentType": "","ContentEncoding": "","TransferEncoding": "","Host": "dvwa.example.com","Destination": "dvwa.example.com","OriginDomain": "","URL": "/","UserAgent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36","HTTPError": "success","ClientPublicIp": "203.0.113.11","ClientPort": 80,"UpgradeHeaderPresent": 0,"StatusCode": 302,"RequestHdrSize": 364,"ResponseHdrSize": 405,"RequestBodySize": 0,"ResponseBodySize": 0,"Application": 216172782113784001,"ApplicationGroup": 216172782113783942,"InspectionPolicy": 216172782113784010,"InspectionProfile": 216172782113784008,"ParanoiaLevel": 4,"InspectionControlsHitCount": 0,"InspectionRuleProcessingTime": 2798,"InspectionReqHeadersProcessingTime": 964,"InspectionReqBodyProcessingTime": 1758,"InspectionRespHeadersProcessingTime": 34,"InspectionRespBodyProcessingTime": 42,"CertificateId": 0,"DoubleEncryption": 0,"SSLInspection": 0,"TotalBytesProcessed": 0,"InspectionControls": [],"InspectionControlTypes": [],"InspectionControlCategories": [],"Actions": [],"Severities": [],"Descriptions": [],"RequestId": "req-0001","TrafficClassfication": "INTERNAL","SSLCipherSuite": "TLS_AES_128_GCM_SHA256","Http2StreamID": 3,"EmptyList": [],"foo_bar":"lower","FooBar":"upper"}

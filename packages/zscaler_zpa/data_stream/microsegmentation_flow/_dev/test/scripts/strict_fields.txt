@@ -1,0 +1,108 @@
+# With strict_fields enabled (_conf.strict_fields: true), records that do not
+# match the expected log template get error.message entries, but are otherwise
+# processed as usual. The template's version and sourcetype keys must both be
+# present and match.
+# With strict_fields disabled or absent, the same records get no error.
+# The pipeline test runner fails any document with error.message, so these
+# cases cannot be pipeline tests.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+install_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+! stderr .
+
+# Strict mode on.
+# 0: template record with another data stream's sourcetype.
+# 1: template record with an unexpected version.
+# 2: template record with both an unexpected sourcetype and version.
+# 3: record without either template key (vendor default, some fields missing).
+# 4: record without either template key (vendor default, fields added and removed).
+# 5: record with the expected version and no sourcetype.
+# 6: record without either template key, otherwise matching the template.
+# 7: template record with the expected sourcetype and version.
+# The input has no data_stream fields: the check must not depend on them.
+exec jq -cR '{message: ., tags: ["forwarded"], _conf: {strict_fields: true}}' records.ndjson
+cp stdout strict.json
+
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default strict.json
+! stderr .
+cp stdout got_strict.json
+
+exec jq -s 'length' got_strict.json
+stdout '^8$'
+
+exec jq -s -r '.[0].error.message | length, .[0]' got_strict.json
+stdout '^1\nsourcetype mismatch: zscaler_zpa\.app_protection is not expected sourcetype zscaler_zpa\.microsegmentation_flow$'
+
+exec jq -s -r '.[1].error.message | length, .[0]' got_strict.json
+stdout '^1\ntemplate version mismatch: v2 is not expected version v1$'
+
+exec jq -s -r '.[2].error.message | length, .[]' got_strict.json
+stdout '^2\ntemplate version mismatch: v2 is not expected version v1\nsourcetype mismatch: zscaler_zpa\.ldap_inspection is not expected sourcetype zscaler_zpa\.microsegmentation_flow$'
+
+exec jq -s -r '.[3].error.message | length, .[]' got_strict.json
+stdout '^2\ntemplate version missing: expected v1\nsourcetype missing: expected zscaler_zpa\.microsegmentation_flow$'
+
+exec jq -s -r '.[4].error.message | length, .[]' got_strict.json
+stdout '^2\ntemplate version missing: expected v1\nsourcetype missing: expected zscaler_zpa\.microsegmentation_flow$'
+
+exec jq -s -r '.[5].error.message | length, .[0]' got_strict.json
+stdout '^1\nsourcetype missing: expected zscaler_zpa\.microsegmentation_flow$'
+
+exec jq -s -r '.[6].error.message | length, .[]' got_strict.json
+stdout '^2\ntemplate version missing: expected v1\nsourcetype missing: expected zscaler_zpa\.microsegmentation_flow$'
+
+exec jq -s '.[7] | has("error")' got_strict.json
+stdout '^false$'
+
+# Mismatching records are still fully processed.
+exec jq -s -r '.[0:5][] | [.event.kind, .["@timestamp"], .source.ip, .destination.ip, .destination.port, .network.transport, .event.action, .rule.name] | join(",")' got_strict.json
+stdout -count=5 '^event,2026-11-06T08:00:0[0-4]\.000Z,192\.0\.2\.10,192\.0\.2\.20,1443,tcp,allow,example_app_to_api_allow$'
+
+# Records with errors keep the original event; the others are not tagged.
+exec jq -s 'map(select(has("error")) | (.tags | index("preserve_original_event") != null) and (.event.original | type == "string")) | [length, all]' -c got_strict.json
+stdout '^\[7,true\]$'
+exec jq -s 'map(select(has("error") | not) | .tags) | unique' -c got_strict.json
+stdout '^\[\["forwarded"\]\]$'
+
+exec jq -s 'map(has("_conf") or has("json")) | any' got_strict.json
+stdout '^false$'
+
+# Strict mode off: the same records, with _conf.strict_fields: false and with
+# no _conf at all.
+exec jq -cR '{message: ., tags: ["forwarded"], data_stream: {type: "logs", dataset: "zscaler_zpa.microsegmentation_flow", namespace: "ep"}} | (. + {_conf: {strict_fields: false}}), .' records.ndjson
+cp stdout lax.json
+
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default lax.json
+! stderr .
+cp stdout got_lax.json
+
+exec jq -s 'length' got_lax.json
+stdout '^16$'
+
+exec jq -s 'map(has("error") or has("_conf") or has("json")) | any' got_lax.json
+stdout '^false$'
+exec jq -s 'map(.tags) | unique' -c got_lax.json
+stdout '^\[\["forwarded"\]\]$'
+exec jq -s -r '.[] | [.event.kind, .source.ip, .destination.port] | join(",")' got_lax.json
+stdout -count=16 '^event,192\.0\.2\.10,1443$'
+
+# The template keys are not kept as vendored fields (event.original has them).
+exec jq -s 'map(.zscaler_zpa.microsegmentation_flow | has("version") or has("sourcetype")) | any' got_lax.json
+stdout '^false$'
+
+uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+! stderr .
+
+-- records.ndjson --
+{"version":"v1","sourcetype":"zscaler_zpa.app_protection","LogTimestamp":"Fri Nov  6 08:00:00 2026","Customer":"Example Corp","AgentID":"71234567890123456-98032e15dee3d704713d9a8368a2c50f","AgentName":"srv-app-01.example.com-98032e15dee3d704713d9a8368a2c50f","ResourceID":"71234567890123456-8fe5a00c3ad21356fc301228968e970c","ResourceName":"srv-app-01.example.com","AppZoneID":"71234567890123456-6547eeb570535a78db73d4b2c59cdc01","AppZoneName":"example-zone-app","ConnectionStartTime":"2026-11-02T15:40:13.463Z","SourceIP":"192.0.2.10","DestinationIP":"192.0.2.20","SourcePorts":[45566,45568,45582,45584,45586],"DestinationPort":1443,"Protocol":6,"AppName":["ncat"],"AppExecutablePath":["/usr/bin/ncat"],"Direction":"OUTBOUND","PolicyID":"71234567890123456-b435222fdcaa2795a9ff0032c27e9181","PolicyName":"example_app_to_api_allow","EnforcementReason":"RULE","EnforcementAction":"ALLOW","EnforcementDisposition":"CONNECTED"}
+{"version":"v2","sourcetype":"zscaler_zpa.microsegmentation_flow","LogTimestamp":"Fri Nov  6 08:00:01 2026","Customer":"Example Corp","AgentID":"71234567890123456-98032e15dee3d704713d9a8368a2c50f","AgentName":"srv-app-01.example.com-98032e15dee3d704713d9a8368a2c50f","ResourceID":"71234567890123456-8fe5a00c3ad21356fc301228968e970c","ResourceName":"srv-app-01.example.com","AppZoneID":"71234567890123456-6547eeb570535a78db73d4b2c59cdc01","AppZoneName":"example-zone-app","ConnectionStartTime":"2026-11-02T15:40:13.463Z","SourceIP":"192.0.2.10","DestinationIP":"192.0.2.20","SourcePorts":[45566,45568,45582,45584,45586],"DestinationPort":1443,"Protocol":6,"AppName":["ncat"],"AppExecutablePath":["/usr/bin/ncat"],"Direction":"OUTBOUND","PolicyID":"71234567890123456-b435222fdcaa2795a9ff0032c27e9181","PolicyName":"example_app_to_api_allow","EnforcementReason":"RULE","EnforcementAction":"ALLOW","EnforcementDisposition":"CONNECTED"}
+{"version":"v2","sourcetype":"zscaler_zpa.ldap_inspection","LogTimestamp":"Fri Nov  6 08:00:02 2026","Customer":"Example Corp","AgentID":"71234567890123456-98032e15dee3d704713d9a8368a2c50f","AgentName":"srv-app-01.example.com-98032e15dee3d704713d9a8368a2c50f","ResourceID":"71234567890123456-8fe5a00c3ad21356fc301228968e970c","ResourceName":"srv-app-01.example.com","AppZoneID":"71234567890123456-6547eeb570535a78db73d4b2c59cdc01","AppZoneName":"example-zone-app","ConnectionStartTime":"2026-11-02T15:40:13.463Z","SourceIP":"192.0.2.10","DestinationIP":"192.0.2.20","SourcePorts":[45566,45568,45582,45584,45586],"DestinationPort":1443,"Protocol":6,"AppName":["ncat"],"AppExecutablePath":["/usr/bin/ncat"],"Direction":"OUTBOUND","PolicyID":"71234567890123456-b435222fdcaa2795a9ff0032c27e9181","PolicyName":"example_app_to_api_allow","EnforcementReason":"RULE","EnforcementAction":"ALLOW","EnforcementDisposition":"CONNECTED"}
+{"LogTimestamp":"Fri Nov  6 08:00:03 2026","Customer":"Example Corp","AgentID":"71234567890123456-98032e15dee3d704713d9a8368a2c50f","AgentName":"srv-app-01.example.com-98032e15dee3d704713d9a8368a2c50f","ResourceID":"71234567890123456-8fe5a00c3ad21356fc301228968e970c","ResourceName":"srv-app-01.example.com","AppZoneID":"71234567890123456-6547eeb570535a78db73d4b2c59cdc01","AppZoneName":"example-zone-app","ConnectionStartTime":"2026-11-02T15:40:13.463Z","SourceIP":"192.0.2.10","DestinationIP":"192.0.2.20","SourcePorts":[45566,45568,45582,45584,45586],"DestinationPort":1443,"Protocol":6,"Direction":"OUTBOUND","PolicyID":"71234567890123456-b435222fdcaa2795a9ff0032c27e9181","PolicyName":"example_app_to_api_allow","EnforcementReason":"RULE","EnforcementAction":"ALLOW","EnforcementDisposition":"CONNECTED"}
+{"LogTimestamp":"Fri Nov  6 08:00:04 2026","Customer":"Example Corp","AgentID":"71234567890123456-98032e15dee3d704713d9a8368a2c50f","AgentName":"srv-app-01.example.com-98032e15dee3d704713d9a8368a2c50f","ResourceID":"71234567890123456-8fe5a00c3ad21356fc301228968e970c","ResourceName":"srv-app-01.example.com","AppZoneID":"71234567890123456-6547eeb570535a78db73d4b2c59cdc01","AppZoneName":"example-zone-app","ConnectionStartTime":"2026-11-02T15:40:13.463Z","SourceIP":"192.0.2.10","DestinationIP":"192.0.2.20","SourcePorts":[45566,45568,45582,45584,45586],"DestinationPort":1443,"Protocol":6,"AppName":["ncat"],"AppExecutablePath":["/usr/bin/ncat"],"Direction":"OUTBOUND","PolicyID":"71234567890123456-b435222fdcaa2795a9ff0032c27e9181","PolicyName":"example_app_to_api_allow","EnforcementAction":"ALLOW","EnforcementDisposition":"CONNECTED","MicroTenantID":"71234567890123456"}
+{"version":"v1","LogTimestamp":"Fri Nov  6 08:00:05 2026","Customer":"Example Corp","AgentID":"71234567890123456-98032e15dee3d704713d9a8368a2c50f","AgentName":"srv-app-01.example.com-98032e15dee3d704713d9a8368a2c50f","ResourceID":"71234567890123456-8fe5a00c3ad21356fc301228968e970c","ResourceName":"srv-app-01.example.com","AppZoneID":"71234567890123456-6547eeb570535a78db73d4b2c59cdc01","AppZoneName":"example-zone-app","ConnectionStartTime":"2026-11-02T15:40:13.463Z","SourceIP":"192.0.2.10","DestinationIP":"192.0.2.20","SourcePorts":[45566,45568,45582,45584,45586],"DestinationPort":1443,"Protocol":6,"AppName":["ncat"],"AppExecutablePath":["/usr/bin/ncat"],"Direction":"OUTBOUND","PolicyID":"71234567890123456-b435222fdcaa2795a9ff0032c27e9181","PolicyName":"example_app_to_api_allow","EnforcementReason":"RULE","EnforcementAction":"ALLOW","EnforcementDisposition":"CONNECTED"}
+{"LogTimestamp":"Fri Nov  6 08:00:06 2026","Customer":"Example Corp","AgentID":"71234567890123456-98032e15dee3d704713d9a8368a2c50f","AgentName":"srv-app-01.example.com-98032e15dee3d704713d9a8368a2c50f","ResourceID":"71234567890123456-8fe5a00c3ad21356fc301228968e970c","ResourceName":"srv-app-01.example.com","AppZoneID":"71234567890123456-6547eeb570535a78db73d4b2c59cdc01","AppZoneName":"example-zone-app","ConnectionStartTime":"2026-11-02T15:40:13.463Z","SourceIP":"192.0.2.10","DestinationIP":"192.0.2.20","SourcePorts":[45566,45568,45582,45584,45586],"DestinationPort":1443,"Protocol":6,"AppName":["ncat"],"AppExecutablePath":["/usr/bin/ncat"],"Direction":"OUTBOUND","PolicyID":"71234567890123456-b435222fdcaa2795a9ff0032c27e9181","PolicyName":"example_app_to_api_allow","EnforcementReason":"RULE","EnforcementAction":"ALLOW","EnforcementDisposition":"CONNECTED"}
+{"version":"v1","sourcetype":"zscaler_zpa.microsegmentation_flow","LogTimestamp":"Fri Nov  6 08:00:07 2026","Customer":"Example Corp","AgentID":"71234567890123456-98032e15dee3d704713d9a8368a2c50f","AgentName":"srv-app-01.example.com-98032e15dee3d704713d9a8368a2c50f","ResourceID":"71234567890123456-8fe5a00c3ad21356fc301228968e970c","ResourceName":"srv-app-01.example.com","AppZoneID":"71234567890123456-6547eeb570535a78db73d4b2c59cdc01","AppZoneName":"example-zone-app","ConnectionStartTime":"2026-11-02T15:40:13.463Z","SourceIP":"192.0.2.10","DestinationIP":"192.0.2.20","SourcePorts":[45566,45568,45582,45584,45586],"DestinationPort":1443,"Protocol":6,"AppName":["ncat"],"AppExecutablePath":["/usr/bin/ncat"],"Direction":"OUTBOUND","PolicyID":"71234567890123456-b435222fdcaa2795a9ff0032c27e9181","PolicyName":"example_app_to_api_allow","EnforcementReason":"RULE","EnforcementAction":"ALLOW","EnforcementDisposition":"CONNECTED"}

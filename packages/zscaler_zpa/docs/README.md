@@ -23,6 +23,14 @@ For detailed docs on setting up the ZPA log receiver, refer to the Zscaler docum
 **Domain or IP**: Use the IP address/hostname of the Elastic Agent  
 **TCP port**: Use the listening port of the Elastic Agent
 
+With the default **Listen Address** of `localhost`, only an App Connector on the same host as the Elastic Agent can deliver logs. Set it to `0.0.0.0`, or to the address of a specific interface, to accept logs from other hosts.
+
+Use one log receiver per log type, pointed at the listening port of the matching data stream. LSS can resend up to 15 minutes of logs after a connection outage, so duplicate records are possible.
+
+### Log templates with `version` and `sourcetype` keys
+
+Data streams whose response format starts with `version` and `sourcetype` keys have an advanced **Require Strict Field/Version Check** setting, which is off by default. When it is on, a record gets an `error.message` if its `version` or `sourcetype` is missing or doesn't match the data stream. Such records are still indexed.
+
 ## Compatibility
 
 This package has been tested against `Zscaler Private Access Client Connector version 3.7.1.44`
@@ -110,6 +118,42 @@ Sample Response:
 ```json
 {"LogTimestamp":"Fri May 31 17:34:48 2019","Customer":"Customer XYZ","Username":"ZPA LSS Client","SessionID":"vkczUERSLl88Y+ytH8v5","SessionStatus":"ZPN_STATUS_AUTHENTICATED","Version":"19.12.0-36-g87dad18","ZEN":"broker2b.pdx","CertificateCN":"loggerz2x.pde.zpabeta.net","PrivateIP":"","PublicIP":"81.2.69.144","Latitude":45,"Longitude":-119,"CountryCode":"US","TimestampAuthentication":"2019-05-29T21:18:38.000Z","TimestampUnAuthentication":"","TotalBytesRx":31274866,"TotalBytesTx":25424152,"Idp":"IDP Config","Hostname":"DESKTOP-99HCSJ1","Platform":"windows","ClientType":"zpn_client_type_zapp","TrustedNetworks":"TN1_stc1","TrustedNetworksNames":"145248739466696953","SAMLAttributes":"myname:user,myemail:user@zscaler.com","PosturesHit":"sm-posture1,sm-posture2","PosturesMiss":"sm-posture11,sm-posture12","ZENLatitude":47,"ZENLongitude":-122,"ZENCountryCode":""}
 ```
+
+### AppProtection Logs
+
+Default port: _9020_
+
+Vendor documentation: https://help.zscaler.com/zpa/understanding-appprotection-log-fields
+
+Zscaler AppProtection response format (v1):  
+```
+{"version":"v1","sourcetype":"zscaler_zpa.app_protection","LogTimestamp": %j{LogTimestamp:time},"Customer": %j{Customer},"ConnectionID": %j{ConnectionID},"UserID": %j{UserID},"AssistantID": %j{AssistantID},"ExchangeSequenceIndex": %d{ExchangeSequenceIndex},"TimestampRequestReceiveStart": %d{TimestampRequestReceiveStart},"TimestampRequestReceiveHeaderFinish": %d{TimestampRequestReceiveHeaderFinish},"TimestampRequestReceiveFinish": %d{TimestampRequestReceiveFinish},"TimestampRequestTransmitStart": %d{TimestampRequestTransmitStart},"TimestampRequestTransmitFinish": %d{TimestampRequestTransmitFinish},"TimestampResponseReceiveStart": %d{TimestampResponseReceiveStart},"TimestampResponseReceiveFinish": %d{TimestampResponseReceiveFinish},"TimestampResponseTransmitStart": %d{TimestampResponseTransmitStart},"TimestampResponseTransmitFinish": %d{TimestampResponseTransmitFinish},"TotalTimeRequestReceive": %d{TotalTimeRequestReceive},"TotalTimeRequestTransmit": %d{TotalTimeRequestTransmit},"TotalTimeResponseReceive": %d{TotalTimeResponseReceive},"TotalTimeResponseTransmit": %d{TotalTimeResponseTransmit},"Domain": %j{Domain},"Method": %j{Method},"Protocol": %j{Protocol},"ProtocolVersion": %j{ProtocolVersion},"ContentType": %j{ContentType},"ContentEncoding": %j{ContentEncoding},"TransferEncoding": %j{TransferEncoding},"Host": %j{Host},"Destination": %j{Destination},"OriginDomain": %j{OriginDomain},"URL": %j{URL},"UserAgent": %j{UserAgent},"HTTPError": %j{HTTPError},"ClientPublicIp": %j{ClientPublicIp},"ClientPort": %d{ClientPort},"UpgradeHeaderPresent": %d{UpgradeHeaderPresent},"StatusCode": %d{StatusCode},"RequestHdrSize": %d{RequestHdrSize},"ResponseHdrSize": %d{ResponseHdrSize},"RequestBodySize": %d{RequestBodySize},"ResponseBodySize": %d{ResponseBodySize},"Application": %d{Application},"ApplicationGroup": %d{ApplicationGroup},"InspectionPolicy": %d{InspectionPolicy},"InspectionProfile": %d{InspectionProfile},"ParanoiaLevel": %d{ParanoiaLevel},"InspectionControlsHitCount": %d{InspectionControlsHitCount},"InspectionRuleProcessingTime": %d{InspectionRuleProcessingTime},"InspectionReqHeadersProcessingTime": %d{InspectionReqHeadersProcessingTime},"InspectionReqBodyProcessingTime": %d{InspectionReqBodyProcessingTime},"InspectionRespHeadersProcessingTime": %d{InspectionRespHeadersProcessingTime},"InspectionRespBodyProcessingTime": %d{InspectionRespBodyProcessingTime},"CertificateId": %d{CertificateId},"DoubleEncryption": %d{DoubleEncryption},"SSLInspection": %d{SSLInspection},"TotalBytesProcessed": %d{TotalBytesProcessed},"InspectionControls": [%j(,){InspectionControlArray}],"InspectionControlTypes": [%j(,){ControlTypeArray}],"InspectionControlCategories": [%j(,){InspectionControlCategories}],"Actions": [%j(,){Actions}],"Severities": [%j(,){SeveritiesArray}],"Descriptions": [%j(,){DescriptiveExplanationsArray}]}\n
+```
+
+Sample Response: 
+```json
+{"version":"v1","sourcetype":"zscaler_zpa.app_protection","LogTimestamp": "Mon Nov  2 15:32:26 2026","Customer": "Example Corp","ConnectionID": "q7Rk2LmXw9TfB4vNe1Hs,Zp3YdG8uKc+Wj0aQxE5n","UserID": "10000001","AssistantID": "Example Connector-1700000000001","ExchangeSequenceIndex": 0,"TimestampRequestReceiveStart": 1793633546400202,"TimestampRequestReceiveHeaderFinish": 1793633546400227,"TimestampRequestReceiveFinish": 1793633546401233,"TimestampRequestTransmitStart": 0,"TimestampRequestTransmitFinish": 0,"TimestampResponseReceiveStart": 1793633546404520,"TimestampResponseReceiveFinish": 1793633546404612,"TimestampResponseTransmitStart": 0,"TimestampResponseTransmitFinish": 1793633546404684,"TotalTimeRequestReceive": 0,"TotalTimeRequestTransmit": 0,"TotalTimeResponseReceive": 92,"TotalTimeResponseTransmit": 0,"Domain": "dvwa.example.com","Method": "GET","Protocol": "HTTP","ProtocolVersion": "1.1","ContentType": "","ContentEncoding": "","TransferEncoding": "","Host": "dvwa.example.com","Destination": "dvwa.example.com","OriginDomain": "","URL": "/","UserAgent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36","HTTPError": "success","ClientPublicIp": "203.0.113.11","ClientPort": 80,"UpgradeHeaderPresent": 0,"StatusCode": 302,"RequestHdrSize": 364,"ResponseHdrSize": 405,"RequestBodySize": 0,"ResponseBodySize": 0,"Application": 216172782113784001,"ApplicationGroup": 216172782113783942,"InspectionPolicy": 216172782113784010,"InspectionProfile": 216172782113784008,"ParanoiaLevel": 4,"InspectionControlsHitCount": 0,"InspectionRuleProcessingTime": 2798,"InspectionReqHeadersProcessingTime": 964,"InspectionReqBodyProcessingTime": 1758,"InspectionRespHeadersProcessingTime": 34,"InspectionRespBodyProcessingTime": 42,"CertificateId": 0,"DoubleEncryption": 0,"SSLInspection": 0,"TotalBytesProcessed": 0,"InspectionControls": [],"InspectionControlTypes": [],"InspectionControlCategories": [],"Actions": [],"Severities": [],"Descriptions": []}
+```
+
+**Note: AppProtection logs are only produced when the ZPA AppProtection add-on is in use. Records where AppProtection controls were hit are indexed with `event.kind: alert`. This data stream is enabled by default, so upgrading adds a listener on port 9020.**
+
+### Microsegmentation Flow Logs
+
+Default port: _9021_
+
+Vendor documentation: https://help.zscaler.com/zpa/understanding-microsegmentation-flow-log-fields
+
+Zscaler Microsegmentation Flow response format (v1):  
+```
+{"version":"v1","sourcetype":"zscaler_zpa.microsegmentation_flow","LogTimestamp": %j{LogTimestamp:time},"Customer": %j{Customer},"AgentID": %j{AgentID},"AgentName": %j{AgentName},"ResourceID": %j{ResourceID},"ResourceName": %j{ResourceName},"AppZoneID": %j{AppZoneID},"AppZoneName": %j{AppZoneName},"ConnectionStartTime": %j{ConnectionStartTime:iso8601},"SourceIP": %j{SourceIP},"DestinationIP": %j{DestinationIP},"SourcePorts": [%d(,){SourcePorts}],"DestinationPort": %d{DestinationPort},"Protocol": %d{Protocol},"AppName": [%j(,){AppName}],"AppExecutablePath": [%j(,){AppExecutablePath}],"Direction": %j{Direction},"PolicyID": %j{PolicyID},"PolicyName": %j{PolicyName},"EnforcementReason": %j{EnforcementReason},"EnforcementAction": %j{EnforcementAction},"EnforcementDisposition": %j{EnforcementDisposition}}\n
+```
+
+Sample Response: 
+```json
+{"version":"v1","sourcetype":"zscaler_zpa.microsegmentation_flow","LogTimestamp": "Mon Nov  2 15:40:18 2026","Customer": "Example Corp","AgentID": "71234567890123456-98032e15dee3d704713d9a8368a2c50f","AgentName": "srv-app-01.example.com-98032e15dee3d704713d9a8368a2c50f","ResourceID": "71234567890123456-8fe5a00c3ad21356fc301228968e970c","ResourceName": "srv-app-01.example.com","AppZoneID": "71234567890123456-6547eeb570535a78db73d4b2c59cdc01","AppZoneName": "example-zone-app","ConnectionStartTime": "2026-11-02T15:40:13.463Z","SourceIP": "192.0.2.10","DestinationIP": "192.0.2.20","SourcePorts": [45566,45568,45582,45584,45586],"DestinationPort": 1443,"Protocol": 6,"AppName": ["ncat"],"AppExecutablePath": ["/usr/bin/ncat"],"Direction": "OUTBOUND","PolicyID": "71234567890123456-b435222fdcaa2795a9ff0032c27e9181","PolicyName": "example_app_to_api_allow","EnforcementReason": "RULE","EnforcementAction": "ALLOW","EnforcementDisposition": "CONNECTED"}
+```
+
+**Note: Microsegmentation Flow logs are only produced when Zscaler Microsegmentation is provisioned for the tenant. This data stream is enabled by default, so upgrading adds a listener on port 9021.**
 
 ## Fields and Sample Event
 
@@ -296,7 +340,7 @@ An example event for `app_connector_status` looks as following:
 }
 ```
 
-## Audit Logs
+### Audit Logs
 
 **Exported fields**
 
@@ -424,7 +468,7 @@ An example event for `audit` looks as following:
 }
 ```
 
-## Browser Access Logs
+### Browser Access Logs
 
 **Exported fields**
 
@@ -635,7 +679,7 @@ An example event for `browser_access` looks as following:
 }
 ```
 
-## User Activity Logs
+### User Activity Logs
 
 **Exported fields**
 
@@ -870,7 +914,7 @@ An example event for `user_activity` looks as following:
 }
 ```
 
-## User Status Logs
+### User Status Logs
 
 **Exported fields**
 
@@ -1043,6 +1087,383 @@ An example event for `user_status` looks as following:
             "zen": {
                 "domain": "broker2b.pdx"
             }
+        }
+    }
+}
+```
+
+### AppProtection Logs
+
+**Exported fields**
+
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |
+| input.type | Type of filebeat input. | keyword |  |
+| log.offset | Log offset. | long |  |
+| log.source.address | Source address from which the log event was read / sent from. | keyword |  |
+| zscaler_zpa.app_protection.actions | The action taken for each AppProtection control hit, index-aligned with `rule.id`. | keyword |  |
+| zscaler_zpa.app_protection.application | The ID of the application. | keyword |  |
+| zscaler_zpa.app_protection.application_group | The ID of the application group. | keyword |  |
+| zscaler_zpa.app_protection.assistant_id | Documented by Zscaler as the App Connector ID, but the values seen are App Connector names. | keyword |  |
+| zscaler_zpa.app_protection.certificate_id | The certificate ID. 0 means no certificate. | keyword |  |
+| zscaler_zpa.app_protection.client_port | The port of the client, as reported. Observed values suggest it may be the server port. | long |  |
+| zscaler_zpa.app_protection.connection_id | The application connection ID. Joins with `zscaler_zpa.user_activity.connection.id`. | keyword |  |
+| zscaler_zpa.app_protection.content_encoding | The value of the content encoding within the HTTP header. | keyword |  |
+| zscaler_zpa.app_protection.content_type | The content type. | keyword |  |
+| zscaler_zpa.app_protection.double_encryption | Whether double encryption is on. | boolean |  |
+| zscaler_zpa.app_protection.exchange_sequence_index | The HTTP exchange sequence index within the TCP connection. | long |  |
+| zscaler_zpa.app_protection.http_error | The HTTP error. | keyword |  |
+| zscaler_zpa.app_protection.inspection_control_types | The type of each AppProtection control hit, index-aligned with `rule.id`. | keyword |  |
+| zscaler_zpa.app_protection.inspection_controls_hit_count | The number of AppProtection control hits. | long |  |
+| zscaler_zpa.app_protection.inspection_policy | The ID of the AppProtection policy. | keyword |  |
+| zscaler_zpa.app_protection.inspection_profile | The ID of the AppProtection profile. | keyword |  |
+| zscaler_zpa.app_protection.inspection_req_body_processing_time | The time in microseconds taken for processing the AppProtection request body. | long | micros |
+| zscaler_zpa.app_protection.inspection_req_headers_processing_time | The time in microseconds taken for processing the AppProtection request headers. | long | micros |
+| zscaler_zpa.app_protection.inspection_resp_body_processing_time | The time in microseconds taken for processing the AppProtection response body. | long | micros |
+| zscaler_zpa.app_protection.inspection_resp_headers_processing_time | The time in microseconds taken for processing the AppProtection response headers. | long | micros |
+| zscaler_zpa.app_protection.inspection_rule_processing_time | The time in microseconds taken for processing the AppProtection rule. | long | micros |
+| zscaler_zpa.app_protection.micro_tenant_id | The Microtenant ID. | keyword |  |
+| zscaler_zpa.app_protection.origin_domain | The value of the origin header in the cross-origin HTTP header. | keyword |  |
+| zscaler_zpa.app_protection.paranoia_level | The OWASP predefined paranoia level (1-4). | long |  |
+| zscaler_zpa.app_protection.protocol | The protocol, as reported. Copied to `network.protocol` when it is a protocol name, or to `http.version` when it is an HTTP version and `ProtocolVersion` is empty. | keyword |  |
+| zscaler_zpa.app_protection.request_hdr_size | The size of the request header. | long | byte |
+| zscaler_zpa.app_protection.response_hdr_size | The size of the response header. | long | byte |
+| zscaler_zpa.app_protection.severities | The severity of each AppProtection control hit, as reported, index-aligned with `rule.id`. | keyword |  |
+| zscaler_zpa.app_protection.ssl_inspection | Whether the inspected HTTPS traffic was terminated. | boolean |  |
+| zscaler_zpa.app_protection.timestamp_request_receive_finish | When the received request was finished. | date_nanos |  |
+| zscaler_zpa.app_protection.timestamp_request_receive_header_finish | When the received request header was finished. | date_nanos |  |
+| zscaler_zpa.app_protection.timestamp_request_receive_start | When the received request was started. | date_nanos |  |
+| zscaler_zpa.app_protection.timestamp_request_transmit_finish | When the transmitted request was finished. | date_nanos |  |
+| zscaler_zpa.app_protection.timestamp_request_transmit_start | When the transmitted request was started. | date_nanos |  |
+| zscaler_zpa.app_protection.timestamp_response_receive_finish | When the received response was finished. | date_nanos |  |
+| zscaler_zpa.app_protection.timestamp_response_receive_start | When the received response was started. | date_nanos |  |
+| zscaler_zpa.app_protection.timestamp_response_transmit_finish | When the transmitted response was finished. | date_nanos |  |
+| zscaler_zpa.app_protection.timestamp_response_transmit_start | When the transmitted response was started. | date_nanos |  |
+| zscaler_zpa.app_protection.total_bytes_processed | The total bytes processed. | long | byte |
+| zscaler_zpa.app_protection.total_time_request_receive | The total time taken in microseconds for the request to be received. | long | micros |
+| zscaler_zpa.app_protection.total_time_request_transmit | The total time taken in microseconds for the request to be transmitted. | long | micros |
+| zscaler_zpa.app_protection.total_time_response_receive | The total time taken in microseconds for the response to be received. | long | micros |
+| zscaler_zpa.app_protection.total_time_response_transmit | The total time taken in microseconds for the response to be transmitted. | long | micros |
+| zscaler_zpa.app_protection.transfer_encoding | The value of the transfer encoding within the HTTP header. | keyword |  |
+| zscaler_zpa.app_protection.upgrade_header_present | Whether the upgrade header is present. | boolean |  |
+
+
+An example event for `app_protection` looks as following:
+
+```json
+{
+    "@timestamp": "2026-11-02T15:32:26.000Z",
+    "agent": {
+        "ephemeral_id": "879dfe66-8ca1-4210-bf58-029f95d8cf91",
+        "id": "ea7af754-2cee-4f10-9d6b-fe8ad7502ce7",
+        "name": "elastic-agent-65958",
+        "type": "filebeat",
+        "version": "8.13.0"
+    },
+    "client": {
+        "as": {
+            "number": 64502,
+            "organization": {
+                "name": "Documentation ASN"
+            }
+        },
+        "geo": {
+            "city_name": "Madrid",
+            "continent_name": "Europe",
+            "country_iso_code": "ES",
+            "country_name": "Spain",
+            "location": {
+                "lat": 40.41639,
+                "lon": -3.7025
+            },
+            "region_iso_code": "ES-M",
+            "region_name": "Madrid"
+        },
+        "ip": "203.0.113.11"
+    },
+    "data_stream": {
+        "dataset": "zscaler_zpa.app_protection",
+        "namespace": "71296",
+        "type": "logs"
+    },
+    "destination": {
+        "address": "dvwa.example.com",
+        "domain": "dvwa.example.com"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "ea7af754-2cee-4f10-9d6b-fe8ad7502ce7",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "web"
+        ],
+        "dataset": "zscaler_zpa.app_protection",
+        "duration": 4482000,
+        "end": "2026-11-02T15:32:26.404684Z",
+        "ingested": "2026-11-18T11:43:03Z",
+        "kind": "event",
+        "original": "{\"version\":\"v1\",\"sourcetype\":\"zscaler_zpa.app_protection\",\"LogTimestamp\": \"Mon Nov  2 15:32:26 2026\",\"Customer\": \"Example Corp\",\"ConnectionID\": \"q7Rk2LmXw9TfB4vNe1Hs,Zp3YdG8uKc+Wj0aQxE5n\",\"UserID\": \"10000001\",\"AssistantID\": \"Example Connector-1700000000001\",\"ExchangeSequenceIndex\": 0,\"TimestampRequestReceiveStart\": 1793633546400202,\"TimestampRequestReceiveHeaderFinish\": 1793633546400227,\"TimestampRequestReceiveFinish\": 1793633546401233,\"TimestampRequestTransmitStart\": 0,\"TimestampRequestTransmitFinish\": 0,\"TimestampResponseReceiveStart\": 1793633546404520,\"TimestampResponseReceiveFinish\": 1793633546404612,\"TimestampResponseTransmitStart\": 0,\"TimestampResponseTransmitFinish\": 1793633546404684,\"TotalTimeRequestReceive\": 0,\"TotalTimeRequestTransmit\": 0,\"TotalTimeResponseReceive\": 92,\"TotalTimeResponseTransmit\": 0,\"Domain\": \"dvwa.example.com\",\"Method\": \"GET\",\"Protocol\": \"HTTP\",\"ProtocolVersion\": \"1.1\",\"ContentType\": \"\",\"ContentEncoding\": \"\",\"TransferEncoding\": \"\",\"Host\": \"dvwa.example.com\",\"Destination\": \"dvwa.example.com\",\"OriginDomain\": \"\",\"URL\": \"/\",\"UserAgent\": \"Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36\",\"HTTPError\": \"success\",\"ClientPublicIp\": \"203.0.113.11\",\"ClientPort\": 80,\"UpgradeHeaderPresent\": 0,\"StatusCode\": 302,\"RequestHdrSize\": 364,\"ResponseHdrSize\": 405,\"RequestBodySize\": 0,\"ResponseBodySize\": 0,\"Application\": 216172782113784001,\"ApplicationGroup\": 216172782113783942,\"InspectionPolicy\": 216172782113784010,\"InspectionProfile\": 216172782113784008,\"ParanoiaLevel\": 4,\"InspectionControlsHitCount\": 0,\"InspectionRuleProcessingTime\": 2798,\"InspectionReqHeadersProcessingTime\": 964,\"InspectionReqBodyProcessingTime\": 1758,\"InspectionRespHeadersProcessingTime\": 34,\"InspectionRespBodyProcessingTime\": 42,\"CertificateId\": 0,\"DoubleEncryption\": 0,\"SSLInspection\": 0,\"TotalBytesProcessed\": 0,\"InspectionControls\": [],\"InspectionControlTypes\": [],\"InspectionControlCategories\": [],\"Actions\": [],\"Severities\": [],\"Descriptions\": []}",
+        "start": "2026-11-02T15:32:26.400202Z",
+        "type": [
+            "access"
+        ]
+    },
+    "http": {
+        "request": {
+            "body": {
+                "bytes": 0
+            },
+            "method": "GET"
+        },
+        "response": {
+            "body": {
+                "bytes": 0
+            },
+            "status_code": 302
+        },
+        "version": "1.1"
+    },
+    "input": {
+        "type": "tcp"
+    },
+    "log": {
+        "source": {
+            "address": "172.16.6.3:56904"
+        }
+    },
+    "network": {
+        "protocol": "http"
+    },
+    "organization": {
+        "name": "Example Corp"
+    },
+    "related": {
+        "hosts": [
+            "dvwa.example.com"
+        ],
+        "ip": [
+            "203.0.113.11"
+        ],
+        "user": [
+            "10000001"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "zscaler_zpa-app_protection"
+    ],
+    "url": {
+        "domain": "dvwa.example.com",
+        "original": "/",
+        "path": "/"
+    },
+    "user": {
+        "name": "10000001"
+    },
+    "user_agent": {
+        "device": {
+            "name": "Other"
+        },
+        "name": "Chrome",
+        "original": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+        "os": {
+            "full": "Windows 10",
+            "name": "Windows",
+            "version": "10"
+        },
+        "version": "126.0.0.0"
+    },
+    "zscaler_zpa": {
+        "app_protection": {
+            "application": "216172782113784001",
+            "application_group": "216172782113783942",
+            "assistant_id": "Example Connector-1700000000001",
+            "certificate_id": "0",
+            "client_port": 80,
+            "connection_id": "q7Rk2LmXw9TfB4vNe1Hs,Zp3YdG8uKc+Wj0aQxE5n",
+            "double_encryption": false,
+            "exchange_sequence_index": 0,
+            "http_error": "success",
+            "inspection_controls_hit_count": 0,
+            "inspection_policy": "216172782113784010",
+            "inspection_profile": "216172782113784008",
+            "inspection_req_body_processing_time": 1758,
+            "inspection_req_headers_processing_time": 964,
+            "inspection_resp_body_processing_time": 42,
+            "inspection_resp_headers_processing_time": 34,
+            "inspection_rule_processing_time": 2798,
+            "paranoia_level": 4,
+            "protocol": "HTTP",
+            "request_hdr_size": 364,
+            "response_hdr_size": 405,
+            "ssl_inspection": false,
+            "timestamp_request_receive_finish": "2026-11-02T15:32:26.401233Z",
+            "timestamp_request_receive_header_finish": "2026-11-02T15:32:26.400227Z",
+            "timestamp_request_receive_start": "2026-11-02T15:32:26.400202Z",
+            "timestamp_response_receive_finish": "2026-11-02T15:32:26.404612Z",
+            "timestamp_response_receive_start": "2026-11-02T15:32:26.404520Z",
+            "timestamp_response_transmit_finish": "2026-11-02T15:32:26.404684Z",
+            "total_bytes_processed": 0,
+            "total_time_request_receive": 0,
+            "total_time_request_transmit": 0,
+            "total_time_response_receive": 92,
+            "total_time_response_transmit": 0,
+            "upgrade_header_present": false
+        }
+    }
+}
+```
+
+### Microsegmentation Flow Logs
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| log.source.address | Source address from which the log event was read / sent from. | keyword |
+| zscaler_zpa.microsegmentation_flow.agent_id | The Microsegmentation agent ID. This is the Zscaler host agent, not the Elastic Agent. | keyword |
+| zscaler_zpa.microsegmentation_flow.agent_name | The Microsegmentation agent name. | keyword |
+| zscaler_zpa.microsegmentation_flow.app_zone_id | The ID of the AppZone the agent belongs to. | keyword |
+| zscaler_zpa.microsegmentation_flow.app_zone_name | The name of the AppZone the agent belongs to. | keyword |
+| zscaler_zpa.microsegmentation_flow.direction | The connection direction, kept only when it is not one of the values mapped to `network.direction` (`INBOUND`, `OUTBOUND` or `UNKNOWN`). | keyword |
+| zscaler_zpa.microsegmentation_flow.enforcement_action | The policy enforcement action configured on the connection (`ALLOW`, `BLOCK` or `SIMBLOCK`, a simulated block). | keyword |
+| zscaler_zpa.microsegmentation_flow.enforcement_disposition | The policy enforcement decision on the connection (`UNKNOWN`, `CONNECTED`, `REJECTED` or `DROPPED`). | keyword |
+| zscaler_zpa.microsegmentation_flow.micro_tenant_id | The Microtenant ID. | keyword |
+| zscaler_zpa.microsegmentation_flow.source_ports | The source ports of the aggregated connections between the same source, destination, protocol and destination port. | long |
+
+
+An example event for `microsegmentation_flow` looks as following:
+
+```json
+{
+    "@timestamp": "2026-11-02T15:40:18.000Z",
+    "agent": {
+        "ephemeral_id": "615bc3ab-4cca-4500-983f-41b5ad1654c7",
+        "id": "e19566e9-c5e0-470e-b81b-b6fbe3e1dc1d",
+        "name": "elastic-agent-39008",
+        "type": "filebeat",
+        "version": "8.13.0"
+    },
+    "data_stream": {
+        "dataset": "zscaler_zpa.microsegmentation_flow",
+        "namespace": "57742",
+        "type": "logs"
+    },
+    "destination": {
+        "ip": "192.0.2.20",
+        "port": 1443
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "e19566e9-c5e0-470e-b81b-b6fbe3e1dc1d",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
+    "event": {
+        "action": "allow",
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "dataset": "zscaler_zpa.microsegmentation_flow",
+        "ingested": "2026-11-18T11:44:55Z",
+        "kind": "event",
+        "original": "{\"version\":\"v1\",\"sourcetype\":\"zscaler_zpa.microsegmentation_flow\",\"LogTimestamp\": \"Mon Nov  2 15:40:18 2026\",\"Customer\": \"Example Corp\",\"AgentID\": \"71234567890123456-98032e15dee3d704713d9a8368a2c50f\",\"AgentName\": \"srv-app-01.example.com-98032e15dee3d704713d9a8368a2c50f\",\"ResourceID\": \"71234567890123456-8fe5a00c3ad21356fc301228968e970c\",\"ResourceName\": \"srv-app-01.example.com\",\"AppZoneID\": \"71234567890123456-6547eeb570535a78db73d4b2c59cdc01\",\"AppZoneName\": \"example-zone-app\",\"ConnectionStartTime\": \"2026-11-02T15:40:13.463Z\",\"SourceIP\": \"192.0.2.10\",\"DestinationIP\": \"192.0.2.20\",\"SourcePorts\": [45566,45568,45582,45584,45586],\"DestinationPort\": 1443,\"Protocol\": 6,\"AppName\": [\"ncat\"],\"AppExecutablePath\": [\"/usr/bin/ncat\"],\"Direction\": \"OUTBOUND\",\"PolicyID\": \"71234567890123456-b435222fdcaa2795a9ff0032c27e9181\",\"PolicyName\": \"example_app_to_api_allow\",\"EnforcementReason\": \"RULE\",\"EnforcementAction\": \"ALLOW\",\"EnforcementDisposition\": \"CONNECTED\"}",
+        "outcome": "success",
+        "reason": "RULE",
+        "start": "2026-11-02T15:40:13.463Z",
+        "type": [
+            "connection",
+            "allowed"
+        ]
+    },
+    "host": {
+        "id": "71234567890123456-8fe5a00c3ad21356fc301228968e970c",
+        "name": "srv-app-01.example.com"
+    },
+    "input": {
+        "type": "tcp"
+    },
+    "log": {
+        "source": {
+            "address": "172.16.6.3:56016"
+        }
+    },
+    "network": {
+        "direction": "egress",
+        "iana_number": "6",
+        "transport": "tcp"
+    },
+    "organization": {
+        "name": "Example Corp"
+    },
+    "process": {
+        "executable": [
+            "/usr/bin/ncat"
+        ],
+        "name": [
+            "ncat"
+        ]
+    },
+    "related": {
+        "hosts": [
+            "srv-app-01.example.com"
+        ],
+        "ip": [
+            "192.0.2.10",
+            "192.0.2.20"
+        ]
+    },
+    "rule": {
+        "id": "71234567890123456-b435222fdcaa2795a9ff0032c27e9181",
+        "name": "example_app_to_api_allow"
+    },
+    "source": {
+        "ip": "192.0.2.10"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "zscaler_zpa-microsegmentation_flow"
+    ],
+    "zscaler_zpa": {
+        "microsegmentation_flow": {
+            "agent_id": "71234567890123456-98032e15dee3d704713d9a8368a2c50f",
+            "agent_name": "srv-app-01.example.com-98032e15dee3d704713d9a8368a2c50f",
+            "app_zone_id": "71234567890123456-6547eeb570535a78db73d4b2c59cdc01",
+            "app_zone_name": "example-zone-app",
+            "enforcement_action": "ALLOW",
+            "enforcement_disposition": "CONNECTED",
+            "source_ports": [
+                45566,
+                45568,
+                45582,
+                45584,
+                45586
+            ]
         }
     }
 }

@@ -1,0 +1,65 @@
+# A message that is not valid JSON, or is JSON but not an object, must be
+# indexed as a pipeline_error document that keeps the raw payload, so the
+# failure can be diagnosed from the document itself.
+# The pipeline test runner fails any document with error.message, so these
+# cases cannot be pipeline tests.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+install_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+! stderr .
+
+# 0: truncated record.
+# 1: record with a comma where a colon should be.
+# 2: JSON array.
+# 3: JSON string.
+exec jq -cR '{message: ., tags: ["forwarded"], data_stream: {type: "logs", dataset: "zscaler_zpa.app_protection", namespace: "ep"}, _conf: {strict_fields: true}}' records.ndjson
+cp stdout data.json
+
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default data.json
+! stderr .
+cp stdout got.json
+
+exec jq -s 'length' got.json
+stdout '^4$'
+
+# All reach the pipeline-level on_failure handler.
+exec jq -s -r '.[].event.kind' got.json
+stdout -count=4 '^pipeline_error$'
+exec jq -s 'map(.error.message | length == 1) | all' got.json
+stdout '^true$'
+
+# Invalid JSON fails in the decode step; JSON that is not an object reaches the
+# guard that requires an object.
+exec jq -s -r '.[0:2][] | .error.message[0]' got.json
+stdout -count=2 '^Processor .json. with tag .json_event_original_to_json. in pipeline .* failed with message '
+exec jq -s -r '.[0].error.message[0]' got.json
+stdout 'Unexpected end-of-input'
+exec jq -s -r '.[1].error.message[0]' got.json
+stdout 'was expecting a colon'
+exec jq -s -r '.[2:4][] | .error.message[0]' got.json
+stdout -count=2 '^Processor .conditional. with tag .fail_json_not_object. in pipeline .* failed with message .expected event\.original to be a JSON object.$'
+
+# The raw payload is kept and tagged for preservation.
+exec jq -s --rawfile raw records.ndjson '[.[].event.original] == ($raw | split("\n") | map(select(. != "")))' got.json
+stdout '^true$'
+exec jq -s 'map(.tags | index("preserve_original_event") != null) | all' got.json
+stdout '^true$'
+
+# Nothing is parsed, and the internal fields are removed.
+exec jq -s -c 'map(keys) | unique' got.json
+stdout '^\[\["data_stream","ecs","error","event","tags"\]\]$'
+exec jq -s -c 'map(.event | keys) | unique' got.json
+stdout '^\[\["kind","original"\]\]$'
+
+uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+! stderr .
+
+-- records.ndjson --
+{"version": "v1","sourcetype": "zscaler_zpa.app_protection","LogTimestamp": "Sat Nov  7 12:00:00 2026","Customer": "Example Corp","ConnectionID": "Aa1Bb2Cc3Dd4Ee5Ff6Gg,Hh7Ii8Jj9Kk0Ll+Mm1N","UserID": "alice@example.com","AssistantID": "Example Connector-1700000000002","ExchangeSequenceIndex": 0,"TimestampRequestReceiveStart": 1794052800100000,"TimestampRequestReceiveHeaderFinish": 1794052800100021,
+{"LogTimestamp": "Sat Nov  7 12:00:01 2026","Customer": "Example Corp","ConnectionID": "Aa1Bb2Cc3Dd4Ee5Ff6Gg,Hh7Ii8Jj9Kk0Ll+Mm1N","UserID": "alice@example.com","AssistantID": "Example Connector-1700000000002","ExchangeSequenceIndex": 0,"TimestampRequestReceiveStart": 1794052801100000,"TimestampRequestReceiveHeaderFinish": 1794052801100021,"TimestampRequestReceiveFinish": 1794052801100840,"TimestampRequestTransmitStart": 1794052801100900,"TimestampRequestTransmitFinish": 1794052801100950,"TimestampResponseReceiveFinish": 1794052801104100,"TimestampResponseTransmitStart": 1794052801104150,"TimestampResponseTransmitFinish": 1794052801104200,"TotalTimeRequestReceive": 819,"TotalTimeRequestTransmit": 50,"TotalTimeResponseReceive": 61,"TotalTimeResponseTransmit": 50,"Domain": "app.example.com","Method": "GET","Protocol": "HTTP","ProtocolVersion": "1.1","ContentType": "text/html","ContentEncoding": "gzip","TransferEncoding": "chunked","Host": "app.example.com","Destination": "app.example.com","OriginDomain": "https://portal.example.com","URL": "/index.html","UserAgent": "curl/8.5.0","HTTPError": "success","ClientPublicIp": "198.51.100.25","ClientPort": 443,"UpgradeHeaderPresent": 0,"StatusCode": 200,"RequestHdrSize": 98,"ResponseHdrSize": 240,"RequestBodySize", 0,"ResponseBodySize": 1520,"Application": 216172782113784101,"ApplicationGroup": 216172782113784102,"InspectionPolicy": 216172782113784110,"InspectionProfile": 216172782113784108,"ParanoiaLevel": 2,"InspectionControlsHitCount": 0,"InspectionRuleProcessingTime": 1200,"InspectionReqHeadersProcessingTime": 400,"InspectionReqBodyProcessingTime": 700,"InspectionRespHeadersProcessingTime": 30,"InspectionRespBodyProcessingTime": 70,"CertificateId": 216172782113784120,"DoubleEncryption": 1,"SSLInspection": 1,"TotalBytesProcessed": 1858,"InspectionControls": [],"InspectionControlTypes": [],"InspectionControlCategories": [],"Actions": [],"Severities": [],"Descriptions": []}
+["not", "an", "object"]
+"not an object"
