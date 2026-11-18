@@ -1,12 +1,13 @@
 # The Audit API rejects the stored cursorRef (403). The CEL program indexes one
 # error document, drops cursor.ref, keeps cursor.last_timestamp, and on the
-# next poll creates a new query whose dateFrom is the last event time.
+# next poll creates a new query whose dateFrom is 5 minutes before the last
+# event time.
 #
 # Request flow (interval 5s, page_size 3):
 #   poll 1: token -> createQuery -> cursor-ref-query
 #           results(cursor-ref-query)   -> 1 event (2099-11-03 14:42:42.914), cursor-ref-expired
 #           results(cursor-ref-expired) -> 403, error document, cursor.ref dropped
-#   poll 2: createQuery with dateFrom "2099-11-03 14:42:42" -> cursor-ref-resumed
+#   poll 2: createQuery with dateFrom "2099-11-03 14:37:42" -> cursor-ref-resumed
 #           results(cursor-ref-resumed)   -> the last event again + 1 new event,
 #                                            cursor-ref-resumed-2
 #           results(cursor-ref-resumed-2) -> 0 events (caught up)
@@ -34,7 +35,7 @@ add_package -profile ${CONFIG_PROFILES}/${PROFILE}
 add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
 
 # 2 audit events + 1 cursor-rejection error document, and no more. The resumed
-# query returns the last event a second time (its time is the new dateFrom).
+# query returns the last event a second time (the new dateFrom is before it).
 # The pipeline sets _id from the event uuid, so the repeat does not make a
 # third audit document.
 get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 3 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
@@ -226,7 +227,7 @@ services:
 -- audit-mock/config.yml --
 rules:
   # Resumed query: matches only the dateFrom built from cursor.last_timestamp
-  # (4097400162914 ms -> 2099-11-03 14:42:42).
+  # minus 5 minutes (4097400162914 ms -> 2099-11-03 14:42:42 -> 14:37:42).
   - path: /api/audits/stream/createQuery
     methods: ['POST']
     request_headers:
@@ -234,7 +235,7 @@ rules:
         - '^Bearer test-access-token$'
       X-Api-Key:
         - '^test-api-key$'
-    request_body: '/"dateFrom": ?"2099-11-03 14:42:42"/'
+    request_body: '/"dateFrom": ?"2099-11-03 14:37:42"/'
     responses:
       - status_code: 200
         headers:
