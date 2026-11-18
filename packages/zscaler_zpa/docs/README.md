@@ -1107,43 +1107,43 @@ An example event for `user_status` looks as following:
 | input.type | Type of filebeat input. | keyword |  |
 | log.offset | Log offset. | long |  |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |  |
-| zscaler_zpa.app_protection.actions | The action taken for each AppProtection control hit, index-aligned with `rule.id`. | keyword |  |
-| zscaler_zpa.app_protection.application | The ID of the application. | keyword |  |
-| zscaler_zpa.app_protection.application_group | The ID of the application group. | keyword |  |
-| zscaler_zpa.app_protection.assistant_id | Documented by Zscaler as the App Connector ID, but the values seen are App Connector names. | keyword |  |
-| zscaler_zpa.app_protection.certificate_id | The certificate ID. 0 means no certificate. | keyword |  |
-| zscaler_zpa.app_protection.client_port | The port of the client, as reported. Observed values suggest it may be the server port. | long |  |
-| zscaler_zpa.app_protection.connection_id | The application connection ID. Joins with `zscaler_zpa.user_activity.connection.id`. | keyword |  |
+| zscaler_zpa.app_protection.actions | The inspection control actions. | keyword |  |
+| zscaler_zpa.app_protection.application | The application. | keyword |  |
+| zscaler_zpa.app_protection.application_group | The application group. | keyword |  |
+| zscaler_zpa.app_protection.assistant_id | The App Connector ID. | keyword |  |
+| zscaler_zpa.app_protection.certificate_id | The certificate ID. | keyword |  |
+| zscaler_zpa.app_protection.client_port | The port of the client. | long |  |
+| zscaler_zpa.app_protection.connection_id | The application connection ID. | keyword |  |
 | zscaler_zpa.app_protection.content_encoding | The value of the content encoding within the HTTP header. | keyword |  |
 | zscaler_zpa.app_protection.content_type | The content type. | keyword |  |
-| zscaler_zpa.app_protection.double_encryption | Whether double encryption is on. | boolean |  |
+| zscaler_zpa.app_protection.double_encryption | The double encryption status. | boolean |  |
 | zscaler_zpa.app_protection.exchange_sequence_index | The HTTP exchange sequence index within the TCP connection. | long |  |
 | zscaler_zpa.app_protection.http_error | The HTTP error. | keyword |  |
-| zscaler_zpa.app_protection.inspection_control_types | The type of each AppProtection control hit, index-aligned with `rule.id`. | keyword |  |
+| zscaler_zpa.app_protection.inspection_control_types | The inspection control types. | keyword |  |
 | zscaler_zpa.app_protection.inspection_controls_hit_count | The number of AppProtection control hits. | long |  |
-| zscaler_zpa.app_protection.inspection_policy | The ID of the AppProtection policy. | keyword |  |
-| zscaler_zpa.app_protection.inspection_profile | The ID of the AppProtection profile. | keyword |  |
+| zscaler_zpa.app_protection.inspection_policy | The AppProtection policy. | keyword |  |
+| zscaler_zpa.app_protection.inspection_profile | The AppProtection profile. | keyword |  |
 | zscaler_zpa.app_protection.inspection_req_body_processing_time | The time in microseconds taken for processing the AppProtection request body. | long | micros |
 | zscaler_zpa.app_protection.inspection_req_headers_processing_time | The time in microseconds taken for processing the AppProtection request headers. | long | micros |
 | zscaler_zpa.app_protection.inspection_resp_body_processing_time | The time in microseconds taken for processing the AppProtection response body. | long | micros |
 | zscaler_zpa.app_protection.inspection_resp_headers_processing_time | The time in microseconds taken for processing the AppProtection response headers. | long | micros |
 | zscaler_zpa.app_protection.inspection_rule_processing_time | The time in microseconds taken for processing the AppProtection rule. | long | micros |
 | zscaler_zpa.app_protection.origin_domain | The value of the origin header in the cross-origin HTTP header. | keyword |  |
-| zscaler_zpa.app_protection.paranoia_level | The OWASP predefined paranoia level (1-4). | long |  |
-| zscaler_zpa.app_protection.protocol | The protocol, as reported. Copied to `network.protocol` when it is a protocol name, or to `http.version` when it is an HTTP version and `ProtocolVersion` is empty. | keyword |  |
+| zscaler_zpa.app_protection.paranoia_level | The OWASP predefined paranoia level. | long |  |
+| zscaler_zpa.app_protection.protocol | The protocol. | keyword |  |
 | zscaler_zpa.app_protection.request_hdr_size | The size of the request header. | long | byte |
 | zscaler_zpa.app_protection.response_hdr_size | The size of the response header. | long | byte |
-| zscaler_zpa.app_protection.severities | The severity of each AppProtection control hit, as reported, index-aligned with `rule.id`. | keyword |  |
-| zscaler_zpa.app_protection.ssl_inspection | Whether the inspected HTTPS traffic was terminated. | boolean |  |
-| zscaler_zpa.app_protection.timestamp_request_receive_finish | When the received request was finished. | date_nanos |  |
-| zscaler_zpa.app_protection.timestamp_request_receive_header_finish | When the received request header was finished. | date_nanos |  |
-| zscaler_zpa.app_protection.timestamp_request_receive_start | When the received request was started. | date_nanos |  |
-| zscaler_zpa.app_protection.timestamp_request_transmit_finish | When the transmitted request was finished. | date_nanos |  |
-| zscaler_zpa.app_protection.timestamp_request_transmit_start | When the transmitted request was started. | date_nanos |  |
-| zscaler_zpa.app_protection.timestamp_response_receive_finish | When the received response was finished. | date_nanos |  |
-| zscaler_zpa.app_protection.timestamp_response_receive_start | When the received response was started. | date_nanos |  |
-| zscaler_zpa.app_protection.timestamp_response_transmit_finish | When the transmitted response was finished. | date_nanos |  |
-| zscaler_zpa.app_protection.timestamp_response_transmit_start | When the transmitted response was started. | date_nanos |  |
+| zscaler_zpa.app_protection.severities | The inspection control severities. | keyword |  |
+| zscaler_zpa.app_protection.ssl_inspection | Whether the HTTPS traffic inspected was terminated. | boolean |  |
+| zscaler_zpa.app_protection.timestamp_request_receive_finish | The timestamp when the received request was finished. | date_nanos |  |
+| zscaler_zpa.app_protection.timestamp_request_receive_header_finish | The timestamp when the received request header was finished. | date_nanos |  |
+| zscaler_zpa.app_protection.timestamp_request_receive_start | The timestamp when the received request was started. | date_nanos |  |
+| zscaler_zpa.app_protection.timestamp_request_transmit_finish | The timestamp when the transmitted request was finished. | date_nanos |  |
+| zscaler_zpa.app_protection.timestamp_request_transmit_start | The timestamp when the transmitted request was started. | date_nanos |  |
+| zscaler_zpa.app_protection.timestamp_response_receive_finish | The timestamp when the received response was finished. | date_nanos |  |
+| zscaler_zpa.app_protection.timestamp_response_receive_start | The timestamp when the received response was started. | date_nanos |  |
+| zscaler_zpa.app_protection.timestamp_response_transmit_finish | The timestamp when the transmitted response was finished. | date_nanos |  |
+| zscaler_zpa.app_protection.timestamp_response_transmit_start | The timestamp when the transmitted response was started. | date_nanos |  |
 | zscaler_zpa.app_protection.total_bytes_processed | The total bytes processed. | long | byte |
 | zscaler_zpa.app_protection.total_time_request_receive | The total time taken in microseconds for the request to be received. | long | micros |
 | zscaler_zpa.app_protection.total_time_request_transmit | The total time taken in microseconds for the request to be transmitted. | long | micros |
@@ -1341,14 +1341,14 @@ An example event for `app_protection` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| zscaler_zpa.microsegmentation_flow.agent_id | The Microsegmentation agent ID. This is the Zscaler host agent, not the Elastic Agent. | keyword |
+| zscaler_zpa.microsegmentation_flow.agent_id | The Microsegmentation agent ID. | keyword |
 | zscaler_zpa.microsegmentation_flow.agent_name | The Microsegmentation agent name. | keyword |
-| zscaler_zpa.microsegmentation_flow.app_zone_id | The ID of the AppZone the agent belongs to. | keyword |
-| zscaler_zpa.microsegmentation_flow.app_zone_name | The name of the AppZone the agent belongs to. | keyword |
-| zscaler_zpa.microsegmentation_flow.direction | The connection direction, kept only when it is not one of the values mapped to `network.direction` (`INBOUND`, `OUTBOUND` or `UNKNOWN`). | keyword |
-| zscaler_zpa.microsegmentation_flow.enforcement_action | The policy enforcement action configured on the connection (`ALLOW`, `BLOCK` or `SIMBLOCK`, a simulated block). | keyword |
+| zscaler_zpa.microsegmentation_flow.app_zone_id | The AppZone identifier the agent generating the flow log belongs to. | keyword |
+| zscaler_zpa.microsegmentation_flow.app_zone_name | The AppZone name the agent generating the flow log belongs to or is a member of. | keyword |
+| zscaler_zpa.microsegmentation_flow.direction | The connection direction. | keyword |
+| zscaler_zpa.microsegmentation_flow.enforcement_action | The policy enforcement action configured on the connection (`ALLOW`, `BLOCK` or `SIMBLOCK`). | keyword |
 | zscaler_zpa.microsegmentation_flow.enforcement_disposition | The policy enforcement decision on the connection (`UNKNOWN`, `CONNECTED`, `REJECTED` or `DROPPED`). | keyword |
-| zscaler_zpa.microsegmentation_flow.source_ports | The source ports of the aggregated connections between the same source, destination, protocol and destination port. | long |
+| zscaler_zpa.microsegmentation_flow.source_ports | The source port used in the connection. In the case of multiple connections between the same endpoints (same source, destination address, protocol and destination port), this becomes an aggregated source port list. | long |
 
 
 An example event for `microsegmentation_flow` looks as following:
