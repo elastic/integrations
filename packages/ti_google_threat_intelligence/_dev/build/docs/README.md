@@ -44,10 +44,11 @@ Data collection is available for all threat feeds and IOC Stream, each with a se
 
 ## Requirements
 
-### Agentless-enabled integration
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+### Elastic Managed enabled integration
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it.
+
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ### Agent-based installation
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
@@ -77,6 +78,23 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
    - (Optional, Vulnerability only) Filter to add custom query filtering on the collected vulnerabilities. By default, this is set to `origin:"Google Threat Intelligence" cvss_3x_base_score:5+`, which limits collection to vulnerabilities curated by Google Threat Intelligence with a CVSS v3 base score of at least 5. Clear this setting to collect all vulnerabilities instead.
 6. Click on **Save and Continue** to save the integration.
 **Note:** Please make only the threat feed types you have the privilege to access are enabled.
+
+### To collect logs from files (filestream), follow the following steps:
+
+Air-gapped and other offline deployments have no route to the Google Threat Intelligence API. For these, each threat list data stream also offers a **filestream** input that reads threat list files already saved to disk, alongside the REST API input above. Documents are written to the same data streams and mappings, so the packaged dashboards and threat enrichment work the same way regardless of how the data arrived.
+
+**File format.** The filestream input expects **NDJSON**: one IOC object per line, each line a single JSON object with a `data` field. This is not the pretty-printed JSON object with an `iocs` array that the API returns. The files must be plain `.ndjson`. The filestream input cannot read `.zip` or `.tar.gz` archives, and gzip-compressed files (`.gz`) are excluded.
+
+**Producing the files.** Google Threat Intelligence does not write NDJSON files itself, so a collector with API access must create them. Call `GET /api/v3/threat_lists/{threat_list_id}/{hour}` (with the `x-apikey` header) on a host that can reach the API, take each element of the `iocs` array in the response, and write it as one `{"data":{...}}` JSON object per line to a `.ndjson` file named after the list and hour, for example `threat_list_ransomware-2025010112.ndjson`. Then copy the files to the air-gapped host and point the filestream input at them.
+
+**Enabling file collection in Elastic:**
+
+1. In Kibana, go to **Management → Integrations** and open the **Google Threat Intelligence** integration.
+2. Enable the **Collect Google Threat Intelligence events via file** input for each threat list data stream you want to collect from files.
+3. Set **Paths** to a glob that matches the NDJSON files for that data stream, for example `/path/to/threat_lists/*ransomware*.ndjson`. Paths have no default, so a path is required to enable the input.
+4. Click **Save and Continue**.
+
+Each line of an NDJSON file is ingested as its own indicator event.
 
 ## Transforming Data for Up-to-Date Insights
 

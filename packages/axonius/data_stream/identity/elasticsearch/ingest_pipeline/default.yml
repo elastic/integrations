@@ -4,7 +4,7 @@ processors:
   - set:
       field: ecs.version
       tag: set_ecs_version_8efb762c
-      value: 9.3.0
+      value: 9.5.0
   - terminate:
       description: error message set and no data to process.
       tag: terminate_data_collection_error_f2e4d3c3
@@ -157,17 +157,6 @@ processors:
             tag: append_error_message_ba5ae88a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: user.name
-      tag: set_user_email_from_display_name_01fe035c
-      copy_from: axonius.identity.display_name
-      ignore_empty_value: true
-  - append:
-      field: related.user
-      tag: append_display_name_into_related_user_6299f010
-      value: '{{{axonius.identity.display_name}}}'
-      allow_duplicates: false
-      if: ctx.axonius?.identity?.display_name != null
   - foreach:
       field: axonius.identity.tenant_number
       tag: foreach_identity_tenant_number_cbe7d4c6
@@ -685,7 +674,6 @@ processors:
   - remove:
       field:
         - axonius.identity.event.accurate_for_datetime
-        - axonius.identity.display_name
         - axonius.identity.application_id
         - axonius.identity.application_name
         - axonius.identity.created_date
@@ -701,10 +689,7 @@ processors:
         - axonius.identity.subject.locality
         - axonius.identity.subject.organization
         - axonius.identity.subject.state
-        - axonius.identity.aws_iam_identity_type
-        - axonius.identity.azure_account_id
         - axonius.identity.cloud_provider
-        - axonius.identity.mail
         - axonius.identity.user_created
         - axonius.identity.user_full_name
         - axonius.identity.username
