@@ -51,7 +51,7 @@ The `labels.is_transform_source` field indicates log origin:
 - **False** for transformed index
 - **True** for source index
 
-> **Deprecated:** `labels.is_transform_source` is deprecated in favor of `labels.is_ioc_transform_source` (`"true"` on the raw source data streams, `"false"` on the transformed destination indices). New queries, dashboards, and detection rules should use `labels.is_ioc_transform_source`; this is the field Elastic's built-in Threat Intel Indicator Match rules rely on to exclude raw source documents. `labels.is_transform_source` continues to work and will be removed in a future major version. On upgrade the `"true"` label is added in place to the current write index of each source data stream, so every document already in that index (old and new) is labeled at once; older source backing indices are not relabeled and keep matching the built-in rules until their documents age out of the rules' 30-day window. The transform destination `_latest` indices only receive `labels.is_ioc_transform_source: "false"` on a fresh install or when the transforms are next rebuilt, so on an upgraded install select the latest transformed data by scoping queries to the destination indices with `_index: logs-ti_greynoise_latest.*` rather than relying on `labels.is_ioc_transform_source: "false"`.
+> **Deprecated:** `labels.is_transform_source` is deprecated in favor of `labels.is_ioc_transform_source` (`"true"` on the raw source data streams, `"false"` on the transformed destination indices). New queries, dashboards, and detection rules should use `labels.is_ioc_transform_source`; this is the field Elastic's built-in Threat Intel Indicator Match rules rely on to exclude raw source documents. `labels.is_transform_source` continues to work and will be removed in a future major version. On upgrade the `"true"` label is added in place to the current write index of each source data stream, so every document already in that index (old and new) is labeled at once; older source backing indices are not relabeled and keep matching the built-in rules until their documents age out of the rules' 30-day window. The transform destination `_latest` indices only receive `labels.is_ioc_transform_source: "false"` on a fresh install or when the transforms are next rebuilt, so on an upgraded install select the latest transformed data by scoping queries to the moving destination alias with `_index: logs-ti_greynoise_latest.ip` rather than relying on `labels.is_ioc_transform_source: "false"`.
 
 Currently, one transform is running for the IP datastream:
 
@@ -61,7 +61,7 @@ Currently, one transform is running for the IP datastream:
 
 For example:
 - The query `event.module: ti_greynoise and labels.is_ioc_transform_source: "true"` shows logs from the **source index**
-- The query `_index: logs-ti_greynoise_latest.*` shows the latest **transformed index** data
+- The query `_index: logs-ti_greynoise_latest.ip` shows the latest **transformed index** data
 
 A **retention policy** removes data older than the default retention period. For more details, refer to the [Retention Policy Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/put-transform.html#:~:text=to%20false.-,retention_policy,-(Optional%2C%20object)%20Defines).
 
@@ -80,7 +80,7 @@ Follow **Steps to Create Detection Rule** below to create indicator match detect
 3. In **Define Rule** section:
     - **Index Pattern**: Add the index pattern relevant to your data. Keeping this specific ensures optimal performance.
     - **Custom Query**: Must include `NOT event.module : "ti_greynoise"` to exclude GreyNoise events.
-    - **Indicator index patterns**: Use `logs-ti_greynoise_latest.ip*`.
+    - **Indicator index patterns**: Use `logs-ti_greynoise_latest.ip`.
     - **Indicator index query**: Refine indcator index with something like `@timestamp >= "now-7d/d"`.
     - **Indicator Mapping**:
         - **Field**: Map to the field in your Elastic environment containing IPs.
