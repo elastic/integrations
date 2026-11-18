@@ -28,6 +28,12 @@ processors:
             field: error.message
             tag: append_error_message_kv_new_target
             value: "failed to parse new_target '{{{_tmp.new_target_string}}}': {{{_ingest.on_failure_message}}}"
+        # kv writes each pair as it goes. Drop the partial result so that the
+        # original string stays in custom_data.new_target.
+        - remove:
+            field: _tmp.new_target
+            tag: remove_partial_new_target
+            ignore_missing: true
   - remove:
       field: json.customData.new_target
       tag: remove_new_target_string
