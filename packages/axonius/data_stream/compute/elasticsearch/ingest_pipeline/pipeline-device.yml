@@ -17,6 +17,20 @@ processors:
       copy_from: axonius.compute.internal_axon_id
       ignore_empty_value: true
   - set:
+      field: host.entity.id
+      tag: set_host_entity_id_from_host_id_6d1f3a90
+      copy_from: host.id
+      ignore_empty_value: true
+  - set:
+      field: host.entity.source
+      tag: set_host_entity_source_axonius_8c2e5f14
+      value: axonius
+  - set:
+      field: host.entity.last_seen_timestamp
+      tag: set_host_entity_last_seen_timestamp_from_timestamp_3a7d9b02
+      copy_from: '@timestamp'
+      ignore_empty_value: true
+  - set:
       field: event.action
       tag: set_event_action_from_compute_event_action_if_exists_bbf21f3f
       copy_from: axonius.compute.event.action_if_exists
@@ -397,11 +411,6 @@ processors:
       value: '{{{axonius.compute.domain}}}'
       allow_duplicates: false
       if: ctx.axonius?.compute?.domain != null
-  - set:
-      field: host.entity.id
-      tag: set_host_entity_id_from_compute_entity_id_aa2bc121
-      copy_from: axonius.compute.entity_id
-      ignore_empty_value: true
   - append:
       field: related.hosts
       tag: append_compute_entity_id_into_related_hosts_d36f2272
