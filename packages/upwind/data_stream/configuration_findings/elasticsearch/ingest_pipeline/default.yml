@@ -29,7 +29,7 @@ processors:
       if: ctx.event?.original != null
   - date:
       field: json.last_seen_time
-      target_field: '@timestamp'
+      target_field: upwind.configuration_findings.last_seen_time
       formats:
         - ISO8601
       tag: date_last_seen_time
@@ -39,6 +39,10 @@ processors:
             tag: append_error_message_cf0d98a2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag ''{{{_ingest.on_failure_processor_tag}}}'' failed: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      copy_from: _ingest.timestamp
+      tag: set_timestamp_ingest
   - date:
       field: json.first_seen_time
       target_field: event.start

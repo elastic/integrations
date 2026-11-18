@@ -211,7 +211,7 @@
                                             ],
                                             "index": "logs-*-f4548ad737a70f660b67bd76f1c080f30ca0f23e370d405768a9bd9e01a5eb0b",
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"upwind.threat_detections\"\n| WHERE upwind.threat_detections.severity == \"CRITICAL\"\n| STATS `Threat Count` = COUNT(*)"
+                                                "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"upwind.threat_detections\"\n| WHERE upwind.threat_detections.severity == \"CRITICAL\"\n| STATS `Threat Count` = COUNT_DISTINCT(event.id)"
                                             }
                                         }
                                     }
@@ -226,7 +226,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"upwind.threat_detections\"\n| WHERE upwind.threat_detections.severity == \"CRITICAL\"\n| STATS `Threat Count` = COUNT(*)"
+                                "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"upwind.threat_detections\"\n| WHERE upwind.threat_detections.severity == \"CRITICAL\"\n| STATS `Threat Count` = COUNT_DISTINCT(event.id)"
                             },
                             "visualization": {
                                 "layerId": "layer_0",
@@ -290,7 +290,7 @@
                                             ],
                                             "index": "logs-*-4090e1c9e916e8b1819161b111a0ba3979fa4aa08f113abf7efb965b358c4328",
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"upwind.threat_detections\"\n| WHERE upwind.threat_detections.severity == \"HIGH\"\n| STATS `Threat Detection Count` = COUNT(*)"
+                                                "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"upwind.threat_detections\"\n| WHERE upwind.threat_detections.severity == \"HIGH\"\n| STATS `Threat Detection Count` = COUNT_DISTINCT(event.id)"
                                             }
                                         }
                                     }
@@ -305,7 +305,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"upwind.threat_detections\"\n| WHERE upwind.threat_detections.severity == \"HIGH\"\n| STATS `Threat Detection Count` = COUNT(*)"
+                                "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"upwind.threat_detections\"\n| WHERE upwind.threat_detections.severity == \"HIGH\"\n| STATS `Threat Detection Count` = COUNT_DISTINCT(event.id)"
                             },
                             "visualization": {
                                 "applyColorTo": "value",
@@ -417,7 +417,7 @@
                                             ],
                                             "index": "logs-*-de3ed380e62a5475f0f5c82b013170e100b48a83dc7014aef2876115854e88b4",
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"upwind.threat_detections\"\n| WHERE upwind.threat_detections.status == \"OPEN\"\n| STATS `Threat Detections Count` = COUNT(*)"
+                                                "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"upwind.threat_detections\"\n| WHERE upwind.threat_detections.status == \"OPEN\"\n| STATS `Threat Detections Count` = COUNT_DISTINCT(event.id)"
                                             }
                                         }
                                     }
@@ -432,7 +432,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"upwind.threat_detections\"\n| WHERE upwind.threat_detections.status == \"OPEN\"\n| STATS `Threat Detections Count` = COUNT(*)"
+                                "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"upwind.threat_detections\"\n| WHERE upwind.threat_detections.status == \"OPEN\"\n| STATS `Threat Detections Count` = COUNT_DISTINCT(event.id)"
                             },
                             "visualization": {
                                 "icon": "alert",
@@ -1665,7 +1665,7 @@
                                                 {
                                                     "columnId": "datatable_accessor_row_0",
                                                     "customLabel": true,
-                                                    "fieldName": "threat.technique.id",
+                                                    "fieldName": "technique_id",
                                                     "label": "Technique ID",
                                                     "meta": {
                                                         "type": "string"
@@ -1674,7 +1674,7 @@
                                                 {
                                                     "columnId": "datatable_accessor_row_1",
                                                     "customLabel": true,
-                                                    "fieldName": "threat.technique.name",
+                                                    "fieldName": "technique_name",
                                                     "label": "Technique Name",
                                                     "meta": {
                                                         "type": "string"
@@ -1683,7 +1683,7 @@
                                                 {
                                                     "columnId": "datatable_accessor_row_2",
                                                     "customLabel": true,
-                                                    "fieldName": "threat.tactic.name",
+                                                    "fieldName": "tactic_name",
                                                     "label": "Tactic",
                                                     "meta": {
                                                         "type": "string"
@@ -1702,7 +1702,7 @@
                                             ],
                                             "index": "logs-*-c500dfa42fc513783bf9fda8b0e35b412610e09cd1e32bfdc5a12d658a0a2f28",
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"upwind.threat_detections\"\n| STATS `count` = COUNT(*) BY threat.technique.id, threat.technique.name, threat.tactic.name\n| SORT `count` DESC\n| LIMIT 20\n| KEEP threat.technique.id, threat.technique.name, threat.tactic.name, `count`"
+                                                "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"upwind.threat_detections\"\n| STATS `count` = COUNT(*) BY mitre_attack = upwind.threat_detections.mitre_attack\n| WHERE mitre_attack IS NOT NULL\n| DISSECT mitre_attack \"%{technique_id}::%{technique_name}::%{tactic_name}\"\n| SORT `count` DESC\n| LIMIT 20\n| KEEP technique_id, technique_name, tactic_name, `count`"
                                             }
                                         }
                                     }
@@ -1717,7 +1717,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"upwind.threat_detections\"\n| STATS `count` = COUNT(*) BY threat.technique.id, threat.technique.name, threat.tactic.name\n| SORT `count` DESC\n| LIMIT 20\n| KEEP threat.technique.id, threat.technique.name, threat.tactic.name, `count`"
+                                "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"upwind.threat_detections\"\n| STATS `count` = COUNT(*) BY mitre_attack = upwind.threat_detections.mitre_attack\n| WHERE mitre_attack IS NOT NULL\n| DISSECT mitre_attack \"%{technique_id}::%{technique_name}::%{tactic_name}\"\n| SORT `count` DESC\n| LIMIT 20\n| KEEP technique_id, technique_name, tactic_name, `count`"
                             },
                             "visualization": {
                                 "columns": [

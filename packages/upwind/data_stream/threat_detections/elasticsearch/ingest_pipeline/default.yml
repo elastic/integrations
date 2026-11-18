@@ -223,6 +223,16 @@ processors:
           tag: append_threat_technique_name
           value: '{{{_ingest._value.technique_name}}}'
           allow_duplicates: false
+  - foreach:
+      field: json.mitre_attacks
+      tag: foreach_mitre_attack
+      if: ctx.json?.mitre_attacks instanceof List
+      processor:
+        append:
+          field: upwind.threat_detections.mitre_attack
+          tag: append_mitre_attack
+          value: '{{{_ingest._value.technique_id}}}::{{{_ingest._value.technique_name}}}::{{{_ingest._value.tactic_name}}}'
+          allow_duplicates: false
   - script:
       lang: painless
       tag: extract_trigger_initiators

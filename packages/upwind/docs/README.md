@@ -165,6 +165,7 @@ The `threat_detections` data stream collects runtime threat detections from `GET
 | upwind.threat_detections.evidences | The evidence records behind this detection, each serialized as a JSON string. | match_only_text |
 | upwind.threat_detections.links | Hypermedia links related to this detection. | flattened |
 | upwind.threat_detections.metadata.vendor_name | The vendor that produced this detection. | keyword |
+| upwind.threat_detections.mitre_attack | One MITRE ATT&CK mapping as technique id, technique name, and tactic name, so dashboard aggregations do not cross-product separate multi-valued fields. | keyword |
 | upwind.threat_detections.mitre_attacks.links | Links to the MITRE ATT&CK tactic and technique pages. | flattened |
 | upwind.threat_detections.mitre_attacks.tactic_id | The MITRE ATT&CK tactic identifier related to this detection. | keyword |
 | upwind.threat_detections.mitre_attacks.tactic_name | The MITRE ATT&CK tactic name related to this detection. | keyword |
@@ -526,6 +527,7 @@ The `configuration_findings` data stream collects the current CSPM posture from 
 | upwind.configuration_findings.framework.revision | The revision of the compliance framework. | keyword |
 | upwind.configuration_findings.framework.status | The status of the compliance framework. | keyword |
 | upwind.configuration_findings.framework.version | The version of the compliance framework. | keyword |
+| upwind.configuration_findings.last_seen_time | The timestamp when this finding was last seen by Upwind. | date |
 | upwind.configuration_findings.last_sync_time | The timestamp when this finding was last synchronized. | date |
 | upwind.configuration_findings.resource.arn | The ARN of this resource. | keyword |
 | upwind.configuration_findings.resource.cloud_account_tags | List of tags associated with the cloud account the resource belongs to. | flattened |
@@ -631,6 +633,7 @@ An example event for `configuration_findings` looks as following:
                 "status": "ENABLED",
                 "version": "1.5.0"
             },
+            "last_seen_time": "2026-03-20T06:00:00.000Z",
             "last_sync_time": "2026-03-20T06:05:00.000Z",
             "resource": {
                 "arn": "arn:aws:s3:::example-logs-bucket",
