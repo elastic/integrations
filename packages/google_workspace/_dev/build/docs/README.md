@@ -71,7 +71,7 @@ The `users`, `group_inventory` and `chromeos_devices` data streams need differen
 
 ### Inventory data streams
 
-Most data streams of this integration contain audit **events** from the Reports API: what happened. Three data streams instead contain an **inventory** from the Admin SDK Directory API: what exists, collected again in full on every cycle, with `event.kind: asset`. All three are turned off by default.
+Most data streams of this integration contain audit **events** from the Reports API: _what happened_. Three data streams instead contain an **inventory** from the Admin SDK Directory API: _what exists_, collected again in full on every cycle, with `event.kind: asset`. All three are turned off by default.
 
 | Inventory data stream | Contains | Related audit data streams |
 |---|---|---|
@@ -436,7 +436,7 @@ The `group_inventory` data stream uses the same service account and `Delegated A
 | Collect group settings | `https://www.googleapis.com/auth/apps.groups.settings` | The Groups privilege (for example the Groups Admin or Groups Editor role), or super administrator. In accounts with several domains, use a delegated account on the primary domain. |
 | Collect admin roles and privileges | `https://www.googleapis.com/auth/admin.directory.rolemanagement.readonly` | The delegated account must be a **super administrator**. |
 
-The first and last scopes are the same as for the `users` data stream, so they may already be delegated.
+The first and last scopes are the same as for the `users` data stream, so they might already be delegated.
 
 > NOTE: Google offers no read-only scope for group settings. `https://www.googleapis.com/auth/apps.groups.settings` allows **changing** the settings of any group the delegated account can manage. The integration only reads settings. Keep the delegated account's privileges as low as the table allows.
 

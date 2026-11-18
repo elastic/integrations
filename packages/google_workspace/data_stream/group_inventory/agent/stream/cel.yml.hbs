@@ -72,7 +72,19 @@ program: |-
     state.?want_more.orValue(false) ?
       state
     :
-      state.drop(["phase", "page_token", "roles", "assignments", "groups_todo", "domains", "current", "head_done", "settings_ok", "settings_denied", "settings_failure"]).with(
+      state.drop(
+        [
+          "roles",
+          "assignments",
+          "groups_todo",
+          "domains",
+          "current",
+          "head_done",
+          "settings_ok",
+          "settings_denied",
+          "settings_failure",
+        ]
+      ).with(
         {
           "phase": state.?collect_admin_roles.orValue(false) ? "roles" : "groups",
           "page_token": "",
@@ -148,28 +160,26 @@ program: |-
           }
         ).format_query()
       ).do_request().as(resp,
-        dyn(
-          state.with(
-            {
-              "resp": {
-                "url": req.url,
-                "code": resp.StatusCode,
-                "status": resp.Status,
-                "body": resp.Body,
-              },
-            }
-          )
+        state.with(
+          {
+            "resp": {
+              "url": req.url,
+              "code": resp.StatusCode,
+              "status": resp.Status,
+              "body": resp.Body,
+            },
+          }
         )
       )
     )
   ).as(state,
     // Stage 4: decode the response into "result": the body of a JSON 200, or
-    // the error. try returns a string when decoding fails.
-    try(state.resp.body.decode_json()).as(body,
+    // the error. body is an error value when the response is not JSON.
+    state.resp.body.decode_json().as(body,
       dyn(
         state.drop("resp").with(
           {
-            "result": (state.resp.code == 200 && type(body) == map) ?
+            "result": (state.resp.code == 200 && !is_error(body)) ?
               {"ok": true, "body": body}
             :
               {
@@ -177,14 +187,14 @@ program: |-
                 // A 401, a rate limit or quota, or a 403 for a disabled API or
                 // a missing scope.
                 "every_call": state.resp.code in [401, 429] || state.resp.code == 403 &&
-                [
+                !is_error(body) && type(body) == map && (
                   // Reasons from Google's error envelope; anything else gives none that
                   // match. They tell a Groups Settings failure that applies to every
                   // call from a per-group one.
-                  try(body.error.errors.map(e, has(e.reason), e.reason)),
-                  try(body.error.details.map(e, has(e.reason), e.reason)),
-                  [try(body.error.status)],
-                ].filter(l, type(l) == list).flatten().exists(r,
+                  body.?error.errors.orValue([]).map(e, e.?reason.orValue("")) +
+                  body.?error.details.orValue([]).map(e, e.?reason.orValue("")) +
+                  [body.?error.status.orValue("")]
+                ).exists(r,
                   r in [
                     "SERVICE_DISABLED",
                     "accessNotConfigured",
@@ -203,7 +213,7 @@ program: |-
                   "id": state.resp.status,
                   "message": "GET " + state.resp.url + ": " + (
                     (state.resp.code == 200) ?
-                      "the response body is not a JSON object"
+                      "the response body is not valid JSON"
                     : (size(state.resp.body) != 0) ?
                       string(state.resp.body)
                     :
@@ -217,7 +227,7 @@ program: |-
     )
   ).as(state,
     // Stage 5: fold the result into the per-cycle state.
-    (state.phase in ["roles", "role_assignments"] && !state.result.ok) ?
+    ((state.phase == "roles" || state.phase == "role_assignments") && !state.result.ok) ?
       // Admin roles enrichment failed: publish the error once (as a list, so
       // that the input is not marked as degraded) and list the groups without
       // role assignments.
@@ -248,6 +258,7 @@ program: |-
           ),
           "phase": (state.result.body.?nextPageToken.orValue("") != "") ? "roles" : "role_assignments",
           "page_token": state.result.body.?nextPageToken.orValue(""),
+          // Stage 8 adds a placeholder event, or this would be ignored.
           "want_more": true,
         }
       )
@@ -258,7 +269,7 @@ program: |-
         {
           "events": [],
           "assignments": state.?assignments.orValue([]) + state.result.body.?items.orValue([]).map(r,
-            r.?assigneeType.orValue("").to_lower() == "group" && (
+            r.?assigneeType.optMap(typ, typ.equal_fold("group")).orValue(false) && (
               r.?expirationDetails.expireTime.orValue("") == "" || is_error(timestamp(r.expirationDetails.expireTime)) ||
               timestamp(r.expirationDetails.expireTime) > now
             ),
@@ -274,6 +285,7 @@ program: |-
           ),
           "phase": (state.result.body.?nextPageToken.orValue("") != "") ? "role_assignments" : "groups",
           "page_token": state.result.body.?nextPageToken.orValue(""),
+          // Stage 8 adds a placeholder event, or this would be ignored.
           "want_more": true,
         }
       )
@@ -301,8 +313,10 @@ program: |-
           }
         ).as(next,
           (next.page_token != "") ?
+            // Stage 8 adds a placeholder event, or this would be ignored.
             next.with({"want_more": true})
           : (size(next.groups_todo) > 0) ?
+            // Stage 8 adds a placeholder event, or this would be ignored.
             next.with({"phase": "members", "want_more": true})
           :
             // No groups at all: end the cycle.
@@ -317,6 +331,7 @@ program: |-
           "current": state.current.with({"settings": state.result.body}),
           "settings_ok": true,
           "head_done": true,
+          // Stage 8 adds a placeholder event, or this would be ignored.
           "want_more": true,
         }
       )
@@ -347,6 +362,7 @@ program: |-
           :
             state.?settings_denied,
           "head_done": true,
+          // Stage 8 adds a placeholder event, or this would be ignored.
           "want_more": true,
         }
       )
@@ -358,6 +374,7 @@ program: |-
           "current": {"members_error": state.result.error},
           "page_token": "",
           "head_done": true,
+          // Stage 8 adds a placeholder event, or this would be ignored.
           "want_more": true,
         }
       )
@@ -415,6 +432,7 @@ program: |-
             ),
             "page_token": state.result.body.?nextPageToken.orValue(""),
             "head_done": state.result.body.?nextPageToken.orValue("") == "",
+            // Stage 8 adds a placeholder event, or this would be ignored.
             "want_more": true,
           }
         )
@@ -489,7 +507,21 @@ program: |-
         :
           // Last group: end the cycle. If no settings call succeeded and one
           // was refused with a 403, publish that refusal once.
-          state.drop(["phase", "page_token", "roles", "assignments", "groups_todo", "domains", "current", "head_done", "settings_ok", "settings_denied", "settings_failure"]).with(
+          state.drop(
+            [
+              "phase",
+              "page_token",
+              "roles",
+              "assignments",
+              "groups_todo",
+              "domains",
+              "current",
+              "head_done",
+              "settings_ok",
+              "settings_denied",
+              "settings_failure",
+            ]
+          ).with(
             {
               "events": state.events + [{"message": doc.encode_json()}] + (
                 (has(state.settings_denied) && !has(state.settings_ok) && !has(state.settings_failure)) ?

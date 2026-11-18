@@ -71,7 +71,7 @@ The `users`, `group_inventory` and `chromeos_devices` data streams need differen
 
 ### Inventory data streams
 
-Most data streams of this integration contain audit **events** from the Reports API: what happened. Three data streams instead contain an **inventory** from the Admin SDK Directory API: what exists, collected again in full on every cycle, with `event.kind: asset`. All three are turned off by default.
+Most data streams of this integration contain audit **events** from the Reports API: _what happened_. Three data streams instead contain an **inventory** from the Admin SDK Directory API: _what exists_, collected again in full on every cycle, with `event.kind: asset`. All three are turned off by default.
 
 | Inventory data stream | Contains | Related audit data streams |
 |---|---|---|
@@ -436,7 +436,7 @@ The `group_inventory` data stream uses the same service account and `Delegated A
 | Collect group settings | `https://www.googleapis.com/auth/apps.groups.settings` | The Groups privilege (for example the Groups Admin or Groups Editor role), or super administrator. In accounts with several domains, use a delegated account on the primary domain. |
 | Collect admin roles and privileges | `https://www.googleapis.com/auth/admin.directory.rolemanagement.readonly` | The delegated account must be a **super administrator**. |
 
-The first and last scopes are the same as for the `users` data stream, so they may already be delegated.
+The first and last scopes are the same as for the `users` data stream, so they might already be delegated.
 
 > NOTE: Google offers no read-only scope for group settings. `https://www.googleapis.com/auth/apps.groups.settings` allows **changing** the settings of any group the delegated account can manage. The integration only reads settings. Keep the delegated account's privileges as low as the table allows.
 
@@ -1178,7 +1178,7 @@ An example event for `group_inventory` looks as following:
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| google_workspace.group_inventory.admin_created | Whether the group was created by an administrator (`false` for groups created by users). May be absent when false. | boolean |
+| google_workspace.group_inventory.admin_created | Whether the group was created by an administrator (`false` for groups created by users). Can be absent when false. | boolean |
 | google_workspace.group_inventory.aliases | The group's alias email addresses. The API documents them as strings and Google's examples show `\{"alias": ...\}` objects; both forms are stored as addresses. | keyword |
 | google_workspace.group_inventory.customer_member_ids | The customer IDs of the group's `CUSTOMER` members. | keyword |
 | google_workspace.group_inventory.description | The group's description. | keyword |
@@ -1235,7 +1235,7 @@ An example event for `group_inventory` looks as following:
 | google_workspace.group_inventory.role_assignments.role_name | The name of the assigned role. | keyword |
 | google_workspace.group_inventory.role_assignments.scope_type | The scope in which the role is assigned (`CUSTOMER` or `ORG_UNIT`). | keyword |
 | google_workspace.group_inventory.settings.allow_external_members | Whether users outside the organization can be members. | boolean |
-| google_workspace.group_inventory.settings.allow_google_communication | Deprecated. Whether Google may contact the group managers. | boolean |
+| google_workspace.group_inventory.settings.allow_google_communication | Deprecated. Whether Google can contact the group managers. | boolean |
 | google_workspace.group_inventory.settings.allow_web_posting | Whether members can post through the web interface. | boolean |
 | google_workspace.group_inventory.settings.archive_only | Whether the group is archive-only (inactive; new messages are rejected). | boolean |
 | google_workspace.group_inventory.settings.custom_footer_text | The custom footer text. | keyword |
@@ -1243,10 +1243,10 @@ An example event for `group_inventory` looks as following:
 | google_workspace.group_inventory.settings.custom_roles_enabled_for_settings_to_be_merged | Whether a custom role of the group is included in one of the merged settings. | boolean |
 | google_workspace.group_inventory.settings.default_message_deny_notification_text | The notification text sent to authors of rejected messages. Absent when empty. | keyword |
 | google_workspace.group_inventory.settings.default_sender | The default sender of messages sent from the group (`DEFAULT_SELF` or `GROUP`). Google documents the key as `defaultSender` and the discovery document as `default_sender`; either is stored here, and `default_sender` is used when both are present. | keyword |
-| google_workspace.group_inventory.settings.description | The group's description, as stored by the Groups Settings API. May differ from the Directory API copy. | keyword |
+| google_workspace.group_inventory.settings.description | The group's description, as stored by the Groups Settings API. Can differ from the Directory API copy. | keyword |
 | google_workspace.group_inventory.settings.email | The group's email address, as returned by the Groups Settings API. | keyword |
 | google_workspace.group_inventory.settings.enable_collaborative_inbox | Whether the group works as a collaborative inbox. | boolean |
-| google_workspace.group_inventory.settings.favorite_replies_on_top | Whether favorite replies are shown above other replies. | boolean |
+| google_workspace.group_inventory.settings.favorite_replies_on_top | Whether favorite replies are shown before other replies. | boolean |
 | google_workspace.group_inventory.settings.include_custom_footer | Whether a custom footer is added to messages. | boolean |
 | google_workspace.group_inventory.settings.include_in_global_address_list | Whether the group is listed in the Global Address List. | boolean |
 | google_workspace.group_inventory.settings.is_archived | Whether the group's conversation history is kept. | boolean |
@@ -1255,14 +1255,14 @@ An example event for `group_inventory` looks as following:
 | google_workspace.group_inventory.settings.members_can_post_as_the_group | Whether members can send messages using the group's address. | boolean |
 | google_workspace.group_inventory.settings.message_display_font | Deprecated. Always `DEFAULT_FONT`. | keyword |
 | google_workspace.group_inventory.settings.message_moderation_level | Which incoming messages need approval. | keyword |
-| google_workspace.group_inventory.settings.name | The group's name, as stored by the Groups Settings API. May differ from the Directory API copy. | keyword |
+| google_workspace.group_inventory.settings.name | The group's name, as stored by the Groups Settings API. Can differ from the Directory API copy. | keyword |
 | google_workspace.group_inventory.settings.primary_language | The language for notifications and footers. | keyword |
 | google_workspace.group_inventory.settings.reply_to | Where replies to group messages go. | keyword |
 | google_workspace.group_inventory.settings.send_message_deny_notification | Whether authors of rejected messages are notified. | boolean |
 | google_workspace.group_inventory.settings.show_in_group_directory | Deprecated, merged into `who_can_discover_group`. Whether the group is listed in the groups directory. | boolean |
 | google_workspace.group_inventory.settings.spam_moderation_level | How messages flagged as spam are handled. | keyword |
 | google_workspace.group_inventory.settings.who_can_add | Deprecated, merged into `who_can_moderate_members`. Who can add members. | keyword |
-| google_workspace.group_inventory.settings.who_can_add_external_members | Who can add external members. Added to the API in 2026; may be absent. | keyword |
+| google_workspace.group_inventory.settings.who_can_add_external_members | Who can add external members. Added to the API in 2026; can be absent. | keyword |
 | google_workspace.group_inventory.settings.who_can_add_references | Deprecated, no longer supported. Who can add references to a topic. | keyword |
 | google_workspace.group_inventory.settings.who_can_approve_members | Deprecated, merged into `who_can_moderate_members`. Who can approve members asking to join. | keyword |
 | google_workspace.group_inventory.settings.who_can_approve_messages | Deprecated, merged into `who_can_moderate_content`. Who can approve messages in the moderation queue. | keyword |
