@@ -128,10 +128,12 @@ An example event for `audit` looks as following:
     },
     "zeronetworks": {
         "audit": {
-            "destinationEntitiesList": {
-                "id": "a:a:9ebab20f",
-                "name": "SHARE"
-            },
+            "destinationEntitiesList": [
+                {
+                    "id": "a:a:9ebab20f",
+                    "name": "SHARE"
+                }
+            ],
             "details": {
                 "rule": {
                     "approvedAt": "1970-01-01T00:00:00.000Z",
