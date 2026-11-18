@@ -14,6 +14,19 @@ inputs:
             - drop_event.when.equals.fake: true
           program: |-
             state.with(
+              (state.?unsupported_agent_version.orValue("") != "") ?
+                {
+                  "events": {
+                    "error": {
+                      "code": "unsupported_agent_version",
+                      "id": "agent_version_guard",
+                      "message": "Unsupported Elastic Agent version " + string(state.unsupported_agent_version) + ": chargeback_serverless requires a Fleet-managed Elastic Agent >= 9.2.0",
+                    },
+                  },
+                  "cursor": state.?cursor.orValue({}),
+                  "want_more": false,
+                }
+              :
               state.?want_more.orValue(false).as(is_continuation,
                 max(
                   state.?cursor.initial_from.optMap(ts, (type(ts) == string) ? timestamp(ts) : ts).orValue(
@@ -84,6 +97,8 @@ inputs:
                                             "replay_completed_to": replay_completed_to,
                                             "next_from": state.?cursor.next_from.orValue(req.from.format(time_layout.RFC3339)),
                                             "recent_day_keys": pruned_recent_keys,
+                                            "empty_inst_day": state.?cursor.empty_inst_day.orValue(""),
+                                            "empty_inst_retries": int(state.?cursor.empty_inst_retries.orValue(0)),
                                           },
                                           "next_from": req.from.format(time_layout.RFC3339),
                                           "want_more": false,
@@ -112,6 +127,8 @@ inputs:
                               {
                                 "projects": state.cached_projects,
                                 "cache_ok": true,
+                                "err_code": "",
+                                "err_msg": "",
                               }
                             :
                               get_request(
@@ -146,6 +163,13 @@ inputs:
                                                   (has(vdb_body.items) && vdb_body.items != null ? vdb_body.items.map(p, dyn(p.with({ "project_type": "vectordb" }))) : [])
                                                 ),
                                                 "cache_ok": es_resp.StatusCode == 200 && obs_resp.StatusCode == 200 && sec_resp.StatusCode == 200 && (vdb_resp.StatusCode == 200 || vdb_resp.StatusCode == 404),
+                                                "err_code": string(
+                                                  es_resp.StatusCode != 200 ? es_resp.StatusCode :
+                                                  (obs_resp.StatusCode != 200 ? obs_resp.StatusCode :
+                                                    (sec_resp.StatusCode != 200 ? sec_resp.StatusCode : vdb_resp.StatusCode)
+                                                  )
+                                                ),
+                                                "err_msg": "Required Serverless project discovery request failed (elasticsearch=" + string(es_resp.StatusCode) + ", observability=" + string(obs_resp.StatusCode) + ", security=" + string(sec_resp.StatusCode) + ", vectordb=" + string(vdb_resp.StatusCode) + "); preserving billing day for retry",
                                               }
                                             )
                                           )
@@ -156,6 +180,30 @@ inputs:
                                 )
                               )
                             ).as(discovery,
+                              !discovery.cache_ok ?
+                                {
+                                  "events": {
+                                    "error": {
+                                      "code": discovery.err_code,
+                                      "id": "project_discovery_failed",
+                                      "message": discovery.err_msg,
+                                    },
+                                  },
+                                  "cursor": {
+                                    "initial_from": initial_from.format(time_layout.RFC3339),
+                                    "last_to": max(high_water, req.from).format(time_layout.RFC3339),
+                                    "replay_target_to": (high_water >= latest_ready_to) ? latest_ready_to_str : replay_target_to,
+                                    "replay_completed_to": replay_completed_to,
+                                    "next_from": req.from.format(time_layout.RFC3339),
+                                    "recent_day_keys": pruned_recent_keys,
+                                    "empty_inst_day": state.?cursor.empty_inst_day.orValue(""),
+                                    "empty_inst_retries": int(state.?cursor.empty_inst_retries.orValue(0)),
+                                  },
+                                  "next_from": req.from.format(time_layout.RFC3339),
+                                  "cached_projects": null,
+                                  "want_more": false,
+                                }
+                              :
                               discovery.projects.as(projects,
                                         ((has(body.instances) && body.instances != null) ?
                                           body.instances.filter(instance,
@@ -242,7 +290,6 @@ inputs:
                                                         size(sls_line_items) > 0 ?
                                                           sls_line_items.map(line_item,
                                                             {
-                                                              "@timestamp": req.from.format(time_layout.RFC3339),
                                                               "period_start": req.from.format(time_layout.RFC3339),
                                                               "project_id": inst_id,
                                                               "project_name": resolved_name,
@@ -258,7 +305,6 @@ inputs:
                                                         :
                                                           [
                                                             {
-                                                              "@timestamp": req.from.format(time_layout.RFC3339),
                                                               "period_start": req.from.format(time_layout.RFC3339),
                                                               "project_id": inst_id,
                                                               "project_name": resolved_name,
@@ -275,7 +321,6 @@ inputs:
                                                     :
                                                       [
                                                         {
-                                                          "@timestamp": req.from.format(time_layout.RFC3339),
                                                           "period_start": req.from.format(time_layout.RFC3339),
                                                           "project_id": inst_id,
                                                           "project_name": resolved_name,
@@ -355,7 +400,6 @@ inputs:
                                                                             (diff_ecu > 0.0001 || diff_qty > 0.0 || (req.from < high_water && size(prev_day_keys) == 0)) ?
                                                                               [
                                                                                 {
-                                                                                  "@timestamp": req.from.format(time_layout.RFC3339),
                                                                                   "period_start": req.from.format(time_layout.RFC3339),
                                                                                   "project_id": "deleted_or_unassociated_" + eff_prod_type,
                                                                                   "project_name": "Deleted / Unassociated (" + eff_prod_type + ")",
@@ -388,7 +432,6 @@ inputs:
                                                 size(sls_instances.filter(inst, has(inst.id) && inst.id == p.id)) == 0
                                               ).map(p,
                                                 {
-                                                  "@timestamp": req.from.format(time_layout.RFC3339),
                                                   "period_start": req.from.format(time_layout.RFC3339),
                                                   "project_id": p.id,
                                                   "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
@@ -416,12 +459,49 @@ inputs:
                                                 )
                                               ).as(curr_evts,
                                                 (
+                                                  size(sls_instances) == 0 &&
+                                                  size(projects) > 0 &&
+                                                  req.to >= (latest_ready_to - duration("24h")) &&
+                                                  curr_evts.exists(e,
+                                                    string(e.project_id).startsWith("deleted_or_unassociated_") &&
+                                                    (e.total_ecu > 0.0001 || e.quantity_value > 0.0) &&
+                                                    string(e.sku).to_lower().as(s,
+                                                      s.contains("-vcu") || s.contains(".vcu") || s.contains("ml.ecu") || s.contains("ml_ecu") ||
+                                                      s.contains(".retained") || s.contains("synthetic") || s.contains("inference") ||
+                                                      s.contains(".eis") || s.contains("llm") || s.contains("agent-builder")
+                                                    )
+                                                  ) &&
+                                                  (state.?cursor.empty_inst_day.orValue("") == req.from.format(time_layout.RFC3339) ? int(state.?cursor.empty_inst_retries.orValue(0)) : 0) < 2
+                                                ) ?
+                                                  {
+                                                    "events": {
+                                                      "error": {
+                                                        "code": "instances_lagging_items",
+                                                        "id": "instances_lagging_items",
+                                                        "message": "Billing /costs/instances returned 0 Serverless project instances while /costs/items reported allocatable workload spend for " + req.from.format(time_layout.DateOnly) + "; holding cursor for retry",
+                                                      },
+                                                    },
+                                                    "cursor": {
+                                                      "initial_from": initial_from.format(time_layout.RFC3339),
+                                                      "last_to": max(high_water, req.from).format(time_layout.RFC3339),
+                                                      "replay_target_to": (high_water >= latest_ready_to) ? latest_ready_to_str : replay_target_to,
+                                                      "replay_completed_to": replay_completed_to,
+                                                      "next_from": req.from.format(time_layout.RFC3339),
+                                                      "recent_day_keys": pruned_recent_keys,
+                                                      "empty_inst_day": req.from.format(time_layout.RFC3339),
+                                                      "empty_inst_retries": (state.?cursor.empty_inst_day.orValue("") == req.from.format(time_layout.RFC3339) ? int(state.?cursor.empty_inst_retries.orValue(0)) : 0) + 1,
+                                                    },
+                                                    "next_from": req.from.format(time_layout.RFC3339),
+                                                    "cached_projects": discovery.cache_ok ? projects : null,
+                                                    "want_more": false,
+                                                  }
+                                                :
+                                                (
                                                   curr_evts +
                                                   prev_day_keys.filter(pk,
                                                     !curr_evts.exists(e, string(e.project_id) == string(pk.project_id) && string(e.sku) == string(pk.sku))
                                                   ).map(pk,
                                                     {
-                                                      "@timestamp": req.from.format(time_layout.RFC3339),
                                                       "period_start": req.from.format(time_layout.RFC3339),
                                                       "project_id": string(pk.project_id),
                                                       "project_name": string(pk.project_name),
@@ -458,6 +538,8 @@ inputs:
                                                         "replay_completed_to": (high_water >= latest_ready_to && req.to + duration("26h") > now) ? latest_ready_to_str : replay_completed_to,
                                                         "next_from": (req.to + duration("26h") <= now) ? req.to.format(time_layout.RFC3339) : replay_start_str,
                                                         "recent_day_keys": updated_recent_keys,
+                                                        "empty_inst_day": "",
+                                                        "empty_inst_retries": 0,
                                                       },
                                                       "next_from": (req.to + duration("26h") <= now) ? req.to.format(time_layout.RFC3339) : replay_start_str,
                                                       "cached_projects": discovery.cache_ok ? projects : null,
@@ -482,6 +564,8 @@ inputs:
                                       "replay_completed_to": replay_completed_to,
                                       "next_from": req.from.format(time_layout.RFC3339),
                                       "recent_day_keys": pruned_recent_keys,
+                                      "empty_inst_day": state.?cursor.empty_inst_day.orValue(""),
+                                      "empty_inst_retries": int(state.?cursor.empty_inst_retries.orValue(0)),
                                     },
                                     "next_from": req.from.format(time_layout.RFC3339),
                                     "want_more": false,
@@ -498,6 +582,8 @@ inputs:
                                   "replay_completed_to": replay_completed_to,
                                   "next_from": req.from.format(time_layout.RFC3339),
                                   "recent_day_keys": pruned_recent_keys,
+                                  "empty_inst_day": state.?cursor.empty_inst_day.orValue(""),
+                                  "empty_inst_retries": int(state.?cursor.empty_inst_retries.orValue(0)),
                                 },
                                 "next_from": req.from.format(time_layout.RFC3339),
                                 "want_more": false,

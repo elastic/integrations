@@ -10,8 +10,23 @@ inputs:
           data_stream:
             dataset: chargeback_serverless.usage
           interval: 30m
+          processors:
+            - drop_event.when.equals.fake: true
           program: |-
             state.with(
+              (state.?unsupported_agent_version.orValue("") != "") ?
+              {
+                "events": {
+                  "error": {
+                    "code": "unsupported_agent_version",
+                    "id": "agent_version_guard",
+                    "message": "Unsupported Elastic Agent version " + string(state.unsupported_agent_version) + ": chargeback_serverless requires a Fleet-managed Elastic Agent >= 9.2.0",
+                  },
+                },
+                "cursor": state.?cursor.orValue({}),
+                "want_more": false,
+              }
+              :
               (now - duration("2h")).format(time_layout.DateOnly).parse_time(time_layout.DateOnly).as(latest_day_end,
               (latest_day_end - duration("24h")).as(latest_day_start,
               ((state.?cursor.pending_day.orValue("") != "" && state.?cursor.pending_day.orValue("") != state.?cursor.last_day.orValue("") && timestamp(state.?cursor.pending_day.orValue("")) <= latest_day_start) ?
@@ -37,11 +52,23 @@ inputs:
                 )
               ).map(k, k.trim_space()).filter(k, k != "" && k != "null" && !k.startsWith("$co.elastic.secret")).as(all_pkeys,
               state.?cursor.ml_baselines.orValue([]).as(prev_ml_baselines,
+              state.?cursor.ds_proj_ts.orValue(dyn({})).as(prev_ds_proj_ts,
+              state.?cursor.ds_baselines.orValue(dyn({})).as(prev_ds_baselines,
               (state.?cursor.pending_day.orValue("") == day_ts ? state.?cursor.completed_projects.orValue([]) : []).as(prev_completed_pids,
+              (state.?cursor.pending_day.orValue("") == day_ts ? state.?cursor.unauth_projects.orValue([]) : []).as(prev_unauth_pids,
               (state.?cursor.last_day.orValue("") == day_ts) ?
               {
                 "events": [],
-                "cursor": { "last_day": day_ts, "pending_day": day_ts, "pending_retries": 0, "completed_projects": prev_completed_pids, "ml_baselines": prev_ml_baselines },
+                "cursor": {
+                  "last_day": day_ts,
+                  "pending_day": day_ts,
+                  "pending_retries": 0,
+                  "completed_projects": prev_completed_pids,
+                  "unauth_projects": prev_unauth_pids,
+                  "ml_baselines": prev_ml_baselines,
+                  "ds_proj_ts": prev_ds_proj_ts,
+                  "ds_baselines": prev_ds_baselines,
+                },
                 "want_more": false,
               }
               :
@@ -206,7 +233,6 @@ inputs:
                       ((has(tb.monitors) && has(tb.monitors.buckets) && tb.monitors.buckets != null) ?
                         tb.monitors.buckets.map(b,
                           {
-                            "@timestamp": day_ts,
                             "period_start": day_ts,
                             "doc_type": "synthetics_monitor",
                             "project_id": p.id,
@@ -230,7 +256,6 @@ inputs:
                       ((has(tb.monitors) && has(tb.monitors.sum_other_doc_count) && tb.monitors.sum_other_doc_count != null && int(tb.monitors.sum_other_doc_count) > 0) ?
                         [
                           {
-                            "@timestamp": day_ts,
                             "period_start": day_ts,
                             "doc_type": "synthetics_monitor",
                             "project_id": p.id,
@@ -286,7 +311,6 @@ inputs:
                     ((has_ping_sku && !harvested_syn_evts.exists(m, m.monitor_type != "browser")) ?
                       [
                         {
-                          "@timestamp": day_ts,
                           "period_start": day_ts,
                           "doc_type": "synthetics_monitor",
                           "project_id": p.id,
@@ -310,7 +334,6 @@ inputs:
                     ((has_browser_sku && !harvested_syn_evts.exists(m, m.monitor_type == "browser")) ?
                       [
                         {
-                          "@timestamp": day_ts,
                           "period_start": day_ts,
                           "doc_type": "synthetics_monitor",
                           "project_id": p.id,
@@ -344,7 +367,7 @@ inputs:
                         (has(m.inference_stats) && m.inference_stats != null && has(m.inference_stats.inference_count) && m.inference_stats.inference_count != null && int(m.inference_stats.inference_count) > 0)
                       )
                     ) : []).as(active_ml_stats,
-                  ((size(active_ml_stats) > 0 ?
+                  (size(active_ml_stats) > 0 ?
                       active_ml_stats.map(m,
                         ((has(m.deployment_stats) && m.deployment_stats != null && has(m.deployment_stats.deployment_id) && m.deployment_stats.deployment_id != null && string(m.deployment_stats.deployment_id) != "") ? string(m.deployment_stats.deployment_id) : "").as(dep_id,
                         (string(p.id) + ":" + string(m.model_id)).as(legacy_mkey,
@@ -380,17 +403,18 @@ inputs:
                         (size(node_entries) == 0 ? 0.0 : double(node_entries.map(ne, ne.t).sum())).as(deploy_time_ms,
                         (size(node_entries) > 0 ? deploy_inf_count : ingest_inf_count).as(raw_inf_count,
                         (size(node_entries) > 0 ? int(deploy_time_ms) : 0).as(raw_time_ms,
-                        (!has_contiguous_baseline ? 0 : ((size(node_entries) > 0 && size(prev_nodes) > 0) ? node_entries.map(ne, ne.dv).sum() : (has(matched_base[0].v) ? (raw_inf_count >= int(matched_base[0].v) ? raw_inf_count - int(matched_base[0].v) : raw_inf_count) : 0))).as(delta_inf_count,
-                        (!has_contiguous_baseline ? 0 : ((size(node_entries) > 0 && size(prev_nodes) > 0) ? node_entries.map(ne, ne.dt).sum() : (has(matched_base[0].t) ? (raw_inf_count >= int(matched_base[0].v) && raw_time_ms >= int(matched_base[0].t) ? raw_time_ms - int(matched_base[0].t) : raw_time_ms) : 0))).as(delta_time_ms,
+                        (!has_contiguous_baseline ? 0 : (size(node_entries) > 0 ? node_entries.map(ne, ne.dv).sum() : (has(matched_base[0].mv) ? (ingest_inf_count >= int(matched_base[0].mv) ? ingest_inf_count - int(matched_base[0].mv) : ingest_inf_count) : ((size(prev_nodes) == 0 && has(matched_base[0].v)) ? (ingest_inf_count >= int(matched_base[0].v) ? ingest_inf_count - int(matched_base[0].v) : ingest_inf_count) : 0)))).as(delta_inf_count,
+                        (!has_contiguous_baseline ? 0 : (size(node_entries) > 0 ? node_entries.map(ne, ne.dt).sum() : 0)).as(delta_time_ms,
                         {
                           "bkey": mkey,
                           "model_id": string(m.model_id),
                           "task_type": has(m.pipeline_count) && int(m.pipeline_count) > 0 ? "ingest_inference" : "query_inference",
+                          "is_deployed": size(node_entries) > 0 || (has(m.deployment_stats) && m.deployment_stats != null && has(m.deployment_stats.state) && m.deployment_stats.state != null && string(m.deployment_stats.state).to_lower() == "started"),
                           "delta_inf": delta_inf_count,
                           "delta_time": delta_time_ms,
                           "deploy_inf": deploy_inf_count,
                           "deploy_time": deploy_time_ms,
-                          "baseline": { "k": mkey, "v": raw_inf_count, "t": raw_time_ms, "ts": day_ts, "nodes": cur_nodes },
+                          "baseline": { "k": mkey, "mv": ingest_inf_count, "v": raw_inf_count, "t": raw_time_ms, "ts": day_ts, "nodes": cur_nodes },
                         }
                         )
                         )
@@ -408,18 +432,20 @@ inputs:
                         )
                         )
                         )
-                      ).as(raw_ml_entries,
-                      raw_ml_entries.filter(d,
-                        raw_ml_entries.filter(y, y.model_id == d.model_id && y.task_type == d.task_type)[0].bkey == d.bkey
-                      ).map(d,
-                        raw_ml_entries.filter(y, y.model_id == d.model_id && y.task_type == d.task_type).as(grp,
-                        grp.map(y, y.delta_inf).sum().as(comb_delta_inf,
-                        grp.map(y, y.delta_time).sum().as(comb_delta_time,
-                        grp.map(y, y.deploy_inf).sum().as(comb_deploy_inf,
-                        grp.map(y, y.deploy_time).sum().as(comb_deploy_time,
-                        (comb_delta_inf > 0 ? double(comb_delta_time) / double(comb_delta_inf) : 0.0).as(avg_inf_ms,
+                      ) : []).as(raw_ml_entries,
+                  (
+                    raw_ml_entries.filter(d,
+                      raw_ml_entries.filter(y, y.model_id == d.model_id && y.task_type == d.task_type)[0].bkey == d.bkey
+                    ).map(d,
+                      raw_ml_entries.filter(y, y.model_id == d.model_id && y.task_type == d.task_type).as(grp,
+                      grp.map(y, y.delta_inf).sum().as(comb_delta_inf,
+                      grp.map(y, y.delta_time).sum().as(comb_delta_time,
+                      grp.map(y, y.deploy_inf).sum().as(comb_deploy_inf,
+                      grp.map(y, y.deploy_time).sum().as(comb_deploy_time,
+                      (comb_delta_inf > 0 ? double(comb_delta_time) / double(comb_delta_inf) : 0.0).as(avg_inf_ms,
+                      (comb_delta_inf > 0 || grp.exists(y, y.is_deployed)) ?
+                      [
                         {
-                          "@timestamp": day_ts,
                           "period_start": day_ts,
                           "doc_type": "ai_model",
                           "project_id": p.id,
@@ -428,21 +454,21 @@ inputs:
                           "model_id": d.model_id,
                           "task_type": d.task_type,
                           "inference_count": comb_delta_inf,
-                          "_raw_baselines": grp.map(y, y.baseline),
                           "average_inference_time_ms": avg_inf_ms,
                           "total_inference_time_ms": comb_delta_time,
                           "conf_chargeable_unit_rate": double(state.conf_unit_rate),
                           "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
                           "conf_currency_symbol": state.conf_currency_symbol,
                         }
-                        )
-                        )
-                        )
-                        )
-                        )
-                        )
+                      ]
+                      : []
                       )
-                      ) : []) +
+                      )
+                      )
+                      )
+                      )
+                      )
+                    ).flatten() +
                     (is_live_day && has(inf_body.endpoints) && inf_body.endpoints != null ?
                       inf_body.endpoints.filter(ep,
                         has(ep.inference_id) && ep.inference_id != null &&
@@ -455,7 +481,6 @@ inputs:
                         )
                       ).map(ep,
                         {
-                          "@timestamp": day_ts,
                           "period_start": day_ts,
                           "doc_type": "ai_model",
                           "project_id": p.id,
@@ -471,7 +496,7 @@ inputs:
                           "conf_currency_symbol": state.conf_currency_symbol,
                         }
                       ) : [])
-                  )).as(harvested_ai_evts,
+                  ).as(harvested_ai_evts,
                   proj_bill_insts.exists(inst,
                     has(inst.product_line_items) && inst.product_line_items != null &&
                     inst.product_line_items.exists(li,
@@ -483,10 +508,9 @@ inputs:
                   ).as(has_ai_sku,
                   (
                     harvested_ai_evts +
-                    ((size(harvested_ai_evts) == 0 && has_ai_sku) ?
+                    ((has_ai_sku && (size(harvested_ai_evts) == 0 || (!harvested_ai_evts.exists(e, e.inference_count > 0) && inf_resp.StatusCode != 200 && inf_resp.StatusCode != 404))) ?
                       [
                         {
-                          "@timestamp": day_ts,
                           "period_start": day_ts,
                           "doc_type": "ai_model",
                           "project_id": p.id,
@@ -504,10 +528,11 @@ inputs:
                       ]
                       : [])
                   ).as(all_ai_evts,
-                  ((ml_resp.StatusCode == 429 || ml_resp.StatusCode >= 500) || (inf_resp.StatusCode == 429 || inf_resp.StatusCode >= 500) || (syn_resp.StatusCode == 429 || syn_resp.StatusCode >= 500) || (syn_resp.StatusCode == 200 && ((has(syn_body.timed_out) && syn_body.timed_out == true) || (has(syn_body._shards) && syn_body._shards != null && has(syn_body._shards.failed) && syn_body._shards.failed != null && int(syn_body._shards.failed) > 0)))).as(sub_transient_err,
-                  (sub_transient_err && !(state.?cursor.pending_day.orValue("") == day_ts && (int(state.?cursor.pending_retries.orValue(0)) >= 2 || (int(state.?cursor.pending_retries.orValue(0)) >= 1 && day_start < latest_day_start)))) ?
+                  ((ml_resp.StatusCode == 429 || ml_resp.StatusCode >= 500) || (inf_resp.StatusCode == 429 || inf_resp.StatusCode >= 500) || (syn_resp.StatusCode == 200 && ((has(syn_body.timed_out) && syn_body.timed_out == true) || (has(syn_body._shards) && syn_body._shards != null && has(syn_body._shards.failed) && syn_body._shards.failed != null && int(syn_body._shards.failed) > 0))) || (syn_resp.StatusCode == 429 || syn_resp.StatusCode >= 500)).as(sub_transient_err,
+                  (sub_transient_err && !(state.?cursor.pending_day.orValue("") == day_ts && (int(state.?cursor.pending_retries.orValue(0)) >= 8 || (int(state.?cursor.pending_retries.orValue(0)) >= 1 && day_start < latest_day_start)))) ?
                   []
                   : ((is_live_day && ((ml_resp.StatusCode != 200 && ml_resp.StatusCode != 404) || (inf_resp.StatusCode != 200 && inf_resp.StatusCode != 404))).as(ai_auth_err,
+                    (is_live_day && string(p.id) in prev_ds_proj_ts && prev_ds_proj_ts[string(p.id)] != null && string(prev_ds_proj_ts[string(p.id)]) != "" && (day_start - timestamp(string(prev_ds_proj_ts[string(p.id)]))) == duration("24h")).as(has_ds_base,
                     (is_live_day ?
                       rows.filter(row,
                         !row.index.startsWith(".") || row.index.startsWith(".ds-")
@@ -530,13 +555,22 @@ inputs:
                           )
                           : raw_idx).as(base_ds,
                         ((base_ds.startsWith(".") || base_ds == "system" || (base_ds.startsWith("serverless_") && (base_ds.endsWith("_lookup") || base_ds.contains("_lookup-")))) ? "system" : base_ds).as(norm_ds,
+                        (("indexing.index_time" in row && row["indexing.index_time"] != null && row["indexing.index_time"] != "") ? int(row["indexing.index_time"]) : 0).as(raw_idx_ms,
+                        (("search.query_time" in row && row["search.query_time"] != null && row["search.query_time"] != "") ? int(row["search.query_time"]) : 0).as(raw_qry_ms,
+                        (((string(p.id) + "\n" + raw_idx) in prev_ds_baselines && prev_ds_baselines[string(p.id) + "\n" + raw_idx] != null && size(prev_ds_baselines[string(p.id) + "\n" + raw_idx]) >= 2) ? prev_ds_baselines[string(p.id) + "\n" + raw_idx] : [0, 0]).as(prev_ds_m,
                         {
                           "ds": norm_ds,
+                          "ds_bkey": string(p.id) + "\n" + raw_idx,
                           "representative_index": norm_ds == "system" ? "system" : raw_idx,
-                          "idx_time": ("indexing.index_time" in row && row["indexing.index_time"] != null && row["indexing.index_time"] != "") ? int(row["indexing.index_time"]) : 0,
-                          "qry_time": ("search.query_time" in row && row["search.query_time"] != null && row["search.query_time"] != "") ? int(row["search.query_time"]) : 0,
+                          "raw_idx_time": raw_idx_ms,
+                          "raw_qry_time": raw_qry_ms,
+                          "idx_time": !has_ds_base ? 0 : (raw_idx_ms >= int(prev_ds_m[0]) ? raw_idx_ms - int(prev_ds_m[0]) : raw_idx_ms),
+                          "qry_time": !has_ds_base ? 0 : (raw_qry_ms >= int(prev_ds_m[1]) ? raw_qry_ms - int(prev_ds_m[1]) : raw_qry_ms),
                           "store_bytes": ("dataset.size" in row && row["dataset.size"] != null && row["dataset.size"] != "") ? int(row["dataset.size"]) : 0,
                         }
+                        )
+                        )
+                        )
                         )
                         )
                         )
@@ -574,7 +608,6 @@ inputs:
                       distinct_ds_names.map(ds_name,
                         norm_rows.filter(r, r.ds == ds_name).as(ds_grp,
                         {
-                          "@timestamp": day_ts,
                           "period_start": day_ts,
                           "doc_type": "datastream",
                           "project_id": p.id,
@@ -595,7 +628,6 @@ inputs:
                       (size(proj_bill_insts) > 0 ?
                         [
                           {
-                            "@timestamp": day_ts,
                             "period_start": day_ts,
                             "doc_type": "datastream",
                             "project_id": p.id,
@@ -613,32 +645,40 @@ inputs:
                         ]
                         : [])
                     ).as(ds_evts,
-                    ds_evts +
-                    all_ai_evts +
-                    all_syn_evts +
-                    [
-                      {
-                        "@timestamp": day_ts,
-                        "period_start": day_ts,
-                        "doc_type": "project_status",
-                        "project_id": p.id,
-                        "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
-                        "project_type": p.project_type,
-                        "optimized_for": has(p.optimized_for) ? p.optimized_for : "general_purpose",
-                        "es_url": es_base_url,
-                        "last_status": sub_transient_err ? "transient_error" : (ai_auth_err ? "empty_or_unauthorized" : "ok"),
-                        "api_key_type": resolved_ktype,
-                        "synthetics_status": (syn_resp.StatusCode == 429 || syn_resp.StatusCode >= 500 || (syn_resp.StatusCode == 200 && ((has(syn_body.timed_out) && syn_body.timed_out == true) || (has(syn_body._shards) && syn_body._shards != null && has(syn_body._shards.failed) && syn_body._shards.failed != null && int(syn_body._shards.failed) > 0)))) ? "transient_error" : ((syn_resp.StatusCode != 200 && syn_resp.StatusCode != 404) ? "unauthorized" : ((size(harvested_syn_evts) == 0 && size(all_syn_evts) > 0) ? "billing_derived" : "ok")),
-                        "index_count": is_live_day ? size(rows) : size(ds_evts),
-                        "datastream_count": size(ds_evts),
-                        "ai_model_count": size(all_ai_evts),
-                        "synthetics_monitor_count": size(all_syn_evts),
-                        "updated_at": now.format(time_layout.RFC3339),
-                        "conf_chargeable_unit_rate": double(state.conf_unit_rate),
-                        "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-                        "conf_currency_symbol": state.conf_currency_symbol,
-                      }
-                    ]
+                    (is_live_day && ai_auth_err && prev_unauth_pids.exists(uid, string(uid) == string(p.id))) ?
+                      []
+                    :
+                      (
+                        ds_evts +
+                        all_ai_evts +
+                        all_syn_evts +
+                        [
+                          {
+                            "period_start": day_ts,
+                            "doc_type": "project_status",
+                            "project_id": p.id,
+                            "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                            "project_type": p.project_type,
+                            "optimized_for": has(p.optimized_for) ? p.optimized_for : "general_purpose",
+                            "es_url": es_base_url,
+                            "last_status": sub_transient_err ? "transient_error" : (ai_auth_err ? "empty_or_unauthorized" : "ok"),
+                            "api_key_type": resolved_ktype,
+                            "synthetics_status": (syn_resp.StatusCode == 429 || syn_resp.StatusCode >= 500 || (syn_resp.StatusCode == 200 && ((has(syn_body.timed_out) && syn_body.timed_out == true) || (has(syn_body._shards) && syn_body._shards != null && has(syn_body._shards.failed) && syn_body._shards.failed != null && int(syn_body._shards.failed) > 0)))) ? "transient_error" : ((syn_resp.StatusCode != 200 && syn_resp.StatusCode != 404) ? "unauthorized" : ((size(harvested_syn_evts) == 0 && size(all_syn_evts) > 0) ? "billing_derived" : "ok")),
+                            "index_count": is_live_day ? size(rows) : size(ds_evts),
+                            "datastream_count": size(ds_evts),
+                            "ai_model_count": size(all_ai_evts),
+                            "synthetics_monitor_count": size(all_syn_evts),
+                            "updated_at": now.format(time_layout.RFC3339),
+                            "_raw_baselines": (is_live_day && !sub_transient_err && !ai_auth_err) ? raw_ml_entries.map(y, y.baseline) : [],
+                            "_raw_ds_proj_ts": (is_live_day && !sub_transient_err && !ai_auth_err) ? day_ts : "",
+                            "_raw_ds_baselines": (is_live_day && !sub_transient_err && !ai_auth_err) ? norm_rows.filter(r, r.raw_idx_time > 0 || r.raw_qry_time > 0).map(r, { "k": r.ds_bkey, "m": [r.raw_idx_time, r.raw_qry_time] }) : [],
+                            "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                            "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                            "conf_currency_symbol": state.conf_currency_symbol,
+                          }
+                        ]
+                      )
+                    )
                     )
                     )
                     )
@@ -665,8 +705,10 @@ inputs:
                   )
                   )
                   )
+                  )
+                  )
                   :
-                  ((resolved_ktype == "transient_error" && !(state.?cursor.pending_day.orValue("") == day_ts && (int(state.?cursor.pending_retries.orValue(0)) >= 2 || (int(state.?cursor.pending_retries.orValue(0)) >= 1 && day_start < latest_day_start)))) ?
+                  (((resolved_ktype == "transient_error" && !(state.?cursor.pending_day.orValue("") == day_ts && (int(state.?cursor.pending_retries.orValue(0)) >= 8 || (int(state.?cursor.pending_retries.orValue(0)) >= 1 && day_start < latest_day_start)))) || (resolved_ktype != "transient_error" && prev_unauth_pids.exists(uid, string(uid) == string(p.id)))) ?
                     []
                     :
                     ((has(bill_body.instances) && bill_body.instances != null) ?
@@ -707,7 +749,6 @@ inputs:
                       (size(u_ping_qtys) > 0 ?
                         [
                           {
-                            "@timestamp": day_ts,
                             "period_start": day_ts,
                             "doc_type": "synthetics_monitor",
                             "project_id": p.id,
@@ -731,7 +772,6 @@ inputs:
                       (size(u_browser_qtys) > 0 ?
                         [
                           {
-                            "@timestamp": day_ts,
                             "period_start": day_ts,
                             "doc_type": "synthetics_monitor",
                             "project_id": p.id,
@@ -756,7 +796,6 @@ inputs:
                     (u_has_ai ?
                       [
                         {
-                          "@timestamp": day_ts,
                           "period_start": day_ts,
                           "doc_type": "ai_model",
                           "project_id": p.id,
@@ -777,7 +816,6 @@ inputs:
                     u_syn_evts +
                     [
                       {
-                        "@timestamp": day_ts,
                         "period_start": day_ts,
                         "doc_type": "project_status",
                         "project_id": p.id,
@@ -883,7 +921,6 @@ inputs:
                       (size(del_ping_qtys) > 0 ?
                         [
                           {
-                            "@timestamp": day_ts,
                             "period_start": day_ts,
                             "doc_type": "synthetics_monitor",
                             "project_id": string(inst.id),
@@ -907,7 +944,6 @@ inputs:
                       (size(del_browser_qtys) > 0 ?
                         [
                           {
-                            "@timestamp": day_ts,
                             "period_start": day_ts,
                             "doc_type": "synthetics_monitor",
                             "project_id": string(inst.id),
@@ -938,7 +974,6 @@ inputs:
                     (size(del_ai_items) > 0 ?
                       [
                         {
-                          "@timestamp": day_ts,
                           "period_start": day_ts,
                           "doc_type": "ai_model",
                           "project_id": string(inst.id),
@@ -957,7 +992,6 @@ inputs:
                       : []).as(del_ai_evts,
                     [
                       {
-                        "@timestamp": day_ts,
                         "period_start": day_ts,
                         "doc_type": "datastream",
                         "project_id": string(inst.id),
@@ -977,7 +1011,6 @@ inputs:
                     del_syn_evts +
                     [
                       {
-                        "@timestamp": day_ts,
                         "period_start": day_ts,
                         "doc_type": "project_status",
                         "project_id": string(inst.id),
@@ -1013,10 +1046,20 @@ inputs:
                   ).flatten()
                   : [])
               ).as(usage_evts,
-              usage_evts.filter(e, has(e.doc_type) && e.doc_type == "project_status").map(e, string(e.project_id)).as(newly_completed_pids,
-              (prev_completed_pids + newly_completed_pids).as(all_completed_pids,
-              (!projects.exists(p, !all_completed_pids.exists(cid, cid == string(p.id)))).as(all_projs_done,
-              usage_evts.filter(e, has(e.doc_type) && e.doc_type == "ai_model" && has(e._raw_baselines) && e._raw_baselines != null).map(e, e._raw_baselines).flatten().as(cur_ml_baselines,
+              usage_evts.filter(e, has(e.doc_type) && e.doc_type == "project_status").as(status_evts,
+              status_evts.filter(e, string(e.last_status) != "empty_or_unauthorized").map(e, string(e.project_id)).as(newly_ok_pids,
+              status_evts.filter(e, string(e.last_status) == "empty_or_unauthorized").map(e, string(e.project_id)).as(newly_unauth_pids,
+              (prev_completed_pids + newly_ok_pids).as(all_completed_pids,
+              (
+                prev_unauth_pids.filter(uid,
+                  !newly_ok_pids.exists(oid, oid == string(uid)) &&
+                  projects.exists(p, string(p.id) == string(uid))
+                ) +
+                newly_unauth_pids.filter(uid, !prev_unauth_pids.exists(puid, string(puid) == uid))
+              ).as(all_unauth_pids,
+              (!projects.exists(p, !all_completed_pids.exists(cid, cid == string(p.id)) && !all_unauth_pids.exists(uid, uid == string(p.id)))).as(all_accounted_for,
+              (all_accounted_for && (size(all_unauth_pids) == 0 || day_start < latest_day_start)).as(all_projs_done,
+              status_evts.filter(e, has(e._raw_baselines) && e._raw_baselines != null).map(e, e._raw_baselines).flatten().as(cur_ml_baselines,
               (is_live_day ?
                 (
                   cur_ml_baselines +
@@ -1027,7 +1070,7 @@ inputs:
                       string(b.ts) == day_ts ||
                       (
                         (day_start - timestamp(string(b.ts))) == duration("24h") &&
-                        !newly_completed_pids.exists(pid, string(b.k) == pid || string(b.k).startsWith(pid + ":"))
+                        !newly_ok_pids.exists(pid, string(b.k) == pid || string(b.k).startsWith(pid + ":"))
                       )
                     )
                   )
@@ -1036,17 +1079,53 @@ inputs:
                   has(b.k) && has(b.ts) && b.ts != null && string(b.ts) != "" &&
                   (day_start - timestamp(string(b.ts))) <= duration("24h")
                 )).as(merged_ml_baselines,
+              status_evts.filter(e, has(e._raw_ds_proj_ts) && e._raw_ds_proj_ts != null && string(e._raw_ds_proj_ts) != "").as(ds_base_evts,
+              ds_base_evts.map(e, string(e.project_id)).as(newly_ds_pids,
+              prev_ds_proj_ts.keys().filter(k,
+                !(string(k) in newly_ds_pids) &&
+                prev_ds_proj_ts[k] != null &&
+                string(prev_ds_proj_ts[k]) != "" &&
+                (day_start - timestamp(string(prev_ds_proj_ts[k]))) <= duration("24h")
+              ).as(kept_ds_pids,
+              (
+                (size(kept_ds_pids) > 0 ? zip(kept_ds_pids, kept_ds_pids.map(k, prev_ds_proj_ts[k])) : dyn({}))
+              ).with(
+                size(ds_base_evts) > 0 ? zip(ds_base_evts.map(e, string(e.project_id)), ds_base_evts.map(e, string(e._raw_ds_proj_ts))) : {}
+              ).as(merged_ds_proj_ts,
+              ds_base_evts.filter(e, has(e._raw_ds_baselines) && e._raw_ds_baselines != null).map(e, e._raw_ds_baselines).flatten().as(new_ds_bases,
+              prev_ds_baselines.keys().filter(k,
+                string(k).split("\n")[0] in kept_ds_pids
+              ).as(kept_ds_bkeys,
+              (
+                (size(kept_ds_bkeys) > 0 ? zip(kept_ds_bkeys, kept_ds_bkeys.map(k, prev_ds_baselines[k])) : dyn({}))
+              ).with(
+                size(new_ds_bases) > 0 ? zip(new_ds_bases.map(b, string(b.k)), new_ds_bases.map(b, b.m)) : {}
+              ).as(merged_ds_baselines,
               {
-                "events": usage_evts,
+                "events": size(usage_evts) > 0 ? usage_evts : [ { "fake": true } ],
                 "cursor": {
                   "last_day": all_projs_done ? day_ts : state.?cursor.last_day.orValue(""),
                   "pending_day": day_ts,
-                  "pending_retries": all_projs_done ? 0 : (state.?cursor.pending_day.orValue("") == day_ts ? int(state.?cursor.pending_retries.orValue(0)) + 1 : 1),
+                  "pending_retries": all_accounted_for ? 0 : (state.?cursor.pending_day.orValue("") == day_ts ? int(state.?cursor.pending_retries.orValue(0)) + 1 : 1),
                   "completed_projects": all_completed_pids,
+                  "unauth_projects": all_unauth_pids,
                   "ml_baselines": merged_ml_baselines,
+                  "ds_proj_ts": merged_ds_proj_ts,
+                  "ds_baselines": merged_ds_baselines,
                 },
                 "want_more": all_projs_done && day_start < latest_day_start,
               }
+              )
+              )
+              )
+              )
+              )
+              )
+              )
+              )
+              )
+              )
+              )
               )
               )
               )
@@ -1080,10 +1159,16 @@ inputs:
                   "pending_day": day_ts,
                   "pending_retries": state.?cursor.pending_day.orValue("") == day_ts ? int(state.?cursor.pending_retries.orValue(0)) : 0,
                   "completed_projects": prev_completed_pids,
+                  "unauth_projects": prev_unauth_pids,
                   "ml_baselines": prev_ml_baselines,
+                  "ds_proj_ts": prev_ds_proj_ts,
+                  "ds_baselines": prev_ds_baselines,
                 },
                 "want_more": false,
               }
+              )
+              )
+              )
               )
               )
               )

@@ -47,6 +47,9 @@ stdout '^logs\|nginx\.access\|prod-eu-west$'
 exec jq -r '.docs[2].doc._source | "\(.datastream)|\(.ds_type)|\(.ds_dataset)|\(.ds_namespace)"' lookup_usage_sim.json
 stdout '^metrics-system\.process-default\|metrics\|system\.process\|default$'
 
+exec jq -r '.hits.hits[0]._source | "\(.project_name)|\(.project_type)|\(.conf_chargeable_unit_rate)|\(.conf_chargeable_unit_rate_unit)|\(.conf_currency_symbol)"' proj_contrib_lookup_doc.json
+stdout '^Healthy Renamed ES\|elasticsearch\|1(\.0)?\|ECU\|ECU$'
+
 -- run_regression.sh --
 #!/bin/sh
 set -eu
@@ -70,7 +73,7 @@ es_curl() {
 
 cleanup() {
   curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" \
-    -X POST "${ES_HOST}/serverless_billing_cost_lookup-1,serverless_project_status_lookup-1/_delete_by_query?refresh=true" \
+    -X POST "${ES_HOST}/serverless_billing_cost_lookup-1,serverless_project_status_lookup-1,serverless_project_contribution_lookup-1/_delete_by_query?refresh=true" \
     -H 'Content-Type: application/json' \
     -d '{"query":{"terms":{"project_id":["proj-healthy","proj-stale-unbilled","proj-inactive"]}}}' >/dev/null 2>&1 || true
 }
@@ -79,7 +82,8 @@ trap cleanup EXIT
 i=0
 while [ "$i" -lt 30 ]; do
   if es_curl "${ES_HOST}/_alias/serverless_billing_cost_lookup" >/dev/null 2>&1 && \
-     es_curl "${ES_HOST}/_alias/serverless_project_status_lookup" >/dev/null 2>&1; then
+     es_curl "${ES_HOST}/_alias/serverless_project_status_lookup" >/dev/null 2>&1 && \
+     es_curl "${ES_HOST}/_alias/serverless_project_contribution_lookup" >/dev/null 2>&1; then
     break
   fi
   i=$((i + 1))
@@ -91,8 +95,8 @@ HEALTHY_UPDATED_AT="$(jq -nr '(now - 3600) | strftime("%Y-%m-%dT%H:%M:%SZ")')"
 STALE_DAY="$(jq -nr '(((now - 21600) / 86400 | floor) * 86400 - 4 * 86400) | strftime("%Y-%m-%dT00:00:00Z")')"
 STALE_UPDATED_AT="$(jq -nr '(now - 96 * 3600) | strftime("%Y-%m-%dT%H:%M:%SZ")')"
 
-BILL_PIPELINE="${CURRENT_VERSION}-chargeback_serverless-lookup_billing"
-USAGE_PIPELINE="${CURRENT_VERSION}-chargeback_serverless-lookup_usage"
+BILL_PIPELINE="metrics-chargeback_serverless.billing-${CURRENT_VERSION}-lookup_billing"
+USAGE_PIPELINE="metrics-chargeback_serverless.usage-${CURRENT_VERSION}-lookup_usage"
 
 jq -n \
   --arg ts "${BILL_DAY}" \
@@ -180,6 +184,26 @@ jq -n \
   -H 'Content-Type: application/json' -d @- >/dev/null
 
 es_curl -X GET "${ES_HOST}/serverless_billing_cost_lookup/_search?q=project_id:proj-healthy&size=1" > billing_lookup_doc.json
+
+jq -n \
+  --arg ts "${BILL_DAY}" \
+  '{
+    "@timestamp": $ts,
+    "project_id": "proj-healthy",
+    "deployment_sum_indexing_time": 1200,
+    "deployment_sum_query_time": 340,
+    "deployment_sum_data_set_store_size": 104857600,
+    "latest_currency": {
+      "project_name": "Healthy Renamed ES",
+      "project_type": "elasticsearch",
+      "conf_chargeable_unit_rate": "1.0",
+      "conf_chargeable_unit_rate_unit": "ECU",
+      "conf_currency_symbol": "ECU"
+    }
+  }' | es_curl -X POST "${ES_HOST}/serverless_project_contribution_lookup-1/_doc?refresh=true&pipeline=${USAGE_PIPELINE}" \
+  -H 'Content-Type: application/json' -d @- >/dev/null
+
+es_curl -X GET "${ES_HOST}/serverless_project_contribution_lookup/_search?q=project_id:proj-healthy&size=1" > proj_contrib_lookup_doc.json
 
 RULE_FILE="${DATA_STREAM_ROOT}/../../kibana/alerting_rule_template/chargeback_serverless-alert-data-trust-health.json"
 jq '{query: .attributes.params.esqlQuery.esql}' "${RULE_FILE}" | \
