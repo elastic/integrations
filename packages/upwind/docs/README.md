@@ -249,11 +249,6 @@ An example event for `threat_detections` looks as following:
         },
         "namespace": "app-stage"
     },
-    "related": {
-        "hosts": [
-            "host-2.example.com"
-        ]
-    },
     "resource": {
         "id": "i-00000000000000000",
         "name": "host-2.example.com",
@@ -361,6 +356,7 @@ The `vulnerability_findings` data stream collects CVE findings from `GET /v1/org
 | vulnerability.enumeration | The type of identifier used for this vulnerability. For example (https://cve.mitre.org/about/) | keyword |
 | vulnerability.id | The identification (ID) is the number portion of a vulnerability entry. It includes a unique identification number for the vulnerability. For example (https://cve.mitre.org/about/faqs.html#what_is_cve_id) | keyword |
 | vulnerability.score.base | Scores can range from 0.0 to 10.0, with 10.0 being the most severe. Base scores cover an assessment for exploitability metrics (attack vector, complexity, privileges, and user interaction), impact metrics (confidentiality, integrity, and availability), and scope. For example (https://www.first.org/cvss/specification-document) | float |
+| vulnerability.score.version | The National Vulnerability Database (NVD) provides qualitative severity rankings of "Low", "Medium", and "High" for CVSS v2.0 base score ranges in addition to the severity ratings for CVSS v3.0 as they are defined in the CVSS v3.0 specification. CVSS is owned and managed by FIRST.Org, Inc. (FIRST), a US-based non-profit organization, whose mission is to help computer security incident response teams across the world. For example (https://nvd.nist.gov/vuln-metrics/cvss) | keyword |
 | vulnerability.severity | The severity of the vulnerability can help with metrics and internal prioritization regarding remediation. For example (https://nvd.nist.gov/vuln-metrics/cvss) | keyword |
 
 
@@ -490,7 +486,8 @@ An example event for `vulnerability_findings` looks as following:
         "enumeration": "CVE",
         "id": "CVE-2024-0000",
         "score": {
-            "base": 9.8
+            "base": 9.8,
+            "version": "3.1"
         },
         "severity": "critical"
     }
@@ -595,11 +592,6 @@ An example event for `configuration_findings` looks as following:
     },
     "observer": {
         "vendor": "Upwind"
-    },
-    "related": {
-        "hosts": [
-            "example-logs-bucket"
-        ]
     },
     "resource": {
         "id": "arn:aws:s3:::example-logs-bucket",

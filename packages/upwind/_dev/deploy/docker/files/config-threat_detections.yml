@@ -7,7 +7,8 @@
 # Rules, first match wins:
 #   1. OAuth client-credentials token (audience is the API base URL).
 #   2. Caught-up bookmark 2026-03-17T12:09:00Z → empty array (terminal window).
-#   3. Resume bookmark 2026-03-17T11:57:50Z → one newer detection.
+#   3. Resume bookmark 2026-03-17T11:57:50Z → overlap duplicate, status-only
+#      change of the same detection, and one newer detection.
 #   4. Any other min-last-seen-time:
 #        first hit → two detections (initial lookback window)
 #        later hits → three extra detections (cursor regression guard)
@@ -58,6 +59,60 @@ rules:
             - application/json
         body: |
           [
+            {
+              "id": "uwd-11111111111111aa",
+              "type": "aws_cloudtrail_security_group_allow_traffic_to_all_ports",
+              "category": "CLOUD_TRAIL",
+              "severity": "MEDIUM",
+              "status": "OPEN",
+              "title": "A security group inbound rule was modified by assumed role to allow unrestricted traffic (0.0.0.0/0) for all ports",
+              "description": "Allowing unrestricted inbound access (0.0.0.0/0) to all ports exposes the cloud environment to the entire internet, creating a critical security vulnerability.",
+              "resource": {
+                "id": "i-00000000000000000",
+                "name": "host-1.example.com",
+                "type": "AWS_SECURITY_GROUP",
+                "cloud_provider": "AWS",
+                "cloud_account_id": "111111111111"
+              },
+              "first_seen_time": "2026-03-17T11:58:50Z",
+              "last_seen_time": "2026-03-17T11:58:50Z",
+              "occurrence_count": 1,
+              "mitre_attacks": [
+                {
+                  "tactic_id": "TA0005",
+                  "tactic_name": "Defense Evasion",
+                  "technique_id": "T1578",
+                  "technique_name": "Modify Cloud Compute Infrastructure"
+                }
+              ]
+            },
+            {
+              "id": "uwd-11111111111111aa",
+              "type": "aws_cloudtrail_security_group_allow_traffic_to_all_ports",
+              "category": "CLOUD_TRAIL",
+              "severity": "MEDIUM",
+              "status": "CLOSED",
+              "title": "A security group inbound rule was modified by assumed role to allow unrestricted traffic (0.0.0.0/0) for all ports",
+              "description": "Allowing unrestricted inbound access (0.0.0.0/0) to all ports exposes the cloud environment to the entire internet, creating a critical security vulnerability.",
+              "resource": {
+                "id": "i-00000000000000000",
+                "name": "host-1.example.com",
+                "type": "AWS_SECURITY_GROUP",
+                "cloud_provider": "AWS",
+                "cloud_account_id": "111111111111"
+              },
+              "first_seen_time": "2026-03-17T11:58:50Z",
+              "last_seen_time": "2026-03-17T11:58:50Z",
+              "occurrence_count": 1,
+              "mitre_attacks": [
+                {
+                  "tactic_id": "TA0005",
+                  "tactic_name": "Defense Evasion",
+                  "technique_id": "T1578",
+                  "technique_name": "Modify Cloud Compute Infrastructure"
+                }
+              ]
+            },
             {
               "id": "uwd-33333333333333cc",
               "type": "aws_cloudtrail_console_login",

@@ -14,7 +14,8 @@ data_stream:
     http_client_timeout: 60s
     preserve_original_event: true
 assert:
-  # Initial lookback window (2) plus the cursor-resume poll (1).
-  # Later polls use the caught-up bookmark and return an empty array.
+  # Initial lookback window (2) plus the cursor-resume poll: one unchanged
+  # overlap duplicate (dropped), one status-only change (indexed), and one
+  # newer detection. Later polls use the caught-up bookmark and return empty.
   # A regressed cursor re-requests the lookback and indexes three extra events.
-  hit_count: 3
+  hit_count: 4
