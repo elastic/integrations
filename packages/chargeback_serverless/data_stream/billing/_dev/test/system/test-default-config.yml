@@ -14,9 +14,10 @@ data_stream:
     lookbehind: 2
     interval: "1h"
 assert:
-  # 8 Serverless instance line items across 3 discovered projects (excluding 1 Hosted deployment)
-  # plus 1 residual deleted/unassociated SKU from /costs/items = 9 documents.
-  hit_count: 9
+  # Day 1 emits 8 Serverless instance line items across 3 discovered projects (excluding 1 Hosted deployment)
+  # plus 1 residual deleted/unassociated SKU from /costs/items = 9 documents (00:00-02:00 UTC).
+  # From 02:00 UTC onward, Day 2 is also ready and emits 3 zero-ECU idle-project rows from cached_projects (12 total).
+  min_count: 9
   fields_present:
     - composite_key
     - project_id

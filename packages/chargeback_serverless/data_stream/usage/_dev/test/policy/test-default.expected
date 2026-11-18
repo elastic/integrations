@@ -101,12 +101,12 @@ inputs:
               ).with(
                 { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
               ).do_request().as(bill_resp,
-              (es_resp.StatusCode == 200 && obs_resp.StatusCode == 200 && sec_resp.StatusCode == 200 && (vdb_resp.StatusCode == 200 || vdb_resp.StatusCode == 404)).as(discovery_ok,
+              ((es_resp.StatusCode == 200 || es_resp.StatusCode == 204) && (obs_resp.StatusCode == 200 || obs_resp.StatusCode == 204) && (sec_resp.StatusCode == 200 || sec_resp.StatusCode == 204) && (vdb_resp.StatusCode == 200 || vdb_resp.StatusCode == 204 || vdb_resp.StatusCode == 404)).as(discovery_ok,
               (bill_resp.StatusCode == 200 && discovery_ok) ?
-              bytes(es_resp.Body).decode_json().as(es_body,
-              bytes(obs_resp.Body).decode_json().as(obs_body,
-              bytes(sec_resp.Body).decode_json().as(sec_body,
-              ((vdb_resp.StatusCode == 200) ? bytes(vdb_resp.Body).decode_json() : { "items": [] }).as(vdb_body,
+              ((es_resp.StatusCode == 200 && size(es_resp.Body) > 0) ? bytes(es_resp.Body).decode_json() : { "items": [] }).as(es_body,
+              ((obs_resp.StatusCode == 200 && size(obs_resp.Body) > 0) ? bytes(obs_resp.Body).decode_json() : { "items": [] }).as(obs_body,
+              ((sec_resp.StatusCode == 200 && size(sec_resp.Body) > 0) ? bytes(sec_resp.Body).decode_json() : { "items": [] }).as(sec_body,
+              ((vdb_resp.StatusCode == 200 && size(vdb_resp.Body) > 0) ? bytes(vdb_resp.Body).decode_json() : { "items": [] }).as(vdb_body,
               bytes(bill_resp.Body).decode_json().as(bill_body,
               ((has(es_body.items) && es_body.items != null ? es_body.items.map(p, dyn(p.with({ "project_type": "elasticsearch" }))) : []) +
                 (has(obs_body.items) && obs_body.items != null ? obs_body.items.map(p, dyn(p.with({ "project_type": "observability" }))) : []) +
@@ -1144,9 +1144,9 @@ inputs:
                   "error": {
                     "code": string(
                       bill_resp.StatusCode != 200 ? bill_resp.StatusCode :
-                      (es_resp.StatusCode != 200 ? es_resp.StatusCode :
-                        (obs_resp.StatusCode != 200 ? obs_resp.StatusCode :
-                          (sec_resp.StatusCode != 200 ? sec_resp.StatusCode : vdb_resp.StatusCode)
+                      ((es_resp.StatusCode != 200 && es_resp.StatusCode != 204) ? es_resp.StatusCode :
+                        ((obs_resp.StatusCode != 200 && obs_resp.StatusCode != 204) ? obs_resp.StatusCode :
+                          ((sec_resp.StatusCode != 200 && sec_resp.StatusCode != 204) ? sec_resp.StatusCode : vdb_resp.StatusCode)
                         )
                       )
                     ),

@@ -157,25 +157,25 @@ program: |-
                     ).with(
                       { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
                     ).do_request().as(es_resp,
-                      ((es_resp.StatusCode == 200) ? bytes(es_resp.Body).decode_json() : { "items": [] }).as(es_body,
+                      ((es_resp.StatusCode == 200 && size(es_resp.Body) > 0) ? bytes(es_resp.Body).decode_json() : { "items": [] }).as(es_body,
                         get_request(
                           state.cloud_api_base + "/api/v1/serverless/projects/observability"
                         ).with(
                           { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
                         ).do_request().as(obs_resp,
-                          ((obs_resp.StatusCode == 200) ? bytes(obs_resp.Body).decode_json() : { "items": [] }).as(obs_body,
+                          ((obs_resp.StatusCode == 200 && size(obs_resp.Body) > 0) ? bytes(obs_resp.Body).decode_json() : { "items": [] }).as(obs_body,
                             get_request(
                               state.cloud_api_base + "/api/v1/serverless/projects/security"
                             ).with(
                               { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
                             ).do_request().as(sec_resp,
-                              ((sec_resp.StatusCode == 200) ? bytes(sec_resp.Body).decode_json() : { "items": [] }).as(sec_body,
+                              ((sec_resp.StatusCode == 200 && size(sec_resp.Body) > 0) ? bytes(sec_resp.Body).decode_json() : { "items": [] }).as(sec_body,
                                 get_request(
                                   state.cloud_api_base + "/api/v1/serverless/projects/vectordb"
                                 ).with(
                                   { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
                                 ).do_request().as(vdb_resp,
-                                  ((vdb_resp.StatusCode == 200) ? bytes(vdb_resp.Body).decode_json() : { "items": [] }).as(vdb_body,
+                                  ((vdb_resp.StatusCode == 200 && size(vdb_resp.Body) > 0) ? bytes(vdb_resp.Body).decode_json() : { "items": [] }).as(vdb_body,
                                     {
                                       "projects": (
                                         (has(es_body.items) && es_body.items != null ? es_body.items.map(p, dyn(p.with({ "project_type": "elasticsearch" }))) : []) +
@@ -183,11 +183,11 @@ program: |-
                                         (has(sec_body.items) && sec_body.items != null ? sec_body.items.map(p, dyn(p.with({ "project_type": "security" }))) : []) +
                                         (has(vdb_body.items) && vdb_body.items != null ? vdb_body.items.map(p, dyn(p.with({ "project_type": "vectordb" }))) : [])
                                       ),
-                                      "cache_ok": es_resp.StatusCode == 200 && obs_resp.StatusCode == 200 && sec_resp.StatusCode == 200 && (vdb_resp.StatusCode == 200 || vdb_resp.StatusCode == 404),
+                                      "cache_ok": (es_resp.StatusCode == 200 || es_resp.StatusCode == 204) && (obs_resp.StatusCode == 200 || obs_resp.StatusCode == 204) && (sec_resp.StatusCode == 200 || sec_resp.StatusCode == 204) && (vdb_resp.StatusCode == 200 || vdb_resp.StatusCode == 204 || vdb_resp.StatusCode == 404),
                                       "err_code": string(
-                                        es_resp.StatusCode != 200 ? es_resp.StatusCode :
-                                        (obs_resp.StatusCode != 200 ? obs_resp.StatusCode :
-                                          (sec_resp.StatusCode != 200 ? sec_resp.StatusCode : vdb_resp.StatusCode)
+                                        (es_resp.StatusCode != 200 && es_resp.StatusCode != 204) ? es_resp.StatusCode :
+                                        ((obs_resp.StatusCode != 200 && obs_resp.StatusCode != 204) ? obs_resp.StatusCode :
+                                          ((sec_resp.StatusCode != 200 && sec_resp.StatusCode != 204) ? sec_resp.StatusCode : vdb_resp.StatusCode)
                                         )
                                       ),
                                       "err_msg": "Required Serverless project discovery request failed (elasticsearch=" + string(es_resp.StatusCode) + ", observability=" + string(obs_resp.StatusCode) + ", security=" + string(sec_resp.StatusCode) + ", vectordb=" + string(vdb_resp.StatusCode) + "); preserving billing day for retry",
