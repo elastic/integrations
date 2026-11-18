@@ -3,14 +3,14 @@ description: "Ingest pipeline for Chargeback self-collected node utilization met
 processors:
   - drop:
       if: "ctx.elasticsearch?.node?.roles == null && ctx.doc_type != 'config_snapshot' && ctx.error?.message == null"
-  - terminate:
-      tag: data_collection_error
-      if: ctx.error?.message != null && ctx.elasticsearch?.node?.roles == null && ctx.doc_type != 'config_snapshot'
-      description: Terminate early on collection error documents.
   - set:
       field: event.ingested
       value: "{{{_ingest.timestamp}}}"
       tag: set_event_ingested
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.elasticsearch?.node?.roles == null && ctx.doc_type != 'config_snapshot'
+      description: Terminate early on collection error documents.
   - terminate:
       tag: config_snapshot_complete
       if: "ctx.doc_type == 'config_snapshot'"

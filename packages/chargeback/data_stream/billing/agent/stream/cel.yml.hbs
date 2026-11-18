@@ -303,7 +303,7 @@ program: |-
                             }
                           )
                       )
-                    : (dep_resp.StatusCode == 404 ? { "ok": true, "retryable": false, "err": dyn({}), "items": [], "next_from": -1 } : {
+                    : (dep_resp.StatusCode == 404 ? { "ok": false, "retryable": false, "err": dyn({ "error": { "code": string(dep_resp.StatusCode), "id": string(dep_resp.Status), "message": "POST " + dep_resp.Request.URL + ": " + ((size(dep_resp.Body) != 0) ? string(dep_resp.Body) : string(dep_resp.Status)) } }), "items": [], "next_from": -1 } : {
                         "ok": false,
                         "retryable": (dep_resp.StatusCode != 401 && dep_resp.StatusCode != 403) || dep_from > 0,
                         "err": dyn({ "error": { "code": string(dep_resp.StatusCode), "id": string(dep_resp.Status), "message": "POST " + dep_resp.Request.URL + ": " + ((size(dep_resp.Body) != 0) ? string(dep_resp.Body) : string(dep_resp.Status)) } }),

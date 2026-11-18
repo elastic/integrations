@@ -89,6 +89,7 @@ inputs:
                 !has(state.deployment_keys) || state.deployment_keys == null ? [] :
                 string(dyn(state.deployment_keys)).split("\n").map(ln, ln.split("\r")).flatten().map(ln, ln.split(",")).flatten()
               ).map(k, k.trim_space()).filter(k, k != "" && k != "null" && !k.startsWith("$co.elastic.secret")).as(all_dkeys,
+              state.?cursor.good_key_idx.orValue(dyn({})).as(prev_good_idx,
               int(state.?cursor.disc_dep_from.orValue(has_cloud ? 0 : -1)).as(dep_from,
               string(state.?cursor.disc_es_next.orValue(has_cloud ? "START" : "")).as(es_next,
               string(state.?cursor.disc_obs_next.orValue(has_cloud ? "START" : "")).as(obs_next,
@@ -159,12 +160,13 @@ inputs:
                             }
                           )
                       )
-                    : (dep_resp.StatusCode == 404 ? { "ok": true, "err": dyn({}), "items": [], "next_from": -1 } : {
+                    :
+                      {
                         "ok": false,
                         "err": dyn({ "error": { "code": string(dep_resp.StatusCode), "id": string(dep_resp.Status), "message": "POST " + dep_resp.Request.URL + ": " + ((size(dep_resp.Body) != 0) ? string(dep_resp.Body) : string(dep_resp.Status)) } }),
                         "items": [],
                         "next_from": -1,
-                      })
+                      }
                   )
                 )
               : { "ok": true, "err": dyn({}), "items": [], "next_from": -1 }).as(dep_page,
@@ -390,6 +392,7 @@ inputs:
                         "cursor": {
                           "conf_sig": conf_sig,
                           "idx_baselines": base_map,
+                          "good_key_idx": prev_good_idx,
                           "disc_dep_from": dep_page.next_from,
                           "disc_es_next": es_page.next,
                           "disc_obs_next": obs_page.next,
@@ -405,6 +408,7 @@ inputs:
                         "cursor": {
                           "conf_sig": conf_sig,
                           "idx_baselines": base_map,
+                          "good_key_idx": prev_good_idx,
                         },
                         "want_more": false,
                       }
@@ -465,11 +469,15 @@ inputs:
                               )
                             ).filter(k, k != "").as(d_keys,
                               (d_keys + ((bool(t.is_hub) && has_hub && !(state.hub_es_api_key in d_keys)) ? [state.hub_es_api_key] : [])).as(dh_keys,
-                              (dh_keys + ((!bool(t.is_ech) && has_cloud && !(state.api_key in dh_keys)) ? [state.api_key] : [])).as(cand_keys,
+                              (dh_keys + ((!bool(t.is_ech) && has_cloud && !(state.api_key in dh_keys)) ? [state.api_key] : [])).as(raw_keys,
+                              [0, 1, 2, 3, 4, 5, 6, 7].filter(i, i < size(raw_keys) && !([0, 1, 2, 3, 4, 5, 6, 7].exists(j, j < i && raw_keys[j] == raw_keys[i]))).map(i, raw_keys[i]).as(cand_keys,
                               (size(cand_keys) == 0) ?
                                 {
                                   "ok": false,
+                                  "auth_err": false,
+                                  "partial": false,
                                   "skipped": true,
+                                  "key_idx": -1,
                                   "id": tid,
                                   "evts": [],
                                   "baselines": [],
@@ -482,115 +490,99 @@ inputs:
                                   }),
                                 }
                               :
+                                ((tid in prev_good_idx && int(prev_good_idx[tid]) >= 0 && int(prev_good_idx[tid]) < size(cand_keys)) ? int(prev_good_idx[tid]) : 0).as(cached_pos,
+                                ([cached_pos] + [0, 1, 2, 3, 4, 5, 6, 7].filter(i, i < size(cand_keys) && i != cached_pos)).map(i, { "k": cand_keys[i], "i": i }).as(ord_keys,
                                 (es_base + (bool(t.is_ech) ?
                                   "/*,.ds-*/_stats/docs,store,indexing,search?level=shards&expand_wildcards=open,hidden&ignore_unavailable=true&allow_no_indices=true&filter_path=_shards,indices.*.primaries.docs.count,indices.*.primaries.store.total_data_set_size_in_bytes,indices.*.primaries.store.size_in_bytes,indices.*.total.store.size_in_bytes,indices.*.total.indexing.index_time_in_millis,indices.*.total.search.query_time_in_millis,indices.*.total.search.query_total,indices.*.shards.*.routing,indices.*.shards.*.docs.count,indices.*.shards.*.store.size_in_bytes,indices.*.shards.*.store.total_data_set_size_in_bytes,indices.*.shards.*.indexing.index_time_in_millis,indices.*.shards.*.search.query_time_in_millis,indices.*.shards.*.search.query_total"
                                 :
                                   "/_cat/indices/*,.ds-*?format=json&bytes=b&time=ms&expand_wildcards=open,hidden&h=index,docs.count,store.size,dataset.size,indexing.index_time,search.query_time,search.query_total,creation.date"
                                 )).as(stats_url,
-                                  try(
-                                    get_request(stats_url).with({ "Header": { "Authorization": ["ApiKey " + cand_keys[0]] } }).do_request(),
-                                    "req_err"
-                                  ).as(r0,
-                                    has(r0.req_err) ?
-                                      {
-                                        "ok": false,
-                                        "body": dyn({}),
-                                        "key": "",
-                                        "err": dyn({ "error": { "code": "transport_error", "id": tid, "message": "GET " + stats_url + ": " + string(r0.req_err) } }),
-                                      }
-                                    : (r0.StatusCode == 200) ?
-                                      try(bytes(r0.Body).decode_json(), "json_err").as(b0,
-                                        (type(b0) == map && has(b0.json_err)) ?
-                                          {
-                                            "ok": false,
-                                            "body": dyn({}),
-                                            "key": "",
-                                            "err": dyn({ "error": { "code": "decode_error", "id": tid, "message": "GET " + stats_url + ": " + string(b0.json_err) } }),
-                                          }
-                                        : { "ok": true, "body": b0, "key": cand_keys[0], "err": dyn({}) }
-                                      )
-                                    : ((r0.StatusCode == 401 || r0.StatusCode == 403) && size(cand_keys) > 1 ?
-                                      tail(cand_keys).filter(ck, ck != cand_keys[0]).as(rem_keys,
-                                        (size(rem_keys) == 0) ?
-                                          {
-                                            "ok": false,
-                                            "body": dyn({}),
-                                            "key": "",
-                                            "err": dyn({ "error": { "code": string(r0.StatusCode), "id": string(r0.Status), "message": "GET " + r0.Request.URL + ": " + ((size(r0.Body) != 0) ? string(r0.Body) : string(r0.Status)) } }),
-                                          }
-                                        :
-                                          rem_keys.map(ck,
-                                            try(
-                                              get_request(stats_url).with({ "Header": { "Authorization": ["ApiKey " + ck] } }).do_request(),
-                                              "req_err"
-                                            ).as(cr,
-                                              has(cr.req_err) ?
-                                                {
-                                                  "ok": false,
-                                                  "body": dyn({}),
-                                                  "key": "",
-                                                  "err": dyn({ "error": { "code": "transport_error", "id": tid, "message": "GET " + stats_url + ": " + string(cr.req_err) } }),
-                                                }
-                                              : (cr.StatusCode == 200) ?
-                                                try(bytes(cr.Body).decode_json(), "json_err").as(cb,
-                                                  (type(cb) == map && has(cb.json_err)) ?
-                                                    {
-                                                      "ok": false,
-                                                      "body": dyn({}),
-                                                      "key": "",
-                                                      "err": dyn({ "error": { "code": "decode_error", "id": tid, "message": "GET " + stats_url + ": " + string(cb.json_err) } }),
-                                                    }
-                                                  : { "ok": true, "body": cb, "key": ck, "err": dyn({}) }
-                                                )
-                                              :
-                                                {
-                                                  "ok": false,
-                                                  "body": dyn({}),
-                                                  "key": "",
-                                                  "err": dyn({ "error": { "code": string(cr.StatusCode), "id": string(cr.Status), "message": "GET " + cr.Request.URL + ": " + ((size(cr.Body) != 0) ? string(cr.Body) : string(cr.Status)) } }),
-                                                }
-                                            )
-                                          ).as(rest_resps,
-                                            rest_resps.filter(x, x.ok).as(ok_resps,
-                                              (size(ok_resps) > 0) ?
-                                                ok_resps[0]
-                                              :
-                                                rest_resps[size(rest_resps) - 1]
-                                            )
+                                  try(get_request(stats_url).with({ "Header": { "Authorization": ["ApiKey " + ord_keys[0].k] } }).do_request(), "req_err").as(r0,
+                                    (!has(r0.req_err) && (r0.StatusCode == 401 || r0.StatusCode == 403) && size(ord_keys) > 1) ?
+                                      try(get_request(stats_url).with({ "Header": { "Authorization": ["ApiKey " + ord_keys[1].k] } }).do_request(), "req_err").as(r1,
+                                        (!has(r1.req_err) && (r1.StatusCode == 401 || r1.StatusCode == 403) && size(ord_keys) > 2) ?
+                                          try(get_request(stats_url).with({ "Header": { "Authorization": ["ApiKey " + ord_keys[2].k] } }).do_request(), "req_err").as(r2,
+                                            (!has(r2.req_err) && (r2.StatusCode == 401 || r2.StatusCode == 403) && size(ord_keys) > 3) ?
+                                              try(get_request(stats_url).with({ "Header": { "Authorization": ["ApiKey " + ord_keys[3].k] } }).do_request(), "req_err").as(r3,
+                                                (!has(r3.req_err) && (r3.StatusCode == 401 || r3.StatusCode == 403) && size(ord_keys) > 4) ?
+                                                  try(get_request(stats_url).with({ "Header": { "Authorization": ["ApiKey " + ord_keys[4].k] } }).do_request(), "req_err").as(r4,
+                                                    (!has(r4.req_err) && (r4.StatusCode == 401 || r4.StatusCode == 403) && size(ord_keys) > 5) ?
+                                                      try(get_request(stats_url).with({ "Header": { "Authorization": ["ApiKey " + ord_keys[5].k] } }).do_request(), "req_err").as(r5,
+                                                        (!has(r5.req_err) && (r5.StatusCode == 401 || r5.StatusCode == 403) && size(ord_keys) > 6) ?
+                                                          try(get_request(stats_url).with({ "Header": { "Authorization": ["ApiKey " + ord_keys[6].k] } }).do_request(), "req_err").as(r6,
+                                                            (!has(r6.req_err) && (r6.StatusCode == 401 || r6.StatusCode == 403) && size(ord_keys) > 7) ?
+                                                              try(get_request(stats_url).with({ "Header": { "Authorization": ["ApiKey " + ord_keys[7].k] } }).do_request(), "req_err").as(r7,
+                                                                { "resp": r7, "key": ord_keys[7].k, "i": ord_keys[7].i }
+                                                              )
+                                                            : { "resp": r6, "key": ord_keys[6].k, "i": ord_keys[6].i }
+                                                          )
+                                                        : { "resp": r5, "key": ord_keys[5].k, "i": ord_keys[5].i }
+                                                      )
+                                                    : { "resp": r4, "key": ord_keys[4].k, "i": ord_keys[4].i }
+                                                  )
+                                                : { "resp": r3, "key": ord_keys[3].k, "i": ord_keys[3].i }
+                                              )
+                                            : { "resp": r2, "key": ord_keys[2].k, "i": ord_keys[2].i }
                                           )
+                                        : { "resp": r1, "key": ord_keys[1].k, "i": ord_keys[1].i }
                                       )
-                                    : {
-                                        "ok": false,
-                                        "body": dyn({}),
-                                        "key": "",
-                                        "err": dyn({ "error": { "code": string(r0.StatusCode), "id": string(r0.Status), "message": "GET " + r0.Request.URL + ": " + ((size(r0.Body) != 0) ? string(r0.Body) : string(r0.Status)) } }),
-                                      })
+                                    : { "resp": r0, "key": ord_keys[0].k, "i": ord_keys[0].i }
+                                  ).as(att,
+                                    att.resp.as(hr,
+                                      has(hr.req_err) ?
+                                        {
+                                          "ok": false,
+                                          "auth_err": false,
+                                          "key_idx": -1,
+                                          "body": dyn({}),
+                                          "key": "",
+                                          "err": dyn({ "error": { "code": "transport_error", "id": tid, "message": "GET " + stats_url + ": " + string(hr.req_err) } }),
+                                        }
+                                      : (hr.StatusCode == 200) ?
+                                        try(bytes(hr.Body).decode_json(), "json_err").as(hb,
+                                          (type(hb) == map && has(hb.json_err)) ?
+                                            {
+                                              "ok": false,
+                                              "auth_err": false,
+                                              "key_idx": -1,
+                                              "body": dyn({}),
+                                              "key": "",
+                                              "err": dyn({ "error": { "code": "decode_error", "id": tid, "message": "GET " + stats_url + ": " + string(hb.json_err) } }),
+                                            }
+                                          : { "ok": true, "auth_err": false, "key_idx": int(att.i), "body": hb, "key": att.key, "err": dyn({}) }
+                                        )
+                                      :
+                                        {
+                                          "ok": false,
+                                          "auth_err": (hr.StatusCode == 401 || hr.StatusCode == 403),
+                                          "key_idx": -1,
+                                          "body": dyn({}),
+                                          "key": "",
+                                          "err": dyn({ "error": { "code": string(hr.StatusCode), "id": string(hr.Status), "message": "GET " + hr.Request.URL + ": " + ((size(hr.Body) != 0) ? string(hr.Body) : string(hr.Status)) } }),
+                                        }
+                                    )
                                   ).as(harvest,
                                     (!harvest.ok) ?
                                       {
                                         "ok": false,
+                                        "auth_err": harvest.auth_err,
+                                        "partial": false,
                                         "skipped": false,
+                                        "key_idx": -1,
                                         "id": tid,
                                         "evts": [],
                                         "baselines": [],
                                         "err": harvest.err,
                                       }
-                                    : (bool(t.is_ech) && type(harvest.body) == map && has(harvest.body._shards) && harvest.body._shards != null && has(harvest.body._shards.failed) && harvest.body._shards.failed != null && int(harvest.body._shards.failed) > 0) ?
-                                      {
-                                        "ok": false,
-                                        "skipped": false,
-                                        "id": tid,
-                                        "evts": [],
-                                        "baselines": [],
-                                        "err": dyn({
-                                          "error": {
-                                            "code": "partial_shard_stats",
-                                            "id": tid,
-                                            "message": "Skipping index usage delta for deployment '" + string(t.name) + "' (" + tid + "): _stats reported " + string(harvest.body._shards.failed) + " failed shard(s); preserving previous counter baselines.",
-                                          },
-                                        }),
-                                      }
                                     :
+                                      (bool(t.is_ech) && type(harvest.body) == map && has(harvest.body._shards) && harvest.body._shards != null && has(harvest.body._shards.failed) && harvest.body._shards.failed != null && int(harvest.body._shards.failed) > 0).as(has_partial_shards,
+                                      (has_partial_shards ? [dyn({
+                                        "error": {
+                                          "code": "partial_shard_stats",
+                                          "id": tid,
+                                          "message": "Partial shard stats for deployment '" + string(t.name) + "' (" + tid + "): _stats reported " + string(harvest.body._shards.failed) + " failed shard(s); emitting best-effort deltas from responding shards.",
+                                        },
+                                      })] : []).as(partial_errs,
                                       (bool(t.is_ech) ?
                                         (es_base + "/*,.ds-*/_settings/index.routing.allocation.include._tier_preference,index.creation_date?expand_wildcards=open,hidden&ignore_unavailable=true&allow_no_indices=true&flat_settings=true&filter_path=*.settings").as(set_url,
                                           try(
@@ -769,6 +761,7 @@ inputs:
                                                                           "idx_ms": ts.map(x, int(x.idx_ms)).sum(),
                                                                           "qry_ms": ts.map(x, int(x.qry_ms)).sum(),
                                                                           "qry_cnt": ts.map(x, int(x.qry_cnt)).sum(),
+                                                                          "partial_empty": false,
                                                                         })
                                                                       )
                                                                     )
@@ -793,6 +786,7 @@ inputs:
                                                                       "idx_ms": ((has(istats.total) && istats.total != null && has(istats.total.indexing) && istats.total.indexing != null && has(istats.total.indexing.index_time_in_millis) && istats.total.indexing.index_time_in_millis != null) ? int(istats.total.indexing.index_time_in_millis) : 0),
                                                                       "qry_ms": ((has(istats.total) && istats.total != null && has(istats.total.search) && istats.total.search != null && has(istats.total.search.query_time_in_millis) && istats.total.search.query_time_in_millis != null) ? int(istats.total.search.query_time_in_millis) : 0),
                                                                       "qry_cnt": ((has(istats.total) && istats.total != null && has(istats.total.search) && istats.total.search != null && has(istats.total.search.query_total) && istats.total.search.query_total != null) ? int(istats.total.search.query_total) : 0),
+                                                                      "partial_empty": has_partial_shards,
                                                                     })]
                                                                   ))
                                                               ))))))))))
@@ -828,6 +822,7 @@ inputs:
                                                 "idx_ms": (("indexing.index_time" in cr && cr["indexing.index_time"] != null && string(cr["indexing.index_time"]).matches("^[0-9]+$")) ? int(cr["indexing.index_time"]) : 0),
                                                 "qry_ms": (("search.query_time" in cr && cr["search.query_time"] != null && string(cr["search.query_time"]).matches("^[0-9]+$")) ? int(cr["search.query_time"]) : 0),
                                                 "qry_cnt": (("search.query_total" in cr && cr["search.query_total"] != null && string(cr["search.query_total"]).matches("^[0-9]+$")) ? int(cr["search.query_total"]) : 0),
+                                                "partial_empty": false,
                                               })
                                             )))
                                           ),
@@ -836,14 +831,18 @@ inputs:
                                         (!norm_harvest.ok) ?
                                           {
                                             "ok": false,
+                                            "auth_err": false,
+                                            "partial": has_partial_shards,
                                             "skipped": false,
+                                            "key_idx": int(harvest.key_idx),
                                             "id": tid,
-                                            "evts": [],
+                                            "evts": partial_errs,
                                             "baselines": [],
                                             "err": norm_harvest.err,
                                           }
                                         :
                                           norm_harvest.rows.filter(row,
+                                            !bool(row.partial_empty) &&
                                             string(row.idx_name) != "" &&
                                             !(string(row.idx_name).matches("^(?:partial-|restored-|shrink-.{4}-)*\\.") && !string(row.idx_name).matches("^(?:partial-|restored-|shrink-.{4}-)*\\.ds-")) &&
                                             !string(row.idx_name).matches("^(?:partial-|restored-|shrink-.{4}-)*\\.ds-(?:\\.|ilm-history)") &&
@@ -859,7 +858,7 @@ inputs:
                                             int(row.tier_cnt).as(tier_cnt,
                                             int(row.created_ms).as(created_ms,
                                             (created_ms / 1000).as(created_sec,
-                                            (created_ms > 0 ? { "creation_date": timestamp(created_ms / 1000).format(time_layout.RFC3339) } : {}).as(idx_extra,
+                                            ((created_ms > 0 ? dyn({ "creation_date": timestamp(created_ms / 1000).format(time_layout.RFC3339) }) : dyn({})).with(has_partial_shards ? dyn({ "partial_shard_stats": true }) : dyn({}))).as(idx_extra,
                                             int(row.docs).as(cur_docs,
                                             int(row.dset).as(cur_dset,
                                             int(row.tot).as(cur_tot,
@@ -1081,9 +1080,12 @@ inputs:
                                             idx_items.filter(x, int(x.gap_sec) > 0).as(gap_items,
                                               {
                                                 "ok": true,
+                                                "auth_err": false,
+                                                "partial": has_partial_shards,
                                                 "skipped": false,
+                                                "key_idx": int(harvest.key_idx),
                                                 "id": tid,
-                                                "evts": (size(gap_items) > 0 ? [dyn({
+                                                "evts": partial_errs + (size(gap_items) > 0 ? [dyn({
                                                   "error": {
                                                     "code": "usage_observation_gap",
                                                     "id": tid,
@@ -1096,14 +1098,58 @@ inputs:
                                             )
                                           )
                                       )
-                                  )
-                                )
-                            )))
+                                  )))
+                                ))
+                              )
+                            ))))
                           ))
                         ).as(results,
-                          results.filter(r, r.ok && !r.skipped).map(r, r.id).as(newly_harvested_ids,
+                          results.filter(r, r.ok && !r.skipped && !r.partial).map(r, r.id).as(fully_harvested_ids,
                           results.map(r, r.baselines).flatten().as(new_bases,
-                          base_map.keys().filter(k, !(string(base_map[k].c) in newly_harvested_ids) && ("t" in base_map[k]) && base_map[k].t != null && int(base_map[k].t) >= (now_sec - 172800)).as(kept_keys,
+                          new_bases.map(b, string(b.k)).as(new_base_keys,
+                          hub_disc.targets.map(t, string(t.id)).as(target_ids,
+                          (size(cloud_disc_errs) > 0 || !hub_disc.ok).as(any_disc_err,
+                          base_map.keys().filter(k,
+                            !(string(base_map[k].c) in fully_harvested_ids) &&
+                            !(string(dyn(k)) in new_base_keys) &&
+                            ("t" in base_map[k]) && base_map[k].t != null &&
+                            int(base_map[k].t) > 0 &&
+                            (
+                              (string(base_map[k].c) in target_ids) ?
+                                (int(base_map[k].t) <= now_sec && (now_sec - int(base_map[k].t)) <= 86400 && int(base_map[k].t) >= (today_start_sec - 86400))
+                              :
+                                (any_disc_err && int(base_map[k].t) >= (now_sec - 172800))
+                            )
+                          ).as(kept_keys,
+                          base_map.keys().filter(k,
+                            !(string(base_map[k].c) in fully_harvested_ids) &&
+                            !(string(dyn(k)) in new_base_keys) &&
+                            !(k in kept_keys) &&
+                            (string(base_map[k].c) in target_ids) &&
+                            ("t" in base_map[k]) && base_map[k].t != null && int(base_map[k].t) > 0 &&
+                            !results.exists(r, r.id == string(base_map[k].c) && r.evts.exists(e, has(e.error) && string(e.error.code) == "usage_observation_gap"))
+                          ).as(expired_keys,
+                          results.filter(r, expired_keys.exists(ek, string(base_map[ek].c) == string(r.id))).map(r, r.id).as(expired_gap_cids,
+                          expired_gap_cids.map(ecid,
+                            expired_keys.filter(ek, string(base_map[ek].c) == string(ecid)).map(ek, now_sec - int(base_map[ek].t)).as(egaps,
+                              dyn({
+                                "error": {
+                                  "code": "usage_observation_gap",
+                                  "id": string(ecid),
+                                  "message": "Usage observation gap of " + string(egaps.max()) + "s detected for cluster " + string(ecid) + "; expired stale counter baselines without attributing multi-day gap to a single day.",
+                                },
+                              })
+                            )
+                          ).as(expired_gap_errs,
+                          prev_good_idx.keys().filter(gid,
+                            results.exists(r, r.id == gid) ?
+                              results.exists(r, r.id == gid && !r.ok && !r.auth_err && !r.skipped)
+                            : any_disc_err
+                          ).as(kept_good_ids,
+                          results.filter(r, r.ok && int(r.key_idx) >= 0).as(good_results,
+                          (size(kept_good_ids) > 0 ? zip(kept_good_ids, kept_good_ids.map(gid, prev_good_idx[gid])) : dyn({})).with(
+                            size(good_results) > 0 ? zip(good_results.map(r, string(r.id)), good_results.map(r, int(r.key_idx))) : {}
+                          ).as(merged_good_idx,
                           (
                             (size(kept_keys) > 0 ? zip(kept_keys, kept_keys.map(k, base_map[k])) : dyn({}))
                           ).with(
@@ -1114,23 +1160,25 @@ inputs:
                             cloud_disc_errs +
                             (!hub_disc.ok ? [hub_disc.err] : []) +
                             results.filter(r, !r.ok).map(r, r.err) +
-                            results.map(r, r.evts).flatten()
+                            results.map(r, r.evts).flatten() +
+                            expired_gap_errs
                           ).as(out_evts,
                             {
                               "events": size(out_evts) > 0 ? out_evts : [dyn({ "fake": true })],
                               "cursor": {
                                 "conf_sig": conf_sig,
                                 "idx_baselines": merged_baselines,
+                                "good_key_idx": merged_good_idx,
                               },
                               "want_more": false,
                             }
-                          )))))
+                          ))))))))))))))
                         )
                       )
                     )
                   )
                 )
-              ))))))))))))))))))))))))))))))))
+              )))))))))))))))))))))))))))))))))
             )
           publisher_pipeline.disable_host: true
           redact:

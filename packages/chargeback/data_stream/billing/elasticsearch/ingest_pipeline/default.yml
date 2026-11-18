@@ -3,14 +3,14 @@ description: "Ingest pipeline for Chargeback self-collected Elastic Cloud billin
 processors:
   - drop:
       if: "ctx.ess?.billing == null && ctx.doc_type != 'config_snapshot' && ctx.error?.message == null"
-  - terminate:
-      tag: data_collection_error
-      if: ctx.error?.message != null && ctx.ess?.billing == null && ctx.doc_type != 'config_snapshot'
-      description: Terminate early on collection error documents.
   - set:
       field: event.ingested
       value: "{{{_ingest.timestamp}}}"
       tag: set_event_ingested
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.ess?.billing == null && ctx.doc_type != 'config_snapshot'
+      description: Terminate early on collection error documents.
   - terminate:
       tag: config_snapshot_complete
       if: "ctx.doc_type == 'config_snapshot'"
@@ -52,6 +52,21 @@ processors:
       tag: credit_line_item_complete
       if: "ctx.doc_type == 'credit_line_item'"
       description: Credit commitment events retain snapshot @timestamp and ESS credit fields; deduplication occurs in the billing_credits transform.
+  - fingerprint:
+      if: "ctx.doc_type == 'billing_line_item'"
+      fields:
+        - conf_policy_id
+        - data_stream.namespace
+        - ess.billing.organization_id
+        - ess.billing.deployment_id
+        - ess.billing.deployment_name
+        - ess.billing.from
+        - ess.billing.to
+        - ess.billing.sku
+        - ess.billing.total_ecu
+      target_field: _id
+      ignore_missing: true
+      tag: fingerprint_billing_line_item
   - date:
       field: ess.billing.from
       target_field: "@timestamp"
