@@ -12,6 +12,7 @@ Triage elastic/integrations issue **#$ARGUMENTS** for its latest failed nightly 
 - Run `$S/sync.sh` from the repo root: it fetches `elastic/main` and fast-forwards `main`, or moves a detached triage worktree. When the checkout is on another branch, it uses (or creates) the triage worktree `../integrations-triage-run` instead and leaves the branch alone. Its last line is `root: <path>`: **run everything after this from that path** (relative paths such as `build/triage/…` resolve there; `$S` stays absolute). On non-zero, write its output to `$W/DRAFT_<date>_SETUP-NEEDED.md` and stop: never switch branches, stash or reset yourself. If it lists uncommitted changes, those package files are local edits, not upstream: say so wherever an investigation relies on them.
 - Use the `gh` and `bk` CLIs (the scripts need them). Don't use GitHub/Buildkite MCP tools in this command.
 - Work from the root `sync.sh` printed. `W=build/triage/issue-$ARGUMENTS`; create it if missing.
+- **Links are complete everywhere** (digest, drafts, tables): every issue/PR as a markdown link to its full URL, e.g. [#22189](https://github.com/elastic/integrations/issues/22189) or [elastic/elastic-agent#17977](https://github.com/elastic/elastic-agent/pull/17977); every build as https://buildkite.com/elastic/<pipeline>/builds/<B>. Never a bare `#N`.
 - Token budget: work from script outputs, `.fail` files and log windows only. Never print whole logs or whole reports.
 
 ## 1. Deterministic pass (no reasoning)
