@@ -66,16 +66,24 @@ processors:
         - 'yyyy-MM-dd HH:mm:ss,SSS'
       if: ctx._temp?.timestamp != null && ctx.event?.timezone == null
 
-  # A Java stack trace follows the message line as `<exception class>[: <message>]`
-  # and one or more `\tat <frame>` lines. The catch-all pattern lets any other
-  # continuation (for example a WARN banner) pass through unchanged.
+  # A Java exception follows the message line as `<exception class>[: <message>]`.
+  # - The first pattern takes an exception with stack frames. Its message can
+  #   span several lines, so everything up to the first `\tat ` frame belongs to
+  #   it.
+  # - The second pattern takes an exception without frames, as the JVM writes
+  #   for a repeated exception once it omits the stack trace. Only a class name
+  #   that ends in `Exception`, `Error` or `Throwable` counts, so other text is
+  #   not mistaken for an exception.
+  # - The catch-all lets any other continuation (for example a WARN banner) pass
+  #   through unchanged.
   # The exception message is not copied to `error.message`: that field marks
-  # ingest failures, and the full exception line stays in `error.stack_trace`.
+  # ingest failures, and the full exception text stays in `error.stack_trace`.
   - grok:
       field: _temp.continuation
       tag: grok_stack_trace
       patterns:
-        - '\A(?<_temp.error_type>[\w$]+(?:\.[\w$]+)+)(?::[^\r\n]*)?\r?\n\tat [\s\S]*\z'
+        - '\A(?<_temp.error_type>[\w$]+(?:\.[\w$]+)+)(?::[\s\S]*?)?\r?\n\tat [\s\S]*\z'
+        - '\A(?<_temp.error_type>(?:[\w$]+\.)+[\w$]*(?:Exception|Error|Throwable))(?::[^\r\n]*)?\s*\z'
         - '\A[\s\S]*\z'
       if: ctx._temp?.continuation != null
   - trim:

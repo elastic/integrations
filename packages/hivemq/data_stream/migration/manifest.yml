@@ -1,0 +1,62 @@
+title: HiveMQ persistence migrations
+type: logs
+streams:
+  - input: filestream
+    template_path: filestream.yml.hbs
+    title: HiveMQ persistence migrations
+    description: Collect the persistence migration log (migration.log) from HiveMQ Community Edition
+    vars:
+      - name: paths
+        type: text
+        title: Paths
+        multi: true
+        required: true
+        show_user: true
+        description: >-
+          Paths to the HiveMQ persistence migration log. The default is the `migration.log` file in the default HiveMQ log folder. Do not use a `*.log` glob on that folder: it also holds `hivemq.log`, `event.log` and their rotated files. HiveMQ never rotates `migration.log`. HiveMQ does not write migration messages to stdout, so they cannot be collected from container logs.
+        default:
+          - /opt/hivemq/log/migration.log
+      - name: tz_offset
+        type: text
+        title: Timezone Offset
+        multi: false
+        required: false
+        show_user: true
+        description: >-
+          HiveMQ writes timestamps without a timezone, in the local timezone of the broker's JVM (the official Docker image runs in UTC). Use this parameter to declare the timezone of the broker when it differs from the host running Elastic Agent. Both a canonical ID (such as `Europe/Amsterdam`) and an HH:mm differential (such as `-05:00`) are accepted. When unset, the Elastic Agent host timezone is used.
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        multi: false
+        required: true
+        show_user: true
+        default: false
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - hivemq-migration
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: condition
+        type: text
+        title: Condition
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Condition to filter when to collect this input. See [Dynamic Input Configuration](https://www.elastic.co/guide/en/fleet/current/dynamic-input-configuration.html) for details.
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false

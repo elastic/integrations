@@ -14,16 +14,17 @@ It is built for the log format of HiveMQ Community Edition. It does not parse Hi
 
 ### How it works
 
-HiveMQ writes its logs with logback into the folder `log` below the HiveMQ home directory, `/opt/hivemq/log` in the official Docker image. Elastic Agent tails the log files with the `filestream` input and forwards each event to Elasticsearch. There, the integration's ingest pipelines parse the timestamp, the log level and the message, and map the result onto ECS fields. No connection is made to the broker itself.
+HiveMQ writes its logs with logback into the folder `log` below the HiveMQ home directory, `/opt/hivemq/log` in the official Docker image. Elastic Agent tails the log files with the `filestream` input and forwards each event to Elasticsearch. There, the integration's ingest pipelines parse the timestamp, the message and, for the server and migration logs, the log level, and map the result onto ECS fields. No connection is made to the broker itself.
 
-The server log is read as multiline events, so Java stack traces and multi-line warnings stay together with the line that introduced them.
+All logs are read as multiline events, so Java stack traces and multi-line warnings stay together with the line that introduced them.
 
 ## What data does this integration collect?
 
-The HiveMQ Community Edition integration collects two kinds of logs:
+The HiveMQ Community Edition integration collects three kinds of logs:
 
 * Broker server log (`hivemq.log`): start-up and shutdown, listeners, extensions, configuration warnings and errors. Errors with a Java stack trace are split into `error.type` and `error.stack_trace`.
 * Client event log (`event.log`): clients connecting, clients disconnecting gracefully, ungracefully or by the broker, together with the reason, outgoing messages and packets dropped by the broker, and expired client sessions. The client identifier, client IP address, clean start flag, session expiry interval, topic, QoS and reason are mapped to fields.
+* Persistence migration log (`migration.log`): the checks HiveMQ runs on every start for persistence migrations, and the migrations it performs after an upgrade, together with the persistence versions from its metadata file.
 
 Lines that do not match a known message shape are still indexed, with the full text kept in `message`.
 
@@ -41,13 +42,13 @@ Elastic Agent must be able to read the HiveMQ log folder. When HiveMQ runs in a 
 
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html). You can install only one Elastic Agent per host.
 
-Elastic Agent is required to stream data from the log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+Elastic Agent reads the HiveMQ log files with the `filestream` input and ships the events to Elastic, where the integration's ingest pipelines process them.
 
 ### Set up steps in HiveMQ Community Edition
 
 1. Locate the HiveMQ log folder. By default it is `<HIVEMQ_HOME>/log`, which is `/opt/hivemq/log` in the official Docker image. You can move it with the environment variable `HIVEMQ_LOG_FOLDER` or the Java system property `hivemq.log.folder`.
-2. Keep the default `conf/logback.xml`, or make sure that a customized one still writes `hivemq.log` and `event.log` with the default patterns. The integration parses the default patterns `%-30(%d %level)- %msg%n%ex` for the server log and `%-24(%d)- %msg%n%ex` for the event log.
-3. When HiveMQ runs in a container, mount the log folder so Elastic Agent can read it, for example with `-v /var/log/hivemq:/opt/hivemq/log`. The client event log is only written to a file, never to the container's standard output.
+2. Keep the default `conf/logback.xml`, or make sure that a customized one still writes `hivemq.log`, `event.log` and `migration.log` with the default patterns. The integration parses the default patterns `%-30(%d %level)- %msg%n%ex` for the server and migration logs and `%-24(%d)- %msg%n%ex` for the event log.
+3. When HiveMQ runs in a container, mount the log folder so Elastic Agent can read it, for example with `-v /var/log/hivemq:/opt/hivemq/log`. The client event log and the migration log are only written to files, never to the container's standard output.
 
 #### Vendor resources
 
@@ -57,7 +58,7 @@ Elastic Agent is required to stream data from the log file receiver and ship the
 ### Set up steps in Kibana
 
 1. In Kibana, go to **Management** → **Integrations**, search for **HiveMQ Community Edition** and select **Add HiveMQ Community Edition**.
-2. Set the **Paths** of each data stream to the log files: `/opt/hivemq/log/hivemq.log` for the broker logs and `/opt/hivemq/log/event.log` for the client events. Name the files exactly. A pattern such as `*.log` also matches the other files in the folder, including the daily rotated server logs.
+2. Set the **Paths** of each data stream to the log files: `/opt/hivemq/log/hivemq.log` for the broker logs, `/opt/hivemq/log/event.log` for the client events and `/opt/hivemq/log/migration.log` for the persistence migrations. Name the files exactly. A pattern such as `*.log` also matches the other files in the folder, including the daily rotated server logs.
 3. Set **Timezone Offset** if HiveMQ runs in a different timezone than Elastic Agent. HiveMQ writes timestamps in the local time of its Java virtual machine without an offset. The official Docker image runs in UTC. Both a canonical ID such as `Europe/Berlin` and an offset such as `-05:00` are accepted.
 4. For the broker logs only: enable **Parse Container Logs** when the paths point at container log files of the HiveMQ container, for example `/var/log/containers/*hivemq*.log`.
 5. Optionally enable **Preserve original event** to keep the raw log event in `event.original`.
@@ -67,14 +68,22 @@ Elastic Agent is required to stream data from the log file receiver and ship the
 
 1. Connect an MQTT client to the broker and disconnect it again, or restart the broker.
 2. In Kibana, open **Discover** and select the `logs-*` data view.
-3. Filter on `event.dataset : "hivemq.event"` and confirm that documents with `event.action` `client-connected` and `client-disconnected` arrive. Filter on `event.dataset : "hivemq.log"` for the broker logs.
+3. Filter on `event.dataset : "hivemq.event"` and confirm that documents with `event.action` `client-connected` and `client-disconnected` arrive. Filter on `event.dataset : "hivemq.log"` for the broker logs and on `event.dataset : "hivemq.migration"` for the migration checks of each broker start.
 
 ## Troubleshooting
 
 - No data is being collected: Confirm that the user running Elastic Agent can read the HiveMQ log folder and the files in it. Elastic Agent identifies files by a fingerprint of their first 1024 bytes, so a new and almost empty `event.log` is only collected once it has grown beyond that size.
+- No migration events are collected: After the first start of a new installation, `migration.log` is smaller than 1024 bytes. HiveMQ appends its migration checks on every start, so the file is collected after one or two further restarts.
 - No client events are collected: The default `logback.xml` writes client events only to `event.log`. Check that the paths of the client events point at this file and not at the container's standard output.
 - Timestamps are off by a whole number of hours: HiveMQ writes local time without an offset. Set the **Timezone Offset** option to the timezone of the HiveMQ Java virtual machine.
-- Authentication events are missing: HiveMQ logs enhanced authentication (`AUTH`) events at DEBUG level, and the default `logback.xml` does not write them to `event.log`. Add a logger for `event.authentication` to `logback.xml` to collect them.
+- Authentication events are missing: HiveMQ logs enhanced authentication (`AUTH`) events at DEBUG level, and the default `logback.xml` has no logger for them. Add the following logger to `logback.xml`. Without `additivity="false"` and the `EVENT-FILE` appender, the events go to `hivemq.log` instead of `event.log`.
+
+  ```xml
+  <logger name="event.authentication" level="DEBUG" additivity="false">
+      <appender-ref ref="EVENT-FILE"/>
+  </logger>
+  ```
+- The container start banner is attached to the previous event: When the broker logs are collected from a container that restarts, the start script's banner has no timestamp and is joined to the last event of the previous run, for example `Shutdown completed.`.
 
 ## Performance and scaling
 
@@ -230,7 +239,7 @@ An example event for `log` looks as following:
 
 #### event
 
-The `event` data stream provides events from the HiveMQ client event log (`event.log`): client connections and disconnections, dropped messages and packets, expired client sessions and, when configured, enhanced authentication. `event.action` names the kind of event, and the client details are stored in `source.ip` and in the `hivemq.event.*` fields.
+The `event` data stream provides events from the HiveMQ client event log (`event.log`): client connections and disconnections, dropped messages and packets, expired client sessions and, when configured, enhanced authentication. `event.action` names the kind of event: `client-connected`, `client-disconnected`, `message-dropped`, `packet-dropped`, `client-session-expired`, `authentication-received` or `authentication-sent`. The client details are stored in `source.ip` and in the `hivemq.event.*` fields, and `hivemq.event.disconnect.type` tells graceful, ungraceful and broker-initiated disconnects apart.
 
 ##### event fields
 
@@ -412,6 +421,146 @@ An example event for `event` looks as following:
     "tags": [
         "preserve_original_event",
         "hivemq-event"
+    ]
+}
+```
+
+#### migration
+
+The `migration` data stream provides events from the HiveMQ persistence migration log (`migration.log`). HiveMQ checks on every start whether the stored persistence data needs a migration, and after an upgrade it migrates the affected persistences. `event.action` names each step, for example `migration-check`, `migrations-found`, `migration-unit-completed` or `migration-finished`. The duration of each completed migration is stored in `event.duration`, and the persistence versions that HiveMQ reads from and writes to its metadata file are stored in the `hivemq.migration.metadata.*` fields.
+
+##### migration fields
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| error.stack_trace | The stack trace of this error in plain text. | wildcard |
+| error.stack_trace.text | Multi-field of `error.stack_trace`. | match_only_text |
+| error.type | The type of the error, for example the class name of the exception. | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| event.reason | Reason why this event happened, according to the source. This describes the why of a particular action or outcome captured in the event. Where `event.action` captures the action from the event, `event.reason` describes why that action was taken. For example, a web proxy with an `event.action` which denied the request may also populate `event.reason` with the reason why (e.g. `blocked site`). | keyword |
+| event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
+| hivemq.migration.hivemq_version | Version of the running HiveMQ broker that checks its persistence for needed migrations, for example `2026.5`. The version recorded in the metadata file is in `hivemq.migration.metadata.hivemq_version`. | keyword |
+| hivemq.migration.metadata.client_session_persistence_version | Version of the client session persistence. | keyword |
+| hivemq.migration.metadata.hivemq_version | HiveMQ version recorded in the metadata file, that is the version that last wrote the persistence. | keyword |
+| hivemq.migration.metadata.publish_payload_persistence_type | Storage type of the publish payload persistence, for example `FILE_NATIVE`. | keyword |
+| hivemq.migration.metadata.publish_payload_persistence_version | Version of the publish payload persistence. | keyword |
+| hivemq.migration.metadata.queued_messages_persistence_version | Version of the queued messages persistence. | keyword |
+| hivemq.migration.metadata.retained_messages_persistence_type | Storage type of the retained messages persistence, for example `FILE_NATIVE`. | keyword |
+| hivemq.migration.metadata.retained_messages_persistence_version | Version of the retained messages persistence. | keyword |
+| hivemq.migration.metadata.subscription_persistence_version | Version of the subscription persistence. | keyword |
+| hivemq.migration.needed | Migration units HiveMQ found it needs to run, for example `retained message payload id` and `client queue payload id`. | keyword |
+| hivemq.migration.persistence_folder | Name of the old persistence folder whose absence made HiveMQ skip a migration unit, as HiveMQ logs it. | keyword |
+| hivemq.migration.target_type | Persistence type a file persistence is migrated to, for example `FILE_NATIVE`. | keyword |
+| hivemq.migration.unit | Migration unit that is migrated, for example `retained message payload id` or `publish payload file persistence`. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.file.device_id | Device Id of the log file this event came from. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.flags | Flags for the log file. | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| log.offset | Log offset. | long |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| tags | List of keywords used to tag each event. | keyword |
+
+
+##### migration sample event
+
+An example event for `migration` looks as following:
+
+```json
+{
+    "@timestamp": "2026-11-18T09:22:55.848Z",
+    "agent": {
+        "ephemeral_id": "f00a3d12-8f0f-4d3f-bd18-42da12017a42",
+        "id": "b087da77-311f-44fc-81d0-3dd840ccdc05",
+        "name": "elastic-agent-98814",
+        "type": "filebeat",
+        "version": "9.5.6"
+    },
+    "data_stream": {
+        "dataset": "hivemq.migration",
+        "namespace": "84230",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.3.0"
+    },
+    "elastic_agent": {
+        "id": "b087da77-311f-44fc-81d0-3dd840ccdc05",
+        "snapshot": false,
+        "version": "9.5.6"
+    },
+    "event": {
+        "action": "migration-check",
+        "agent_id_status": "verified",
+        "dataset": "hivemq.migration",
+        "ingested": "2026-11-18T09:39:01Z",
+        "kind": "event",
+        "module": "hivemq",
+        "original": "2026-11-18 09:22:55,848 INFO  - Checking for migrations (HiveMQ version 2024.9).",
+        "timezone": "UTC"
+    },
+    "hivemq": {
+        "migration": {
+            "hivemq_version": "2024.9"
+        }
+    },
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-98814",
+        "ip": [
+            "10.89.2.2",
+            "fe80::2877:63ff:feb2:db7d",
+            "10.89.1.15",
+            "fe80::b0ce:dfff:fe48:f7e5"
+        ],
+        "mac": [
+            "2A-77-63-B2-DB-7D",
+            "B2-CE-DF-48-F7-E5"
+        ],
+        "name": "elastic-agent-98814",
+        "os": {
+            "family": "",
+            "kernel": "6.17.7-300.fc43.aarch64",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "input": {
+        "type": "filestream"
+    },
+    "log": {
+        "file": {
+            "device_id": "39",
+            "fingerprint": "4078af935ac87bb2f45903618de9873b2904c37b40ecf6d9591e690f434dcc16",
+            "inode": "95",
+            "path": "/tmp/service_logs/migration.log"
+        },
+        "level": "info",
+        "offset": 0
+    },
+    "message": "Checking for migrations (HiveMQ version 2024.9).",
+    "tags": [
+        "preserve_original_event",
+        "hivemq-migration"
     ]
 }
 ```
