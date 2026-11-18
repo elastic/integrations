@@ -1,0 +1,205 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies Azure resource group deletions by a principal that has not performed this operation in the prior 7 days. Deletion of a resource group is permanent and removes all resources in the group. This rule uses an ES|QL first-seen (new terms) approach keyed on the acting principal so routine infrastructure-as-code teardown is suppressed after the first occurrence, while still surfacing first-time or unusual identities performing the delete.",
+        "false_positives": [
+            "Infrastructure-as-code, CI/CD, and platform automation (for example Crossplane, Terraform, ARM/Bicep, AKS control plane) commonly delete resource groups during environment teardown. The first occurrence per principal will alert; baseline expected service principals and exclude them if the activity is authorized.",
+            "Administrators may delete resource groups during decommissioning, lab cleanup, or organizational restructuring. Verify the actor, change ticket, and whether the deleted group was non-production before treating the event as malicious."
+        ],
+        "from": "now-7d",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Azure Resource Group Deleted by Unusual Principal",
+        "note": "## Triage and analysis\n\n### Investigating Azure Resource Group Deleted by Unusual Principal\n\nAzure Resource Groups contain related resources for a solution. Deleting a group is irreversible and removes every resource in it. This rule aggregates successful `RESOURCEGROUPS/DELETE` operations over a 7-day lookback and alerts when a principal's first delete in that window falls in the current schedule interval. Repeat deletes by the same automation identity are suppressed; a newly seen user or service principal is not.\n\n### Possible investigation steps\n\n- Identify the acting principal from `azure.activitylogs.identity.authorization.evidence.principal_id` and check `Esql.principal_type_values` (User vs ServicePrincipal vs Group). Resolve the human-readable name from `Esql.initiated_by_user_values`.\n- Review `Esql.appid_values` and `Esql.role_values` to distinguish first-party / IaC identities from interactive clients such as Azure Portal or Azure CLI. `Esql.role_assignment_id_values` shows which assignment granted delete.\n- Pivot on `Esql.session_id_values` (`azure.activitylogs.identity.claims.sid`) and `Esql.unique_token_id_values` to Entra sign-in logs and Microsoft Graph activity for the same session.\n- Use `Esql.correlation_id_values` to find related ARM operations (lock removal, mass deletes, RBAC changes) in the same activity-log transaction.\n- Inspect `Esql.resource_group_values` and `Esql.resource_id_values` for the groups that were deleted and whether they look like lab, ephemeral, or production naming.\n- Check `Esql.source_ip_values`, `Esql.source_country_values`, and `Esql.source_as_number_values`, then correlate Entra ID sign-in logs for the same principal around `Esql.first_time_seen`.\n- Look for related activity by the same principal: role assignments, lock removal, mass resource deletes, or snapshot/backup deletion.\n- Confirm whether the delete was ticketed or matches a known pipeline / GitOps controller.\n\n### False positive analysis\n\n- Crossplane, Terraform, GitHub Actions, and similar automation will alert on the first resource-group delete per principal in 7 days, then go quiet. Exclude verified automation principals after review.\n- AKS and other Microsoft-owned control-plane identities may delete managed node resource groups as part of cluster lifecycle.\n- Newly provisioned automation identities performing expected teardown will fire once; do not allowlist by tenant or user GUID.\n\n### Response and remediation\n\n- If unauthorized, disable the principal, revoke standing Contributor/Owner on the subscription, and place resource locks on remaining critical groups.\n- Restore from backup or IaC state if the deleted group hosted production resources.\n- Audit other deletes and RBAC changes by the same principal during the same window.\n- Require privileged delete operations to go through PIM or a change-control pipeline.\n",
+        "query": "FROM logs-azure.activitylogs-*, filebeat-*\n| WHERE data_stream.dataset == \"azure.activitylogs\"\n    AND event.action == \"MICROSOFT.RESOURCES/SUBSCRIPTIONS/RESOURCEGROUPS/DELETE\"\n    AND event.outcome IN (\"success\", \"Success\")\n    AND azure.activitylogs.identity.authorization.evidence.principal_id IS NOT NULL\n| STATS Esql.first_time_seen = MIN(@timestamp),\n        Esql.last_time_seen = MAX(@timestamp),\n        Esql.event_count = COUNT(*),\n        Esql.resource_group_values = VALUES(azure.resource.group),\n        Esql.resource_name_values = VALUES(azure.resource.name),\n        Esql.resource_id_values = VALUES(azure.resource.id),\n        Esql.principal_type_values = VALUES(azure.activitylogs.identity.authorization.evidence.principal_type),\n        Esql.initiated_by_user_values = VALUES(azure.activitylogs.identity.claims_initiated_by_user.name),\n        Esql.appid_values = VALUES(azure.activitylogs.identity.claims.appid),\n        Esql.session_id_values = VALUES(azure.activitylogs.identity.claims.sid),\n        Esql.unique_token_id_values = VALUES(azure.activitylogs.identity.claims.uti),\n        Esql.correlation_id_values = VALUES(azure.correlation_id),\n        Esql.role_values = VALUES(azure.activitylogs.identity.authorization.evidence.role),\n        Esql.role_assignment_id_values = VALUES(azure.activitylogs.identity.authorization.evidence.role_assignment_id),\n        Esql.source_ip_values = VALUES(source.ip),\n        Esql.source_country_values = VALUES(source.geo.country_name),\n        Esql.source_as_number_values = VALUES(source.`as`.number),\n        Esql.subscription_id_values = VALUES(azure.subscription_id)\n        BY azure.activitylogs.identity.authorization.evidence.principal_id\n// new terms emulation: fire when this principal's first_seen falls in the current interval\n// (schedule + ingest-lag buffer), i.e. it was absent from the rest of the 7-day window\n| EVAL Esql.recent_minutes = DATE_DIFF(\"minute\", Esql.first_time_seen, NOW())\n| WHERE Esql.recent_minutes <= 10\n| KEEP azure.*, Esql.*\n",
+        "references": [
+            "https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/manage-resource-groups-portal"
+        ],
+        "related_integrations": [
+            {
+                "integration": "activitylogs",
+                "package": "azure",
+                "version": ">=1.22.0"
+            },
+            {
+                "integration": "events",
+                "package": "azure",
+                "version": ">=1.22.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "azure.activitylogs.identity.authorization.evidence.principal_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.activitylogs.identity.authorization.evidence.principal_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.activitylogs.identity.authorization.evidence.role",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.activitylogs.identity.authorization.evidence.role_assignment_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.activitylogs.identity.claims.appid",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.activitylogs.identity.claims.sid",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.activitylogs.identity.claims.uti",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.activitylogs.identity.claims_initiated_by_user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.correlation_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.resource.group",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.resource.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.resource.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.subscription_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.as.number",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "source.geo.country_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "bb4fe8d2-7ae2-475c-8b5d-55b449e4264f",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: Azure",
+            "Use Case: Log Auditing",
+            "Tactic: Impact",
+            "Resources: Investigation Guide",
+            "Noise: Low",
+            "Performance: Fast",
+            "Profile: Recommended",
+            "Rule Type: ES|QL",
+            "Platform: Azure",
+            "Data Source: Azure Activity Logs",
+            "Service: Azure Resource Manager",
+            "Tactic: Defense Impairment"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1529",
+                        "name": "System Shutdown/Reboot",
+                        "reference": "https://attack.mitre.org/techniques/T1529/"
+                    },
+                    {
+                        "id": "T1490",
+                        "name": "Inhibit System Recovery",
+                        "reference": "https://attack.mitre.org/techniques/T1490/"
+                    },
+                    {
+                        "id": "T1489",
+                        "name": "Service Stop",
+                        "reference": "https://attack.mitre.org/techniques/T1489/"
+                    },
+                    {
+                        "id": "T1485",
+                        "name": "Data Destruction",
+                        "reference": "https://attack.mitre.org/techniques/T1485/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0112",
+                    "name": "Defense Impairment",
+                    "reference": "https://attack.mitre.org/tactics/TA0112/"
+                },
+                "technique": [
+                    {
+                        "id": "T1685",
+                        "name": "Disable or Modify Tools",
+                        "reference": "https://attack.mitre.org/techniques/T1685/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 113
+    },
+    "id": "bb4fe8d2-7ae2-475c-8b5d-55b449e4264f_113",
+    "type": "security-rule"
+}

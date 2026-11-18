@@ -1,0 +1,103 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when a GitHub Enterprise audit log streaming destination is updated or deleted. Adversaries who gain enterprise admin access may change the stream sink or destroy it to stop security telemetry from reaching the SIEM, or to redirect audit events to attacker-controlled storage.",
+        "false_positives": [
+            "Planned stream rotation, sink migration, or pausing a misconfigured destination by an enterprise owner. Confirm the actor, change ticket, and that the production SIEM sink remains enabled."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "user.name",
+                "github.org",
+                "github.repo",
+                "github.actor_ip",
+                "github.hashed_token",
+                "github.programmatic_access_type",
+                "github.user_agent",
+                "github.business",
+                "github.audit_log_stream_id",
+                "github.audit_log_stream_sink",
+                "github.audit_log_stream_enabled"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "GitHub Audit Log Streaming Configuration Modified or Deleted",
+        "note": "## Triage and analysis\n\n### Investigating GitHub Audit Log Streaming Configuration Modified or Deleted\n\nEnterprise audit log streaming is the durable copy of GitHub audit events. Updating or deleting a stream can blind detection coverage or send logs to an untrusted bucket.\n\n### Possible investigation steps\n\n- Identify `user.name`, `github.programmatic_access_type`, `github.hashed_token`, and `github.actor_ip`.\n- Confirm whether `event.action` is `audit_log_streaming.update` or `audit_log_streaming.destroy` and inspect `github.audit_log_stream_id` / `github.audit_log_stream_sink`.\n- Verify in GitHub Enterprise settings that the production SIEM destination is still enabled and pointing at the expected sink.\n- Correlate nearby enterprise-admin actions (IP allow list, SSO, owner changes) from the same actor or token.\n\n### False positive analysis\n\n- Authorized sink rotation or OIDC role replacement.\n- Deleting a throwaway/test stream while the production stream stays enabled.\n\n### Response and remediation\n\n- If unauthorized, restore the production stream immediately and rotate the actor's credentials.\n- Review other enterprise settings changed in the same window.\n- Treat a destroy of the SIEM-bound stream as a detection outage and backfill from GitHub's retained audit log if needed.\n",
+        "query": "from logs-github.audit-* metadata _id, _index, _version\n| where\n  event.module == \"github\" and data_stream.dataset == \"github.audit\"\n    and event.action in (\"audit_log_streaming.update\", \"audit_log_streaming.destroy\")\n| keep\n    _id,\n    _index,\n    _version,\n    @timestamp,\n    event.action,\n    user.name,\n    github.org,\n    github.repo,\n    github.actor_ip,\n    github.hashed_token,\n    github.programmatic_access_type,\n    github.user_agent,\n    github.business,\n    github.audit_log_stream_id,\n    github.audit_log_stream_sink,\n    github.audit_log_stream_enabled\n",
+        "references": [
+            "https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise"
+        ],
+        "related_integrations": [
+            {
+                "package": "github",
+                "version": ">=3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "f419b071-4568-4559-a81f-109075160537",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: SaaS",
+            "Platform: GitHub",
+            "Use Case: Threat Detection",
+            "Data Source: Github",
+            "Data Source: GitHub Audit Logs",
+            "Rule Type: ESQL",
+            "Resources: Investigation Guide",
+            "Tactic: Defense Impairment"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0112",
+                    "name": "Defense Impairment",
+                    "reference": "https://attack.mitre.org/tactics/TA0112/"
+                },
+                "technique": [
+                    {
+                        "id": "T1685",
+                        "name": "Disable or Modify Tools",
+                        "reference": "https://attack.mitre.org/techniques/T1685/",
+                        "subtechnique": [
+                            {
+                                "id": "T1685.002",
+                                "name": "Disable or Modify Cloud Log",
+                                "reference": "https://attack.mitre.org/techniques/T1685/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 2
+    },
+    "id": "f419b071-4568-4559-a81f-109075160537_2",
+    "type": "security-rule"
+}

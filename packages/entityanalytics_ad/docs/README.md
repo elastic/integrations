@@ -63,7 +63,7 @@ The Active Directory provider periodically contacts the server, retrieves update
 
 Fetching and shipping updates occurs in one of two processes: **full synchronizations** and **incremental updates**. Full synchronizations send the entire list of users, devices, and groups in state. Incremental updates send only records that changed since the last sync. Changes include metadata updates, additions, and deletions. By default, full synchronizations occur every 24 hours and incremental updates occur every 15 minutes. These intervals may be customized to suit your use case.
 
-By default this integration uses **minimal-state sync**, which routes user, device, and group documents directly to the `user`, `device`, and `group` data streams. Existing policies are updated to use minimal-state sync on upgrade.
+By default this integration uses **minimal-state sync**, which routes user, device, and group documents directly to the `user`, `device`, and `group` data streams. Existing policies are updated to use minimal-state sync on upgrade. Minimal-state sync requires Elastic Agent 9.5.0 or later; older agents use the legacy sync.
 
 This integration provides an **asset inventory**, a point-in-time snapshot of which users and devices exist and their current properties. It does not provide an audit trail of who changed what, or when. If you need to track administrative changes to Active Directory objects, consider collecting Windows Security event logs (e.g., Event IDs 4720, 4722, 4738, 4743) via the [System integration](https://docs.elastic.co/integrations/system).
 

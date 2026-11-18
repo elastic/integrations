@@ -240,7 +240,8 @@ An example event for `alert` looks as following:
 | armis.alert.classification |  | keyword |
 | armis.alert.connection_ids |  | keyword |
 | armis.alert.description |  | keyword |
-| armis.alert.destination_endpoints |  | keyword |
+| armis.alert.destination_endpoint_details | Structured destination endpoint objects returned by Armis. | flattened |
+| armis.alert.destination_endpoints | String destination endpoint values. Structured endpoints are stored in destination_endpoint_details. | keyword |
 | armis.alert.device_ids |  | keyword |
 | armis.alert.friendly_name |  | keyword |
 | armis.alert.last_alert_update_time |  | date |
@@ -249,7 +250,8 @@ An example event for `alert` looks as following:
 | armis.alert.policy_labels |  | keyword |
 | armis.alert.policy_title |  | keyword |
 | armis.alert.severity |  | keyword |
-| armis.alert.source_endpoints |  | keyword |
+| armis.alert.source_endpoint_details | Structured source endpoint objects returned by Armis. | flattened |
+| armis.alert.source_endpoints | String source endpoint values. Structured endpoints are stored in source_endpoint_details. | keyword |
 | armis.alert.status |  | keyword |
 | armis.alert.status_change_time |  | date |
 | armis.alert.time |  | date |

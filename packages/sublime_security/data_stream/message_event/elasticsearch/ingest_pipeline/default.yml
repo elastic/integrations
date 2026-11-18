@@ -242,6 +242,12 @@ processors:
             tag: append_error_message_5effc47e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.data.message.recipients
+      tag: rename_data_message_recipients_5b2e7c91
+      target_field: json.recipients
+      ignore_missing: true
+      if: ctx.json?.recipients == null
   - foreach:
       tag: foreach_json_recipients_089ecb42
       field: json.recipients
@@ -280,10 +286,16 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      field: json.data.message.sender.display_name
+      tag: rename_data_message_sender_display_name_a4d81f36
+      target_field: sublime_security.message_event.sender.display_name
+      ignore_missing: true
+  - rename:
       field: json.sender.display_name
       tag: rename_sender_display_name_bc842980
       target_field: sublime_security.message_event.sender.display_name
       ignore_missing: true
+      if: ctx.sublime_security?.message_event?.sender?.display_name == null
   - set:
       field: source.user.name
       tag: set_source_user_name_from_message_event_sender_display_name_3ec93f36
@@ -296,10 +308,16 @@ processors:
       allow_duplicates: false
       if: ctx.sublime_security?.message_event?.sender?.display_name != null
   - rename:
+      field: json.data.message.sender.email
+      tag: rename_data_message_sender_email_7c3f9a20
+      target_field: sublime_security.message_event.sender.email
+      ignore_missing: true
+  - rename:
       field: json.sender.email
       tag: rename_sender_email_e3b00ca2
       target_field: sublime_security.message_event.sender.email
       ignore_missing: true
+      if: ctx.sublime_security?.message_event?.sender?.email == null
   - append:
       field: email.from.address
       tag: append_sublime_security_message_event_sender_email_into_email_from_address_3db432e5
@@ -313,10 +331,16 @@ processors:
       allow_duplicates: false
       if: ctx.sublime_security?.message_event?.sender?.email != null
   - rename:
+      field: json.data.message.subject
+      tag: rename_data_message_subject_e19b6d48
+      target_field: sublime_security.message_event.subject
+      ignore_missing: true
+  - rename:
       field: json.subject
       tag: rename_subject_c03358c2
       target_field: sublime_security.message_event.subject
       ignore_missing: true
+      if: ctx.sublime_security?.message_event?.subject == null
   - set:
       field: email.subject
       tag: set_email_subject_from_message_event_subject_eecf6b26
