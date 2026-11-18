@@ -8,7 +8,7 @@
 
 ### Compatibility
 
-This integration is tested against HiveMQ Community Edition 2026.5 and, for the metrics, the HiveMQ Prometheus Extension 4.1.1. The client event log has had the same wording since at least HiveMQ Community Edition 2024.3.
+This integration is tested against HiveMQ Community Edition 2026.5 and, for the metrics, the HiveMQ Prometheus Extension 4.1.1. The client event log has had the same wording since at least HiveMQ Community Edition 2024.3. Older versions such as 2020.1 write ungraceful disconnects without the listener and port; the integration parses these lines too.
 
 It is built for the log format of HiveMQ Community Edition. It does not parse HiveMQ Enterprise logs, such as the audit log.
 
