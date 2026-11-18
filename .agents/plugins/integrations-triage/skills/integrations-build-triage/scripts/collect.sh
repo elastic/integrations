@@ -34,6 +34,17 @@ ep=$(grep -h -m1 -o 'elastic-package v[0-9.]*' logs/*.log 2>/dev/null | sort | u
 echo "elastic-package: ${ep:-?}"
 
 printf 'pkg\ttests\tlink\tdetail\n' > failures.tsv
+# An abort mid-loop (set -e) would leave failures.tsv short, and match.sh would then mark the missing packages DROPPED
+check_rows() {
+  rc=$?
+  want=$(wc -l < failed.txt | tr -d ' '); got=$(( $(wc -l < failures.tsv) - 1 ))
+  if [ "$got" -ne "$want" ]; then
+    echo "COLLECT INCOMPLETE: $OUT/failures.tsv has $got of $want failed packages (exit $rc). Missing rows would show as DROPPED in match.sh; don't use it." >&2
+    [ "$rc" -ne 0 ] || rc=1
+  fi
+  exit "$rc"
+}
+trap check_rows EXIT
 while read -r job pkg; do
   f=logs/$pkg.log
   s=$(grep -n -m1 -E 'test case\(s\) failed|^Error: ' "$f" | cut -d: -f1 || true)
