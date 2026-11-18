@@ -21,14 +21,32 @@ state:
   api_key: {{api_key}}
   batch_size: {{batch_size}}
   initial_interval: {{initial_interval}}
+  delay: {{delay}}
 redact:
   fields:
     - state.api_key
 program: |-
+  // An event can become visible in the API some time after its processedAt, and
+  // after later events. Only collect events processed at least the delay ago, so
+  // that the cursor does not pass events that are not visible yet.
+  (now - duration(state.delay)).as(t, int(t) * 1000 + t.getMilliseconds()).as(cutoff,
   state.?cursor.token.orValue("").as(token,
-    state.?cursor.last_timestamp.orValue(
-      string(int(now - duration(state.initial_interval)) * 1000)
-    ).as(from_millis,
+  state.?cursor.last_timestamp.orValue(
+    string(int(now - duration(state.initial_interval)) * 1000)
+  ).as(from_millis,
+  // from is inclusive, so the events collected at last_timestamp are returned
+  // again. Their IDs are kept to drop them, so that an event with the same
+  // processedAt that becomes visible later is still collected.
+  state.?cursor.last_ids.orValue([]).as(last_ids,
+    (token == "" && int(from_millis) > cutoff) ?
+      // The delay is longer than the initial interval or was increased, or the
+      // clock went back. Wait until last_timestamp is at least the delay old.
+      state.with({
+        "events": [],
+        "cursor": state.?cursor.orValue({"last_timestamp": from_millis}),
+        "want_more": false,
+      })
+    :
       state.with(
         request(
           "GET",
@@ -42,7 +60,7 @@ program: |-
               {
                 "limit": [string(int(state.batch_size))],
                 "from": [from_millis],
-                "to": [string(int(now) * 1000)],
+                "to": [string(cutoff)],
                 "sortOrder": ["asc"],
               }
           ).format_query()
@@ -60,23 +78,32 @@ program: |-
                 :
                   ""
               ).as(next,
-                body.?data.orValue([]).as(items, {
-                  "events": items.map(e, {"message": e.encode_json()}),
-                  "cursor": {
-                    ?"token": (next != "") ?
-                      optional.of(next)
-                    :
-                      optional.none(),
-                    "last_timestamp": (size(items) > 0) ?
-                      string(int(timestamp(items[size(items) - 1].attributes.processedAt)) * 1000)
-                    :
-                      (next != "") ?
-                        from_millis
-                      :
-                        string(int(now) * 1000),
-                  },
-                  "want_more": next != "",
-                })
+                body.?data.orValue([]).map(e, {
+                  "event": e,
+                  "ms": timestamp(e.attributes.processedAt).as(t, int(t) * 1000 + t.getMilliseconds()),
+                }).as(page,
+                  // Pages are in processedAt order, and pages after the first are not
+                  // limited by to. Stop at the first event after the cutoff and leave
+                  // the rest for a later poll.
+                  page.filter(p, p.ms <= cutoff).as(ready,
+                    ready.filter(p, !(p.ms == int(from_millis) && p.event.id in last_ids)).as(unseen,
+                      // Only advance to a collected event. A last page with no events does
+                      // not mean that no event before the current time remains to be read.
+                      ((size(ready) > 0) ? ready[size(ready) - 1].ms : int(from_millis)).as(last,
+                        (next != "" && size(ready) == size(page)).as(more, {
+                          "events": unseen.map(p, {"message": p.event.encode_json()}),
+                          "cursor": {
+                            ?"token": more ? optional.of(next) : optional.none(),
+                            "last_timestamp": string(last),
+                            "last_ids": ((last == int(from_millis)) ? last_ids : []) +
+                              unseen.map(p, p.ms == last, p.event.id),
+                          },
+                          "want_more": more,
+                        })
+                      )
+                    )
+                  )
+                )
               )
             )
           :
@@ -97,8 +124,7 @@ program: |-
             }
         )
       )
-    )
-  )
+  ))))
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

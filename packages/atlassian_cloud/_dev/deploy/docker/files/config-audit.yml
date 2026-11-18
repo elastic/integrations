@@ -86,11 +86,10 @@ rules:
             }
           }
           ` }}
-  # Round 1, page 3 — terminal page: returns a Confluence API event whose container
-  # attribute keys contain NUL characters, then Eve (2 events), with no next cursor.
+  # Round 1, page 3 — returns a Confluence API event whose container attribute keys
+  # contain NUL characters, then Eve (2 events), with a next cursor.
   # The CEL program sets last_timestamp = Eve's processedAt
-  # (2026-05-19T10:10:01.000Z → 1779185401000 ms) because size(items) > 0.
-  # want_more = false because meta.next is null, ending the pagination loop.
+  # (2026-05-19T10:10:01.000Z → 1779185401000 ms).
   - path: /admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream
     methods: ["GET"]
     query_params:
@@ -179,29 +178,22 @@ rules:
                 }
               }
             ],
-            "links": {},
+            "links": {
+              "next": "https://api.atlassian.com/admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream?cursor=cursor-page-4"
+            },
             "meta": {
-              "attributes": null,
-              "next": null,
-              "prev": null,
-              "current": null,
-              "page_size": 200,
-              "start_index": 1,
-              "end_index": 2,
-              "total": 2
+              "next": "cursor-page-4",
+              "page_size": 2
             }
           }
           ` }}
-  # Round 2 — fresh time-window request after the polling interval.
-  # last_timestamp from round 1 = Eve's processedAt (1779185401000 ms),
-  # so the CEL program sends from=1779185401000. Returns empty data,
-  # confirming no new events. After this, last_timestamp advances to "now".
+  # Round 1, page 4 — terminal page at the head of the stream: no events and no
+  # next cursor. want_more = false, ending the pagination loop. The CEL program
+  # keeps last_timestamp = Eve's processedAt, with last_ids = [Eve].
   - path: /admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream
     methods: ["GET"]
     query_params:
-      from: "1779185401000"
-      to: "{to:.*}"
-      sortOrder: asc
+      cursor: cursor-page-4
       limit: "2"
     request_headers:
       Authorization:
@@ -230,12 +222,340 @@ rules:
             }
           }
           ` }}
-  # Round 1, page 1 + steady-state (round 3+).
-  # This wildcard rule matches any from/to time-window request. It uses
-  # response cycling: the first match returns page 1 events with a pagination
-  # cursor (round 1 initial poll); subsequent matches return empty data
-  # (steady state after round 2 advances last_timestamp to "now").
-  # Must come after the round 2 exact-match rule above.
+  # Round 2 — fresh time-window request after the polling interval. from is
+  # inclusive, so the CEL program sends Eve's processedAt (from=1779185401000) and
+  # drops Eve, whose ID is in cursor.last_ids. Grace has the same processedAt as
+  # Eve, and Frank a later one, but neither was visible to the API until after
+  # round 1 ended, so both are collected. Ivy was processed less than the delay
+  # ago (2099 stands in for that), so collection stops before her and
+  # last_timestamp = Frank's processedAt (1779185401500 ms).
+  - path: /admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream
+    methods: ["GET"]
+    query_params:
+      from: "1779185401000"
+      to: "{to:.*}"
+      sortOrder: asc
+      limit: "2"
+    request_headers:
+      Authorization:
+        - "Bearer test-api-key"
+      Accept:
+        - "application/json"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "type": "events",
+                "id": "a1000005-0000-4000-8000-000000000005",
+                "attributes": {
+                  "time": "2026-05-19T10:10:00.000Z",
+                  "processedAt": "2026-05-19T10:10:01.000Z",
+                  "action": "api_token_created",
+                  "actor": {
+                    "id": "712020:eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee",
+                    "name": "Eve Martinez",
+                    "email": "eve.martinez@example.com",
+                    "auth": {
+                      "authType": "session",
+                      "tokenId": "token-00000001",
+                      "tokenLabel": "Example API Token"
+                    }
+                  },
+                  "location": {
+                    "ip": "198.51.100.30",
+                    "geo": "EU",
+                    "countryName": "Example Country",
+                    "city": "Example City"
+                  }
+                },
+                "message": {
+                  "content": "Eve Martinez created an API token",
+                  "format": "simple"
+                }
+              },
+              {
+                "type": "events",
+                "id": "a1000008-0000-4000-8000-000000000008",
+                "attributes": {
+                  "time": "2026-05-19T10:10:00.800Z",
+                  "processedAt": "2026-05-19T10:10:01.000Z",
+                  "action": "user_login",
+                  "actor": {
+                    "id": "712020:99999999-aaaa-bbbb-cccc-dddddddddddd",
+                    "name": "Grace Kim",
+                    "email": "grace.kim@example.com"
+                  },
+                  "location": {
+                    "ip": "198.51.100.60",
+                    "countryName": "Example Country",
+                    "city": "Example City"
+                  }
+                },
+                "message": {
+                  "content": "Grace Kim logged in",
+                  "format": "simple"
+                }
+              },
+              {
+                "type": "events",
+                "id": "a1000007-0000-4000-8000-000000000007",
+                "attributes": {
+                  "time": "2026-05-19T10:10:01.200Z",
+                  "processedAt": "2026-05-19T10:10:01.500Z",
+                  "action": "user_login_failed",
+                  "actor": {
+                    "id": "712020:ffffffff-ffff-ffff-ffff-ffffffffffff",
+                    "name": "Frank Moore",
+                    "email": "frank.moore@example.com"
+                  },
+                  "location": {
+                    "ip": "198.51.100.50",
+                    "countryName": "Example Country",
+                    "city": "Example City"
+                  }
+                },
+                "message": {
+                  "content": "Frank Moore failed to log in",
+                  "format": "simple"
+                }
+              },
+              {
+                "type": "events",
+                "id": "a1000010-0000-4000-8000-000000000010",
+                "attributes": {
+                  "time": "2099-01-01T00:00:00.000Z",
+                  "processedAt": "2099-01-01T00:00:00.000Z",
+                  "action": "user_login",
+                  "actor": {
+                    "id": "712020:77777777-aaaa-bbbb-cccc-dddddddddddd",
+                    "name": "Ivy Chen",
+                    "email": "ivy.chen@example.com"
+                  },
+                  "location": {
+                    "ip": "198.51.100.80",
+                    "countryName": "Example Country",
+                    "city": "Example City"
+                  }
+                },
+                "message": {
+                  "content": "Ivy Chen logged in",
+                  "format": "simple"
+                }
+              }
+            ],
+            "links": {},
+            "meta": {
+              "attributes": null,
+              "next": null,
+              "prev": null,
+              "current": null,
+              "page_size": 200,
+              "start_index": 1,
+              "end_index": 4,
+              "total": 4
+            }
+          }
+          ` }}
+  # Round 3 — Henry was processed before Ivy but became visible after her. The
+  # cursor did not pass Ivy, so Henry is collected; Frank is dropped as seen.
+  # last_timestamp = Henry's processedAt (1779185402000 ms).
+  - path: /admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream
+    methods: ["GET"]
+    query_params:
+      from: "1779185401500"
+      to: "{to:.*}"
+      sortOrder: asc
+      limit: "2"
+    request_headers:
+      Authorization:
+        - "Bearer test-api-key"
+      Accept:
+        - "application/json"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "type": "events",
+                "id": "a1000007-0000-4000-8000-000000000007",
+                "attributes": {
+                  "time": "2026-05-19T10:10:01.200Z",
+                  "processedAt": "2026-05-19T10:10:01.500Z",
+                  "action": "user_login_failed",
+                  "actor": {
+                    "id": "712020:ffffffff-ffff-ffff-ffff-ffffffffffff",
+                    "name": "Frank Moore",
+                    "email": "frank.moore@example.com"
+                  },
+                  "location": {
+                    "ip": "198.51.100.50",
+                    "countryName": "Example Country",
+                    "city": "Example City"
+                  }
+                },
+                "message": {
+                  "content": "Frank Moore failed to log in",
+                  "format": "simple"
+                }
+              },
+              {
+                "type": "events",
+                "id": "a1000009-0000-4000-8000-000000000009",
+                "attributes": {
+                  "time": "2026-05-19T10:10:01.900Z",
+                  "processedAt": "2026-05-19T10:10:02.000Z",
+                  "action": "organization_users_viewed",
+                  "actor": {
+                    "id": "712020:88888888-aaaa-bbbb-cccc-dddddddddddd",
+                    "name": "Henry Park",
+                    "email": "henry.park@example.com"
+                  },
+                  "location": {
+                    "ip": "198.51.100.70",
+                    "countryName": "Example Country",
+                    "city": "Example City"
+                  }
+                },
+                "message": {
+                  "content": "Henry Park viewed organization users",
+                  "format": "simple"
+                }
+              },
+              {
+                "type": "events",
+                "id": "a1000010-0000-4000-8000-000000000010",
+                "attributes": {
+                  "time": "2099-01-01T00:00:00.000Z",
+                  "processedAt": "2099-01-01T00:00:00.000Z",
+                  "action": "user_login",
+                  "actor": {
+                    "id": "712020:77777777-aaaa-bbbb-cccc-dddddddddddd",
+                    "name": "Ivy Chen",
+                    "email": "ivy.chen@example.com"
+                  },
+                  "location": {
+                    "ip": "198.51.100.80",
+                    "countryName": "Example Country",
+                    "city": "Example City"
+                  }
+                },
+                "message": {
+                  "content": "Ivy Chen logged in",
+                  "format": "simple"
+                }
+              }
+            ],
+            "links": {},
+            "meta": {
+              "attributes": null,
+              "next": null,
+              "prev": null,
+              "current": null,
+              "page_size": 200,
+              "start_index": 1,
+              "end_index": 3,
+              "total": 3
+            }
+          }
+          ` }}
+  # Round 4+ — steady state: Henry is dropped as seen and Ivy is still too
+  # recent, so nothing is collected and every later poll sends the same request.
+  - path: /admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream
+    methods: ["GET"]
+    query_params:
+      from: "1779185402000"
+      to: "{to:.*}"
+      sortOrder: asc
+      limit: "2"
+    request_headers:
+      Authorization:
+        - "Bearer test-api-key"
+      Accept:
+        - "application/json"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "type": "events",
+                "id": "a1000009-0000-4000-8000-000000000009",
+                "attributes": {
+                  "time": "2026-05-19T10:10:01.900Z",
+                  "processedAt": "2026-05-19T10:10:02.000Z",
+                  "action": "organization_users_viewed",
+                  "actor": {
+                    "id": "712020:88888888-aaaa-bbbb-cccc-dddddddddddd",
+                    "name": "Henry Park",
+                    "email": "henry.park@example.com"
+                  },
+                  "location": {
+                    "ip": "198.51.100.70",
+                    "countryName": "Example Country",
+                    "city": "Example City"
+                  }
+                },
+                "message": {
+                  "content": "Henry Park viewed organization users",
+                  "format": "simple"
+                }
+              },
+              {
+                "type": "events",
+                "id": "a1000010-0000-4000-8000-000000000010",
+                "attributes": {
+                  "time": "2099-01-01T00:00:00.000Z",
+                  "processedAt": "2099-01-01T00:00:00.000Z",
+                  "action": "user_login",
+                  "actor": {
+                    "id": "712020:77777777-aaaa-bbbb-cccc-dddddddddddd",
+                    "name": "Ivy Chen",
+                    "email": "ivy.chen@example.com"
+                  },
+                  "location": {
+                    "ip": "198.51.100.80",
+                    "countryName": "Example Country",
+                    "city": "Example City"
+                  }
+                },
+                "message": {
+                  "content": "Ivy Chen logged in",
+                  "format": "simple"
+                }
+              }
+            ],
+            "links": {},
+            "meta": {
+              "attributes": null,
+              "next": null,
+              "prev": null,
+              "current": null,
+              "page_size": 200,
+              "start_index": 1,
+              "end_index": 2,
+              "total": 2
+            }
+          }
+          ` }}
+  # Round 1, page 1 — initial poll (from = now - initial_interval).
+  # This wildcard rule matches any other from/to time-window request, so a poll
+  # whose from is not one of the values above gets page 1 again, and the hit
+  # count no longer matches. Must come after the exact-match rules above.
   - path: /admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream
     methods: ["GET"]
     query_params:
@@ -310,27 +630,6 @@ rules:
             "meta": {
               "next": "cursor-page-2",
               "page_size": 2
-            }
-          }
-          ` }}
-      - status_code: 200
-        headers:
-          Content-Type:
-            - "application/json"
-        body: |-
-          {{ minify_json `
-          {
-            "data": [],
-            "links": {},
-            "meta": {
-              "attributes": null,
-              "next": null,
-              "prev": null,
-              "current": null,
-              "page_size": 200,
-              "start_index": null,
-              "end_index": null,
-              "total": 0
             }
           }
           ` }}
