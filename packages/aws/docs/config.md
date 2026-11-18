@@ -28,6 +28,7 @@ Elastic Managed deployments are only supported in Elastic Serverless and Elastic
 - Elastic Agent must be installed
 - You can install only one Elastic Agent per host.
 - Elastic Agent is required to stream data from the REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+- This integration needs Elastic Agent 8.19.15 or a later 8.19 release, or 9.3.0 or later.
 
 Before using any AWS integration you will need:
 

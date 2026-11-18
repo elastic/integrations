@@ -6,6 +6,7 @@ The [Amazon Inspector](https://docs.aws.amazon.com/inspector/) integration colle
 
 ## Compatibility
 This module is tested against `Amazon Inspector API version 2.0`.
+This module needs Elastic Agent 8.19.15 or a later 8.19 release, or 9.3.0 or later.
 
 ## Agentless-enabled integration
 
