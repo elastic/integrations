@@ -156,19 +156,6 @@ processors:
       field: json.app_zone_id
       type: string
       ignore_missing: true
-  - convert:
-      tag: convert_json_micro_tenant_id_to_string
-      field: json.micro_tenant_id
-      type: string
-      ignore_missing: true
-  - script:
-      tag: script_connection_start_time_epoch_us
-      description: Converts a connection start time given as epoch microseconds, as some templates without `:iso8601` send it.
-      lang: painless
-      if: ctx.json.connection_start_time instanceof Number || (ctx.json.connection_start_time instanceof String && ctx.json.connection_start_time =~ /^\d+$/)
-      source: |-
-        long t = Long.parseLong(ctx.json.remove('connection_start_time').toString());
-        ctx.event.start = Instant.ofEpochSecond(t / 1000000L, (t % 1000000L) * 1000L).toString();
   - date:
       tag: date_json_connection_start_time_to_event_start
       field: json.connection_start_time
@@ -211,18 +198,10 @@ processors:
       lang: painless
       if: ctx.json.source_ports != null
       source: |-
-        def v = ctx.json.source_ports;
-        List src;
-        if (v instanceof List) {
-          src = (List) v;
-        } else {
-          src = new ArrayList();
-          src.add(v);
-        }
         List ports = new ArrayList();
         List msgs = new ArrayList();
         int count = 0;
-        for (def e : src) {
+        for (def e : ctx.json.source_ports) {
           if (e == null) {
             continue;
           }
@@ -319,16 +298,9 @@ processors:
           if (v == null) {
             continue;
           }
-          List src;
-          if (v instanceof List) {
-            src = (List) v;
-          } else {
-            src = new ArrayList();
-            src.add(v);
-          }
           List out = new ArrayList();
           boolean hasValue = false;
-          for (def x : src) {
+          for (def x : v) {
             String s = x?.toString();
             out.add(s);
             if (s != null && !s.trim().isEmpty()) {

@@ -1128,7 +1128,6 @@ An example event for `user_status` looks as following:
 | zscaler_zpa.app_protection.inspection_resp_body_processing_time | The time in microseconds taken for processing the AppProtection response body. | long | micros |
 | zscaler_zpa.app_protection.inspection_resp_headers_processing_time | The time in microseconds taken for processing the AppProtection response headers. | long | micros |
 | zscaler_zpa.app_protection.inspection_rule_processing_time | The time in microseconds taken for processing the AppProtection rule. | long | micros |
-| zscaler_zpa.app_protection.micro_tenant_id | The Microtenant ID. | keyword |  |
 | zscaler_zpa.app_protection.origin_domain | The value of the origin header in the cross-origin HTTP header. | keyword |  |
 | zscaler_zpa.app_protection.paranoia_level | The OWASP predefined paranoia level (1-4). | long |  |
 | zscaler_zpa.app_protection.protocol | The protocol, as reported. Copied to `network.protocol` when it is a protocol name, or to `http.version` when it is an HTTP version and `ProtocolVersion` is empty. | keyword |  |
@@ -1349,7 +1348,6 @@ An example event for `app_protection` looks as following:
 | zscaler_zpa.microsegmentation_flow.direction | The connection direction, kept only when it is not one of the values mapped to `network.direction` (`INBOUND`, `OUTBOUND` or `UNKNOWN`). | keyword |
 | zscaler_zpa.microsegmentation_flow.enforcement_action | The policy enforcement action configured on the connection (`ALLOW`, `BLOCK` or `SIMBLOCK`, a simulated block). | keyword |
 | zscaler_zpa.microsegmentation_flow.enforcement_disposition | The policy enforcement decision on the connection (`UNKNOWN`, `CONNECTED`, `REJECTED` or `DROPPED`). | keyword |
-| zscaler_zpa.microsegmentation_flow.micro_tenant_id | The Microtenant ID. | keyword |
 | zscaler_zpa.microsegmentation_flow.source_ports | The source ports of the aggregated connections between the same source, destination, protocol and destination port. | long |
 
 

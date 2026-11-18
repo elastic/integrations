@@ -552,11 +552,6 @@ processors:
       type: string
       ignore_missing: true
   - convert:
-      tag: convert_json_micro_tenant_id_to_string
-      field: json.micro_tenant_id
-      type: string
-      ignore_missing: true
-  - convert:
       tag: convert_json_paranoia_level_to_long
       field: json.paranoia_level
       type: long
@@ -714,7 +709,7 @@ processors:
       source: |-
         List upper(def v) {
           List out = [];
-          for (def e : v instanceof List ? v : v == null ? [] : [v]) {
+          for (def e : v ?: []) {
             String s = e?.toString()?.trim() ?: '';
             if (!s.isEmpty()) {
               out.add(s.toUpperCase());
