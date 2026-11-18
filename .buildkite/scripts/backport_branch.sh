@@ -175,17 +175,10 @@ updateBackportBranchContents() {
   # pinned to an older version the env var is still the only way to enable that
   # flag — so keep it instead of dropping it with the copy from main.
   local kibana_skip_validation_line=""
-  local serverless_kibana_skip_validation_line=""
   if [ -f "${pipeline_yml}" ]; then
     kibana_skip_validation_line=$(grep -E '^\s*ELASTIC_PACKAGE_KIBANA_SKIP_UPLOAD_PACKAGE_VALIDATION:' "${pipeline_yml}" || true)
     if [ -n "${kibana_skip_validation_line}" ]; then
       echo "Preserving from backport branch (pipeline.yml): ${kibana_skip_validation_line}"
-    fi
-  fi
-  if [ -f "${pipeline_serverless_yml}" ]; then
-    serverless_kibana_skip_validation_line=$(grep -E '^\s*ELASTIC_PACKAGE_KIBANA_SKIP_UPLOAD_PACKAGE_VALIDATION:' "${pipeline_serverless_yml}" || true)
-    if [ -n "${serverless_kibana_skip_validation_line}" ]; then
-      echo "Preserving from backport branch (pipeline.serverless.yml): ${serverless_kibana_skip_validation_line}"
     fi
   fi
 
@@ -213,10 +206,6 @@ updateBackportBranchContents() {
   if [ -n "${kibana_skip_validation_line}" ]; then
     echo "--- Restoring ELASTIC_PACKAGE_KIBANA_SKIP_UPLOAD_PACKAGE_VALIDATION in ${pipeline_yml}..."
     restore_pipeline_env_line "${pipeline_yml}" "${kibana_skip_validation_line}"
-  fi
-  if [ -n "${serverless_kibana_skip_validation_line}" ]; then
-    echo "--- Restoring ELASTIC_PACKAGE_KIBANA_SKIP_UPLOAD_PACKAGE_VALIDATION in ${pipeline_serverless_yml}..."
-    restore_pipeline_env_line "${pipeline_serverless_yml}" "${serverless_kibana_skip_validation_line}"
   fi
 
   git add $BUILDKITE_FOLDER_PATH

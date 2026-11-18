@@ -701,8 +701,8 @@ assert_equals "existing key → not duplicated" \
     "1" \
     "$(grep -cE '^\s*ELASTIC_PACKAGE_KIBANA_SKIP_UPLOAD_PACKAGE_VALIDATION:' "${pipeline}")"
 
-# 3. pipeline.serverless.yml shape: blank line before env:, step-level env: blocks
-pipeline="${TMPDIR_PIPELINE}/serverless.yml"
+# 3. Pipeline with a blank line before env: and step-level env: blocks
+pipeline="${TMPDIR_PIPELINE}/nested_env.yml"
 {
     printf '# yaml-language-server: $schema=https://example.invalid/schema.json\n'
     printf '\n'
@@ -716,13 +716,13 @@ pipeline="${TMPDIR_PIPELINE}/serverless.yml"
     printf '      SERVERLESS: "true"\n'
 } > "${pipeline}"
 restore_pipeline_env_line "${pipeline}" '  ELASTIC_PACKAGE_KIBANA_SKIP_UPLOAD_PACKAGE_VALIDATION: "true"'
-assert_equals "serverless shape → inserted in the top-level env block" \
+assert_equals "nested env → inserted in the top-level env block" \
     "true" \
     "$(yq -r '.env.ELASTIC_PACKAGE_KIBANA_SKIP_UPLOAD_PACKAGE_VALIDATION' "${pipeline}")"
-assert_equals "serverless shape → step-level env block is left untouched" \
+assert_equals "nested env → step-level env block is left untouched" \
     "null" \
     "$(yq -r '.steps[0].env.ELASTIC_PACKAGE_KIBANA_SKIP_UPLOAD_PACKAGE_VALIDATION' "${pipeline}")"
-assert_equals "serverless shape → step-level env entries are kept" \
+assert_equals "nested env → step-level env entries are kept" \
     "true" \
     "$(yq -r '.steps[0].env.SERVERLESS' "${pipeline}")"
 
