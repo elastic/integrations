@@ -45,7 +45,10 @@ while read -r job pkg; do
   fi
   sed -n "${s},${e}p" "$f" > "logs/$pkg.fail"
   tests=$(grep '^FAIL: ' "logs/$pkg.fail" | sed -E 's/^FAIL: [^/]*\///' | paste -sd',' - || true)
-  detail=$(grep -v -E '^(FAIL:|Error: |[[:space:]]*$)' "logs/$pkg.fail" | head -1 | sed -e 's/^ *//' -e 's/^test case failed: //' -e 's/[0-9]\{4,\}/N/g' | cut -c1-180)
+  # grep finds nothing when the block is only an "Error:" line (e.g. stack boot failed); under pipefail that would abort the loop
+  detail=$(grep -v -E '^(FAIL:|Error: |[[:space:]]*$)' "logs/$pkg.fail" | head -1 || true)
+  [ -n "$detail" ] || detail=$(grep -m1 '^Error: ' "logs/$pkg.fail" || true)
+  detail=$(printf '%s' "$detail" | sed -e 's/^ *//' -e 's/^Error: //' -e 's/^test case failed: //' -e 's/[0-9]\{4,\}/N/g' | cut -c1-180)
   printf '%s\t%s\t%s\t%s\n' "$pkg" "${tests:-no-test-block}" \
     "https://buildkite.com/$P/builds/$B#$job/$s-$e" "$detail" >> failures.tsv
 done < failed.txt
