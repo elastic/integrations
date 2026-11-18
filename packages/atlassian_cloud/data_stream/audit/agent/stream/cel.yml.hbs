@@ -41,8 +41,10 @@ program: |-
     (token == "" && int(from_millis) > cutoff) ?
       // The delay is longer than the initial interval or was increased, or the
       // clock went back. Wait until last_timestamp is at least the delay old.
+      // The CEL input only stores the cursor with published events, so publish a
+      // placeholder, which the agent drops.
       state.with({
-        "events": [],
+        "events": [{"message": "retry"}],
         "cursor": state.?cursor.orValue({"last_timestamp": from_millis}),
         "want_more": false,
       })
@@ -90,15 +92,22 @@ program: |-
                       // Only advance to a collected event. A last page with no events does
                       // not mean that no event before the current time remains to be read.
                       ((size(ready) > 0) ? ready[size(ready) - 1].ms : int(from_millis)).as(last,
-                        (next != "" && size(ready) == size(page)).as(more, {
-                          "events": unseen.map(p, {"message": p.event.encode_json()}),
+                        (next != "" && size(ready) == size(page)).as(keep_next, {
+                          // Publish a placeholder, which the agent drops, when nothing is new,
+                          // so that the cursor is stored and paging is not cut short.
+                          "events": (size(unseen) > 0) ?
+                            unseen.map(p, {"message": p.event.encode_json()})
+                          :
+                            [{"message": "retry"}],
                           "cursor": {
-                            ?"token": more ? optional.of(next) : optional.none(),
+                            ?"token": keep_next ? optional.of(next) : optional.none(),
                             "last_timestamp": string(last),
                             "last_ids": ((last == int(from_millis)) ? last_ids : []) +
                               unseen.map(p, p.ms == last, p.event.id),
                           },
-                          "want_more": more,
+                          // The last page of the stream has a next cursor for later polls, so
+                          // an empty page with one is kept for the next poll, not requested now.
+                          "want_more": keep_next && size(page) > 0,
                         })
                       )
                     )
@@ -135,7 +144,8 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-{{#if processors}}
 processors:
+- drop_event.when.equals.message: retry
+{{#if processors}}
 {{processors}}
 {{/if}}

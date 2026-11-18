@@ -189,7 +189,9 @@ rules:
           ` }}
   # Round 1, page 4 — terminal page at the head of the stream: no events and no
   # next cursor. want_more = false, ending the pagination loop. The CEL program
-  # keeps last_timestamp = Eve's processedAt, with last_ids = [Eve].
+  # keeps last_timestamp = Eve's processedAt, with last_ids = [Eve], and
+  # publishes a placeholder that the agent drops, so that this cursor, without
+  # the page token, is the one stored.
   - path: /admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream
     methods: ["GET"]
     query_params:
@@ -222,13 +224,11 @@ rules:
             }
           }
           ` }}
-  # Round 2 — fresh time-window request after the polling interval. from is
-  # inclusive, so the CEL program sends Eve's processedAt (from=1779185401000) and
-  # drops Eve, whose ID is in cursor.last_ids. Grace has the same processedAt as
-  # Eve, and Frank a later one, but neither was visible to the API until after
-  # round 1 ended, so both are collected. Ivy was processed less than the delay
-  # ago (2099 stands in for that), so collection stops before her and
-  # last_timestamp = Frank's processedAt (1779185401500 ms).
+  # Round 2, page 1 — fresh time-window request after the polling interval. from
+  # is inclusive, so the CEL program sends Eve's processedAt (from=1779185401000)
+  # and drops Eve, whose ID is in cursor.last_ids. Grace has the same processedAt
+  # as Eve but was not visible to the API until after round 1 ended, so she is
+  # collected.
   - path: /admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream
     methods: ["GET"]
     query_params:
@@ -301,7 +301,40 @@ rules:
                   "content": "Grace Kim logged in",
                   "format": "simple"
                 }
-              },
+              }
+            ],
+            "links": {
+              "next": "https://api.atlassian.com/admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream?cursor=cursor-round-2-page-2"
+            },
+            "meta": {
+              "next": "cursor-round-2-page-2",
+              "page_size": 2
+            }
+          }
+          ` }}
+  # Round 2, page 2 — Frank is collected. Ivy was processed less than the delay
+  # ago (2099 stands in for that), so collection stops before her and the next
+  # cursor is not requested. last_timestamp = Frank's processedAt
+  # (1779185401500 ms).
+  - path: /admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream
+    methods: ["GET"]
+    query_params:
+      cursor: cursor-round-2-page-2
+      limit: "2"
+    request_headers:
+      Authorization:
+        - "Bearer test-api-key"
+      Accept:
+        - "application/json"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
               {
                 "type": "events",
                 "id": "a1000007-0000-4000-8000-000000000007",
@@ -349,22 +382,17 @@ rules:
                 }
               }
             ],
-            "links": {},
+            "links": {
+              "next": "https://api.atlassian.com/admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream?cursor=canary-round-2"
+            },
             "meta": {
-              "attributes": null,
-              "next": null,
-              "prev": null,
-              "current": null,
-              "page_size": 200,
-              "start_index": 1,
-              "end_index": 4,
-              "total": 4
+              "next": "canary-round-2",
+              "page_size": 2
             }
           }
           ` }}
-  # Round 3 — Henry was processed before Ivy but became visible after her. The
-  # cursor did not pass Ivy, so Henry is collected; Frank is dropped as seen.
-  # last_timestamp = Henry's processedAt (1779185402000 ms).
+  # Round 3, page 1 — Frank is dropped as seen. Henry was processed before Ivy but
+  # became visible after her; the cursor did not pass Ivy, so he is collected.
   - path: /admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream
     methods: ["GET"]
     query_params:
@@ -431,7 +459,39 @@ rules:
                   "content": "Henry Park viewed organization users",
                   "format": "simple"
                 }
-              },
+              }
+            ],
+            "links": {
+              "next": "https://api.atlassian.com/admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream?cursor=cursor-round-3-page-2"
+            },
+            "meta": {
+              "next": "cursor-round-3-page-2",
+              "page_size": 2
+            }
+          }
+          ` }}
+  # Round 3, page 2 — only Ivy, still too recent: nothing is collected, the CEL
+  # program publishes a placeholder that the agent drops, and last_timestamp =
+  # Henry's processedAt (1779185402000 ms).
+  - path: /admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream
+    methods: ["GET"]
+    query_params:
+      cursor: cursor-round-3-page-2
+      limit: "2"
+    request_headers:
+      Authorization:
+        - "Bearer test-api-key"
+      Accept:
+        - "application/json"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
               {
                 "type": "events",
                 "id": "a1000010-0000-4000-8000-000000000010",
@@ -456,16 +516,12 @@ rules:
                 }
               }
             ],
-            "links": {},
+            "links": {
+              "next": "https://api.atlassian.com/admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream?cursor=canary-round-3"
+            },
             "meta": {
-              "attributes": null,
-              "next": null,
-              "prev": null,
-              "current": null,
-              "page_size": 200,
-              "start_index": 1,
-              "end_index": 3,
-              "total": 3
+              "next": "canary-round-3",
+              "page_size": 2
             }
           }
           ` }}
@@ -539,6 +595,61 @@ rules:
                 }
               }
             ],
+            "links": {
+              "next": "https://api.atlassian.com/admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream?cursor=canary-round-4"
+            },
+            "meta": {
+              "next": "canary-round-4",
+              "page_size": 2
+            }
+          }
+          ` }}
+  # Canary — the next cursor of a page that reached Ivy. The CEL program must not
+  # request it; if it does, the canary event is collected and the hit count no
+  # longer matches.
+  - path: /admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream
+    methods: ["GET"]
+    query_params:
+      cursor: "{cursor:canary-.*}"
+      limit: "2"
+    request_headers:
+      Authorization:
+        - "Bearer test-api-key"
+      Accept:
+        - "application/json"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "type": "events",
+                "id": "a1000011-0000-4000-8000-000000000011",
+                "attributes": {
+                  "time": "2026-05-19T10:10:02.900Z",
+                  "processedAt": "2026-05-19T10:10:03.000Z",
+                  "action": "user_login",
+                  "actor": {
+                    "id": "712020:66666666-aaaa-bbbb-cccc-dddddddddddd",
+                    "name": "Canary User",
+                    "email": "canary.user@example.com"
+                  },
+                  "location": {
+                    "ip": "198.51.100.90",
+                    "countryName": "Example Country",
+                    "city": "Example City"
+                  }
+                },
+                "message": {
+                  "content": "Canary User logged in",
+                  "format": "simple"
+                }
+              }
+            ],
             "links": {},
             "meta": {
               "attributes": null,
@@ -547,8 +658,8 @@ rules:
               "current": null,
               "page_size": 200,
               "start_index": 1,
-              "end_index": 2,
-              "total": 2
+              "end_index": 1,
+              "total": 1
             }
           }
           ` }}
