@@ -1,0 +1,44 @@
+paths:
+{{#each paths as |path|}}
+  - {{path}}
+{{/each}}
+{{#if exclude_files}}
+prospector.scanner.exclude_files:
+{{#each exclude_files as |pattern f|}}
+  - {{pattern}}
+{{/each}}
+{{/if}}
+{{#if multiline_json}}
+multiline.pattern: '^{'
+multiline.negate: true
+multiline.match: after
+multiline.max_lines: 5000
+multiline.timeout: 10
+{{/if}}
+{{#if custom}}
+{{custom}}
+{{/if}}
+
+{{#if tags.length}}
+tags:
+{{#each tags as |tag|}}
+- {{tag}}
+{{/each}}
+{{#if preserve_original_event}}
+- preserve_original_event
+{{/if}}
+{{else}}
+{{#if preserve_original_event}}
+tags:
+- preserve_original_event
+{{/if}}
+{{/if}}
+
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

@@ -1,0 +1,13 @@
+wait_for_data_timeout: 1m
+service: hivemq-log-filestream
+input: filestream
+data_stream:
+  vars:
+    paths:
+      - "{{SERVICE_LOGS_DIR}}/hivemq.log"
+    preserve_original_event: true
+    tz_offset: "UTC"
+assert:
+  # 78 physical lines; the WARN banners and the Java stack trace are joined
+  # by the multiline parser into 46 events.
+  hit_count: 46

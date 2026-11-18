@@ -1,0 +1,19 @@
+---
+description: Pipeline for processing sample logs
+processors:
+- set:
+    tag: set_sample_field
+    field: sample_field
+    value: "1"
+on_failure:
+- set:
+    field: error.message
+    value: >-
+      Processor '{{{ _ingest.on_failure_processor_type }}}'
+      with tag '{{{ _ingest.on_failure_processor_tag }}}'
+      in pipeline '{{{ _ingest.pipeline }}}'
+      failed with message '{{{ _ingest.on_failure_message }}}'
+- set:
+    field: event.kind
+    tag: set_pipeline_error_to_event_kind
+    value: pipeline_error
