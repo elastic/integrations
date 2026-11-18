@@ -3,7 +3,9 @@
 # Usage: sync.sh            (run from the checkout root)
 #   on branch main    fetch, then fast-forward only (stops if main diverged or local changes would be overwritten)
 #   detached HEAD     (a dedicated triage worktree) check out the latest <remote>/main if the tree is clean
-#   other branch      stop: switch to main, or run the triage from a dedicated worktree (see README)
+#   other branch      leave your branch alone and use the triage worktree instead: $TRIAGE_WORKTREE, default
+#                     <checkout>/../integrations-triage-run (created detached at <remote>/main if missing)
+# The last line is always `root: <path>`: run the rest of the triage from that directory.
 # Exit 0 = synced; non-zero = not synced, with the reason on stderr. Never stashes, resets or discards changes.
 set -euo pipefail
 fail() { echo "SYNC FAILED: $*" >&2; exit 1; }
@@ -14,7 +16,24 @@ REMOTE=$(git remote -v | awk '$2 ~ /github\.com[:\/]elastic\/integrations(\.git)
 
 git fetch -q "$REMOTE" main || fail "git fetch $REMOTE main failed (network or auth)"
 TARGET="$REMOTE/main"
+ROOT=$(git rev-parse --show-toplevel)
 BRANCH=$(git branch --show-current)
+
+if [ -n "$BRANCH" ] && [ "$BRANCH" != main ]; then
+  WT=${TRIAGE_WORKTREE:-$(dirname "$ROOT")/integrations-triage-run}
+  if git worktree list --porcelain | grep -qxF "worktree $WT"; then
+    echo "on branch '$BRANCH': using the triage worktree $WT"
+  elif [ -e "$WT" ]; then
+    fail "on branch '$BRANCH', and $WT exists but isn't a worktree of this checkout. Set TRIAGE_WORKTREE to another path, or switch to main"
+  else
+    git worktree add -q --detach "$WT" "$TARGET" || fail "git worktree add $WT failed"
+    echo "on branch '$BRANCH': created the triage worktree $WT (detached at $TARGET)"
+    [ -d "$ROOT/build/triage" ] && echo "note: earlier triage memory is in $ROOT/build/triage; copy it over to keep known.tsv/TRACKING.md: cp -R $ROOT/build/triage $WT/build/"
+  fi
+  cd "$WT"; ROOT=$WT
+  BRANCH=$(git branch --show-current)
+  [ -z "$BRANCH" ] || fail "triage worktree $WT is on branch '$BRANCH'; it must be detached (git -C $WT switch --detach $TARGET)"
+fi
 BEFORE=$(git rev-parse --short HEAD)
 
 if [ "$BRANCH" = main ]; then
@@ -25,8 +44,6 @@ elif [ -z "$BRANCH" ]; then
     git diff --quiet && git diff --cached --quiet || fail "detached worktree has uncommitted changes; clean it before syncing"
     git checkout -q --detach "$TARGET"
   fi
-else
-  fail "checkout is on branch '$BRANCH', not main. Run 'git switch main', or schedule the triage from a dedicated worktree: git worktree add --detach ../integrations-triage-run $TARGET"
 fi
 
 AFTER=$(git rev-parse --short HEAD)
@@ -37,3 +54,4 @@ if [ -n "$dirty" ]; then
   echo "uncommitted changes ($(wc -l <<<"$dirty" | tr -d ' ')): these files differ from $TARGET; don't treat them as upstream state:"
   sed 's/^/  /' <<<"$dirty" | head -10
 fi
+echo "root: $ROOT"

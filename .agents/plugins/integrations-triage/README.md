@@ -130,13 +130,8 @@ Every run starts with `scripts/sync.sh`, so the triage reads the **latest `elast
 
 - **On `main`:** it fetches `elastic/main` and fast-forwards. Your uncommitted changes are kept and listed in the run output, and the triage treats those files as local edits, not as upstream state.
 - **A detached checkout (a dedicated worktree):** it moves to the latest `elastic/main` if the tree is clean.
-- **Another branch, local commits on `main`, or local changes that conflict with upstream:** it **stops without touching anything** (runner exit `4`, or a `SETUP-NEEDED.md` from the commands). It never switches branches, stashes or resets.
-
-If you often work on branches in your integrations checkout, give the scheduled run its own worktree, and point the task or plist at it:
-
-```sh
-cd /path/to/integrations && git worktree add --detach ../integrations-triage-run elastic/main
-```
+- **Another branch:** your branch is left alone. The triage runs in a detached worktree next to the checkout, `../integrations-triage-run` (override with `TRIAGE_WORKTREE`), which `sync.sh` creates on first use and moves to the latest `elastic/main` on every run. Drafts and memory (`build/triage/`) live in that worktree. `sync.sh` ends with `root: <path>`, and the commands and the runner continue from there.
+- **Local commits on `main`, or local changes that conflict with upstream:** it **stops without touching anything** (runner exit `4`, or a `SETUP-NEEDED.md` from the commands). It never switches branches, stashes or resets.
 
 ## 5. Expected outcome
 
@@ -168,7 +163,7 @@ Known limits:
 | Symptom | Fix |
 |---|---|
 | Exit `3` / `SETUP-NEEDED.md` from doctor | Run `doctor.sh` by hand; it prints the fix (e.g. `bk configure --force` on a 401) |
-| Exit `4` / not synced | You're on a branch, or `main` diverged from `elastic/main`, or local changes conflict. Switch to `main` and resolve, or use a dedicated worktree (see [Repo state](#repo-state)) |
+| Exit `4` / not synced | `main` diverged from `elastic/main`, local changes conflict, or the triage worktree path is taken by something else. Resolve by hand, or set `TRIAGE_WORKTREE` (see [Repo state](#repo-state)) |
 | "no scheduler runs on <date>" | Weekend, or it ran before 00:30 UTC |
 | Digest says "no new failing night" | The issue's job passed or stayed under the threshold; nothing to triage |
 | Old numbers in the sweep | `rm -rf build/triage/cache` and run again |

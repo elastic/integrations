@@ -9,9 +9,9 @@ Triage elastic/integrations issue **#$ARGUMENTS** for its latest failed nightly 
 
 - Load the skill `integrations-triage:integrations-build-triage`. Its base directory is printed when it loads. Set `S=<base>/scripts` and `REF=<base>/references`. Follow its hard rules. Ignore its interactive-only parts: the private logs gate and local repro.
 - Run `$S/doctor.sh --unattended`. If it exits non-zero, write `$W/DRAFT_<date>_SETUP-NEEDED.md` with its output and stop. No partial triage.
-- Run `$S/sync.sh` from the repo root: it fetches `elastic/main` and fast-forwards `main` (or moves a detached triage worktree), so the triage reads the latest repo state. On non-zero, write its output to `$W/DRAFT_<date>_SETUP-NEEDED.md` and stop: never switch branches, stash or reset yourself. If it lists uncommitted changes, those package files are local edits, not upstream: say so wherever an investigation relies on them.
+- Run `$S/sync.sh` from the repo root: it fetches `elastic/main` and fast-forwards `main`, or moves a detached triage worktree. When the checkout is on another branch, it uses (or creates) the triage worktree `../integrations-triage-run` instead and leaves the branch alone. Its last line is `root: <path>`: **run everything after this from that path** (relative paths such as `build/triage/…` resolve there; `$S` stays absolute). On non-zero, write its output to `$W/DRAFT_<date>_SETUP-NEEDED.md` and stop: never switch branches, stash or reset yourself. If it lists uncommitted changes, those package files are local edits, not upstream: say so wherever an investigation relies on them.
 - Use the `gh` and `bk` CLIs (the scripts need them). Don't use GitHub/Buildkite MCP tools in this command.
-- Work from the elastic/integrations repo root. `W=build/triage/issue-$ARGUMENTS`; create it if missing.
+- Work from the root `sync.sh` printed. `W=build/triage/issue-$ARGUMENTS`; create it if missing.
 - Token budget: work from script outputs, `.fail` files and log windows only. Never print whole logs or whole reports.
 
 ## 1. Deterministic pass (no reasoning)

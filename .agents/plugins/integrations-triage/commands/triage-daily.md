@@ -9,8 +9,8 @@ Triage the elastic/integrations **daily jobs** for **${ARGUMENTS:-today}**. Star
 
 - Load the skill `integrations-triage:integrations-build-triage`. Set `S=<base>/scripts` and `REF=<base>/references`, follow its hard rules, and ignore its interactive-only parts (private logs gate, local repro). Read `$REF/auto-issues.md`: it explains how the daily jobs file and update issues, and every decision below depends on it.
 - Run `$S/doctor.sh --unattended`. On non-zero, write `build/triage/daily/<date>/SETUP-NEEDED.md` with its output and stop.
-- Run `$S/sync.sh` from the repo root: it fetches `elastic/main` and fast-forwards `main` (or moves a detached triage worktree), so the triage reads the latest repo state. On non-zero, write its output to `build/triage/daily/<date>/SETUP-NEEDED.md` and stop: never switch branches, stash or reset yourself. If it lists uncommitted changes, those package files are local edits, not upstream: say so wherever an investigation relies on them.
-- `gh` and `bk` CLIs only (no GitHub/Buildkite MCP). Work from the elastic/integrations repo root. `D=build/triage/daily/<date>`.
+- Run `$S/sync.sh` from the repo root: it fetches `elastic/main` and fast-forwards `main`, or moves a detached triage worktree. When the checkout is on another branch, it uses (or creates) the triage worktree `../integrations-triage-run` instead and leaves the branch alone. Its last line is `root: <path>`: **run everything after this from that path** (relative paths such as `build/triage/…` resolve there; `$S` stays absolute). On non-zero, write its output to `build/triage/daily/<date>/SETUP-NEEDED.md` and stop: never switch branches, stash or reset yourself. If it lists uncommitted changes, those package files are local edits, not upstream: say so wherever an investigation relies on them.
+- `gh` and `bk` CLIs only (no GitHub/Buildkite MCP). Work from the root `sync.sh` printed. `D=build/triage/daily/<date>`.
 - Token budget: script outputs, `.fail` files and log windows only.
 
 ## 1. Builds: what ran and where it was reported (no reasoning)
