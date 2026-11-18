@@ -135,27 +135,16 @@ processors:
       field: json.customer
       target_field: organization.name
       ignore_missing: true
-  - convert:
-      tag: convert_json_agent_id_to_string
-      field: json.agent_id
-      type: string
-      ignore_missing: true
-  - convert:
-      tag: convert_json_resource_id_to_host_id
-      field: json.resource_id
-      target_field: host.id
-      type: string
-      ignore_missing: true
+  - set:
+      tag: set_host_id_from_json_resource_id
+      field: host.id
+      copy_from: json.resource_id
+      if: ctx.json.resource_id != null
   - set:
       tag: set_host_name_from_json_resource_name
       field: host.name
       copy_from: json.resource_name
       if: ctx.json.resource_name != null
-  - convert:
-      tag: convert_json_app_zone_id_to_string
-      field: json.app_zone_id
-      type: string
-      ignore_missing: true
   - date:
       tag: date_json_connection_start_time_to_event_start
       field: json.connection_start_time
@@ -190,67 +179,17 @@ processors:
             tag: append_error_message_convert_json_destination_ip_to_destination_ip
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - script:
-      tag: script_source_ports
-      description: >-
-        Converts the aggregated source port list to a list of longs, and copies it to source.port
-        when it holds exactly one port.
-      lang: painless
-      if: ctx.json.source_ports != null
-      source: |-
-        List ports = new ArrayList();
-        List msgs = new ArrayList();
-        int count = 0;
-        for (def e : ctx.json.source_ports) {
-          if (e == null) {
-            continue;
-          }
-          if (e instanceof Number) {
-            count++;
-            ports.add(((Number) e).longValue());
-            continue;
-          }
-          String s = e.toString().trim();
-          if (s.isEmpty()) {
-            continue;
-          }
-          count++;
-          try {
-            ports.add(Long.parseLong(s));
-          } catch (NumberFormatException ex) {
-            msgs.add("could not parse source_ports value '" + s + "' as a port number");
-          }
-        }
-        if (ports.isEmpty()) {
-          ctx.json.remove('source_ports');
-        } else {
-          ctx.json.source_ports = ports;
-          if (count == 1 && ports.size() == 1) {
-            if (ctx.source == null) {
-              ctx.source = new HashMap();
-            }
-            ctx.source.port = ports.get(0);
-          }
-        }
-        if (!msgs.isEmpty()) {
-          ctx.error = ctx.error ?: [:];
-          ctx.error.message = ctx.error.message ?: [];
-          if (!(ctx.error.message instanceof List)) {
-            ctx.error.message = new ArrayList([ctx.error.message]);
-          }
-          ctx.error.message.addAll(msgs);
-        }
-  - convert:
-      tag: convert_json_destination_port_to_destination_port
+  - set:
+      tag: set_source_port_from_json_source_ports
+      field: source.port
+      copy_from: json.source_ports.0
+      description: Only when the aggregated source port list holds exactly one port.
+      if: ctx.json.source_ports?.size() == 1
+  - rename:
+      tag: rename_json_destination_port_to_destination_port
       field: json.destination_port
       target_field: destination.port
-      type: long
       ignore_missing: true
-      on_failure:
-        - append:
-            tag: append_error_message_convert_json_destination_port_to_destination_port
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_protocol_to_network_iana_number
       field: json.protocol
@@ -335,11 +274,10 @@ processors:
       field: json.direction
       description: Unrecognised values are kept under zscaler_zpa.microsegmentation_flow.
       if: ctx.network?.direction != null
-  - convert:
-      tag: convert_json_policy_id_to_rule_id
+  - rename:
+      tag: rename_json_policy_id_to_rule_id
       field: json.policy_id
       target_field: rule.id
-      type: string
       ignore_missing: true
   - rename:
       tag: rename_json_policy_name_to_rule_name
@@ -418,9 +356,7 @@ processors:
         - json.connection_start_time
         - json.source_ip
         - json.destination_ip
-        - json.destination_port
         - json.protocol
-        - json.policy_id
       ignore_missing: true
   - rename:
       tag: rename_json_to_zscaler_zpa_microsegmentation_flow

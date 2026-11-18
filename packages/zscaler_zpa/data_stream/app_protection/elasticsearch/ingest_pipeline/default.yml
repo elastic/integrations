@@ -140,11 +140,6 @@ processors:
       field: json.user_id
       target_field: user.name
       ignore_missing: true
-  - convert:
-      tag: convert_user_name_to_string
-      field: user.name
-      type: string
-      ignore_missing: true
   - rename:
       tag: rename_user_name_to_user_email
       field: user.name
@@ -191,24 +186,12 @@ processors:
       source: |-
         Map j = ctx.json;
         Map micros = new HashMap();
-        List msgs = new ArrayList();
         for (String k : params.keys) {
           def v = j.get(k);
           if (v == null) {
             continue;
           }
-          long t;
-          if (v instanceof Number) {
-            t = ((Number) v).longValue();
-          } else {
-            try {
-              t = Long.parseLong(v.toString().trim());
-            } catch (NumberFormatException ex) {
-              j.remove(k);
-              msgs.add("could not parse " + k + " value '" + v + "' as epoch microseconds");
-              continue;
-            }
-          }
+          long t = ((Number) v).longValue();
           if (t == 0) {
             j.remove(k);
             continue;
@@ -227,79 +210,6 @@ processors:
         if (start != null && end != null && end >= start) {
           ctx.event.duration = (end - start) * 1000L;
         }
-        if (!msgs.isEmpty()) {
-          ctx.error = ctx.error ?: [:];
-          ctx.error.message = ctx.error.message ?: [];
-          if (!(ctx.error.message instanceof List)) {
-            ctx.error.message = new ArrayList([ctx.error.message]);
-          }
-          ctx.error.message.addAll(msgs);
-        }
-  - convert:
-      tag: convert_json_total_time_request_receive_to_long
-      field: json.total_time_request_receive
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            tag: remove_json_total_time_request_receive
-            field: json.total_time_request_receive
-        - append:
-            tag: append_error_message_convert_json_total_time_request_receive_to_long
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      tag: convert_json_total_time_request_transmit_to_long
-      field: json.total_time_request_transmit
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            tag: remove_json_total_time_request_transmit
-            field: json.total_time_request_transmit
-        - append:
-            tag: append_error_message_convert_json_total_time_request_transmit_to_long
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      tag: convert_json_total_time_response_receive_to_long
-      field: json.total_time_response_receive
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            tag: remove_json_total_time_response_receive
-            field: json.total_time_response_receive
-        - append:
-            tag: append_error_message_convert_json_total_time_response_receive_to_long
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      tag: convert_json_total_time_response_transmit_to_long
-      field: json.total_time_response_transmit
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            tag: remove_json_total_time_response_transmit
-            field: json.total_time_response_transmit
-        - append:
-            tag: append_error_message_convert_json_total_time_response_transmit_to_long
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      tag: convert_json_exchange_sequence_index_to_long
-      field: json.exchange_sequence_index
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            tag: remove_json_exchange_sequence_index
-            field: json.exchange_sequence_index
-        - append:
-            tag: append_error_message_convert_json_exchange_sequence_index_to_long
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_domain_to_destination_ip
       field: json.domain
@@ -330,7 +240,7 @@ processors:
       tag: dissect_url_original_path_query
       field: url.original
       pattern: '%{url.path}?%{url.query}'
-      if: ctx.url?.original instanceof String && ctx.url.original.indexOf('?') > 0 && ctx.url.original.indexOf('?') < ctx.url.original.length() - 1
+      if: ctx.url?.original != null && ctx.url.original.indexOf('?') > 0 && ctx.url.original.indexOf('?') < ctx.url.original.length() - 1
   - set:
       tag: set_url_path_from_url_original
       field: url.path
@@ -341,7 +251,7 @@ processors:
       field: url.path
       pattern: '\?$'
       replacement: ''
-      if: ctx.url?.path instanceof String && ctx.url.path.length() > 1 && ctx.url.path.endsWith('?')
+      if: ctx.url?.path != null && ctx.url.path.length() > 1 && ctx.url.path.endsWith('?')
   - rename:
       tag: rename_json_method_to_http_request_method
       field: json.method
@@ -357,12 +267,12 @@ processors:
       field: http.version
       copy_from: json.protocol
       description: The vendor documentation's example puts the HTTP version in `Protocol` and leaves `ProtocolVersion` empty.
-      if: ctx.json.protocol instanceof String && ctx.http?.version == null && Character.isDigit(ctx.json.protocol.charAt(0))
+      if: ctx.json.protocol != null && ctx.http?.version == null && Character.isDigit(ctx.json.protocol.charAt(0))
   - set:
       tag: set_network_protocol_from_json_protocol
       field: network.protocol
       copy_from: json.protocol
-      if: ctx.json.protocol instanceof String && !Character.isDigit(ctx.json.protocol.charAt(0))
+      if: ctx.json.protocol != null && !Character.isDigit(ctx.json.protocol.charAt(0))
   - lowercase:
       tag: lowercase_network_protocol
       field: network.protocol
@@ -413,19 +323,6 @@ processors:
       field: client.as.organization_name
       target_field: client.as.organization.name
       ignore_missing: true
-  - convert:
-      tag: convert_json_client_port_to_long
-      field: json.client_port
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            tag: remove_json_client_port
-            field: json.client_port
-        - append:
-            tag: append_error_message_convert_json_client_port_to_long
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       tag: script_flags_to_boolean
       description: >-
@@ -445,11 +342,11 @@ processors:
           if (v == null) {
             continue;
           }
-          String s = v.toString().trim();
+          long n = ((Number) v).longValue();
           def b = null;
-          if (s == '1' || s.equalsIgnoreCase('true')) {
+          if (n == 1) {
             b = true;
-          } else if (s == '0' || s.equalsIgnoreCase('false')) {
+          } else if (n == 0) {
             b = false;
           }
           if (b == null) {
@@ -467,65 +364,21 @@ processors:
           }
           ctx.error.message.addAll(msgs);
         }
-  - convert:
-      tag: convert_json_status_code_to_http_response_status_code
+  - rename:
+      tag: rename_json_status_code_to_http_response_status_code
       field: json.status_code
       target_field: http.response.status_code
-      type: long
       ignore_missing: true
-      on_failure:
-        - append:
-            tag: append_error_message_convert_json_status_code_to_http_response_status_code
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      tag: convert_json_request_hdr_size_to_long
-      field: json.request_hdr_size
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            tag: remove_json_request_hdr_size
-            field: json.request_hdr_size
-        - append:
-            tag: append_error_message_convert_json_request_hdr_size_to_long
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      tag: convert_json_response_hdr_size_to_long
-      field: json.response_hdr_size
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            tag: remove_json_response_hdr_size
-            field: json.response_hdr_size
-        - append:
-            tag: append_error_message_convert_json_response_hdr_size_to_long
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      tag: convert_json_request_body_size_to_http_request_body_bytes
+  - rename:
+      tag: rename_json_request_body_size_to_http_request_body_bytes
       field: json.request_body_size
       target_field: http.request.body.bytes
-      type: long
       ignore_missing: true
-      on_failure:
-        - append:
-            tag: append_error_message_convert_json_request_body_size_to_http_request_body_bytes
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      tag: convert_json_response_body_size_to_http_response_body_bytes
+  - rename:
+      tag: rename_json_response_body_size_to_http_response_body_bytes
       field: json.response_body_size
       target_field: http.response.body.bytes
-      type: long
       ignore_missing: true
-      on_failure:
-        - append:
-            tag: append_error_message_convert_json_response_body_size_to_http_response_body_bytes
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_application_to_string
       field: json.application
@@ -551,115 +404,10 @@ processors:
       field: json.certificate_id
       type: string
       ignore_missing: true
-  - convert:
-      tag: convert_json_paranoia_level_to_long
-      field: json.paranoia_level
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            tag: remove_json_paranoia_level
-            field: json.paranoia_level
-        - append:
-            tag: append_error_message_convert_json_paranoia_level_to_long
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      tag: convert_json_inspection_controls_hit_count_to_long
-      field: json.inspection_controls_hit_count
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            tag: remove_json_inspection_controls_hit_count
-            field: json.inspection_controls_hit_count
-        - append:
-            tag: append_error_message_convert_json_inspection_controls_hit_count_to_long
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      tag: convert_json_inspection_rule_processing_time_to_long
-      field: json.inspection_rule_processing_time
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            tag: remove_json_inspection_rule_processing_time
-            field: json.inspection_rule_processing_time
-        - append:
-            tag: append_error_message_convert_json_inspection_rule_processing_time_to_long
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      tag: convert_json_inspection_req_headers_processing_time_to_long
-      field: json.inspection_req_headers_processing_time
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            tag: remove_json_inspection_req_headers_processing_time
-            field: json.inspection_req_headers_processing_time
-        - append:
-            tag: append_error_message_convert_json_inspection_req_headers_processing_time_to_long
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      tag: convert_json_inspection_req_body_processing_time_to_long
-      field: json.inspection_req_body_processing_time
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            tag: remove_json_inspection_req_body_processing_time
-            field: json.inspection_req_body_processing_time
-        - append:
-            tag: append_error_message_convert_json_inspection_req_body_processing_time_to_long
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      tag: convert_json_inspection_resp_headers_processing_time_to_long
-      field: json.inspection_resp_headers_processing_time
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            tag: remove_json_inspection_resp_headers_processing_time
-            field: json.inspection_resp_headers_processing_time
-        - append:
-            tag: append_error_message_convert_json_inspection_resp_headers_processing_time_to_long
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      tag: convert_json_inspection_resp_body_processing_time_to_long
-      field: json.inspection_resp_body_processing_time
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            tag: remove_json_inspection_resp_body_processing_time
-            field: json.inspection_resp_body_processing_time
-        - append:
-            tag: append_error_message_convert_json_inspection_resp_body_processing_time_to_long
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      tag: convert_json_total_bytes_processed_to_long
-      field: json.total_bytes_processed
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            tag: remove_json_total_bytes_processed
-            field: json.total_bytes_processed
-        - append:
-            tag: append_error_message_convert_json_total_bytes_processed_to_long
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      tag: convert_json_inspection_controls_to_rule_id
+  - rename:
+      tag: rename_json_inspection_controls_to_rule_id
       field: json.inspection_controls
       target_field: rule.id
-      type: string
       ignore_missing: true
   - rename:
       tag: rename_json_inspection_control_categories_to_rule_category
@@ -710,7 +458,7 @@ processors:
         List upper(def v) {
           List out = [];
           for (def e : v ?: []) {
-            String s = e?.toString()?.trim() ?: '';
+            String s = e.trim();
             if (!s.isEmpty()) {
               out.add(s.toUpperCase());
             }
@@ -720,7 +468,7 @@ processors:
         List actions = upper(ctx.json.actions);
         def hits = ctx.json.inspection_controls_hit_count;
         String outcome = 'no_hit';
-        if ((hits instanceof Number && hits > 0) || !actions.isEmpty()) {
+        if ((hits != null && hits > 0) || !actions.isEmpty()) {
           outcome = actions.any(a -> params.deny_actions.contains(a)) ? 'denied' : 'allowed';
         }
         Map o = params.outcomes[outcome];
@@ -782,10 +530,6 @@ processors:
         - json.log_timestamp
         - json.domain
         - json.client_public_ip
-        - json.status_code
-        - json.request_body_size
-        - json.response_body_size
-        - json.inspection_controls
       ignore_missing: true
   - rename:
       tag: rename_json_to_zscaler_zpa_app_protection
