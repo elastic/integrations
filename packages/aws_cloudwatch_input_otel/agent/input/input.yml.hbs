@@ -1,3 +1,9 @@
+{{#if supports_identity_federation}}
+extensions:
+  awsidentityfederation:
+    role_arn: {{role_arn}}
+    sts_region: {{region}}
+{{else}}
 extensions:
   awscredentialsprovider:
 {{#if access_key_id}}
@@ -15,10 +21,15 @@ extensions:
       external_id: {{external_id}}
 {{/if}}
 {{/if}}
+{{/if}}
 
 receivers:
   awscloudwatch:
+{{#if supports_identity_federation}}
+    credentials_provider: awsidentityfederation
+{{else}}
     credentials_provider: awscredentialsprovider
+{{/if}}
     region: {{region}}
     metrics:
       collection_interval: {{collection_interval}}
@@ -66,7 +77,11 @@ processors:
     override: false
 
 service:
+{{#if supports_identity_federation}}
+  extensions: [awsidentityfederation]
+{{else}}
   extensions: [awscredentialsprovider]
+{{/if}}
   pipelines:
     metrics:
       receivers: [awscloudwatch]

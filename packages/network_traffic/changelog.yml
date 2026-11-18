@@ -1,4 +1,33 @@
 # newer versions go on top
+- version: "2.0.0"
+  changes:
+    - description: >-
+        Remove the `map_to_ecs` option and the original field mappings.
+        All data streams now always move Packetbeat's non-ECS root fields:
+        protocol objects, `method`, `query`, `path` and `resource` go to `network_traffic.<protocol>` where the protocol writes them,
+        `status` goes to `network_traffic.status`, and `type` is dropped (use `network.protocol`).
+        The `dns`, `http` and `tls` field sets stay where they are, since ECS defines them, including non-ECS subfields such as
+        `dns.additionals`, `dns.opt.*` and `http.request.headers`. Only some non-ECS `dns` fields (such as `dns.flags` and the counts)
+        and HTTP's `query` move, and HTTP's `method` is dropped (use `http.request.method`).
+        The raw `request` and `response` messages move to `network_traffic.<protocol>.request.original` and `.response.original`,
+        and MySQL's `params` moves to `network_traffic.mysql.params`.
+        Policies that set `map_to_ecs` to `false` produce the new layout after the upgrade.
+        Update rules, saved searches, visualisations, ML jobs and custom ingest pipelines that use the old fields.
+        The dashboards that are not marked ECS compliant do not show these fields for new data.
+      type: breaking-change
+      link: https://github.com/elastic/integrations/pull/22186
+    - description: Require Kibana 9.4.0 or later.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/22186
+    - description: Keep `event.dataset`, which the ECS compatibility pipelines removed.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/22186
+    - description: Reshape `network_traffic.memcached.response.stats` into an object in the Memcached data stream. The processors read the field name from before it was moved.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/22186
+    - description: Use `network_traffic.*` fields in the ECS-compliant dashboards. The Overview protocols panel, the error filters, the MySQL and PostgreSQL read/write filters, and the DHCPv4, NFS and Cassandra panels used fields that are not present after the move.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/22186
 - version: "1.34.3"
   changes:
     - description: Transfer package ownership to elastic/security-service-integrations.

@@ -111,6 +111,8 @@ This integration brings Axonius asset and security data into Elastic so teams ca
 
 Bundled dashboards summarize these data streams for day-to-day monitoring, risk and backlog sizing, access hygiene checks, and incident investigation with correlated operational, identity, asset, and event context.
 
+**Entity Store** support: user assets from the `identity` data stream and Axonius console accounts from the `user` data stream populate ECS entity fields, so they appear as user entities in the Elastic Security Entity Store. A user is identified by `user.email` when any of its adapters reports an email address, and otherwise by `user.id`. If adapters report different addresses, the first one in lexical order is used. In both data streams, `user.email` is lowercased. For identity assets, `user.id` is the Axonius `internal_axon_id`. Axonius notes that `internal_axon_id` may change in the future, for example when assets are re-correlated; if it changes, a user without an email address appears as a new entity. A console account whose email address matches an inventoried user is merged into the same entity.
+
 ## What do I need to use this integration?
 
 ### From Elastic
@@ -137,7 +139,7 @@ To generate or reset an API key, your role must be **Admin**, and you must have 
 
 ## How do I deploy this integration?
 
-This integration supports both Elastic Managed-based and Agent-based installations.
+This integration supports both Elastic Managed and Agent-based installations.
 
 ### Agent-based deployment
 
@@ -145,11 +147,11 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
 
-### Elastic Managed deployment
+### Elastic Managed enabled integration
 
-Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments. Elastic Managed deployments provide a means to ingest data while avoiding the orchestration, management, and maintenance needs associated with standard ingest infrastructure. Using an Elastic Managed deployment makes manual agent deployment unnecessary, allowing you to focus on your data instead of the agent that collects it.
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it.
 
-For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and [Elastic Managed integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html)
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ### Configure
 

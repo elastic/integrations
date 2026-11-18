@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, CASB, Device Posture, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, WARP Config Changes, WARP Toggle Changes, Zero Trust Network Session, and Workers Trace Events logs.
+The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, Audit Logs v2, CASB, Device Posture, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, WARP Config Changes, WARP Toggle Changes, Zero Trust Network Session, and Workers Trace Events logs.
 
 Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
 
@@ -50,6 +50,7 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 
 ### Non Zero Trust events
 
+- `audit_logs_v2`: Account and zone level configuration and administrative actions recorded by Cloudflare Audit Logs v2. See [Audit Logs v2 schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/audit_logs_v2/).
 - `dns`: Zone-scoped authoritative DNS query logs. See [DNS logs schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/dns_logs/).
 - `dns_firewall`: Cloudflare DNS Firewall query and response logs. See [DNS Firewall logs schema](https://developers.cloudflare.com/logs/reference/log-fields/account/dns_firewall_logs/).
 - `dlp_forensic_copies`: Data Loss Prevention forensic copies of content that matched a DLP profile. See [DLP Forensic Copies schema](https://developers.cloudflare.com/logs/reference/log-fields/account/dlp_forensic_copies/).
@@ -71,7 +72,7 @@ Integrating Cloudflare Logpush with Elastic provides centralized visibility acro
 - Investigating traffic, WAF, and DDoS-mitigation events from the Cloudflare edge (`http_request`, `firewall_event`, `network_analytics`).
 - Monitoring Zero Trust user activity, policy decisions, and device posture (`gateway_http`, `gateway_dns`, `gateway_network`, `access_request`, `device_posture`, `network_session`, `warp_config_changes`, `warp_toggle_changes`).
 - Detecting data exfiltration and SaaS misconfigurations (`dlp_forensic_copies`, `casb`, `email_security_alerts`).
-- Auditing administrative activity on the Cloudflare account (`audit`).
+- Auditing administrative activity on the Cloudflare account (`audit`, `audit_logs_v2`).
 - Troubleshooting DNS and client-side performance issues (`dns`, `dns_firewall`, `nel_report`, `workers_trace`).
 
 ## What do I need to use this integration?
@@ -89,7 +90,7 @@ To use this integration, you must be able to create and manage [Cloudflare Logpu
 Creating and managing Logpush jobs requires an API token or user role with the `Logs Write` permission (or a role that includes it, such as **Super Administrator**, **Administrator**, or **Log Share** with edit permissions). Refer to [Cloudflare Logpush permissions](https://developers.cloudflare.com/logs/logpush/permissions/) for details.
 
 - **Zone-scoped datasets** (for example, `http_requests`, `firewall_events`, `dns_logs`, `spectrum_events`, `nel_reports`, `page_shield_events`) require a **zone-scoped token**.
-- **Account-scoped datasets** (for example, `audit_logs`, `access_requests`, `casb_findings`, `device_posture_results`, `dlp_forensic_copies`, `email_security_alerts`, `gateway_*`, `dns_firewall_logs`, `magic_ids_detections`, `network_analytics_logs`, `sinkhole_http_logs`, `workers_trace_events`, `zero_trust_network_sessions`) require an **account-scoped token**.
+- **Account-scoped datasets** (for example, `audit_logs`, `audit_logs_v2`, `access_requests`, `casb_findings`, `device_posture_results`, `dlp_forensic_copies`, `email_security_alerts`, `gateway_*`, `dns_firewall_logs`, `magic_ids_detections`, `network_analytics_logs`, `sinkhole_http_logs`, `workers_trace_events`, `zero_trust_network_sessions`) require an **account-scoped token**.
 - Zero Trust datasets (Access, Gateway, DEX) additionally require `Zero Trust: PII Read`.
 
 **Destination-specific credentials**
@@ -121,7 +122,8 @@ Configure one of the following delivery pipelines before enabling the integratio
   | Data Stream Name           | Bucket Prefix          |
   | -------------------------- | ---------------------- |
   | Access Request             | access_request         |
-  | Audit Logs                 | audit_logs             |
+  | Audit Logs                 | audit_logs/            |
+  | Audit Logs v2              | audit_logs_v2          |
   | CASB findings              | casb                   |
   | Device Posture Results     | device_posture         |
   | DLP Forensic Copies        | dlp_forensic_copies    |
@@ -143,6 +145,8 @@ Configure one of the following delivery pipelines before enabling the integratio
   | WARP Config Changes        | warp_config_changes    |
   | WARP Toggle Changes        | warp_toggle_changes    |
   | Workers Trace Events       | workers_trace          |
+
+**Note:** Upgrading the integration does not change a Bucket Prefix that is already saved in a policy. Before version 2.3.0, the default prefix of the Audit Logs data stream was `audit_logs`, which also matches `audit_logs_v2/` objects. If your existing policy uses `audit_logs` and you enable Audit Logs v2 on the same bucket, set the **[S3] Bucket Prefix** of the Audit Logs data stream to `audit_logs/` first, so that Audit Logs v2 objects are not collected twice.
 
 #### Collect data from AWS SQS
 
@@ -304,6 +308,16 @@ This is the `audit` dataset.
 {{event "audit"}}
 
 {{fields "audit"}}
+
+#### audit_logs_v2
+
+This is the `audit_logs_v2` dataset.
+
+##### Example
+
+{{event "audit_logs_v2"}}
+
+{{fields "audit_logs_v2"}}
 
 #### casb
 
