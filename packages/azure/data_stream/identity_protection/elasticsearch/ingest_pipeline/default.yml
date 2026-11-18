@@ -113,10 +113,16 @@ processors:
       target_field: source.as.organization.name
       ignore_missing: true
 
-  - rename:
-      tag: rename_azure_identityprotection_durationMs_to_event_duration_504eaf80
+  - convert:
       field: azure.identityprotection.durationMs
+      tag: convert_identityprotection_durationms_to_event_duration
       target_field: event.duration
+      type: long
+      ignore_failure: true
+      if: ctx.azure?.identityprotection?.durationMs != null
+  - remove:
+      field: azure.identityprotection.durationMs
+      tag: remove_identityprotection_durationms
       ignore_missing: true
   - script:
       tag: script_7f8b9902

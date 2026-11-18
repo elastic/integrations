@@ -1,0 +1,154 @@
+# One user asset with four adapter records: two case variants of one
+# address, a different address, and one record with no mail. Every
+# record must get the same user.email: the lexical minimum of the
+# lowercased addresses. A case-sensitive minimum would pick the
+# all-caps variant instead.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} axonius-mock
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 4 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+# All four adapter records carry user.email.
+exec jq '[.hits.hits[]._source | select(.user.email != null)] | length' got_docs.json
+stdout '^4$'
+
+# And it is the same lowercased address on every record.
+exec jq -c '[.hits.hits[]._source.user.email] | unique' got_docs.json
+stdout '^\["alice\.smith@example\.com"\]$'
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down axonius-mock
+
+-- test_config.yaml --
+input: cel
+vars:
+  url: http://svc-axonius-mock:8090
+  api_key: xxxx
+  secret_key: xxxx
+data_stream:
+  vars:
+    interval: 24h
+    batch_size: 10
+    asset_type_list:
+      - users
+-- axonius-mock/docker-compose.yml --
+version: '3.8'
+services:
+  axonius-mock:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: axonius-mock
+    ports:
+      - 8090
+    environment:
+      PORT: '8090'
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/config.yml
+-- axonius-mock/config.yml --
+rules:
+  - path: /api/v2/assets/users
+    methods: ['POST']
+    request_headers:
+      Content-Type: application/json
+      api-key: xxxx
+      api-secret: xxxx
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "assets": [
+              {
+                "internal_axon_id": "a1b2c3d4e5f60718293a4b5c6d7e8f90",
+                "adapters": [
+                  "azure_ad_adapter",
+                  "okta_adapter",
+                  "workday_adapter",
+                  "zoom_adapter"
+                ],
+                "asset_type": "users",
+                "adapter_list_length": 4,
+                "specific_data": [
+                  {
+                    "accurate_for_datetime": "Tue, 09 Dec 2025 12:02:20 GMT",
+                    "client_used": "67fd0998fe1c8e812a176b01",
+                    "data": {
+                      "id": "c0a8e1f2-0001-4a5b-9c8d-000000000001",
+                      "display_name": "Alice Smith",
+                      "mail": "Smith.Alice@Example.com",
+                      "username": "smith.alice"
+                    },
+                    "plugin_name": "azure_ad_adapter",
+                    "plugin_type": "Adapter",
+                    "plugin_unique_name": "azure_ad_adapter_0",
+                    "type": "entitydata"
+                  },
+                  {
+                    "accurate_for_datetime": "Tue, 09 Dec 2025 12:02:20 GMT",
+                    "client_used": "67fd0998fe1c8e812a176b02",
+                    "data": {
+                      "id": "c0a8e1f2-0002-4a5b-9c8d-000000000002",
+                      "display_name": "Alice Smith",
+                      "mail": "alice.smith@example.com",
+                      "username": "alice.smith"
+                    },
+                    "plugin_name": "okta_adapter",
+                    "plugin_type": "Adapter",
+                    "plugin_unique_name": "okta_adapter_0",
+                    "type": "entitydata"
+                  },
+                  {
+                    "accurate_for_datetime": "Tue, 09 Dec 2025 12:02:20 GMT",
+                    "client_used": "67fd0998fe1c8e812a176b03",
+                    "data": {
+                      "id": "c0a8e1f2-0003-4a5b-9c8d-000000000003",
+                      "display_name": "Alice Smith",
+                      "mail": "ALICE.SMITH@EXAMPLE.COM",
+                      "username": "ALICE.SMITH"
+                    },
+                    "plugin_name": "workday_adapter",
+                    "plugin_type": "Adapter",
+                    "plugin_unique_name": "workday_adapter_0",
+                    "type": "entitydata"
+                  },
+                  {
+                    "accurate_for_datetime": "Tue, 09 Dec 2025 12:02:20 GMT",
+                    "client_used": "67fd0998fe1c8e812a176b04",
+                    "data": {
+                      "id": "c0a8e1f2-0004-4a5b-9c8d-000000000004",
+                      "display_name": "Alice Smith",
+                      "username": "asmith"
+                    },
+                    "plugin_name": "zoom_adapter",
+                    "plugin_type": "Adapter",
+                    "plugin_unique_name": "zoom_adapter_0",
+                    "type": "entitydata"
+                  }
+                ]
+              }
+            ],
+            "meta": {
+              "page": {
+                "number": 1,
+                "size": 1,
+                "totalPages": 1,
+                "totalResources": 1
+              }
+            }
+          }
+          `}}
