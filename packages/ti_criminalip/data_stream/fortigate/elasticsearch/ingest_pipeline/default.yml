@@ -50,6 +50,7 @@ processors:
         StringBuilder value = new StringBuilder();
         boolean inValue = false;
         boolean quoted = false;
+        boolean valueQuoted = false;
         for (int i = 0; i <= message.length(); i++) {
           boolean end = i == message.length();
           int c = end ? 32 : (int) message.charAt(i);
@@ -68,7 +69,7 @@ processors:
               continue;
             }
           }
-          if (!end && c == 34) { quoted = !quoted; continue; }
+          if (!end && c == 34) { quoted = !quoted; valueQuoted = true; continue; }
           if (end && quoted) {
             throw new IllegalArgumentException('Unterminated quoted FortiGate field');
           }
@@ -76,7 +77,7 @@ processors:
             if (key.length() > 0) {
               String name = key.toString();
               String text = value.toString();
-              if (text.length() >= 2) {
+              if (!valueQuoted && text.length() >= 2) {
                 int first = (int) text.charAt(0);
                 int last = (int) text.charAt(text.length() - 1);
                 if ((first == 40 && last == 41) || (first == 91 && last == 93) || (first == 60 && last == 62)) {
@@ -90,6 +91,7 @@ processors:
             key.setLength(0);
             value.setLength(0);
             inValue = false;
+            valueQuoted = false;
           } else { value.append((char) c); }
         }
         if (ctx._temp == null) { ctx._temp = [:]; }

@@ -108,6 +108,12 @@ stdout 'parse_fortigate_event_time_with_configured_timezone'
 stdout 'pipeline_error'
 stdout 'preserve_original_event'
 
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-14.json
+! stderr .
+stdout 'parse_fortigate_event_time'
+stdout 'pipeline_error'
+stdout 'preserve_original_event'
+
 uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
 ! stderr .
 
@@ -204,4 +210,10 @@ uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
   "@timestamp": "2026-01-08T00:00:00.000Z",
   "message": "date=2026-01-08 time=12:00:00 type=traffic action=accept",
   "_conf": {"tz_offset": "not-a-timezone"}
+}
+
+-- case-14.json --
+{
+  "@timestamp": "2026-01-08T00:00:00.000Z",
+  "message": "date=2026-01-08 time=12:00:00 tz=JST type=traffic action=accept"
 }

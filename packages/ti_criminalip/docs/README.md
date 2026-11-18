@@ -56,12 +56,9 @@ Start with **[Logs Criminal IP] Firewall Threat Detection and Threat Intelligenc
 | --- | --- | --- |
 | Firewall visibility | Elastic Agent and a supported firewall configured to forward logs | Firewall to the Agent's TCP or UDP listener |
 | TI match alerts | Firewall logs, Elastic Agent, a key with Criminal IP TI Feed access, and the installed/enabled indicator match rule | Agent to the TI Feed endpoint; firewall to its collector |
-| Optional Cortex analysis | TheHive, Cortex, the custom Criminal IP analyzer, an IP Report API key, an Elasticsearch endpoint, and an Elasticsearch write API key | TheHive to Cortex; analyzer to Criminal IP and Elasticsearch |
 | Optional configured IP Report lookups | Elastic Agent, a Criminal IP key with IP Report access, and explicitly configured public IPs | Agent to the Criminal IP API |
 
 For every feature, prepare an Elastic deployment that meets the package's Kibana requirement, `^9.5.3`, with Elastic Security available. Your Kibana user needs permission to install the package and read the relevant data. Agent management and detection rule management require their corresponding permissions.
-
-For Cortex, TheHive also needs a Cortex API key with analyzer execution permissions in the correct organization. This key is separate from the Criminal IP key and Elasticsearch key.
 
 Obtain the Criminal IP keys and API access through your organization's Criminal IP account. IP Report and TI Feed access can require different entitlements; confirm access to the feature you selected before configuring collection.
 
@@ -274,12 +271,10 @@ The package does not include Cortex result panels or a Cortex data stream. The s
 | Agent is healthy but no firewall logs arrive | Reachable destination IP, matching protocol/port, sender logging, routing, and network access |
 | Old logs are missing from a recent search | Event timestamps and time range |
 | Firewall logs arrive but no match alerts appear | Rule installation/enabled state, permissions, event/indicator time windows, and an actual IP match |
-| TheHive has a report but no Elastic Cortex document | `elastic_delivery`, Elasticsearch root URL, encoded key, key permissions/expiry, and connectivity |
-| Cortex job fails with `AccessDeniedException` | Check the Cortex process UID/GID and job-directory mount permissions using the separately distributed analyzer's deployment documentation |
 | Discover shows a result but the dashboard does not | Managed dashboard version, time range, filters, and read permissions |
 | An updated dashboard still displays previous labels | Open the managed dashboard, review any unsaved changes, choose **More → Reset changes**, then reload the page to clear the previous browser state |
 | Empty panels after installation | Whether the corresponding feature is configured and has produced data |
-| Alert panel errors in a new or different Space | Alert index existence and the Space-specific alias |
+| Alert panel errors in a new or different Space | Alert index existence and permissions to access the relevant Security alerts |
 
 A dashboard-wide `event.category: network` filter hides Cortex documents, which use the threat category. Event, connection, attack, and alert counts describe different things.
 
