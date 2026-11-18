@@ -231,10 +231,12 @@ rules:
           }
           ` }}
   # Round 1, page 1 + steady-state (round 3+).
-  # This wildcard rule matches any from/to time-window request. It uses
-  # response cycling: the first match returns page 1 events with a pagination
-  # cursor (round 1 initial poll); subsequent matches return empty data
-  # (steady state after round 2 advances last_timestamp to "now").
+  # This wildcard rule matches any from/to time-window request. Only the first
+  # match (req_num 1) returns page 1 events with a pagination cursor (round 1
+  # initial poll); every later match returns empty data (steady state after
+  # round 2 advances last_timestamp to "now"). A second response entry is not
+  # used because stream cycles responses round-robin, which would serve page 1
+  # again on every third poll.
   # Must come after the round 2 exact-match rule above.
   - path: /admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream
     methods: ["GET"]
@@ -254,7 +256,7 @@ rules:
           Content-Type:
             - "application/json"
         body: |-
-          {{ minify_json `
+          {{ if eq .req_num 1 }}{{ minify_json `
           {
             "data": [
               {
@@ -312,13 +314,7 @@ rules:
               "page_size": 2
             }
           }
-          ` }}
-      - status_code: 200
-        headers:
-          Content-Type:
-            - "application/json"
-        body: |-
-          {{ minify_json `
+          ` }}{{ else }}{{ minify_json `
           {
             "data": [],
             "links": {},
@@ -333,4 +329,4 @@ rules:
               "total": 0
             }
           }
-          ` }}
+          ` }}{{ end }}
