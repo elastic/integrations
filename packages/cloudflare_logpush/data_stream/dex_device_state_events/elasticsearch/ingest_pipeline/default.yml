@@ -665,6 +665,55 @@ processors:
       field: json.TunnelStatsUpstream
       target_field: cloudflare_logpush.dex_device_state_events.tunnel_stats.upstream
       ignore_missing: true
+  - script:
+      tag: script_normalize_tunnel_stats_fields
+      lang: painless
+      description: Rename the camelCase WARP tunnel stats keys to snake_case and convert their values to long so they map cleanly to the declared numeric fields and cannot cause a string/long mapping conflict.
+      if: ctx.cloudflare_logpush?.dex_device_state_events?.tunnel_stats != null
+      source: |-
+        def mapping = [
+          'rttUs': 'rtt_us',
+          'minRttUs': 'min_rtt_us',
+          'rttVarUs': 'rtt_var_us',
+          'packetsSent': 'packets_sent',
+          'packetsLost': 'packets_lost',
+          'packetsRetransmitted': 'packets_retransmitted',
+          'bytesSent': 'bytes_sent',
+          'bytesLost': 'bytes_lost',
+          'bytesRetransmitted': 'bytes_retransmitted'
+        ];
+        for (def direction : ['downstream', 'upstream']) {
+          def stats = ctx.cloudflare_logpush.dex_device_state_events.tunnel_stats[direction];
+          if (!(stats instanceof Map)) {
+            continue;
+          }
+          for (def entry : mapping.entrySet()) {
+            if (!stats.containsKey(entry.getKey())) {
+              continue;
+            }
+            def value = stats.remove(entry.getKey());
+            if (value == null) {
+              continue;
+            }
+            try {
+              if (value instanceof Number) {
+                stats.put(entry.getValue(), ((Number) value).longValue());
+              } else {
+                stats.put(entry.getValue(), Long.parseLong(value.toString().trim()));
+              }
+            } catch (NumberFormatException e) {
+              stats.remove(entry.getValue());
+              ctx.error = ctx.error ?: [:];
+              ctx.error.message = ctx.error.message ?: [];
+              ctx.error.message.add('failed to convert cloudflare_logpush.dex_device_state_events.tunnel_stats.' + direction + '.' + entry.getValue() + ' to long: ' + e.getMessage());
+            }
+          }
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_script_normalize_tunnel_stats_fields
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       tag: rename_json_ExperimentalExtra
       field: json.ExperimentalExtra

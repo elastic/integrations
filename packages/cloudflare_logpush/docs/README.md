@@ -1152,9 +1152,9 @@ An example event for `dex_application_tests` looks as following:
 {
     "@timestamp": "2023-10-11T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "a3773afd-3e7d-4286-ae3c-398d8b9b9a1a",
-        "id": "f17965c6-6913-4dff-ba47-07cb6cf3ec5c",
-        "name": "elastic-agent-48129",
+        "ephemeral_id": "3d0f39ce-8c4b-45b5-b73b-24a87ecc7add",
+        "id": "b5a119e7-d592-4953-983d-84cc00989d27",
+        "name": "elastic-agent-37497",
         "type": "filebeat",
         "version": "8.17.1"
     },
@@ -1209,7 +1209,7 @@ An example event for `dex_application_tests` looks as following:
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.dex_application_tests",
-        "namespace": "94893",
+        "namespace": "26272",
         "type": "logs"
     },
     "destination": {
@@ -1234,7 +1234,7 @@ An example event for `dex_application_tests` looks as following:
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "f17965c6-6913-4dff-ba47-07cb6cf3ec5c",
+        "id": "b5a119e7-d592-4953-983d-84cc00989d27",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -1244,7 +1244,7 @@ An example event for `dex_application_tests` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.dex_application_tests",
-        "ingested": "2026-10-05T15:27:38Z",
+        "ingested": "2026-11-18T07:20:19Z",
         "kind": "event",
         "original": "{\"AccountID\":\"a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6\",\"ClientPlatform\":\"mac\",\"ClientVersion\":\"2024.6.415.0\",\"ColoCode\":\"SJC\",\"DeviceID\":\"083a8354-d56c-11ed-9771-abcdef123456\",\"DeviceRegistrationID\":\"f174e90a-fafe-4643-bbbc-4a0ed4fc8415\",\"ExecutionContext\":\"inTunnel\",\"HTTPClientIPASN\":64500,\"HTTPClientIPASO\":\"Example ISP\",\"HTTPClientIPAddress\":\"203.0.113.10\",\"HTTPClientIPCity\":\"San Jose\",\"HTTPClientIPCountryISO\":\"US\",\"HTTPClientIPNetmask\":\"255.255.255.0\",\"HTTPClientIPStateISO\":\"US-CA\",\"HTTPClientIPVersion\":\"IPv4\",\"HTTPClientIPZip\":\"95113\",\"HTTPConnectEndMs\":120,\"HTTPConnectStartMs\":90,\"HTTPDomainLookupEndMs\":40,\"HTTPDomainLookupStartMs\":20,\"HTTPMethod\":\"GET\",\"HTTPRedirectEndMs\":0,\"HTTPRedirectStartMs\":0,\"HTTPRequestStartMs\":130,\"HTTPResponseBody\":\"\",\"HTTPResponseBodyBytes\":5120,\"HTTPResponseEndMs\":210,\"HTTPResponseHeaderBytes\":320,\"HTTPResponseHeaders\":[{\"name\":\"content-type\",\"value\":\"application/json\"}],\"HTTPResponseStartMs\":180,\"HTTPSecureConnectionStartMs\":100,\"HTTPServerIPASN\":64501,\"HTTPServerIPASO\":\"Example Hosting\",\"HTTPServerIPAddress\":\"198.51.100.25\",\"HTTPServerIPCity\":\"Ashburn\",\"HTTPServerIPCountryISO\":\"US\",\"HTTPServerIPNetmask\":\"255.255.255.0\",\"HTTPServerIPStateISO\":\"US-VA\",\"HTTPServerIPVersion\":\"IPv4\",\"HTTPServerIPZip\":\"20147\",\"HTTPStatusCode\":200,\"HTTPURL\":\"https://dash.example.com/api/v4/health\",\"TestID\":\"5b2c1a90-1111-4a2b-8c3d-aaaabbbbcccc\",\"TestType\":\"http\",\"Timestamp\":\"2023-10-11T00:00:00Z\",\"TunnelType\":\"wireguard\",\"UserEmail\":\"user@example.com\",\"UserID\":\"d2e3f4a5-6b7c-8d9e-0f1a-2b3c4d5e6f70\"}",
         "type": [
@@ -1308,6 +1308,7 @@ An example event for `dex_application_tests` looks as following:
     ],
     "url": {
         "domain": "dash.example.com",
+        "full": "https://dash.example.com/api/v4/health",
         "original": "https://dash.example.com/api/v4/health",
         "path": "/api/v4/health",
         "scheme": "https"
@@ -1345,16 +1346,16 @@ An example event for `dex_application_tests` looks as following:
 | cloudflare_logpush.dex_application_tests.http.response.headers.value | HTTP response header value. | keyword |  |  |
 | cloudflare_logpush.dex_application_tests.http.server_ip.netmask | Netmask of the server IP address observed during the HTTP test. | keyword |  |  |
 | cloudflare_logpush.dex_application_tests.http.server_ip.version | IP version of the server IP address observed during the HTTP test. | keyword |  |  |
-| cloudflare_logpush.dex_application_tests.http.timings.connect_end_ms | Time in milliseconds when the connection completed. | long | ms | gauge |
-| cloudflare_logpush.dex_application_tests.http.timings.connect_start_ms | Time in milliseconds when the connection started. | long | ms | gauge |
-| cloudflare_logpush.dex_application_tests.http.timings.domain_lookup_end_ms | Time in milliseconds when the DNS lookup completed. | long | ms | gauge |
-| cloudflare_logpush.dex_application_tests.http.timings.domain_lookup_start_ms | Time in milliseconds when the DNS lookup started. | long | ms | gauge |
+| cloudflare_logpush.dex_application_tests.http.timings.connect_end_ms | Offset in milliseconds from the start of the test at which the connection completed. | long | ms | gauge |
+| cloudflare_logpush.dex_application_tests.http.timings.connect_start_ms | Offset in milliseconds from the start of the test at which the connection started. | long | ms | gauge |
+| cloudflare_logpush.dex_application_tests.http.timings.domain_lookup_end_ms | Offset in milliseconds from the start of the test at which the DNS lookup completed. | long | ms | gauge |
+| cloudflare_logpush.dex_application_tests.http.timings.domain_lookup_start_ms | Offset in milliseconds from the start of the test at which the DNS lookup started. | long | ms | gauge |
 | cloudflare_logpush.dex_application_tests.http.timings.redirect_end_ms | Time in milliseconds when the redirect completed. | long | ms | gauge |
 | cloudflare_logpush.dex_application_tests.http.timings.redirect_start_ms | Time in milliseconds when the redirect started. | long | ms | gauge |
-| cloudflare_logpush.dex_application_tests.http.timings.request_start_ms | Time in milliseconds when the request started. | long | ms | gauge |
-| cloudflare_logpush.dex_application_tests.http.timings.response_end_ms | Time in milliseconds when the response completed. | long | ms | gauge |
-| cloudflare_logpush.dex_application_tests.http.timings.response_start_ms | Time in milliseconds when the response started. | long | ms | gauge |
-| cloudflare_logpush.dex_application_tests.http.timings.secure_connection_start_ms | Time in milliseconds when the TLS handshake started. | long | ms | gauge |
+| cloudflare_logpush.dex_application_tests.http.timings.request_start_ms | Offset in milliseconds from the start of the test at which the request started. | long | ms | gauge |
+| cloudflare_logpush.dex_application_tests.http.timings.response_end_ms | Offset in milliseconds from the start of the test at which the response completed. | long | ms | gauge |
+| cloudflare_logpush.dex_application_tests.http.timings.response_start_ms | Offset in milliseconds from the start of the test at which the response started. | long | ms | gauge |
+| cloudflare_logpush.dex_application_tests.http.timings.secure_connection_start_ms | Offset in milliseconds from the start of the test at which the TLS handshake started. | long | ms | gauge |
 | cloudflare_logpush.dex_application_tests.test.id | Unique identifier of the DEX test. | keyword |  |  |
 | cloudflare_logpush.dex_application_tests.test.type | Type of the DEX test (for example `http` or `traceroute`). | keyword |  |  |
 | cloudflare_logpush.dex_application_tests.traceroute.destination_ip.netmask | Netmask of the traceroute destination IP address. | keyword |  |  |
@@ -1411,9 +1412,9 @@ An example event for `dex_device_state_events` looks as following:
 {
     "@timestamp": "2023-10-11T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "f826f0b8-f2cd-40b8-8b2e-28c5fb9dac4f",
-        "id": "566c60bd-92cb-4686-bb38-1d92db046329",
-        "name": "elastic-agent-54155",
+        "ephemeral_id": "47f4a4be-f907-4f9f-94de-9d4bef55a1e2",
+        "id": "3e85df33-1982-4028-a459-a83964d0b303",
+        "name": "elastic-agent-67755",
         "type": "filebeat",
         "version": "8.17.1"
     },
@@ -1502,12 +1503,26 @@ An example event for `dex_device_state_events` looks as following:
             "switch_locked": false,
             "tunnel_stats": {
                 "downstream": {
-                    "Bytes": 10485760,
-                    "Packets": 8192
+                    "bytes_lost": 4096,
+                    "bytes_retransmitted": 2048,
+                    "bytes_sent": 10485760,
+                    "min_rtt_us": 41000,
+                    "packets_lost": 12,
+                    "packets_retransmitted": 6,
+                    "packets_sent": 8192,
+                    "rtt_us": 52000,
+                    "rtt_var_us": 8000
                 },
                 "upstream": {
-                    "Bytes": 5242880,
-                    "Packets": 4096
+                    "bytes_lost": 2048,
+                    "bytes_retransmitted": 1024,
+                    "bytes_sent": 5242880,
+                    "min_rtt_us": 44000,
+                    "packets_lost": 8,
+                    "packets_retransmitted": 4,
+                    "packets_sent": 4096,
+                    "rtt_us": 58000,
+                    "rtt_var_us": 9000
                 }
             },
             "tunnel_type": "wireguard",
@@ -1520,7 +1535,7 @@ An example event for `dex_device_state_events` looks as following:
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.dex_device_state_events",
-        "namespace": "81851",
+        "namespace": "24294",
         "type": "logs"
     },
     "device": {
@@ -1530,7 +1545,7 @@ An example event for `dex_device_state_events` looks as following:
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "566c60bd-92cb-4686-bb38-1d92db046329",
+        "id": "3e85df33-1982-4028-a459-a83964d0b303",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -1540,9 +1555,9 @@ An example event for `dex_device_state_events` looks as following:
             "host"
         ],
         "dataset": "cloudflare_logpush.dex_device_state_events",
-        "ingested": "2026-10-05T15:29:50Z",
+        "ingested": "2026-11-18T07:21:17Z",
         "kind": "event",
-        "original": "{\"AccountID\":\"a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6\",\"AlwaysOn\":true,\"AppFirewallEnabled\":true,\"BatteryCharging\":true,\"BatteryCycles\":120,\"BatteryPercentage\":0.875,\"CPUPercentage\":0.124,\"CPUPercentageByApp\":[{\"name\":\"com.cloudflare.warp\",\"percentage\":0.03}],\"ClientPlatform\":\"mac\",\"ClientVersion\":\"2024.6.415.0\",\"ConnectionType\":\"wifi\",\"DeviceID\":\"083a8354-d56c-11ed-9771-abcdef123456\",\"DeviceIPv4Address\":\"203.0.113.10\",\"DeviceIPv4Netmask\":\"255.255.255.0\",\"DeviceIPv6Address\":\"2001:db8::10\",\"DeviceIPv6Netmask\":\"ffff:ffff:ffff:ffff::\",\"DeviceRegistrationID\":\"f174e90a-fafe-4643-bbbc-4a0ed4fc8415\",\"DeviceRegistrationProfileID\":\"11111111-2222-3333-4444-555555555555\",\"DiskReadBPS\":1048576,\"DiskUsagePercentage\":0.642,\"DiskWriteBPS\":524288,\"DoHSubdomain\":\"abc123.cloudflare-gateway.example.com\",\"ExperimentalExtra\":{\"beta_metric\":1},\"FirewallEnabled\":true,\"GatewayIPv4Address\":\"192.0.2.1\",\"GatewayIPv4Netmask\":\"255.255.255.0\",\"GatewayIPv6Address\":\"2001:db8::1\",\"GatewayIPv6Netmask\":\"ffff:ffff:ffff:ffff::\",\"HandshakeLatencyMs\":28,\"ISPIPv4ASN\":64500,\"ISPIPv4ASO\":\"Example ISP\",\"ISPIPv4Address\":\"198.51.100.20\",\"ISPIPv4City\":\"San Jose\",\"ISPIPv4CountryISO\":\"US\",\"ISPIPv4Netmask\":\"255.255.255.0\",\"ISPIPv4StateISO\":\"US-CA\",\"ISPIPv4Zip\":\"95113\",\"ISPIPv6ASN\":64500,\"ISPIPv6ASO\":\"Example ISP\",\"ISPIPv6Address\":\"2001:db8:abcd::20\",\"ISPIPv6City\":\"San Jose\",\"ISPIPv6CountryISO\":\"US\",\"ISPIPv6Netmask\":\"ffff:ffff:ffff:ffff::\",\"ISPIPv6StateISO\":\"US-CA\",\"ISPIPv6Zip\":\"95113\",\"Mode\":\"warp\",\"NetworkReceivedBPS\":204800,\"NetworkSSID\":\"ExampleCorp-WiFi\",\"NetworkSentBPS\":102400,\"RAMAvailableKB\":4194304,\"RAMUsedPercentage\":0.486,\"RAMUsedPercentageByApp\":[{\"name\":\"com.cloudflare.warp\",\"percentage\":0.01}],\"Status\":\"connected\",\"SwitchLocked\":false,\"Timestamp\":\"2023-10-11T00:00:00Z\",\"TunnelStatsDownstream\":{\"Bytes\":10485760,\"Packets\":8192},\"TunnelStatsUpstream\":{\"Bytes\":5242880,\"Packets\":4096},\"TunnelType\":\"wireguard\",\"WarpColoCode\":\"SJC\",\"WiFiStrengthDBM\":-55}",
+        "original": "{\"AccountID\":\"a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6\",\"AlwaysOn\":true,\"AppFirewallEnabled\":true,\"BatteryCharging\":true,\"BatteryCycles\":120,\"BatteryPercentage\":0.875,\"CPUPercentage\":0.124,\"CPUPercentageByApp\":[{\"name\":\"com.cloudflare.warp\",\"percentage\":0.03}],\"ClientPlatform\":\"mac\",\"ClientVersion\":\"2024.6.415.0\",\"ConnectionType\":\"wifi\",\"DeviceID\":\"083a8354-d56c-11ed-9771-abcdef123456\",\"DeviceIPv4Address\":\"203.0.113.10\",\"DeviceIPv4Netmask\":\"255.255.255.0\",\"DeviceIPv6Address\":\"2001:db8::10\",\"DeviceIPv6Netmask\":\"ffff:ffff:ffff:ffff::\",\"DeviceRegistrationID\":\"f174e90a-fafe-4643-bbbc-4a0ed4fc8415\",\"DeviceRegistrationProfileID\":\"11111111-2222-3333-4444-555555555555\",\"DiskReadBPS\":1048576,\"DiskUsagePercentage\":0.642,\"DiskWriteBPS\":524288,\"DoHSubdomain\":\"abc123.cloudflare-gateway.example.com\",\"ExperimentalExtra\":{\"beta_metric\":1},\"FirewallEnabled\":true,\"GatewayIPv4Address\":\"192.0.2.1\",\"GatewayIPv4Netmask\":\"255.255.255.0\",\"GatewayIPv6Address\":\"2001:db8::1\",\"GatewayIPv6Netmask\":\"ffff:ffff:ffff:ffff::\",\"HandshakeLatencyMs\":28,\"ISPIPv4ASN\":64500,\"ISPIPv4ASO\":\"Example ISP\",\"ISPIPv4Address\":\"198.51.100.20\",\"ISPIPv4City\":\"San Jose\",\"ISPIPv4CountryISO\":\"US\",\"ISPIPv4Netmask\":\"255.255.255.0\",\"ISPIPv4StateISO\":\"US-CA\",\"ISPIPv4Zip\":\"95113\",\"ISPIPv6ASN\":64500,\"ISPIPv6ASO\":\"Example ISP\",\"ISPIPv6Address\":\"2001:db8:abcd::20\",\"ISPIPv6City\":\"San Jose\",\"ISPIPv6CountryISO\":\"US\",\"ISPIPv6Netmask\":\"ffff:ffff:ffff:ffff::\",\"ISPIPv6StateISO\":\"US-CA\",\"ISPIPv6Zip\":\"95113\",\"Mode\":\"warp\",\"NetworkReceivedBPS\":204800,\"NetworkSSID\":\"ExampleCorp-WiFi\",\"NetworkSentBPS\":102400,\"RAMAvailableKB\":4194304,\"RAMUsedPercentage\":0.486,\"RAMUsedPercentageByApp\":[{\"name\":\"com.cloudflare.warp\",\"percentage\":0.01}],\"Status\":\"connected\",\"SwitchLocked\":false,\"Timestamp\":\"2023-10-11T00:00:00Z\",\"TunnelStatsDownstream\":{\"bytesLost\":4096,\"bytesRetransmitted\":2048,\"bytesSent\":10485760,\"minRttUs\":41000,\"packetsLost\":12,\"packetsRetransmitted\":6,\"packetsSent\":8192,\"rttUs\":52000,\"rttVarUs\":8000},\"TunnelStatsUpstream\":{\"bytesLost\":2048,\"bytesRetransmitted\":1024,\"bytesSent\":5242880,\"minRttUs\":44000,\"packetsLost\":8,\"packetsRetransmitted\":4,\"packetsSent\":4096,\"rttUs\":58000,\"rttVarUs\":9000},\"TunnelType\":\"wireguard\",\"WarpColoCode\":\"SJC\",\"WiFiStrengthDBM\":-55}",
         "type": [
             "info"
         ]
@@ -1660,8 +1675,24 @@ An example event for `dex_device_state_events` looks as following:
 | cloudflare_logpush.dex_device_state_events.ram.used_percentage_by_app.percentage | RAM utilization for the application, as a fraction from 0 to 1. | float | percent | gauge |
 | cloudflare_logpush.dex_device_state_events.status | Connection status of the WARP client (for example `connected` or `paused`). | keyword |  |  |
 | cloudflare_logpush.dex_device_state_events.switch_locked | Whether the ability to toggle the WARP switch is locked. | boolean |  |  |
-| cloudflare_logpush.dex_device_state_events.tunnel_stats.downstream | Downstream tunnel statistics. | flattened |  |  |
-| cloudflare_logpush.dex_device_state_events.tunnel_stats.upstream | Upstream tunnel statistics. | flattened |  |  |
+| cloudflare_logpush.dex_device_state_events.tunnel_stats.downstream.bytes_lost | Bytes lost on the downstream tunnel. | long | byte |  |
+| cloudflare_logpush.dex_device_state_events.tunnel_stats.downstream.bytes_retransmitted | Bytes retransmitted on the downstream tunnel. | long | byte |  |
+| cloudflare_logpush.dex_device_state_events.tunnel_stats.downstream.bytes_sent | Bytes sent on the downstream tunnel. | long | byte |  |
+| cloudflare_logpush.dex_device_state_events.tunnel_stats.downstream.min_rtt_us | Minimum round-trip time of the downstream tunnel, in microseconds. | long | micros | gauge |
+| cloudflare_logpush.dex_device_state_events.tunnel_stats.downstream.packets_lost | Packets lost on the downstream tunnel. | long |  |  |
+| cloudflare_logpush.dex_device_state_events.tunnel_stats.downstream.packets_retransmitted | Packets retransmitted on the downstream tunnel. | long |  |  |
+| cloudflare_logpush.dex_device_state_events.tunnel_stats.downstream.packets_sent | Packets sent on the downstream tunnel. | long |  |  |
+| cloudflare_logpush.dex_device_state_events.tunnel_stats.downstream.rtt_us | Smoothed round-trip time of the downstream tunnel, in microseconds. | long | micros | gauge |
+| cloudflare_logpush.dex_device_state_events.tunnel_stats.downstream.rtt_var_us | Round-trip time variance of the downstream tunnel, in microseconds. | long | micros | gauge |
+| cloudflare_logpush.dex_device_state_events.tunnel_stats.upstream.bytes_lost | Bytes lost on the upstream tunnel. | long | byte |  |
+| cloudflare_logpush.dex_device_state_events.tunnel_stats.upstream.bytes_retransmitted | Bytes retransmitted on the upstream tunnel. | long | byte |  |
+| cloudflare_logpush.dex_device_state_events.tunnel_stats.upstream.bytes_sent | Bytes sent on the upstream tunnel. | long | byte |  |
+| cloudflare_logpush.dex_device_state_events.tunnel_stats.upstream.min_rtt_us | Minimum round-trip time of the upstream tunnel, in microseconds. | long | micros | gauge |
+| cloudflare_logpush.dex_device_state_events.tunnel_stats.upstream.packets_lost | Packets lost on the upstream tunnel. | long |  |  |
+| cloudflare_logpush.dex_device_state_events.tunnel_stats.upstream.packets_retransmitted | Packets retransmitted on the upstream tunnel. | long |  |  |
+| cloudflare_logpush.dex_device_state_events.tunnel_stats.upstream.packets_sent | Packets sent on the upstream tunnel. | long |  |  |
+| cloudflare_logpush.dex_device_state_events.tunnel_stats.upstream.rtt_us | Smoothed round-trip time of the upstream tunnel, in microseconds. | long | micros | gauge |
+| cloudflare_logpush.dex_device_state_events.tunnel_stats.upstream.rtt_var_us | Round-trip time variance of the upstream tunnel, in microseconds. | long | micros | gauge |
 | cloudflare_logpush.dex_device_state_events.tunnel_type | Tunnel protocol in use (for example `wireguard`, `masque` or `http2`). | keyword |  |  |
 | cloudflare_logpush.dex_device_state_events.version | Version of the WARP client running on the device. | keyword |  |  |
 | cloudflare_logpush.dex_device_state_events.warp_colo.code | Cloudflare data center (colo) the WARP client is connected to. | keyword |  |  |
