@@ -762,6 +762,7 @@ The `log` data stream collects all log types from the FortiGate firewall, includ
 | fortinet.firewall.xauthgroup | XAuth Group Name | keyword |
 | fortinet.firewall.xauthuser | XAuth User Name | keyword |
 | fortinet.firewall.xid | Wireless X ID | integer |
+| group.name | Name of the group. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -874,6 +875,8 @@ The `log` data stream collects all log types from the FortiGate firewall, includ
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
 | user.roles | Array of user roles at the time of the event. | keyword |
+| user.target.name | Short name or login of the user. | keyword |
+| user.target.name.text | Multi-field of `user.target.name`. | match_only_text |
 | user_agent.original | Unparsed user_agent string. | keyword |
 | user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
 | vulnerability.category | The type of system or architecture that the vulnerability affects. These may be platform-specific (for example, Debian or SUSE) or general (for example, Database or Firewall). For example (https://qualysguard.qualys.com/qwebhelp/fo_portal/knowledgebase/vulnerability_categories.htm) This field must be an array. | keyword |

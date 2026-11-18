@@ -1,0 +1,188 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects a Ray worker (`ray/_private/workers/default_worker.py`) spawning a shell, an inline Python command (`python -c` / `python3 -c`), or a discovery or download utility. Ray runs job entrypoints from that worker through a shell, so a Python reverse shell shows up as `sh -c` or `bash -c` whose command line contains `python -c` and the program it starts, such as `/bin/sh -i`. On an exposed cluster this is exploitation of the public-facing Ray jobs API (CVE-2023-48022). Ray commonly hosts LLM training, fine-tuning, and serving, so this can be an attack on that infrastructure: theft of model weights, datasets, or API and cloud tokens, tampering with a served model, or use of the GPUs for cryptomining.",
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "host.name",
+                "user.name",
+                "process.parent.name",
+                "process.parent.executable",
+                "process.parent.command_line",
+                "process.name",
+                "process.executable",
+                "process.command_line"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Shell or Suspicious Process Spawned by Ray Worker",
+        "note": "## Triage and analysis\n\n### Investigating Shell or Suspicious Process Spawned by Ray Worker\n\nA Python process running `ray/_private/workers/default_worker.py` started `cmd`, PowerShell, a Unix shell,\ninline `python -c` / `python3 -c`, `curl`, `wget`, `whoami`, `id`, `uname`, or `hostname`. Ray's job\nsupervisor is that worker. It runs the entrypoint with a shell, so the direct child is usually `sh -c` or\n`cmd.exe /c` and the entrypoint text is on that command line. A `python3 -c` reverse shell that then runs\n`/bin/sh -i` is visible on that shell command line. The `python3 -c` process and the interactive `/bin/sh`\nare children of the shell, not of the worker, so they are separate events.\n\n### Possible investigation steps\n\n- Review `process.command_line` for the entrypoint. Downloaders, `whoami`, `id`, encoded commands, and\n  reverse shells are higher priority than a known training or serving command.\n- Confirm `process.parent.command_line` contains `ray/_private/workers/default_worker.py`.\n- On the same host, review the child and grandchild processes and any outbound connections from that tree.\n- Check whether the Ray dashboard (port 8265 by default) is reachable from outside the cluster, and who\n  submitted the job. The submitter is not the parent process.\n- Ask the workload owner whether this entrypoint is an approved Ray job.\n\n### False positive analysis\n\n- Approved Ray jobs start their entrypoint from this same worker, usually through `cmd.exe /c` on Windows or\n  `sh -c` on Linux. Expect this rule on clusters that run jobs.\n- Tune with the entrypoint command line, the Ray working directory, the host, or the user. Do not exclude\n  `python` or `default_worker.py` broadly, or the worker respawn noise returns and the entrypoint shell is missed.\n\n### Response and remediation\n\n- If the entrypoint is not an approved job, stop the child process and isolate the host if it made outbound\n  connections or read credentials.\n- Remove unapproved files dropped by the job and rotate credentials present in the Ray environment.\n- Stop exposing the dashboard. Bind it to a trusted interface and require authentication in front of it.\n",
+        "query": "FROM logs-endpoint.events.process-* METADATA _id, _version, _index\n| WHERE KQL(\"\"\"event.category:process and event.type:start\"\"\")\n  AND TO_LOWER(process.parent.name) LIKE \"python*\"\n  AND (\n    TO_LOWER(process.parent.command_line) LIKE \"\"\"*\\\\ray\\\\_private\\\\workers\\\\default_worker.py*\"\"\"\n    OR TO_LOWER(process.parent.command_line) LIKE \"*/ray/_private/workers/default_worker.py*\"\n  )\n  AND (\n    TO_LOWER(process.name) IN (\n      \"cmd.exe\", \"powershell.exe\", \"pwsh.exe\",\n      \"bash\", \"bash.exe\", \"sh\", \"zsh\", \"dash\",\n      \"curl\", \"curl.exe\", \"wget\", \"wget.exe\",\n      \"whoami\", \"whoami.exe\", \"id\", \"uname\", \"hostname\", \"hostname.exe\"\n    )\n    // Direct python -c child of the worker.\n    OR (\n      TO_LOWER(process.name) LIKE \"python*\"\n      AND MV_CONTAINS(process.args, \"-c\")\n    )\n  )\n| KEEP\n    _id,\n    _version,\n    _index,\n    data_stream.namespace,\n    @timestamp,\n    host.name,\n    host.id,\n    host.os.type,\n    agent.id,\n    user.name,\n    user.domain,\n    process.name,\n    process.executable,\n    process.command_line,\n    process.args,\n    process.parent.name,\n    process.parent.executable,\n    process.parent.command_line,\n    process.parent.entity_id\n",
+        "references": [
+            "https://www.oligo.security/blog/shadowray-attack-ai-workloads-actively-exploited-in-the-wild",
+            "https://nvd.nist.gov/vuln/detail/CVE-2023-48022",
+            "https://docs.ray.io/en/latest/ray-security/index.html"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": ">=9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "fc7b9873-a9ed-43af-a9a2-c37660c4a211",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "OS: Linux",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Initial Access",
+            "Tactic: Execution",
+            "Tactic: Discovery",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide",
+            "Noise: High",
+            "Threat: Vulnerability Exploit",
+            "Performance: Normal",
+            "Rule Type: ES|QL",
+            "Platform: Windows",
+            "Platform: Linux",
+            "Platform: macOS",
+            "Vuln: CVE-2023-48022",
+            "Tactic: Command and Control"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1190",
+                        "name": "Exploit Public-Facing Application",
+                        "reference": "https://attack.mitre.org/techniques/T1190/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            },
+                            {
+                                "id": "T1059.003",
+                                "name": "Windows Command Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/003/"
+                            },
+                            {
+                                "id": "T1059.004",
+                                "name": "Unix Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/004/"
+                            },
+                            {
+                                "id": "T1059.006",
+                                "name": "Python",
+                                "reference": "https://attack.mitre.org/techniques/T1059/006/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1033",
+                        "name": "System Owner/User Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1033/"
+                    },
+                    {
+                        "id": "T1082",
+                        "name": "System Information Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1082/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1105",
+                        "name": "Ingress Tool Transfer",
+                        "reference": "https://attack.mitre.org/techniques/T1105/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 2
+    },
+    "id": "fc7b9873-a9ed-43af-a9a2-c37660c4a211_2",
+    "type": "security-rule"
+}

@@ -1,0 +1,55 @@
+source:
+  index:
+    - "logs-tenable_sc.vulnerability-*"
+  query:
+    bool:
+      filter:
+        - range:
+            "@timestamp":
+              gte: "now-90d"
+        - exists:
+            field: event.id
+        - exists:
+            field: resource.id
+      must_not:
+        # Informational findings stay searchable in the source indices only.
+        # Findings recast to Info are kept, so that they replace the finding's
+        # earlier severity in the destination index.
+        - bool:
+            filter:
+              - term:
+                  tenable_sc.vulnerability.severity.id: "0"
+            must_not:
+              - term:
+                  tenable_sc.vulnerability.recast_risk: "1"
+        - terms:
+            _tier:
+              - data_frozen
+              - data_cold
+dest:
+  index: "security_solution-tenable_sc.vulnerability_latest-v1"
+  aliases:
+    - alias: "security_solution-tenable_sc.vulnerability_latest"
+      move_on_creation: true
+latest:
+  unique_key:
+    - event.id
+    - resource.id
+    - data_stream.namespace
+  sort: "@timestamp"
+description: Latest Vulnerabilities Findings from Tenable Security Center.
+settings:
+  unattended: true
+frequency: 5m
+sync:
+  time:
+    field: event.ingested
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 90d
+_meta:
+  managed: true
+  # Bump this version to delete, reinstall, and restart the transform during package.
+  # Version bump is needed if there is any code change in transform.
+  fleet_transform_version: 0.1.0
