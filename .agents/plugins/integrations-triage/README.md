@@ -11,10 +11,10 @@ How the daily jobs file and update these issues (and why so many go stale): [`re
 
 ## 1. Requirements
 
-Everything runs on your machine (macOS or Linux; tested on Ubuntu 24.04), from an elastic/integrations checkout, with your own CLI logins. Check with:
+Everything runs on your machine (macOS or Linux; tested on Ubuntu 24.04), from an elastic/integrations checkout, with your own CLI logins. The plugin itself can live anywhere: below, `<plugin>` is its root directory (the folder with `.claude-plugin/`), and nothing in it depends on where that is. Check with:
 
 ```sh
-cd <your integrations checkout> && .agents/plugins/integrations-triage/skills/integrations-build-triage/scripts/doctor.sh
+cd <your integrations checkout> && <plugin>/skills/integrations-build-triage/scripts/doctor.sh
 ```
 
 | Needed for | Tool | macOS | Ubuntu / Linux | Then |
@@ -31,7 +31,7 @@ The scripts use the `gh`/`bk` CLIs, not the GitHub/Buildkite MCP servers. The CL
 ## 2. Install and update
 
 ```sh
-claude plugin marketplace add ./.agents/plugins/integrations-triage
+claude plugin marketplace add <plugin>        # a local path, or the git URL / owner/repo of a repo that hosts it
 claude plugin install integrations-triage@integrations-triage
 ```
 
@@ -42,7 +42,7 @@ claude plugin marketplace update integrations-triage
 claude plugin update integrations-triage@integrations-triage
 ```
 
-To try changes without installing: `claude --plugin-dir ./.agents/plugins/integrations-triage`. If you used a personal copy of the skill before, remove `~/.claude/skills/integrations-build-triage` so it isn't loaded twice.
+To try changes without installing: `claude --plugin-dir <plugin>`. If you used a personal copy of the skill before, remove `~/.claude/skills/integrations-build-triage` so it isn't loaded twice.
 
 ## 3. Run it
 
@@ -50,9 +50,9 @@ Always run from the **root of the integrations checkout**. Each run first brings
 
 | What | How |
 |---|---|
-| The whole daily run (the normal case) | In Claude Code, from the checkout root: `/integrations-triage:triage-daily` (today, UTC) or `/integrations-triage:triage-daily 2026-11-17`. Headless: `.agents/plugins/integrations-triage/bin/triage-unattended.sh` |
-| One issue ("Too many" or per-package) | `/integrations-triage:triage-nightly 22189`, or `bin/triage-unattended.sh 22189` |
-| Only the backlog sweep (no LLM, about 20 s once cached) | `.agents/plugins/integrations-triage/skills/integrations-build-triage/scripts/sweep.sh` |
+| The whole daily run (the normal case) | In Claude Code, from the checkout root: `/integrations-triage:triage-daily` (today, UTC) or `/integrations-triage:triage-daily 2026-11-17`. Headless, from the checkout root: `<plugin>/bin/triage-unattended.sh` |
+| One issue ("Too many" or per-package) | `/integrations-triage:triage-nightly 22189`, or `<plugin>/bin/triage-unattended.sh 22189` |
+| Only the backlog sweep (no LLM, about 20 s once cached) | `<plugin>/skills/integrations-build-triage/scripts/sweep.sh` |
 | Only "what ran today and where it was reported" (no LLM) | `…/scripts/daily.sh` |
 | An interactive deep dive into one cause | Ask in a normal session ("investigate the vectra_rux failure on 9.7"). The `integrations-build-triage` skill loads, and can use private logs (it asks first) and local repros |
 
@@ -73,7 +73,7 @@ Claude Code's **cloud** scheduled tasks (`/schedule`) don't fit. They run in a f
   <key>Label</key><string>local.integrations-triage.daily</string>
   <key>ProgramArguments</key><array>
     <string>/bin/bash</string>
-    <string>/path/to/integrations/.agents/plugins/integrations-triage/bin/triage-unattended.sh</string>
+    <string>/path/to/plugin/bin/triage-unattended.sh</string>
     <string>daily</string>
     <string>/path/to/integrations</string>
   </array>
@@ -104,7 +104,7 @@ Description=integrations-triage daily run (draft-only)
 [Service]
 Type=oneshot
 Environment=TRIAGE_MAX_BUDGET_USD=20
-ExecStart=/bin/bash /path/to/integrations/.agents/plugins/integrations-triage/bin/triage-unattended.sh daily /path/to/integrations
+ExecStart=/bin/bash /path/to/plugin/bin/triage-unattended.sh daily /path/to/integrations
 ```
 
 ```ini

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Unattended, draft-only triage.
-# Usage: triage-unattended.sh [daily [YYYY-MM-DD] | <issue-number>] [integrations-repo-path]
+# Usage: triage-unattended.sh [daily [YYYY-MM-DD] | <issue-number>] [integrations-repo-path (default: current directory)]
 #   no argument / daily   the whole daily run: builds -> issues -> backlog sweep (/integrations-triage:triage-daily)
 #   <issue-number>        one daily-job issue, "Too many" or per-package (/integrations-triage:triage-nightly)
 # Run after the last scheduler run has reported (~06:30 UTC; the basic-subscription run starts at 04:30).
@@ -12,8 +12,7 @@
 set -euo pipefail
 # launchd/cron don't load your shell profile: make gh, bk, jq, yq and claude findable
 export PATH="/opt/homebrew/bin:/home/linuxbrew/.linuxbrew/bin:/usr/local/bin:/snap/bin:$HOME/.local/bin:$HOME/go/bin:$HOME/.claude/local:$PATH"
-# Default: the integrations checkout this plugin lives in (.agents/plugins/integrations-triage)
-DEFAULT_REPO=$(cd "$(dirname "$0")/../../../.." && pwd)
+DEFAULT_REPO=$PWD
 MODE=${1:-daily}
 if [ "$MODE" = daily ]; then
   D=$(date -u +%F); REPO=$DEFAULT_REPO
