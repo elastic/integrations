@@ -62,7 +62,8 @@ program: |-
           (resp.StatusCode == 200) ?
             resp.Body.decode_json().as(body,
               {
-                "items": body.?data.orValue([]),
+                // `data` can be absent or null; both mean an empty page.
+                "items": (body.?data.orValue(null) != null) ? body.data : [],
                 "next": body.?paging.cursor.cursorRef,
               }
             ).as(page,
@@ -82,7 +83,9 @@ program: |-
               }
             )
           : (resp.StatusCode == 400 || resp.StatusCode == 403) ?
-            // The API rejected the stored cursor. Drop it and keep last_timestamp so the
+            // The API rejected the request. The usual cause is a cursor that is no longer
+            // valid, but a rejected API key gives the same status, so the message names
+            // both. Drop the cursor and keep last_timestamp so the
             // next poll creates a new query from there. This is published as an event so
             // that the cursor change is stored; waiting for the next poll stops a tight
             // loop if the new cursor is rejected too.
@@ -92,7 +95,7 @@ program: |-
                   "error": {
                     "code": string(resp.StatusCode),
                     "id": string(resp.Status),
-                    "message": "POST /api/audits/stream/results: cursor rejected, a new query starts on the next poll: " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)),
+                    "message": "POST /api/audits/stream/results: request rejected (cursor or API key not accepted), a new query starts on the next poll: " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)),
                   },
                 },
               ],

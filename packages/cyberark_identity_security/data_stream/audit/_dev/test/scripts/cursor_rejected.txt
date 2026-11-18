@@ -7,7 +7,8 @@
 #           results(cursor-ref-query)   -> 1 event (2099-11-03 14:42:42.914), cursor-ref-expired
 #           results(cursor-ref-expired) -> 403, error document, cursor.ref dropped
 #   poll 2: createQuery with dateFrom "2099-11-03 14:42:42" -> cursor-ref-resumed
-#           results(cursor-ref-resumed)   -> 1 new event, cursor-ref-resumed-2
+#           results(cursor-ref-resumed)   -> the last event again + 1 new event,
+#                                            cursor-ref-resumed-2
 #           results(cursor-ref-resumed-2) -> 0 events (caught up)
 #
 # The createQuery rule for cursor-ref-resumed matches only the exact dateFrom.
@@ -32,7 +33,10 @@ docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} audit-
 add_package -profile ${CONFIG_PROFILES}/${PROFILE}
 add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
 
-# 2 audit events + 1 cursor-rejection error document, and no more.
+# 2 audit events + 1 cursor-rejection error document, and no more. The resumed
+# query returns the last event a second time (its time is the new dateFrom).
+# The pipeline sets _id from the event uuid, so the repeat does not make a
+# third audit document.
 get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 3 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
 cp stdout got_docs.json
 exec jq '.hits.total.value' got_docs.json
@@ -42,7 +46,7 @@ stdout '^3$'
 exec jq '[.hits.hits[]._source | select(.error.message != null)] | length' got_docs.json
 stdout '^1$'
 exec jq -r '[.hits.hits[]._source | select(.error.message != null) | .error.message] | flatten | .[]' got_docs.json
-stdout 'POST /api/audits/stream/results: cursor rejected, a new query starts on the next poll'
+stdout 'POST /api/audits/stream/results: request rejected \(cursor or API key not accepted\), a new query starts on the next poll'
 stdout 'The cursor is no longer valid'
 
 # The event before the rejection and the event from the resumed query.
@@ -305,7 +309,7 @@ rules:
           Content-Type:
             - 'application/json'
         body: |-
-          {"data":[{"uuid":"00000a02-0000-4000-8000-000000000a02","tenantId":"00000002-0000-4000-8000-000000000002","timestamp":4097400170000,"username":"bob.smith@example.com","applicationCode":"IDP","auditCode":"IDP2006","auditType":"Info","action":"Logout","userId":"00000007-0000-4000-8000-000000000007","source":"203.0.113.11","actionType":"Logout","component":"Identity","serviceName":"Identity","message":"cloud.core.logout","customData":{}}],"paging":{"cursor":{"cursorRef":"cursor-ref-resumed-2"}}}
+          {"data":[{"uuid":"00000a01-0000-4000-8000-000000000a01","tenantId":"00000002-0000-4000-8000-000000000002","timestamp":4097400162914,"username":"bob.smith@example.com","applicationCode":"IDP","auditCode":"IDP2006","auditType":"Info","action":"Logout","userId":"00000007-0000-4000-8000-000000000007","source":"203.0.113.11","actionType":"Logout","component":"Identity","serviceName":"Identity","message":"cloud.core.logout","customData":{}},{"uuid":"00000a02-0000-4000-8000-000000000a02","tenantId":"00000002-0000-4000-8000-000000000002","timestamp":4097400170000,"username":"bob.smith@example.com","applicationCode":"IDP","auditCode":"IDP2006","auditType":"Info","action":"Logout","userId":"00000007-0000-4000-8000-000000000007","source":"203.0.113.11","actionType":"Logout","component":"Identity","serviceName":"Identity","message":"cloud.core.logout","customData":{}}],"paging":{"cursor":{"cursorRef":"cursor-ref-resumed-2"}}}
   # Caught up after the resumed query.
   - path: /api/audits/stream/results
     methods: ['POST']
