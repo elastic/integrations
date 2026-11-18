@@ -1,34 +1,38 @@
 {{- generatedHeader }}
-{{/*
-This template can be used as a starting point for writing documentation for your new integration. For each section, fill in the details
-described in the comments.
-
-Find more detailed documentation guidelines in https://www.elastic.co/docs/extend/integrations/documentation-guidelines
-*/}}
-# hivemq Integration for Elastic
+# HiveMQ Community Edition Integration for Elastic
 
 ## Overview
-{{/* Complete this section with a short summary of what data this integration collects and the service it integrates with. */}}
-The hivemq integration for Elastic enables collection of ...
+
+[HiveMQ Community Edition](https://github.com/hivemq/hivemq-community-edition) is an open source MQTT broker that supports MQTT 3.x and MQTT 5. The HiveMQ Community Edition integration for Elastic collects the broker's server log and its client event log and parses them into ECS fields. Client connections and disconnections, dropped messages, expired sessions and broker errors become searchable, and you can chart them or alert on them.
 
 ### Compatibility
-{{/* Complete this section with information on what 3rd party software or hardware versions this integration is compatible with */}}
-This integration is compatible with ...
+
+This integration has been tested against HiveMQ Community Edition 2026.5. The client event log has had the same wording since at least HiveMQ Community Edition 2024.3.
+
+It is built for the log format of HiveMQ Community Edition. It does not parse HiveMQ Enterprise logs, such as the audit log.
 
 ### How it works
-{{/* Add a high level overview on how this integration works. For example, does it collect data from API calls or receiving data from a network or file.*/}}
+
+HiveMQ writes its logs with logback into the folder `log` below the HiveMQ home directory, `/opt/hivemq/log` in the official Docker image. Elastic Agent tails the log files with the `filestream` input and forwards each event to Elasticsearch. There, the integration's ingest pipelines parse the timestamp, the log level and the message, and map the result onto ECS fields. No connection is made to the broker itself.
+
+The server log is read as multiline events, so Java stack traces and multi-line warnings stay together with the line that introduced them.
 
 ## What data does this integration collect?
-{{/* Complete this section with information on what types of data the integration collects, and link to reference documentation if available
-*/}}
-The hivemq integration collects log messages of the following types:
-* ...
+
+The HiveMQ Community Edition integration collects two kinds of logs:
+
+* Broker server log (`hivemq.log`): start-up and shutdown, listeners, extensions, configuration warnings and errors. Errors with a Java stack trace are split into `error.type` and `error.stack_trace`.
+* Client event log (`event.log`): clients connecting, clients disconnecting gracefully, ungracefully or by the broker, together with the reason, outgoing messages and packets dropped by the broker, and expired client sessions. The client identifier, client IP address, clean start flag, session expiry interval, topic, QoS and reason are mapped to fields.
+
+Lines that do not match a known message shape are still indexed, with the full text kept in `message`.
 
 ### Supported use cases
-{{/* Add details on the use cases that can be enabled by using this integration. Explain why a user would want to install and use this integration. */}}
+
+Track which MQTT clients connect to and disconnect from a HiveMQ broker and why, spot clients that are disconnected in a loop because another client takes over their client identifier, find messages that the broker drops because a subscriber is too slow or its maximum packet size is too small, and alert on broker errors or restarts. Because client addresses are mapped to `source.ip` and `related.ip`, broker activity can be correlated with the rest of the data in the cluster.
 
 ## What do I need to use this integration?
-{{/* List any Elastic or vendor-specific prerequisites needed before starting to install the integration. For example, Elastic self-managed or cloud deployment, or a vendor-specific credentials or accounts */}}
+
+Elastic Agent must be able to read the HiveMQ log folder. When HiveMQ runs in a container, mount its log folder to a host path or volume that Elastic Agent can read.
 
 ## How do I deploy this integration?
 
@@ -36,107 +40,85 @@ The hivemq integration collects log messages of the following types:
 
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html). You can install only one Elastic Agent per host.
 
-Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+Elastic Agent is required to stream data from the log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
 
-{{/* If agentless is available for this integration, include the following section. You can determine if agentless is available for this integration by checking the `manifest.yml` file, and looking for the existence of `policy_templates.deployment_modes.agentless.enabled: "true"`.
-### Agentless deployment
+### Set up steps in HiveMQ Community Edition
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. Agentless deployments provide a means to ingest data while avoiding the orchestration, management, and maintenance needs associated with standard ingest infrastructure. Using an agentless deployment makes manual agent deployment unnecessary, allowing you to focus on your data instead of the agent that collects it.
-
-For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html) 
-*/}}
-
-### Set up steps in hivemq
-{{/* List the steps that are required to set up the 3rd party system to send data to Elastic. 
-This should be specific to the steps needed to set up the 3rd party system to send data to Elastic. It should not include generic information about how to install or set up the 3rd party system itself.
-*/}}
+1. Locate the HiveMQ log folder. By default it is `<HIVEMQ_HOME>/log`, which is `/opt/hivemq/log` in the official Docker image. You can move it with the environment variable `HIVEMQ_LOG_FOLDER` or the Java system property `hivemq.log.folder`.
+2. Keep the default `conf/logback.xml`, or make sure that a customized one still writes `hivemq.log` and `event.log` with the default patterns. The integration parses the default patterns `%-30(%d %level)- %msg%n%ex` for the server log and `%-24(%d)- %msg%n%ex` for the event log.
+3. When HiveMQ runs in a container, mount the log folder so Elastic Agent can read it, for example with `-v /var/log/hivemq:/opt/hivemq/log`. The client event log is only written to a file, never to the container's standard output.
 
 #### Vendor resources
-{{/* Add vendor documentation links that are specific to the steps needed to set up the vendor system to send data to Elastic. Exclude this section if no vendor setup links are available. */}}
-- [Vendor documentation link 1](https://www.vendor.com/documentation/link1)
-- [Vendor documentation link 2](https://www.vendor.com/documentation/link2)
-- [Vendor documentation link 3](https://www.vendor.com/documentation/link3)
+
+- [HiveMQ logging documentation](https://docs.hivemq.com/hivemq/latest/user-guide/logging.html)
+- [Default logback.xml of HiveMQ Community Edition](https://github.com/hivemq/hivemq-community-edition/blob/master/src/distribution/conf/logback.xml)
 
 ### Set up steps in Kibana
-{{/* List the steps that are required to set up the integration in Kibana.
-This includes how to add the integration, and how to configure the integration, with descriptions of each available configuration option.
 
-If multiple input types are supported, add instructions for each in a subsection.
-*/}}
+1. In Kibana, go to **Management** → **Integrations**, search for **HiveMQ Community Edition** and select **Add HiveMQ Community Edition**.
+2. Set the **Paths** of each data stream to the log files: `/opt/hivemq/log/hivemq.log` for the broker logs and `/opt/hivemq/log/event.log` for the client events. Name the files exactly. A pattern such as `*.log` also matches the other files in the folder, including the daily rotated server logs.
+3. Set **Timezone Offset** if HiveMQ runs in a different timezone than Elastic Agent. HiveMQ writes timestamps in the local time of its Java virtual machine without an offset. The official Docker image runs in UTC. Both a canonical ID such as `Europe/Berlin` and an offset such as `-05:00` are accepted.
+4. For the broker logs only: enable **Parse Container Logs** when the paths point at container log files of the HiveMQ container, for example `/var/log/containers/*hivemq*.log`.
+5. Optionally enable **Preserve original event** to keep the raw log event in `event.original`.
+6. Select the agent policy to add the integration to, and save.
 
 ### Validation
-{{/* In this section, describe the actions required to validate that the integration is working properly, and data is flowing into Elasticsearch.
-If required, list the steps needed in the vendor product to start sending events or trigger alerts.
-Then list how to validate that the data is in Elasticsearch, using Kibana. This could be which indices to check in the Discover table, or which built in dashboards to look at to see the data.
-*/}}
+
+1. Connect an MQTT client to the broker and disconnect it again, or restart the broker.
+2. In Kibana, open **Discover** and select the `logs-*` data view.
+3. Filter on `event.dataset : "hivemq.event"` and confirm that documents with `event.action` `client-connected` and `client-disconnected` arrive. Filter on `event.dataset : "hivemq.log"` for the broker logs.
 
 ## Troubleshooting
-{{/* The troubleshooting section should contain troubleshooting for common issues specific to this integration. Do not include generic troubleshooting information. Where appropriate, include details specific to each input type.
-Whenever possible, link to the troubleshooting documentation provided by the third-party software. 
 
-IMPORTANT: Use plain text for issue descriptions, NOT bold. Example:
-- No data is being collected: Verify network connectivity and credentials
-- TCP framing issues: Check that both sides use the same framing method
-Do NOT use **bold** for issue names like "**No data is being collected**:".
-*/}}
+- No data is being collected: Confirm that the user running Elastic Agent can read the HiveMQ log folder and the files in it. Elastic Agent identifies files by a fingerprint of their first 1024 bytes, so a new and almost empty `event.log` is only collected once it has grown beyond that size.
+- No client events are collected: The default `logback.xml` writes client events only to `event.log`. Check that the paths of the client events point at this file and not at the container's standard output.
+- Timestamps are off by a whole number of hours: HiveMQ writes local time without an offset. Set the **Timezone Offset** option to the timezone of the HiveMQ Java virtual machine.
+- Authentication events are missing: HiveMQ logs enhanced authentication (`AUTH`) events at DEBUG level, and the default `logback.xml` does not write them to `event.log`. Add a logger for `event.authentication` to `logback.xml` to collect them.
 
 ## Performance and scaling
-{{/* Add any vendor specific performance and scaling information to this section.
-Performance and scaling information should be specific to sending data to Elasticsearch. It should not include information about the vendor product itself or generic information about performance and scaling.
-*/}}
+
+The client event log grows with the number of client connections. Brokers with many short-lived connections write several lines for each connection, so plan the ingest volume accordingly.
+
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
 ## Reference
 
 ### Inputs used
-{{/* All inputs used by this package will be automatically listed here. Do not modify this section. */}}
+
 {{ inputDocs }}
 
-### API usage
-{{/* For integrations that use APIs to collect data, document all the APIs that are used, and link to relevent information. For integrations that do not use APIs, do not include this section. */}}
-These APIs are used with this integration:
-* ...
-
 ### Vendor documentation links
-{{/* Add vendor documentation links which provide useful general information about the integration.*/}}
-- [Vendor documentation link 1](https://www.vendor.com/documentation/link1)
-- [Vendor documentation link 2](https://www.vendor.com/documentation/link2)
-- [Vendor documentation link 3](https://www.vendor.com/documentation/link3)
+
+- [HiveMQ Community Edition on GitHub](https://github.com/hivemq/hivemq-community-edition)
+- [HiveMQ Community Edition Docker image](https://hub.docker.com/r/hivemq/hivemq-ce)
+- [HiveMQ logging documentation](https://docs.hivemq.com/hivemq/latest/user-guide/logging.html)
 
 ### Data streams
-{{/* Repeat all information in this section for each data stream the package collects.*/}}
 
-#### {Data stream name}
+#### log
 
-The `{data stream name}` data stream provides events from {source} of the following types: {list types}.
+The `log` data stream provides events from the HiveMQ broker server log (`hivemq.log`): start-up and shutdown, listeners, extensions, warnings and errors. `log.level` is taken from the level that HiveMQ writes on each line.
 
-For each data_stream_name, include an optional summary of the datastream, the exported fields reference table and the sample event.
+##### log fields
 
-The fields template function will be replaced by a generated list of all fields from the `fields/` directory of the data stream when building the integration.
+{{ fields "log" }}
 
-##### {data stream name} fields
+##### log sample event
 
-To include a generated list of fields from the `fields/` directory, uncomment and use:
-{{/* {{ fields "data_stream_name" }} */}}
+{{ event "log" }}
 
-##### {data stream name} sample event
-The event template function will be replace by a sample event, taken from `sample_event.json`, when building this integration.
+#### event
 
-To include a sample event from `sample_event.json`, uncomment and use:
-{{/* {{ event "data_stream_name" }}  */}}
+The `event` data stream provides events from the HiveMQ client event log (`event.log`): client connections and disconnections, dropped messages and packets, expired client sessions and, when configured, enhanced authentication. `event.action` names the kind of event, and the client details are stored in `source.ip` and in the `hivemq.event.*` fields.
 
-{{/* Export ILM Policies
-     This accepts a list of data stream names as arguments and documents one policy
-     per data stream. If no arguments are provided, data streams are auto-discovered by
-     scanning for data_stream/<name>/elasticsearch/ilm/ directories and
-     data_stream/<name>/lifecycle.yml files (lifecycle.yml takes precedence when both exist).
+##### event fields
 
-     If there are no policies defined, this renders as an empty string (no heading).
-*/}}
+{{ fields "event" }}
+
+##### event sample event
+
+{{ event "event" }}
+
 {{ ilm }}
 
-{{/* Export Transforms
-     This will export the transforms used by this integration.
-     If there are no transforms defined, this renders as an empty string (no heading).
-*/}}
 {{ transform }}
