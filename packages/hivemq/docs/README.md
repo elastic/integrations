@@ -320,22 +320,22 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2026-11-18T08:35:58.970Z",
     "agent": {
-        "ephemeral_id": "7824d0ec-cbdd-4cb4-b3d6-114832a4636a",
-        "id": "01623040-2456-48a3-896b-082760d2f35a",
-        "name": "elastic-agent-37601",
+        "ephemeral_id": "8669de98-5b38-4481-a282-c3cbb88d7e98",
+        "id": "6f3c748b-c818-4c72-9360-e51a5200304b",
+        "name": "elastic-agent-86179",
         "type": "filebeat",
         "version": "9.5.6"
     },
     "data_stream": {
         "dataset": "hivemq.event",
-        "namespace": "71052",
+        "namespace": "13471",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "01623040-2456-48a3-896b-082760d2f35a",
+        "id": "6f3c748b-c818-4c72-9360-e51a5200304b",
         "snapshot": false,
         "version": "9.5.6"
     },
@@ -346,10 +346,10 @@ An example event for `event` looks as following:
             "network"
         ],
         "dataset": "hivemq.event",
-        "ingested": "2026-11-18T09:12:07Z",
+        "ingested": "2026-11-18T14:00:29Z",
         "kind": "event",
         "module": "hivemq",
-        "original": "2026-11-18 08:35:58,970 - Client ID: sensor-pub-311, IP: 192.0.2.30, Clean Start: true, Session Expiry: 0 connected.",
+        "original": "2026-11-18 08:35:58,970 - Client ID: sensor-pub-311, IP: 10.89.1.3, Clean Start: true, Session Expiry: 0 connected.",
         "outcome": "success",
         "timezone": "UTC",
         "type": [
@@ -367,18 +367,18 @@ An example event for `event` looks as following:
     "host": {
         "architecture": "aarch64",
         "containerized": false,
-        "hostname": "elastic-agent-37601",
+        "hostname": "elastic-agent-86179",
         "ip": [
             "10.89.2.2",
-            "fe80::8cce:6fff:fef9:ab7",
-            "10.89.1.14",
-            "fe80::88ab:a2ff:fe32:1ba0"
+            "fe80::84e6:e3ff:fe9e:b8dc",
+            "10.89.1.29",
+            "fe80::9051:c4ff:fef6:e1fc"
         ],
         "mac": [
-            "8A-AB-A2-32-1B-A0",
-            "8E-CE-6F-F9-0A-B7"
+            "86-E6-E3-9E-B8-DC",
+            "92-51-C4-F6-E1-FC"
         ],
-        "name": "elastic-agent-37601",
+        "name": "elastic-agent-86179",
         "os": {
             "family": "",
             "kernel": "6.17.7-300.fc43.aarch64",
@@ -394,41 +394,20 @@ An example event for `event` looks as following:
     "log": {
         "file": {
             "device_id": "39",
-            "fingerprint": "d87190469d13c17e427ea47b18faf5fb90ea2145fb472b929d41f58b5ea19717",
-            "inode": "78",
+            "fingerprint": "13883b08e440bb62bcda2f058ab3f28ea72149a5a1436173bc47a436a7c77ede",
+            "inode": "144",
             "path": "/tmp/service_logs/event.log"
         },
         "offset": 0
     },
-    "message": "Client ID: sensor-pub-311, IP: 192.0.2.30, Clean Start: true, Session Expiry: 0 connected.",
+    "message": "Client ID: sensor-pub-311, IP: 10.89.1.3, Clean Start: true, Session Expiry: 0 connected.",
     "related": {
         "ip": [
-            "192.0.2.30"
+            "10.89.1.3"
         ]
     },
     "source": {
-        "as": {
-            "number": 64500,
-            "organization": {
-                "name": "Documentation ASN"
-            }
-        },
-        "geo": {
-            "city_name": "Las Vegas",
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "location": {
-                "coordinates": [
-                    -115.13722007162869,
-                    36.17496999911964
-                ],
-                "type": "Point"
-            },
-            "region_iso_code": "US-NV",
-            "region_name": "Nevada"
-        },
-        "ip": "192.0.2.30"
+        "ip": "10.89.1.3"
     },
     "tags": [
         "preserve_original_event",
