@@ -119,6 +119,12 @@ output_permissions:
 processors:
     resourcedetection/componentid-0:
         detectors:
+            - ec2
+            - ecs
+        override: false
+        timeout: 2s
+    resourcedetection/componentid-1:
+        detectors:
             - system
         system:
             hostname_sources:
@@ -128,13 +134,13 @@ processors:
                     enabled: false
                 host.name:
                     enabled: true
-    transform/componentid-1:
+    transform/componentid-2:
         metric_statements:
             - context: datapoint
               statements:
                 - merge_maps(datapoint.attributes, datapoint.attributes["Dimensions"], "upsert") where IsMap(datapoint.attributes["Dimensions"])
                 - delete_key(datapoint.attributes, "Dimensions") where IsMap(datapoint.attributes["Dimensions"])
-    transform/componentid-2:
+    transform/componentid-3:
         metric_statements:
             - context: datapoint
               statements:
@@ -153,9 +159,64 @@ receivers:
                 limit: 10000
                 recently_active: true
                 stats:
-                    - Maximum
                     - Average
                     - Sum
+                    - Maximum
+            period: 1m
+        region: us-east-1
+    awscloudwatch/componentid-1:
+        credentials_provider: awscredentialsprovider/componentid-0
+        metrics:
+            collection_interval: 5m
+            delay: 5m
+            discovery:
+                filters:
+                    namespace: AWS/ELB
+                limit: 10000
+                recently_active: true
+                stats:
+                    - Average
+                    - Sum
+                    - Maximum
+            period: 1m
+        region: us-east-1
+    awscloudwatch/componentid-2:
+        credentials_provider: awscredentialsprovider/componentid-0
+        metrics:
+            collection_interval: 5m
+            delay: 5m
+            discovery:
+                filters:
+                    namespace: AWS/GatewayELB
+                limit: 10000
+                recently_active: true
+                stats:
+                    - Average
+                    - Sum
+                    - Maximum
+            period: 1m
+        region: us-east-1
+    awscloudwatch/componentid-3:
+        credentials_provider: awscredentialsprovider/componentid-0
+        metrics:
+            collection_interval: 5m
+            delay: 5m
+            discovery:
+                filters:
+                    namespace: AWS/NetworkELB
+                limit: 10000
+                recently_active: true
+                stats:
+                    - Average
+                    - Sum
+                    - Maximum
+            period: 1m
+        region: us-east-1
+    awscloudwatch/componentid-4:
+        credentials_provider: awscredentialsprovider/componentid-0
+        metrics:
+            collection_interval: 5m
+            delay: 5m
             period: 1m
         region: us-east-1
 secret_references:
@@ -176,8 +237,13 @@ service:
             exporters:
                 - forward/componentid-0
             processors:
-                - transform/componentid-1
-                - resourcedetection/componentid-0
                 - transform/componentid-2
+                - resourcedetection/componentid-1
+                - resourcedetection/componentid-0
+                - transform/componentid-3
             receivers:
+                - awscloudwatch/componentid-4
                 - awscloudwatch/componentid-0
+                - awscloudwatch/componentid-3
+                - awscloudwatch/componentid-1
+                - awscloudwatch/componentid-2

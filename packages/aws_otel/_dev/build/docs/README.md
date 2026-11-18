@@ -3,9 +3,9 @@
 
 ## Overview
 
-The AWS OpenTelemetry integration collects CloudWatch metrics for AWS services. Each service is its own data stream. Collection uses the [AWS CloudWatch receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/awscloudwatchreceiver) from the `aws_cloudwatch_input_otel` input package, which supplies the receiver and the credentials extension.
+The AWS OpenTelemetry integration collects CloudWatch metrics for AWS services. Each service is its own data stream. Collection uses the [AWS CloudWatch receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/awscloudwatchreceiver) from the `aws_cloudwatch_input_otel` input package, which supplies the receiver, metric discovery, the credentials extension, and CloudWatch dimension flattening.
 
-This integration adds metric discovery and poll settings on each data stream. The input package flattens CloudWatch dimensions. Each data stream adds host resource detection. EC2 also adds only the EC2 detector, and ECS adds only the ECS detector.
+Each data stream only points the input at its service's CloudWatch namespace and overrides the defaults that differ for that service.
 
 The AWS OpenTelemetry content packages for EC2, Lambda, RDS, SQS, load balancers, and ECS provide dashboards, alerting rule templates, SLO templates, and anomaly detection jobs. Kibana installs each content package automatically once its data stream receives data.
 
@@ -16,19 +16,20 @@ The AWS OpenTelemetry content packages for EC2, Lambda, RDS, SQS, load balancers
 
 ## Services
 
-| Data stream | CloudWatch namespace | Period | Resource detector |
-|---|---|---|---|
-| EC2 | `AWS/EC2` | 5m | EC2 |
-| Lambda | `AWS/Lambda` | 1m | none |
-| RDS | `AWS/RDS` | 1m | none |
-| SQS | `AWS/SQS` | 1m | none |
-| Application Load Balancer | `AWS/ApplicationELB` | 1m | none |
-| Classic Load Balancer | `AWS/ELB` | 1m | none |
-| Network Load Balancer | `AWS/NetworkELB` | 1m | none |
-| Gateway Load Balancer | `AWS/GatewayELB` | 1m | none |
-| ECS | `AWS/ECS` | 1m | ECS |
+| Data stream | CloudWatch namespace | Period |
+|---|---|---|
+| EC2 | `AWS/EC2` | 5m |
+| Lambda | `AWS/Lambda` | 1m |
+| RDS | `AWS/RDS` | 1m |
+| SQS | `AWS/SQS` | 1m |
+| Load balancers (Application, Network, Classic, Gateway) | `AWS/ApplicationELB`, `AWS/NetworkELB`, `AWS/ELB`, `AWS/GatewayELB` | 1m |
+| ECS | `AWS/ECS` | 1m |
 
 Every data stream collects on a 5-minute interval, waits 5 minutes for late CloudWatch data, and caps discovery at 10,000 metrics. Statistics differ by service and are an advanced setting on that data stream.
+
+The load balancer data stream collects all four load balancer types into `aws.elb`. Application Load Balancers are always collected. Network, Classic, and Gateway Load Balancers can each be turned off on that data stream.
+
+To collect a CloudWatch namespace this integration does not cover, such as another AWS service or a custom application namespace, add the AWS CloudWatch (OpenTelemetry) input (`aws_cloudwatch_input_otel`) directly and set its CloudWatch Namespace.
 
 ## Requirements
 
@@ -36,7 +37,7 @@ Every data stream collects on a 5-minute interval, waits 5 minutes for late Clou
 |---|---|
 | **AWS account** | Permission to read CloudWatch metrics (`cloudwatch:ListMetrics`, `cloudwatch:GetMetricData`) |
 | **AWS region** | The region your resources run in |
-| **Elastic Stack** | 9.5.0+ |
+| **Elastic Stack** | 9.6.0+ |
 | **Input package** | `aws_cloudwatch_input_otel` (installed automatically as a dependency) |
 | **Content packages** | `aws_ec2_otel`, `aws_lambda_otel`, `aws_rds_otel`, `aws_sqs_otel`, `aws_elb_metrics_otel`, `aws_ecs_otel` (installed automatically when the matching data stream receives data) |
 
@@ -45,10 +46,10 @@ Every data stream collects on a 5-minute interval, waits 5 minutes for late Clou
 | Setting | Description |
 |---|---|
 | Period | CloudWatch aggregation window for that service. Advanced setting on each data stream. |
-| AWS Region | AWS region to query, for example `us-east-1`. Defined on the CloudWatch input and shown on the main form. Required. |
-| AWS Access Key ID | Access key from the CloudWatch input. Shown on the main form. |
-| AWS Secret Access Key | Secret key from the CloudWatch input. Shown on the main form. |
-| AWS Session Token | Session token from the CloudWatch input. Shown on the main form. Required for temporary credentials. |
+| AWS Region | AWS region to query, for example `us-east-1`. Shown on the main form. Required. |
+| AWS Access Key ID | Access key ID. Shown on the main form. |
+| AWS Secret Access Key | Secret access key. Shown on the main form. |
+| AWS Session Token | Session token. Shown on the main form. Required for temporary credentials. |
 
 ## Authentication
 
