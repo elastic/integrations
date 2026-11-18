@@ -1,10 +1,10 @@
-# The API key is wrong. The token request works, but the Audit API answers 401
-# to createQuery. The CEL program indexes one error document per poll and never
+# The API key is wrong. The token request works, but the Audit API answers 403
+# to createQuery, with the same body as the real API (checked on a tenant). The CEL program indexes one error document per poll and never
 # asks for results, because it has no cursor.
 #
 # Request flow (interval 5s):
-#   poll 1:  token -> createQuery -> 401 -> error document
-#   poll 2+: createQuery -> 401 -> error document
+#   poll 1:  token -> createQuery -> 403 -> error document
+#   poll 2+: createQuery -> 403 -> error document
 
 [!external_stack] skip 'Skipping external stack test.'
 [!exec:jq] skip 'Skipping test requiring absent jq command'
@@ -25,13 +25,13 @@ add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_
 get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 0s -timeout 5m ${DATA_STREAM_NAME}
 cp stdout got_docs.json
 
-# Only error documents, each for a 401 from the createQuery request.
+# Only error documents, each for a 403 from the createQuery request.
 exec jq '[.hits.hits[]._source | select(.error.message == null)] | length' got_docs.json
 stdout '^0$'
-exec jq '[.hits.hits[]._source | select(.error.code != "401")] | length' got_docs.json
+exec jq '[.hits.hits[]._source | select(.error.code != "403")] | length' got_docs.json
 stdout '^0$'
 exec jq -r '[.hits.hits[]._source.error.message] | flatten | .[]' got_docs.json
-stdout 'POST /api/audits/stream/createQuery: \{"code":"401","message":"Unauthorized"'
+stdout 'POST /api/audits/stream/createQuery: \{"message":"Forbidden"\}'
 
 remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
 uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
@@ -224,13 +224,13 @@ rules:
             - 'application/json'
         body: |-
           {"cursorRef":"cursor-ref-not-reached"}
-  # Missing or wrong bearer token or API key.
+  # Missing or wrong API key. The real API answers 403 with this body.
   - path: /api/audits/stream/{endpoint:(?:createQuery|results)}
     methods: ['POST']
     responses:
-      - status_code: 401
+      - status_code: 403
         headers:
           Content-Type:
             - 'application/json'
         body: |-
-          {"code":"401","message":"Unauthorized","description":"The access token or API key is missing or not valid."}
+          {"message":"Forbidden"}

@@ -6,12 +6,12 @@ The CyberArk Identity Security (Idira) integration for Elastic collects audit ev
 
 Use this integration if your CyberArk services run on the CyberArk Identity Security Platform (also called Idira or ISPSS). For other CyberArk products, use these integrations instead:
 
-- **Endpoint Privilege Manager (EPM)**: the [CyberArk EPM](https://www.elastic.co/docs/reference/integrations/cyberark_epm) integration.
+- **Endpoint Privilege Manager (EPM)**: the [CyberArk EPM](https://www.elastic.co/docs/reference/integrations/cyberark_epm) integration collects the endpoint events, policy audit events and admin audit events from the EPM API. The Audit Service can also send EPM administration events (for example, an administrator views a set or a policy), and this integration collects those.
 - **Self-hosted Privileged Access Security (PAS) Vault**: the [CyberArk Privileged Access Security](https://www.elastic.co/docs/reference/integrations/cyberarkpas) integration.
 - **Self-hosted Privileged Threat Analytics (PTA)**: the [CyberArk PTA](https://www.elastic.co/docs/reference/integrations/cyberark_pta) integration.
 
 ### Compatibility
-This integration uses the CyberArk Identity Security Platform SIEM integration API (`/api/audits/stream`). It has been tested against a CyberArk Identity Security Platform tenant with the CyberArk Identity service.
+This integration uses the CyberArk Identity Security Platform SIEM integration API (`/api/audits/stream`). It has been tested against a CyberArk Identity Security Platform tenant with the CyberArk Identity and Endpoint Privilege Manager services. The parsing of Privilege Cloud, Secure Infrastructure Access and Identity Threat Detection and Response events is based on the CyberArk documentation and sample events, not on events from a live tenant.
 
 ### How it works
 Elastic Agent gets an OAuth2 access token from your CyberArk Identity tenant with the client credentials flow. It then creates a stream query on the Audit Service and reads the results page by page. The Audit Service returns a cursor with each page. Elastic Agent stores the cursor and uses it on the next poll to read only the new events.
@@ -25,6 +25,7 @@ The CyberArk Identity Security (Idira) integration collects log messages of the 
   * Privilege Cloud: vault sign-ins, password retrieval and changes, safe and owner changes, and privileged sessions.
   * Secure Infrastructure Access: privileged session start, end, and failure.
   * Identity Threat Detection and Response: security alerts.
+  * Endpoint Privilege Manager: administration events, such as views of sets and policies.
 
 ### Supported use cases
 Use this integration to monitor identity and privileged access activity across the CyberArk Identity Security Platform in one place. For example, detect sign-in failures and MFA misuse, track changes to administrative rights and roles, audit access to privileged credentials, and investigate CyberArk threat detection alerts together with your other security data.
@@ -95,7 +96,8 @@ Menu names can be different in your portal version. Newer portals group the menu
 ## Troubleshooting
 - Token request fails with `400` and `access_denied`: make sure **Client ID** is the full login name of the service user, including the tenant suffix (for example `svc_elastic@cyberark.cloud.1234`).
 - Token request fails with an empty or wrong secret: check that **Client Secret** is the current password of the service user.
-- Audit API requests fail with `401`, or `createQuery` fails with `403`: check that the web app has the `isp.audit.events:read` scope and the advanced script with the `tenant_id` and `aud` claims, and that the service user has the web app permissions.
+- `createQuery` fails with `403` and the message `Forbidden`: the Audit Service did not accept the API key. Check that **SIEM API Key** is the key of the SIEM integration and that **Audit API URL** is the API base URL of the same SIEM integration.
+- Audit API requests fail with `401` and the message `Unauthorized`: the Audit Service did not accept the access token. Check that the web app has the `isp.audit.events:read` scope and the advanced script with the `tenant_id` and `aud` claims, and that the service user has the web app permissions.
 - A document with the `error.message` "cursor rejected, a new query starts on the next poll": the Audit Service did not accept the stored cursor (`400` or `403` on `results`). On the next poll, the integration creates a new query from the time of the last collected event. Events that are collected again at that time are not duplicated, because the document ID comes from the event ID. If the message repeats and the next poll logs a `createQuery` error, the cause is the credentials or permissions, not the cursor.
 - No events are collected and there are no errors: give the service user the **Read Only System Administration** right.
 - Events older than 7 days are missing: the Audit Service keeps events for 7 days only. If Elastic Agent stops for longer than that, the older events cannot be collected.
