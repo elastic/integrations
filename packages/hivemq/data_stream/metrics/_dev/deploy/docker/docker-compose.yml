@@ -1,0 +1,25 @@
+version: '2.3'
+services:
+  hivemq-metrics:
+    build:
+      context: .
+      args:
+        HIVEMQ_VERSION: ${HIVEMQ_VERSION:-2026.5}
+    # 9399 must stay first: elastic-package resolves {{Port}} to the first
+    # entry of this list.
+    ports:
+      - 9399
+      - 1883
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "-o", "/dev/null", "http://localhost:9399/metrics"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  # Publishes retained and QoS 1 messages in a loop so the broker counters move.
+  hivemq-metrics-traffic:
+    image: eclipse-mosquitto:2
+    depends_on:
+      hivemq-metrics:
+        condition: service_healthy
+    command: >-
+      sh -c 'i=0; while true; do i=$$((i+1)); mosquitto_pub -h hivemq-metrics -p 1883 -i traffic-pub -q 1 -r -t sensors/temperature -m "$$i" || true; mosquitto_sub -h hivemq-metrics -p 1883 -i traffic-sub -q 1 -t sensors/# -C 1 -W 2 > /dev/null || true; sleep 2; done'

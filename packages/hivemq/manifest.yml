@@ -4,7 +4,7 @@ title: HiveMQ Community Edition
 version: "0.1.0"
 source:
   license: "Elastic-2.0"
-description: Collect broker and client event logs from HiveMQ Community Edition MQTT brokers with Elastic Agent.
+description: Collect logs and metrics from HiveMQ Community Edition MQTT brokers with Elastic Agent.
 type: integration
 categories:
   - message_queue
@@ -21,12 +21,54 @@ icons:
     type: image/svg+xml
 policy_templates:
   - name: hivemq
-    title: HiveMQ Community Edition logs
-    description: Collect broker and client event logs from HiveMQ Community Edition
+    title: HiveMQ Community Edition logs and metrics
+    description: Collect broker, client event and migration logs and broker metrics from HiveMQ Community Edition
     inputs:
       - type: filestream
         title: Collect HiveMQ logs from files
-        description: Collecting HiveMQ broker and client event logs using the filestream input
+        description: Collecting HiveMQ broker, client event and migration logs using the filestream input
+      - type: prometheus/metrics
+        title: Collect HiveMQ metrics from the Prometheus extension
+        description: Collecting HiveMQ broker metrics from the endpoint served by the HiveMQ Prometheus Extension
+        vars:
+          - name: hosts
+            type: text
+            title: Hosts
+            description: >-
+              Base URLs of the HiveMQ Prometheus Extension endpoint, in the format `http[s]://<host>:<port>`. The extension listens on port 9399 by default (`port` in the extension's `conf/config.properties`). Add one entry per broker.
+            multi: true
+            required: true
+            show_user: true
+            default:
+              - http://localhost:9399
+          - name: metrics_path
+            type: text
+            title: Metrics Path
+            description: >-
+              Path of the metrics endpoint, as set by `metric_path` in the extension's `conf/config.properties`.
+            multi: false
+            required: true
+            show_user: true
+            default: /metrics
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: >-
+              SSL configuration options, for when the endpoint is served over HTTPS through a TLS-terminating proxy. See [documentation](https://www.elastic.co/guide/en/fleet/current/elastic-agent-ssl-configuration.html) for details.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              # ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+              # ssl.verification_mode: full
+          - name: condition
+            type: text
+            title: Condition
+            description: >-
+              Condition to filter when to collect this input. See [Dynamic Input Configuration](https://www.elastic.co/guide/en/fleet/current/dynamic-input-configuration.html) for details.
+            multi: false
+            required: false
+            show_user: false
 owner:
   github: elastic/integrations-triaging
   type: community
