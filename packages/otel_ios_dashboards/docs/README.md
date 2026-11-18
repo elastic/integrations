@@ -86,7 +86,7 @@ A drilldown dashboard opened from the Application Overview when selecting a spec
 1. Instrument your iOS application and start sending data to your Elastic Stack.
 2. Install this content package in Kibana and open the **[iOS OTel] Application Overview** dashboard.
 
-For the full setup guide, refer to the [EDOT iOS documentation](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/ios).
+For the full setup guide, refer to the [EDOT iOS getting started documentation](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/ios/getting-started).
 
 ## Visualizing your data
 

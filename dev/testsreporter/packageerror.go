@@ -5,10 +5,9 @@
 package testsreporter
 
 import (
+	"errors"
 	"fmt"
 	"strings"
-
-	"github.com/elastic/integrations/dev/codeowners"
 )
 
 type packageError struct {
@@ -16,7 +15,10 @@ type packageError struct {
 	dataError
 	teams       []string
 	packageName string
+	packagePath string
 	dataStream  string
+	// ownersErr is the problem found looking for the owners, if the error was created without them.
+	ownersErr error
 }
 
 type packageErrorOptions struct {
@@ -27,10 +29,22 @@ type packageErrorOptions struct {
 	Subscription      string
 	BuildURL          string
 	TestCase          testCase
-	CodeownersPath    string
 	ClosedIssueURL    string
 	PreviousBuilds    []string
 	Teams             []string
+
+	// OwnersResolver is used to find the owners of the package. It is required unless
+	// Teams or OwnersError are set.
+	OwnersResolver *ownersResolver
+
+	// OwnersError is a previous problem preparing the lookup of owners (e.g. invalid CODEOWNERS file).
+	// If it is set, no owners are looked up and the error is kept in the package error.
+	// It requires AllowMissingOwners.
+	OwnersError error
+
+	// AllowMissingOwners avoids failing when the owners of the package are not found,
+	// the package error is created without owners.
+	AllowMissingOwners bool
 }
 
 // Ensures that packageError implements failureObserver interface
@@ -58,11 +72,27 @@ func newPackageError(options packageErrorOptions) (*packageError, error) {
 	p.dataStream = p.testCase.DataStream()
 
 	if len(options.Teams) == 0 {
-		owners, err := codeowners.PackageOwners(p.packageName, p.dataStream, options.CodeownersPath)
-		if err != nil {
-			return nil, fmt.Errorf("failed to find owners for package %s: %w", p.packageName, err)
+		var owners []string
+		err := options.OwnersError
+		switch {
+		case err != nil:
+		case options.OwnersResolver != nil:
+			var details packageDetails
+			details, err = options.OwnersResolver.lookup(p.packageName, p.dataStream)
+			owners = details.owners
+			p.packagePath = details.path
+		default:
+			return nil, errors.New("owners resolver, owners error or teams are required to create a package error")
 		}
-		p.teams = owners
+		switch {
+		case err != nil && options.AllowMissingOwners:
+			p.ownersErr = err
+			fmt.Printf("WARNING: the failure of %q will be reported without owners: %s\n", p.testCase.String(), err)
+		case err != nil:
+			return nil, fmt.Errorf("failed to find owners for package %s: %w", p.packageName, err)
+		default:
+			p.teams = owners
+		}
 	}
 
 	return &p, nil
@@ -96,6 +126,7 @@ func (p *packageError) String() string {
 func (p *packageError) SummaryData() map[string]any {
 	data := p.dataError.Data()
 	data["packageName"] = p.packageName
+	data["packagePath"] = p.packagePath
 	data["testName"] = p.Name
 	data["dataStream"] = p.dataStream
 	data["owners"] = p.teams

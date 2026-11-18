@@ -1,0 +1,111 @@
+# Test that a poll returning no threats does not break the next poll.
+#
+# An empty threats list makes the CEL program return "events": []. The CEL
+# input leaves an empty events array in state, so the next evaluation starts
+# with "events": [] and must not treat it as a phase 1 error object.
+#
+# The mock cycles through three responses for /web/api/v2.1/threats:
+#   1st call → 200 with no threats; "events": [] is left in state
+#   2nd call → 200 with no threats; evaluated with the left over "events": []
+#   3rd call → 200 with 1 threat; CEL fetches /threats/threat-001/explore/events
+#
+# Before the fix, the 2nd evaluation failed with "unsupported index type
+# 'string' in list" and indexed an error event. The test asserts that the 2
+# threat event documents arrive and that no error events were indexed.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} s1-mock
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# Wait for the 2 threat event documents from the 3rd poll. By then the 2nd
+# poll, which used to fail, has already run.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+# Verify both documents are real threat events.
+exec jq '[.hits.hits[]._source | select(.sentinel_one.threat_event != null)] | length' got_docs.json
+stdout '^2$'
+
+# Verify no error events were indexed.
+exec jq '[.hits.hits[]._source | select(.error.message != null)] | length' got_docs.json
+stdout '^0$'
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down s1-mock
+
+-- test_config.yaml --
+input: cel
+vars:
+  url: http://s1-mock:8080
+  api_token: test-api-token
+data_stream:
+  vars:
+    interval: 10s
+    batch_size: 10
+    preserve_original_event: true
+    enable_request_tracer: false
+-- s1-mock/docker-compose.yml --
+version: '2.3'
+services:
+  s1-mock:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: s1-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+-- s1-mock/config.yml --
+rules:
+  # Threats list endpoint: the first two calls return no threats, the third
+  # call returns one threat. The mock cycles through responses in order.
+  - path: /web/api/v2.1/threats
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "ApiToken test-api-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"data":[],"pagination":{"nextCursor":null,"totalItems":0}}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"data":[],"pagination":{"nextCursor":null,"totalItems":0}}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"data":[{"id":"threat-001","threatInfo":{"threatName":"TestThreat","classification":"Malware","createdAt":"2024-01-15T10:00:00.000Z","updatedAt":"2024-01-15T10:01:00.000Z"}}],"pagination":{"nextCursor":null,"totalItems":1}}
+
+  # Threat events endpoint: always returns 200 with 2 events. This endpoint
+  # is called only after the threats list returns a threat (3rd call).
+  - path: /web/api/v2.1/threats/threat-001/explore/events
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "ApiToken test-api-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"data":[{"id":"event-001","eventType":"DNS","createdAt":"2024-01-15T10:00:00.000Z","agentId":"agent-001"},{"id":"event-002","eventType":"NETWORK","createdAt":"2024-01-15T10:01:00.000Z","agentId":"agent-001"}],"pagination":{"nextCursor":null,"totalItems":2}}

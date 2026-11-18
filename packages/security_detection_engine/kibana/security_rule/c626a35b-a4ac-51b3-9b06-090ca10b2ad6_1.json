@@ -1,0 +1,128 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects an unusual volume of Kubernetes API get requests against multiple distinct Secret objects from the same client fingerprint (user, source IP, and user agent) within a defined lookback window. This can indicate credential access or in-cluster reconnaissance, where a user or token is used to enumerate and retrieve sensitive data such as service account tokens, registry credentials, TLS material, or application configuration. Failed get requests are also included, as they may reveal RBAC boundaries, confirm the existence of targeted secrets, or reflect automated probing activity.",
+        "from": "now-6m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "AWS EKS Rapid Secret GET Activity Against Multiple Objects",
+        "note": "## Triage and analysis\n\n### Investigating AWS EKS Rapid Secret GET Activity Against Multiple Objects\nThis rule surfaces clusters of `get` operations on the `secrets` API where the same identity and client path\n(`user.name`, `source.ip`, `user_agent.original`) touch several different secret names within the rule lookback window.\n**Allowed and denied** outcomes are included: successful reads may indicate harvesting; repeated **forbidden** or\n**unauthorized** responses can still signal reconnaissance, RBAC probing, or scripted spray against secret names that\nexist in the cluster.\n\n### Possible investigation steps\n\n- Inspect `Esql.outcome` for a mix of allow vs deny and whether failures cluster on sensitive namespaces.\n- Map the identity to RBAC and namespace scope; review `Esql.secrets_names` and `Esql.namespaces` for high-value\n  targets (tokens, registry credentials, TLS bundles, application secrets).\n- Pivot on the same `source.ip` and user for follow-on API activity (exec, pod create, role changes, broad `list` on\n  secrets).\n- Validate against expected automation (CI, GitOps, backup, in-cluster controllers) before treating as malicious.\n\n### False positive analysis\n\n- Startup, Helm, or controllers may legitimately touch many secrets in one window; tune by user, namespace, or IP\n  allowlists when baselined.\n\n### Response and remediation\n\n- If the activity is unauthorized, revoke the token or credentials used, rotate every secret that was read, and reduce\n  the identity's RBAC to least privilege.\n- Review the same identity and source IP for pod exec, token creation, or RBAC changes in the surrounding time window.",
+        "query": "from logs-aws.eks_audit-* metadata _id, _index, _version\n| where data_stream.dataset == \"aws.eks_audit\"\n    and event.action == \"get\"\n    and aws.eks.audit.objectRef.resource == \"secrets\"\n    and source.ip is not null and user.name is not null\n    and not to_string(source.ip) in (\"127.0.0.1\", \"::1\")\n    and not user.name in (\"system:kube-controller-manager\", \"system:kube-scheduler\")\n    and not aws.eks.audit.objectRef.name like \"sh.helm.release.*\"\n    and not aws.eks.audit.user.username in (\n      \"system:serviceaccount:flux-system:kustomize-controller\",\n      \"system:serviceaccount:flux-system:helm-controller\",\n      \"system:serviceaccount:flux-system:source-controller\",\n      \"system:serviceaccount:security:trivy-operator\"\n    )\n| stats\n    Esql.unique_credentials = count_distinct(aws.eks.audit.objectRef.name),\n    Esql.secrets_names = values(aws.eks.audit.objectRef.name),\n    Esql.namespaces = values(aws.eks.audit.objectRef.namespace),\n    Esql.event_outcome_values = values(event.outcome),\n    Esql.outcome = values(`aws.eks.audit.annotations.authorization_k8s_io/decision`)\n  by user.name, aws.eks.audit.user.username, source.ip, user_agent.original\n| where Esql.unique_credentials >= 3\n| KEEP user.name, aws.eks.audit.user.username, source.ip, user_agent.original, Esql.*\n",
+        "references": [
+            "https://www.sysdig.com/blog/scarleteel-2-0"
+        ],
+        "related_integrations": [
+            {
+                "package": "aws",
+                "version": ">=8.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.eks.audit.annotations.authorization_k8s_io/decision",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.eks.audit.objectRef.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.eks.audit.objectRef.namespace",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.eks.audit.objectRef.resource",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.eks.audit.user.username",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "c626a35b-a4ac-51b3-9b06-090ca10b2ad6",
+        "setup": "This rule reads EKS control-plane audit logs collected by the AWS integration\ninto `logs-aws.eks_audit-*`, where the AWS EKS audit ingest\npipelines normalize each audit record under `aws.eks.audit.*`.\n\nEnable the `audit` control-plane log type on the EKS cluster, send its\nCloudWatch log group through the AWS integration, and confirm events carry\n`data_stream.dataset: aws.eks_audit` and\n`cloud.provider: aws` before enabling this rule.\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Containers",
+            "Platform: AWS",
+            "Platform: Kubernetes",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: Kubernetes API Server Audit Logs",
+            "Service: AWS EKS",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Rule Type: ES|QL",
+            "Resources: Investigation Guide",
+            "Profile: Beta"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.007",
+                                "name": "Container API",
+                                "reference": "https://attack.mitre.org/techniques/T1552/007/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "c626a35b-a4ac-51b3-9b06-090ca10b2ad6_1",
+    "type": "security-rule"
+}

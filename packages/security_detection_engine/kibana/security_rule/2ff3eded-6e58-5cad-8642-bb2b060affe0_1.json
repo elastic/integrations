@@ -1,0 +1,95 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects ESXi SSH being turned on. SSH is often left disabled so the host is managed through the local console, the Host Client, or vCenter. Enabling it opens a remote shell that can copy files onto the host and run commands against the datastore.",
+        "false_positives": [
+            "Administrators enable SSH for a documented troubleshooting window. ESXi often disables the service again on reboot, so a later enable by a known operator can be expected."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-vsphere.log-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "message",
+                "event.original",
+                "host.hostname",
+                "log.file.path",
+                "host.ip"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "ESXi SSH Access Enabled",
+        "note": "## Triage and analysis\n\n### Investigating ESXi SSH Access Enabled\n\nSSH is disabled on many ESXi hosts. Turning it on is the step that lets an intruder who already has the root password open a shell and stage a payload in /tmp.\n\n#### Possible investigation steps\n\n- Confirm whether the hit is the hostd sentence SSH access has been enabled or the shell command hostsvc/enable_ssh.\n- Review source.ip and the account on nearby authentication events.\n- Check for a following cd /tmp, file upload, or vm process command.\n- Ask whether a change ticket opened SSH on this host.\n\n### False positive analysis\n\nDocumented troubleshooting enables SSH and should disable it afterward. An enable with no ticket, followed by datastore commands, is the intrusion pattern.\n\n### Response and remediation\n\n- If the enable was not approved, disable SSH (vim-cmd hostsvc/disable_ssh) after preserving logs.\n- Rotate the root password and review accounts added in the same window.\n- Hunt other hosts for the same hostd event.\n",
+        "query": "data_stream.dataset:vsphere.log and message:(\"SSH access has been enabled\" or \"hostsvc/enable_ssh\")\n",
+        "references": [
+            "https://lolesxi-project.github.io/LOLESXi/#",
+            "https://blogs.vmware.com/security/2022/10/esxi-targeting-ransomware-tactics-and-techniques-part-2.html",
+            "https://detect.fyi/vmware-esxi-logging-detection-opportunities-4fb56411ec21"
+        ],
+        "related_integrations": [
+            {
+                "package": "vsphere",
+                "version": ">=1.18.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "message",
+                "type": "match_only_text"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "2ff3eded-6e58-5cad-8642-bb2b060affe0",
+        "setup": "## Setup\n\nThis rule requires ESXi host logs collected by the Elastic vSphere integration: https://www.elastic.co/docs/reference/integrations/vsphere\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "Data Source: VMware vSphere",
+            "Use Case: Threat Detection",
+            "Tactic: Lateral Movement",
+            "Resources: Investigation Guide",
+            "Rule Type: Custom Query (KQL)",
+            "Platform: VMware ESXi"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1021",
+                        "name": "Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1021/",
+                        "subtechnique": [
+                            {
+                                "id": "T1021.004",
+                                "name": "SSH",
+                                "reference": "https://attack.mitre.org/techniques/T1021/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "2ff3eded-6e58-5cad-8642-bb2b060affe0_1",
+    "type": "security-rule"
+}
