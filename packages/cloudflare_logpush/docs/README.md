@@ -1350,8 +1350,8 @@ An example event for `dex_application_tests` looks as following:
 | cloudflare_logpush.dex_application_tests.http.timings.connect_start_ms | Offset in milliseconds from the start of the test at which the connection started. | long | ms | gauge |
 | cloudflare_logpush.dex_application_tests.http.timings.domain_lookup_end_ms | Offset in milliseconds from the start of the test at which the DNS lookup completed. | long | ms | gauge |
 | cloudflare_logpush.dex_application_tests.http.timings.domain_lookup_start_ms | Offset in milliseconds from the start of the test at which the DNS lookup started. | long | ms | gauge |
-| cloudflare_logpush.dex_application_tests.http.timings.redirect_end_ms | Time in milliseconds when the redirect completed. | long | ms | gauge |
-| cloudflare_logpush.dex_application_tests.http.timings.redirect_start_ms | Time in milliseconds when the redirect started. | long | ms | gauge |
+| cloudflare_logpush.dex_application_tests.http.timings.redirect_end_ms | Offset in milliseconds from the start of the test at which the redirect completed. | long | ms | gauge |
+| cloudflare_logpush.dex_application_tests.http.timings.redirect_start_ms | Offset in milliseconds from the start of the test at which the redirect started. | long | ms | gauge |
 | cloudflare_logpush.dex_application_tests.http.timings.request_start_ms | Offset in milliseconds from the start of the test at which the request started. | long | ms | gauge |
 | cloudflare_logpush.dex_application_tests.http.timings.response_end_ms | Offset in milliseconds from the start of the test at which the response completed. | long | ms | gauge |
 | cloudflare_logpush.dex_application_tests.http.timings.response_start_ms | Offset in milliseconds from the start of the test at which the response started. | long | ms | gauge |
