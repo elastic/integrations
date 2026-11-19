@@ -1,9 +1,29 @@
-# Test that _shards.failed > 0 triggers Soft-Fail + partial_shard_stats tagging
-# instead of blocking all index deltas, while indices with zero responding shards
-# (partial_empty) are filtered out so existing baselines are not zeroed.
+# Test 3-poll partial shard failure and recovery sequence (healthy -> partial -> healthy):
+# 1. Poll A (healthy, _shards.failed == 0): establishes full multi-shard baselines for
+#    orders-2026.01.01 (2 primaries, 2,000,000 ms), truncated-2026.01.01 (1 primary + 1 replica,
+#    1,000,000 ms), and healthy-2026.01.01 (1 primary, 500 ms).
+# 2. Poll B (partial, _shards.failed == 3):
+#    - Emits 1 error.code == "partial_shard_stats" diagnostic document.
+#    - Emits best-effort delta (50 ms) tagged partial_shard_stats == true for unaffected healthy-2026.01.01.
+#    - Skips orders-2026.01.01 via _shards.failures[].index so its Poll A baseline is preserved.
+#    - Skips truncated-2026.01.01 via cur_sc < prev_sc fallback (omitted from _shards.failures[])
+#      so its Poll A baseline is preserved.
+#    - Skips broken-2026.01.01 (0 responding shards, partial_empty).
+# 3. Poll C (healthy recovery, _shards.failed == 0):
+#    - Computes exact Poll A -> Poll C deltas without lifetime-counter inflation:
+#      * orders-2026.01.01: index_time_in_millis_delta == 200 (not 1,000,100),
+#        query_time_in_millis_delta == 80, query_total_delta == 8, docs.count_delta == 100.
+#      * truncated-2026.01.01: index_time_in_millis_delta == 90 (not 500,050),
+#        query_time_in_millis_delta == 20, query_total_delta == 4.
+#      * healthy-2026.01.01: index_time_in_millis_delta == 60 (partial_shard_stats absent).
+#      * broken-2026.01.01: initial healthy baseline document (1 doc, no delta).
 
 [!external_stack] skip 'Skipping external stack test.'
 [!exec:jq] skip 'Skipping test requiring absent jq command'
+[!exec:sh] skip 'Skipping test requiring absent sh command'
+
+# Avoid straddling 00:00 UTC mid-3-poll sequence.
+exec sh -c 'wait_sec=$(jq -nr "now | gmtime | if .[3] == 23 and .[4] == 59 and .[5] >= 25 then (60 - (.[5] | floor) + 2) else 0 end"); if [ "$wait_sec" -gt 0 ]; then sleep "$wait_sec"; fi'
 
 use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
 
@@ -15,21 +35,42 @@ add_package -profile ${CONFIG_PROFILES}/${PROFILE}
 
 add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
 
-# Expect 3 documents:
-#   1 config_snapshot (conf_sync_enabled=false)
-#   1 partial_shard_stats diagnostic error document
-#   1 index_usage document for orders-2026.01.01 (broken-2026.01.01 filtered via partial_empty)
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 3 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+# Expect 10 documents across Polls A, B, C (Poll D+ returns empty indices and is dropped):
+#   Poll A: 1 config_snapshot + 3 baseline index_usage (healthy, orders, truncated) = 4
+#   Poll B: 1 partial_shard_stats error + 1 healthy-2026.01.01 partial delta = 2
+#   Poll C: 4 healthy index_usage (healthy delta, orders delta, truncated delta, broken baseline) = 4
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 10 -confirm 12s -timeout 5m ${DATA_STREAM_NAME}
 cp stdout got_docs.json
 
 exec jq '[.hits.hits[]._source | select(.error.code == "partial_shard_stats")] | length' got_docs.json
 stdout '^1$'
 
-exec jq '[.hits.hits[]._source | select(.elasticsearch.index.name == "orders-2026.01.01" and .elasticsearch.index.partial_shard_stats == true)] | length' got_docs.json
+# Unaffected healthy-2026.01.01: 3 docs total (Poll A baseline, Poll B partial delta=50, Poll C healthy delta=60)
+exec jq '[.hits.hits[]._source | select(.elasticsearch.index.name == "healthy-2026.01.01" and .elasticsearch.index.partial_shard_stats == true and .elasticsearch.index.total.indexing.index_time_in_millis_delta == 50)] | length' got_docs.json
 stdout '^1$'
 
-exec jq '[.hits.hits[]._source | select(.elasticsearch.index.name == "broken-2026.01.01")] | length' got_docs.json
-stdout '^0$'
+exec jq '[.hits.hits[]._source | select(.elasticsearch.index.name == "healthy-2026.01.01" and (.elasticsearch.index.partial_shard_stats == null) and .elasticsearch.index.total.indexing.index_time_in_millis_delta == 60)] | length' got_docs.json
+stdout '^1$'
+
+# Multi-primary orders-2026.01.01 (listed in _shards.failures[] on Poll B):
+# Only 2 docs total (Poll A baseline + Poll C recovery), with exact delta=200 ms and docs_delta=100 (no ~1,000,000 inflation)
+exec jq '[.hits.hits[]._source | select(.elasticsearch.index.name == "orders-2026.01.01")] | length' got_docs.json
+stdout '^2$'
+
+exec jq '[.hits.hits[]._source | select(.elasticsearch.index.name == "orders-2026.01.01" and .elasticsearch.index.total.indexing.index_time_in_millis_delta == 200 and .elasticsearch.index.total.search.query_time_in_millis_delta == 80 and .elasticsearch.index.total.search.query_total_delta == 8 and .elasticsearch.index.primaries.docs.count_delta == 100)] | length' got_docs.json
+stdout '^1$'
+
+# Multi-copy truncated-2026.01.01 (omitted from _shards.failures[] on Poll B; skipped via cur_sc < prev_sc fallback):
+# Only 2 docs total (Poll A baseline + Poll C recovery), with exact delta=90 ms (no ~500,000 inflation)
+exec jq '[.hits.hits[]._source | select(.elasticsearch.index.name == "truncated-2026.01.01")] | length' got_docs.json
+stdout '^2$'
+
+exec jq '[.hits.hits[]._source | select(.elasticsearch.index.name == "truncated-2026.01.01" and .elasticsearch.index.total.indexing.index_time_in_millis_delta == 90 and .elasticsearch.index.total.search.query_time_in_millis_delta == 20 and .elasticsearch.index.total.search.query_total_delta == 4)] | length' got_docs.json
+stdout '^1$'
+
+# Zero-shard broken-2026.01.01 on Poll B: skipped on Poll B, 1 initial baseline doc on Poll C
+exec jq '[.hits.hits[]._source | select(.elasticsearch.index.name == "broken-2026.01.01" and .elasticsearch.index.partial_shard_stats == null and .elasticsearch.index.total.indexing.index_time_in_millis_delta == null)] | length' got_docs.json
+stdout '^1$'
 
 remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
 uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
@@ -47,6 +88,7 @@ data_stream:
     indexing_weight: 20
     query_weight: 20
     storage_weight: 40
+    interval: 8s
 -- cb-mock/docker-compose.yml --
 version: '2.3'
 services:
@@ -89,7 +131,25 @@ rules:
           Content-Type:
             - "application/json"
         body: |-
-          {"_shards":{"total":4,"successful":3,"skipped":0,"failed":1},"indices":{"orders-2026.01.01":{"primaries":{"docs":{"count":80000},"store":{"total_data_set_size_in_bytes":268435456}},"total":{"store":{"size_in_bytes":268435456},"indexing":{"index_time_in_millis":100},"search":{"query_time_in_millis":320,"query_total":20}},"shards":{"0":[{"routing":{"state":"STARTED","primary":true,"node":"node-hub-1"},"docs":{"count":80000},"store":{"size_in_bytes":268435456,"total_data_set_size_in_bytes":268435456},"indexing":{"index_time_in_millis":100},"search":{"query_time_in_millis":320,"query_total":20}}]}},"broken-2026.01.01":{"primaries":{"docs":{"count":0},"store":{"total_data_set_size_in_bytes":0}},"total":{"store":{"size_in_bytes":0}},"shards":{}}}}
+          {"_shards":{"total":5,"successful":5,"skipped":0,"failed":0},"indices":{"healthy-2026.01.01":{"primaries":{"docs":{"count":10000},"store":{"total_data_set_size_in_bytes":104857600}},"total":{"store":{"size_in_bytes":104857600},"indexing":{"index_time_in_millis":500},"search":{"query_time_in_millis":100,"query_total":10}},"shards":{"0":[{"routing":{"state":"STARTED","primary":true,"node":"node-hub-1"},"docs":{"count":10000},"store":{"size_in_bytes":104857600,"total_data_set_size_in_bytes":104857600},"indexing":{"index_time_in_millis":500},"search":{"query_time_in_millis":100,"query_total":10}}]}},"orders-2026.01.01":{"primaries":{"docs":{"count":100000},"store":{"total_data_set_size_in_bytes":268435456}},"total":{"store":{"size_in_bytes":268435456},"indexing":{"index_time_in_millis":2000000},"search":{"query_time_in_millis":400000,"query_total":10000}},"shards":{"0":[{"routing":{"state":"STARTED","primary":true,"node":"node-hub-1"},"docs":{"count":50000},"store":{"size_in_bytes":134217728,"total_data_set_size_in_bytes":134217728},"indexing":{"index_time_in_millis":1000000},"search":{"query_time_in_millis":200000,"query_total":5000}}],"1":[{"routing":{"state":"STARTED","primary":true,"node":"node-hub-2"},"docs":{"count":50000},"store":{"size_in_bytes":134217728,"total_data_set_size_in_bytes":134217728},"indexing":{"index_time_in_millis":1000000},"search":{"query_time_in_millis":200000,"query_total":5000}}]}},"truncated-2026.01.01":{"primaries":{"docs":{"count":20000},"store":{"total_data_set_size_in_bytes":67108864}},"total":{"store":{"size_in_bytes":134217728},"indexing":{"index_time_in_millis":1000000},"search":{"query_time_in_millis":100000,"query_total":2000}},"shards":{"0":[{"routing":{"state":"STARTED","primary":true,"node":"node-hub-1"},"docs":{"count":20000},"store":{"size_in_bytes":67108864,"total_data_set_size_in_bytes":67108864},"indexing":{"index_time_in_millis":500000},"search":{"query_time_in_millis":50000,"query_total":1000}},{"routing":{"state":"STARTED","primary":false,"node":"node-hub-2"},"docs":{"count":20000},"store":{"size_in_bytes":67108864,"total_data_set_size_in_bytes":67108864},"indexing":{"index_time_in_millis":500000},"search":{"query_time_in_millis":50000,"query_total":1000}}]}}}}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"_shards":{"total":6,"successful":3,"skipped":0,"failed":3,"failures":[{"shard":1,"index":"orders-2026.01.01","node":"node-hub-2","reason":{"type":"node_disconnected_exception","reason":"disconnected"}},{"shard":0,"index":"broken-2026.01.01","node":"node-hub-2","reason":{"type":"node_disconnected_exception","reason":"disconnected"}}]},"indices":{"healthy-2026.01.01":{"primaries":{"docs":{"count":10010},"store":{"total_data_set_size_in_bytes":104858600}},"total":{"store":{"size_in_bytes":104858600},"indexing":{"index_time_in_millis":550},"search":{"query_time_in_millis":120,"query_total":12}},"shards":{"0":[{"routing":{"state":"STARTED","primary":true,"node":"node-hub-1"},"docs":{"count":10010},"store":{"size_in_bytes":104858600,"total_data_set_size_in_bytes":104858600},"indexing":{"index_time_in_millis":550},"search":{"query_time_in_millis":120,"query_total":12}}]}},"orders-2026.01.01":{"primaries":{"docs":{"count":50050},"store":{"total_data_set_size_in_bytes":134218728}},"total":{"store":{"size_in_bytes":134218728},"indexing":{"index_time_in_millis":1000100},"search":{"query_time_in_millis":200040,"query_total":5004}},"shards":{"0":[{"routing":{"state":"STARTED","primary":true,"node":"node-hub-1"},"docs":{"count":50050},"store":{"size_in_bytes":134218728,"total_data_set_size_in_bytes":134218728},"indexing":{"index_time_in_millis":1000100},"search":{"query_time_in_millis":200040,"query_total":5004}}]}},"truncated-2026.01.01":{"primaries":{"docs":{"count":20005},"store":{"total_data_set_size_in_bytes":67109864}},"total":{"store":{"size_in_bytes":67109864},"indexing":{"index_time_in_millis":500040},"search":{"query_time_in_millis":50010,"query_total":1002}},"shards":{"0":[{"routing":{"state":"STARTED","primary":true,"node":"node-hub-1"},"docs":{"count":20005},"store":{"size_in_bytes":67109864,"total_data_set_size_in_bytes":67109864},"indexing":{"index_time_in_millis":500040},"search":{"query_time_in_millis":50010,"query_total":1002}}]}},"broken-2026.01.01":{"primaries":{"docs":{"count":0},"store":{"total_data_set_size_in_bytes":0}},"total":{"store":{"size_in_bytes":0}},"shards":{}}}}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"_shards":{"total":6,"successful":6,"skipped":0,"failed":0},"indices":{"healthy-2026.01.01":{"primaries":{"docs":{"count":10025},"store":{"total_data_set_size_in_bytes":104860600}},"total":{"store":{"size_in_bytes":104860600},"indexing":{"index_time_in_millis":610},"search":{"query_time_in_millis":150,"query_total":15}},"shards":{"0":[{"routing":{"state":"STARTED","primary":true,"node":"node-hub-1"},"docs":{"count":10025},"store":{"size_in_bytes":104860600,"total_data_set_size_in_bytes":104860600},"indexing":{"index_time_in_millis":610},"search":{"query_time_in_millis":150,"query_total":15}}]}},"orders-2026.01.01":{"primaries":{"docs":{"count":100100},"store":{"total_data_set_size_in_bytes":268436456}},"total":{"store":{"size_in_bytes":268436456},"indexing":{"index_time_in_millis":2000200},"search":{"query_time_in_millis":400080,"query_total":10008}},"shards":{"0":[{"routing":{"state":"STARTED","primary":true,"node":"node-hub-1"},"docs":{"count":50080},"store":{"size_in_bytes":134219728,"total_data_set_size_in_bytes":134219728},"indexing":{"index_time_in_millis":1000150},"search":{"query_time_in_millis":200060,"query_total":5006}}],"1":[{"routing":{"state":"STARTED","primary":true,"node":"node-hub-2"},"docs":{"count":50020},"store":{"size_in_bytes":134216728,"total_data_set_size_in_bytes":134216728},"indexing":{"index_time_in_millis":1000050},"search":{"query_time_in_millis":200020,"query_total":5002}}]}},"truncated-2026.01.01":{"primaries":{"docs":{"count":20010},"store":{"total_data_set_size_in_bytes":67110864}},"total":{"store":{"size_in_bytes":134219728},"indexing":{"index_time_in_millis":1000090},"search":{"query_time_in_millis":100020,"query_total":2004}},"shards":{"0":[{"routing":{"state":"STARTED","primary":true,"node":"node-hub-1"},"docs":{"count":20010},"store":{"size_in_bytes":67110864,"total_data_set_size_in_bytes":67110864},"indexing":{"index_time_in_millis":500060},"search":{"query_time_in_millis":50015,"query_total":1003}},{"routing":{"state":"STARTED","primary":false,"node":"node-hub-2"},"docs":{"count":20010},"store":{"size_in_bytes":67108864,"total_data_set_size_in_bytes":67108864},"indexing":{"index_time_in_millis":500030},"search":{"query_time_in_millis":50005,"query_total":1001}}]}},"broken-2026.01.01":{"primaries":{"docs":{"count":500},"store":{"total_data_set_size_in_bytes":1048576}},"total":{"store":{"size_in_bytes":1048576},"indexing":{"index_time_in_millis":30},"search":{"query_time_in_millis":10,"query_total":1}},"shards":{"0":[{"routing":{"state":"STARTED","primary":true,"node":"node-hub-1"},"docs":{"count":500},"store":{"size_in_bytes":1048576,"total_data_set_size_in_bytes":1048576},"indexing":{"index_time_in_millis":30},"search":{"query_time_in_millis":10,"query_total":1}}]}}}}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"_shards":{"total":0,"successful":0,"skipped":0,"failed":0},"indices":{}}
 
   - path: /hub/{indices}/_settings/{settings}
     methods: ["GET"]
@@ -102,7 +162,7 @@ rules:
           Content-Type:
             - "application/json"
         body: |-
-          {"orders-2026.01.01":{"settings":{"index.routing.allocation.include._tier_preference":"data_hot","index.creation_date":"1772323200000"}},"broken-2026.01.01":{"settings":{"index.routing.allocation.include._tier_preference":"data_hot","index.creation_date":"1772323200000"}}}
+          {"healthy-2026.01.01":{"settings":{"index.routing.allocation.include._tier_preference":"data_hot","index.creation_date":"1767225600000"}},"orders-2026.01.01":{"settings":{"index.routing.allocation.include._tier_preference":"data_hot","index.creation_date":"1767225600000"}},"truncated-2026.01.01":{"settings":{"index.routing.allocation.include._tier_preference":"data_hot","index.creation_date":"1767225600000"}},"broken-2026.01.01":{"settings":{"index.routing.allocation.include._tier_preference":"data_hot","index.creation_date":"1767225600000"}}}
 
   - path: /hub/_nodes
     methods: ["GET"]
@@ -115,4 +175,4 @@ rules:
           Content-Type:
             - "application/json"
         body: |-
-          {"nodes":{"node-hub-1":{"roles":["data_hot"]}}}
+          {"nodes":{"node-hub-1":{"roles":["data_hot"]},"node-hub-2":{"roles":["data_hot"]}}}

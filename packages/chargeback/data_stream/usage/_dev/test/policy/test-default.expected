@@ -62,9 +62,12 @@ inputs:
                   "conf_owner_id": clean_owner_id,
                 })]
               : []))).as(conf_evts,
+              state.poll_interval.trim_space().as(raw_poll_iv,
+              try(int(duration(raw_poll_iv != "" ? raw_poll_iv : "10m").getSeconds()), "iv_err").as(parsed_iv_sec,
+              ((type(parsed_iv_sec) == int && parsed_iv_sec > 0 && parsed_iv_sec < 600) ? parsed_iv_sec : 600).as(bucket_sec,
               int(now).as(now_sec,
               now.format(time_layout.RFC3339).as(obs_ts,
-              timestamp(now_sec - (now_sec % 600)).format(time_layout.RFC3339).as(now_ts,
+              timestamp(now_sec - (now_sec % bucket_sec)).format(time_layout.RFC3339).as(now_ts,
               today_utc.parse_time(time_layout.DateOnly).as(today_start,
               int(today_start).as(today_start_sec,
               (today_start - duration("10m")).format(time_layout.RFC3339).as(prev_midnight_ts,
@@ -576,11 +579,20 @@ inputs:
                                       }
                                     :
                                       (bool(t.is_ech) && type(harvest.body) == map && has(harvest.body._shards) && harvest.body._shards != null && has(harvest.body._shards.failed) && harvest.body._shards.failed != null && int(harvest.body._shards.failed) > 0).as(has_partial_shards,
+                                      ((has_partial_shards && has(harvest.body._shards.failures) && harvest.body._shards.failures != null && type(harvest.body._shards.failures) == list) ?
+                                        harvest.body._shards.failures.filter(f, type(f) == map).map(f,
+                                          ((has(f.index) && f.index != null && string(f.index) != "") ? string(f.index) : (
+                                            (has(f.reason) && f.reason != null && type(f.reason) == map && has(f.reason.index) && f.reason.index != null) ? string(f.reason.index) : ""
+                                          )).as(f_raw,
+                                            f_raw.contains(":") ? f_raw.substring(size(f_raw.split(":")[0]) + 1, size(f_raw)) : f_raw
+                                          )
+                                        ).filter(fn, fn != "")
+                                      : []).as(failed_idx_names,
                                       (has_partial_shards ? [dyn({
                                         "error": {
                                           "code": "partial_shard_stats",
                                           "id": tid,
-                                          "message": "Partial shard stats for deployment '" + string(t.name) + "' (" + tid + "): _stats reported " + string(harvest.body._shards.failed) + " failed shard(s); emitting best-effort deltas from responding shards.",
+                                          "message": "Partial shard stats for deployment '" + string(t.name) + "' (" + tid + "): _stats reported " + string(harvest.body._shards.failed) + " failed shard(s); skipping affected indices to preserve counter baselines and emitting deltas from unaffected indices.",
                                         },
                                       })] : []).as(partial_errs,
                                       (bool(t.is_ech) ?
@@ -843,6 +855,7 @@ inputs:
                                         :
                                           norm_harvest.rows.filter(row,
                                             !bool(row.partial_empty) &&
+                                            !(has_partial_shards && (string(row.idx_name) in failed_idx_names || string(row.raw_idx) in failed_idx_names)) &&
                                             string(row.idx_name) != "" &&
                                             !(string(row.idx_name).matches("^(?:partial-|restored-|shrink-.{4}-)*\\.") && !string(row.idx_name).matches("^(?:partial-|restored-|shrink-.{4}-)*\\.ds-")) &&
                                             !string(row.idx_name).matches("^(?:partial-|restored-|shrink-.{4}-)*\\.ds-(?:\\.|ilm-history)") &&
@@ -874,12 +887,22 @@ inputs:
                                             ((has_prev && ("psc" in prev_b) && prev_b.psc != null) ? int(prev_b.psc) : -1).as(prev_psc,
                                             [leg_bkey, leg_bkey + "::hot/content", leg_bkey + "::warm", leg_bkey + "::cold", leg_bkey + "::frozen", leg_bkey + "::unknown"].filter(ck,
                                               ck in base_map && ("t" in base_map[ck]) && base_map[ck].t != null && int(base_map[ck].t) > 0 && int(base_map[ck].t) < now_sec &&
-                                              (now_sec - int(base_map[ck].t)) <= 86400 && int(base_map[ck].t) >= (today_start_sec - 86400) && (int(base_map[ck].t) / 600) != (now_sec / 600)
+                                              (now_sec - int(base_map[ck].t)) <= 86400 && int(base_map[ck].t) >= (today_start_sec - 86400) && (bucket_sec < 600 ? ((now_sec - int(base_map[ck].t)) >= max(1, bucket_sec / 2)) : ((int(base_map[ck].t) / 600) != (now_sec / 600)))
                                             ).map(ck, int(base_map[ck].t)).as(peer_ts,
                                             (size(peer_ts) > 0 ? peer_ts[0] : 0).as(idx_prev_t,
-                                            (prev_t > 0 && (prev_t / 600) == (now_sec / 600)).as(same_bucket,
+                                            (has_partial_shards && ((prev_sc > 0 && cur_sc < prev_sc) || (prev_psc > 0 && cur_psc < prev_psc))).as(partial_sc_drop,
+                                            (prev_t > 0 && (bucket_sec < 600 ? ((now_sec - prev_t) < max(1, bucket_sec / 2)) : ((prev_t / 600) == (now_sec / 600)))).as(same_bucket,
+                                            partial_sc_drop ?
+                                              {
+                                                "skip_base": true,
+                                                "gap_sec": 0,
+                                                "evts": [],
+                                                "base": dyn({}),
+                                              }
+                                            :
                                             same_bucket ?
                                               {
+                                                "skip_base": false,
                                                 "gap_sec": 0,
                                                 "evts": [],
                                                 "base": dyn(prev_b.with({ "k": bkey })),
@@ -907,6 +930,7 @@ inputs:
                                                 int(double(raw_dset) * prev_ratio).as(p_dset,
                                                 (now_sec > today_start_sec).as(has_cur_day,
                                                   {
+                                                    "skip_base": false,
                                                     "gap_sec": 0,
                                                     "evts": [
                                                       dyn({
@@ -1010,6 +1034,7 @@ inputs:
                                                 (is_valid_interval || is_new_intraday || (is_tier_arrival && now_sec > arr_start_sec)).as(emit_delta,
                                                 (is_valid_interval ? prev_t : (is_tier_arrival ? arr_start_sec : created_sec)).as(int_start_sec,
                                                   {
+                                                    "skip_base": false,
                                                     "gap_sec": is_gap ? (now_sec - prev_t) : 0,
                                                     "evts": [
                                                       dyn({
@@ -1075,7 +1100,7 @@ inputs:
                                                     }),
                                                   }
                                                 )))
-                                            ))))))))))))))))))))))))))))))))))))))
+                                            )))))))))))))))))))))))))))))))))))))))
                                           ).as(idx_items,
                                             idx_items.filter(x, int(x.gap_sec) > 0).as(gap_items,
                                               {
@@ -1092,13 +1117,13 @@ inputs:
                                                     "message": "Usage observation gap of " + string(gap_items[0].gap_sec) + "s detected for cluster " + tid + "; reset counter baselines without attributing multi-day gap to a single day.",
                                                   },
                                                 })] : []) + idx_items.map(x, x.evts).flatten(),
-                                                "baselines": idx_items.map(x, x.base),
+                                                "baselines": idx_items.filter(x, !bool(x.skip_base)).map(x, x.base),
                                                 "err": dyn({}),
                                               }
                                             )
                                           )
                                       )
-                                  )))
+                                  ))))
                                 ))
                               )
                             ))))
@@ -1178,7 +1203,7 @@ inputs:
                     )
                   )
                 )
-              )))))))))))))))))))))))))))))))))
+              ))))))))))))))))))))))))))))))))))))
             )
           publisher_pipeline.disable_host: true
           redact:
@@ -1203,6 +1228,7 @@ inputs:
             hub_es_api_key: ""
             hub_es_url: ""
             organization_id: "1111"
+            poll_interval: 10m
             sync_fleet_config: true
           tags:
             - forwarded
