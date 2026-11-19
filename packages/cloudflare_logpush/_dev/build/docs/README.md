@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, Audit Logs v2, CASB, Device Posture, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, WARP Config Changes, WARP Toggle Changes, Zero Trust Network Session, and Workers Trace Events logs.
+The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, Audit Logs v2, CASB, Device Posture, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, Turnstile Events, WARP Config Changes, WARP Toggle Changes, Zero Trust Network Session, and Workers Trace Events logs.
 
 Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
 
@@ -63,6 +63,7 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 - `page_shield_events`: Page Shield events reporting changes to scripts and connections observed on protected zones. See [Page Shield Events schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/page_shield_events/).
 - `sinkhole_http`: HTTP traffic captured by Cloudflare sinkholes. See [Sinkhole HTTP logs schema](https://developers.cloudflare.com/logs/reference/log-fields/account/sinkhole_http_logs/).
 - `spectrum_event`: Cloudflare Spectrum events for TCP/UDP applications proxied through Cloudflare. See [Spectrum Events schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/spectrum_events/).
+- `turnstile_events`: Cloudflare Turnstile challenge events (challenge issued, solved, and siteverify results) for widgets embedded on your sites. See [Turnstile Events schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/turnstile_events/).
 - `workers_trace`: Cloudflare Workers Trace Events with execution logs and exceptions for Workers scripts. See [Workers Trace Events schema](https://developers.cloudflare.com/logs/reference/log-fields/account/workers_trace_events/).
 
 ### Supported use cases
@@ -74,6 +75,7 @@ Integrating Cloudflare Logpush with Elastic provides centralized visibility acro
 - Detecting data exfiltration and SaaS misconfigurations (`dlp_forensic_copies`, `casb`, `email_security_alerts`).
 - Auditing administrative activity on the Cloudflare account (`audit`, `audit_logs_v2`).
 - Troubleshooting DNS and client-side performance issues (`dns`, `dns_firewall`, `nel_report`, `workers_trace`).
+- Monitoring Turnstile bot-challenge activity and siteverify failures (`turnstile_events`).
 
 ## What do I need to use this integration?
 
@@ -90,7 +92,7 @@ To use this integration, you must be able to create and manage [Cloudflare Logpu
 Creating and managing Logpush jobs requires an API token or user role with the `Logs Write` permission (or a role that includes it, such as **Super Administrator**, **Administrator**, or **Log Share** with edit permissions). Refer to [Cloudflare Logpush permissions](https://developers.cloudflare.com/logs/logpush/permissions/) for details.
 
 - **Zone-scoped datasets** (for example, `http_requests`, `firewall_events`, `dns_logs`, `spectrum_events`, `nel_reports`, `page_shield_events`) require a **zone-scoped token**.
-- **Account-scoped datasets** (for example, `audit_logs`, `audit_logs_v2`, `access_requests`, `casb_findings`, `device_posture_results`, `dlp_forensic_copies`, `email_security_alerts`, `gateway_*`, `dns_firewall_logs`, `magic_ids_detections`, `network_analytics_logs`, `sinkhole_http_logs`, `workers_trace_events`, `zero_trust_network_sessions`) require an **account-scoped token**.
+- **Account-scoped datasets** (for example, `audit_logs`, `audit_logs_v2`, `access_requests`, `casb_findings`, `device_posture_results`, `dlp_forensic_copies`, `email_security_alerts`, `gateway_*`, `dns_firewall_logs`, `magic_ids_detections`, `network_analytics_logs`, `sinkhole_http_logs`, `turnstile_events`, `workers_trace_events`, `zero_trust_network_sessions`) require an **account-scoped token**.
 - Zero Trust datasets (Access, Gateway, DEX) additionally require `Zero Trust: PII Read`.
 
 **Destination-specific credentials**
@@ -142,6 +144,7 @@ Configure one of the following delivery pipelines before enabling the integratio
   | Zero Trust Network Session | network_session        |
   | Sinkhole HTTP              | sinkhole_http          |
   | Spectrum Event             | spectrum_event         |
+  | Turnstile Events           | turnstile_events       |
   | WARP Config Changes        | warp_config_changes    |
   | WARP Toggle Changes        | warp_toggle_changes    |
   | Workers Trace Events       | workers_trace          |
@@ -498,6 +501,16 @@ This is the `spectrum_event` dataset.
 {{event "spectrum_event"}}
 
 {{fields "spectrum_event"}}
+
+#### turnstile_events
+
+This is the `turnstile_events` dataset.
+
+##### Example
+
+{{event "turnstile_events"}}
+
+{{fields "turnstile_events"}}
 
 #### warp_config_changes
 
