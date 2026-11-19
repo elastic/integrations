@@ -1,0 +1,181 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects a high number of GitHub repository ZIP archive downloads by a single non-bot user from one source IP within a short window. The `repo.download_zip` action retrieves a full repository archive over HTTP, so adversaries use it to collect source code without a `git clone` (which clone-threshold rules watch), including with classic PATs, fine-grained PATs, or OAuth tokens. Grouping by actor and source IP and requiring a high archive-download count separates bulk source collection from occasional developer downloads.",
+        "false_positives": [
+            "Developers downloading archives for offline review, backup jobs, or CI that fetches zipballs. Confirm the actor, token type, and whether the repositories are expected."
+        ],
+        "from": "now-9m",
+        "interval": "8m",
+        "investigation_fields": {
+            "field_names": [
+                "user.name",
+                "github.actor_ip",
+                "Esql.time_window",
+                "Esql.event_count",
+                "Esql.github_repo_unique_count",
+                "Esql.github_org_values",
+                "Esql.github_repo_values",
+                "Esql.github_programmatic_access_type_values",
+                "Esql.github_user_agent_values",
+                "Esql.github_token_id_values"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "GitHub Exfiltration via High Number of Repository ZIP Downloads",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating GitHub Exfiltration via High Number of Repository ZIP Downloads\n\n`repo.download_zip` is the audit action for repository archive/zipball downloads. Mass ZIP collection is a clone alternative that `git.clone` threshold rules do not catch, so it is a useful source-collection path for an adversary with a stolen token. The rule groups downloads by `user.name` and `github.actor_ip` in a 10-minute window, requires a high archive-download count, and excludes automated actors (`github.actor_is_bot: true`) and requests without an actor IP.\n\n### Possible investigation steps\n\n- Identify `user.name`, `github.actor_ip`, `github.programmatic_access_type`, and the token (`Esql.github_token_id_values`), and confirm whether the token belongs to a known developer or automation identity.\n- Review the distinct repositories downloaded (`Esql.github_repo_values`, `Esql.github_repo_unique_count`) and the organizations (`Esql.github_org_values`), and whether those repositories are private or sensitive.\n- Review the client from `Esql.github_user_agent_values`; tooling or scripted user agents on a high download count are a stronger signal than a browser.\n- Correlate with `git.clone`, `api.request` enumeration, collaborator changes, and secret-scanning alerts from the same token or actor IP to establish whether this is part of a broader collection campaign.\n- Check the authentication context for the actor around the window for signs of a stolen token, such as a new `github.actor_ip` or unfamiliar user agent for that token.\n\n### False positive analysis\n\n- Approved bulk archive export, backup, or disaster-recovery tooling, and CI that fetches zipballs. Confirm the actor and token type and, if expected, scope exceptions by actor, token, or user agent.\n- A developer legitimately downloading several archives for offline review over a short period.\n\n### Response and remediation\n\n- Revoke the token if the actor is not a known automation identity, and review repository access and PAT/OAuth grants for the actor.\n- Review the downloaded repositories for sensitive content and rotate any secrets they contain.\n- Hunt for subsequent off-platform transfer of the archives from the same host or IP.\n- Escalate to incident response if private or sensitive repositories were downloaded, or if the downloads coincide with other collection or credential-access activity by the same actor.\n",
+        "query": "from logs-github.audit-* metadata _id, _index, _version\n| where\n  data_stream.dataset == \"github.audit\" and event.action == \"repo.download_zip\" and\n  github.actor_ip is not null and github.actor_is_bot == false\n| stats\n  Esql.event_count = COUNT(*),\n  Esql.github_repo_unique_count = COUNT_DISTINCT(github.repo),\n  Esql.github_org_values = VALUES(github.org),\n  Esql.github_repo_values = VALUES(github.repo),\n  Esql.github_programmatic_access_type_values = VALUES(github.programmatic_access_type),\n  Esql.github_user_agent_values = VALUES(github.user_agent),\n  Esql.agent_id_values = VALUES(agent.id),\n  Esql.data_stream_dataset_values = VALUES(data_stream.dataset),\n  Esql.data_stream_namespace_values = VALUES(data_stream.namespace),\n  Esql.github_token_id_values = VALUES(github.token_id)\n  by user.name, github.actor_ip, Esql.time_window = DATE_TRUNC(10 minutes, @timestamp)\n| keep user.name, github.actor_ip, Esql.*\n| where Esql.event_count >= 8\n",
+        "references": [
+            "https://securitylabs.datadoghq.com/articles/mapping-out-your-unknown-threat-hunters-guide-to-github/",
+            "https://github.blog/news-insights/company-news/security-alert-stolen-oauth-user-tokens/",
+            "https://docs.github.com/en/rest/repos/contents#download-a-repository-archive-zip"
+        ],
+        "related_integrations": [
+            {
+                "package": "github",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "agent.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.namespace",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.actor_ip",
+                "type": "ip"
+            },
+            {
+                "ecs": false,
+                "name": "github.actor_is_bot",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "github.org",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.programmatic_access_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.repo",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.token_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.user_agent",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "0fe75796-0258-4e19-a762-26228edcc468",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: SaaS",
+            "Platform: GitHub",
+            "Use Case: Threat Detection",
+            "Tactic: Collection",
+            "Tactic: Exfiltration",
+            "Data Source: Github",
+            "Data Source: GitHub Audit Logs",
+            "Rule Type: ES|QL",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0010",
+                    "name": "Exfiltration",
+                    "reference": "https://attack.mitre.org/tactics/TA0010/"
+                },
+                "technique": [
+                    {
+                        "id": "T1020",
+                        "name": "Automated Exfiltration",
+                        "reference": "https://attack.mitre.org/techniques/T1020/"
+                    },
+                    {
+                        "id": "T1567",
+                        "name": "Exfiltration Over Web Service",
+                        "reference": "https://attack.mitre.org/techniques/T1567/",
+                        "subtechnique": [
+                            {
+                                "id": "T1567.001",
+                                "name": "Exfiltration to Code Repository",
+                                "reference": "https://attack.mitre.org/techniques/T1567/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0009",
+                    "name": "Collection",
+                    "reference": "https://attack.mitre.org/tactics/TA0009/"
+                },
+                "technique": [
+                    {
+                        "id": "T1213",
+                        "name": "Data from Information Repositories",
+                        "reference": "https://attack.mitre.org/techniques/T1213/",
+                        "subtechnique": [
+                            {
+                                "id": "T1213.003",
+                                "name": "Code Repositories",
+                                "reference": "https://attack.mitre.org/techniques/T1213/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "0fe75796-0258-4e19-a762-26228edcc468_1",
+    "type": "security-rule"
+}

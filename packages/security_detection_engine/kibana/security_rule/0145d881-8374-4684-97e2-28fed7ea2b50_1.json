@@ -1,0 +1,132 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies when a GitHub organization is removed from an enterprise or transferred to another enterprise. Removing an organization takes its repositories, members, audit history, and billing out of the enterprise's centralized management and security monitoring, while a transfer hands the organization and its repositories to a different enterprise or owner. An adversary with enterprise owner access can use either action to move intellectual property beyond the organization's visibility or to disrupt the enterprise's governance and security controls.",
+        "false_positives": [
+            "Approved org moves between enterprises or decommission of a lab org. Confirm with enterprise owners before treating as incident."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "user.name",
+                "github.org",
+                "github.repo",
+                "github.actor_ip",
+                "github.hashed_token",
+                "github.programmatic_access_type",
+                "github.user_agent",
+                "github.business"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "GitHub Organization Removed or Transferred from Enterprise",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating GitHub Organization Removed or Transferred from Enterprise\n\nThis rule fires on `business.remove_organization`, which removes an organization from the enterprise, and on `org.transfer_outgoing` / `org.transfer`, which move an organization to a different enterprise or owner. Both actions remove the organization from the enterprise's centralized audit logging, policies, and security monitoring, and a transfer can additionally relocate all of its repositories to an attacker-controlled enterprise. Because these are high-impact, enterprise-owner-level operations, review the actor (`user.name`, `github.actor_ip`), the token used (`github.hashed_token`, `github.programmatic_access_type`), and the organization affected (`github.org`, `github.business`) to confirm whether the change was authorized.\n\n### Possible investigation steps\n\n- Identify the actor and confirm enterprise-owner privileges using `user.name`, `github.actor_ip`, `github.hashed_token`, and `github.programmatic_access_type`, and verify the actor is expected to manage enterprise membership.\n- Review `event.action` to distinguish a removal (`business.remove_organization`) from a transfer (`org.transfer_outgoing` / `org.transfer`), since the impact and remediation differ.\n- Determine the affected organization and enterprise from `github.org` and `github.business`, and for transfers identify the destination enterprise or owner to assess data exposure.\n- Check the enterprise audit log for related changes by the same actor, such as enterprise owner additions, policy modifications, or additional organization removals that indicate a broader takeover.\n- Review recent activity by the actor and token for clones, archive downloads, or repository transfers that suggest intellectual property was staged or exfiltrated before the organization was moved.\n\n### False positive analysis\n\n- Planned organizational restructuring, mergers, or decommissioning of a lab or test organization. Confirm the change with enterprise owners and validate it against an approved change-management record.\n- Consolidation of organizations between enterprises owned by the same company. Validate the destination enterprise and scope exceptions to the specific actor and organization where appropriate.\n\n### Response and remediation\n\n- If the action was unauthorized, contact GitHub Support immediately to attempt to restore the organization to the enterprise or reverse the transfer while it is still possible.\n- Revoke the token identified by `github.hashed_token` and the actor's other tokens, and require the user to reauthenticate.\n- Review the enterprise owner and administrator list, remove any unauthorized owners, and re-enroll the organization in required enterprise policies and audit log streaming.\n- Inventory the enterprise for additional organization removals, transfers, or policy changes by the same actor.\n- Rotate secrets and deploy keys in the affected organization's repositories and engage incident response per your organization's playbooks if sensitive data may have been exposed.\n",
+        "query": "from logs-github.audit-* metadata _id, _index, _version\n| where\n  event.module == \"github\" and data_stream.dataset == \"github.audit\"\n    and event.action in (\"business.remove_organization\", \"org.transfer_outgoing\", \"org.transfer\")\n| keep\n    _id,\n    _index,\n    _version,\n    @timestamp,\n    event.action,\n    user.name,\n    github.org,\n    github.actor_ip,\n    github.hashed_token,\n    github.programmatic_access_type,\n    github.user_agent,\n    github.business\n",
+        "references": [
+            "https://docs.github.com/en/enterprise-cloud@latest/admin/managing-organizations-in-your-enterprise/adding-organizations-to-your-enterprise"
+        ],
+        "related_integrations": [
+            {
+                "package": "github",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "0145d881-8374-4684-97e2-28fed7ea2b50",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: SaaS",
+            "Platform: GitHub",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Tactic: Exfiltration",
+            "Tactic: Impact",
+            "Data Source: Github",
+            "Data Source: GitHub Audit Logs",
+            "Rule Type: ES|QL",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1531",
+                        "name": "Account Access Removal",
+                        "reference": "https://attack.mitre.org/techniques/T1531/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.001",
+                                "name": "Disable or Modify Tools",
+                                "reference": "https://attack.mitre.org/techniques/T1562/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0010",
+                    "name": "Exfiltration",
+                    "reference": "https://attack.mitre.org/tactics/TA0010/"
+                },
+                "technique": [
+                    {
+                        "id": "T1537",
+                        "name": "Transfer Data to Cloud Account",
+                        "reference": "https://attack.mitre.org/techniques/T1537/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "0145d881-8374-4684-97e2-28fed7ea2b50_1",
+    "type": "security-rule"
+}

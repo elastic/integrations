@@ -1,0 +1,178 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the creation of a Java HotSpot fatal error log by a Java process. The JVM writes \"hs_err_pid*.log\" after a fatal error, such as an access violation, segmentation fault, or unrecoverable native-code failure. This may indicate an unsuccessful attempt to exploit a Java memory-corruption vulnerability. In particular, failed Java4Shell (CVE-2026-114938) heap-grooming or corruption attempts may crash the JVM before remote code execution succeeds. This event indicates a JVM crash and possible exploit attempt; it does not by itself establish successful exploitation or remote code execution.",
+        "false_positives": [
+            "JVM defects, incompatible or vulnerable JNI libraries, Java agents, profilers, faulty native modules, hardware problems, and resource exhaustion can legitimately cause HotSpot to terminate and write a fatal error log."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.file-*",
+            "auditbeat-*",
+            "logs-auditd_manager.auditd-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-crowdstrike.fdr*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.id",
+                "host.name",
+                "host.os.type",
+                "host.architecture",
+                "user.id",
+                "user.name",
+                "process.entity_id",
+                "process.pid",
+                "process.name",
+                "process.executable",
+                "process.command_line",
+                "file.path",
+                "file.name",
+                "file.size",
+                "file.hash.sha256"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Java HotSpot Fatal Error Log Created",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and\n> relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting\n> it to suit your specific environment and operational needs.\n\n### Investigating Java HotSpot Fatal Error Log Created\n\nThe HotSpot JVM creates an `hs_err_pid<PID>.log` file when it encounters a fatal error it cannot recover from. The file\ntypically records the signal or exception, problematic frame, JVM and operating-system versions, command line, loaded\nnative libraries, thread state, and memory details.\n\nJava4Shell (CVE-2026-114938) is a memory-corruption vulnerability in OpenJDK's hardware-accelerated Base64 decoder.\nExploitation requires application-specific heap grooming, and unsuccessful object placement or corruption may crash\nthe JVM. Other attempts to exploit Java, the JVM, JNI, JIT, deserialization, or native libraries may produce the same\nartifact. The existence of this file is evidence of a JVM crash, not proof that exploitation succeeded.\n\n### Possible investigation steps\n\n- Review `file.path`, `file.name`, `process.name`, `process.executable`, `process.command_line`, `process.entity_id`, and\n  the affected user and host. Extract the PID from the filename and correlate it with process and service telemetry.\n- Preserve and inspect the complete error log. Record the fatal signal or exception, problematic frame, JVM build,\n  active VM flags, loaded native libraries, current thread, and native stack.\n- Determine which Java application crashed and whether it is externally reachable or processes untrusted Base64 data,\n  authentication values, uploads, messages, or network responses.\n- For possible Java4Shell activity, verify whether the host uses an affected OpenJDK-derived runtime on x86-64 hardware\n  with AVX-512 VBMI support. Review requests before the crash for repeated decoder warm-up activity, malformed Base64\n  tails such as 64 `A` characters followed by `=`, retries, unusual request streaming, and repeated requests from the\n  same source.\n- Review application, reverse-proxy, load-balancer, and network telemetry immediately before the crash. A Java client\n  may also be exposed when it decodes attacker-controlled data received from a malicious server.\n- Search the host for additional `hs_err_pid*.log` files. Repeated crashes or a crash pattern shared by several Java\n  servers may indicate exploit rehearsal or repeated heap-grooming attempts.\n- Hunt for evidence of successful follow-on activity, including Java spawning shells or scripting interpreters,\n  unexpected outbound connections, payload downloads, suspicious file creation, credential access, or persistence.\n\n### False positive analysis\n\n- Correlate the error log's problematic frame and loaded native libraries with known JVM, application, Java-agent, JNI,\n  profiler, or driver defects and recent upgrades.\n- Check service health and infrastructure telemetry for memory exhaustion, disk problems, hardware instability, or\n  administrative crash testing.\n- Treat a reproducible crash caused by a known benign defect as benign only after the error signature, application\n  version, triggering workflow, and change history all agree. Avoid broad exceptions based only on `java*` or the\n  `hs_err_pid*.log` filename.\n\n### Response and remediation\n\n- Preserve the HotSpot error log, application and proxy logs, process telemetry, relevant request data, and any core\n  dump or minidump before restarting or rebuilding the service.\n- If exploitation cannot be ruled out, remove the affected service from public traffic and isolate the host when its\n  operational role permits.\n- Upgrade affected Java runtimes. For Java4Shell, follow current vendor guidance; temporary mitigations include\n  disabling Base64 intrinsics with `-XX:-UseBASE64Intrinsics` or limiting AVX use with `-XX:UseAVX=2` on x86-64.\n- Scope peer systems for the same JVM version, crash signature, source infrastructure, and Java follow-on behavior.\n",
+        "query": "file where host.os.type in (\"windows\", \"linux\", \"macos\") and\n  event.type == \"creation\" and\n  process.name : \"java*\" and\n  file.name : \"hs_err_pid*.log\"\n",
+        "references": [
+            "https://calif.io/java4shell",
+            "https://www.oracle.com/security-alerts/cspunov2026.html"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "auditd_manager",
+                "version": "^1.18.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "7829cfa6-2378-4f6a-bd29-5dde4549f45e",
+        "setup": "## Setup\n\nThis rule requires ECS-compatible file creation events that populate `event.type`, `process.name`, and `file.name`.\nIt searches data from Elastic Defend, Elastic Endgame, Auditbeat, Auditd Manager, Microsoft Defender XDR, SentinelOne\nCloud Funnel, and CrowdStrike Falcon Data Replicator. Availability of process attribution on file events depends on\nthe source product and integration configuration.\n\nOn Linux, Auditbeat or Auditd Manager must be configured to collect the file-creation syscall that writes the HotSpot\nerror log and normalize it as an ECS file event. Auditd does not collect every file creation by default. Because the JVM\nnormally writes `hs_err_pid*.log` to its working directory, and `-XX:ErrorFile` can redirect it elsewhere, audit policy\ncoverage must match the Java service's possible output paths. Broad file-creation auditing can generate significant\nevent volume.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "OS: Linux",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Use Case: Vulnerability",
+            "Tactic: Initial Access",
+            "Tactic: Execution",
+            "Tactic: Impact",
+            "Data Source: Elastic Defend",
+            "Data Source: Auditd Manager",
+            "Data Source: Microsoft Defender XDR",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Resources: Investigation Guide",
+            "Rule Type: Event Correlation (EQL)",
+            "Platform: Windows",
+            "Platform: Linux",
+            "Platform: macOS",
+            "Vuln: CVE-2026-114938"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1190",
+                        "name": "Exploit Public-Facing Application",
+                        "reference": "https://attack.mitre.org/techniques/T1190/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1203",
+                        "name": "Exploitation for Client Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1203/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1499",
+                        "name": "Endpoint Denial of Service",
+                        "reference": "https://attack.mitre.org/techniques/T1499/",
+                        "subtechnique": [
+                            {
+                                "id": "T1499.004",
+                                "name": "Application or System Exploitation",
+                                "reference": "https://attack.mitre.org/techniques/T1499/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "7829cfa6-2378-4f6a-bd29-5dde4549f45e_1",
+    "type": "security-rule"
+}
