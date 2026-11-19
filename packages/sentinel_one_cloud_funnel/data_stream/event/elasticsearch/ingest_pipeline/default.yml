@@ -99,18 +99,11 @@ processors:
             tag: append_error_message_86f53aaf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - date:
-      field: json.event.time
-      tag: date_timestamp_d7c13361
-      formats:
-        - ISO8601
-        - epoch_millis
-      if: ctx.json?.event?.time != null && ctx.json.event.time != ''
-      on_failure:
-        - append:
-            tag: append_error_message_1aa3e3c3
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_timestamp_from_event_time
+      field: '@timestamp'
+      copy_from: sentinel_one_cloud_funnel.event.time
+      ignore_empty_value: true
   - rename:
       tag: rename_json_event_logout_tgt_user_name_to_sentinel_one_cloud_funnel_event_logout_tgt_user_name_aebc319e
       field: json.event.logout.tgt.user.name
