@@ -39,7 +39,7 @@ program: |-
   // caught up; the same cursorRef returns new events on later polls.
   //
   // cursor.ref is the stream cursorRef to resume from. cursor.last_timestamp is the
-  // largest event timestamp seen (epoch ms, 0 if none). When the API rejects the
+  // largest event timestamp seen (epoch ms, not set if none). When the API rejects the
   // stored cursorRef, a new query starts 5 minutes before it.
   state.?cursor.ref.orValue("").as(ref,
     (ref != "") ?
@@ -71,13 +71,12 @@ program: |-
                 "events": page.items.map(e, {"message": e.encode_json()}),
                 "cursor": {
                   "ref": page.next.orValue(ref),
-                  // 0 means no event timestamp seen yet.
-                  "last_timestamp": int(
-                    (
-                      [double(state.?cursor.last_timestamp.orValue(0))] +
-                      page.items.map(e, e.?timestamp.orValue(null) != null, double(e.timestamp))
-                    ).max()
-                  ),
+                  // The newest event timestamp seen, in milliseconds. It is not set
+                  // until an event with a timestamp is seen.
+                  ?"last_timestamp": (
+                    state.?cursor.last_timestamp.optMap(t, [int(t)]).orValue([]) +
+                    page.items.map(e, e.?timestamp.orValue(null) != null, int(e.timestamp))
+                  ).as(seen, (size(seen) > 0) ? optional.of(seen.max()) : optional.none()),
                 },
                 "want_more": size(page.items) > 0 && page.next.orValue("") != "",
               }
@@ -94,8 +93,8 @@ program: |-
                 {
                   "error": {
                     "code": string(resp.StatusCode),
-                    "id": string(resp.Status),
-                    "message": "POST /api/audits/stream/results: request rejected (cursor or API key not accepted), a new query starts on the next poll: " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)),
+                    "id": resp.Status,
+                    "message": "POST /api/audits/stream/results: request rejected (cursor or API key not accepted), a new query starts on the next poll: " + ((size(resp.Body) != 0) ? string(resp.Body) : resp.Status),
                   },
                 },
               ],
@@ -107,8 +106,8 @@ program: |-
               "events": {
                 "error": {
                   "code": string(resp.StatusCode),
-                  "id": string(resp.Status),
-                  "message": "POST /api/audits/stream/results: " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)),
+                  "id": resp.Status,
+                  "message": "POST /api/audits/stream/results: " + ((size(resp.Body) != 0) ? string(resp.Body) : resp.Status),
                 },
               },
               "want_more": false,
@@ -117,14 +116,14 @@ program: |-
       )
     :
       (
-        (state.?cursor.last_timestamp.orValue(0) > 0) ?
-          // Resume a little before the last event seen. The API returns events in
-          // the order it received them, not in event time order, so an unread event
-          // can be a few seconds older than the newest one seen. Events read again
-          // are not duplicated, because the pipeline sets _id from the event uuid.
-          timestamp(int(state.cursor.last_timestamp) / 1000) - duration("5m")
-        :
-          now - duration(state.initial_interval)
+        // Resume a little before the last event seen. The API returns events in
+        // the order it received them, not in event time order, so an unread event
+        // can be a few seconds older than the newest one seen. Events read again
+        // are not duplicated, because the pipeline sets _id from the event uuid.
+        // If no event was seen yet, start at the initial interval.
+        state.?cursor.last_timestamp.optMap(t,
+          timestamp(int(t) / 1000) - duration("5m")
+        ).orValue(now - duration(state.initial_interval))
       ).as(from,
         state.with(
           request(
@@ -165,8 +164,8 @@ program: |-
                   "events": {
                     "error": {
                       "code": string(resp.StatusCode),
-                      "id": string(resp.Status),
-                      "message": "POST /api/audits/stream/createQuery: " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)),
+                      "id": resp.Status,
+                      "message": "POST /api/audits/stream/createQuery: " + ((size(resp.Body) != 0) ? string(resp.Body) : resp.Status),
                     },
                   },
                   "want_more": false,
