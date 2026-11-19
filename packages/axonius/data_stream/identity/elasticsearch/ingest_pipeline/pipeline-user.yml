@@ -1,6 +1,40 @@
 ---
 description: Pipeline for processing user logs.
 processors:
+  - set:
+      field: event.kind
+      tag: set_event_kind_asset_5c0a8e21
+      value: asset
+  - append:
+      field: event.type
+      tag: append_event_type_user_7d3b91f4
+      value: user
+      allow_duplicates: false
+  - append:
+      field: user.entity.type
+      tag: append_user_entity_type_2f6c4a17
+      value: user
+      allow_duplicates: false
+  # internal_axon_id is the only identifier shared by every adapter record of an Axonius user asset.
+  - set:
+      field: user.id
+      tag: set_user_id_from_identity_internal_axon_id_9b1e2d63
+      copy_from: axonius.identity.internal_axon_id
+      ignore_empty_value: true
+  - set:
+      field: user.entity.id
+      tag: set_user_entity_id_from_user_id_e3a7c512
+      copy_from: user.id
+      ignore_empty_value: true
+  - set:
+      field: user.entity.source
+      tag: set_user_entity_source_axonius_71d4b8e6
+      value: axonius
+  - set:
+      field: user.entity.last_seen_timestamp
+      tag: set_user_entity_last_seen_timestamp_from_timestamp_4b9f2a07
+      copy_from: '@timestamp'
+      ignore_empty_value: true
   - convert:
       field: axonius.identity.account_disabled
       tag: convert_account_disabled_to_boolean_984a66ca
@@ -21,8 +55,8 @@ processors:
       description: >-
         Copies associated_devices fields (device_id, device_model, device_serial) to ECS device.* fields
         with deduplication, normalises device_preferred_mac_address (`:` -> `-`, upper-cased) in place,
-        and copies associated_employees.username and associated_groups.display_name to related.user
-        with deduplication.
+        copies associated_employees.username to related.user, and copies associated_groups and
+        nested_groups names and IDs to user.group.name and user.group.id with deduplication.
       source: |-
         void appendUnique(Map container, String field, def value) {
           if (value == null) return;
@@ -36,6 +70,13 @@ processors:
           } else if (current != value) {
             container[field] = [current, value];
           }
+        }
+        void appendGroup(Map doc, def name, def id) {
+          if ((name == null || name == '') && (id == null || id == '')) return;
+          if (doc.user == null) doc.user = [:];
+          if (doc.user.group == null) doc.user.group = [:];
+          if (name != null && name != '') appendUnique(doc.user.group, 'name', name.toString());
+          if (id != null && id != '') appendUnique(doc.user.group, 'id', id.toString());
         }
         if (ctx.axonius?.identity?.associated_devices instanceof List) {
           if (ctx.device == null) ctx.device = [:];
@@ -79,12 +120,13 @@ processors:
           }
         }
         if (ctx.axonius?.identity?.associated_groups instanceof List) {
-          if (ctx.related == null) ctx.related = [:];
           for (def grp : ctx.axonius.identity.associated_groups) {
-            if (!(grp instanceof Map)) continue;
-            if (grp.display_name != null) {
-              appendUnique(ctx.related, 'user', grp.display_name.toString());
-            }
+            if (grp instanceof Map) appendGroup(ctx, grp.display_name, grp.remote_id);
+          }
+        }
+        if (ctx.axonius?.identity?.nested_groups instanceof List) {
+          for (def grp : ctx.axonius.identity.nested_groups) {
+            if (grp instanceof Map) appendGroup(ctx, grp.name, grp.value);
           }
         }
       on_failure:
@@ -92,16 +134,6 @@ processors:
             tag: append_error_message_527c4bbb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: cloud.service.name
-      tag: set_cloud_service_name_from_identity_aws_iam_identity_type_8ee242e0
-      copy_from: axonius.identity.aws_iam_identity_type
-      ignore_empty_value: true
-  - set:
-      field: cloud.account.id
-      tag: set_cloud_account_id_from_identity_azure_account_id_e078e1de
-      copy_from: axonius.identity.azure_account_id
-      ignore_empty_value: true
   - script:
       tag: script_process_breaches_data_cdfe1125
       lang: painless
@@ -551,6 +583,11 @@ processors:
             tag: append_error_message_cc0e2935
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.entity.attributes.mfa_enabled
+      tag: set_user_entity_attributes_mfa_enabled_from_identity_is_mfa_enrolled_4e7b0c92
+      copy_from: axonius.identity.is_mfa_enrolled
+      if: ctx.axonius?.identity?.is_mfa_enrolled instanceof Boolean
   - date:
       field: axonius.identity.last_login_attempt
       tag: date_last_login_attempt_d8f4961b
@@ -587,6 +624,11 @@ processors:
             tag: append_error_message_3b33a662
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.entity.lifecycle.last_activity
+      tag: set_user_entity_lifecycle_last_activity_from_identity_last_logon_a83d5f10
+      copy_from: axonius.identity.last_logon
+      ignore_empty_value: true
   - append:
       field: related.user
       tag: append_identity_last_name_into_related_user_dc7be44d
@@ -629,11 +671,25 @@ processors:
             tag: append_error_message_cdf1ebf2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # asset_mail is injected by the input so every adapter record of a user asset carries the same
+  # user.email, which the entity store uses as the user identifier.
+  - set:
+      field: user.email
+      tag: set_user_email_from_identity_asset_mail_6d21f8b4
+      copy_from: axonius.identity.asset_mail
+      ignore_empty_value: true
   - set:
       field: user.email
       tag: set_user_email_from_identity_mail_f3c2f9a2
       copy_from: axonius.identity.mail
       ignore_empty_value: true
+      override: false
+  # asset_mail is already lowercase. Lowercase again so the mail fallback, used for
+  # events without asset_mail, matches it and the user data stream.
+  - lowercase:
+      tag: lowercase_user_email_8e4b1d27
+      field: user.email
+      ignore_missing: true
   - dissect:
       tag: dissect_user_email_c7a077f3
       if: ctx.user?.email != null && ctx.user.email.contains('@')
@@ -645,6 +701,12 @@ processors:
       value: '{{{axonius.identity.mail}}}'
       allow_duplicates: false
       if: ctx.axonius?.identity?.mail != null
+  - append:
+      field: related.user
+      tag: append_user_email_into_related_user_0c5e7a39
+      value: '{{{user.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.email != null
   - append:
       field: related.user
       tag: append_identity_manager_id_into_related_user_38d8f425
@@ -1267,6 +1329,118 @@ processors:
       value: '{{{axonius.identity.username}}}'
       allow_duplicates: false
       if: ctx.axonius?.identity?.username != null
+  - set:
+      field: user.name
+      tag: set_user_name_from_identity_display_name_01fe035c
+      copy_from: axonius.identity.display_name
+      ignore_empty_value: true
+      override: false
+  - append:
+      field: related.user
+      tag: append_display_name_into_related_user_6299f010
+      value: '{{{axonius.identity.display_name}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.identity?.display_name != null
+  - script:
+      tag: script_build_user_entity_fields_b47c2e95
+      lang: painless
+      description: >-
+        Builds user.roles from nested_roles, admin_roles and roles, user.entity.attributes.permissions
+        from user_permissions and nested_permissions, and user.entity.relationships from
+        associated_employees (supervises), nested_applications with administrative permissions
+        (administers), associated_devices (owns) and provider_name (depends_on), with deduplication.
+      if: ctx.axonius?.identity != null
+      source: |-
+        void addValue(Map container, String field, def value) {
+          if (value == null) return;
+          if (value instanceof List) {
+            for (def v : value) addValue(container, field, v);
+            return;
+          }
+          String s = value.toString();
+          if (s.isEmpty()) return;
+          def current = container[field];
+          if (current == null) {
+            container[field] = [s];
+          } else if (!current.contains(s)) {
+            current.add(s);
+          }
+        }
+        void collect(def list, String key, Map container, String field) {
+          if (!(list instanceof List)) return;
+          for (def item : list) {
+            if (item instanceof Map) addValue(container, field, item[key]);
+          }
+        }
+        Map entityMap(Map doc) {
+          if (!(doc.user instanceof Map)) doc.user = [:];
+          if (!(doc.user.entity instanceof Map)) doc.user.entity = [:];
+          return doc.user.entity;
+        }
+        def src = ctx.axonius.identity;
+
+        Map roles = [:];
+        collect(src.nested_roles, 'name', roles, 'roles');
+        collect(src.admin_roles, 'display_name', roles, 'roles');
+        collect(src.roles, 'display_name', roles, 'roles');
+        if (!roles.isEmpty()) {
+          if (!(ctx.user instanceof Map)) ctx.user = [:];
+          ctx.user.roles = roles.roles;
+        }
+
+        Map perms = [:];
+        collect(src.user_permissions, 'name', perms, 'permissions');
+        collect(src.nested_permissions, 'value', perms, 'permissions');
+        if (!perms.isEmpty()) {
+          Map entity = entityMap(ctx);
+          if (!(entity.attributes instanceof Map)) entity.attributes = [:];
+          entity.attributes.permissions = perms.permissions;
+        }
+
+        Map rels = [:];
+        Map supervised = [:];
+        collect(src.associated_employees, 'internal_axon_id', supervised, 'id');
+        collect(src.associated_employees, 'username', supervised, 'name');
+        if (!supervised.isEmpty()) rels.supervises = ['user': supervised];
+
+        Map administered = [:];
+        if (src.nested_applications instanceof List) {
+          for (def app : src.nested_applications) {
+            if (app instanceof Map && app.has_administrative_permissions == true) {
+              addValue(administered, 'name', app.name);
+              addValue(administered, 'id', app.value);
+            }
+          }
+        }
+        if (!administered.isEmpty()) rels.administers = ['service': administered];
+
+        Map owned = [:];
+        collect(src.associated_devices, 'internal_axon_id', owned, 'id');
+        collect(src.associated_devices, 'device_caption', owned, 'name');
+        if (!owned.isEmpty()) rels.owns = ['host': owned];
+
+        Map provider = [:];
+        addValue(provider, 'name', src.provider_name);
+        if (!provider.isEmpty()) rels.depends_on = ['service': provider];
+
+        if (!rels.isEmpty()) entityMap(ctx).relationships = rels;
+      on_failure:
+        - append:
+            tag: append_error_message_6a9f13d2
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field: axonius.identity.display_name
+      tag: remove_identity_display_name_mapped_to_user_name_3e8d6a40
+      if: ctx.axonius?.identity?.display_name != null && ctx.axonius.identity.display_name == ctx.user?.name
+  - remove:
+      field: axonius.identity.mail
+      tag: remove_identity_mail_mapped_to_user_email_8c4f0b27
+      if: ctx.axonius?.identity?.mail != null && ctx.axonius.identity.mail == ctx.user?.email
+  - remove:
+      field: axonius.identity.asset_mail
+      tag: remove_identity_asset_mail_mapped_to_user_email_d5e9a1c6
+      if: ctx.axonius?.identity?.asset_mail != null && ctx.axonius.identity.asset_mail == ctx.user?.email
   - convert:
       field: axonius.identity.verified
       tag: convert_verified_to_boolean_11b94678
