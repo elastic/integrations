@@ -43,3 +43,4 @@ Alert rule templates require Elastic Stack version 9.6.0 or later.
 
 </details>
 
+
