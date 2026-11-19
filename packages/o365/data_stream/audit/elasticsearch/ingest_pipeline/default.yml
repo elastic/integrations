@@ -53,7 +53,7 @@ processors:
         be compared to strings, to integer strings without scientific
         notation. The o365audit input delivers JSON numbers as doubles, which
         may be rendered in scientific notation; the CEL input delivers them
-        as strings.
+        as strings. Strings that are not integers are left unchanged.
       if: ctx.o365audit != null
       lang: painless
       params:
@@ -68,7 +68,6 @@ processors:
           - RunningTime
           - UserType
           - AzureActiveDirectoryEventType
-          - ListBaseType
         list_fields:
           Actor: Type
           Target: Type
@@ -78,7 +77,13 @@ processors:
             return ((Number)value).longValue().toString();
           }
           if (value instanceof String && (value.indexOf('e') >= 0 || value.indexOf('E') >= 0)) {
-            return new BigDecimal(value).toBigIntegerExact().toString();
+            try {
+              return new BigDecimal(value).toBigIntegerExact().toString();
+            } catch (NumberFormatException e) {
+              return value;
+            } catch (ArithmeticException e) {
+              return value;
+            }
           }
           return value;
         }

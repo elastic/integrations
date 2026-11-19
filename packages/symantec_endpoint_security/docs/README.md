@@ -4,10 +4,11 @@ Symantec Endpoint Security (SES), is fully cloud-managed version of the on-premi
 
 This SES Integration enables user to stream Events and EDR incidents data to Elastic, via Data Storage(AWS S3, AWS SQS or GCS) and API endpoint respectively.
 
-## Agentless Enabled Integration
+## Elastic Managed enabled integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it.
+
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ## Compatibility
 
@@ -1458,6 +1459,7 @@ An example event for `event` looks as following:
 | ses.actor.app_uid | The identifier of the application that may be associated with this process. | keyword |
 | ses.actor.app_ver | The version of the application that may be associated with this process. | keyword |
 | ses.actor.cmd_line | The command line used to launch the startup application, service, process or job. | keyword |
+| ses.actor.cmd_line_raw_length | The length of the raw command line. | long |
 | ses.actor.file.accessed | The time that the file was last accessed. | date |
 | ses.actor.file.accessor | The name of the user who last accessed the object. | keyword |
 | ses.actor.file.attribute_ids | The array of file attributes. | keyword |
@@ -2187,6 +2189,13 @@ An example event for `event` looks as following:
 | ses.dst_endpoint_app.name | Reports the application name. | keyword |
 | ses.dst_endpoint_app.operation | Reports the operation (action) of an application. | keyword |
 | ses.duration | The duration of the scan (seconds). | long |
+| ses.edr_enriched_data.category_id | The category of the enriched data added by Endpoint Detection and Response (EDR). | long |
+| ses.edr_enriched_data.category_name | The name of the category of the enriched data added by EDR. | keyword |
+| ses.edr_enriched_data.event_group_id | The unique identifier of the group of related events. | keyword |
+| ses.edr_enriched_data.rule_description | The description of the EDR rule that matched the event. | keyword |
+| ses.edr_enriched_data.rule_id | The identifier of the EDR rule that matched the event. | long |
+| ses.edr_enriched_data.rule_name | The name of the EDR rule that matched the event. | keyword |
+| ses.edr_enriched_data.suspicion_score | The EDR suspicion score of the event. | long |
 | ses.email.direction_id | The direction of the email relative to the scanning host or organization. | keyword |
 | ses.email.direction_value | The direction value of the email relative to the scanning host or organization. | keyword |
 | ses.email.header_from | The email header From values, as defined by RFC 5322. | keyword |
@@ -2384,6 +2393,7 @@ An example event for `event` looks as following:
 | ses.incident_url | The URL used to access the original incident. | keyword |
 | ses.injection_type_id | The process injection method. | keyword |
 | ses.interpreter | The script interpreter used. | keyword |
+| ses.is_npvdi_client | The indication of whether the client runs on a non-persistent virtual desktop infrastructure (NPVDI). | boolean |
 | ses.is_user_present | The indication of whether the user was logged on at event generation time. | boolean |
 | ses.js_canary_enabled | The indication of whether the JavaScript canary is enabled for the customer. | boolean |
 | ses.kernel.is_system | The indication of whether the object is part of the operating system. | boolean |
@@ -2391,6 +2401,7 @@ An example event for `event` looks as following:
 | ses.kernel.system_call | The system call that was invoked. | keyword |
 | ses.kernel.type_id | The type of the kernel resource. | keyword |
 | ses.kernel.type_value | The type value of the kernel resource. | keyword |
+| ses.legacy_product_uid | The legacy unique identifier of the product. | keyword |
 | ses.license.count | The number of seats. | long |
 | ses.license.end_time | The time at which the license expires. | date |
 | ses.license.name | The name of the license. | keyword |
@@ -2501,6 +2512,7 @@ An example event for `event` looks as following:
 | ses.num_skipped | The number of skipped items. | long |
 | ses.num_trusted | The number of trusted items. | long |
 | ses.num_unresolved | The number of scanned items with threats, but no resolution. | long |
+| ses.on_prem_domain_id | The identifier of the on-premises domain. | keyword |
 | ses.open_mask_id | The Windows setting needed to open a registry key. | keyword |
 | ses.open_mode | The mode in which the file was opened: 'Read' = false, 'Write' = true. Applicable to file open events. | boolean |
 | ses.operation | The OS operation that initiated the event. | keyword |
@@ -2757,6 +2769,7 @@ An example event for `event` looks as following:
 | ses.process.app_uid | The identifier of the application that may be associated with this process. | keyword |
 | ses.process.app_ver | The version of the application that may be associated with this process. | keyword |
 | ses.process.cmd_line | The command line used to launch the startup application, service, process or job. | keyword |
+| ses.process.cmd_line_raw_length | The length of the raw command line. | long |
 | ses.process.file.accessed | The time that the file was last accessed. | date |
 | ses.process.file.accessor | The name of the user who last accessed the object. | keyword |
 | ses.process.file.attribute_ids | The array of file attributes. | keyword |
@@ -3282,6 +3295,7 @@ An example event for `event` looks as following:
 | ses.sessions.user.uid | The unique identifier of the user associated with the event. | keyword |
 | ses.severity_id | The severity of the event. | keyword |
 | ses.severity_value | The severity value of the event. | keyword |
+| ses.site_id | The identifier of the site. | keyword |
 | ses.source.facility | The subsystem or application that is providing the event data. | keyword |
 | ses.source.facility_detail | Additional detail about the source facility. For example, details could include a the name of a particular application instance (such as a database name) or a path to a monitored log file. | keyword |
 | ses.source.facility_uid | The unique identifier of the facility. | keyword |
@@ -3416,6 +3430,7 @@ An example event for `event` looks as following:
 | ses.time | The event occurrence time (Device Time) adjusted to the server clock. | date |
 | ses.timezone | Returns a Long value that represents the difference in minutes of between the local time in this time zone and the Coordinated Universal Time (UTC). | long |
 | ses.total | The total number of items that were scanned; zero if no items were scanned. Required for all events except START. | long |
+| ses.trans_event_raw_length | The length of the raw transmitted event. | long |
 | ses.type | The event type. | keyword |
 | ses.type_id | The event type id. | keyword |
 | ses.url.categories | The array of URL categories. | keyword |
@@ -3456,31 +3471,6 @@ An example event for `event` looks as following:
 | ses.verdict_value | The outcome value of the Scan. | keyword |
 | ses.version | The event type version, in the form major.minor. | keyword |
 | winlog.event_data | The event-specific data. If you are capturing event data on versions prior to Windows Vista, the parameters in `event_data` are named `param1`, `param2`, and so on, because event log parameters are unnamed in earlier versions of Windows. | object |
-| winlog.event_data.CallerProcessId |  | keyword |
-| winlog.event_data.CallerProcessName |  | keyword |
-| winlog.event_data.ClientProcessId |  | keyword |
-| winlog.event_data.CountOfCredentialsReturned |  | keyword |
-| winlog.event_data.FailureReason |  | keyword |
-| winlog.event_data.IpAddress |  | keyword |
-| winlog.event_data.LogonType |  | keyword |
-| winlog.event_data.ProcessName |  | keyword |
-| winlog.event_data.ReadOperation |  | keyword |
-| winlog.event_data.Reason |  | keyword |
-| winlog.event_data.ReturnCode |  | keyword |
-| winlog.event_data.StartTime |  | keyword |
-| winlog.event_data.State |  | keyword |
-| winlog.event_data.Status |  | keyword |
-| winlog.event_data.SubStatus |  | keyword |
-| winlog.event_data.SubjectDomainName |  | keyword |
-| winlog.event_data.SubjectLogonId |  | keyword |
-| winlog.event_data.SubjectUserName |  | keyword |
-| winlog.event_data.SubjectUserSid |  | keyword |
-| winlog.event_data.TargetDomainName |  | keyword |
-| winlog.event_data.TargetName |  | keyword |
-| winlog.event_data.TargetUserName |  | keyword |
-| winlog.event_data.TargetUserSid |  | keyword |
-| winlog.event_data.Version |  | keyword |
-| winlog.event_data.WorkstationName |  | keyword |
 | winlog.event_id | The event identifier. The value is specific to the source of the event. | keyword |
 
 
