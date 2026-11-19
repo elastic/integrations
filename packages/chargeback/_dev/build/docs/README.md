@@ -21,10 +21,12 @@ Chargeback costs are presented based on a configured rate and unit, used to conv
 ## Requirements
 
 **Monitoring cluster:**
+
 - Must be on Elasticsearch version **9.2.0+** due to the use of smart [ES|QL LOOKUP JOIN](https://www.elastic.co/docs/reference/query-languages/esql/esql-lookup-join) (conditional joins) in dashboard queries.
 - Run a single Fleet-managed **Elastic Agent** on an agent policy with the **Chargeback** integration enabled (or install assets alongside existing billing and monitoring producers).
 
 **Self-contained data collection, On-Premises billing prerequisite, and legacy coexistence:**
+
 - Chargeback collects Elastic Cloud billing, index/tier usage, and node utilization telemetry directly via Elastic Agent CEL inputs:
   - `metrics-chargeback.billing-*`: Elastic Cloud Hosted (ECH) and Serverless billing line items across all project types, deployment tags (`chargeback_group:*`), regions, configuration snapshots, and optional organization credit commitments (`collect_ess_credits`).
   - `metrics-chargeback.usage-*`: 10-minute reset-aware per-index and per-tier usage metrics harvested via shard-level `/_stats` (`level=shards`), `/_nodes`, and `/_settings` (`_tier_preference`, `creation_date`, computed `age`) on ECH and self-managed clusters (`primaries.store.total_data_set_size_in_bytes`) and `/_cat/indices` on Cloud Serverless projects, attributing timestamped counter intervals across UTC days, emitting best-effort deltas tagged with `elasticsearch.index.partial_shard_stats: true` during partial shard failures (`error.code: "partial_shard_stats"`), and bounding stale cursor hold to 24h with explicit `usage_observation_gap` expiry events.
@@ -33,23 +35,25 @@ Chargeback costs are presented based on a configured rate and unit, used to conv
 - **Existing collector coexistence**: **On-Premises Billing** (`metrics-ess_billing.billing-onprem*`), **ESS Billing** (`metrics-ess_billing.billing-*`), **Elasticsearch** (`monitoring-indices*`, `metrics-elasticsearch.stack_monitoring.node_stats*`, `.monitoring-es-*`, and `metricbeat-*`), and Cross-Cluster Search (`*:monitoring-indices*`) are supported side by side. When both native `chargeback.*` and legacy streams report the same deployment and UTC day, Chargeback transforms retain legacy rows until native samples cover the full day across contributing nodes and indices so totals are neither double-counted nor truncated during mid-day cutover.
 
 **Opt-in compatibility aliases for stock ESS Billing and Elasticsearch Consumption dashboards:**
+
 - Chargeback populates compatibility fields on `chargeback_lookup.dest_billing_cluster_cost-1` (aliased as `chargeback_lookup.billing_cluster_cost`), `chargeback_lookup.dest_billing_credits-1` (aliased as `chargeback_lookup.billing_credits`), and `metrics-chargeback.usage-*` (`doc_type: index_usage`, 10-minute per-index samples) without automatically attaching index names owned by `ess_billing` or `elasticsearch` (`index_pivot`).
 - On standalone clusters that do not run separate `ess_billing` or `elasticsearch` (`index_pivot`) policies, install the dashboard assets only under **Management -> Integrations -> ESS Billing / Elasticsearch -> Assets -> Install assets**, enable **Collect ESS Credit Commitment Data (for stock ESS Billing Credits dashboard)** (`collect_ess_credits`) if using the Credits dashboard, and attach the opt-in lookup and filtered data-stream aliases in Dev Tools:
 
-```json
-POST /_aliases
-{
-  "actions": [
-    { "add": { "index": "chargeback_lookup.dest_billing_cluster_cost-*", "alias": "metrics-ess_billing.billing-chargeback" } },
-    { "add": { "index": "chargeback_lookup.dest_billing_credits-*", "alias": "metrics-ess_billing.credits-chargeback" } },
-    { "add": { "index": "metrics-chargeback.usage-*", "alias": "monitoring-indices", "filter": { "term": { "doc_type": "index_usage" } } } }
-  ]
-}
-```
+  ```json
+  POST /_aliases
+  {
+    "actions": [
+      { "add": { "index": "chargeback_lookup.dest_billing_cluster_cost-*", "alias": "metrics-ess_billing.billing-chargeback" } },
+      { "add": { "index": "chargeback_lookup.dest_billing_credits-*", "alias": "metrics-ess_billing.credits-chargeback" } },
+      { "add": { "index": "metrics-chargeback.usage-*", "alias": "monitoring-indices", "filter": { "term": { "doc_type": "index_usage" } } } }
+    ]
+  }
+  ```
 
 - Attach `metrics-ess_billing.billing-chargeback` and `metrics-ess_billing.credits-chargeback` only when no `metrics-ess_billing.billing-*` (including `metrics-ess_billing.billing-onprem*`) or `metrics-ess_billing.credits-*` backing indices exist on the cluster. Because Chargeback transforms already roll up historical `ess_billing` records into the destination lookup indices using `double` and `long` precision, matching both legacy backing indices and the compatibility alias under `FROM metrics-ess_billing.*` duplicates historical rows and triggers ES|QL numeric type-ambiguity errors (`float`/`integer`/`long` versus `double`/`long`). If decommissioning an earlier `ess_billing` policy, wait for its Chargeback rollup to finish and delete the retired `metrics-ess_billing.*` data streams before attaching the alias.
 
 **Data flow:**
+
 1. Elastic Agent collects billing into `metrics-chargeback.billing-*`, index/tier usage into `metrics-chargeback.usage-*`, and node stats into `metrics-chargeback.node_stats-*` (alongside On-Premises Billing or any existing monitoring streams).
 2. Chargeback continuous transforms (`5m` configuration sync and `60m` billing, credit commitment, usage, and utilization rollups) aggregate and enrich this telemetry into nine `lookup`-mode indices.
 3. Chargeback dashboards (and optional stock dashboards) query the lookup indices via ES|QL and Lens.
@@ -59,6 +63,7 @@ POST /_aliases
 Credentials, currency settings, optional credit commitments, and cost/utilization weights are configured in Kibana under **Management -> Fleet -> Agent Policies -> Chargeback** and synced into `chargeback_lookup.dest_chargeback_conf-1` (aliased as `chargeback_lookup.chargeback_conf`, `_id: config` for Elastic Cloud ECU and `_id: config_onprem` for On-Premises `mERU`) by the `chargeback_conf_lookup` continuous transform when `sync_fleet_config` is enabled.
 
 ### Shared Connection Settings (`Elastic Cloud & Cluster Access`)
+
 - **Organization ID (`organization_id`)**: Optional Elastic Cloud organization ID. Leave empty for On-Premises or local Hub-only collection (requires On-Premises Billing or a compatible billing producer for cost dashboards).
 - **Elastic Cloud API Key (`cloud_api_key`)**: Optional API key with **Billing Admin** role and Cloud deployment or Serverless project read access. Leave empty for On-Premises or local Hub-only collection (requires On-Premises Billing or a compatible billing producer for cost dashboards).
 - **Local / Hub Elasticsearch URL (`hub_es_url`)** and **Local / Hub Elasticsearch API Key (`hub_es_api_key`)**: Optional direct endpoint and API key for harvesting the local or self-managed Hub cluster.
@@ -66,29 +71,30 @@ Credentials, currency settings, optional credit commitments, and cost/utilizatio
 - **Configuration Owner ID (Multi-Policy) (`config_owner_id`)**: Optional identifier designating the single Chargeback policy authorized to write global rate and weight settings to `chargeback_lookup.chargeback_conf` when multiple Chargeback policies write to the same cluster (default: `""`). Leave empty in single-policy deployments; when multiple policies share a cluster, enable `sync_fleet_config` on only one policy and assign it a `config_owner_id` so overlapping policies do not overwrite or mix global rate and weight settings.
 - **Sync Fleet Rate & Weight Settings to Configuration Lookup (`sync_fleet_config`)**: Emits daily `config_snapshot` events into `chargeback_lookup.chargeback_conf` across whichever streams are enabled (default: `true`). Set to `false` to preserve manual edits or custom multi-period rows in `chargeback_lookup.chargeback_conf`. On assets-only installations without a Chargeback Agent policy, `chargeback_lookup.chargeback_conf` (`chargeback_lookup.dest_chargeback_conf-1`) is created automatically as an empty lookup index once any Chargeback or billing source index exists (or populated from any existing pre-0.6.0 `chargeback_conf_lookup` index) so dashboards apply configured or default rates and weights automatically. To create or update `_id: config` manually via `POST chargeback_lookup.chargeback_conf/_update/config` with `"doc_as_upsert": true`, place `config_join_key: "chargeback_config"`, `conf_start_date`, and `conf_end_date` directly inside `"doc"` using inclusive UTC millisecond bounds (`00:00:00.000Z` to `23:59:59.999Z` so adjacent historical rate periods do not overlap; use `_id: config_onprem` with `config_join_key: "chargeback_config_onprem"` for a separate On-Premises `mERU` rate, or, after installing the Chargeback integration assets so the managed `lookup`-mode index template for `chargeback_lookup.dest_chargeback_conf-1` is in place, run `PUT chargeback_lookup.dest_chargeback_conf-1` and alias it as `chargeback_lookup.chargeback_conf` on an empty cluster before source indices arrive):
 
-```json
-POST chargeback_lookup.chargeback_conf/_update/config
-{
-  "doc": {
-    "config_join_key": "chargeback_config",
-    "conf_chargeable_unit_rate": 0.85,
-    "conf_chargeable_unit_rate_unit": "EUR",
-    "conf_indexing_weight": 20,
-    "conf_query_weight": 20,
-    "conf_storage_weight": 40,
-    "conf_utilization_memory_weight": 70,
-    "conf_utilization_storage_weight": 30,
-    "conf_utilization_floor": 0.10,
-    "conf_start_date": 1262304000000,
-    "conf_end_date": 2430518399999
-  },
-  "doc_as_upsert": true
-}
-```
+  ```json
+  POST chargeback_lookup.chargeback_conf/_update/config
+  {
+    "doc": {
+      "config_join_key": "chargeback_config",
+      "conf_chargeable_unit_rate": 0.85,
+      "conf_chargeable_unit_rate_unit": "EUR",
+      "conf_indexing_weight": 20,
+      "conf_query_weight": 20,
+      "conf_storage_weight": 40,
+      "conf_utilization_memory_weight": 70,
+      "conf_utilization_storage_weight": 30,
+      "conf_utilization_floor": 0.10,
+      "conf_start_date": 1262304000000,
+      "conf_end_date": 2430518399999
+    },
+    "doc_as_upsert": true
+  }
+  ```
 
 ### Per-Data-Stream UI Settings
 
 **Elastic Cloud Daily Billing & Rate Settings (`chargeback.billing`):**
+
 - **Billing Lookbehind Days (`lookbehind`)**: Historical days backfilled on initial install (default: `60`).
 - **Currency Unit (`currency_unit`)**: Target display currency code, for example `"EUR"`, `"USD"`, `"GBP"`, `"ZAR"` (default: `"EUR"`).
 - **Chargeable Unit Rate (Elastic Cloud ECU) (`unit_rate`)**: Monetary value per Elastic Cloud Consumption Unit (ECU) (default: `0.85`).
@@ -97,11 +103,13 @@ POST chargeback_lookup.chargeback_conf/_update/config
 - **Collect ESS Credit Commitment Data (for stock ESS Billing Credits dashboard) (`collect_ess_credits`)**: Pulls daily organization credit commitment snapshots into `metrics-chargeback.billing-*` for the opt-in stock **[Metrics ESS Billing] Credits dashboard** alias (default: `false`).
 
 **Index & Tier Usage (`chargeback.usage`):**
+
 - **Blended Indexing Weight (`indexing_weight`)**: Non-negative weight for indexing operations in blended cost calculation (default: `20`, active when deployment indexing activity is non-zero).
 - **Blended Query Weight (`query_weight`)**: Non-negative weight for query operations in blended cost calculation (default: `20`, active when deployment query activity is non-zero). The sum of `query_weight` and `storage_weight` must be greater than zero.
 - **Blended Storage Weight (`storage_weight`)**: Non-negative weight for storage in blended cost calculation (default: `40`, active when deployment storage is non-zero). Blended cost normalizes across the deployment's active non-zero dimensions so tier and data stream shares sum to 100% of the chargeable pool. The sum of `query_weight` and `storage_weight` must be greater than zero.
 
 **Elastic Cloud Data Node Utilization (15m) (`chargeback.node_stats`):**
+
 - **Utilization Memory (Heap p95) Weight (`utilization_memory_weight`)**: Non-negative weight for JVM heap p95 in capacity utilization score (default: `70`). The sum of `utilization_memory_weight` and `utilization_storage_weight` must be greater than zero.
 - **Utilization Storage (Disk p95) Weight (`utilization_storage_weight`)**: Non-negative weight for disk p95 in capacity utilization score (default: `30`). The sum of `utilization_memory_weight` and `utilization_storage_weight` must be greater than zero.
 - **Utilization Floor (`utilization_floor`)**: Minimum utilization score (`0.0` to `1.0`) applied across realized-cost dashboard calculations (default: `0.10`). Prevents realized cost from reaching zero for idle clusters.
@@ -119,6 +127,7 @@ realized_cost   = chargeable_pool x conf_chargeable_unit_rate
 ```
 
 Where:
+
 - `heap_p95` = p95 heap usage across data nodes (0.0 to 1.0), sourced from `cluster_capacity_utilization_lookup`. Defaults to 1.0 (100%) when monitoring data is absent.
 - `disk_p95` = p95 disk usage across data nodes (0.0 to 1.0), same source.
 - `mem_w` / `disk_w` = `conf_utilization_memory_weight` / `conf_utilization_storage_weight` (default 70 / 30)
@@ -135,15 +144,18 @@ Where:
 The integration creates nine transforms to aggregate cost and usage data:
 
 **Billing transforms:**
+
 1. **`billing_cluster_cost`**: aggregates daily chargeable units (ECU/ERU) per deployment and SKU into `chargeback_lookup.dest_billing_cluster_cost-1` (aliased as `chargeback_lookup.billing_cluster_cost`), adding `cost_type`, `cost_category`, `is_allocatable`, and ESS Billing compatibility fields.
 2. **`billing_realized_pool`**: aggregates daily allocatable data-tier capacity per deployment across ECH data tiers, Serverless workload and retained storage SKUs, and On-Premises nodes into `chargeback_lookup.dest_billing_realized_pool-1` (aliased as `chargeback_lookup.billing_realized_pool`).
 3. **`billing_credits`**: aggregates daily organization credit commitment snapshots into `chargeback_lookup.dest_billing_credits-1` (aliased as `chargeback_lookup.billing_credits`) for the opt-in stock **[Metrics ESS Billing] Credits dashboard** compatibility alias.
 4. **`chargeback_conf_lookup`**: syncs `config_snapshot` events into `chargeback_lookup.dest_chargeback_conf-1` (aliased as `chargeback_lookup.chargeback_conf`, `_id: config` and `_id: config_onprem`) while carrying over any legacy `chargeback_conf_lookup` custom row or preserving manual configuration rows when Fleet sync is inactive.
 
 **Utilization transforms:**
+
 5. **`cluster_capacity_utilization`**: computes p95 heap and disk utilization across data-role nodes per deployment/day from `node_stats` using equal-weighted 15-minute node slots.
 
 **Usage transforms** (from `metrics-chargeback.usage-*` and `monitoring-indices*`):
+
 6. **`cluster_deployment_contribution`**: indexing, querying, and storage metrics per deployment/day into `chargeback_lookup.dest_cluster_deployment_contribution-1` (aliased as `chargeback_lookup.cluster_deployment_contribution`).
 7. **`cluster_datastream_contribution`**: same metrics split by data stream into `chargeback_lookup.dest_cluster_datastream_contribution-1` (aliased as `chargeback_lookup.cluster_datastream_contribution`). The usage ingest pipeline also sets `ds_type` (first `-` segment) and `ds_namespace` (last `-` segment) from the data stream name, or `other` when the name is non-conforming.
 8. **`cluster_tier_contribution`**: same metrics split by data tier into `chargeback_lookup.dest_cluster_tier_contribution-1` (aliased as `chargeback_lookup.cluster_tier_contribution`).
@@ -176,6 +188,7 @@ Answers: *what did we spend and where did it go?*
 **Source:** `chargeback_lookup.billing_cluster_cost` (full invoice, all SKUs). Totals in this dashboard equal the full Elastic invoice.
 
 Sections:
+
 - **Deployment group statistics**: total billing spend and trend per chargeback group. Use this for internal chargeback allocation by team or cost center.
 - **Component statistics**: cost broken down by billing component (`cost_type`: datahot/datacontent, datawarm, ml, kibana, snapshots, data-transfer, and others) and FinOps category (`cost_category`: data_tier, platform, transfer, snapshot, support, onprem, other).
 
@@ -188,6 +201,7 @@ Answers: *which data streams and tiers drive cost, and how efficiently are we us
 **Source:** `chargeback_lookup.billing_realized_pool` joined with `chargeback_lookup.cluster_tier_contribution`, `chargeback_lookup.cluster_tier_and_datastream_contribution`, and related usage and utilization lookups. Totals reflect the chargeable pool (allocatable data-tier capacity weighted by utilization and clamped to `conf_utilization_floor`) and do not equal the full invoice. ML, Kibana, snapshots, support, and data transfer are excluded.
 
 Sections:
+
 - **Deployment cost allocation (usage-based)**: normalized cost per deployment split by data tier (usage-weighted). Shows which deployments consume the most of their chargeable pool across tiers.
 - **Datatiers / utilization**: provisioned capacity vs chargeable pool, utilization p95 per deployment.
 - **Data tier and data stream overview**: top-20 data streams by indexing / query / storage cost, blended cost totals, and the **Workload Breakdown by Data Tier** table with columns **Data stream type**, **Namespace**, **Data stream**, **Data tier**, then indexing / querying / storage / blended cost.
