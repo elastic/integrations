@@ -178,7 +178,7 @@ The unattended runner doesn't allow Bash wholesale. It allows the plugin's scrip
 | `commands/triage-nightly.md` | `/integrations-triage:triage-nightly <issue>`: one issue, "Too many" or per-package |
 | `agents/cause-investigator.md` | One per unexplained failure group (parallel, at most 5 per run). Public evidence only; returns a structured verdict |
 | `skills/integrations-build-triage/` | Interactive playbook (deep dives, private-logs gate, rollout checks), references and scripts |
-| `skills/…/scripts/` | `sync.sh` (latest elastic/main), `daily.sh` (a day's builds and the issues each reported to), `sweep.sh` (backlog verdicts + `CLOSE_COMMANDS.sh`), `scope.sh` → `collect.sh` → `match.sh` → `lookup.sh` → `history.sh` (deterministic, no LLM), `lib.sh` (shared: title → job, cached build data), `doctor.sh`, `gcs-preflight.sh` (interactive only) |
+| `skills/…/scripts/` | `sync.sh` (latest elastic/main), `daily.sh` (a day's builds and the issues each reported to), `sweep.sh` (backlog verdicts + `CLOSE_COMMANDS.sh`), `scope.sh` → `collect.sh` → `match.sh` → `lookup.sh` → `history.sh` (deterministic, no LLM), `lib.sh` (shared: title → job, cached build data), `doctor.sh`, `junit.sh` (a job's JUnit XML), `gcs-preflight.sh` (interactive only) |
 | `hooks/guard.sh` | The write and safety guard above |
 | `bin/triage-unattended.sh` | Headless runner: doctor → sync → `claude -p`, logs to `build/triage/daily/<date>/runs/` (or `issue-<n>/runs/`), desktop notification |
 

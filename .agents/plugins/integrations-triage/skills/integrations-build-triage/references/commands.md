@@ -9,6 +9,7 @@
 | `$S/scope.sh <issue>` | issue body, edit-history GraphQL, per-night package lists, deltas, linked-issue states | ~20 s, ~3 KB output |
 | `$S/collect.sh <B>` | build JSON, parallel log download, ANSI strip, failure blocks, log-line links | ~10 s, ~3 KB output (logs 8 MB stay on disk) |
 | `$S/history.sh <B> [days]` | per-night job states, first failing build of each streak | ~50 s, ~2 KB output |
+| `$S/junit.sh [-k <pkg>] <B> <job-id> <dir>` | the job's JUnit XML (pipeline/policy want/got diffs) into `<dir>` | a few seconds |
 
 All three are idempotent: re-running skips logs that are already downloaded.
 
@@ -26,7 +27,7 @@ grep -n -E 'Policy revision assigned|Killing|service_notify|Wait for|found [0-9]
 
 # JUnit (pipeline/policy diffs) and stack dump
 bk artifacts list $B -p $P --job <job-id>    # build/test-results/<pkg>-<type>-*.xml, build/elastic-stack-dump/<pkg>/logs/*.log
-bk artifacts download <artifact-id> -p $P    # into its own empty dir
+bk artifacts download <artifact-id>         # into the current dir; for JUnit XML use $S/junit.sh instead
 
 # Same nightly on other nights (history.sh does this): --since <h>h + client-side message filter
 bk build list -p $P --branch main --since 720h --limit 300 -o json | jq -r '.[] | select(.message|test("local stacks")) | [.number,.created_at[:10],.state,.message] | @tsv'

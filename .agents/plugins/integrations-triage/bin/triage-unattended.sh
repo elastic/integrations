@@ -46,7 +46,7 @@ claude plugin list 2>/dev/null | grep -q integrations-triage || PLUGIN_ARGS=(--p
 # Allow only the commands the playbook uses; anything else is denied (no prompts). guard.sh still blocks the
 # write verbs of gh/bk and the risky commands below, as a second layer.
 ALLOWED=("Read" "Grep" "Glob" "Write" "Edit" "Agent" "Skill" "Bash($SCRIPTS/*)")
-for c in gh bk git jq yq awk sed grep rg sort uniq cut paste comm base64 head tail wc tr cat ls printf echo \
+for c in gh bk git jq yq awk sed grep rg sort uniq cut paste comm diff base64 head tail wc tr cat ls printf echo \
   date mkdir basename dirname sleep test cd; do ALLOWED+=("Bash($c:*)"); done
 claude -p "$CMD" ${PLUGIN_ARGS[@]+"${PLUGIN_ARGS[@]}"} \
   --permission-mode acceptEdits --permission-prompts none \
