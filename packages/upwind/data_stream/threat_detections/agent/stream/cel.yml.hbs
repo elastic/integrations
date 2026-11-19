@@ -34,95 +34,106 @@ program: |-
   // operation reference omits those parameters, but the API introduction uses
   // this endpoint as the page-based pagination example (default per-page 100).
   // Incremental collection is still a time bookmark: min-last-seen-time is the
-  // previous max(last_seen_time) minus a 1 minute overlap. The cursor only
-  // advances after the last page of the window so a truncated first page cannot
-  // skip remaining detections.
+  // previous max(last_seen_time) minus a 1 minute overlap. The lower bound is
+  // frozen for every page of a window so `now - initial_interval` is not
+  // recomputed mid-pagination. The cursor only advances to window_max after
+  // the last page so a truncated first page cannot skip remaining detections.
   state.?page.orValue(1).as(page,
     state.?window_max.orValue("").as(window_max,
-      state.with(
-        request(
-          "GET",
-          state.url.trim_right("/") + "?" + {
-            "min-last-seen-time": [
-              state.?cursor.last_seen_time.orValue(
-                (now - duration(state.initial_interval)).format(time_layout.RFC3339)
-              ),
-            ],
-            "page": [string(int(page))],
-            "per-page": [string(int(state.batch_size))],
-          }.format_query()
-        ).do_request().as(resp,
-          (resp.StatusCode == 200) ?
-            try(resp.Body.decode_json()).as(decoded,
-              (!is_error(decoded) && type(decoded) == type([])) ?
-                decoded.map(e, string(e.?last_seen_time.orValue(""))).filter(t, t != "").as(seen,
-                  (
-                    (size(seen) == 0) ?
-                      window_max
-                    :
-                      ((window_max == "") ? seen.max() : [window_max, seen.max()].max())
-                  ).as(combined,
-                    (size(decoded) == int(state.batch_size)).as(more,
-                      {
-                        "events": decoded.map(e, {
-                          "message": e.encode_json(),
-                          "organization": {"id": state.organization_id},
-                        }),
-                        "want_more": more,
-                        "page": more ? int(page) + 1 : 1,
-                        "window_max": more ? combined : "",
-                        "cursor": more ?
-                          state.?cursor.orValue({})
-                        :
-                          (
-                            (combined == "") ?
-                              ""
-                            :
-                              (combined.parse_time(time_layout.RFC3339) - duration("1m")).format(time_layout.RFC3339)
-                          ).as(candidate,
-                            (candidate == "") ?
-                              state.?cursor.orValue({})
-                            :
-                              {
-                                "last_seen_time": (
-                                  state.?cursor.last_seen_time.orValue("") != "" && state.?cursor.last_seen_time.orValue("") > candidate
-                                ) ?
-                                  state.?cursor.last_seen_time.orValue("")
-                                :
-                                  candidate,
-                              }
-                          ),
-                      }
+      state.?window_start.orValue("").as(stored_start,
+        (
+          (stored_start != "") ?
+            stored_start
+          :
+            state.?cursor.last_seen_time.orValue(
+              (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+            )
+        ).as(lower,
+        state.with(
+          request(
+            "GET",
+            state.url.trim_right("/") + "?" + {
+              "min-last-seen-time": [lower],
+              "page": [string(int(page))],
+              "per-page": [string(int(state.batch_size))],
+            }.format_query()
+          ).do_request().as(resp,
+            (resp.StatusCode == 200) ?
+              try(resp.Body.decode_json()).as(decoded,
+                (!is_error(decoded) && type(decoded) == type([])) ?
+                  decoded.map(e, string(e.?last_seen_time.orValue(""))).filter(t, t != "").as(seen,
+                    (
+                      (size(seen) == 0) ?
+                        window_max
+                      :
+                        ((window_max == "") ? seen.max() : [window_max, seen.max()].max())
+                    ).as(combined,
+                      (size(decoded) == int(state.batch_size)).as(more,
+                        {
+                          "events": decoded.map(e, {
+                            "message": e.encode_json(),
+                            "organization": {"id": state.organization_id},
+                          }),
+                          "want_more": more,
+                          "page": more ? int(page) + 1 : 1,
+                          "window_max": more ? combined : "",
+                          "window_start": more ? lower : "",
+                          "cursor": more ?
+                            state.?cursor.orValue({})
+                          :
+                            (
+                              (combined == "") ?
+                                ""
+                              :
+                                (combined.parse_time(time_layout.RFC3339) - duration("1m")).format(time_layout.RFC3339)
+                            ).as(candidate,
+                              (candidate == "") ?
+                                state.?cursor.orValue({})
+                              :
+                                {
+                                  "last_seen_time": (
+                                    state.?cursor.last_seen_time.orValue("") != "" && state.?cursor.last_seen_time.orValue("") > candidate
+                                  ) ?
+                                    state.?cursor.last_seen_time.orValue("")
+                                  :
+                                    candidate,
+                                }
+                            ),
+                        }
+                      )
                     )
                   )
-                )
-              :
-                {
-                  "events": {
-                    "error": {
-                      "code": string(resp.StatusCode),
-                      "id": resp.Status,
-                      "message": "GET " + state.url.trim_right("/") + ": response was not a JSON array",
+                :
+                  {
+                    "events": {
+                      "error": {
+                        "code": string(resp.StatusCode),
+                        "id": resp.Status,
+                        "message": "GET " + state.url.trim_right("/") + ": response was not a JSON array",
+                      },
                     },
+                    "want_more": false,
+                    "page": 1,
+                    "window_max": "",
+                    "window_start": "",
+                  }
+              )
+            :
+              {
+                "events": {
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": resp.Status,
+                    "message": "GET " + state.url.trim_right("/") + ": " + ((size(resp.Body) != 0) ? string(resp.Body) : resp.Status),
                   },
-                  "want_more": false,
-                  "page": 1,
-                  "window_max": "",
-                }
-            )
-          :
-            {
-              "events": {
-                "error": {
-                  "code": string(resp.StatusCode),
-                  "id": resp.Status,
-                  "message": "GET " + state.url.trim_right("/") + ": " + ((size(resp.Body) != 0) ? string(resp.Body) : resp.Status),
                 },
-              },
-              "want_more": false,
-              "page": 1,
-              "window_max": "",
-            }
+                "want_more": false,
+                "page": 1,
+                "window_max": "",
+                "window_start": "",
+              }
+          )
+        )
         )
       )
     )

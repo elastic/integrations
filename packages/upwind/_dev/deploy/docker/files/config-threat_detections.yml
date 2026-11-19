@@ -7,12 +7,16 @@
 # Rules, first match wins:
 #   1. OAuth client-credentials token (audience is the API base URL).
 #   2. Caught-up bookmark 2026-03-17T12:09:00Z → empty array (terminal window).
-#   3. Resume bookmark 2026-03-17T11:57:50Z → overlap duplicate, status-only
-#      change of the same detection, and one newer detection.
-#   4. Any other min-last-seen-time:
-#        first hit → two detections (initial lookback window)
-#        later hits → three extra detections (cursor regression guard)
-#   5. List with no time filter (research test-api.py without --lookback).
+#   3. Resume bookmark 2026-03-17T11:59:00Z (per-page=2):
+#        page 1 → overlap duplicate + status-only change of the page-2
+#        lookback detection (last_seen 12:00:00Z, inside the lower bound)
+#        page 2 → newer detection
+#   4. Multi-page collection (per-page=1):
+#        page 1 → one detection, page 2 → one newer detection, page 3 → []
+#        committed bookmark 2026-03-17T10:29:00Z → empty array
+#   5. Any other min-last-seen-time (per-page=2):
+#        page 1 → two detections; page 2 → newest remaining detection
+#        later hits → cursor regression guard events
 rules:
   - path: /oauth/token
     methods: ['POST']
@@ -31,7 +35,7 @@ rules:
     query_params:
       min-last-seen-time: "2026-03-17T12:09:00Z"
       page: "1"
-      per-page: "100"
+      per-page: "2"
     request_headers:
       Authorization:
         - Bearer test-token
@@ -44,13 +48,14 @@ rules:
             - application/json
         body: '[]'
   # Cursor resume: min-last-seen-time is max(last_seen_time) from the initial
-  # window (2026-03-17T11:58:50Z) minus the 1 minute overlap.
+  # window (2026-03-17T12:00:00Z) minus the 1 minute overlap. Two pages so
+  # the default system test (batch_size=2) exercises want_more and window_max.
   - path: /v1/organizations/org-example-0001/threat-detections
     methods: ['GET']
     query_params:
-      min-last-seen-time: "2026-03-17T11:57:50Z"
+      min-last-seen-time: "2026-03-17T11:59:00Z"
       page: "1"
-      per-page: "100"
+      per-page: "2"
     request_headers:
       Authorization:
         - Bearer test-token
@@ -64,59 +69,64 @@ rules:
         body: |
           [
             {
-              "id": "uwd-11111111111111aa",
-              "type": "aws_cloudtrail_security_group_allow_traffic_to_all_ports",
-              "category": "CLOUD_TRAIL",
-              "severity": "MEDIUM",
+              "id": "uwd-initial-page2-0001",
+              "type": "aws_cloudtrail_console_login",
+              "category": "NETWORK",
+              "severity": "LOW",
               "status": "OPEN",
-              "title": "A security group inbound rule was modified by assumed role to allow unrestricted traffic (0.0.0.0/0) for all ports",
-              "description": "Allowing unrestricted inbound access (0.0.0.0/0) to all ports exposes the cloud environment to the entire internet, creating a critical security vulnerability.",
-              "resource": {
-                "id": "i-00000000000000000",
-                "name": "host-1.example.com",
-                "type": "AWS_SECURITY_GROUP",
-                "cloud_provider": "AWS",
-                "cloud_account_id": "111111111111"
-              },
-              "first_seen_time": "2026-03-17T11:58:50Z",
-              "last_seen_time": "2026-03-17T11:58:50Z",
+              "title": "Initial lookback page 2",
+              "description": "Newest detection in the initial lookback window, returned on page 2.",
+              "first_seen_time": "2026-03-17T12:00:00Z",
+              "last_seen_time": "2026-03-17T12:00:00Z",
               "occurrence_count": 1,
-              "mitre_attacks": [
-                {
-                  "tactic_id": "TA0005",
-                  "tactic_name": "Defense Evasion",
-                  "technique_id": "T1578",
-                  "technique_name": "Modify Cloud Compute Infrastructure"
-                }
-              ]
+              "resource": {
+                "cloud_provider": "AWS",
+                "cloud_account_id": "111111111111",
+                "id": "i-00000000000000012",
+                "name": "host-lookback-page2.example.com",
+                "type": "AWS_EC2_INSTANCE",
+                "region": "us-east-1"
+              }
             },
             {
-              "id": "uwd-11111111111111aa",
-              "type": "aws_cloudtrail_security_group_allow_traffic_to_all_ports",
-              "category": "CLOUD_TRAIL",
-              "severity": "MEDIUM",
+              "id": "uwd-initial-page2-0001",
+              "type": "aws_cloudtrail_console_login",
+              "category": "NETWORK",
+              "severity": "LOW",
               "status": "CLOSED",
-              "title": "A security group inbound rule was modified by assumed role to allow unrestricted traffic (0.0.0.0/0) for all ports",
-              "description": "Allowing unrestricted inbound access (0.0.0.0/0) to all ports exposes the cloud environment to the entire internet, creating a critical security vulnerability.",
-              "resource": {
-                "id": "i-00000000000000000",
-                "name": "host-1.example.com",
-                "type": "AWS_SECURITY_GROUP",
-                "cloud_provider": "AWS",
-                "cloud_account_id": "111111111111"
-              },
-              "first_seen_time": "2026-03-17T11:58:50Z",
-              "last_seen_time": "2026-03-17T11:58:50Z",
+              "title": "Initial lookback page 2",
+              "description": "Newest detection in the initial lookback window, returned on page 2.",
+              "first_seen_time": "2026-03-17T12:00:00Z",
+              "last_seen_time": "2026-03-17T12:00:00Z",
               "occurrence_count": 1,
-              "mitre_attacks": [
-                {
-                  "tactic_id": "TA0005",
-                  "tactic_name": "Defense Evasion",
-                  "technique_id": "T1578",
-                  "technique_name": "Modify Cloud Compute Infrastructure"
-                }
-              ]
-            },
+              "resource": {
+                "cloud_provider": "AWS",
+                "cloud_account_id": "111111111111",
+                "id": "i-00000000000000012",
+                "name": "host-lookback-page2.example.com",
+                "type": "AWS_EC2_INSTANCE",
+                "region": "us-east-1"
+              }
+            }
+          ]
+  - path: /v1/organizations/org-example-0001/threat-detections
+    methods: ['GET']
+    query_params:
+      min-last-seen-time: "2026-03-17T11:59:00Z"
+      page: "2"
+      per-page: "2"
+    request_headers:
+      Authorization:
+        - Bearer test-token
+      Accept:
+        - application/json
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          [
             {
               "id": "uwd-33333333333333cc",
               "type": "aws_cloudtrail_console_login",
@@ -138,13 +148,127 @@ rules:
               }
             }
           ]
+  # Multi-page collection: batch_size=1. After both pages, the agent commits
+  # max(last_seen_time) minus 1 minute (2026-03-17T10:29:00Z).
+  - path: /v1/organizations/org-example-0001/threat-detections
+    methods: ['GET']
+    query_params:
+      min-last-seen-time: "2026-03-17T10:29:00Z"
+      page: "1"
+      per-page: "1"
+    request_headers:
+      Authorization:
+        - Bearer test-token
+      Accept:
+        - application/json
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: '[]'
+  - path: /v1/organizations/org-example-0001/threat-detections
+    methods: ['GET']
+    query_params:
+      min-last-seen-time: "{minLastSeen:.*}"
+      page: "1"
+      per-page: "1"
+    request_headers:
+      Authorization:
+        - Bearer test-token
+      Accept:
+        - application/json
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          [
+            {
+              "id": "uwd-page-0000000001aa",
+              "type": "aws_cloudtrail_console_login",
+              "category": "NETWORK",
+              "severity": "LOW",
+              "status": "OPEN",
+              "title": "Multi-page collection page 1",
+              "description": "First page of a two-page threat-detection window.",
+              "first_seen_time": "2026-03-17T10:00:00Z",
+              "last_seen_time": "2026-03-17T10:00:00Z",
+              "occurrence_count": 1,
+              "resource": {
+                "cloud_provider": "AWS",
+                "cloud_account_id": "111111111111",
+                "id": "i-00000000000000010",
+                "name": "host-page-1.example.com",
+                "type": "AWS_EC2_INSTANCE",
+                "region": "us-east-1"
+              }
+            }
+          ]
+  - path: /v1/organizations/org-example-0001/threat-detections
+    methods: ['GET']
+    query_params:
+      min-last-seen-time: "{minLastSeen:.*}"
+      page: "2"
+      per-page: "1"
+    request_headers:
+      Authorization:
+        - Bearer test-token
+      Accept:
+        - application/json
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          [
+            {
+              "id": "uwd-page-0000000002bb",
+              "type": "aws_cloudtrail_console_login",
+              "category": "NETWORK",
+              "severity": "MEDIUM",
+              "status": "OPEN",
+              "title": "Multi-page collection page 2",
+              "description": "Second page of a two-page threat-detection window.",
+              "first_seen_time": "2026-03-17T10:30:00Z",
+              "last_seen_time": "2026-03-17T10:30:00Z",
+              "occurrence_count": 1,
+              "resource": {
+                "cloud_provider": "AWS",
+                "cloud_account_id": "111111111111",
+                "id": "i-00000000000000011",
+                "name": "host-page-2.example.com",
+                "type": "AWS_EC2_INSTANCE",
+                "region": "us-east-1"
+              }
+            }
+          ]
+  - path: /v1/organizations/org-example-0001/threat-detections
+    methods: ['GET']
+    query_params:
+      min-last-seen-time: "{minLastSeen:.*}"
+      page: "3"
+      per-page: "1"
+    request_headers:
+      Authorization:
+        - Bearer test-token
+      Accept:
+        - application/json
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: '[]'
   # Initial lookback (any other min-last-seen-time) and regression guard.
   - path: /v1/organizations/org-example-0001/threat-detections
     methods: ['GET']
     query_params:
       min-last-seen-time: "{minLastSeen:.*}"
       page: "1"
-      per-page: "100"
+      per-page: "2"
     request_headers:
       Authorization:
         - Bearer test-token
@@ -233,7 +357,51 @@ rules:
               "last_seen_time": "2026-03-17T11:58:50Z",
               "occurrence_count": 1,
               "resource": {"cloud_provider": "AWS", "cloud_account_id": "111111111111", "id": "i-regress00000000002", "name": "host-regress.example.com", "type": "AWS_EC2_INSTANCE"}
-            },
+            }
+          ]
+          {{ end }}
+  - path: /v1/organizations/org-example-0001/threat-detections
+    methods: ['GET']
+    query_params:
+      min-last-seen-time: "{minLastSeen:.*}"
+      page: "2"
+      per-page: "2"
+    request_headers:
+      Authorization:
+        - Bearer test-token
+      Accept:
+        - application/json
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          {{ if eq .req_num 1 }}
+          [
+            {
+              "id": "uwd-initial-page2-0001",
+              "type": "aws_cloudtrail_console_login",
+              "category": "NETWORK",
+              "severity": "LOW",
+              "status": "OPEN",
+              "title": "Initial lookback page 2",
+              "description": "Newest detection in the initial lookback window, returned on page 2.",
+              "first_seen_time": "2026-03-17T12:00:00Z",
+              "last_seen_time": "2026-03-17T12:00:00Z",
+              "occurrence_count": 1,
+              "resource": {
+                "cloud_provider": "AWS",
+                "cloud_account_id": "111111111111",
+                "id": "i-00000000000000012",
+                "name": "host-lookback-page2.example.com",
+                "type": "AWS_EC2_INSTANCE",
+                "region": "us-east-1"
+              }
+            }
+          ]
+          {{ else }}
+          [
             {
               "id": "uwd-regress00000003",
               "type": "cursor_regression_guard",
@@ -248,31 +416,3 @@ rules:
             }
           ]
           {{ end }}
-  # Unfiltered list used by test-api.py when --lookback is omitted.
-  - path: /v1/organizations/org-example-0001/threat-detections
-    methods: ['GET']
-    request_headers:
-      Authorization:
-        - Bearer test-token
-      Accept:
-        - application/json
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type:
-            - application/json
-        body: |
-          [
-            {
-              "id": "uwd-11111111111111aa",
-              "type": "aws_cloudtrail_security_group_allow_traffic_to_all_ports",
-              "category": "CLOUD_TRAIL",
-              "severity": "MEDIUM",
-              "status": "OPEN",
-              "title": "A security group inbound rule was modified by assumed role to allow unrestricted traffic (0.0.0.0/0) for all ports",
-              "first_seen_time": "2026-03-17T11:58:50Z",
-              "last_seen_time": "2026-03-17T11:58:50Z",
-              "occurrence_count": 1,
-              "resource": {"cloud_provider": "AWS", "cloud_account_id": "111111111111", "id": "i-00000000000000000", "name": "host-1.example.com", "type": "AWS_SECURITY_GROUP"}
-            }
-          ]

@@ -11,11 +11,12 @@ data_stream:
   vars:
     interval: 2s
     initial_interval: 24h
+    batch_size: 2
     http_client_timeout: 60s
     preserve_original_event: true
 assert:
-  # Initial lookback window (2) plus the cursor-resume poll: one unchanged
-  # overlap duplicate (dropped), one status-only change (indexed), and one
-  # newer detection. Later polls use the caught-up bookmark and return empty.
-  # A regressed cursor re-requests the lookback and indexes three extra events.
-  hit_count: 4
+  # Initial lookback is two pages (2 + 1). The resume poll, also two pages,
+  # indexes one status-only change and one newer detection; the overlap
+  # duplicate is dropped. Later polls use the caught-up bookmark and return
+  # empty.
+  hit_count: 5

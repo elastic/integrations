@@ -176,6 +176,7 @@ The `threat_detections` data stream collects runtime threat detections from `GET
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
 | organization.id | Unique identifier for the organization. | keyword |
 | resource.id | The unique identifier of the resource affected by this detection. | keyword |
 | resource.name | The name of the resource affected by this detection. | keyword |
@@ -327,7 +328,7 @@ The `vulnerability_findings` data stream collects CVE findings from `GET /v1/org
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| observer.vendor | Vendor name of the observer. | keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
 | orchestrator.cluster.id | Unique ID of the cluster. | keyword |
 | orchestrator.cluster.name | Name of the cluster. | keyword |
 | orchestrator.namespace | Namespace in which the action is taking place. | keyword |
@@ -538,6 +539,7 @@ The `configuration_findings` data stream collects the current CSPM posture from 
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
 | organization.id | Unique identifier for the organization. | keyword |
 | resource.id | The unique identifier of the resource evaluated by this finding. | keyword |
 | resource.name | The name of the resource evaluated by this finding. | keyword |
