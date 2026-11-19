@@ -1,0 +1,97 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects a container image being built from inside a running container using a container build utility such as \"docker build\", \"buildah\", \"buildctl\", \"img\", or \"nerdctl build\". Building an image on the host (or inside a pod) bypasses defenses that monitor for the retrieval of malicious images from a public registry, allowing an adversary to assemble and run tooling without pulling a flagged image. Nested image builds inside a Kubernetes pod are rarely legitimate outside of dedicated CI/build namespaces.",
+        "false_positives": [
+            "CI/CD and image-build pipelines (for example Tekton, Argo Workflows, Jenkins, or Kaniko builders) legitimately build images inside pods. Baseline the build namespaces and service accounts used for those pipelines and add exceptions by \"orchestrator.namespace\"."
+        ],
+        "from": "now-6m",
+        "interval": "5m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Container Image Built Inside a Container",
+        "note": "## Triage and analysis\n\n### Investigating Container Image Built Inside a Container\n\nAdversaries build a container image directly inside a running container or pod to bypass defenses that inspect images pulled from a registry. Using \"docker build\" (or buildah/buildctl/img/nerdctl) they assemble an image locally from a Dockerfile and then run it, avoiding registry scanning and admission controls. Outside of dedicated CI/build workloads this is a strong indicator of hands-on-keyboard activity.\n\n### Possible investigation steps\n\n- Identify the container (`container.id`, `container.name`) and namespace (`orchestrator.namespace`) and determine whether it is a sanctioned build/CI workload.\n- Review the full command line (`process.args`) for the build context, Dockerfile path, and resulting image tag.\n- Examine the parent process (`process.parent.name`, `process.parent.executable`) to determine whether the build was launched interactively.\n- Correlate with follow-on activity such as the newly built image being run, pushed, or used to deploy a privileged or host-namespaced pod.\n\n### False positive analysis\n\n- Dedicated CI/build namespaces (Tekton, Argo, Jenkins, Kaniko) build images routinely. Baseline those namespaces and service accounts and add exceptions by `orchestrator.namespace`.\n\n### Response and remediation\n\n- If unexpected, isolate the container, capture the build context and Dockerfile, and identify what the resulting image was used for.\n- Remove the built image, redeploy affected workloads from trusted images, and tighten RBAC/admission controls to prevent in-cluster image builds outside approved pipelines.",
+        "query": "from logs-cloud_defend.process* metadata _id, _index, _version\n| where host.os.type == \"linux\" and event.type == \"start\" and event.action == \"exec\" and\n    container.id like \"*\" and\n    process.name in (\"docker\", \"docker-buildx\", \"buildah\", \"buildctl\", \"img\", \"nerdctl\") and\n    kql(\"\"\"process.args: (\"build\" or \"bud\")\"\"\")\n| keep @timestamp, host.id, container.id, process.name, process.args, process.parent.name, process.parent.executable, user.id, _id, _index, _version\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1612/",
+            "https://github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1612/T1612.md"
+        ],
+        "related_integrations": [
+            {
+                "package": "cloud_defend",
+                "version": "^1.4.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "container.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "daa0d56b-9149-475c-8bf7-bce8a337eed8",
+        "setup": "This rule requires the Elastic Defend for Containers integration to be configured to collect container process events.",
+        "severity": "medium",
+        "tags": [
+            "Data Source: Elastic Defend for Containers",
+            "Domain: Containers",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Platform: Linux",
+            "Platform: Kubernetes"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1612",
+                        "name": "Build Image on Host",
+                        "reference": "https://attack.mitre.org/techniques/T1612/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "daa0d56b-9149-475c-8bf7-bce8a337eed8_1",
+    "type": "security-rule"
+}
