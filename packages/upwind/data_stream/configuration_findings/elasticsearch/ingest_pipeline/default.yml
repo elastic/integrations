@@ -62,7 +62,7 @@ processors:
       tag: rename_id
   - rename:
       field: json.title
-      target_field: rule.name
+      target_field: message
       ignore_missing: true
       tag: rename_title
   - rename:
@@ -83,9 +83,14 @@ processors:
       description: Cloud security posture workflows require `rule.uuid`; the check identifier is the stable rule identity.
   - rename:
       field: json.check.title
-      target_field: rule.description
+      target_field: rule.name
       ignore_missing: true
       tag: rename_check_title
+  - rename:
+      field: json.check.description
+      target_field: rule.description
+      ignore_missing: true
+      tag: rename_check_description
   - rename:
       field: json.framework.title
       target_field: rule.ruleset
@@ -217,13 +222,8 @@ processors:
       ignore_missing: true
       tag: rename_last_sync_time
   - rename:
-      field: json.check.description
-      target_field: upwind.configuration_findings.check.description
-      ignore_missing: true
-      tag: rename_check_description
-  - rename:
       field: json.check.remediation
-      target_field: upwind.configuration_findings.check.remediation
+      target_field: rule.remediation
       ignore_missing: true
       tag: rename_check_remediation
   - rename:

@@ -25,6 +25,7 @@ resource.headers:
     - application/json
 state:
   batch_size: {{batch_size}}
+  organization_id: "{{organization_id}}"
 redact:
   fields: ~
 {{#if max_executions}}
@@ -55,7 +56,10 @@ program: |-
                 "more": decoded.?pagination.hasMoreData.orValue(false),
               }.as(page,
                 {
-                  "events": decoded.?resourceFindings.orValue([]).map(e, {"message": e.encode_json()}),
+                  "events": decoded.?resourceFindings.orValue([]).map(e, {
+                    "message": e.encode_json(),
+                    "organization": {"id": state.organization_id},
+                  }),
                   "want_more": page.more && page.tok != "",
                   "next_token": (page.more && page.tok != "") ? page.tok : "",
                 }

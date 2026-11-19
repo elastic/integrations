@@ -1,7 +1,7 @@
 {
     "expected": [
         {
-            "@timestamp": "2026-11-18T09:09:34.233966042Z",
+            "@timestamp": "2026-11-19T09:15:17.349707295Z",
             "cloud": {
                 "account": {
                     "id": "111111111111",
@@ -27,6 +27,7 @@
                     "info"
                 ]
             },
+            "message": "S3 bucket allows public read access",
             "observer": {
                 "vendor": "Upwind"
             },
@@ -39,18 +40,15 @@
                 "evaluation": "failed"
             },
             "rule": {
-                "description": "S3 bucket should not allow public read access",
+                "description": "Detects bucket policies or ACLs that expose objects publicly.",
                 "id": "check-s3-public-read",
-                "name": "S3 bucket allows public read access",
+                "name": "S3 bucket should not allow public read access",
+                "remediation": "Remove public principals from the bucket policy and enable Block Public Access.",
                 "ruleset": "CIS AWS Foundations",
                 "uuid": "check-s3-public-read"
             },
             "upwind": {
                 "configuration_findings": {
-                    "check": {
-                        "description": "Detects bucket policies or ACLs that expose objects publicly.",
-                        "remediation": "Remove public principals from the bucket policy and enable Block Public Access."
-                    },
                     "framework": {
                         "cloud_provider": "AWS",
                         "id": "cis-aws-v1",
@@ -72,7 +70,7 @@
             }
         },
         {
-            "@timestamp": "2026-11-18T09:09:34.233977833Z",
+            "@timestamp": "2026-11-19T09:15:17.349712545Z",
             "cloud": {
                 "account": {
                     "id": "111111111111",
@@ -98,6 +96,7 @@
                     "info"
                 ]
             },
+            "message": "Security group allows unrestricted SSH access",
             "observer": {
                 "vendor": "Upwind"
             },
@@ -110,18 +109,15 @@
                 "evaluation": "failed"
             },
             "rule": {
-                "description": "Security groups should not allow unrestricted SSH",
+                "description": "Detects security groups exposing SSH to the internet.",
                 "id": "check-sg-open-ssh",
-                "name": "Security group allows unrestricted SSH access",
+                "name": "Security groups should not allow unrestricted SSH",
+                "remediation": "Restrict inbound SSH to known administrative CIDR ranges.",
                 "ruleset": "CIS AWS Foundations",
                 "uuid": "check-sg-open-ssh"
             },
             "upwind": {
                 "configuration_findings": {
-                    "check": {
-                        "description": "Detects security groups exposing SSH to the internet.",
-                        "remediation": "Restrict inbound SSH to known administrative CIDR ranges."
-                    },
                     "framework": {
                         "cloud_provider": "AWS",
                         "id": "cis-aws-v1",
@@ -143,7 +139,7 @@
             }
         },
         {
-            "@timestamp": "2026-11-18T09:09:34.233979333Z",
+            "@timestamp": "2026-11-19T09:15:17.349713628Z",
             "cloud": {
                 "account": {
                     "id": "111111111111",
@@ -169,6 +165,7 @@
                     "info"
                 ]
             },
+            "message": "CloudTrail is not enabled in all regions",
             "observer": {
                 "vendor": "Upwind"
             },
@@ -181,18 +178,15 @@
                 "evaluation": "failed"
             },
             "rule": {
-                "description": "CloudTrail should be enabled in all regions",
+                "description": "Detects accounts without a multi-region trail.",
                 "id": "check-cloudtrail-all-regions",
-                "name": "CloudTrail is not enabled in all regions",
+                "name": "CloudTrail should be enabled in all regions",
+                "remediation": "Create a multi-region CloudTrail trail with log file validation enabled.",
                 "ruleset": "CIS AWS Foundations",
                 "uuid": "check-cloudtrail-all-regions"
             },
             "upwind": {
                 "configuration_findings": {
-                    "check": {
-                        "description": "Detects accounts without a multi-region trail.",
-                        "remediation": "Create a multi-region CloudTrail trail with log file validation enabled."
-                    },
                     "framework": {
                         "cloud_provider": "AWS",
                         "id": "cis-aws-v1",
@@ -214,7 +208,7 @@
             }
         },
         {
-            "@timestamp": "2026-11-18T09:09:34.233980458Z",
+            "@timestamp": "2026-11-19T09:15:17.349714461Z",
             "cloud": {
                 "account": {
                     "id": "111111111111",
@@ -240,6 +234,7 @@
                     "info"
                 ]
             },
+            "message": "Root account has active access keys",
             "observer": {
                 "vendor": "Upwind"
             },
@@ -252,18 +247,15 @@
                 "evaluation": "passed"
             },
             "rule": {
-                "description": "Root account access keys should not exist",
+                "description": "Detects active access keys on the root user.",
                 "id": "check-root-access-keys",
-                "name": "Root account has active access keys",
+                "name": "Root account access keys should not exist",
+                "remediation": "Delete root user access keys and use IAM roles instead.",
                 "ruleset": "CIS AWS Foundations",
                 "uuid": "check-root-access-keys"
             },
             "upwind": {
                 "configuration_findings": {
-                    "check": {
-                        "description": "Detects active access keys on the root user.",
-                        "remediation": "Delete root user access keys and use IAM roles instead."
-                    },
                     "framework": {
                         "cloud_provider": "AWS",
                         "id": "cis-aws-v1",
@@ -281,6 +273,93 @@
                     },
                     "severity": "CRITICAL",
                     "status": "PASS"
+                }
+            }
+        },
+        {
+            "@timestamp": "2026-11-19T09:15:17.349715253Z",
+            "cloud": {
+                "account": {
+                    "id": "111111111111",
+                    "name": "production"
+                },
+                "provider": "aws",
+                "region": "us-east-1"
+            },
+            "ecs": {
+                "version": "9.5.0"
+            },
+            "event": {
+                "category": [
+                    "configuration"
+                ],
+                "id": "ucf-55555555555555ee",
+                "kind": "state",
+                "original": "{\"id\":\"ucf-55555555555555ee\",\"title\":\"EKS namespace uses the default network policy\",\"description\":\"The Kubernetes namespace does not restrict pod-to-pod traffic with a network policy.\",\"status\":\"FAIL\",\"severity\":\"LOW\",\"first_seen_time\":\"2026-03-18T08:00:00Z\",\"last_seen_time\":\"2026-03-20T08:00:00Z\",\"last_sync_time\":\"2026-03-20T08:05:00Z\",\"check\":{\"id\":\"check-eks-netpol\",\"title\":\"Namespaces should have a default deny network policy\",\"description\":\"Detects namespaces without a default deny NetworkPolicy.\",\"remediation\":\"Apply a default deny NetworkPolicy and allow only required traffic.\"},\"framework\":{\"id\":\"cis-eks-v1\",\"title\":\"CIS Amazon EKS\",\"description\":\"CIS Benchmark for Amazon Elastic Kubernetes Service.\",\"version\":\"1.4.0\",\"revision\":\"1\",\"status\":\"ENABLED\",\"cloud_provider\":\"AWS\"},\"resource\":{\"id\":\"ns-payments\",\"arn\":\"arn:aws:eks:us-east-1:111111111111:cluster/prod-eks/namespace/payments\",\"name\":\"payments\",\"type\":\"KUBERNETES_NAMESPACE\",\"cloud_provider\":\"AWS\",\"cloud_account_id\":\"111111111111\",\"cloud_account_name\":\"production\",\"region\":\"us-east-1\",\"namespace\":\"payments\",\"cluster_id\":\"00000000-0000-0000-0000-000000000001\",\"upwind_asset_id\":\"asset-ns-001\",\"risk_categories\":[\"NETWORK\"],\"cloud_account_tags\":[{\"key\":\"environment\",\"value\":\"production\"},{\"key\":\"team\",\"value\":\"platform\"}]}}",
+                "reason": "The Kubernetes namespace does not restrict pod-to-pod traffic with a network policy.",
+                "severity": 21,
+                "start": "2026-03-18T08:00:00.000Z",
+                "type": [
+                    "info"
+                ]
+            },
+            "message": "EKS namespace uses the default network policy",
+            "observer": {
+                "vendor": "Upwind"
+            },
+            "orchestrator": {
+                "cluster": {
+                    "id": "00000000-0000-0000-0000-000000000001"
+                },
+                "namespace": "payments"
+            },
+            "resource": {
+                "id": "ns-payments",
+                "name": "payments",
+                "type": "KUBERNETES_NAMESPACE"
+            },
+            "result": {
+                "evaluation": "failed"
+            },
+            "rule": {
+                "description": "Detects namespaces without a default deny NetworkPolicy.",
+                "id": "check-eks-netpol",
+                "name": "Namespaces should have a default deny network policy",
+                "remediation": "Apply a default deny NetworkPolicy and allow only required traffic.",
+                "ruleset": "CIS Amazon EKS",
+                "uuid": "check-eks-netpol"
+            },
+            "upwind": {
+                "configuration_findings": {
+                    "framework": {
+                        "cloud_provider": "AWS",
+                        "description": "CIS Benchmark for Amazon Elastic Kubernetes Service.",
+                        "id": "cis-eks-v1",
+                        "revision": "1",
+                        "status": "ENABLED",
+                        "version": "1.4.0"
+                    },
+                    "last_seen_time": "2026-03-20T08:00:00.000Z",
+                    "last_sync_time": "2026-03-20T08:05:00Z",
+                    "resource": {
+                        "arn": "arn:aws:eks:us-east-1:111111111111:cluster/prod-eks/namespace/payments",
+                        "cloud_account_tags": [
+                            {
+                                "key": "environment",
+                                "value": "production"
+                            },
+                            {
+                                "key": "team",
+                                "value": "platform"
+                            }
+                        ],
+                        "risk_categories": [
+                            "NETWORK"
+                        ],
+                        "upwind_asset_id": "asset-ns-001"
+                    },
+                    "severity": "LOW",
+                    "status": "FAIL"
                 }
             }
         }
