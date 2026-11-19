@@ -1,0 +1,45 @@
+# Keys whose expanded paths collide, such as a scalar src.process.startTime next
+# to src.process.startTime.raw, can't all be expanded. Only the conflicting keys
+# are skipped and reported in error.message. All other keys are still mapped.
+# The first event has the scalar key of each pair first, the second has the
+# object key first.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+install_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+! stderr .
+
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default data.json
+! stderr .
+cp stdout got.json
+
+exec jq -s 'length' got.json
+stdout '^2$'
+
+exec jq -s 'all(.event.kind == "pipeline_error")' got.json
+stdout '^true$'
+
+# One key from each colliding pair is reported, and nothing else.
+exec jq -s -r '.[].error.message[] | capture("with tag script_expand_and_rename_json_fields .* fields not expanded due to conflicts: \\[(?<keys>.*)\\]$").keys | split(", ") | sort | join(" ")' got.json
+stdout -count=2 '^custom\.label(\.detail)? src\.process\.startTime(\.raw)?$'
+
+# The other fields are still mapped.
+exec jq -s -c '[.[] | [.event.category, .process.name, .process.pid, .process.parent.name, .sentinel_one_cloud_funnel.event.category]] | unique[]' got.json
+stdout -count=1 '^\[\["process"\],"cupsd",61536,"launchd","process"\]$'
+
+exec jq -s 'all(has("json") | not)' got.json
+stdout '^true$'
+
+uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+! stderr .
+
+-- data.json --
+{
+	"message": "{\"src.process.startTime\":1742370207425,\"src.process.startTime.raw\":\"not a number\",\"custom.label\":\"scalar value\",\"custom.label.detail\":\"object value\",\"src.process.image.path\":\"/sbin/launchd\",\"tgt.process.displayName\":\"cupsd\",\"event.category\":\"process\",\"site.id\":\"2153930400268683161\",\"tgt.process.pid\":61536,\"endpoint.os\":\"osx\",\"tgt.process.name\":\"cupsd\",\"src.process.image.binaryIsExecutable\":true,\"tgt.process.storyline.id\":\"D6326018-32E5-4F56-8B8D-F1E547F7DCD5\",\"tgt.process.signedStatus\":\"signed\",\"tgt.process.isNative64Bit\":false,\"mgmt.id\":\"104301\",\"os.name\":\"macOS\",\"src.process.user\":\"root\",\"tgt.process.cmdline\":\"/usr/sbin/cupsd -l\",\"src.process.displayName\":\"launchd\",\"src.process.isNative64Bit\":false,\"src.process.uid\":\"210E4277-DCB7-43CC-AA94-A9D2DD2CB05F\",\"i.version\":\"preprocess-lib-1.0\",\"process.unique.key\":\"4BD5291C-6B5C-49D0-BA6B-BF7EA9A9D0CA\",\"src.process.storyline.id\":\"D6326018-32E5-4F56-8B8D-F1E547F7DCD5\",\"tgt.process.uid\":\"4BD5291C-6B5C-49D0-BA6B-BF7EA9A9D0CA\",\"tgt.process.isStorylineRoot\":false,\"mgmt.url\":\"usea1-020.sentinelone.net\",\"agent.version\":\"24.4.1.7830\",\"tgt.process.subsystem\":\"SUBSYSTEM_UNKNOWN\",\"tgt.process.image.binaryIsExecutable\":true,\"src.process.sessionId\":0,\"tgt.process.image.sha256\":\"436c10c32804c11b92a20ead7dc74cdcb1f69f3eee014735b76b5b0568af6e82\",\"mgmt.osRevision\":\"15.3.2 (24D81)\",\"src.process.subsystem\":\"SUBSYSTEM_UNKNOWN\",\"meta.event.name\":\"PROCESSCREATION\",\"group.id\":\"D6326018-32E5-4F56-8B8D-F1E547F7DCD5\",\"tgt.process.publisher\":\"<Type=Apple/ID=com.apple.cupsd>\",\"src.process.isRedirectCmdProcessor\":false,\"src.process.verifiedStatus\":\"verified\",\"tgt.process.startTime\":1744763538265,\"tgt.process.verifiedStatus\":\"verified\",\"endpoint.type\":\"laptop\",\"src.process.integrityLevel\":\"INTEGRITY_LEVEL_UNKNOWN\",\"tgt.process.image.path\":\"/usr/sbin/cupsd\",\"i.scheme\":\"edr\",\"trace.id\":\"70EBB5A8-289F-4436-9C34-EA90A4A5D90E\",\"tgt.process.integrityLevel\":\"INTEGRITY_LEVEL_UNKNOWN\",\"site.name\":\"Default site\",\"src.process.name\":\"launchd\",\"agent.uuid\":\"8396991E-788F-5FFD-8393-20F43D0C7F87\",\"tgt.process.image.md5\":\"3a8d45fa3f1cb761f97585d5e757b1ba\",\"event.time\":1744763538265,\"tgt.process.user\":\"root\",\"timestamp\":\"2025-04-16T00:32:18.265Z\",\"account.id\":\"2153930398339303196\",\"dataSource.name\":\"SentinelOne\",\"endpoint.name\":\"first_last\\u2019s MacBook Pro\",\"src.process.isStorylineRoot\":false,\"packet.id\":\"7E05407F-4D6F-47E7-AAE1-47FADDEBB3D5\",\"tgt.process.sessionId\":0,\"dataSource.vendor\":\"SentinelOne\",\"src.process.pid\":1,\"sca:RetentionType\":\"EDR\",\"src.process.cmdline\":\"/sbin/launchd\",\"src.process.publisher\":\"<Type=Apple/ID=com.apple.xpc.launchd>\",\"dataSource.category\":\"security\",\"tgt.process.isRedirectCmdProcessor\":false,\"tgt.process.image.sha1\":\"d7b0ca32855a80f35e57a60205d7f191b7dc1cb0\",\"account.name\":\"Company, Inc.\",\"event.type\":\"Process Creation\",\"src.process.signedStatus\":\"signed\",\"event.id\":\"70EBB5A8-289F-4436-9C34-EA90A4A5D90E_415\"}"
+}
+{
+	"message": "{\"src.process.startTime.raw\":\"not a number\",\"src.process.startTime\":1742370207425,\"custom.label.detail\":\"object value\",\"custom.label\":\"scalar value\",\"src.process.image.path\":\"/sbin/launchd\",\"tgt.process.displayName\":\"cupsd\",\"event.category\":\"process\",\"site.id\":\"2153930400268683161\",\"tgt.process.pid\":61536,\"endpoint.os\":\"osx\",\"tgt.process.name\":\"cupsd\",\"src.process.image.binaryIsExecutable\":true,\"tgt.process.storyline.id\":\"D6326018-32E5-4F56-8B8D-F1E547F7DCD5\",\"tgt.process.signedStatus\":\"signed\",\"tgt.process.isNative64Bit\":false,\"mgmt.id\":\"104301\",\"os.name\":\"macOS\",\"src.process.user\":\"root\",\"tgt.process.cmdline\":\"/usr/sbin/cupsd -l\",\"src.process.displayName\":\"launchd\",\"src.process.isNative64Bit\":false,\"src.process.uid\":\"210E4277-DCB7-43CC-AA94-A9D2DD2CB05F\",\"i.version\":\"preprocess-lib-1.0\",\"process.unique.key\":\"4BD5291C-6B5C-49D0-BA6B-BF7EA9A9D0CA\",\"src.process.storyline.id\":\"D6326018-32E5-4F56-8B8D-F1E547F7DCD5\",\"tgt.process.uid\":\"4BD5291C-6B5C-49D0-BA6B-BF7EA9A9D0CA\",\"tgt.process.isStorylineRoot\":false,\"mgmt.url\":\"usea1-020.sentinelone.net\",\"agent.version\":\"24.4.1.7830\",\"tgt.process.subsystem\":\"SUBSYSTEM_UNKNOWN\",\"tgt.process.image.binaryIsExecutable\":true,\"src.process.sessionId\":0,\"tgt.process.image.sha256\":\"436c10c32804c11b92a20ead7dc74cdcb1f69f3eee014735b76b5b0568af6e82\",\"mgmt.osRevision\":\"15.3.2 (24D81)\",\"src.process.subsystem\":\"SUBSYSTEM_UNKNOWN\",\"meta.event.name\":\"PROCESSCREATION\",\"group.id\":\"D6326018-32E5-4F56-8B8D-F1E547F7DCD5\",\"tgt.process.publisher\":\"<Type=Apple/ID=com.apple.cupsd>\",\"src.process.isRedirectCmdProcessor\":false,\"src.process.verifiedStatus\":\"verified\",\"tgt.process.startTime\":1744763538265,\"tgt.process.verifiedStatus\":\"verified\",\"endpoint.type\":\"laptop\",\"src.process.integrityLevel\":\"INTEGRITY_LEVEL_UNKNOWN\",\"tgt.process.image.path\":\"/usr/sbin/cupsd\",\"i.scheme\":\"edr\",\"trace.id\":\"70EBB5A8-289F-4436-9C34-EA90A4A5D90E\",\"tgt.process.integrityLevel\":\"INTEGRITY_LEVEL_UNKNOWN\",\"site.name\":\"Default site\",\"src.process.name\":\"launchd\",\"agent.uuid\":\"8396991E-788F-5FFD-8393-20F43D0C7F87\",\"tgt.process.image.md5\":\"3a8d45fa3f1cb761f97585d5e757b1ba\",\"event.time\":1744763538265,\"tgt.process.user\":\"root\",\"timestamp\":\"2025-04-16T00:32:18.265Z\",\"account.id\":\"2153930398339303196\",\"dataSource.name\":\"SentinelOne\",\"endpoint.name\":\"first_last\\u2019s MacBook Pro\",\"src.process.isStorylineRoot\":false,\"packet.id\":\"7E05407F-4D6F-47E7-AAE1-47FADDEBB3D5\",\"tgt.process.sessionId\":0,\"dataSource.vendor\":\"SentinelOne\",\"src.process.pid\":1,\"sca:RetentionType\":\"EDR\",\"src.process.cmdline\":\"/sbin/launchd\",\"src.process.publisher\":\"<Type=Apple/ID=com.apple.xpc.launchd>\",\"dataSource.category\":\"security\",\"tgt.process.isRedirectCmdProcessor\":false,\"tgt.process.image.sha1\":\"d7b0ca32855a80f35e57a60205d7f191b7dc1cb0\",\"account.name\":\"Company, Inc.\",\"event.type\":\"Process Creation\",\"src.process.signedStatus\":\"signed\",\"event.id\":\"70EBB5A8-289F-4436-9C34-EA90A4A5D90E_415\"}"
+}
