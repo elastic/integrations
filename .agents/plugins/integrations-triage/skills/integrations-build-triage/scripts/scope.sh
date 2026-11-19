@@ -69,15 +69,15 @@ else
     MAINREF=$(git rev-parse -q --verify main >/dev/null && echo main || echo --all)
     c=$(git log "$MAINREF" -1 --format='%h %ad %s' --date=short -S "${ISSUE_STACK:-$LABEL}" -- "$SCHED" 2>/dev/null || true)
     NEW_TITLE=${TITLE/"[Stack $ISSUE_STACK]"/"[Stack $NEW_STACK]"}
-    SUCC=$(gh issue list -R "$R" --state all --search "\"$NEW_TITLE\" in:title" --limit 20 --json number,title,state,updatedAt \
-      -q "map(select(.title == \"$NEW_TITLE\")) | first // empty | \"#\(.number) \(.state) updated \(.updatedAt[:10])\"" 2>/dev/null || true)
+    SUCC=$(gh issue list -R "$R" --state all --search "\"$NEW_TITLE\" in:title" --limit 20 --json number,title,state,updatedAt 2>/dev/null |
+      jq -r --arg t "$NEW_TITLE" 'map(select(.title == $t)) | first // empty | "#\(.number) \(.state) updated \(.updatedAt[:10])"' 2>/dev/null || true)
     echo "job status: SUPERSEDED (job now '$NEW_LABEL' on ${NEW_STACK:-?}; this issue is for ${ISSUE_STACK:-?}; changed by: ${c:-? (not in local history)})"
     echo "  successor issue: ${SUCC:-none} — title \"$NEW_TITLE\""
     if [ -z "$SUCC" ] && [ "$KIND" = too-many ]; then
       PREFIX=${NEW_TITLE%%Too many packages failing in daily job}
-      np=$(gh issue list -R "$R" --state open --label automation --search "\"$PREFIX\" \"Failing test daily\" in:title" --limit 200 --json title \
-        -q "map(select(.title | startswith(\"$PREFIX[\"))) | length" 2>/dev/null || echo '?')
-      echo "  no successor 'Too many' issue: nights stayed <= CI_MAX_TESTS_REPORTED; $np open per-package issues titled \"$PREFIX[<pkg>] Failing test daily: …\""
+      np=$(gh issue list -R "$R" --state open --label automation --search "\"$PREFIX\" \"Failing test daily\" in:title" --limit 200 --json title 2>/dev/null |
+        jq -r --arg p "${PREFIX}[" 'map(select(.title | startswith($p))) | length' 2>/dev/null || echo '?')
+      echo "  no successor 'Too many' issue: nights stayed <= CI_MAX_TESTS_REPORTED; $np open per-package issues titled \"${PREFIX}[<pkg>] Failing test daily: …\""
     fi
     echo "  -> $B is the final build for this issue. Say so at the top of every draft, name the successor, and propose closing this one"
   fi
