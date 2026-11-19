@@ -59,12 +59,12 @@ processors:
       field: event.type
       tag: append_event_type_start_e6ae121d
       value: start
-      if: ctx.ses?.type_id != null && ['8001'].contains(ctx.ses.type_id)
+      if: ctx.ses?.type_id == '8001' && ctx.ses.id == 1
   - append:
       field: event.type
       tag: append_event_type_end_ace2a10c
       value: end
-      if: ctx.ses?.type_id != null && ['8001'].contains(ctx.ses.type_id)
+      if: ctx.ses?.type_id == '8001' && ctx.ses.id == 2
   - append:
       field: event.type
       tag: append_event_type_connection_22583ae6
@@ -3615,6 +3615,11 @@ processors:
       value: '{{{ses.remote_process.module.src_name}}}'
       allow_duplicates: false
       if: ctx.ses?.remote_process?.module?.src_name != null && ctx.ses.remote_process.module.src_name != ''
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_ecs_process" }}'
+      if: ctx.ses?.process != null && ctx.ses.type_id == '8001' && ctx.ses.id == 1
+      tag: pipeline_ecs_process_system_302ddb0c
+      ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_actor" }}'
       if: ctx.ses?.type_id != null && ['8000', '8001', '8002', '8003', '8004', '8005', '8006', '8007', '8009', '8015', '8016', '8018'].contains(ctx.ses.type_id) && ctx.ses?.actor != null

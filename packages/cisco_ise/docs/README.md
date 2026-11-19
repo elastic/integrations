@@ -755,6 +755,8 @@ The following table lists the exported fields for this data stream:
 | user.full_name.text | Multi-field of `user.full_name`. | match_only_text |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
+| user.target.name | Short name or login of the user. | keyword |
+| user.target.name.text | Multi-field of `user.target.name`. | match_only_text |
 
 
 ##### `log` sample event

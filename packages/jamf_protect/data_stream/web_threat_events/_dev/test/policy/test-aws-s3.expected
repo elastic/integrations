@@ -1,0 +1,34 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: jamf_protect
+      name: test-aws-s3-jamf_protect
+      streams:
+        - bucket_arn: arn:aws:s3:::jamf-protect-test
+          bucket_list_interval: 5m
+          data_stream:
+            dataset: jamf_protect.web_threat_events
+          default_region: us-east-1
+          number_of_workers: 5
+          role_arn: arn:aws:iam::123456789012:role/jamf-protect-reader
+          tags:
+            - collect_s3_logs
+      type: aws-s3
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-jamf_protect.web_threat_events-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []

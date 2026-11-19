@@ -1,0 +1,147 @@
+# Test that an HTTP 200 response with a non-JSON body part way through a
+# paginated window is reported as an error, drops the page token, and that the
+# next poll restarts the window from its first page.
+#
+# The mock returns a first page with a next_page_token. A request carrying that
+# token gets a 200 response with an XML body. Before the fix the stale token
+# stayed in the input state and every poll repeated the failing request, so the
+# second page of first-page data below was never fetched. With the fix the
+# following poll requests the first page again and receives the "recovered"
+# record.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} zoom-mock
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# Expect the first page record, the error event for the non-JSON response and
+# the record returned when the window is restarted.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 3 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+exec jq -r '[.hits.hits[]._source.user.name | select(. != null)] | sort | join(",")' got_docs.json
+stdout '^alice@example\.com,jill@example\.com$'
+
+exec jq -r '[.hits.hits[]._source.error.message | select(. != null)] | length' got_docs.json
+stdout '^1$'
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down zoom-mock
+
+-- test_config.yaml --
+input: cel
+vars:
+  url: http://zoom-mock:8090
+  token_url: http://zoom-mock:8090
+  account_id: test-account-id
+  client_id: test-client-id
+  client_secret: test-client-secret
+data_stream:
+  vars:
+    interval: 5s
+    initial_interval: 24h
+    page_size: 300
+    tags:
+      - forwarded
+      - zoom-activity
+
+-- zoom-mock/docker-compose.yml --
+version: '2.3'
+services:
+  zoom-mock:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: zoom-mock
+    ports:
+      - 8090
+    environment:
+      PORT: "8090"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/config.yml
+
+-- zoom-mock/config.yml --
+rules:
+  - path: /oauth/token
+    methods: [POST]
+    query_params:
+      grant_type: account_credentials
+      account_id: test-account-id
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {"access_token":"test-access-token","token_type":"Bearer","expires_in":3600,"scope":"report:read:admin"}
+  # The page token from the first page is answered with a non-JSON body.
+  - path: /v2/report/activities
+    methods: [GET]
+    query_params:
+      from: "{from:.*}"
+      to: "{to:.*}"
+      page_size: "{page_size:.*}"
+      next_page_token: bad-page-token
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "text/xml"
+        body: |-
+          <?xml version="1.0" encoding="UTF-8"?><error>unexpected</error>
+  # First page: one record and a token. Later requests without a token
+  # return the recovered record, then empty pages.
+  - path: /v2/report/activities
+    methods: [GET]
+    query_params:
+      from: "{from:.*}"
+      to: "{to:.*}"
+      page_size: "{page_size:.*}"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ if eq .req_num 1 }}
+          {
+            "activity_logs": [
+              {
+                "client_type": "Browser",
+                "email": "jill@example.com",
+                "ip_address": "198.51.100.10",
+                "time": "2024-03-21T07:09:03Z",
+                "type": "Sign in",
+                "version": "6.0.0.1000"
+              }
+            ],
+            "page_size": 300,
+            "next_page_token": "bad-page-token"
+          }
+          {{ else if eq .req_num 2 }}
+          {
+            "activity_logs": [
+              {
+                "client_type": "Mac",
+                "email": "alice@example.com",
+                "ip_address": "203.0.113.20",
+                "time": "2024-03-22T09:00:10Z",
+                "type": "Sign out",
+                "version": "6.0.0.1000"
+              }
+            ],
+            "page_size": 300
+          }
+          {{ else }}
+          {
+            "activity_logs": [],
+            "page_size": 300
+          }
+          {{ end }}

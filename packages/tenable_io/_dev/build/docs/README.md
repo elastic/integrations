@@ -83,6 +83,19 @@ For existing users of Tenable Vulnerability Management integration, before upgra
    For more details on Transform Setup, refer to the link [here](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup)
 3. Because the latest copy of vulnerabilities is now indexed in two places, i.e., in both source and destination indices, users must anticipate storage requirements accordingly.
 
+### Vulnerability status
+
+The integration maps the Tenable finding state (`tenable_io.vulnerability.state`) to the `vulnerability.status` field so the [Vulnerability Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page-3) can distinguish active from remediated findings. `vulnerability.status` is a package-defined field that aligns with the ECS `vulnerability.status` field (added in ECS 9.5):
+
+| `tenable_io.vulnerability.state` | `vulnerability.status` |
+|---|---|
+| `OPEN` | `open` |
+| `REOPENED` | `reopened` |
+| `FIXED` | `fixed` |
+| any other value | `unknown` |
+
+Note: the Vulnerability Findings page does not currently filter on `vulnerability.status`, so by default all findings are shown regardless of status. To exclude remediated findings, add a filter such as `NOT vulnerability.status: fixed`.
+
 ## Logs reference
 
 ### asset
