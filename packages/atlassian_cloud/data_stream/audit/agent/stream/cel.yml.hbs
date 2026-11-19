@@ -30,108 +30,124 @@ program: |-
   // after later events. Only collect events processed at least the delay ago, so
   // that the cursor does not pass events that are not visible yet.
   (now - duration(state.delay)).as(t, int(t) * 1000 + t.getMilliseconds()).as(cutoff,
-  state.?cursor.token.orValue("").as(token,
-  state.?cursor.last_timestamp.orValue(
-    string(int(now - duration(state.initial_interval)) * 1000)
-  ).as(from_millis,
-  // from is inclusive, so the events collected at last_timestamp are returned
-  // again. Their IDs are kept to drop them, so that an event with the same
-  // processedAt that becomes visible later is still collected.
-  state.?cursor.last_ids.orValue([]).as(last_ids,
-    (token == "" && int(from_millis) > cutoff) ?
-      // The delay is longer than the initial interval or was increased, or the
-      // clock went back. Wait until last_timestamp is at least the delay old.
-      // The CEL input only stores the cursor with published events, so publish a
-      // placeholder, which the agent drops.
-      state.with({
-        "events": [{"message": "retry"}],
-        "cursor": state.?cursor.orValue({"last_timestamp": from_millis}),
-        "want_more": false,
-      })
-    :
-      state.with(
-        request(
-          "GET",
-          state.url.trim_right("/") + "/admin/v1/orgs/" + state.org_id + "/events-stream?" + (
-            (token != "") ?
+    state.?cursor.token.orValue("").as(token,
+      state.?cursor.last_timestamp.orValue(
+        string(int(now - duration(state.initial_interval)) * 1000)
+      ).as(from_millis,
+        // from is inclusive, so the events collected at last_timestamp are returned
+        // again. Their IDs are kept to drop them, so that an event with the same
+        // processedAt that becomes visible later is still collected.
+        state.?cursor.last_ids.orValue([]).as(last_ids,
+          (token == "" && int(from_millis) > cutoff) ?
+            // The delay is longer than the initial interval or was increased, or the
+            // clock went back. Wait until last_timestamp is at least the delay old.
+            // The CEL input only stores the cursor with published events, so publish a
+            // placeholder, which the agent drops.
+            state.with(
               {
-                "limit": [string(int(state.batch_size))],
-                "cursor": [token],
+                "events": [{"message": "retry"}],
+                "cursor": state.?cursor.orValue({"last_timestamp": from_millis}),
+                "want_more": false,
               }
-            :
-              {
-                "limit": [string(int(state.batch_size))],
-                "from": [from_millis],
-                "to": [string(cutoff)],
-                "sortOrder": ["asc"],
-              }
-          ).format_query()
-        ).with({
-          "Header": {
-            "Authorization": ["Bearer " + state.api_key],
-            "Accept": ["application/json"],
-          },
-        }).do_request().as(resp,
-          (resp.StatusCode == 200) ?
-            resp.Body.decode_json().as(body,
-              body.?data.orValue([]).map(e, {
-                "event": e,
-                "ms": timestamp(e.attributes.processedAt).as(t, int(t) * 1000 + t.getMilliseconds()),
-              }).as(page, {
-                "page": page,
-                // Pages are in processedAt order, and pages after the first are not
-                // limited by to. Stop at the first event after the cutoff and leave
-                // the rest for a later poll.
-                "ready": page.filter(p, p.ms <= cutoff),
-                "next": (has(body.meta) && has(body.meta.next) && body.meta.next != null) ?
-                  string(body.meta.next)
-                :
-                  "",
-              }).as(r, {
-                "unseen": r.ready.filter(p, !(p.ms == int(from_millis) && p.event.id in last_ids)),
-                // Only advance to a collected event. A last page with no events does
-                // not mean that no event before the current time remains to be read.
-                "last": (size(r.ready) > 0) ? r.ready[size(r.ready) - 1].ms : int(from_millis),
-                // Follow next only from a page whose events are all before the cutoff.
-                // An empty page ends the poll even with a next cursor, which Atlassian
-                // returns on the last page, so the next poll queries from last_timestamp.
-                "more": r.next != "" && size(r.page) > 0 && size(r.ready) == size(r.page),
-                "next": r.next,
-              }).as(v, {
-                // Publish a placeholder, which the agent drops, when nothing is new, so
-                // that the cursor is stored and paging is not cut short.
-                "events": (size(v.unseen) > 0) ?
-                  v.unseen.map(p, {"message": p.event.encode_json()})
-                :
-                  [{"message": "retry"}],
-                "cursor": {
-                  ?"token": v.more ? optional.of(v.next) : optional.none(),
-                  "last_timestamp": string(v.last),
-                  "last_ids": ((v.last == int(from_millis)) ? last_ids : []) +
-                    v.unseen.map(p, p.ms == v.last, p.event.id),
-                },
-                "want_more": v.more,
-              })
             )
           :
-            {
-              "events": {
-                "error": {
-                  "code": string(resp.StatusCode),
-                  "id": string(resp.Status),
-                  "message": "GET /admin/v1/orgs/" + state.org_id + "/events-stream: " + (
-                    (size(resp.Body) != 0) ?
-                      string(resp.Body)
-                    :
-                      string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-                  ),
-                },
-              },
-              "want_more": false,
-            }
+            state.with(
+              request(
+                "GET",
+                state.url.trim_right("/") + "/admin/v1/orgs/" + state.org_id + "/events-stream?" + (
+                  (token != "") ?
+                    {
+                      "limit": [string(int(state.batch_size))],
+                      "cursor": [token],
+                    }
+                  :
+                    {
+                      "limit": [string(int(state.batch_size))],
+                      "from": [from_millis],
+                      "to": [string(cutoff)],
+                      "sortOrder": ["asc"],
+                    }
+                ).format_query()
+              ).with(
+                {
+                  "Header": {
+                    "Authorization": ["Bearer " + state.api_key],
+                    "Accept": ["application/json"],
+                  },
+                }
+              ).do_request().as(resp,
+                (resp.StatusCode == 200) ?
+                  resp.Body.decode_json().as(body,
+                    body.?data.orValue([]).map(e,
+                      {
+                        "event": e,
+                        "ms": timestamp(e.attributes.processedAt).as(t, int(t) * 1000 + t.getMilliseconds()),
+                      }
+                    ).as(page,
+                      {
+                        "page": page,
+                        // Pages are in processedAt order, and pages after the first are not
+                        // limited by to. Stop at the first event after the cutoff and leave
+                        // the rest for a later poll.
+                        "ready": page.filter(p, p.ms <= cutoff),
+                        "next": (has(body.meta) && has(body.meta.next) && body.meta.next != null) ?
+                          string(body.meta.next)
+                        :
+                          "",
+                      }
+                    ).as(r,
+                      {
+                        "unseen": r.ready.filter(p,
+                          !(p.ms == int(from_millis) && p.event.id in last_ids)
+                        ),
+                        // Only advance to a collected event. A last page with no events does
+                        // not mean that no event before the current time remains to be read.
+                        "last": (size(r.ready) > 0) ? r.ready[size(r.ready) - 1].ms : int(from_millis),
+                        // Follow next only from a page whose events are all before the cutoff.
+                        // An empty page ends the poll even with a next cursor, which Atlassian
+                        // returns on the last page, so the next poll queries from last_timestamp.
+                        "more": r.next != "" && size(r.page) > 0 && size(r.ready) == size(r.page),
+                        "next": r.next,
+                      }
+                    ).as(v,
+                      {
+                        // Publish a placeholder, which the agent drops, when nothing is new, so
+                        // that the cursor is stored and paging is not cut short.
+                        "events": (size(v.unseen) > 0) ?
+                          v.unseen.map(p, {"message": p.event.encode_json()})
+                        :
+                          [{"message": "retry"}],
+                        "cursor": {
+                          ?"token": v.more ? optional.of(v.next) : optional.none(),
+                          "last_timestamp": string(v.last),
+                          "last_ids": ((v.last == int(from_millis)) ? last_ids : []) + v.unseen.map(p, p.ms == v.last, p.event.id),
+                        },
+                        "want_more": v.more,
+                      }
+                    )
+                  )
+                :
+                  {
+                    "events": {
+                      "error": {
+                        "code": string(resp.StatusCode),
+                        "id": string(resp.Status),
+                        "message": "GET /admin/v1/orgs/" + state.org_id + "/events-stream: " + (
+                          (size(resp.Body) != 0) ?
+                            string(resp.Body)
+                          :
+                            string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                        ),
+                      },
+                    },
+                    "want_more": false,
+                  }
+              )
+            )
         )
       )
-  ))))
+    )
+  )
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
