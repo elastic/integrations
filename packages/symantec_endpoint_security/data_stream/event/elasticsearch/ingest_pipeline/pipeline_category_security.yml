@@ -60,6 +60,16 @@ processors:
             tag: remove_ses_activity_id_0e571241
             field: ses.activity_id
             ignore_missing: true
+  - append:
+      field: event.type
+      tag: append_event_type_start_activity_1f4e5f06
+      value: start
+      if: ctx.ses?.type_id == '8027' && ctx.ses.activity_id == '1'
+  - append:
+      field: event.type
+      tag: append_event_type_end_activity_c52cdd5f
+      value: end
+      if: ctx.ses?.type_id == '8027' && ctx.ses.activity_id == '2'
   - convert:
       field: ses.attacker_ip
       tag: convert_attacker_ip_to_ip_1398c3c1
@@ -919,6 +929,11 @@ processors:
             tag: append_error_message_82165cd0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_ecs_process" }}'
+      if: ctx.ses?.process != null && ctx.ses.type_id == '8027' && ctx.ses.activity_id == '1'
+      tag: pipeline_ecs_process_security_6dd2dff1
+      ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_actor" }}'
       if: ctx.ses?.type_id != null && ['8025', '8026', '8027', '8028', '8030', '8031', '8032', '8033', '8038', '8040'].contains(ctx.ses.type_id) && ctx.ses?.actor != null

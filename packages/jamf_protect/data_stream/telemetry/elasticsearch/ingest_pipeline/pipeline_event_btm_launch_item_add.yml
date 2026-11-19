@@ -74,6 +74,222 @@ processors:
             }
 
     ##########################
+    ## Instigator ##
+    ##########################
+    # When both app and instigator are present, process.* is populated from the app only.
+    # Copy the instigator to jamf_protect.telemetry.instigator.*, then remove the source object
+    # so the instigator renames below cannot fill process.* fields that the app lacks.
+    - set:
+        tag: set_jamf_protect_telemetry_instigator_start_e8bae768
+        field: jamf_protect.telemetry.instigator.start
+        copy_from: jamf_protect.telemetry.event.btm_launch_item_add.instigator.start_time
+        ignore_empty_value: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+    - convert:
+        tag: convert_jamf_protect_telemetry_instigator_pid_e389f102
+        field: jamf_protect.telemetry.event.btm_launch_item_add.instigator.audit_token.pid
+        target_field: jamf_protect.telemetry.instigator.pid
+        type: long
+        ignore_missing: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+    - set:
+        tag: set_jamf_protect_telemetry_instigator_entity_id_2d7224b6
+        field: jamf_protect.telemetry.instigator.entity_id
+        copy_from: jamf_protect.telemetry.event.btm_launch_item_add.instigator.audit_token.uuid
+        ignore_empty_value: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+    - set:
+        tag: set_jamf_protect_telemetry_instigator_executable_367ea936
+        field: jamf_protect.telemetry.instigator.executable
+        copy_from: jamf_protect.telemetry.event.btm_launch_item_add.instigator.executable.path
+        ignore_empty_value: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+    - script:
+        tag: script_jamf_protect_telemetry_instigator_name_8d366825
+        lang: painless
+        if: ctx.jamf_protect?.telemetry?.instigator?.executable != null
+        source: >
+            String path = ctx.jamf_protect.telemetry.instigator.executable;
+            int lastSlashIndex = path.lastIndexOf('/');
+            ctx.jamf_protect.telemetry.instigator.name = lastSlashIndex != -1 ? path.substring(lastSlashIndex + 1) : path;
+    - set:
+        tag: set_jamf_protect_telemetry_instigator_user_name_adb9672f
+        field: jamf_protect.telemetry.instigator.user.name
+        copy_from: jamf_protect.telemetry.event.btm_launch_item_add.instigator.audit_token.e_username
+        ignore_empty_value: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+    - set:
+        tag: set_jamf_protect_telemetry_instigator_hash_sha1_2b70347e
+        field: jamf_protect.telemetry.instigator.hash.sha1
+        copy_from: jamf_protect.telemetry.event.btm_launch_item_add.instigator.executable.sha1
+        ignore_empty_value: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+    - set:
+        tag: set_jamf_protect_telemetry_instigator_hash_sha256_650f68b4
+        field: jamf_protect.telemetry.instigator.hash.sha256
+        copy_from: jamf_protect.telemetry.event.btm_launch_item_add.instigator.executable.sha256
+        ignore_empty_value: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+    - set:
+        tag: set_jamf_protect_telemetry_instigator_hash_cdhash_35942bdc
+        field: jamf_protect.telemetry.instigator.hash.cdhash
+        copy_from: jamf_protect.telemetry.event.btm_launch_item_add.instigator.cdhash
+        ignore_empty_value: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+    - set:
+        tag: set_jamf_protect_telemetry_instigator_code_signature_signing_id_9a3c70a2
+        field: jamf_protect.telemetry.instigator.code_signature.signing_id
+        copy_from: jamf_protect.telemetry.event.btm_launch_item_add.instigator.signing_id
+        ignore_empty_value: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+    - set:
+        tag: set_jamf_protect_telemetry_instigator_code_signature_team_id_ff7bac67
+        field: jamf_protect.telemetry.instigator.code_signature.team_id
+        copy_from: jamf_protect.telemetry.event.btm_launch_item_add.instigator.team_id
+        ignore_empty_value: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+    - convert:
+        tag: convert_jamf_protect_telemetry_instigator_code_signature_flags_3f4007b4
+        field: jamf_protect.telemetry.event.btm_launch_item_add.instigator.codesigning_flags
+        target_field: jamf_protect.telemetry.instigator.code_signature.flags
+        type: string
+        ignore_missing: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+    - set:
+        tag: set_jamf_protect_telemetry_instigator_platform_binary_de8318f3
+        field: jamf_protect.telemetry.instigator.platform_binary
+        copy_from: jamf_protect.telemetry.event.btm_launch_item_add.instigator.is_platform_binary
+        ignore_empty_value: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+    - set:
+        tag: set_jamf_protect_telemetry_instigator_endpoint_security_client_22326a8a
+        field: jamf_protect.telemetry.instigator.endpoint_security_client
+        copy_from: jamf_protect.telemetry.event.btm_launch_item_add.instigator.is_es_client
+        ignore_empty_value: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+    - set:
+        tag: set_jamf_protect_telemetry_instigator_tty
+        field: jamf_protect.telemetry.instigator.tty
+        copy_from: jamf_protect.telemetry.event.btm_launch_item_add.instigator.tty.path
+        ignore_empty_value: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+    - convert:
+        tag: convert_jamf_protect_telemetry_instigator_user_id_46718291
+        field: jamf_protect.telemetry.event.btm_launch_item_add.instigator.audit_token.euid
+        target_field: jamf_protect.telemetry.instigator.user.id
+        type: string
+        ignore_missing: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+    - set:
+        tag: set_jamf_protect_telemetry_instigator_parent_entity_id_3ded94e2
+        field: jamf_protect.telemetry.instigator.parent.entity_id
+        copy_from: jamf_protect.telemetry.event.btm_launch_item_add.instigator.parent_audit_token.uuid
+        ignore_empty_value: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+    - set:
+        tag: set_jamf_protect_telemetry_instigator_parent_pid_89fad38d
+        field: jamf_protect.telemetry.instigator.parent.pid
+        copy_from: jamf_protect.telemetry.event.btm_launch_item_add.instigator.parent_audit_token.pid
+        ignore_empty_value: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+    - set:
+        tag: set_jamf_protect_telemetry_instigator_parent_user_name_3d0071cf
+        field: jamf_protect.telemetry.instigator.parent.user.name
+        copy_from: jamf_protect.telemetry.event.btm_launch_item_add.instigator.parent_audit_token.e_username
+        ignore_empty_value: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+    - set:
+        tag: set_jamf_protect_telemetry_instigator_parent_code_signature_signing_id_43df8c1f
+        field: jamf_protect.telemetry.instigator.parent.code_signature.signing_id
+        copy_from: jamf_protect.telemetry.event.btm_launch_item_add.instigator.parent_audit_token.signing_id
+        ignore_empty_value: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+    - set:
+        tag: set_jamf_protect_telemetry_instigator_parent_executable_eba22d28
+        field: jamf_protect.telemetry.instigator.parent.executable
+        copy_from: jamf_protect.telemetry.event.btm_launch_item_add.instigator.parent_audit_token.exec_path
+        ignore_empty_value: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+    - convert:
+        tag: convert_jamf_protect_telemetry_instigator_parent_user_id_b5ad2b42
+        field: jamf_protect.telemetry.event.btm_launch_item_add.instigator.parent_audit_token.euid
+        target_field: jamf_protect.telemetry.instigator.parent.user.id
+        type: string
+        ignore_missing: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+    - convert:
+        tag: convert_jamf_protect_telemetry_instigator_parent_real_user_id_1a7aeba2
+        field: jamf_protect.telemetry.event.btm_launch_item_add.instigator.parent_audit_token.ruid
+        target_field: jamf_protect.telemetry.instigator.parent.real_user.id
+        type: string
+        ignore_missing: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+    - convert:
+        tag: convert_jamf_protect_telemetry_instigator_parent_real_group_id_5b05d61a
+        field: jamf_protect.telemetry.event.btm_launch_item_add.instigator.parent_audit_token.rgid
+        target_field: jamf_protect.telemetry.instigator.parent.real_group.id
+        type: string
+        ignore_missing: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+    - set:
+        tag: set_jamf_protect_telemetry_instigator_responsible_entity_id_b758462e
+        field: jamf_protect.telemetry.instigator.responsible.entity_id
+        copy_from: jamf_protect.telemetry.event.btm_launch_item_add.instigator.responsible_audit_token.uuid
+        ignore_empty_value: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+    - set:
+        tag: set_jamf_protect_telemetry_instigator_responsible_pid_3ff64e6c
+        field: jamf_protect.telemetry.instigator.responsible.pid
+        copy_from: jamf_protect.telemetry.event.btm_launch_item_add.instigator.responsible_audit_token.pid
+        ignore_empty_value: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+    - set:
+        tag: set_jamf_protect_telemetry_instigator_responsible_user_name_1ad15136
+        field: jamf_protect.telemetry.instigator.responsible.user.name
+        copy_from: jamf_protect.telemetry.event.btm_launch_item_add.instigator.responsible_audit_token.e_username
+        ignore_empty_value: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+    - set:
+        tag: set_jamf_protect_telemetry_instigator_responsible_code_signature_signing_id_2d804bc1
+        field: jamf_protect.telemetry.instigator.responsible.code_signature.signing_id
+        copy_from: jamf_protect.telemetry.event.btm_launch_item_add.instigator.responsible_audit_token.signing_id
+        ignore_empty_value: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+    - set:
+        tag: set_jamf_protect_telemetry_instigator_responsible_executable_a45465b2
+        field: jamf_protect.telemetry.instigator.responsible.executable
+        copy_from: jamf_protect.telemetry.event.btm_launch_item_add.instigator.responsible_audit_token.exec_path
+        ignore_empty_value: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+    - convert:
+        tag: convert_jamf_protect_telemetry_instigator_responsible_user_id_e3d5dfab
+        field: jamf_protect.telemetry.event.btm_launch_item_add.instigator.responsible_audit_token.euid
+        target_field: jamf_protect.telemetry.instigator.responsible.user.id
+        type: string
+        ignore_missing: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+    - convert:
+        tag: convert_jamf_protect_telemetry_instigator_responsible_real_user_id_ea57678b
+        field: jamf_protect.telemetry.event.btm_launch_item_add.instigator.responsible_audit_token.ruid
+        target_field: jamf_protect.telemetry.instigator.responsible.real_user.id
+        type: string
+        ignore_missing: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+    - convert:
+        tag: convert_jamf_protect_telemetry_instigator_responsible_real_group_id_ba4a7e25
+        field: jamf_protect.telemetry.event.btm_launch_item_add.instigator.responsible_audit_token.rgid
+        target_field: jamf_protect.telemetry.instigator.responsible.real_group.id
+        type: string
+        ignore_missing: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.instigator != null
+    - remove:
+        tag: remove_jamf_protect_telemetry_event_btm_launch_item_add_instigator
+        field: jamf_protect.telemetry.event.btm_launch_item_add.instigator
+        ignore_missing: true
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_add?.app != null
+
+
+    ##########################
     ## ECS Process ##
     ##########################
     - rename:
@@ -209,6 +425,24 @@ processors:
         value: '{{{process.hash.cdhash}}}'
         if: ctx.process?.hash?.cdhash != null && ctx.process.hash.cdhash != ''
         allow_duplicates: false
+    - append:
+        tag: append_related_hash_instigator_sha1
+        field: related.hash
+        value: '{{{jamf_protect.telemetry.instigator.hash.sha1}}}'
+        if: ctx.jamf_protect?.telemetry?.instigator?.hash?.sha1 != null
+        allow_duplicates: false
+    - append:
+        tag: append_related_hash_instigator_sha256
+        field: related.hash
+        value: '{{{jamf_protect.telemetry.instigator.hash.sha256}}}'
+        if: ctx.jamf_protect?.telemetry?.instigator?.hash?.sha256 != null
+        allow_duplicates: false
+    - append:
+        tag: append_related_hash_instigator_cdhash
+        field: related.hash
+        value: '{{{jamf_protect.telemetry.instigator.hash.cdhash}}}'
+        if: ctx.jamf_protect?.telemetry?.instigator?.hash?.cdhash != null && ctx.jamf_protect.telemetry.instigator.hash.cdhash != ''
+        allow_duplicates: false
     - rename:
         tag: rename_jamf_protect_telemetry_event_btm_launch_item_add_app_tty_path_to_jamf_protect_telemetry_tty_2b4a4159
         field: jamf_protect.telemetry.event.btm_launch_item_add.app.tty.path
@@ -219,7 +453,7 @@ processors:
         field: jamf_protect.telemetry.event.btm_launch_item_add.instigator.tty.path
         target_field: jamf_protect.telemetry.tty
         ignore_missing: true
-        if: ctx.jamf_protect?.telemetry?.tty == null
+        if: ctx.jamf_protect?.telemetry?.tty == null && ctx.jamf_protect.telemetry?.event?.btm_launch_item_add?.app == null
     - set:
         tag: set_process_interactive_b6ee088c
         field: process.interactive
@@ -229,7 +463,7 @@ processors:
         tag: set_process_interactive_6f6f127f
         field: process.interactive
         value: true
-        if: ctx.process?.interactive == null && ctx.jamf_protect.telemetry?.event?.btm_launch_item_add?.instigator?.tty != null
+        if: ctx.process?.interactive == null && ctx.jamf_protect.telemetry?.event?.btm_launch_item_add?.app == null && ctx.jamf_protect.telemetry?.event?.btm_launch_item_add?.instigator?.tty != null
     - set:
         tag: set_process_interactive_57ca4ec7
         field: process.interactive
