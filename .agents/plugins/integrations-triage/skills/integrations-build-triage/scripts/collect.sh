@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # Step 2: collect failed jobs of one Buildkite build and print one compact row per failed package.
-# Usage: [P=elastic/integrations-serverless] [ONLY=pkg1,pkg2] collect.sh <build-number> [out-dir]
-#   P: pipeline (serverless daily builds live in elastic/integrations-serverless). ONLY: restrict to these packages (per-package issues).
+# Usage: collect.sh [-p elastic/integrations-serverless] [-k pkg1,pkg2] <build-number> [out-dir]
+#   -p: pipeline (serverless daily builds live in elastic/integrations-serverless). -k: restrict to these packages
+#   (per-package issues). P / ONLY env vars also work.
 # Writes build.json, logs/<pkg>.log (ANSI-stripped, line numbers match Buildkite anchors),
 # logs/<pkg>.fail (failure block only) and failures.tsv. Read the .fail files, not the .log files.
 set -euo pipefail
+while getopts p:k: o; do case $o in p) P=$OPTARG ;; k) ONLY=$OPTARG ;; *) exit 2 ;; esac; done; shift $((OPTIND-1))
 B=${1:?build number}
 P=${P:-elastic/integrations}
 OUT=${2:-build/triage/build-$B}

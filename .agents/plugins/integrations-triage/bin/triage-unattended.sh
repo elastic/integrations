@@ -43,11 +43,17 @@ mv "$SETUP_LOG.doctor" "$LOG.doctor"; mv "$SETUP_LOG.sync" "$LOG.sync"; rm -f "$
 export TRIAGE_UNATTENDED=1; rc=0
 PLUGIN_ARGS=()
 claude plugin list 2>/dev/null | grep -q integrations-triage || PLUGIN_ARGS=(--plugin-dir "$(cd "$(dirname "$0")/.." && pwd)")
+# Allow only the commands the playbook uses; anything else is denied (no prompts). guard.sh still blocks the
+# write verbs of gh/bk and the risky commands below, as a second layer.
+ALLOWED=("Read" "Grep" "Glob" "Write" "Edit" "Agent" "Skill" "Bash($SCRIPTS/*)")
+for c in gh bk git jq yq awk sed grep rg sort uniq cut paste comm base64 head tail wc tr cat ls printf echo \
+  date mkdir basename dirname sleep test cd; do ALLOWED+=("Bash($c:*)"); done
 claude -p "$CMD" ${PLUGIN_ARGS[@]+"${PLUGIN_ARGS[@]}"} \
   --permission-mode acceptEdits --permission-prompts none \
   ${TRIAGE_MAX_BUDGET_USD:+--max-budget-usd "$TRIAGE_MAX_BUDGET_USD"} \
-  --allowedTools "Bash" "Read" "Grep" "Glob" "Write" "Edit" "Agent" "Skill" \
-  --disallowedTools "Bash(gcloud:*)" "Bash(gsutil:*)" \
+  --allowedTools "${ALLOWED[@]}" \
+  --disallowedTools "Bash(gcloud:*)" "Bash(gsutil:*)" "Bash(curl:*)" "Bash(wget:*)" "Bash(nc:*)" \
+    "Bash(elastic-package:*)" "Bash(docker:*)" \
   > "$LOG" 2>&1 || rc=$?
 tail -5 "$LOG"
 TITLE="$TITLE (rc=$rc)" notify "$(tail -1 "$LOG" | tr -d '"' | cut -c1-120)"

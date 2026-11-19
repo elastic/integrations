@@ -11,6 +11,7 @@ Triage the elastic/integrations **daily jobs** for **${ARGUMENTS:-today}**. Star
 - Run `$S/doctor.sh --unattended`. On non-zero, write `build/triage/daily/<date>/SETUP-NEEDED.md` with its output and stop.
 - Run `$S/sync.sh` from the repo root: it fetches `elastic/main` and fast-forwards `main`, or moves a detached triage worktree. When the checkout is on another branch, it uses (or creates) the triage worktree `../integrations-triage-run` instead and leaves the branch alone. Its last line is `root: <path>`: **run everything after this from that path** (relative paths such as `build/triage/…` resolve there; `$S` stays absolute). On non-zero, write its output to `build/triage/daily/<date>/SETUP-NEEDED.md` and stop: never switch branches, stash or reset yourself. If it lists uncommitted changes, those package files are local edits, not upstream: say so wherever an investigation relies on them.
 - `gh` and `bk` CLIs only (no GitHub/Buildkite MCP). Work from the root `sync.sh` printed. `D=build/triage/daily/<date>`.
+- **Write every command literally**: expand `$S`, `$W`, `$D`, `<B>`, … to their values (absolute script paths) and don't use shell loops or variables. Unattended runs allow only a fixed list of commands, and the harness denies any command with a shell variable it can't check.
 - **Links are complete everywhere** (digest, drafts, tables): every issue/PR as a markdown link to its full URL, e.g. [#22189](https://github.com/elastic/integrations/issues/22189) or [elastic/elastic-agent#17977](https://github.com/elastic/elastic-agent/pull/17977); every build as https://buildkite.com/elastic/<pipeline>/builds/<B>. Never a bare `#N`.
 - Token budget: script outputs, `.fail` files and log windows only.
 
@@ -40,10 +41,10 @@ Investigator budget for the whole run: **max 5** `cause-investigator` agents, in
 **Per build (`per-package`)**: workspace `W=build/triage/job-<label-slug>` (lowercase, non-alphanumerics → `-`). This is the memory for that job across nights and across the per-package issues it files.
 
 ```sh
-P=<pipeline> $S/collect.sh <B> $W/build-<B>
+$S/collect.sh -p <pipeline> <B> $W/build-<B>
 $S/match.sh $W/build-<B>/failures.tsv $W/known.tsv > $W/build-<B>/match.tsv
 $S/lookup.sh $W/build-<B>/match.tsv > $W/build-<B>/lookup.md
-P=<pipeline> $S/history.sh <B> 30 $W/build-<B> > $W/build-<B>/history.txt
+$S/history.sh -p <pipeline> <B> 30 $W/build-<B> > $W/build-<B>/history.txt
 ```
 
 - Join `match.tsv` to `issues.tsv` on the package: each failing package now has its issue numbers and whether they were `created` (new tonight) or `updated`.

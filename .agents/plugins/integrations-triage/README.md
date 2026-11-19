@@ -156,7 +156,9 @@ Known limits:
 
 ## 6. Safety
 
-`hooks/guard.sh` (PreToolUse) is always on in an elastic/integrations checkout. It blocks GitHub and Buildkite writes (gh CLI and MCP: comment, create, edit, close, merge, retry, rebuild, …), printing `gh`/`bk` tokens, and running a generated `CLOSE_COMMANDS.sh`. In unattended runs (`TRIAGE_UNATTENDED=1`) it also blocks gcloud/gsutil, `elastic-package stack/test/service`, docker runs, network egress (curl, wget, nc, scp, rsync, ssh), `git push` and piping into a shell, and it fails closed: if it can't parse the call (e.g. `jq` is missing), it blocks it. The runner also passes `--permission-prompts none`, so anything that would need approval is denied instead of hanging.
+`hooks/guard.sh` (PreToolUse) is always on in an elastic/integrations checkout. It blocks GitHub and Buildkite writes (gh CLI and MCP: comment, create, edit, close, merge, retry, rebuild, …), printing `gh`/`bk` tokens, and running a generated `CLOSE_COMMANDS.sh`. In unattended runs (`TRIAGE_UNATTENDED=1`) it also blocks gcloud/gsutil, `elastic-package stack/test/service`, docker runs, network egress (curl, wget, nc, scp, rsync, ssh), `git push` and piping into a shell, and it fails closed: if it can't parse the call (e.g. `jq` is missing), it blocks it.
+
+The unattended runner doesn't allow Bash wholesale. It allows the plugin's scripts and a fixed list of read-only tools (`gh`, `bk`, `git`, `jq`, `yq`, text utilities); everything else is denied, and it passes `--permission-prompts none`, so anything that would need approval is denied instead of hanging. The guard stays as a second layer for the write verbs of the allowed `gh`/`bk`/`git`. Commands with shell variables or loops are denied too, so the triage commands write every command out literally.
 
 ## 7. Troubleshooting
 

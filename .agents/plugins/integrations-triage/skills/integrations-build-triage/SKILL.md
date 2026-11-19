@@ -22,7 +22,7 @@ Report as an artifact:
 
 Unattended/draft-only runs use the commands and the `cause-investigator` agent: `/integrations-triage:triage-daily [date]` covers the whole daily run (builds → the issues they reported to → backlog sweep), and `/integrations-triage:triage-nightly <issue>` covers one issue, "Too many" or per-package. This skill is the playbook for interactive sessions, and it works for both issue kinds.
 
-**Which issue, which unit.** A failing daily build reports to one "Too many packages failing" issue (more than 30 failing tests; ecosystem's queue), or to one `[<pkg>] Failing test daily: <test>` issue per failing test (package owners). `$S/daily.sh` maps each build to its issues, and `scope.sh` prints `kind:` for an issue. Per-package issues: pass `ONLY=<pkg>` to `collect.sh` and `PKGS=<pkg>` to `history.sh`. Serverless builds (`P=elastic/integrations-serverless`) run every package in one job. See auto-issues.md.
+**Which issue, which unit.** A failing daily build reports to one "Too many packages failing" issue (more than 30 failing tests; ecosystem's queue), or to one `[<pkg>] Failing test daily: <test>` issue per failing test (package owners). `$S/daily.sh` maps each build to its issues, and `scope.sh` prints `kind:` for an issue. Per-package issues: pass `-k <pkg>` to `collect.sh` and `history.sh`. Serverless builds (`P=elastic/integrations-serverless`) run every package in one job. See auto-issues.md.
 
 **Backlog hygiene.** `$S/sweep.sh` classifies every open auto-filed issue (SUPERSEDED, RETIRED, NOT-FAILING, QUIET, ACTIVE) and writes `CLOSE_COMMANDS.sh` for the human to run. When asked "what's stale", run it instead of reasoning issue by issue.
 

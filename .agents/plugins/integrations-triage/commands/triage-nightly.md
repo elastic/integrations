@@ -13,18 +13,19 @@ Triage elastic/integrations issue **#$ARGUMENTS** for its latest failed nightly 
 - Use the `gh` and `bk` CLIs (the scripts need them). Don't use GitHub/Buildkite MCP tools in this command.
 - Work from the root `sync.sh` printed. `W=build/triage/issue-$ARGUMENTS`; create it if missing.
 - **Links are complete everywhere** (digest, drafts, tables): every issue/PR as a markdown link to its full URL, e.g. [#22189](https://github.com/elastic/integrations/issues/22189) or [elastic/elastic-agent#17977](https://github.com/elastic/elastic-agent/pull/17977); every build as https://buildkite.com/elastic/<pipeline>/builds/<B>. Never a bare `#N`.
+- **Write every command literally**: expand `$S`, `$W`, `$D`, `<B>`, … to their values (absolute script paths) and don't use shell loops or variables. Unattended runs allow only a fixed list of commands, and the harness denies any command with a shell variable it can't check.
 - Token budget: work from script outputs, `.fail` files and log windows only. Never print whole logs or whole reports.
 
 ## 1. Deterministic pass (no reasoning)
 
 ```sh
 $S/scope.sh $ARGUMENTS $W            # writes $W/scope.env: KIND, PIPELINE, REF_BUILD (=B), STATUS, LATEST, SUCCESSOR
-. $W/scope.env
-# per-package issues: restrict to the issue's package (ONLY/PKGS = the line in $W/packages.txt); too-many: leave them empty
-P=$PIPELINE ONLY=<pkg> $S/collect.sh $REF_BUILD $W/build-$REF_BUILD
+cat $W/scope.env                     # read the values; use them literally below
+# per-package issues: restrict to the issue's package (-k <the line in $W/packages.txt>); too-many: drop -k
+$S/collect.sh -p <PIPELINE> -k <pkg> <B> $W/build-<B>
 $S/match.sh $W/build-<B>/failures.tsv $W/known.tsv > $W/build-<B>/match.tsv
 $S/lookup.sh $W/build-<B>/match.tsv > $W/build-<B>/lookup.md
-P=$PIPELINE PKGS=<pkg> $S/history.sh <B> 30 $W/build-<B> > $W/build-<B>/history.txt
+$S/history.sh -p <PIPELINE> -k <pkg> <B> 30 $W/build-<B> > $W/build-<B>/history.txt
 ```
 Serverless (`PIPELINE=elastic/integrations-serverless`) runs all packages in one job, so `collect.sh` gives one row for the whole job. Note it and stop; the investigation is interactive.
 

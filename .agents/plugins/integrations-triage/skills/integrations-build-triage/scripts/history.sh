@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # Step 4: per-package pass/fail history of the same nightly, from job states only (no logs).
-# Usage: [P=<pipeline>] [PKGS=pkg1,pkg2] history.sh <build-number> [days=30] [out-dir]
-#   packages default to the failed jobs of <build>; PKGS overrides (per-package issues)
+# Usage: history.sh [-p <pipeline>] [-k pkg1,pkg2] <build-number> [days=30] [out-dir]
+#   packages default to the failed jobs of <build>; -k overrides (per-package issues). P / PKGS env vars also work.
 # Prints one row per package: timeline oldest→newest (X failed, . passed, - not run) and the first
 # build of the current failing streak. Use that build to bisect (upstream commits, package changes).
 set -euo pipefail
+while getopts p:k: o; do case $o in p) P=$OPTARG ;; k) PKGS=$OPTARG ;; *) exit 2 ;; esac; done; shift $((OPTIND-1))
 B=${1:?build number}; DAYS=${2:-30}
 P=${P:-elastic/integrations}
 OUT=${3:-build/triage/build-$B}/history
