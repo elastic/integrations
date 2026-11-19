@@ -1,0 +1,130 @@
+{
+  "id": "nginx_otel-connections-ml",
+  "type": "ml-module",
+  "migrationVersion": {
+    "search": "7.9.3"
+  },
+  "references": [],
+  "attributes": {
+    "id": "nginx_otel-connections-ml",
+    "title": "[Nginx OTel] Connection state anomalies",
+    "description": "Detect Nginx hosts with unusually high reading, writing or waiting connections, from the Nginx (OpenTelemetry) stub_status metrics.",
+    "type": "Web server metrics",
+    "logo": {
+      "icon": "logoNginx"
+    },
+    "defaultIndexPattern": "metrics-nginxreceiver.otel-*",
+    "query": {
+      "bool": {
+        "filter": [
+          {
+            "term": {
+              "data_stream.dataset": "nginxreceiver.otel"
+            }
+          },
+          {
+            "exists": {
+              "field": "host.name"
+            }
+          }
+        ],
+        "must_not": {
+          "terms": {
+            "_tier": [
+              "data_frozen",
+              "data_cold"
+            ]
+          }
+        }
+      }
+    },
+    "jobs": [
+      {
+        "id": "nginx_host_connection_state_anomaly",
+        "config": {
+          "groups": [
+            "nginx",
+            "otel"
+          ],
+          "description": "Nginx OTel stub_status: unusually high reading, writing or waiting connections per host compared with its baseline. Active connections are not modeled separately because they are the sum of the three states.",
+          "analysis_config": {
+            "bucket_span": "15m",
+            "detectors": [
+              {
+                "detector_description": "High mean current connections by state (reading, writing, waiting) per host",
+                "function": "high_mean",
+                "field_name": "nginx.connections_current",
+                "by_field_name": "state",
+                "partition_field_name": "host.name"
+              }
+            ],
+            "influencers": [
+              "host.name",
+              "state"
+            ]
+          },
+          "analysis_limits": {
+            "model_memory_limit": "128mb"
+          },
+          "data_description": {
+            "time_field": "@timestamp",
+            "time_format": "epoch_ms"
+          },
+          "model_plot_config": {
+            "enabled": true,
+            "annotations_enabled": true
+          },
+          "custom_settings": {
+            "created_by": "ml-module-nginx-otel-connections-ml",
+            "custom_urls": [
+              {
+                "url_name": "Server Internals for this host",
+                "url_value": "dashboards#/view/nginx_otel-b2c3d4e5-f6a7-8901-bcde-f12345678901?_g=(filters:!(),time:(from:'$earliest$',mode:absolute,to:'$latest$'))&_a=(filters:!(),query:(language:kuery,query:'host.name:\"$host.name$\"'))"
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "datafeeds": [
+      {
+        "id": "datafeed-nginx_host_connection_state_anomaly",
+        "job_id": "nginx_host_connection_state_anomaly",
+        "config": {
+          "job_id": "nginx_host_connection_state_anomaly",
+          "indices": [
+            "INDEX_PATTERN_NAME"
+          ],
+          "query": {
+            "bool": {
+              "filter": [
+                {
+                  "term": {
+                    "data_stream.dataset": "nginxreceiver.otel"
+                  }
+                },
+                {
+                  "exists": {
+                    "field": "nginx.connections_current"
+                  }
+                },
+                {
+                  "terms": {
+                    "state": [
+                      "reading",
+                      "writing",
+                      "waiting"
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "indices_options": {
+            "allow_no_indices": true
+          }
+        }
+      }
+    ]
+  }
+}

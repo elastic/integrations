@@ -55,10 +55,16 @@ processors:
       field: azure.tenant_id
       copy_from: azure.eventhub.tenantId
       ignore_empty_value: true
-  - rename:
-      tag: rename_azure_eventhub_durationMs_to_event_duration_f7de1882
+  - convert:
       field: azure.eventhub.durationMs
+      tag: convert_eventhub_durationms_to_event_duration
       target_field: event.duration
+      type: long
+      ignore_failure: true
+      if: ctx.azure?.eventhub?.durationMs != null
+  - remove:
+      field: azure.eventhub.durationMs
+      tag: remove_eventhub_durationms
       ignore_missing: true
   - script:
       tag: script_7f8b9902

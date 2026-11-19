@@ -97,10 +97,16 @@ processors:
       field: azure.activitylogs.level
       target_field: log.level
       ignore_missing: true
-  - rename:
-      tag: rename_azure_activitylogs_durationMs_to_event_duration_d99d8e2b
+  - convert:
       field: azure.activitylogs.durationMs
+      tag: convert_activitylogs_durationms_to_event_duration
       target_field: event.duration
+      type: long
+      ignore_failure: true
+      if: ctx.azure?.activitylogs?.durationMs != null
+  - remove:
+      field: azure.activitylogs.durationMs
+      tag: remove_activitylogs_durationms
       ignore_missing: true
   - script:
       tag: script_7f8b9902

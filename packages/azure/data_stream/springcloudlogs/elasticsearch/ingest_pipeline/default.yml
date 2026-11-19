@@ -236,10 +236,16 @@ processors:
       field: azure.springcloudlogs.level
       target_field: log.level
       ignore_missing: true
-  - rename:
-      tag: rename_azure_springcloudlogs_durationMs_to_event_duration_ecc2e33c
+  - convert:
       field: azure.springcloudlogs.durationMs
+      tag: convert_springcloudlogs_durationms_to_event_duration
       target_field: event.duration
+      type: long
+      ignore_failure: true
+      if: ctx.azure?.springcloudlogs?.durationMs != null
+  - remove:
+      field: azure.springcloudlogs.durationMs
+      tag: remove_springcloudlogs_durationms
       ignore_missing: true
   - script:
       tag: script_7f8b9902
