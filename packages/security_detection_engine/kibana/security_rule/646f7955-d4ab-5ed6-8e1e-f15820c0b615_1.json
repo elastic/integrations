@@ -1,0 +1,119 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects the creation of a Kubernetes service account token through the TokenRequest API by a non-system identity. The TokenRequest API allows users and workloads to programmatically generate short-lived tokens for any service account they have create permissions on, without accessing the filesystem or the mounted projected token. Attackers who have gained initial access to a cluster can abuse this API to mint tokens for more privileged service accounts, pivot to cloud provider resources via IRSA/workload identity, or generate long-lived tokens that persist beyond pod termination. Unlike mounted service account tokens which are detectable through file access monitoring, tokens created via the TokenRequest API leave no filesystem footprint, they are only visible in Kubernetes audit logs as a create verb on the serviceaccounts/token subresource. This rule excludes legitimate system components such as the kubelet, kube-controller-manager, EKS managed identities, and the Calico/Tigera operator that routinely create tokens for pod lifecycle management.",
+        "false_positives": [
+            "New automation, admission webhooks, or platform agents that legitimately call the TokenRequest API under a non-standard user string may require narrow exclusions by user.name or source IP."
+        ],
+        "from": "now-6m",
+        "index": [
+            "logs-aws.eks_audit-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS EKS Service Account Token Created via TokenRequest API",
+        "note": "## Triage and analysis\n\n### Investigating AWS EKS Service Account Token Created via TokenRequest API\nThis alert indicates a successful `create` against the `serviceaccounts/token` subresource (TokenRequest API), which\nissues a new service account token without a filesystem read. In EKS and other managed clusters, this can be abused to\nmint tokens for more privileged service accounts (including IRSA-linked ones) and pivot to cloud APIs.\n\n### Possible investigation steps\n\n- Identify the actor and origin: `user.name` or `aws.eks.audit.user.username`, `source.ip` or `aws.eks.audit.sourceIPs`,\n  and `user_agent.original` or `aws.eks.audit.userAgent`. For cloud identities, review `aws.eks.audit.user.extra.*`\n  (for example `arn` and `principalId`).\n- Identify the targeted service account from `aws.eks.audit.objectRef.namespace`, `aws.eks.audit.objectRef.name`, and\n  `aws.eks.audit.requestURI` (expected to resemble `/api/v1/namespaces/<ns>/serviceaccounts/<sa>/token`).\n- Record the issued credential id from `aws.eks.audit.annotations.authentication_kubernetes_io/issued-credential-id`\n  to correlate later use of the minted token.\n- Identify which Role or ClusterRoleBindings grant the actor `create` on `serviceaccounts/token` in the affected\n  namespace.\n- Pivot on the same `user.name` and `source.ip` for follow-on secret reads, pod exec, RBAC changes, or cloud API calls.\n\n### False positive analysis\n\n- Platform automation, admission webhooks, or CI systems that legitimately mint short-lived tokens through the\n  TokenRequest API may match; confirm the owner and scope, then exclude the specific user or service account.\n\n### Response and remediation\n\n- If unauthorized, remove/revert the RBAC permission that allows TokenRequest (`serviceaccounts/token`) and rotate the\n  affected service account credentials where applicable.\n- For IRSA/workload identity cases, rotate/revoke the cloud role session pathways and review cloud audit logs for API\n  activity from the time window of the token mint.",
+        "query": "data_stream.dataset:\"aws.eks_audit\" and\naws.eks.audit.verb:\"create\" and\naws.eks.audit.objectRef.resource:\"serviceaccounts\" and\naws.eks.audit.objectRef.subresource:\"token\" and\naws.eks.audit.stage:\"ResponseComplete\" and\nevent.outcome:success and\naws.eks.audit.responseStatus.code:201 and\nuser.name:(* and not\n (system\\:kube-controller-manager or\n  system\\:kube-scheduler or\n  system\\:node\\:* or\n  system\\:serviceaccount\\:kube-system\\:* or\n  eks\\:* or\n  system\\:serviceaccount\\:tigera-operator\\:* or\n  system\\:serviceaccount\\:calico-system\\:*))\n",
+        "references": [
+            "https://kubernetes.io/docs/reference/kubernetes-api/authentication-resources/token-v1/"
+        ],
+        "related_integrations": [
+            {
+                "package": "aws",
+                "version": ">=8.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.eks.audit.objectRef.resource",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.eks.audit.objectRef.subresource",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.eks.audit.responseStatus.code",
+                "type": "integer"
+            },
+            {
+                "ecs": false,
+                "name": "aws.eks.audit.stage",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.eks.audit.verb",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "646f7955-d4ab-5ed6-8e1e-f15820c0b615",
+        "setup": "This rule reads EKS control-plane audit logs collected by the AWS integration\ninto `logs-aws.eks_audit-*`, where the AWS EKS audit ingest\npipelines normalize each audit record under `aws.eks.audit.*`.\n\nEnable the `audit` control-plane log type on the EKS cluster, send its\nCloudWatch log group through the AWS integration, and confirm events carry\n`data_stream.dataset: aws.eks_audit` and\n`cloud.provider: aws` before enabling this rule.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Containers",
+            "Platform: AWS",
+            "Platform: Kubernetes",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: Kubernetes API Server Audit Logs",
+            "Service: AWS EKS",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Rule Type: Custom Query (KQL)",
+            "Resources: Investigation Guide",
+            "Profile: Beta"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.007",
+                                "name": "Container API",
+                                "reference": "https://attack.mitre.org/techniques/T1552/007/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "646f7955-d4ab-5ed6-8e1e-f15820c0b615_1",
+    "type": "security-rule"
+}

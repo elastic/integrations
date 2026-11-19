@@ -110,13 +110,122 @@ The `event` data stream collects events sequentially: each request returns at mo
 
 `3000 events / (API response time + processing time)`
 
-For example, at about 1.4 seconds per request the integration can collect roughly 2,100 events per second. If your Cato Networks account produces events faster than that, the integration falls behind and the difference between `@timestamp` and `event.ingested` keeps growing, without any errors in Fleet or Elasticsearch. Slower API response times, for example during busy periods, lower this ceiling.
+For example, at about 1.4 seconds per request the integration can collect roughly 2100 events per second. If your Cato Networks account produces events faster than that, the integration falls behind and the difference between `@timestamp` and `event.ingested` keeps growing, without any errors in Fleet or Elasticsearch. Slower API response times, for example during busy periods, lower this ceiling.
 
-- **`Maximum Pages Per Cycle` (`max_executions`)**: limits how many pages the integration requests back to back in one cycle (default `1000`, up to 3,000,000 events). When the limit is reached, the Elastic Agent logs a warning containing `maximum number of CEL executions`, and the next cycle starts at the next `Interval` tick, which is immediately if the cycle took longer than the `Interval`. A full-`Interval` pause therefore only happens on the first cycle after the input starts or restarts (for example after a policy change or an Elastic Agent restart), or when cycles are shorter than the `Interval`. Raising this value does not raise the throughput ceiling described above.
+If your account produces more than roughly 2000 events per second, the default mode, where one request collects all events, cannot catch up. Between about 2000 and about 5000 events per second, you can split collection across several integration policies, each with its own `Filters`. Above that, the rate limit shared by the whole account is the ceiling. See [Splitting collection across multiple instances](#splitting-collection-across-multiple-instances), including the checks to run before you enable filters.
+
+- **`Maximum Pages Per Cycle` (`max_executions`)**: limits how many pages the integration requests back to back in one cycle (default `1000`, up to 3000000 events). When the limit is reached, the Elastic Agent logs a warning containing `maximum number of CEL executions`, and the next cycle starts at the next `Interval` tick, which is immediately if the cycle took longer than the `Interval`. A full-`Interval` pause therefore only happens on the first cycle after the input starts or restarts (for example after a policy change or an Elastic Agent restart), or when cycles are shorter than the `Interval`. Raising this value does not raise the throughput ceiling described above.
 - **Processors such as `drop_event`** run after events have been fetched. They reduce the volume indexed in Elasticsearch, but not the number of events fetched per second, so they do not reduce the delay.
+- **`Filters`** are applied by the Cato Networks API before events are returned, so they reduce the volume fetched by an instance. Combined with several integration policies, they let you split collection (see [Splitting collection across multiple instances](#splitting-collection-across-multiple-instances)).
 - **Elasticsearch and Elastic Agent output tuning** does not help when the bottleneck is retrieval from the Cato Networks API.
 
 A delay that keeps growing should be addressed promptly: the marker expires after 3 days (see [Limitation](#limitation)), after which events that were not yet collected are permanently lost.
+
+#### Splitting collection across multiple instances
+
+An instance fetches events sequentially: each request returns at most 3000 events, and when the queue holds more than 3000, Cato Networks paginates the results in batches of 3000. Each instance keeps its own marker, so several instances that collect disjoint sets of events can run in parallel. To improve performance when one request for all events cannot keep up, add the integration once per filter, each as its own integration policy, and set the `Filters` advanced option of the `event` data stream to a different filter in each. One agent policy is enough: all the integration policies can be attached to it, so a single Elastic Agent runs them. Use separate agent policies only if you want them on separate agents. The value is a list of `EventFeedFieldFilterInput` objects sent as the `filters` argument of the EventsFeed query:
+
+- `fieldName`: `event_type` or `event_sub_type`.
+- `operator`: `in`, `not_in`, `is`, or `is_not`.
+- `values`: exact event type or subtype strings, as returned by Cato Networks.
+
+Leave `Filters` empty to collect all events. A value that contains only comments or whitespace, or the YAML value `null`, is treated as empty. Fleet checks only that the value is valid YAML. Cato Networks checks the content: it rejects an unknown `fieldName` or `operator` (both are case-sensitive) with an error that the input reports. Unquoted numbers and booleans in `values` are sent as strings.
+
+For example, to collect WAN Firewall events, Internet Firewall events, and all remaining events with three instances:
+
+Instance 1:
+
+```yaml
+- fieldName: event_sub_type
+  operator: in
+  values:
+    - WAN Firewall
+```
+
+Instance 2:
+
+```yaml
+- fieldName: event_sub_type
+  operator: in
+  values:
+    - Internet Firewall
+```
+
+Instance 3:
+
+```yaml
+- fieldName: event_sub_type
+  operator: not_in
+  values:
+    - WAN Firewall
+    - Internet Firewall
+```
+
+##### Before December 2026
+
+All instances share the `eventsFeed` limit of 100 requests per minute per account ([Understanding Cato API Rate Limiting](https://knowledge.catonetworks.com/docs/understanding-cato-api-rate-limiting)). Together they collect at most about 100 x 3000 / 60, roughly 5000 events per second, however many you run. That is about 2.4 times one instance at 1.4 seconds per request. If your account produces more, splitting cannot catch up.
+
+##### From December 2026
+
+Cato Networks starts rolling out a new API gateway on December 1, 2026. It replaces the per-minute limit with cost-based budgets shared by the whole account, and `eventsFeed` can also have its own budget. Cato Networks has not published the values, so the 5000 events per second above may change ([FAQ: Upcoming API Gateway and Rate Limiting Changes](https://knowledge.catonetworks.com/docs/faq-upcoming-api-gateway-and-rate-limiting-changes)).
+
+If your account produces more events than splitting can collect, the alternative is a push-based feed. Cato Networks describes its event integrations for cloud storage, [Integrating Cato Events with AWS S3](https://knowledge.catonetworks.com/docs/integrating-cato-events-with-aws-s3) and [Integrating Cato Events with Azure Storage](https://knowledge.catonetworks.com/docs/integrating-cato-events-with-azure-storage), as a high-scale feed ([Getting Started with Event Integrations](https://knowledge.catonetworks.com/docs/getting-started-with-event-integrations)). Its own Elastic integration ([Integrating Cato Data with Elastic](https://knowledge.catonetworks.com/docs/integrating-cato-data-with-elastic)) is developed and maintained by Cato Networks separately from this integration, is currently a preview, and pushes events instead of polling. Cato Networks has indicated that its Elastic integration can support up to 14000 events per second.
+
+##### Before you enable filters
+
+**Splitting an instance that is already behind.** Instances you add have no marker, so they start at the current position of the queue and do not collect older events ([API reference](https://api.catonetworks.com/documentation/#query-eventsFeed), [Cato API Potentially Breaking Changes and EoL](https://knowledge.catonetworks.com/docs/cato-api-potentially-breaking-changes-and-eol)). If the instance that is behind gets a narrower filter, the events it has not collected yet, in slices that no other instance covers, are lost. To cover them, keep the existing unfiltered instance running until the `@timestamp` of its newest events reaches the time the new instances started, then remove it or change its filter. Until then both collect the same events, and duplicates are rejected only within one backing index (see below). If you can do without those events, no extra step is needed.
+
+> **Warning:** Check the event volume before you enable `Filters`. When filters are applied, Cato Networks scans its event queue until matching events are found or a search limit is reached, and it does not publish that limit. A filter that matches a small share of a busy queue can return short or empty pages while the scan is still working through the queue. The integration treats a page with fewer than 3000 events as the end of a cycle and waits for the next `Interval`, so such an instance scans the queue once per `Interval`, and how far behind it gets depends on the total number of events the account produces, not only on how many match the filter.
+
+To check the volume, run the following query against the Cato Networks API, for example from the [GraphQL Playground](https://knowledge.catonetworks.com/docs/connecting-to-the-cato-api-from-the-graphql-playground) with an [API key](https://knowledge.catonetworks.com/docs/generating-api-keys-for-the-cato-api). It returns the number of events per time bucket.
+
+```graphql
+query EventsTimeSeries($accountID: ID!, $timeFrame: TimeFrame!, $buckets: Int!, $filters: [EventsFilter!]) {
+  eventsTimeSeries(
+    accountID: $accountID
+    timeFrame: $timeFrame
+    measures: [{fieldName: event_id, aggType: count}]
+    filters: $filters
+  ) {
+    from
+    to
+    granularity
+    timeseries(buckets: $buckets) {
+      label
+      sum
+      data
+    }
+  }
+}
+```
+
+Variables:
+
+```json
+{
+  "accountID": "<your account ID>",
+  "timeFrame": "last.P3D",
+  "buckets": 72,
+  "filters": [
+    {"fieldName": "event_sub_type", "operator": "in", "values": ["WAN Firewall"]}
+  ]
+}
+```
+
+`data` is a list of `[timestamp in milliseconds, number of events]` pairs, one per bucket. With `last.P3D` and `72` buckets, each bucket covers one hour. Run the query twice: once with `"filters": null` to get the total for the account, and once with the filter you plan to use. The counts come from Cato Networks' analytics and can differ slightly from the number of records the EventsFeed API returns.
+
+- Look at the busiest buckets, not the average, and divide by the bucket length in seconds to get events per second. If the total for the account is close to or above the ceiling in [Throughput and ingestion delay](#throughput-and-ingestion-delay), a single instance cannot catch up, even with filters on one instance.
+- `Interval` is the main setting for a filtered instance. Because a page with fewer than 3000 events ends a cycle, the instance scans the queue once per `Interval`. If a filter matches a small share of a busy queue, a shorter `Interval` lets the instance scan further per minute and reduces the delay. Every request counts against the documented limit of 100 requests per minute per account, shared by all instances and all other consumers of the account. An instance that reads full pages back to back at about 1.4 seconds per request makes about 43 requests per minute, so two busy instances already use about 86 of the 100 and leave little room for a shorter `Interval` on a third. Add up the requests of all instances before you shorten it (see [Rate Limiting](#rate-limiting)).
+- Splitting a filter across more instances does not reduce scan-limit delays: each instance still scans the account queue, and all instances draw on the same request budget. Split collection when the volume of matching events is too high for one instance to keep up.
+- After enabling filters, compare `@timestamp` and `event.ingested` for each instance. If the difference keeps growing, the instance is falling behind.
+
+Keep the following in mind:
+
+- Nothing validates the combined scope of the filters of all your instances. As long as each filter is valid, its instance runs, whatever the other instances collect. Two things can go wrong:
+  - **Duplicates (low risk).** Overlapping filters make several instances fetch the same events. The ingest pipeline sets a deterministic document ID. Elasticsearch enforces ID uniqueness only within a single backing index, so it rejects a second copy only when it targets the same backing index. Elastic Agent counts such a rejection as a duplicate event (`libbeat.output.events.duplicates` in the output metrics) instead of indexing it twice. A growing duplicate count suggests that filters overlap. A zero duplicate count does not prove that they are disjoint: instances that write to different namespaces use different data streams, and events fetched on either side of a data stream rollover land in different backing indices, so in both cases both copies can be indexed without increasing the duplicate count.
+  - **Gaps (medium risk).** Events that match no instance's filter are never collected. Nothing in Fleet or Elasticsearch flags them, and they cannot be recovered once they leave the Cato Networks event queue, about 3 days after they were generated. The only check is manual: compare the total number of events Cato Networks reports for a time range (the `eventsTimeSeries` query above, without a filter) with the number of documents in Elasticsearch for the same range, and with the counts for each instance's filter.
+- When filters are applied, Cato Networks scans its event queue until matching events are found or a search limit is reached, so a request can return fewer than 3000 events even when more matching events are pending. The integration does not try to tell this apart from the end of the queue: a page with fewer than 3000 events ends the cycle, and the next request starts at the next `Interval`. For unfiltered requests, Cato Networks documents that the marker is empty when there are no new events in the queue ([Cato API Potentially Breaking Changes and EoL](https://knowledge.catonetworks.com/docs/cato-api-potentially-breaking-changes-and-eol), 2025-04-27). For filtered requests, it documents only that the marker is the position where the scan stopped ([API reference](https://api.catonetworks.com/documentation/#query-eventsFeed)), and not how to tell that apart from the end of the queue or whether the empty marker applies, so the integration does not rely on it.
+- All instances share the account rate limit described in [Rate Limiting](#rate-limiting). Lower `Resource Rate Limit` on each instance so that the total stays under 100 requests per minute.
 
 ## Limitation:
 
