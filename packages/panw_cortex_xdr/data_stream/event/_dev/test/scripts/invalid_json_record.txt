@@ -1,7 +1,7 @@
-# A record field that is sent as a string but is not valid JSON must not send
-# the document to the failure store. The failing field is dropped, the error is
-# recorded, and the rest of the document, including other string-encoded record
-# fields, is still parsed.
+# A record field that is sent as a string but is not valid JSON, or that is
+# valid JSON but not an object, must not send the document to the failure store.
+# The failing field is dropped, the error is recorded, and the rest of the
+# document, including other string-encoded record fields, is still parsed.
 #
 # This is a script test because the pipeline test runner treats any error.message
 # as a failure and cannot expect one.
@@ -19,7 +19,7 @@ simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default data
 cp stdout got.json
 
 exec jq -s 'length' got.json
-stdout '^2$'
+stdout '^3$'
 
 # Both documents are marked as pipeline errors and keep the original event.
 exec jq -s 'all(.event.kind == "pipeline_error")' got.json
@@ -42,10 +42,23 @@ exec jq -s '.[0].panw_cortex.xdr.event.action.process.fds.stdin' got.json
 stdout '^"0"$'
 
 # Record 2: the invalid file mode is dropped, the valid token string is parsed.
-exec jq -s '.[1].panw_cortex.xdr.event.action.file | has("mode")' got.json
+exec jq -s '(.[1].panw_cortex.xdr.event.action.file // {}) | has("mode")' got.json
 stdout '^false$'
 exec jq -s '.[1].panw_cortex.xdr.event.action.process.token.user_id' got.json
 stdout '^"S-1-5-18"$'
+
+# Record 3: values that parse, or already are, but are not objects are dropped
+# too, and each one is reported. The valid token string is still parsed.
+exec jq -s '(.[2].panw_cortex.xdr.event.action.file // {}) | has("mode") or has("pe_info")' got.json
+stdout '^false$'
+exec jq -s '.[2].panw_cortex.xdr.event.action.process | has("fds")' got.json
+stdout '^false$'
+exec jq -s '.[2].panw_cortex.xdr.event.action.process.token.user_id' got.json
+stdout '^"S-1-5-18"$'
+exec jq -s -r '[.[2].error.message] | flatten | join(" ")' got.json
+stdout 'Field json.action_file_mode is not an object'
+stdout 'Field json.action_file_pe_info is not an object'
+stdout 'Field json.action_process_fds is not an object'
 
 # The rest of each document is still processed.
 exec jq -s 'all(.panw_cortex.xdr.event.action.process.image_name == "cmd.exe")' got.json
@@ -60,4 +73,7 @@ uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
 }
 {
 	"message": "{\"event_type\":1,\"event_sub_type\":1,\"event_version\":29,\"event_id\":\"synthetic-invalid-json-002\",\"action_process_image_name\":\"cmd.exe\",\"action_file_mode\":\"{\\\"mask\\\":\",\"action_process_token\":\"{\\\"user_id\\\":\\\"S-1-5-18\\\",\\\"session_id\\\":0}\"}"
+}
+{
+	"message": "{\"event_type\":1,\"event_sub_type\":1,\"event_version\":29,\"event_id\":\"synthetic-invalid-json-003\",\"action_process_image_name\":\"cmd.exe\",\"action_file_mode\":\"420\",\"action_file_pe_info\":[1,2],\"action_process_fds\":7,\"action_process_token\":\"{\\\"user_id\\\":\\\"S-1-5-18\\\",\\\"session_id\\\":0}\"}"
 }

@@ -118,6 +118,38 @@ processors:
             field: json.action_process_token
             tag: remove_action_process_token_331ac283
             ignore_missing: true
+  - script:
+      tag: script_drop_non_object_records_7c881364
+      lang: painless
+      if: ctx.json instanceof Map
+      description: These record fields are mapped as flattened, which only accepts objects. Drop any value that is still not an object after JSON parsing, and record an error so the document is still indexed.
+      params:
+        fields:
+          - action_file_mode
+          - action_file_pe_info
+          - action_process_fds
+          - action_process_pe_load_info
+          - action_process_token
+      source: |
+        for (def f : params.fields) {
+          def v = ctx.json[f];
+          if (v == null || v instanceof Map) {
+            continue;
+          }
+          ctx.json.remove(f);
+          if (!(ctx.error instanceof Map)) {
+            ctx.error = new HashMap();
+          }
+          def msg = 'Field json.' + f + ' is not an object and cannot be indexed as flattened.';
+          def em = ctx.error.message;
+          if (em == null) {
+            ctx.error.message = [msg];
+          } else if (em instanceof List) {
+            em.add(msg);
+          } else {
+            ctx.error.message = [em, msg];
+          }
+        }
   - rename:
       field: json._id
       tag: rename_id_to_xdr_event_id_23ef6968
