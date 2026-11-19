@@ -90,8 +90,227 @@ Events are split into two data streams at ingest:
   `logs-harfanglab.detection-<namespace>`.
 - **`harfanglab.generic`** — all other telemetry, indexed as `logs-harfanglab.generic-<namespace>`.
 
-Both inputs (push and pull) ingest into `harfanglab.generic`; a `reroute` processor in the ingest
-pipeline moves detection alerts into `harfanglab.detection`.
+Both inputs (push and pull) ingest into `harfanglab.generic`. The routing rule declared in
+`data_stream/generic/routing_rules.yml` reroutes detection alerts into `harfanglab.detection`.
+
+### Generic telemetry
+
+An example event for `generic` looks as following:
+
+```json
+{
+    "@timestamp": "2026-05-17T19:12:14.985Z",
+    "agent": {
+        "id": "801945e1-4037-4327-b285-f1ede5fdbaa8",
+        "name": "DESKTOP-EXAMPLE1",
+        "type": "winlogbeat",
+        "version": "9.11.0+363b134d36d5"
+    },
+    "data_stream": {
+        "dataset": "harfanglab.generic",
+        "namespace": "27128",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.0.0"
+    },
+    "elastic_agent": {
+        "id": "834bc7bf-e577-439f-adc4-f02146f1e618",
+        "snapshot": false,
+        "version": "9.5.3"
+    },
+    "event": {
+        "agent_id_status": "mismatch",
+        "category": [
+            "process"
+        ],
+        "ingested": "2026-10-26T13:33:29Z",
+        "kind": "event",
+        "module": "sysmon",
+        "type": [
+            "start"
+        ]
+    },
+    "host": {
+        "domain": "WORKGROUP",
+        "hostname": "DESKTOP-EXAMPLE1",
+        "id": "801945e1-4037-4327-b285-f1ede5fdbaa8",
+        "ip": [
+            "192.0.2.10"
+        ],
+        "name": "DESKTOP-EXAMPLE1",
+        "os": {
+            "full": "Windows 11 Enterprise",
+            "type": "windows",
+            "version": "10.0.26100"
+        }
+    },
+    "input": {
+        "type": "http_endpoint"
+    },
+    "labels": {
+        "agent_type": "hurukai"
+    },
+    "organization": {
+        "id": "example"
+    },
+    "process": {
+        "code_signature": {
+            "subject_name": "Microsoft Windows",
+            "valid": true
+        },
+        "command_line": "C:\\WINDOWS\\system32\\sppsvc.exe",
+        "entity_id": "0a24e600-4037-4327-ec20-006e7a2d15e7",
+        "executable": "C:\\Windows\\System32\\sppsvc.exe",
+        "hash": {
+            "md5": "1f0dee3de1cdfb47773a618016999bb5",
+            "sha1": "e26093f1c32bb4e74126f85f7c4130bf8a2b1cfc",
+            "sha256": "91323f2c80e9e49d2a63fe5c9e4cad0635174e485cc6e54529027dafdf7466f5"
+        },
+        "name": "sppsvc.exe",
+        "pid": 8428,
+        "user": {
+            "id": "S-1-5-20",
+            "name": "NT AUTHORITY\\NETWORK SERVICE"
+        }
+    },
+    "tags": [
+        "forwarded",
+        "harfanglab-generic"
+    ],
+    "user": {
+        "name": "NT AUTHORITY\\NETWORK SERVICE"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| harfanglab.detection.confidence | Confidence level the HarfangLab EDR assigns to a detection (for example "strong", "moderate", "weak"). | keyword |
+| harfanglab.detection.engine.name | Name of the HarfangLab detection engine that produced the alert (for example "ioc", "yara", "sigma"). | keyword |
+| harfanglab.detection.level | Severity level the HarfangLab EDR assigns to the detection (for example "low", "medium", "high", "critical"). | keyword |
+| harfanglab.detection.title | Human-readable title (name) of the HarfangLab detection. | keyword |
+| harfanglab.process.parent.parent.command_line | Full command line that started the grandparent process. | keyword |
+| harfanglab.process.parent.parent.entity_id | Unique identifier for the grandparent process. | keyword |
+| harfanglab.process.parent.parent.executable | Absolute path to the grandparent process executable. | keyword |
+| input.type | Type of filebeat input. | keyword |
+
+
+### Detections
+
+An example event for `detection` looks as following:
+
+```json
+{
+    "@timestamp": "2026-05-17T19:12:22.431Z",
+    "agent": {
+        "id": "801945e1-4037-4327-b285-f1ede5fdbaa8",
+        "name": "DESKTOP-EXAMPLE1",
+        "type": "winlogbeat",
+        "version": "9.11.0+363b134d36d5"
+    },
+    "data_stream": {
+        "dataset": "harfanglab.detection",
+        "namespace": "50747",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.0.0"
+    },
+    "elastic_agent": {
+        "id": "da674bfe-4fc5-46aa-b0bc-d33fdb86ab3a",
+        "snapshot": false,
+        "version": "9.5.3"
+    },
+    "event": {
+        "agent_id_status": "mismatch",
+        "category": [
+            "malware"
+        ],
+        "ingested": "2026-10-26T13:36:44Z",
+        "kind": "alert",
+        "module": "sysmon",
+        "type": [
+            "info"
+        ]
+    },
+    "harfanglab": {
+        "detection": {
+            "confidence": "strong",
+            "engine": {
+                "name": "sigma"
+            },
+            "level": "high",
+            "title": "Suspicious service host behaviour"
+        }
+    },
+    "host": {
+        "domain": "WORKGROUP",
+        "hostname": "DESKTOP-EXAMPLE1",
+        "id": "801945e1-4037-4327-b285-f1ede5fdbaa8",
+        "ip": [
+            "192.0.2.10"
+        ],
+        "name": "DESKTOP-EXAMPLE1",
+        "os": {
+            "full": "Windows 11 Enterprise",
+            "type": "windows",
+            "version": "10.0.26100"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "labels": {
+        "agent_type": "hurukai"
+    },
+    "organization": {
+        "id": "example"
+    },
+    "process": {
+        "command_line": "C:\\WINDOWS\\system32\\notepad.exe",
+        "entity_id": "0a24e600-4037-4327-ec20-006e7a2d15e8",
+        "executable": "C:\\Windows\\System32\\notepad.exe",
+        "name": "notepad.exe",
+        "pid": 9112,
+        "user": {
+            "id": "S-1-5-21-1111111111-2222222222-3333333333-1001",
+            "name": "DESKTOP-EXAMPLE1\\analyst"
+        }
+    },
+    "tags": [
+        "forwarded",
+        "harfanglab-generic"
+    ],
+    "user": {
+        "name": "DESKTOP-EXAMPLE1\\analyst"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| harfanglab.detection.confidence | Confidence level the HarfangLab EDR assigns to a detection (for example "strong", "moderate", "weak"). | keyword |
+| harfanglab.detection.engine.name | Name of the HarfangLab detection engine that produced the alert (for example "ioc", "yara", "sigma"). | keyword |
+| harfanglab.detection.level | Severity level the HarfangLab EDR assigns to the detection (for example "low", "medium", "high", "critical"). | keyword |
+| harfanglab.detection.title | Human-readable title (name) of the HarfangLab detection. | keyword |
+| harfanglab.process.parent.parent.command_line | Full command line that started the grandparent process. | keyword |
+| harfanglab.process.parent.parent.entity_id | Unique identifier for the grandparent process. | keyword |
+| harfanglab.process.parent.parent.executable | Absolute path to the grandparent process executable. | keyword |
+| input.type | Type of filebeat input. | keyword |
+
 
 ## Processing
 
@@ -101,12 +320,21 @@ The ingest pipeline:
 2. Derives the canonical ECS fields `host.name` (from `host.hostname`) and `user.name` (from
    `process.user.name`) when the event does not already set them. Elastic Security relies on
    `host.name` and `user.name` for its host/user pivots, detail pages and alert columns.
-3. Moves the fields the agent emits that ECS does not define into the `harfanglab.*` vendor
+3. Relabels events that carry a `process.entity_id` as Sysmon-via-Winlogbeat, and defaults their
+   `event.kind` to `event` when the agent did not set one, so Elastic Security can draw a process
+   tree from them. See [Process tree](#process-tree-visual-event-analyzer) below.
+4. Maps `event.type: creation` on process events to the ECS value `start`. The agent reports
+   process creation as `creation`, which ECS does not allow for the process category.
+5. Moves the fields the agent emits that ECS does not define into the `harfanglab.*` vendor
    namespace: `harfanglab.detection.*` and `harfanglab.process.parent.parent.*`.
-4. Removes intermediate fields created while parsing.
-5. Drops empty `{}` payloads, which the agent sends to test connectivity.
-6. Removes `event.original` unless **Preserve original event** is enabled.
-7. Reroutes detection alerts (`event.kind: alert`) to the `harfanglab.detection` data stream.
+6. Removes intermediate fields created while parsing.
+7. Drops empty `{}` payloads, which the agent sends to test connectivity.
+
+Two things happen outside this pipeline. `event.original` is collected on every event and removed
+again by Fleet's final pipeline, unless **Preserve original event** is enabled, which sets the
+`preserve_original_event` tag. Detection alerts are moved to the `harfanglab.detection` data
+stream by the routing rule in `data_stream/generic/routing_rules.yml`, which matches on
+`event.kind: alert`.
 
 ## Detection rule
 
