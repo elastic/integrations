@@ -55,8 +55,10 @@ processors:
       if: ctx.json instanceof Map
       description: >-
         Expand the dotted keys in json into objects. Keys listed in params.renames
-        are moved to the given field instead. Other keys stay under json for the
-        processors below. This is done in Painless as a performance optimization.
+        are moved to the given field instead. Nested objects are walked so their
+        fields are handled the same way as dotted keys. Other keys stay under json
+        for the processors below. This is done in Painless as a performance
+        optimization.
       source: |-
         boolean put(Map m, String path, def value) {
           int start = 0;
@@ -79,14 +81,22 @@ processors:
           m.put(leaf, value);
           return true;
         }
-        Map flat = ctx.json;
-        ctx.json = new HashMap();
-        List conflicts = new ArrayList();
-        for (def e : flat.entrySet()) {
-          if (!put(ctx, params.renames[e.getKey()] ?: 'json.' + e.getKey(), e.getValue())) {
-            conflicts.add(e.getKey());
+        void expand(Map ctx, Map renames, String prefix, Map src, List conflicts) {
+          for (def e : src.entrySet()) {
+            String key = prefix + e.getKey();
+            def value = e.getValue();
+            String dest = renames[key];
+            if (dest == null && value instanceof Map && !value.isEmpty()) {
+              expand(ctx, renames, key + '.', value, conflicts);
+            } else if (!put(ctx, dest ?: 'json.' + key, value)) {
+              conflicts.add(key);
+            }
           }
         }
+        Map src = ctx.json;
+        ctx.json = new HashMap();
+        List conflicts = new ArrayList();
+        expand(ctx, params.renames, '', src, conflicts);
         if (!conflicts.isEmpty()) {
           throw new IllegalArgumentException('fields not expanded due to conflicts: ' + conflicts);
         }
