@@ -792,6 +792,8 @@ processors:
       lang: painless
       source: |
         ctx.gen_ai.performance.request_size = ctx.gen_ai.prompt.length();
+        // Counts characters, not bytes. Keyword and flattened fields are
+        // protected from the 32766-byte term limit by ignore_above, not by this check.
         if (ctx.gen_ai.prompt.length() > 32766) {
           ctx.aws_bedrock.invocation.input.input_body_json_massive_hash = ctx.gen_ai.prompt.sha1();
           ctx.aws_bedrock.invocation.input.remove("input_body_json");
@@ -881,6 +883,8 @@ processors:
       lang: painless
       source: |
         ctx.gen_ai.performance.response_size = ctx.gen_ai.completion.length();
+        // Counts characters, not bytes. Keyword and flattened fields are
+        // protected from the 32766-byte term limit by ignore_above, not by this check.
         if (ctx.gen_ai.completion.length() > 32766) {
           ctx.aws_bedrock.invocation.output.output_body_json_massive_hash = ctx.gen_ai.completion.sha1();
           ctx.aws_bedrock.invocation.output.remove("output_body_json");
