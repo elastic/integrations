@@ -156,7 +156,7 @@ Known limits:
 
 ## 6. Safety
 
-`hooks/guard.sh` (PreToolUse) is always on in an elastic/integrations checkout. It blocks GitHub and Buildkite writes (gh CLI and MCP: comment, create, edit, close, merge, retry, rebuild, …) and running a generated `CLOSE_COMMANDS.sh`. In unattended runs (`TRIAGE_UNATTENDED=1`) it also blocks gcloud/gsutil, `elastic-package stack/test/service` and docker runs. The runner also passes `--permission-prompts none`, so anything that would need approval is denied instead of hanging.
+`hooks/guard.sh` (PreToolUse) is always on in an elastic/integrations checkout. It blocks GitHub and Buildkite writes (gh CLI and MCP: comment, create, edit, close, merge, retry, rebuild, …), printing `gh`/`bk` tokens, and running a generated `CLOSE_COMMANDS.sh`. In unattended runs (`TRIAGE_UNATTENDED=1`) it also blocks gcloud/gsutil, `elastic-package stack/test/service`, docker runs, network egress (curl, wget, nc, scp, rsync, ssh), `git push` and piping into a shell, and it fails closed: if it can't parse the call (e.g. `jq` is missing), it blocks it. The runner also passes `--permission-prompts none`, so anything that would need approval is denied instead of hanging.
 
 ## 7. Troubleshooting
 
