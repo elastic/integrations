@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, Audit Logs v2, CASB, Device Posture, DEX Application Tests, DEX Device State Events, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, WARP Config Changes, WARP Toggle Changes, Zero Trust Network Session, and Workers Trace Events logs.
+The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, Audit Logs v2, CASB, Device Posture, DEX Application Tests, DEX Device State Events, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, SSH Logs, WARP Config Changes, WARP Toggle Changes, Zero Trust Network Session, and Workers Trace Events logs.
 
 Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
 
@@ -47,6 +47,7 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 - `gateway_http`: HTTP requests inspected by Cloudflare Gateway. See [Gateway HTTP schema](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_http/).
 - `gateway_network`: Network packets inspected by Cloudflare Gateway. See [Gateway Network schema](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_network/).
 - `network_session`: Network session logs for traffic proxied by Cloudflare Gateway. See [Zero Trust Network Session schema](https://developers.cloudflare.com/logs/reference/log-fields/account/zero_trust_network_sessions/).
+- `ssh_logs`: SSH command logs for Access for Infrastructure targets, including the SSH session and program details and the captured command data. See [SSH Logs schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/ssh_logs/).
 - `warp_config_changes`: WARP configuration switch events from the Cloudflare One Client (WARP), recording the account and configuration a device switched from and to. See [WARP Config Changes schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/warp_config_changes/).
 - `warp_toggle_changes`: WARP on/off toggle events from the Cloudflare One Client (WARP) per device. See [WARP Toggle Changes schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/warp_toggle_changes/).
 
@@ -72,7 +73,7 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 Integrating Cloudflare Logpush with Elastic provides centralized visibility across Cloudflare's edge, Zero Trust, and network-layer products. Common use cases include:
 
 - Investigating traffic, WAF, and DDoS-mitigation events from the Cloudflare edge (`http_request`, `firewall_event`, `network_analytics`).
-- Monitoring Zero Trust user activity, policy decisions, and device posture (`gateway_http`, `gateway_dns`, `gateway_network`, `access_request`, `device_posture`, `network_session`, `warp_config_changes`, `warp_toggle_changes`).
+- Monitoring Zero Trust user activity, policy decisions, and device posture (`gateway_http`, `gateway_dns`, `gateway_network`, `access_request`, `device_posture`, `network_session`, `ssh_logs`, `warp_config_changes`, `warp_toggle_changes`).
 - Monitoring Cloudflare DEX digital experience, synthetic test results, and device health (`dex_application_tests`, `dex_device_state_events`).
 - Detecting data exfiltration and SaaS misconfigurations (`dlp_forensic_copies`, `casb`, `email_security_alerts`).
 - Auditing administrative activity on the Cloudflare account (`audit`, `audit_logs_v2`).
@@ -93,7 +94,7 @@ To use this integration, you must be able to create and manage [Cloudflare Logpu
 Creating and managing Logpush jobs requires an API token or user role with the `Logs Write` permission (or a role that includes it, such as **Super Administrator**, **Administrator**, or **Log Share** with edit permissions). Refer to [Cloudflare Logpush permissions](https://developers.cloudflare.com/logs/logpush/permissions/) for details.
 
 - **Zone-scoped datasets** (for example, `http_requests`, `firewall_events`, `dns_logs`, `spectrum_events`, `nel_reports`, `page_shield_events`) require a **zone-scoped token**.
-- **Account-scoped datasets** (for example, `audit_logs`, `audit_logs_v2`, `access_requests`, `casb_findings`, `device_posture_results`, `dlp_forensic_copies`, `email_security_alerts`, `gateway_*`, `dns_firewall_logs`, `magic_ids_detections`, `network_analytics_logs`, `sinkhole_http_logs`, `workers_trace_events`, `zero_trust_network_sessions`) require an **account-scoped token**.
+- **Account-scoped datasets** (for example, `audit_logs`, `audit_logs_v2`, `access_requests`, `casb_findings`, `device_posture_results`, `dlp_forensic_copies`, `email_security_alerts`, `gateway_*`, `dns_firewall_logs`, `magic_ids_detections`, `network_analytics_logs`, `sinkhole_http_logs`, `ssh_logs`, `workers_trace_events`, `zero_trust_network_sessions`) require an **account-scoped token**.
 - Zero Trust datasets (Access, Gateway, DEX) additionally require `Zero Trust: PII Read`.
 
 **Destination-specific credentials**
@@ -147,6 +148,7 @@ Configure one of the following delivery pipelines before enabling the integratio
   | Zero Trust Network Session | network_session         |
   | Sinkhole HTTP              | sinkhole_http           |
   | Spectrum Event             | spectrum_event          |
+  | SSH Logs                   | ssh_logs                |
   | WARP Config Changes        | warp_config_changes     |
   | WARP Toggle Changes        | warp_toggle_changes     |
   | Workers Trace Events       | workers_trace           |
@@ -5473,6 +5475,177 @@ An example event for `spectrum_event` looks as following:
 | cloudflare_logpush.spectrum_event.proxy.protocol | Which form of proxy protocol is applied to the given connection. | keyword |
 | cloudflare_logpush.spectrum_event.status | A code indicating reason for connection closure. | long |
 | cloudflare_logpush.spectrum_event.timestamp | Timestamp at which the event took place. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
+| gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
+| gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
+| gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
+| log.source.address | Source address from which the log event was read / sent from. | keyword |
+
+
+#### ssh_logs
+
+This is the `ssh_logs` dataset.
+
+##### Example
+
+An example event for `ssh` looks as following:
+
+```json
+{
+    "@timestamp": "2025-02-27T23:15:06.000Z",
+    "agent": {
+        "ephemeral_id": "7b078b79-9bfe-48ab-a6f3-4a17b41703a1",
+        "id": "b136667e-47db-409a-a2d4-3347a906052b",
+        "name": "elastic-agent-32229",
+        "type": "filebeat",
+        "version": "8.17.1"
+    },
+    "cloudflare_logpush": {
+        "ssh_logs": {
+            "account_id": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6",
+            "payload": "{\"version\":2,\"width\":80,\"height\":24,\"timestamp\":1740698100,\"command\":\"uptime\",\"env\":{\"SHELL\":\"/bin/bash\"}}\n[0.112,\"o\",\" 23:15:00 up 12 days,  3:04,  1 user,  load average: 0.08, 0.03, 0.01\\r\\n\"]\n",
+            "program": {
+                "end": "2025-02-27T23:15:01.000Z",
+                "id": "p-6f1c2a9e-0d3b-4e8a-9c71-2b5d8e4f0a13",
+                "start": "2025-02-27T23:15:00.000Z",
+                "type": "exec"
+            },
+            "session": {
+                "end": "2025-02-27T23:15:02.000Z",
+                "id": "s-3e9b7d21-8c4f-4a6e-b1d0-5f2a9c7e1b34",
+                "start": "2025-02-27T23:14:58.000Z"
+            },
+            "target_id": "t-0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d"
+        }
+    },
+    "data_stream": {
+        "dataset": "cloudflare_logpush.ssh_logs",
+        "namespace": "92095",
+        "type": "logs"
+    },
+    "destination": {
+        "address": "81.2.69.142",
+        "geo": {
+            "city_name": "London",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.5142,
+                "lon": -0.0931
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
+        },
+        "ip": "81.2.69.142",
+        "user": {
+            "name": "ubuntu"
+        }
+    },
+    "ecs": {
+        "version": "9.3.0"
+    },
+    "elastic_agent": {
+        "id": "b136667e-47db-409a-a2d4-3347a906052b",
+        "snapshot": false,
+        "version": "8.17.1"
+    },
+    "event": {
+        "action": "exec",
+        "agent_id_status": "verified",
+        "category": [
+            "session",
+            "network"
+        ],
+        "dataset": "cloudflare_logpush.ssh_logs",
+        "ingested": "2026-11-06T05:54:06Z",
+        "kind": "event",
+        "original": "{\"AccountID\":\"a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6\",\"ClientAddress\":\"89.160.20.128\",\"Datetime\":\"2025-02-27T23:15:06Z\",\"Error\":\"\",\"PTY\":\"\",\"Payload\":\"{\\\"version\\\":2,\\\"width\\\":80,\\\"height\\\":24,\\\"timestamp\\\":1740698100,\\\"command\\\":\\\"uptime\\\",\\\"env\\\":{\\\"SHELL\\\":\\\"/bin/bash\\\"}}\\n[0.112,\\\"o\\\",\\\" 23:15:00 up 12 days,  3:04,  1 user,  load average: 0.08, 0.03, 0.01\\\\r\\\\n\\\"]\\n\",\"ProgramFinishDatetime\":\"2025-02-27T23:15:01Z\",\"ProgramID\":\"p-6f1c2a9e-0d3b-4e8a-9c71-2b5d8e4f0a13\",\"ProgramStartDatetime\":\"2025-02-27T23:15:00Z\",\"ProgramType\":\"exec\",\"ServerAddress\":\"81.2.69.142\",\"SessionFinishDatetime\":\"2025-02-27T23:15:02Z\",\"SessionID\":\"s-3e9b7d21-8c4f-4a6e-b1d0-5f2a9c7e1b34\",\"SessionStartDatetime\":\"2025-02-27T23:14:58Z\",\"TargetID\":\"t-0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d\",\"UserEmail\":\"user@example.com\",\"UserID\":\"89a1d5c1-2b3e-4f67-8a9b-0c1d2e3f4a5b\",\"Username\":\"ubuntu\"}",
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "http_endpoint"
+    },
+    "network": {
+        "protocol": "ssh"
+    },
+    "related": {
+        "ip": [
+            "89.160.20.128",
+            "81.2.69.142"
+        ],
+        "user": [
+            "user@example.com",
+            "89a1d5c1-2b3e-4f67-8a9b-0c1d2e3f4a5b",
+            "ubuntu"
+        ]
+    },
+    "source": {
+        "address": "89.160.20.128",
+        "as": {
+            "number": 29518,
+            "organization": {
+                "name": "Bredband2 AB"
+            }
+        },
+        "geo": {
+            "city_name": "Linköping",
+            "continent_name": "Europe",
+            "country_iso_code": "SE",
+            "country_name": "Sweden",
+            "location": {
+                "lat": 58.4167,
+                "lon": 15.6167
+            },
+            "region_iso_code": "SE-E",
+            "region_name": "Östergötland County"
+        },
+        "ip": "89.160.20.128"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "cloudflare_logpush-ssh_logs"
+    ],
+    "user": {
+        "email": "user@example.com",
+        "id": "89a1d5c1-2b3e-4f67-8a9b-0c1d2e3f4a5b"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
+| cloudflare_logpush.ssh_logs.account_id | The Cloudflare account ID. | keyword |
+| cloudflare_logpush.ssh_logs.error | The SSH error. Only set if an error occurred. | keyword |
+| cloudflare_logpush.ssh_logs.payload | The captured request and response data of the SSH program, in asciicast v2 format. For the `exec` program type this includes the executed command. | match_only_text |
+| cloudflare_logpush.ssh_logs.program.end | The time when the SSH program terminated. Empty until the program ends. | date |
+| cloudflare_logpush.ssh_logs.program.id | The SSH program ID. A single SSH session can have multiple programs running. | keyword |
+| cloudflare_logpush.ssh_logs.program.start | The time when the SSH program was created. | date |
+| cloudflare_logpush.ssh_logs.program.type | The SSH program being run (`shell`, `exec`, `x11`, `direct-tcpip` or `forwarded-tcpip`). | keyword |
+| cloudflare_logpush.ssh_logs.pty | The PTY information used by certain program types to synchronize local and remote SSH terminal state. | keyword |
+| cloudflare_logpush.ssh_logs.session.end | The time when the SSH session terminated. Empty until the session ends. | date |
+| cloudflare_logpush.ssh_logs.session.id | The SSH session ID. | keyword |
+| cloudflare_logpush.ssh_logs.session.start | The time when the SSH session was created. | date |
+| cloudflare_logpush.ssh_logs.target_id | The identifier of the target being accessed. | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
