@@ -1,0 +1,178 @@
+- name: bitdefender
+  type: group
+  description: Fields for BitDefender GravityZone related events.
+  fields:
+    - name: endpoint
+      type: group
+      description: Fields returned by the GravityZone Network Inventory API.
+      fields:
+        - name: id
+          type: keyword
+          description: Stable GravityZone network inventory item identifier.
+        - name: name
+          type: keyword
+          description: Name of the endpoint or container.
+        - name: type
+          type: long
+          description: Network inventory item type. Values emitted by this stream are 5 (computer), 6 (virtual machine), 7 (EC2 instance), and 16 (container).
+        - name: parentId
+          type: keyword
+          description: Identifier of the immediate parent inventory container.
+        - name: companyId
+          type: keyword
+          description: Identifier of the company that owns the inventory item.
+        - name: manageAiSpm
+          type: boolean
+          description: Whether AI Security Posture Management applies to the inventory item.
+        - name: lastSuccessfulScan
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: Name of the last successful scan.
+            - name: date
+              type: date
+              description: Time of the last successful scan.
+        - name: details
+          type: group
+          description: Endpoint or container details returned inline with the inventory item.
+          fields:
+            - name: label
+              type: keyword
+              description: Custom label assigned to the inventory item.
+            - name: fqdn
+              type: keyword
+              description: Fully qualified domain name.
+            - name: groupId
+              type: keyword
+              description: Identifier of the custom group containing the inventory item.
+            - name: isManaged
+              type: boolean
+              description: Whether the inventory item is managed by GravityZone.
+            - name: machineType
+              type: long
+              description: Machine classification code.
+            - name: operatingSystemVersion
+              type: keyword
+              ignore_above: 4096
+              description: Operating system name and version reported by GravityZone.
+            - name: firstSeen
+              type: keyword
+              description: Raw first-seen time. GravityZone might omit the timezone from this value.
+            - name: isIsolated
+              type: boolean
+              description: Whether the inventory item is isolated from the network.
+            - name: ip
+              type: ip
+              description: Local IP address.
+            - name: publicIp
+              type: ip
+              description: Public IP address.
+            - name: macs
+              type: keyword
+              description: Network adapter MAC addresses in vendor-provided formats.
+            - name: ssid
+              type: keyword
+              description: Active Directory SID of the endpoint.
+            - name: managedWithBest
+              type: boolean
+              description: Whether Bitdefender Endpoint Security Tools is installed.
+            - name: isContainerHost
+              type: boolean
+              description: Whether container host protection is installed.
+            - name: managedExchangeServer
+              type: boolean
+              description: Whether the endpoint is a protected Exchange server.
+            - name: managedRelay
+              type: boolean
+              description: Whether the endpoint has the GravityZone Relay role.
+            - name: securityServer
+              type: boolean
+              description: Whether the endpoint is a GravityZone Security Server.
+            - name: productOutdated
+              type: boolean
+              description: Vendor-provided security agent update status.
+            - name: policy
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: Identifier of the active security policy.
+                - name: name
+                  type: keyword
+                  description: Name of the active security policy.
+                - name: applied
+                  type: boolean
+                  description: Whether the policy is currently applied.
+            - name: movingInfo
+              type: group
+              fields:
+                - name: state
+                  type: long
+                  description: Inter-company transfer state.
+                - name: destinationCompanyName
+                  type: keyword
+                  description: Destination company name for an in-progress transfer.
+            - name: modules
+              type: group
+              description: Installed protection module enablement states.
+              fields:
+                - name: advancedThreatControl
+                  type: boolean
+                - name: antimalware
+                  type: boolean
+                - name: contentControl
+                  type: boolean
+                - name: deviceControl
+                  type: boolean
+                - name: firewall
+                  type: boolean
+                - name: powerUser
+                  type: boolean
+                - name: encryption
+                  type: boolean
+                - name: edrSensor
+                  type: boolean
+                - name: hyperDetect
+                  type: boolean
+                - name: patchManagement
+                  type: boolean
+                - name: relay
+                  type: boolean
+                - name: sandboxAnalyzer
+                  type: boolean
+                - name: exchange
+                  type: boolean
+                - name: advancedAntiExploit
+                  type: boolean
+                - name: containerProtection
+                  type: boolean
+                - name: networkAttackDefense
+                  type: boolean
+                - name: integrityMonitoring
+                  type: boolean
+                - name: applicationControl
+                  type: boolean
+                - name: remoteEnginesScanning
+                  type: boolean
+                - name: riskManagement
+                  type: boolean
+            - name: riskScore
+              type: group
+              description: Endpoint security risk score and components.
+              fields:
+                - name: value
+                  type: keyword
+                  description: Overall risk score percentage.
+                - name: impact
+                  type: keyword
+                  description: Risk impact level.
+                - name: misconfigurations
+                  type: keyword
+                  description: Misconfiguration contribution percentage.
+                - name: appVulnerabilities
+                  type: keyword
+                  description: Application vulnerability contribution percentage.
+                - name: humanRisks
+                  type: keyword
+                  description: Human risk contribution percentage.

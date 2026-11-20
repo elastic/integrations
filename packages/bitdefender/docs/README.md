@@ -9,8 +9,9 @@ This integration additionally provides:
 2. Collection of push notification statistics via API polling, which includes the number of events sent, and counters for errors of different types, which you may wish to use to troubleshoot lost push notification events and for alerting purposes.
 3. Support for multiple instances of the integration, which may be needed for MSP/MSSP scenarios where multiple BitDefender GravityZone tenants exist.
 4. BitDefender company ID to your own company name/description mapping, in order to determine to which tenant the event relates to in a human friendly way. This is very useful for MSP/MSSP environments or for large organisations with multiple sub-organisations.
+5. GravityZone Public API polling for EDR/XDR incidents and individual incident alerts, endpoint quarantine, endpoint and account entity inventories, and EDR blocklist state.
 
-This allows you to search, observe and visualize the BitDefender GravityZone events through Elastic, trigger alerts and monitor the BitDefender GravityZone Push Notification service for state and errors.
+This allows you to search, observe and visualize BitDefender GravityZone events, incidents, entities, and containment rules through Elastic, trigger alerts, and monitor the BitDefender GravityZone Push Notification service for state and errors.
 
 For more information about BitDefender GravityZone, refer to [BitDefender GravityZone](https://www.bitdefender.com/business/products/security-products.html) and refer to the [Public API - Push](https://www.bitdefender.com/business/support/en/77209-135318-push.html) documentation.
 
@@ -30,7 +31,9 @@ The package collects BitDefender GravityZone push notification transported event
 
 The `jsonrpc` format is recommended default, but the ingest pipeline will attempt to detect if `qradar` or `splunk` format events have been received and process them accordingly.
 
-The integration can also collect the push notification configuration and statistics by polling the BitDefender GravityZone API.
+The integration can also collect the push notification configuration and statistics and poll higher-level security incidents and entity inventories from the BitDefender GravityZone Public API.
+
+Public API polling in this integration targets GravityZone Cloud. GravityZone On-Premises has a different API surface, authentication model, and service-specific paths and is not supported by the Public API polling data streams.
 
 ## How do I deploy this integration?
 
@@ -70,6 +73,33 @@ Click the Key value that is shown in blue.
 Click the clipboard icon to copy the API key to your PC's clipboard.
 
 ![Example Configuration 4](../img/bitdefender-gravityzone-api-key-4.png)
+
+### Create an API key for Public API polling
+
+The Public API polling data streams support either of these authentication types:
+
+- A Service API key, configured with `x_api_key`, from **Accounts → Service API keys**. Enable only the API areas required by the selected data streams. Service API keys are independent of human accounts, expire after at most one year, and do not support the Event Push Service API.
+- A Personal API key, configured with `basic`, from the account menu under **API keys**. Personal API keys are required for the existing Push API streams.
+
+Copy the exact Control Center API Access URL from the account menu under **Control Center API**. The URL normally ends in `/api`. GravityZone uses multiple regional instances, including `https://cloudgz.gravityzone.bitdefender.com/api`, `https://cloud.gravityzone.bitdefender.com/api`, and `https://cloudap.gravityzone.bitdefender.com/api`. An API key is valid only on the Control Center instance where it was created. If GravityZone reports an invalid API key, verify the Access URL before replacing the key.
+
+For partner or MSP collection, optionally set the target company ID. The integration places that ID in the method-specific request field required by each API.
+
+If Push and Public API polling require different key types or permissions, create separate integration policies and enable only the relevant data streams in each policy.
+
+The Public API data streams require the corresponding GravityZone API permissions and product licenses:
+
+- Incidents and blocklist: **Incidents API** and an EDR/XDR-capable subscription.
+- Quarantine: **Quarantine API**.
+- Endpoint inventory: **Network API**.
+- Account inventory: **Accounts API** and the required user-management rights.
+
+Selecting an API area when creating a key does not grant the corresponding product license or user rights.
+
+GravityZone rate limits vary by API method and tenant. A throttled request returns HTTP `429` and can include a `Retry-After` header. The integration retries throttled requests. Each polling cycle fetches every paginated response page for the enabled stream:
+
+- Incidents runs paginated `getIncidentsList` requests for the window and then resolves full details with `getIncidentsByIds` in batches of up to 10 incident IDs per request.
+- Endpoint inventory, account inventory, and blocklist append a full snapshot of the active inventory or rules on every polling interval. Size retention and polling intervals according to your tenant's object counts and API rate limits, or split streams across separate API keys when needed.
 
 ### Creating the push notification configuration via BitDefender GravityZone API
 
@@ -697,5 +727,1137 @@ An example event for `push_statistics` looks as following:
         "preserve_original_event",
         "forwarded"
     ]
+}
+```
+
+### Log stream incidents
+
+The incidents dataset collects changed EDR and XDR incidents and retrieves their complete details, including alert graphs, affected entities, MITRE ATT&CK metadata, status, priority, and analyst notes. Each polling cycle pages through `getIncidentsList` and fetches full incident objects with `getIncidentsByIds` in batches of up to 10 IDs. Parent incident documents use a revision-aware document ID derived from `incidentId` and `lastIncidentChange`, so unchanged boundary overlaps collapse onto the same document while status, action, or severity updates are preserved as new revisions in the append-only data stream.
+
+The same poll emits each object in an incident's `details.alerts` array as a separate document in the `bitdefender.incident_alert` dataset. Individual alert documents include compact parent-incident context and alert-level process, file, network, registry, user, host, and related indicator fields. Alert documents use a revision-aware document ID derived from the parent incident ID, alert ID, and parent incident state so unchanged re-polls deduplicate cleanly without dropping later incident status, action, or severity updates. This fan-out does not make additional GravityZone API requests.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| bitdefender.incident.assignee.companyId |  | keyword |
+| bitdefender.incident.assignee.companyName |  | keyword |
+| bitdefender.incident.assignee.userId |  | keyword |
+| bitdefender.incident.assignee.userName |  | keyword |
+| bitdefender.incident.attackTypes |  | keyword |
+| bitdefender.incident.company.id |  | keyword |
+| bitdefender.incident.company.name |  | keyword |
+| bitdefender.incident.created |  | date |
+| bitdefender.incident.details | Full polymorphic endpoint EDR or organization XDR incident details, including alerts, graph nodes, resources, MITRE ATT&CK metadata, counters, narrative, and reasoning. | flattened |
+| bitdefender.incident.id | Stable GravityZone incident identifier. | keyword |
+| bitdefender.incident.incidentId | Stable GravityZone incident identifier. | keyword |
+| bitdefender.incident.incidentLink |  | keyword |
+| bitdefender.incident.incidentNumber | Incident number displayed in GravityZone Control Center. | long |
+| bitdefender.incident.incidentType | Incident scope, such as incident or extendedIncident. | keyword |
+| bitdefender.incident.lastIncidentChange |  | date |
+| bitdefender.incident.lastProcessed |  | date |
+| bitdefender.incident.lastUpdated |  | date |
+| bitdefender.incident.mainAction |  | keyword |
+| bitdefender.incident.notes.created |  | date |
+| bitdefender.incident.notes.id |  | keyword |
+| bitdefender.incident.notes.text |  | match_only_text |
+| bitdefender.incident.notes.userId |  | keyword |
+| bitdefender.incident.notes.userName |  | keyword |
+| bitdefender.incident.priority |  | keyword |
+| bitdefender.incident.severityScore |  | long |
+| bitdefender.incident.status |  | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.id | Unique ID to describe the event. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.reference | Reference URL linking to additional information about this event. This URL links to a static definition of this event. Alert events, indicated by `event.kind:alert`, are a common use case for this field. | keyword |
+| event.risk_score | Risk score or priority of the event (e.g. security solutions). Use your system's original value here. | float |
+| event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| organization.id | Unique identifier for the organization. | keyword |
+| organization.name | Organization name. | keyword |
+| organization.name.text | Multi-field of `organization.name`. | match_only_text |
+| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| rule.name | The name of the rule or signature generating the event. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
+| threat.group.name | The name of the group for a set of related intrusion activity that are tracked by a common name in the security community. While not required, you can use a MITRE ATT&CK® group name. | keyword |
+| threat.tactic.name | Name of the type of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/) | keyword |
+| threat.technique.id | The id of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
+| threat.technique.name | The name of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
+| threat.technique.name.text | Multi-field of `threat.technique.name`. | match_only_text |
+| threat.technique.subtechnique.id | The full id of subtechnique used by this threat. You can use a MITRE ATT&CK® subtechnique, for example. (ex. https://attack.mitre.org/techniques/T1059/001/) | keyword |
+| threat.technique.subtechnique.name | The name of subtechnique used by this threat. You can use a MITRE ATT&CK® subtechnique, for example. (ex. https://attack.mitre.org/techniques/T1059/001/) | keyword |
+| threat.technique.subtechnique.name.text | Multi-field of `threat.technique.subtechnique.name`. | match_only_text |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
+| vulnerability.id | The identification (ID) is the number portion of a vulnerability entry. It includes a unique identification number for the vulnerability. For example (https://cve.mitre.org/about/faqs.html#what_is_cve_id) | keyword |
+
+
+An example event for `incident` looks as following:
+
+```json
+{
+    "@timestamp": "2026-11-01T01:01:00.000Z",
+    "agent": {
+        "ephemeral_id": "854bbbe5-f862-46f9-ae3e-de4d9fafd6d7",
+        "id": "521127d5-3940-4007-a706-e3e7218aa1ad",
+        "name": "elastic-agent-60839",
+        "type": "filebeat",
+        "version": "9.5.5"
+    },
+    "bitdefender": {
+        "incident": {
+            "company": {
+                "id": "5e4d3c2b1a0987654321fedc",
+                "name": "Example Corp"
+            },
+            "details": {
+                "detectionName": "Synthetic incident 1"
+            },
+            "id": "65f04c2e1234567890abc001",
+            "incidentId": "65f04c2e1234567890abc001",
+            "incidentNumber": 101,
+            "incidentType": "incident",
+            "lastIncidentChange": "2026-11-01T01:01:00.000Z",
+            "priority": "low",
+            "severityScore": 31,
+            "status": "open"
+        }
+    },
+    "data_stream": {
+        "dataset": "bitdefender.incident",
+        "namespace": "22933",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.5.0"
+    },
+    "elastic_agent": {
+        "id": "521127d5-3940-4007-a706-e3e7218aa1ad",
+        "snapshot": false,
+        "version": "9.5.5"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "intrusion_detection",
+            "malware",
+            "threat"
+        ],
+        "dataset": "bitdefender.incident",
+        "id": "65f04c2e1234567890abc001",
+        "ingested": "2026-11-13T18:46:36Z",
+        "kind": "alert",
+        "module": "bitdefender",
+        "original": "{\"company\":{\"id\":\"5e4d3c2b1a0987654321fedc\",\"name\":\"Example Corp\"},\"details\":{\"alerts\":[],\"detectionName\":\"Synthetic incident 1\",\"nodes\":[]},\"incidentId\":\"65f04c2e1234567890abc001\",\"incidentNumber\":101,\"incidentType\":\"incident\",\"lastIncidentChange\":\"2026-11-01T01:01:00Z\",\"notes\":[],\"priority\":\"low\",\"severityScore\":31,\"status\":\"open\"}",
+        "risk_score": 31,
+        "severity": 47,
+        "type": [
+            "indicator",
+            "info"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "message": "Synthetic incident 1",
+    "observer": {
+        "product": "GravityZone",
+        "vendor": "Bitdefender"
+    },
+    "organization": {
+        "id": "5e4d3c2b1a0987654321fedc",
+        "name": "Example Corp"
+    },
+    "rule": {
+        "name": "Synthetic incident 1"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded"
+    ]
+}
+```
+
+### Log stream incident alerts
+
+The incident alerts dataset contains one document for each endpoint EDR or organization XDR alert embedded in an incident. Enable the incidents data stream to collect both the parent incident and these individual alert documents. Use `data_stream.dataset: bitdefender.incident_alert` to search the alert-level events. Alert titles, identifiers, risk scores, and normalized severities are populated for compatibility with the Elastic Security External Alerts rule.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| bitdefender.incident_alert.alert.date | Date and time when the alert was detected. | date |
+| bitdefender.incident_alert.alert.detectedBy.class | Class of the detecting technology. | keyword |
+| bitdefender.incident_alert.alert.detectedBy.name | Name of the detecting technology. | keyword |
+| bitdefender.incident_alert.alert.extra | Polymorphic extra alert attributes. | flattened |
+| bitdefender.incident_alert.alert.id | Stable identifier of the individual alert. | keyword |
+| bitdefender.incident_alert.alert.name | Name of the alert. | keyword |
+| bitdefender.incident_alert.alert.resources | Polymorphic endpoint alert resources. | flattened |
+| bitdefender.incident_alert.alert.sensors | Organization sensors that detected the alert. | keyword |
+| bitdefender.incident_alert.alert.tactic | Vendor MITRE ATT&CK tactic identifier. | keyword |
+| bitdefender.incident_alert.alert.transitions | Polymorphic organization alert transitions and resources. | flattened |
+| bitdefender.incident_alert.incident.company.id | Identifier of the company where the incident occurred. | keyword |
+| bitdefender.incident_alert.incident.company.name | Name of the company where the incident occurred. | keyword |
+| bitdefender.incident_alert.incident.created | Date and time when the parent incident was created. | date |
+| bitdefender.incident_alert.incident.details.computerFqdn | FQDN of the endpoint that generated the incident. | keyword |
+| bitdefender.incident_alert.incident.details.computerId | Identifier of the endpoint that generated the incident. | keyword |
+| bitdefender.incident_alert.incident.details.computerIp | Communication IP address of the endpoint. | ip |
+| bitdefender.incident_alert.incident.details.computerMacAddresses | MAC addresses of the endpoint. | keyword |
+| bitdefender.incident_alert.incident.details.computerName | Name of the endpoint that generated the incident. | keyword |
+| bitdefender.incident_alert.incident.incidentId | Stable identifier of the parent incident. | keyword |
+| bitdefender.incident_alert.incident.incidentLink | Link to the parent incident in GravityZone Control Center. | keyword |
+| bitdefender.incident_alert.incident.incidentNumber | Incident number displayed in GravityZone Control Center. | long |
+| bitdefender.incident_alert.incident.incidentType | Scope of the parent incident. | keyword |
+| bitdefender.incident_alert.incident.lastIncidentChange | Date and time of the most recent parent incident change. | date |
+| bitdefender.incident_alert.incident.lastProcessed | Date and time when the parent incident was last processed. | date |
+| bitdefender.incident_alert.incident.lastUpdated | Date and time when the parent incident was last updated. | date |
+| bitdefender.incident_alert.incident.mainAction | Main automatic action taken for the parent incident. | keyword |
+| bitdefender.incident_alert.incident.priority | Priority of the parent incident. | keyword |
+| bitdefender.incident_alert.incident.severityScore | Severity score of the parent incident. | long |
+| bitdefender.incident_alert.incident.status | Investigation status of the parent incident. | keyword |
+| client.ip | IP address of the client (IPv4 or IPv6). | ip |
+| client.mac | MAC address of the client. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
+| destination.port | Port of the destination. | long |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.id | Unique ID to describe the event. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
+| event.reference | Reference URL linking to additional information about this event. This URL links to a static definition of this event. Alert events, indicated by `event.kind:alert`, are a common use case for this field. | keyword |
+| event.risk_score | Risk score or priority of the event (e.g. security solutions). Use your system's original value here. | float |
+| event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| file.extension | File extension, excluding the leading dot. Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
+| file.hash.md5 | MD5 hash. | keyword |
+| file.hash.sha256 | SHA256 hash. | keyword |
+| file.name | Name of the file including the extension, without the directory. | keyword |
+| file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
+| file.path.text | Multi-field of `file.path`. | match_only_text |
+| file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| organization.id | Unique identifier for the organization. | keyword |
+| organization.name | Organization name. | keyword |
+| organization.name.text | Multi-field of `organization.name`. | match_only_text |
+| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
+| process.command_line.text | Multi-field of `process.command_line`. | match_only_text |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
+| process.parent.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
+| process.parent.command_line.text | Multi-field of `process.parent.command_line`. | match_only_text |
+| process.parent.executable | Absolute path to the process executable. | keyword |
+| process.parent.executable.text | Multi-field of `process.parent.executable`. | match_only_text |
+| process.parent.pid | Process id. | long |
+| process.pid | Process id. | long |
+| registry.data.strings | Content when writing string types. Populated as an array when writing string data to the registry. For single string registry types (REG_SZ, REG_EXPAND_SZ), this should be an array with one string. For sequences of string with REG_MULTI_SZ, this array will be variable length. For numeric data, such as REG_DWORD and REG_QWORD, this should be populated with the decimal representation (e.g `"1"`). | wildcard |
+| registry.data.type | Standard registry type for encoding contents | keyword |
+| registry.path | Full path, including hive, key and value | keyword |
+| registry.value | Name of the value written. | keyword |
+| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| rule.category | A categorization value keyword used by the entity using the rule for detection of this event. | keyword |
+| rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
+| rule.name | The name of the rule or signature generating the event. | keyword |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| source.port | Port of the source. | long |
+| tags | List of keywords used to tag each event. | keyword |
+| threat.framework | Name of the threat framework used to further categorize and classify the tactic and technique of the reported threat. Framework classification can be provided by detecting systems, evaluated at ingest time, or retrospectively tagged to events. | keyword |
+| threat.tactic.id | The id of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/ ) | keyword |
+| threat.tactic.name | Name of the type of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/) | keyword |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.original.text | Multi-field of `url.original`. | match_only_text |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
+
+
+### Log stream quarantine
+
+The quarantine dataset collects quarantined files from the GravityZone computers quarantine service across all pages in each polling window and reconciles active quarantined items on subsequent polls so later `actionStatus` transitions (such as pending or failed restore and removal actions) are emitted without re-indexing unchanged items. Exchange quarantine is not included. GravityZone returns `quarantinedOn` without a timezone, so the integration preserves it as a source string and uses the collection time for `@timestamp`.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| bitdefender.quarantine.actionStatus | Quarantine action status code. Values include 0 (none), 1 (pending remove), 2 (pending restore), 3 (remove failed), and 4 (restore failed). | long |
+| bitdefender.quarantine.canBeRemoved | Whether the quarantine item can be removed. | boolean |
+| bitdefender.quarantine.canBeRestored | Whether the quarantine item can be restored. | boolean |
+| bitdefender.quarantine.companyId | GravityZone company identifier. | keyword |
+| bitdefender.quarantine.details.filePath | Original path of the quarantined file. | keyword |
+| bitdefender.quarantine.details.fileSha256 | File hash returned by the vendor's fileSha256 field. Valid 64-character hexadecimal values map to file.hash.sha256, 32-character hexadecimal values map to file.hash.md5, and other values remain only in this source field. | keyword |
+| bitdefender.quarantine.endpointIP | IP address of the endpoint where the item was quarantined. | ip |
+| bitdefender.quarantine.endpointId | Identifier of the endpoint where the item was quarantined. | keyword |
+| bitdefender.quarantine.endpointName | Name of the endpoint where the item was quarantined. | keyword |
+| bitdefender.quarantine.id | Stable GravityZone quarantine item identifier. | keyword |
+| bitdefender.quarantine.quarantinedOn | Raw quarantine time from GravityZone. The value has no timezone and is intentionally not parsed as a date. @timestamp records the collection or ingest observation time instead. | keyword |
+| bitdefender.quarantine.threatName | Name of the detected threat. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.id | Unique ID to describe the event. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| file.directory | Directory where the file is located. It should include the drive letter, when appropriate. | keyword |
+| file.hash.md5 | MD5 hash. | keyword |
+| file.hash.sha256 | SHA256 hash. | keyword |
+| file.name | Name of the file including the extension, without the directory. | keyword |
+| file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
+| file.path.text | Multi-field of `file.path`. | match_only_text |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| organization.id | Unique identifier for the organization. | keyword |
+| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| rule.name | The name of the rule or signature generating the event. | keyword |
+| threat.indicator.name | The display name indicator in an UI friendly format URL, IP address, email address, registry key, port number, hash value, or other relevant name can serve as the display name. | keyword |
+
+
+An example event for `quarantine` looks as following:
+
+```json
+{
+    "@timestamp": "2026-11-02T21:48:09.663Z",
+    "agent": {
+        "ephemeral_id": "1d55d1ee-c4de-431c-8469-6ff86f66ad22",
+        "id": "064513de-b74e-4cb5-94f4-2c8435e6fd8a",
+        "name": "elastic-agent-62024",
+        "type": "filebeat",
+        "version": "9.5.5"
+    },
+    "bitdefender": {
+        "quarantine": {
+            "actionStatus": 0,
+            "canBeRemoved": true,
+            "canBeRestored": true,
+            "companyId": "5e4d3c2b1a0987654321fedc",
+            "details": {
+                "filePath": "C:\\ProgramData\\Example\\test-file.exe",
+                "fileSha256": "11111111111111111111111111111111"
+            },
+            "endpointIP": "192.0.2.21",
+            "endpointId": "5d4c3b2a190876543210fe01",
+            "endpointName": "example-host-01",
+            "id": "65a000000000000000000001",
+            "quarantinedOn": "2026-11-01T01:00:00",
+            "threatName": "Synthetic.Test.File"
+        }
+    },
+    "data_stream": {
+        "dataset": "bitdefender.quarantine",
+        "namespace": "50896",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.5.0"
+    },
+    "elastic_agent": {
+        "id": "064513de-b74e-4cb5-94f4-2c8435e6fd8a",
+        "snapshot": false,
+        "version": "9.5.5"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "malware",
+            "file"
+        ],
+        "dataset": "bitdefender.quarantine",
+        "id": "65a000000000000000000001",
+        "ingested": "2026-11-02T21:48:13Z",
+        "kind": "event",
+        "module": "bitdefender",
+        "original": "{\"actionStatus\":0,\"canBeRemoved\":true,\"canBeRestored\":true,\"companyId\":\"5e4d3c2b1a0987654321fedc\",\"details\":{\"filePath\":\"C:\\\\ProgramData\\\\Example\\\\test-file.exe\",\"fileSha256\":\"11111111111111111111111111111111\"},\"endpointIP\":\"192.0.2.21\",\"endpointId\":\"5d4c3b2a190876543210fe01\",\"endpointName\":\"example-host-01\",\"id\":\"65a000000000000000000001\",\"quarantinedOn\":\"2026-11-01T01:00:00\",\"threatName\":\"Synthetic.Test.File\"}",
+        "type": [
+            "info"
+        ]
+    },
+    "file": {
+        "directory": "C:\\ProgramData\\Example",
+        "hash": {
+            "md5": "11111111111111111111111111111111"
+        },
+        "name": "test-file.exe",
+        "path": "C:\\ProgramData\\Example\\test-file.exe"
+    },
+    "host": {
+        "id": "5d4c3b2a190876543210fe01",
+        "ip": [
+            "192.0.2.21"
+        ],
+        "name": "example-host-01"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "GravityZone",
+        "vendor": "Bitdefender"
+    },
+    "organization": {
+        "id": "5e4d3c2b1a0987654321fedc"
+    },
+    "related": {
+        "hash": [
+            "11111111111111111111111111111111"
+        ],
+        "hosts": [
+            "example-host-01"
+        ],
+        "ip": [
+            "192.0.2.21"
+        ]
+    },
+    "rule": {
+        "name": "Synthetic.Test.File"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded"
+    ],
+    "threat": {
+        "indicator": {
+            "name": "Synthetic.Test.File"
+        }
+    }
+}
+```
+
+### Log stream endpoints
+
+The endpoint dataset collects bulk network inventory as host and container entity snapshots across all inventory pages on each polling interval. Each poll appends a full snapshot of matching endpoints and containers, including endpoint identity, addresses, operating system, policy, protection modules, management state, last successful scan, and risk posture without per-endpoint detail fan-out. GravityZone returns `firstSeen` without a timezone, so the integration preserves it as a source string and uses the collection time as the entity observation timestamp.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| bitdefender.endpoint.companyId | Identifier of the company that owns the inventory item. | keyword |
+| bitdefender.endpoint.details.firstSeen | Raw first-seen time. GravityZone might omit the timezone from this value. | keyword |
+| bitdefender.endpoint.details.fqdn | Fully qualified domain name. | keyword |
+| bitdefender.endpoint.details.groupId | Identifier of the custom group containing the inventory item. | keyword |
+| bitdefender.endpoint.details.ip | Local IP address. | ip |
+| bitdefender.endpoint.details.isContainerHost | Whether container host protection is installed. | boolean |
+| bitdefender.endpoint.details.isIsolated | Whether the inventory item is isolated from the network. | boolean |
+| bitdefender.endpoint.details.isManaged | Whether the inventory item is managed by GravityZone. | boolean |
+| bitdefender.endpoint.details.label | Custom label assigned to the inventory item. | keyword |
+| bitdefender.endpoint.details.machineType | Machine classification code. | long |
+| bitdefender.endpoint.details.macs | Network adapter MAC addresses in vendor-provided formats. | keyword |
+| bitdefender.endpoint.details.managedExchangeServer | Whether the endpoint is a protected Exchange server. | boolean |
+| bitdefender.endpoint.details.managedRelay | Whether the endpoint has the GravityZone Relay role. | boolean |
+| bitdefender.endpoint.details.managedWithBest | Whether Bitdefender Endpoint Security Tools is installed. | boolean |
+| bitdefender.endpoint.details.modules.advancedAntiExploit |  | boolean |
+| bitdefender.endpoint.details.modules.advancedThreatControl |  | boolean |
+| bitdefender.endpoint.details.modules.antimalware |  | boolean |
+| bitdefender.endpoint.details.modules.applicationControl |  | boolean |
+| bitdefender.endpoint.details.modules.containerProtection |  | boolean |
+| bitdefender.endpoint.details.modules.contentControl |  | boolean |
+| bitdefender.endpoint.details.modules.deviceControl |  | boolean |
+| bitdefender.endpoint.details.modules.edrSensor |  | boolean |
+| bitdefender.endpoint.details.modules.encryption |  | boolean |
+| bitdefender.endpoint.details.modules.exchange |  | boolean |
+| bitdefender.endpoint.details.modules.firewall |  | boolean |
+| bitdefender.endpoint.details.modules.hyperDetect |  | boolean |
+| bitdefender.endpoint.details.modules.integrityMonitoring |  | boolean |
+| bitdefender.endpoint.details.modules.networkAttackDefense |  | boolean |
+| bitdefender.endpoint.details.modules.patchManagement |  | boolean |
+| bitdefender.endpoint.details.modules.powerUser |  | boolean |
+| bitdefender.endpoint.details.modules.relay |  | boolean |
+| bitdefender.endpoint.details.modules.remoteEnginesScanning |  | boolean |
+| bitdefender.endpoint.details.modules.riskManagement |  | boolean |
+| bitdefender.endpoint.details.modules.sandboxAnalyzer |  | boolean |
+| bitdefender.endpoint.details.movingInfo.destinationCompanyName | Destination company name for an in-progress transfer. | keyword |
+| bitdefender.endpoint.details.movingInfo.state | Inter-company transfer state. | long |
+| bitdefender.endpoint.details.operatingSystemVersion | Operating system name and version reported by GravityZone. | keyword |
+| bitdefender.endpoint.details.policy.applied | Whether the policy is currently applied. | boolean |
+| bitdefender.endpoint.details.policy.id | Identifier of the active security policy. | keyword |
+| bitdefender.endpoint.details.policy.name | Name of the active security policy. | keyword |
+| bitdefender.endpoint.details.productOutdated | Vendor-provided security agent update status. | boolean |
+| bitdefender.endpoint.details.publicIp | Public IP address. | ip |
+| bitdefender.endpoint.details.riskScore.appVulnerabilities | Application vulnerability contribution percentage. | keyword |
+| bitdefender.endpoint.details.riskScore.humanRisks | Human risk contribution percentage. | keyword |
+| bitdefender.endpoint.details.riskScore.impact | Risk impact level. | keyword |
+| bitdefender.endpoint.details.riskScore.misconfigurations | Misconfiguration contribution percentage. | keyword |
+| bitdefender.endpoint.details.riskScore.value | Overall risk score percentage. | keyword |
+| bitdefender.endpoint.details.securityServer | Whether the endpoint is a GravityZone Security Server. | boolean |
+| bitdefender.endpoint.details.ssid | Active Directory SID of the endpoint. | keyword |
+| bitdefender.endpoint.id | Stable GravityZone network inventory item identifier. | keyword |
+| bitdefender.endpoint.lastSuccessfulScan.date | Time of the last successful scan. | date |
+| bitdefender.endpoint.lastSuccessfulScan.name | Name of the last successful scan. | keyword |
+| bitdefender.endpoint.manageAiSpm | Whether AI Security Posture Management applies to the inventory item. | boolean |
+| bitdefender.endpoint.name | Name of the endpoint or container. | keyword |
+| bitdefender.endpoint.parentId | Identifier of the immediate parent inventory container. | keyword |
+| bitdefender.endpoint.type | Network inventory item type. Values emitted by this stream are 5 (computer), 6 (virtual machine), 7 (EC2 instance), and 16 (container). | long |
+| container.id | Unique container id. | keyword |
+| container.name | Container name. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| entity.id | A unique identifier for the entity. When multiple identifiers exist, this should be the most stable and commonly used identifier that: 1) persists across the entity's lifecycle, 2) ensures uniqueness within its scope, 3) is commonly used for queries and correlation, and 4) is readily available in most observations (logs/events). For entities with dedicated field sets (for example, host, user), this value should match the corresponding \*.id field. Alternative identifiers (for example, ARNs values in AWS, URLs) can be preserved in the raw field. | keyword |
+| entity.last_seen_timestamp | Indicates the date/time when this entity was last "seen," usually based upon the last event/log that is initiated by this entity. | date |
+| entity.name | The name of the entity. The keyword field enables exact matches for filtering and aggregations, while the text field enables full-text search. For entities with dedicated field sets (for example, `host`), this field should mirrors the corresponding \*.name value. | keyword |
+| entity.name.text | Multi-field of `entity.name`. | match_only_text |
+| entity.source | The module or integration that provided this entity data (similar to event.module). | keyword |
+| entity.type | A standardized high-level classification of the entity. This provides a normalized way to group similar entities across different providers or systems. Example values: `bucket`, `database`, `container`, `function`, `queue`, `host`, `user`, `application`, `session`, `cloud`, `orchestrator`, etc. If an entity is nested under a top-level namespace like `host` or `cloud`, or similar, its type array should include the matching value — for example, `host` or `cloud`. | keyword |
+| error.message | Error message. | match_only_text |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.entity.attributes.managed | Indicates whether the entity is managed by an external administration or control system. Typically applicable to Host and Service entities. | boolean |
+| host.entity.id | A unique identifier for the entity. When multiple identifiers exist, this should be the most stable and commonly used identifier that: 1) persists across the entity's lifecycle, 2) ensures uniqueness within its scope, 3) is commonly used for queries and correlation, and 4) is readily available in most observations (logs/events). For entities with dedicated field sets (for example, host, user), this value should match the corresponding \*.id field. Alternative identifiers (for example, ARNs values in AWS, URLs) can be preserved in the raw field. | keyword |
+| host.entity.last_seen_timestamp | Indicates the date/time when this entity was last "seen," usually based upon the last event/log that is initiated by this entity. | date |
+| host.entity.name | The name of the entity. The keyword field enables exact matches for filtering and aggregations, while the text field enables full-text search. For entities with dedicated field sets (for example, `host`), this field should mirrors the corresponding \*.name value. | keyword |
+| host.entity.name.text | Multi-field of `host.entity.name`. | match_only_text |
+| host.entity.source | The module or integration that provided this entity data (similar to event.module). | keyword |
+| host.entity.type | A standardized high-level classification of the entity. This provides a normalized way to group similar entities across different providers or systems. Example values: `bucket`, `database`, `container`, `function`, `queue`, `host`, `user`, `application`, `session`, `cloud`, `orchestrator`, etc. If an entity is nested under a top-level namespace like `host` or `cloud`, or similar, its type array should include the matching value — for example, `host` or `cloud`. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
+| host.os.full | Operating system name, including the version or code name. | keyword |
+| host.os.full.text | Multi-field of `host.os.full`. | match_only_text |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
+| host.risk.calculated_level | A risk classification level calculated by an internal system as part of entity analytics and entity risk scoring. | keyword |
+| host.risk.calculated_score | A risk classification score calculated by an internal system as part of entity analytics and entity risk scoring. | float |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| organization.id | Unique identifier for the organization. | keyword |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| tags | List of keywords used to tag each event. | keyword |
+
+
+An example event for `endpoint` looks as following:
+
+```json
+{
+    "@timestamp": "2026-11-02T21:50:21.327Z",
+    "agent": {
+        "ephemeral_id": "474f45cf-5246-4741-a9be-c424034096f8",
+        "id": "9df94d36-6611-4aef-a3c2-b2edd835ca9e",
+        "name": "elastic-agent-76679",
+        "type": "filebeat",
+        "version": "9.5.5"
+    },
+    "bitdefender": {
+        "endpoint": {
+            "companyId": "5e4d3c2b1a0987654321fedc",
+            "details": {
+                "firstSeen": "2026-10-01T10:00:00",
+                "fqdn": "example-host-01.example.local",
+                "groupId": "65b00000000000000000a001",
+                "ip": "192.0.2.21",
+                "isIsolated": false,
+                "isManaged": true,
+                "label": "Example Windows host",
+                "machineType": 1,
+                "macs": "00:00:5E:00:53:21",
+                "managedWithBest": true,
+                "modules": {
+                    "advancedThreatControl": true,
+                    "antimalware": true,
+                    "contentControl": true,
+                    "deviceControl": true,
+                    "edrSensor": true,
+                    "firewall": true,
+                    "hyperDetect": true,
+                    "networkAttackDefense": true,
+                    "patchManagement": true
+                },
+                "operatingSystemVersion": "Windows 11 Enterprise",
+                "policy": {
+                    "applied": true,
+                    "id": "65b00000000000000000c001",
+                    "name": "Example endpoint policy"
+                },
+                "productOutdated": false,
+                "publicIp": "198.51.100.21",
+                "riskScore": {
+                    "appVulnerabilities": "8%",
+                    "humanRisks": "2%",
+                    "impact": "Low",
+                    "misconfigurations": "10%",
+                    "value": "20%"
+                },
+                "ssid": "S-1-5-21-000000000-000000000-000000000-1001"
+            },
+            "id": "65b000000000000000000001",
+            "lastSuccessfulScan": {
+                "date": "2026-11-01T06:00:00.000Z",
+                "name": "Scheduled scan"
+            },
+            "name": "example-host-01",
+            "parentId": "65b00000000000000000a001",
+            "type": 5
+        }
+    },
+    "data_stream": {
+        "dataset": "bitdefender.endpoint",
+        "namespace": "71712",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.5.0"
+    },
+    "elastic_agent": {
+        "id": "9df94d36-6611-4aef-a3c2-b2edd835ca9e",
+        "snapshot": false,
+        "version": "9.5.5"
+    },
+    "entity": {
+        "id": "65b000000000000000000001",
+        "last_seen_timestamp": "2026-11-02T21:50:21.327Z",
+        "name": "example-host-01",
+        "source": "bitdefender_gravityzone",
+        "type": [
+            "host"
+        ]
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "host"
+        ],
+        "dataset": "bitdefender.endpoint",
+        "ingested": "2026-11-02T21:50:25Z",
+        "kind": "asset",
+        "module": "bitdefender",
+        "original": "{\"companyId\":\"5e4d3c2b1a0987654321fedc\",\"details\":{\"firstSeen\":\"2026-10-01T10:00:00\",\"fqdn\":\"example-host-01.example.local\",\"groupId\":\"65b00000000000000000a001\",\"ip\":\"192.0.2.21\",\"isIsolated\":false,\"isManaged\":true,\"label\":\"Example Windows host\",\"machineType\":1,\"macs\":[\"00:00:5E:00:53:21\"],\"managedWithBest\":true,\"modules\":{\"advancedThreatControl\":true,\"antimalware\":true,\"contentControl\":true,\"deviceControl\":true,\"edrSensor\":true,\"firewall\":true,\"hyperDetect\":true,\"networkAttackDefense\":true,\"patchManagement\":true},\"operatingSystemVersion\":\"Windows 11 Enterprise\",\"policy\":{\"applied\":true,\"id\":\"65b00000000000000000c001\",\"name\":\"Example endpoint policy\"},\"productOutdated\":false,\"publicIp\":\"198.51.100.21\",\"riskScore\":{\"appVulnerabilities\":\"8%\",\"humanRisks\":\"2%\",\"impact\":\"Low\",\"misconfigurations\":\"10%\",\"value\":\"20%\"},\"ssid\":\"S-1-5-21-000000000-000000000-000000000-1001\"},\"id\":\"65b000000000000000000001\",\"lastSuccessfulScan\":{\"date\":\"2026-11-01T06:00:00+00:00\",\"name\":\"Scheduled scan\"},\"name\":\"example-host-01\",\"parentId\":\"65b00000000000000000a001\",\"type\":5}",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "domain": "example.local",
+        "entity": {
+            "attributes": {
+                "managed": true
+            },
+            "id": "65b000000000000000000001",
+            "last_seen_timestamp": "2026-11-02T21:50:21.327Z",
+            "name": "example-host-01",
+            "source": "bitdefender_gravityzone",
+            "type": [
+                "host"
+            ]
+        },
+        "hostname": "example-host-01.example.local",
+        "id": "65b000000000000000000001",
+        "ip": [
+            "192.0.2.21",
+            "198.51.100.21"
+        ],
+        "mac": [
+            "00-00-5E-00-53-21"
+        ],
+        "name": "example-host-01",
+        "os": {
+            "full": "Windows 11 Enterprise",
+            "name": "Windows",
+            "platform": "windows",
+            "type": "windows"
+        },
+        "risk": {
+            "calculated_level": "Low",
+            "calculated_score": 20
+        },
+        "type": "computer"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "GravityZone",
+        "vendor": "Bitdefender"
+    },
+    "organization": {
+        "id": "5e4d3c2b1a0987654321fedc"
+    },
+    "related": {
+        "hosts": [
+            "example-host-01",
+            "example-host-01.example.local"
+        ],
+        "ip": [
+            "192.0.2.21",
+            "198.51.100.21"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded"
+    ]
+}
+```
+
+### Log stream accounts
+
+The account dataset collects Control Center users as entity snapshots across all pages on each polling interval, including roles, enabled permissions, authentication method, and MFA state. When authenticated with a Personal API key (`basic`), the cycle also calls `getAccountDetails` once to include the key owner's account.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| bitdefender.account.accountLockdown | Whether the account locks after repeated failed sign-in attempts. | boolean |
+| bitdefender.account.authenticationMethod | GravityZone account authentication method code. | long |
+| bitdefender.account.companyId | Identifier of the company to which the account belongs. | keyword |
+| bitdefender.account.companyName | Name of the company to which the account belongs. | keyword |
+| bitdefender.account.email | Email address used to sign in to the Control Center account. | keyword |
+| bitdefender.account.hasOwnCompanyInTargets | Whether the account can manage its own top-level company. | boolean |
+| bitdefender.account.id | Stable GravityZone Control Center account identifier. | keyword |
+| bitdefender.account.passwordLifetime | Password expiration policy in days. | long |
+| bitdefender.account.phoneNumber.countryCode | Telephone country calling code. | keyword |
+| bitdefender.account.phoneNumber.subscriberNumber | Telephone subscriber number. | keyword |
+| bitdefender.account.profile.fullName | Full name associated with the account. | keyword |
+| bitdefender.account.profile.landingPage | Default Control Center landing page. | keyword |
+| bitdefender.account.profile.language | Control Center interface language. | keyword |
+| bitdefender.account.profile.timezone | Account timezone. | keyword |
+| bitdefender.account.rights.companyManager |  | boolean |
+| bitdefender.account.rights.manageCompanies |  | boolean |
+| bitdefender.account.rights.manageInventory |  | boolean |
+| bitdefender.account.rights.manageMspTrialFeatures |  | boolean |
+| bitdefender.account.rights.manageNetworks |  | boolean |
+| bitdefender.account.rights.managePoliciesRead |  | boolean |
+| bitdefender.account.rights.managePoliciesWrite |  | boolean |
+| bitdefender.account.rights.manageRemoteShell |  | boolean |
+| bitdefender.account.rights.manageReports |  | boolean |
+| bitdefender.account.rights.manageServiceAccounts |  | boolean |
+| bitdefender.account.rights.manageUsers |  | boolean |
+| bitdefender.account.role | GravityZone account role code. | long |
+| bitdefender.account.targetIds | Inventory target identifiers assigned to the account. | keyword |
+| bitdefender.account.twoFactorAuthenticationStatus | Whether two-factor authentication is enabled. | boolean |
+| bitdefender.account.userName | Account login name returned by GravityZone On-Premises deployments. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| entity.id | A unique identifier for the entity. When multiple identifiers exist, this should be the most stable and commonly used identifier that: 1) persists across the entity's lifecycle, 2) ensures uniqueness within its scope, 3) is commonly used for queries and correlation, and 4) is readily available in most observations (logs/events). For entities with dedicated field sets (for example, host, user), this value should match the corresponding \*.id field. Alternative identifiers (for example, ARNs values in AWS, URLs) can be preserved in the raw field. | keyword |
+| entity.last_seen_timestamp | Indicates the date/time when this entity was last "seen," usually based upon the last event/log that is initiated by this entity. | date |
+| entity.name | The name of the entity. The keyword field enables exact matches for filtering and aggregations, while the text field enables full-text search. For entities with dedicated field sets (for example, `host`), this field should mirrors the corresponding \*.name value. | keyword |
+| entity.name.text | Multi-field of `entity.name`. | match_only_text |
+| entity.source | The module or integration that provided this entity data (similar to event.module). | keyword |
+| entity.type | A standardized high-level classification of the entity. This provides a normalized way to group similar entities across different providers or systems. Example values: `bucket`, `database`, `container`, `function`, `queue`, `host`, `user`, `application`, `session`, `cloud`, `orchestrator`, etc. If an entity is nested under a top-level namespace like `host` or `cloud`, or similar, its type array should include the matching value — for example, `host` or `cloud`. | keyword |
+| error.message | Error message. | match_only_text |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| organization.id | Unique identifier for the organization. | keyword |
+| organization.name | Organization name. | keyword |
+| organization.name.text | Multi-field of `organization.name`. | match_only_text |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
+| user.email | User email address. | keyword |
+| user.entity.attributes.mfa_enabled | Indicates whether multi-factor authentication is enabled for this entity. Typically applicable to User entities. | boolean |
+| user.entity.attributes.permissions | Action-level permissions associated with this entity (not roles or groups). Typically applicable to User, Host, and Service entities. | keyword |
+| user.entity.id | A unique identifier for the entity. When multiple identifiers exist, this should be the most stable and commonly used identifier that: 1) persists across the entity's lifecycle, 2) ensures uniqueness within its scope, 3) is commonly used for queries and correlation, and 4) is readily available in most observations (logs/events). For entities with dedicated field sets (for example, host, user), this value should match the corresponding \*.id field. Alternative identifiers (for example, ARNs values in AWS, URLs) can be preserved in the raw field. | keyword |
+| user.entity.last_seen_timestamp | Indicates the date/time when this entity was last "seen," usually based upon the last event/log that is initiated by this entity. | date |
+| user.entity.name | The name of the entity. The keyword field enables exact matches for filtering and aggregations, while the text field enables full-text search. For entities with dedicated field sets (for example, `host`), this field should mirrors the corresponding \*.name value. | keyword |
+| user.entity.name.text | Multi-field of `user.entity.name`. | match_only_text |
+| user.entity.source | The module or integration that provided this entity data (similar to event.module). | keyword |
+| user.entity.type | A standardized high-level classification of the entity. This provides a normalized way to group similar entities across different providers or systems. Example values: `bucket`, `database`, `container`, `function`, `queue`, `host`, `user`, `application`, `session`, `cloud`, `orchestrator`, etc. If an entity is nested under a top-level namespace like `host` or `cloud`, or similar, its type array should include the matching value — for example, `host` or `cloud`. | keyword |
+| user.full_name | User's full name, if available. | keyword |
+| user.full_name.text | Multi-field of `user.full_name`. | match_only_text |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
+| user.roles | Array of user roles at the time of the event. | keyword |
+
+
+An example event for `account` looks as following:
+
+```json
+{
+    "@timestamp": "2026-11-02T21:35:06.445Z",
+    "agent": {
+        "ephemeral_id": "e5c177b2-16b0-4ad5-a790-bd1a2c6d6faa",
+        "id": "3675909e-74c6-4939-94e0-2686e044c3ce",
+        "name": "elastic-agent-11206",
+        "type": "filebeat",
+        "version": "9.5.5"
+    },
+    "bitdefender": {
+        "account": {
+            "accountLockdown": false,
+            "authenticationMethod": 0,
+            "companyId": "5e4d3c2b1a0987654321fedc",
+            "companyName": "Example Corp",
+            "email": "analyst@example.com",
+            "id": "65c000000000000000000011",
+            "passwordLifetime": 90,
+            "profile": {
+                "fullName": "Alex Morgan",
+                "landingPage": "dashboardV2",
+                "language": "en_US",
+                "timezone": "UTC"
+            },
+            "rights": {
+                "companyManager": false,
+                "manageCompanies": false,
+                "manageInventory": true,
+                "manageNetworks": true,
+                "managePoliciesRead": true,
+                "managePoliciesWrite": true,
+                "manageRemoteShell": true,
+                "manageReports": true,
+                "manageServiceAccounts": false,
+                "manageUsers": false
+            },
+            "role": 2,
+            "twoFactorAuthenticationStatus": true
+        }
+    },
+    "data_stream": {
+        "dataset": "bitdefender.account",
+        "namespace": "70579",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.5.0"
+    },
+    "elastic_agent": {
+        "id": "3675909e-74c6-4939-94e0-2686e044c3ce",
+        "snapshot": false,
+        "version": "9.5.5"
+    },
+    "entity": {
+        "id": "65c000000000000000000011",
+        "last_seen_timestamp": "2026-11-02T21:35:06.445Z",
+        "name": "analyst@example.com",
+        "source": "Bitdefender GravityZone",
+        "type": [
+            "user"
+        ]
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "iam"
+        ],
+        "dataset": "bitdefender.account",
+        "ingested": "2026-11-02T21:35:10Z",
+        "kind": "asset",
+        "module": "bitdefender",
+        "original": "{\"accountLockdown\":false,\"authenticationMethod\":0,\"companyId\":\"5e4d3c2b1a0987654321fedc\",\"companyName\":\"Example Corp\",\"email\":\"analyst@example.com\",\"id\":\"65c000000000000000000011\",\"passwordLifetime\":90,\"profile\":{\"fullName\":\"Alex Morgan\",\"landingPage\":\"dashboardV2\",\"language\":\"en_US\",\"timezone\":\"UTC\"},\"rights\":{\"companyManager\":false,\"manageCompanies\":false,\"manageInventory \":true,\"manageNetworks\":true,\"managePoliciesRead\":true,\"managePoliciesWrite\":true,\"manageRemoteShell\":true,\"manageReports\":true,\"manageServiceAccounts\":false,\"manageUsers\":false},\"role\":2,\"twoFactorAuthenticationStatus\":true}",
+        "type": [
+            "user",
+            "info"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "GravityZone",
+        "vendor": "Bitdefender"
+    },
+    "organization": {
+        "id": "5e4d3c2b1a0987654321fedc",
+        "name": "Example Corp"
+    },
+    "related": {
+        "user": [
+            "65c000000000000000000011",
+            "analyst@example.com",
+            "Alex Morgan"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded"
+    ],
+    "user": {
+        "email": "analyst@example.com",
+        "entity": {
+            "attributes": {
+                "mfa_enabled": true,
+                "permissions": [
+                    "manage_networks",
+                    "manage_inventory",
+                    "manage_policies_read",
+                    "manage_policies_write",
+                    "manage_reports",
+                    "manage_remote_shell"
+                ]
+            },
+            "id": "65c000000000000000000011",
+            "last_seen_timestamp": "2026-11-02T21:35:06.445Z",
+            "name": "analyst@example.com",
+            "source": "Bitdefender GravityZone",
+            "type": [
+                "user"
+            ]
+        },
+        "full_name": "Alex Morgan",
+        "id": "65c000000000000000000011",
+        "name": "analyst@example.com",
+        "roles": [
+            "network_administrator"
+        ]
+    }
+}
+```
+
+### Log stream blocklist
+
+The blocklist dataset collects full snapshots of active EDR hash, path, and connection blocklist rules across all pages on each polling interval. An empty response is valid when the company has no active blocklist rules.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| bitdefender.blocklist.company.id | GravityZone company identifier. | keyword |
+| bitdefender.blocklist.company.name | GravityZone company name. | keyword |
+| bitdefender.blocklist.created | Source date and time when the item was added to the blocklist. GravityZone does not document a timezone for this value, so it is preserved without date normalization. | keyword |
+| bitdefender.blocklist.details.algorithm | Hash algorithm used for a hash rule. | keyword |
+| bitdefender.blocklist.details.commandLine | Command line constraint of a connection rule. | wildcard |
+| bitdefender.blocklist.details.direction | Network direction constrained by a connection rule. | keyword |
+| bitdefender.blocklist.details.directlyConnected.enable | Whether directly connected MAC address matching is enabled. | boolean |
+| bitdefender.blocklist.details.directlyConnected.remoteMac | Remote MAC addresses constrained by the connection rule. | keyword |
+| bitdefender.blocklist.details.file.name | Name of the file corresponding to the hash. | keyword |
+| bitdefender.blocklist.details.hash | File hash used by a hash or connection rule. | keyword |
+| bitdefender.blocklist.details.ipVersion | IP version constrained by a connection rule. | keyword |
+| bitdefender.blocklist.details.localAddress.any | Whether the connection rule matches any local address. | boolean |
+| bitdefender.blocklist.details.localAddress.ipMask | Local IP address or CIDR mask constrained by the rule. | keyword |
+| bitdefender.blocklist.details.localAddress.portRange | Local port or port range constrained by the rule. | keyword |
+| bitdefender.blocklist.details.operatingSystems | Operating systems to which a connection rule applies. | keyword |
+| bitdefender.blocklist.details.path | Application path used by a path or connection rule. | keyword |
+| bitdefender.blocklist.details.protocol | IP protocol constrained by a connection rule. | keyword |
+| bitdefender.blocklist.details.remoteAddress.any | Whether the connection rule matches any remote address. | boolean |
+| bitdefender.blocklist.details.remoteAddress.ipMask | Remote IP address or CIDR mask constrained by the rule. | keyword |
+| bitdefender.blocklist.details.remoteAddress.portRange | Remote port or port range constrained by the rule. | keyword |
+| bitdefender.blocklist.details.ruleId | Internal identifier of a connection rule. | keyword |
+| bitdefender.blocklist.details.ruleName | Display name of a connection rule. | keyword |
+| bitdefender.blocklist.id | Stable GravityZone blocklist item identifier. | keyword |
+| bitdefender.blocklist.owner.id | GravityZone user identifier. | keyword |
+| bitdefender.blocklist.owner.userName | Email address of the user who created the item. | keyword |
+| bitdefender.blocklist.source.description | Description supplied when the blocklist item was added. | keyword |
+| bitdefender.blocklist.source.type | Origin of the blocklist item. | keyword |
+| bitdefender.blocklist.type | Blocklist rule type, such as hash, path, or connection. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.id | Unique ID to describe the event. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| file.hash.md5 | MD5 hash. | keyword |
+| file.hash.sha256 | SHA256 hash. | keyword |
+| file.name | Name of the file including the extension, without the directory. | keyword |
+| file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
+| file.path.text | Multi-field of `file.path`. | match_only_text |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| organization.id | Unique identifier for the organization. | keyword |
+| organization.name | Organization name. | keyword |
+| organization.name.text | Multi-field of `organization.name`. | match_only_text |
+| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
+| rule.name | The name of the rule or signature generating the event. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
+| user.email | User email address. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
+
+
+An example event for `blocklist` looks as following:
+
+```json
+{
+    "@timestamp": "2026-11-02T21:58:30.081Z",
+    "agent": {
+        "ephemeral_id": "153870d9-924c-4f45-9e4e-56f13064d64a",
+        "id": "8d8df243-b8d9-4526-a136-96128b7d83d0",
+        "name": "elastic-agent-31119",
+        "type": "filebeat",
+        "version": "9.5.5"
+    },
+    "bitdefender": {
+        "blocklist": {
+            "company": {
+                "id": "5e4d3c2b1a0987654321fedc",
+                "name": "Example Corp"
+            },
+            "created": "2026-08-04T16:09:52",
+            "details": {
+                "algorithm": "sha256",
+                "file": {
+                    "name": "example-threat.exe"
+                },
+                "hash": "1e0905327f443c54aa617e2ff323067c985428e5566886f2aa8296cddfe6ddf9"
+            },
+            "id": "6a7100000000000000000001",
+            "owner": {
+                "id": "69e700000000000000000001",
+                "userName": "alice.johnson@example.com"
+            },
+            "source": {
+                "description": "Synthetic hash rule",
+                "type": "incident"
+            },
+            "type": "hash"
+        }
+    },
+    "data_stream": {
+        "dataset": "bitdefender.blocklist",
+        "namespace": "50506",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.5.0"
+    },
+    "elastic_agent": {
+        "id": "8d8df243-b8d9-4526-a136-96128b7d83d0",
+        "snapshot": false,
+        "version": "9.5.5"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "threat",
+            "configuration"
+        ],
+        "dataset": "bitdefender.blocklist",
+        "id": "6a7100000000000000000001",
+        "ingested": "2026-11-02T21:58:33Z",
+        "kind": "state",
+        "module": "bitdefender",
+        "original": "{\"company\":{\"id\":\"5e4d3c2b1a0987654321fedc\",\"name\":\"Example Corp\"},\"created\":\"2026-08-04T16:09:52\",\"details\":{\"algorithm\":\"sha256\",\"file\":{\"name\":\"example-threat.exe\"},\"hash\":\"1e0905327f443c54aa617e2ff323067c985428e5566886f2aa8296cddfe6ddf9\"},\"id\":\"6a7100000000000000000001\",\"owner\":{\"id\":\"69e700000000000000000001\",\"userName\":\"alice.johnson@example.com\"},\"source\":{\"description\":\"Synthetic hash rule\",\"type\":\"incident\"},\"type\":\"hash\"}",
+        "type": [
+            "indicator",
+            "info"
+        ]
+    },
+    "file": {
+        "hash": {
+            "sha256": "1e0905327f443c54aa617e2ff323067c985428e5566886f2aa8296cddfe6ddf9"
+        },
+        "name": "example-threat.exe"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "GravityZone",
+        "vendor": "Bitdefender"
+    },
+    "organization": {
+        "id": "5e4d3c2b1a0987654321fedc",
+        "name": "Example Corp"
+    },
+    "related": {
+        "hash": [
+            "1e0905327f443c54aa617e2ff323067c985428e5566886f2aa8296cddfe6ddf9"
+        ],
+        "user": [
+            "69e700000000000000000001",
+            "alice.johnson@example.com"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded"
+    ],
+    "user": {
+        "email": "alice.johnson@example.com",
+        "id": "69e700000000000000000001",
+        "name": "alice.johnson@example.com"
+    }
 }
 ```
