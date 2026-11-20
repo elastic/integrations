@@ -501,71 +501,75 @@ processors:
       field: json.symantec_ep_hardware_keys
       target_field: tenable_io.asset.symantec_ep_hardware_keys
       ignore_missing: true
+  - script:
+      tag: script_collect_nested_dates_8a955914
+      description: Collect present nested date values so the date processor only runs on values that exist.
+      lang: painless
+      source: |
+        void collect(List out, def items, String list, String key) {
+          if (!(items instanceof List)) {
+            return;
+          }
+          for (int i = 0; i < items.size(); i++) {
+            def item = items.get(i);
+            if (!(item instanceof Map)) {
+              continue;
+            }
+            def value = item.get(key);
+            if (value == null || value == '') {
+              item.remove(key);
+              continue;
+            }
+            out.add(['list': list, 'index': i, 'key': key, 'value': value]);
+          }
+        }
+        List dates = new ArrayList();
+        collect(dates, ctx.json?.sources, 'sources', 'first_seen');
+        collect(dates, ctx.json?.sources, 'sources', 'last_seen');
+        collect(dates, ctx.json?.tags, 'tags', 'added_at');
+        if (!dates.isEmpty()) {
+          ctx._temp_ = ['nested_dates': dates];
+        }
   - foreach:
-      tag: foreach_json_sources_7e16efb0
-      field: json.sources
-      if: ctx.json?.sources instanceof List
+      tag: foreach_temp_nested_dates_d348b5b0
+      field: _temp_.nested_dates
+      if: ctx._temp_?.nested_dates instanceof List
       processor:
         date:
-          tag: date_ingest_value_first_seen_to_ingest_value_first_seen_af3ec520
-          field: _ingest._value.first_seen
-          target_field: _ingest._value.first_seen
+          tag: date_ingest_value_value_to_ingest_value_value_24ca70da
+          field: _ingest._value.value
+          target_field: _ingest._value.value
           formats:
             - ISO8601
           on_failure:
             - remove:
-                tag: remove_ingest_value_first_seen_52042d82
-                field: _ingest._value.first_seen
+                tag: remove_ingest_value_value_e2865be4
+                field: _ingest._value.value
                 ignore_missing: true
             - append:
-                tag: append_error_message_38a077e4
+                tag: append_error_message_76d3c1ac
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
-  - foreach:
-      tag: foreach_json_sources_7a5a76e0
-      field: json.sources
-      if: ctx.json?.sources instanceof List
-      processor:
-        date:
-          tag: date_ingest_value_last_seen_to_ingest_value_last_seen_2808395c
-          field: _ingest._value.last_seen
-          target_field: _ingest._value.last_seen
-          formats:
-            - ISO8601
-          on_failure:
-            - remove:
-                tag: remove_ingest_value_last_seen_8e54ef27
-                field: _ingest._value.last_seen
-                ignore_missing: true
-            - append:
-                tag: append_error_message_e99bffec
-                field: error.message
-                value: '{{{_ingest.on_failure_message}}}'
+  - script:
+      tag: script_write_back_nested_dates_5ffa4275
+      description: Write parsed nested date values back to their source objects.
+      lang: painless
+      if: ctx._temp_?.nested_dates instanceof List
+      source: |
+        for (def d : ctx._temp_.nested_dates) {
+          Map item = ctx.json[d.list][d.index];
+          if (d.value == null) {
+            item.remove(d.key);
+          } else {
+            item[d.key] = d.value;
+          }
+        }
+        ctx.remove('_temp_');
   - rename:
       tag: rename_json_sources_to_tenable_io_asset_sources_3f2a7c1d
       field: json.sources
       target_field: tenable_io.asset.sources
       ignore_missing: true
-  - foreach:
-      tag: foreach_json_tags_6ce6b7dc
-      field: json.tags
-      if: ctx.json?.tags instanceof List
-      processor:
-        date:
-          tag: date_ingest_value_added_at_to_ingest_value_added_at_904922b5
-          field: _ingest._value.added_at
-          target_field: _ingest._value.added_at
-          formats:
-            - ISO8601
-          on_failure:
-            - remove:
-                tag: remove_ingest_value_added_at_06e59eac
-                field: _ingest._value.added_at
-                ignore_missing: true
-            - append:
-                tag: append_error_message_38d86ede
-                field: error.message
-                value: '{{{_ingest.on_failure_message}}}'
   - rename:
       tag: rename_json_tags_to_tenable_io_asset_tags_9980b5d0
       field: json.tags

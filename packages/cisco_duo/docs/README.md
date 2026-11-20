@@ -4,8 +4,9 @@ The Cisco Duo integration collects and parses data from the [Cisco Duo Admin API
 
 ## Elastic Managed enabled integration
 
-Elastic Managed integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Elastic Managed integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
-Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it.
+
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ## Compatibility
 
@@ -34,7 +35,7 @@ The Cisco Duo integration collects logs for the following types of events.
 - [**Offline Enrollment Logs**](https://duo.com/docs/adminapi#offline-enrollment-logs)
 - [**Summary**](https://duo.com/docs/adminapi#retrieve-summary)
 - [**Telephony Logs**](https://duo.com/docs/adminapi#telephony-logs)
-- [**Telephony Logs (legacy)**](https://duo.com/docs/adminapi#telephony-logs-(legacy-v1))
+- [**Telephony Logs (v1)**](https://duo.com/docs/adminapi#telephony-logs-(legacy-v1)) - **DEPRECATED**, use Telephony Logs instead
 - [**Trust Monitor**](https://duo.com/docs/adminapi#trust-monitor)
 - [**Users**](https://duo.com/docs/adminapi#retrieve-users)
 
@@ -43,6 +44,8 @@ The Cisco Duo integration collects logs for the following types of events.
 Cisco Duo has implemented v2 handlers for some endpoints. In these cases, the API v1 handler remains supported, but will be limited or deprecated in the future.
 
 From data streams listed above, v2 handlers are supported for Activity, Authentication and Telephony Logs at the moment. It is recommended to migrate data streams to the v2 endpoints when they become available.
+
+The **Telephony (v1)** data stream, which collects Telephony logs from the v1 API endpoint, is **DEPRECATED** and will be removed in a future release. Deactivate it and instead enable **Telephony v2** in the **Collect Cisco Duo logs via API v2** input.
 
 ## Configuration
 
@@ -789,9 +792,9 @@ An example event for `summary` looks as following:
 | log.offset | Log offset | long |
 
 
-### Telephony
+### **DEPRECATED:** Telephony
 
-This is the `telephony` dataset.
+This is the `telephony` dataset. It is deprecated in favour of the `telephony_v2` dataset below.
 
 An example event for `telephony` looks as following:
 

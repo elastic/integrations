@@ -41,6 +41,13 @@ processors:
       tag: json_event_original_to_misp_attribute_0492fdd6
       field: event.original
       target_field: misp.attribute
+  # Set by the input in refetch mode. MISP computes decay scores at query time without changing the
+  # attribute, so the refetch cycle must be part of the _id for a refetched copy to be indexed.
+  - rename:
+      tag: rename_misp_attribute_daily_refetch_at_db754d4a
+      field: misp.attribute.daily_refetch_at
+      target_field: _tmp.daily_refetch_at
+      ignore_missing: true
   - fingerprint:
       tag: fingerprint_to_id_cc5fdf8d
       fields:
@@ -48,6 +55,7 @@ processors:
         - misp.attribute.timestamp
         - misp.attribute.uuid
         - misp.attribute.Event.uuid
+        - _tmp.daily_refetch_at
       target_field: "_id"
       ignore_missing: true
   - set:

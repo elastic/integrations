@@ -1,0 +1,112 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a process running from a temporary or user-writable directory, or a script interpreter executing a payload from such a directory, followed by a network connection to an AWS identity, secrets, or management control plane endpoint. This detects credential abuse performed through an AWS SDK such as boto3, aws-sdk-js, or the Go SDK rather than through the aws command line binary. Rules that key on the CLI process name are bypassed entirely by SDK based tooling, which is what most post exploitation malware and supply chain stealers actually use, so this rule is intended as the name independent complement to them.",
+        "false_positives": [
+            "Build systems and CI runners frequently compile or download binaries into temporary directories and then make AWS API calls as part of integration tests. Exclude known runner paths and restrict to interactive or production hosts if alert volume is high."
+        ],
+        "from": "now-9m",
+        "history_window_start": "now-5d",
+        "index": [
+            "logs-endpoint.events.network-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS Control Plane Access by Suspicious Process",
+        "new_terms_fields": [
+            "host.id",
+            "process.executable"
+        ],
+        "note": "## Triage and analysis\n\n### Investigating AWS Control Plane Access by Suspicious Process\n\nThis rule detects a process running from a temporary or user-writable directory, or a script interpreter executing a payload from such a path, followed by a DNS lookup for an AWS identity or secrets management endpoint. This pattern is characteristic of SDK-based credential theft and post-exploitation tooling that bypasses CLI-name-based rules by calling the AWS API directly via boto3, aws-sdk-js, or similar libraries.\n\n### Possible investigation steps\n\n- Examine the process executable path and command line to determine if it is a known tool or malicious payload.\n- Identify the parent process to understand how the suspicious process was spawned.\n- Review the DNS queries and network connections made by the process to determine which AWS control plane services were contacted.\n- Query AWS CloudTrail for API calls made around the same time from the host's source IP to identify what actions were taken with any obtained credentials.\n- Check for lateral movement or persistence artifacts on the affected host.\n\n### False positive analysis\n\n- Build and CI systems that compile binaries into /tmp or run integration tests that make real AWS API calls will trigger this rule. Exclude known runner paths via `process.executable` exceptions in the rule or as exceptions.\n- Development environments where engineers routinely run scripts from temporary directories against AWS may generate benign alerts.\n\n### Response and remediation\n\n- Initiate the incident response process based on the outcome of the triage.\n- Isolate the affected host to prevent further post-compromise activity.\n- Revoke and rotate any AWS credentials that may have been accessed or harvested by the process.\n- Review CloudTrail logs for API actions performed using the compromised credentials and assess the blast radius.\n- Scan the host for additional malicious scripts or payloads in user-writable directories.\n",
+        "query": "event.category : network and host.os.type : (linux or macos or windows) and\ndns.question.name : (\n  iam.amazonaws.com or sts.amazonaws.com or bedrock*.amazonaws.com or kms.*.amazonaws.com or organizations.*.amazonaws.com or\n  portal.sso.*.amazonaws.com or secretsmanager.*.amazonaws.com or ssm.*.amazonaws.com or sso.*.amazonaws.com or\n  sts.*.amazonaws.com\n) and\nprocess.executable : (\n  (\n    *\\\\ProgramData\\\\* or *\\\\Users\\\\*\\\\AppData\\\\Local\\\\Temp\\\\* or *\\\\Users\\\\Public\\\\* or *\\\\Windows\\\\Temp\\\\* or\n    /Users/*/Public/* or /Users/Shared/* or /dev/shm/* or /private/tmp/* or /run/* or /tmp/* or /var/run/* or\n    /var/tmp/* or /var/www/*\n  ) and\n  not (/opt/actions-runner/* or /tmp/cargo-install* or /tmp/go-build* or /tmp/pytest-*)\n)\n",
+        "references": [
+            "https://thehackernews.com/2024/11/malicious-pypi-package-fabrice-found.html",
+            "https://www.sentinelone.com/labs/cloudy-with-a-chance-of-credentials-aws-targeting-cred-stealer-expands-to-azure-gcp/",
+            "https://www.sysdig.com/blog/ai-assisted-cloud-intrusion-achieves-admin-access-in-8-minutes",
+            "https://unit42.paloaltonetworks.com/teamtnt-operations-cloud-environments/",
+            "https://www.sysdig.com/blog/cloud-breach-terraform-data-theft"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": ">=9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "dns.question.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "ffba7c69-13b3-4b6d-a747-2947e73c967c",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the\nElastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can\n  click the \"Existing hosts\" tab and select an existing policy instead.\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and install Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "Domain: Cloud",
+            "Platform: AWS",
+            "Platform: Linux",
+            "Platform: macOS",
+            "Platform: Windows",
+            "OS: Linux",
+            "OS: macOS",
+            "OS: Windows",
+            "Service: AWS IAM",
+            "Service: AWS STS",
+            "Service: AWS SSM",
+            "Service: AWS Secrets Manager",
+            "Service: AWS KMS",
+            "Service: AWS Bedrock",
+            "Tactic: Discovery",
+            "Data Source: Elastic Defend",
+            "Rule Type: New Terms",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1526",
+                        "name": "Cloud Service Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1526/"
+                    },
+                    {
+                        "id": "T1580",
+                        "name": "Cloud Infrastructure Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1580/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "ffba7c69-13b3-4b6d-a747-2947e73c967c_1",
+    "type": "security-rule"
+}

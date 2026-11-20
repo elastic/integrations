@@ -8,6 +8,6 @@ mapped_pages:
 Refer to the following pages for some tips and recommendations for building integrations.
 
 * [General guidelines](/extend/general-guidelines.md)
-* [Dashboard guidelines](/extend/dashboard-guidelines.md)
+* [](/extend/dashboard-guidelines.md)
 * [Documentation guidelines](/extend/documentation-guidelines.md)
 * [TSDS guidelines](/extend/developer-tsds-guidelines.md)

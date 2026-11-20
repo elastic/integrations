@@ -1,0 +1,116 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects a Microsoft Foundry chat, sent through API Management, where Azure sets jailbreak.detected on the prompt. The flag is on the prompt filter when the call is allowed through, and on the error body when the filter blocks the call.",
+        "false_positives": [
+            "Approved prompt-security tests that send known jailbreak strings, such as DAN or \"ignore previous instructions\". Exclude that source IP or API Management subscription."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "source.ip",
+                "azure.ai_foundry.properties.user_agent",
+                "azure.ai_foundry.properties.apim_subscription_id",
+                "azure.ai_foundry.properties.api_id",
+                "azure.ai_foundry.properties.operation_id",
+                "azure.ai_foundry.properties.backend_response_body.model",
+                "azure.ai_foundry.properties.backend_response_code",
+                "azure.ai_foundry.service_name",
+                "azure.resource.group",
+                "url.domain",
+                "url.path",
+                "source.geo.country_iso_code",
+                "source.geo.city_name",
+                "source.as.organization.name",
+                "azure.ai_foundry.properties.backend_request_body.messages.content",
+                "azure.ai_foundry.properties.backend_response_body.choices.message.content",
+                "azure.ai_foundry.properties.backend_response_body.prompt_filter_results.content_filter_results.jailbreak.detected",
+                "azure.ai_foundry.properties.backend_response_body.error.innererror.content_filter_result.jailbreak.detected",
+                "azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.jailbreak.detected"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Microsoft Foundry Jailbreak Detected",
+        "note": "## Triage and analysis\n\n### Investigating Microsoft Foundry Jailbreak Detected\n\nFoundry marked the prompt as a jailbreak. On a blocked call the flag is\nerror.innererror.content_filter_result.jailbreak.detected and the backend response code is 400. On a call that was\nallowed through, the flag is prompt_filter_results.content_filter_results.jailbreak.detected and the response code\nis 200. A 200 with the flag set means the filter annotated the prompt and still sent it to the model.\n\n#### Possible investigation steps\n\n- Read the prompt on the alert. Confirm it is an instruction to ignore or override the model's rules.\n- Check backend_response_code. 400 means the filter blocked the call. 200 means the prompt was annotated and the\n  model still answered. Read the assistant reply on a 200.\n- Identify the caller from source.ip, user agent, and apim_subscription_id, and the target from the model and URL path.\n- Look for other GatewayLogs from the same IP or subscription in the same window, including repeated refusals.\n\n### False positive analysis\n\n- Red-team and application tests that deliberately send jailbreak prompts. Exclude that source IP or subscription.\n\n### Response and remediation\n\n- If the caller is not approved, disable or rotate the API Management subscription key and block the source IP.\n- On a 200, review the assistant reply for a bypassed instruction, and tighten the content filter from annotate to\n  block if this deployment should refuse jailbreak prompts.\n",
+        "query": "from logs-azure_ai_foundry.logs-* metadata _id, _version, _index\n| where\n    data_stream.dataset == \"azure_ai_foundry.logs\" and\n    azure.ai_foundry.category == \"GatewayLogs\" and\n    (\n        azure.ai_foundry.properties.backend_response_body.prompt_filter_results.content_filter_results.jailbreak.detected == true or\n        azure.ai_foundry.properties.backend_response_body.error.innererror.content_filter_result.jailbreak.detected == true or\n        azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.jailbreak.detected == true\n    )\n| keep\n    _id,\n    _version,\n    _index,\n    @timestamp,\n    source.ip,\n    azure.ai_foundry.properties.user_agent,\n    azure.ai_foundry.properties.apim_subscription_id,\n    azure.ai_foundry.properties.api_id,\n    azure.ai_foundry.properties.operation_id,\n    azure.ai_foundry.properties.backend_response_body.model,\n    azure.ai_foundry.properties.backend_response_code,\n    azure.ai_foundry.service_name,\n    azure.resource.group,\n    url.domain,\n    url.path,\n    source.geo.country_iso_code,\n    source.geo.city_name,\n    source.as.organization.name,\n    azure.ai_foundry.properties.backend_request_body.messages.content,\n    azure.ai_foundry.properties.backend_response_body.choices.message.content,\n    azure.ai_foundry.properties.backend_response_body.prompt_filter_results.content_filter_results.jailbreak.detected,\n    azure.ai_foundry.properties.backend_response_body.error.innererror.content_filter_result.jailbreak.detected,\n    azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.jailbreak.detected\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/azure_ai_foundry",
+            "https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/content-filter"
+        ],
+        "related_integrations": [
+            {
+                "package": "azure_ai_foundry",
+                "version": ">=0.2.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "azure.ai_foundry.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.jailbreak.detected",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "azure.ai_foundry.properties.backend_response_body.error.innererror.content_filter_result.jailbreak.detected",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "azure.ai_foundry.properties.backend_response_body.prompt_filter_results.content_filter_results.jailbreak.detected",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "a8eadd55-e6da-4df6-becd-910cd0da19f7",
+        "setup": "## Setup\n\nThis rule needs the Microsoft Foundry integration collecting Azure API Management GatewayLogs with the backend\nresponse body. jailbreak.detected is inside that body. Log the request body as well so the prompt is on the alert.\nFoundry RequestResponse logs do not carry this flag.\n\n- Use an API Management tier that emits resource logs. Developer or higher works. Consumption does not.\n- Send the GatewayLogs category to the Event Hub the integration reads.\n- Log the backend response body in API diagnostics. Log the request body to keep the prompt for triage.\n\nhttps://www.elastic.co/docs/reference/integrations/azure_ai_foundry\n",
+        "severity": "medium",
+        "tags": [
+            "Data Source: Microsoft Foundry",
+            "Use Case: Threat Detection",
+            "Mitre Atlas: AML.T0051",
+            "Mitre Atlas: AML.T0054",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Platform: Azure",
+            "Domain: Cloud",
+            "Domain: GenAI",
+            "Service: Azure API Management",
+            "Tactic: Defense Impairment"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0112",
+                    "name": "Defense Impairment",
+                    "reference": "https://attack.mitre.org/tactics/TA0112/"
+                },
+                "technique": [
+                    {
+                        "id": "T1685",
+                        "name": "Disable or Modify Tools",
+                        "reference": "https://attack.mitre.org/techniques/T1685/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 2
+    },
+    "id": "a8eadd55-e6da-4df6-becd-910cd0da19f7_2",
+    "type": "security-rule"
+}

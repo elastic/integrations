@@ -1,0 +1,742 @@
+---
+description: Pipeline for processing Compromised Credential Sighting logs.
+processors:
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: 9.3.0
+  - terminate:
+      description: error message set and no data to process.
+      tag: terminate_data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+
+  # Remove Agentless metadata fields as they can collide with ECS fields.
+  - remove:
+      description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+      tag: remove_agentless_tags
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+
+  # Preserve the original event and parse the JSON payload.
+  - rename:
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      tag: rename_message_to_event_original
+      if: ctx.event?.original == null
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - remove:
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      tag: remove_message
+      if: ctx.event?.original != null
+      field: message
+      ignore_missing: true
+  - json:
+      tag: json_event_original_into_json
+      field: event.original
+      target_field: json
+
+  # Set a deterministic document _id for deduplication.
+  - fingerprint:
+      tag: fingerprint_sighting
+      fields:
+        - json.fpid
+        - json.username
+        - json.password
+        - json.breach.fpid
+        - json.header_.indexed_at
+      target_field: _id
+      ignore_missing: true
+
+  # Move the payload under the vendor namespace and normalize the few hyphenated field names.
+  - rename:
+      tag: rename_json_to_ti_flashpoint_sighting
+      field: json
+      target_field: ti_flashpoint.sighting
+      ignore_missing: true
+  - rename:
+      tag: rename_last_observed_at_date_time
+      field: ti_flashpoint.sighting.last_observed_at.date-time
+      target_field: ti_flashpoint.sighting.last_observed_at.date_time
+      ignore_missing: true
+  - rename:
+      tag: rename_breach_created_at_date_time
+      field: ti_flashpoint.sighting.breach.created_at.date-time
+      target_field: ti_flashpoint.sighting.breach.created_at.date_time
+      ignore_missing: true
+  - rename:
+      tag: rename_breach_first_observed_at_date_time
+      field: ti_flashpoint.sighting.breach.first_observed_at.date-time
+      target_field: ti_flashpoint.sighting.breach.first_observed_at.date_time
+      ignore_missing: true
+  - rename:
+      tag: rename_malware_scanned_at_date_time
+      field: ti_flashpoint.sighting.infected_host_attributes.malware.scanned_at.date-time
+      target_field: ti_flashpoint.sighting.infected_host_attributes.malware.scanned_at.date_time
+      ignore_missing: true
+
+  # The `body` field may arrive as a string (keyword) or as an object. Route the object
+  # form to `body_raw` (object) so the two shapes cannot cause a mapping conflict.
+  - rename:
+      tag: rename_body_object_to_body_raw
+      if: ctx.ti_flashpoint?.sighting?.body instanceof Map
+      field: ti_flashpoint.sighting.body
+      target_field: ti_flashpoint.sighting.body_raw
+      ignore_missing: true
+
+  # Type-safety conversions.
+  - convert:
+      tag: convert_has_plaintext_recovered_to_boolean
+      field: ti_flashpoint.sighting.has_plaintext_recovered
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_has_plaintext_recovered_on_failure
+            field: ti_flashpoint.sighting.has_plaintext_recovered
+            ignore_missing: true
+        - append:
+            tag: append_error_has_plaintext_recovered
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_is_fresh_to_boolean
+      field: ti_flashpoint.sighting.is_fresh
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_is_fresh_on_failure
+            field: ti_flashpoint.sighting.is_fresh
+            ignore_missing: true
+        - append:
+            tag: append_error_is_fresh
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_password_complexity_has_lowercase_to_boolean
+      field: ti_flashpoint.sighting.password_complexity.has_lowercase
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_password_complexity_has_lowercase_on_failure
+            field: ti_flashpoint.sighting.password_complexity.has_lowercase
+            ignore_missing: true
+        - append:
+            tag: append_error_has_lowercase
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_password_complexity_has_uppercase_to_boolean
+      field: ti_flashpoint.sighting.password_complexity.has_uppercase
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_password_complexity_has_uppercase_on_failure
+            field: ti_flashpoint.sighting.password_complexity.has_uppercase
+            ignore_missing: true
+        - append:
+            tag: append_error_has_uppercase
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_password_complexity_has_number_to_boolean
+      field: ti_flashpoint.sighting.password_complexity.has_number
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_password_complexity_has_number_on_failure
+            field: ti_flashpoint.sighting.password_complexity.has_number
+            ignore_missing: true
+        - append:
+            tag: append_error_has_number
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_password_complexity_has_symbol_to_boolean
+      field: ti_flashpoint.sighting.password_complexity.has_symbol
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_password_complexity_has_symbol_on_failure
+            field: ti_flashpoint.sighting.password_complexity.has_symbol
+            ignore_missing: true
+        - append:
+            tag: append_error_has_symbol
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      tag: foreach_cookies_convert_allow_subdomains
+      field: ti_flashpoint.sighting.cookies
+      ignore_missing: true
+      processor:
+        convert:
+          tag: convert_cookies_allow_subdomains_to_boolean
+          field: _ingest._value.allow_subdomains
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                tag: remove_cookies_allow_subdomains_on_failure
+                field: _ingest._value.allow_subdomains
+                ignore_missing: true
+            - append:
+                tag: append_error_cookies_allow_subdomains
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_times_seen_to_long
+      field: ti_flashpoint.sighting.times_seen
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_times_seen_on_failure
+            field: ti_flashpoint.sighting.times_seen
+            ignore_missing: true
+        - append:
+            tag: append_error_times_seen
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_password_complexity_length_to_long
+      field: ti_flashpoint.sighting.password_complexity.length
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_password_complexity_length_on_failure
+            field: ti_flashpoint.sighting.password_complexity.length
+            ignore_missing: true
+        - append:
+            tag: append_error_password_complexity_length
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_location_accuracy_radius_to_long
+      field: ti_flashpoint.sighting.infected_host_attributes.location.accuracy_radius
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_infected_host_attributes_location_accuracy_radius_on_failure
+            field: ti_flashpoint.sighting.infected_host_attributes.location.accuracy_radius
+            ignore_missing: true
+        - append:
+            tag: append_error_accuracy_radius
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_isp_autonomous_system_number_to_long
+      field: ti_flashpoint.sighting.infected_host_attributes.isp.autonomous_system_number
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_infected_host_attributes_isp_autonomous_system_number_on_failure
+            field: ti_flashpoint.sighting.infected_host_attributes.isp.autonomous_system_number
+            ignore_missing: true
+        - append:
+            tag: append_error_autonomous_system_number
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_location_latitude_to_double
+      field: ti_flashpoint.sighting.infected_host_attributes.location.latitude
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_infected_host_attributes_location_latitude_on_failure
+            field: ti_flashpoint.sighting.infected_host_attributes.location.latitude
+            ignore_missing: true
+        - append:
+            tag: append_error_latitude
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_location_longitude_to_double
+      field: ti_flashpoint.sighting.infected_host_attributes.location.longitude
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_infected_host_attributes_location_longitude_on_failure
+            field: ti_flashpoint.sighting.infected_host_attributes.location.longitude
+            ignore_missing: true
+        - append:
+            tag: append_error_longitude
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_infected_host_ip_to_ip
+      field: ti_flashpoint.sighting.infected_host_attributes.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_infected_host_attributes_ip_on_failure
+            field: ti_flashpoint.sighting.infected_host_attributes.ip
+            ignore_missing: true
+        - append:
+            tag: append_error_infected_host_ip
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_infected_host_ipv4_to_ip
+      field: ti_flashpoint.sighting.infected_host_attributes.ipv4
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_infected_host_attributes_ipv4_on_failure
+            field: ti_flashpoint.sighting.infected_host_attributes.ipv4
+            ignore_missing: true
+        - append:
+            tag: append_error_infected_host_ipv4
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_infected_host_ipv6_to_ip
+      field: ti_flashpoint.sighting.infected_host_attributes.ipv6
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_infected_host_attributes_ipv6_on_failure
+            field: ti_flashpoint.sighting.infected_host_attributes.ipv6
+            ignore_missing: true
+        - append:
+            tag: append_error_infected_host_ipv6
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Date parsing. Flashpoint timestamps arrive as ISO8601 strings (`*.date-time`) or
+  # UNIX epoch seconds (`*.timestamp`, `header_.indexed_at`); accept both.
+  - date:
+      tag: date_header_indexed_at_into_timestamp
+      if: ctx.ti_flashpoint?.sighting?.header_?.indexed_at != null
+      field: ti_flashpoint.sighting.header_.indexed_at
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+        - UNIX
+      on_failure:
+        - append:
+            tag: append_error_message_indexed_at
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_last_observed_at_timestamp
+      if: ctx.ti_flashpoint?.sighting?.last_observed_at?.timestamp != null
+      field: ti_flashpoint.sighting.last_observed_at.timestamp
+      target_field: ti_flashpoint.sighting.last_observed_at.timestamp
+      formats:
+        - UNIX
+        - ISO8601
+      on_failure:
+        - remove:
+            tag: remove_last_observed_at_timestamp_on_failure
+            field: ti_flashpoint.sighting.last_observed_at.timestamp
+            ignore_missing: true
+        - append:
+            tag: append_error_last_observed_at_timestamp
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_breach_created_at_timestamp
+      if: ctx.ti_flashpoint?.sighting?.breach?.created_at?.timestamp != null
+      field: ti_flashpoint.sighting.breach.created_at.timestamp
+      target_field: ti_flashpoint.sighting.breach.created_at.timestamp
+      formats:
+        - UNIX
+        - ISO8601
+      on_failure:
+        - remove:
+            tag: remove_breach_created_at_timestamp_on_failure
+            field: ti_flashpoint.sighting.breach.created_at.timestamp
+            ignore_missing: true
+        - append:
+            tag: append_error_breach_created_at_timestamp
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_breach_first_observed_at_timestamp
+      if: ctx.ti_flashpoint?.sighting?.breach?.first_observed_at?.timestamp != null
+      field: ti_flashpoint.sighting.breach.first_observed_at.timestamp
+      target_field: ti_flashpoint.sighting.breach.first_observed_at.timestamp
+      formats:
+        - UNIX
+        - ISO8601
+      on_failure:
+        - remove:
+            tag: remove_breach_first_observed_at_timestamp_on_failure
+            field: ti_flashpoint.sighting.breach.first_observed_at.timestamp
+            ignore_missing: true
+        - append:
+            tag: append_error_breach_first_observed_at_timestamp
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_last_observed_at_date_time
+      if: ctx.ti_flashpoint?.sighting?.last_observed_at?.date_time != null && ctx.ti_flashpoint.sighting.last_observed_at.date_time != ''
+      field: ti_flashpoint.sighting.last_observed_at.date_time
+      target_field: ti_flashpoint.sighting.last_observed_at.date_time
+      formats:
+        - ISO8601
+        - UNIX
+      on_failure:
+        - remove:
+            tag: remove_last_observed_at_date_time_on_failure
+            field: ti_flashpoint.sighting.last_observed_at.date_time
+            ignore_missing: true
+        - append:
+            tag: append_error_last_observed_at_date_time
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_breach_created_at_date_time
+      if: ctx.ti_flashpoint?.sighting?.breach?.created_at?.date_time != null && ctx.ti_flashpoint.sighting.breach.created_at.date_time != ''
+      field: ti_flashpoint.sighting.breach.created_at.date_time
+      target_field: ti_flashpoint.sighting.breach.created_at.date_time
+      formats:
+        - ISO8601
+        - UNIX
+      on_failure:
+        - remove:
+            tag: remove_breach_created_at_date_time_on_failure
+            field: ti_flashpoint.sighting.breach.created_at.date_time
+            ignore_missing: true
+        - append:
+            tag: append_error_breach_created_at_date_time
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_breach_first_observed_at_date_time
+      if: ctx.ti_flashpoint?.sighting?.breach?.first_observed_at?.date_time != null && ctx.ti_flashpoint.sighting.breach.first_observed_at.date_time != ''
+      field: ti_flashpoint.sighting.breach.first_observed_at.date_time
+      target_field: ti_flashpoint.sighting.breach.first_observed_at.date_time
+      formats:
+        - ISO8601
+        - UNIX
+      on_failure:
+        - remove:
+            tag: remove_breach_first_observed_at_date_time_on_failure
+            field: ti_flashpoint.sighting.breach.first_observed_at.date_time
+            ignore_missing: true
+        - append:
+            tag: append_error_breach_first_observed_at_date_time
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_malware_scanned_at_date_time
+      if: ctx.ti_flashpoint?.sighting?.infected_host_attributes?.malware?.scanned_at?.date_time != null && ctx.ti_flashpoint.sighting.infected_host_attributes.malware.scanned_at.date_time != ''
+      field: ti_flashpoint.sighting.infected_host_attributes.malware.scanned_at.date_time
+      target_field: ti_flashpoint.sighting.infected_host_attributes.malware.scanned_at.date_time
+      formats:
+        - ISO8601
+        - UNIX
+      on_failure:
+        - remove:
+            tag: remove_infected_host_attributes_malware_scanned_at_date_time_on_failure
+            field: ti_flashpoint.sighting.infected_host_attributes.malware.scanned_at.date_time
+            ignore_missing: true
+        - append:
+            tag: append_error_malware_scanned_at_date_time
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_breach_first_observed_at_into_event_start
+      if: ctx.ti_flashpoint?.sighting?.breach?.first_observed_at?.date_time != null && ctx.ti_flashpoint.sighting.breach.first_observed_at.date_time != ''
+      field: ti_flashpoint.sighting.breach.first_observed_at.date_time
+      target_field: event.start
+      formats:
+        - ISO8601
+        - UNIX
+      on_failure:
+        - append:
+            tag: append_error_message_event_start
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # event.*
+  - set:
+      tag: set_event_kind_to_event
+      field: event.kind
+      value: event
+  - append:
+      tag: append_threat_into_event_category
+      field: event.category
+      value: threat
+      allow_duplicates: false
+  - append:
+      tag: append_indicator_into_event_type
+      field: event.type
+      value: indicator
+      allow_duplicates: false
+
+  # user.*
+  - rename:
+      tag: rename_ti_flashpoint_sighting_username_to_user_name
+      field: ti_flashpoint.sighting.username
+      target_field: user.name
+      ignore_missing: true
+  - rename:
+      tag: rename_ti_flashpoint_sighting_email_to_user_email
+      field: ti_flashpoint.sighting.email
+      target_field: user.email
+      ignore_missing: true
+  - rename:
+      tag: rename_ti_flashpoint_sighting_domain_to_user_domain
+      field: ti_flashpoint.sighting.domain
+      target_field: user.domain
+      ignore_missing: true
+
+  # url.*
+  - rename:
+      tag: rename_ti_flashpoint_sighting_affected_url_to_url_original
+      field: ti_flashpoint.sighting.affected_url
+      target_field: url.original
+      ignore_missing: true
+  - uri_parts:
+      tag: uri_parts_url_original
+      field: url.original
+      target_field: url
+      keep_original: true
+      ignore_failure: true
+  - set:
+      tag: set_url_full_from_url_original
+      field: url.full
+      copy_from: url.original
+      ignore_empty_value: true
+  - set:
+      tag: set_url_domain_from_affected_domain
+      if: ctx.url?.domain == null
+      field: url.domain
+      copy_from: ti_flashpoint.sighting.affected_domain
+      ignore_empty_value: true
+
+  # source.* / host.* (infected host attributes)
+  - set:
+      tag: set_source_ip_from_infected_host_ip
+      field: source.ip
+      copy_from: ti_flashpoint.sighting.infected_host_attributes.ip
+      ignore_empty_value: true
+  - append:
+      tag: append_infected_host_ip_into_host_ip
+      if: ctx.ti_flashpoint?.sighting?.infected_host_attributes?.ip != null
+      field: host.ip
+      value: '{{{ti_flashpoint.sighting.infected_host_attributes.ip}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_infected_host_ipv4_into_host_ip
+      if: ctx.ti_flashpoint?.sighting?.infected_host_attributes?.ipv4 != null
+      field: host.ip
+      value: '{{{ti_flashpoint.sighting.infected_host_attributes.ipv4}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_infected_host_ipv6_into_host_ip
+      if: ctx.ti_flashpoint?.sighting?.infected_host_attributes?.ipv6 != null
+      field: host.ip
+      value: '{{{ti_flashpoint.sighting.infected_host_attributes.ipv6}}}'
+      allow_duplicates: false
+  - set:
+      tag: set_host_name_from_infected_host_id
+      field: host.name
+      copy_from: ti_flashpoint.sighting.infected_host_attributes.host_id
+      ignore_empty_value: true
+  - set:
+      tag: set_host_os_full_from_infected_host_machine_os
+      field: host.os.full
+      copy_from: ti_flashpoint.sighting.infected_host_attributes.machine.os
+      ignore_empty_value: true
+  - script:
+      description: Dynamically set host.os.type from host.os.full.
+      tag: script_set_host_os_type
+      lang: painless
+      if: ctx.host?.os?.full != null
+      params:
+        os_type:
+          - linux
+          - macos
+          - unix
+          - windows
+          - ios
+          - android
+      source: |-
+        String os = ctx.host.os.full.toLowerCase();
+        for (String t: params.os_type) {
+          if (os.contains(t)) {
+            ctx.host.os.put('type', t);
+            return;
+          }
+        }
+  - set:
+      tag: set_host_architecture_from_infected_host_machine_architecture
+      field: host.architecture
+      copy_from: ti_flashpoint.sighting.infected_host_attributes.machine.architecture
+      ignore_empty_value: true
+
+  # source.geo.*
+  - set:
+      tag: set_source_geo_city_name
+      field: source.geo.city_name
+      copy_from: ti_flashpoint.sighting.infected_host_attributes.location.city_name
+      ignore_empty_value: true
+  - set:
+      tag: set_source_geo_country_name
+      field: source.geo.country_name
+      copy_from: ti_flashpoint.sighting.infected_host_attributes.location.country_name
+      ignore_empty_value: true
+  - set:
+      tag: set_source_geo_continent_name
+      field: source.geo.continent_name
+      copy_from: ti_flashpoint.sighting.infected_host_attributes.location.continent_name
+      ignore_empty_value: true
+  - set:
+      tag: set_source_geo_region_name
+      field: source.geo.region_name
+      copy_from: ti_flashpoint.sighting.infected_host_attributes.location.subdivision_1_name
+      ignore_empty_value: true
+  - set:
+      tag: set_source_geo_location_from_location_object
+      field: source.geo.location
+      copy_from: ti_flashpoint.sighting.infected_host_attributes.location.location
+      ignore_empty_value: true
+  - script:
+      description: Build source.geo.location from the latitude/longitude pair when the geopoint object is absent.
+      tag: script_set_source_geo_location_from_lat_lon
+      lang: painless
+      if: ctx.source?.geo?.location == null && ctx.ti_flashpoint?.sighting?.infected_host_attributes?.location?.latitude != null && ctx.ti_flashpoint?.sighting?.infected_host_attributes?.location?.longitude != null
+      source: |-
+        ctx.source = ctx.source ?: [:];
+        ctx.source.geo = ctx.source.geo ?: [:];
+        def loc = ctx.ti_flashpoint.sighting.infected_host_attributes.location;
+        ctx.source.geo.location = ['lat': loc.latitude, 'lon': loc.longitude];
+
+  # source.as.*
+  - set:
+      tag: set_source_as_number
+      field: source.as.number
+      copy_from: ti_flashpoint.sighting.infected_host_attributes.isp.autonomous_system_number
+      ignore_empty_value: true
+  - set:
+      tag: set_source_as_organization_name
+      field: source.as.organization.name
+      copy_from: ti_flashpoint.sighting.infected_host_attributes.isp.autonomous_system_organization
+      ignore_empty_value: true
+
+  # threat.*
+  - set:
+      tag: set_threat_software_name_from_malware_family
+      field: threat.software.name
+      copy_from: ti_flashpoint.sighting.infected_host_attributes.malware.family
+      ignore_empty_value: true
+
+  # related.*
+  - append:
+      tag: append_user_name_into_related_user
+      if: ctx.user?.name != null
+      field: related.user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_user_email_into_related_user
+      if: ctx.user?.email != null
+      field: related.user
+      value: '{{{user.email}}}'
+      allow_duplicates: false
+  - foreach:
+      tag: foreach_host_ip_into_related_ip
+      field: host.ip
+      ignore_missing: true
+      processor:
+        append:
+          tag: append_host_ip_into_related_ip
+          field: related.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      tag: append_host_name_into_related_hosts
+      if: ctx.host?.name != null
+      field: related.hosts
+      value: '{{{host.name}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_user_domain_into_related_hosts
+      if: ctx.user?.domain != null
+      field: related.hosts
+      value: '{{{user.domain}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_affected_domain_into_related_hosts
+      if: ctx.ti_flashpoint?.sighting?.affected_domain != null
+      field: related.hosts
+      value: '{{{ti_flashpoint.sighting.affected_domain}}}'
+      allow_duplicates: false
+
+  # Cleanup
+  - remove:
+      tag: remove_ti_flashpoint_sighting_header
+      field:
+        - ti_flashpoint.sighting.header_
+      ignore_missing: true
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      tag: set_event_kind_to_pipeline_error
+      if: ctx.error?.message != null
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event_into_tags
+      if: ctx.error?.message != null
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+on_failure:
+  - append:
+      tag: append_error_message
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_event_kind_to_pipeline_error_on_failure
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event_into_tags_on_failure
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

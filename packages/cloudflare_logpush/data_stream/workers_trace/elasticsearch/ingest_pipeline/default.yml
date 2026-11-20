@@ -95,12 +95,11 @@ processors:
       value: failure
       if: ctx.cloudflare_logpush?.workers_trace?.outcome == 'exception'
       tag: set_event_outcome_failure
-  - append:
+  - set:
       field: event.type
-      value: error
-      allow_duplicates: false
+      value: [error]
       if: ctx.event?.outcome == 'failure'
-      tag: append_event_type_error
+      tag: set_event_type_error
 
   # Custom fields
   - rename:

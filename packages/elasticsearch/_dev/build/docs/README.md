@@ -87,6 +87,8 @@ ingest-time enrichment.
 
 ### Index
 
+The `index` metricset is collected by Metricbeat. From package version 1.24.0, the `elasticsearch.index.mode` and `elasticsearch.index.codec` fields are populated when the collecting Metricbeat version includes [beats#49237](https://github.com/elastic/beats/pull/49237) (Metricbeat **8.19** and later). These fields are written to the source indices consumed by the `index_pivot` transform.
+
 {{event "index"}}
 
 {{fields "index"}}
@@ -181,10 +183,11 @@ You can then visualize the resulting data in the `[Elasticsearch] Indices & data
 
 ![Indices & data streams usage](../img/indices_datastream_view.png)
 
-Apart from some high-level statistics, such as total query count, total query time and total addressable data, the dashboard surfaces usage information centered on two dimensions:
+Apart from some high-level statistics, such as total query count, total query time and total addressable data, the dashboard surfaces usage information centered on three dimensions:
 
-* The [data tier](https://www.elastic.co/guide/en/elasticsearch/reference/current/data-tiers.html).
-* The data stream (see note below for details about how this is computed).
+* The [data tier](https://www.elastic.co/docs/manage-data/lifecycle/data-tiers).
+* The data stream (see the note later in this section for details about how this is computed).
+* Index mode and codec (for example, LogsDB versus standard, and `best_compression` versus `default`).
 
 #### Tier usage
 
@@ -196,9 +199,16 @@ Other visualizations in the dashboard allow you to compare the relative footprin
 
 Both approaches can be used in conjunction, allowing you to fine-tune ILM on a data stream basis (if required) to closely match usage patterns.
 
+#### Index mode and codec
+
+From package version 1.24.0, the Consumption dashboard and Index & Shard View also surface index mode and codec. These values come from `elasticsearch.index.mode` and `elasticsearch.index.codec` in the Metricbeat `index` metricset events that the transform reads from (`metrics-elasticsearch.stack_monitoring.index*`, `.monitoring-es-*`, or `metricbeat-*`). Collecting agents must run Metricbeat **8.19** or later, which includes [beats#49237](https://github.com/elastic/beats/pull/49237). Missing values are left empty so pre-8.19 data is not counted as adoption.
+
+Use these panels to review LogsDB adoption, time series (TSDS) usage, and whether indices use `best_compression`.
+
 ⚠️ Important notes:
 
-* The transform job will process all compatible historical data, which has two implications: 1. if you have pre-8.17.1 data, this will not get picked up by the job and 2. it might take time for "live" data to be available, as the transform job works its way through all documents. You can modify the transform job as you please if need be.
+* The transform job will process all compatible historical data that is still on the hot or warm tier, which has two implications: 1. if you have pre-8.17.1 data, this will not get picked up by the job and 2. it might take time for "live" data to be available, as the transform job works its way through all documents.
 * The target index `monitoring-indices` is not controlled by ILM. In case you work on a setup with a high count of indices or with a high retention, you may need to tune the transform job, or [activate ILM on the target index](https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started-index-lifecycle-management.html#manage-time-series-data-without-data-streams). Per our testing on a cluster with 5000 indices, we generated around 1GB of primary data for each week (your mileage may vary).
+* The transform reads the monitoring data from the backing indices of the `metrics-elasticsearch.stack_monitoring.index` data stream, and not from the data stream itself. If your ILM policy downsamples that data, the downsampled indices are skipped, as the transform cannot aggregate downsampled data. The same applies to indices renamed by a shrink action or mounted as searchable snapshots.
 * The identification of the data stream is based on the following grok pattern: `^(?:partial-)?(?:restored-)?(?:shrink-.{4}-)?(?:\\.ds-)?(?<elasticsearch.index.datastream>[a-z_0-9\\-\\.]+?)(-(?:\\d{4}\\.\\d{2}(\\.\\d{2})?))?(?:-\\d+)?$`. This should cover all "out of the box" names, but you can modify this to your liking in the `{VERSION}-monitoring_indices` ingest pipeline (though a copy is advised), if you are using non-standard names or would like to aggregate data differently.
 

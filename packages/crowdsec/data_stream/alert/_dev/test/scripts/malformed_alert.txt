@@ -1,0 +1,49 @@
+# A body that is not JSON, and JSON that is not an alert object, must be indexed
+# as pipeline_error documents that still carry the raw payload, so the failure
+# can be diagnosed from the document itself.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+install_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+! stderr .
+
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default data.json
+! stderr .
+cp stdout got.json
+
+exec jq -s 'length' got.json
+stdout '^2$'
+
+# Both reach the pipeline-level on_failure handler.
+exec jq -s 'all(.event.kind == "pipeline_error")' got.json
+stdout '^true$'
+exec jq -s 'all(.tags | index("preserve_original_event") != null)' got.json
+stdout '^true$'
+exec jq -s 'all(.error.message | length > 0)' got.json
+stdout '^true$'
+
+# The raw payload is kept.
+exec jq -s -r '.[].event.original' got.json
+stdout '^this is not json$'
+stdout '^\["not","an","alert"\]$'
+
+# The body that is not JSON fails in the decode step; the one that decodes to a
+# list reaches the guard that requires an alert object.
+exec jq -s -r '.[0].error.message | tostring' got.json
+stdout 'with tag .parse_json. failed with message'
+exec jq -s -r '.[1].error.message | tostring' got.json
+stdout 'with tag .fail_missing_json. failed with message'
+
+uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+! stderr .
+
+-- data.json --
+{
+	"message": "this is not json"
+}
+{
+	"message": "[\"not\",\"an\",\"alert\"]"
+}

@@ -12,7 +12,6 @@ inputs:
             - name: test-container
           data_stream:
             dataset: github.audit
-            type: logs
           file_selectors: null
           max_workers: 3
           poll: true
@@ -21,6 +20,7 @@ inputs:
           tags:
             - preserve_original_event
             - preserve_duplicate_custom_fields
+            - route_api_request_events
             - forwarded
             - github.audit
       type: azure-blob-storage
@@ -35,7 +35,7 @@ output_permissions:
         uuid-for-permissions-on-related-indices:
             indices:
                 - names:
-                    - logs-github.audit-ep
+                    - logs-*-ep
                   privileges:
                     - auto_configure
                     - create_doc

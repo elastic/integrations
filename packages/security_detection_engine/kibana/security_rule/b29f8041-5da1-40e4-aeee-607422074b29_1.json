@@ -1,0 +1,182 @@
+{
+    "attributes": {
+        "alert_suppression": {
+            "duration": {
+                "unit": "h",
+                "value": 4
+            },
+            "group_by": [
+                "client.user.email"
+            ],
+            "missing_fields_strategy": "suppress"
+        },
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects Vertex AI authenticated caller activity for the same client.user.email from at least three countries and three source IPs within a four-hour interval. That pattern can indicate stolen user or service-account credentials reused from multiple regions, including VPN or cloud egress and return trips where first and last locations are close.",
+        "false_positives": [
+            "Shared service accounts used by multi-region CI, build agents, or dual-homed VPN/cloud egress can span several countries. Prefer per-region identities, or exclude known automation principals.",
+            "VPN or proxy egress that geo-resolves through hubs far from the caller's physical location. Corroborate with ASN and user-agent diversity before rotating credentials."
+        ],
+        "from": "now-4h",
+        "interval": "15m",
+        "investigation_fields": {
+            "field_names": [
+                "client.user.email",
+                "source.ip",
+                "Esql.country_count",
+                "Esql.source_ip_count",
+                "Esql.user_agent_count",
+                "Esql.event_count",
+                "Esql.event_action_values",
+                "Esql.source_ip_values",
+                "Esql.source_geo_country_name_values",
+                "Esql.source_geo_region_name_values",
+                "Esql.source_geo_city_name_values",
+                "Esql.source_as_organization_name_values",
+                "Esql.user_agent_original_values",
+                "Esql.timestamp_first_seen",
+                "Esql.timestamp_last_seen"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "GCP Vertex AI Caller Activity From High Number of Countries",
+        "note": "## Triage and analysis\n\n### Investigating GCP Vertex AI Caller Activity From High Number of Countries\n\nSuccessful Vertex AI GenerateContent / CountTokens audit activity for the same\n`client.user.email` spans at least three countries and three source IPs inside four hours.\nThat pattern can indicate leaked or stolen credentials reused from VPN or cloud egress in\nmultiple regions, including return trips where the first and last locations are close.\n\nEscalate when countries differ, user agents diverge (SDK vs curl/browser), privileged methods\nappear on the distant IPs, or IAM key activity precedes the burst. Close as a false positive for\ndocumented multi-region automation with consistent corporate tooling.\n\n#### Possible investigation steps\n\n- Use `Esql.source_geo_country_name_values`, `Esql.source_geo_region_name_values`, `Esql.source_ip_values`, and\n  `Esql.user_agent_original_values` to map the geographic and client spread.\n- Use `Esql.event_action_values` and `Esql.event_count` to see what the caller did.\n- Contact the owner of `client.user.email` (or the owning team for a service account) to confirm\n  whether VPN or multi-region automation is expected.\n- Pivot to `logs-gcp_vertexai.prompt_response_logs-*` in the same window for prompt abuse,\n  refusals, or token volume after the distant events.\n- Check GCP IAM / audit logs for key creation, key download, or role grants near the first\n  distant country.\n\n### False positive analysis\n\n- Multi-region CI and dual-homed VPN/cloud egress are the main FPs \u2014 require ASN/UA\n  corroboration and known-principal allowlists before rotating credentials.\n- Shared org-wide service accounts used from many regions by design. Split those identities\n  per region or exclude them.\n\n### Response and remediation\n\n- On suspected compromise: disable or rotate the caller's keys/tokens, revoke active sessions,\n  hunt concurrent sessions from the listed IPs, and review IAM bindings after the distant events.\n- Prefer region-scoped service accounts for automation so legitimate multi-region traffic does\n  not share one email principal.\n",
+        "query": "from logs-gcp_vertexai.auditlogs-*\n| where\n    data_stream.dataset == \"gcp_vertexai.auditlogs\" and\n    client.user.email is not null and\n    source.ip is not null and\n    source.geo.location is not null and\n    source.geo.country_name is not null and\n    (\n        event.action like \"*PredictionService.GenerateContent*\" or\n        event.action like \"*PredictionService.StreamGenerateContent*\" or\n        event.action like \"*PredictionService.CountTokens*\"\n    )\n| stats\n    Esql.country_count = count_distinct(source.geo.country_name),\n    Esql.source_ip_count = count_distinct(source.ip),\n    Esql.user_agent_count = count_distinct(user_agent.original),\n    Esql.event_count = count(*),\n    Esql.event_action_values = values(event.action),\n    Esql.source_ip_values = values(source.ip),\n    Esql.source_geo_country_name_values = values(source.geo.country_name),\n    Esql.source_geo_region_name_values = values(source.geo.region_name),\n    Esql.source_geo_city_name_values = values(source.geo.city_name),\n    Esql.source_as_organization_name_values = values(source.as.organization.name),\n    Esql.user_agent_original_values = values(user_agent.original),\n    Esql.timestamp_first_seen = min(@timestamp),\n    Esql.timestamp_last_seen = max(@timestamp)\n  by\n    client.user.email\n| where Esql.country_count >= 3 and Esql.source_ip_count >= 3\n| eval source.ip = MV_FIRST(Esql.source_ip_values)\n| keep\n    client.user.email,\n    source.ip,\n    Esql.country_count,\n    Esql.source_ip_count,\n    Esql.user_agent_count,\n    Esql.event_count,\n    Esql.event_action_values,\n    Esql.source_ip_values,\n    Esql.source_geo_country_name_values,\n    Esql.source_geo_region_name_values,\n    Esql.source_geo_city_name_values,\n    Esql.source_as_organization_name_values,\n    Esql.user_agent_original_values,\n    Esql.timestamp_first_seen,\n    Esql.timestamp_last_seen\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/gcp_vertexai"
+        ],
+        "related_integrations": [
+            {
+                "package": "gcp_vertexai",
+                "version": ">=1.2.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "client.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.as.organization.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.geo.city_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.geo.country_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.geo.location",
+                "type": "geo_point"
+            },
+            {
+                "ecs": true,
+                "name": "source.geo.region_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 99,
+        "rule_id": "b29f8041-5da1-40e4-aeee-607422074b29",
+        "setup": "## Setup\n\nRequires GCP Vertex AI `auditlogs` with `source.ip`, `source.geo.location`, `source.geo.country_name`,\n`client.user.email`, and preferably `user_agent.original`.\n",
+        "severity": "critical",
+        "tags": [
+            "Domain: GenAI",
+            "Domain: Cloud",
+            "Data Source: GCP Vertex AI",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Platform: GCP",
+            "Service: GCP Vertex AI",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Tactic: Initial Access",
+            "Threat: Impossible Travel",
+            "Threat: LLMjacking",
+            "Threat: Unauthorized AI Usage",
+            "Mitre Atlas: AML.T0012",
+            "Mitre Atlas: AML.T0091",
+            "Mitre Atlas: AML.T0091.000",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1528",
+                        "name": "Steal Application Access Token",
+                        "reference": "https://attack.mitre.org/techniques/T1528/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/",
+                        "subtechnique": [
+                            {
+                                "id": "T1078.004",
+                                "name": "Cloud Accounts",
+                                "reference": "https://attack.mitre.org/techniques/T1078/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "b29f8041-5da1-40e4-aeee-607422074b29_1",
+    "type": "security-rule"
+}

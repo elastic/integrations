@@ -1,0 +1,76 @@
+# A 429 keeps the worklist and stops the poll. policy always returns 429 and
+# dlp would return a record. The worklist stays on policy, so later polls retry
+# policy and never ingest the dlp record. The interval is longer than -confirm
+# so the document count can settle between polls.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} netskope-error-mock
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 10s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+exec jq '[.hits.hits[]._source | select(.error.code == "429")] | length >= 2' got_docs.json
+stdout '^true$'
+
+exec jq '[.hits.hits[]._source | select(.netskope.alert_v2 != null)] | length' got_docs.json
+stdout '^0$'
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down netskope-error-mock
+
+-- test_config.yaml --
+input: cel
+vars:
+  url: http://netskope-error-mock:8090
+  api_token: test-token
+  iterator_index: elastic-test
+data_stream:
+  vars:
+    interval: 20s
+    initial_interval: 24h
+    alert_types:
+      - policy
+      - dlp
+    preserve_original_event: false
+    enable_request_tracer: false
+-- netskope-error-mock/docker-compose.yml --
+version: "2.3"
+services:
+  netskope-error-mock:
+    image: docker.elastic.co/observability/stream:v0.22.0
+    hostname: netskope-error-mock
+    ports:
+      - 8090
+    environment:
+      PORT: "8090"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/config.yml
+-- netskope-error-mock/config.yml --
+rules:
+  - path: /api/v2/events/dataexport/alerts/policy
+    methods: ["GET"]
+    responses:
+      - status_code: 429
+        headers:
+          Content-Type:
+            - application/json
+        body: '{"ok":0,"error":"rate limited"}'
+  - path: /api/v2/events/dataexport/alerts/dlp
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: '{"ok":1,"wait_time":5,"result":[{"_id":"dlp-rate-limit-1","alert":"yes","alert_type":"dlp","timestamp":1722282889,"user":"user@example.com"}]}'

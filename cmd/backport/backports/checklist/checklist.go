@@ -128,10 +128,9 @@ func BuildComment(pkgs []PackageBranches, checked map[string]bool) string {
 	fmt.Fprintln(&b, "## Backport branches")
 	fmt.Fprintln(&b)
 	fmt.Fprintln(&b, "> [!IMPORTANT]")
-	fmt.Fprintln(&b, "> Only branches for packages touched by this PR's current diff are shown.")
-	fmt.Fprintln(&b, "> This comment is updated automatically on each push — manual edits will be overwritten.")
+	fmt.Fprintln(&b, "> Only active backport branches for packages changed by this PR are shown.")
 	fmt.Fprintln(&b)
-	fmt.Fprintln(&b, "Tick the branches you want to backport to. PRs will be created automatically on merge, or when you update this checklist after merge.")
+	fmt.Fprintln(&b, "Tick the branches you want to backport to. A backport PR will be opened automatically for each branch you check.")
 	fmt.Fprintln(&b)
 	fmt.Fprintln(&b, "Backport a change when it fixes behavior a branch already has; leave new behavior on `main`. See [when and why to backport](https://github.com/elastic/integrations/wiki/Package-Backports) if you are unsure.")
 

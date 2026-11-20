@@ -1,0 +1,66 @@
+- name: tychon
+  type: group
+  fields:
+    - name: network.transport
+      type: keyword
+      description: |-
+        Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.)
+        The field value is normalized to lowercase for querying.
+    - name: process.command_line
+      type: wildcard
+      description: |-
+        Full command line that started the process, including the absolute path to the executable, and all arguments.
+        Some arguments may be filtered to protect sensitive information.
+      multi_fields:
+        - name: text
+          type: match_only_text
+    - name: process.executable
+      type: keyword
+      description: Absolute path to the process executable.
+      multi_fields:
+        - name: text
+          type: match_only_text
+    - name: process.hash.sha1
+      type: keyword
+      description: SHA1 hash.
+    - name: process.name
+      type: keyword
+      description: |-
+        Process name.
+        Sometimes called program name or similar.
+      multi_fields:
+        - name: text
+          type: match_only_text
+    - name: process.pid
+      type: long
+      description: Process id.
+    - name: process.start
+      type: date
+      description: The time the process started.
+    - name: process.user.name
+      type: keyword
+      description: Short name or login of the user.
+      multi_fields:
+        - name: text
+          type: match_only_text
+    - name: service.name
+      type: keyword
+      description: |-
+        Name of the service data is collected from.
+        The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name.
+        In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified.
+    - name: service.state
+      type: keyword
+      description: Current state of the service.
+    - name: source.ip
+      type: ip
+      description: IP address of the source (IPv4 or IPv6).
+    - name: source.port
+      type: long
+      description: Port of the source.
+    - name: user.name
+      type: keyword
+      description: Short name or login of the user.
+      multi_fields:
+        - name: text
+          type: match_only_text

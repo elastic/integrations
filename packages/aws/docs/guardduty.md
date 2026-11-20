@@ -25,7 +25,7 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 
 ## Compatibility
 
-  1. The minimum compatible version of this module is **Elastic Agent 8.6.0**.
+  1. Collecting findings from the GuardDuty API needs Elastic Agent 8.19.15 or a later 8.19 release, or 9.3.0 or later.
 
   2. Following GuardDuty Resource types have been supported in the current integration version:
 

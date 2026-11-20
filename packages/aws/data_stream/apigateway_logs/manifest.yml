@@ -159,6 +159,23 @@ streams:
     template_path: aws-cloudwatch.yml.hbs
     title: AWS API Gateway Logs via CloudWatch
     description: Collect AWS API Gateway logs using CloudWatch input.
+    enabled: false
+    var_groups:
+      - name: log_group_source
+        required: true
+        title: Log group
+        selector_title: Identify the log group by
+        description: Choose how to identify the CloudWatch log group to collect from. The region name is required with the log group name and the log group name prefix.
+        options:
+          - name: log_group_arn
+            title: Log Group ARN
+            vars: [log_group_arn]
+          - name: log_group_name
+            title: Log Group Name
+            vars: [log_group_name, region_name]
+          - name: log_group_name_prefix
+            title: Log Group Name Prefix
+            vars: [log_group_name_prefix, region_name]
     vars:
       - name: log_group_arn
         type: text
@@ -172,14 +189,14 @@ streams:
         title: Log Group Name
         multi: false
         required: false
-        show_user: false
+        show_user: true
         description: Name of the log group to collect logs from. `region_name` is required when `log_group_name` is given.
       - name: log_group_name_prefix
         type: text
         title: Log Group Name Prefix
         multi: false
         required: false
-        show_user: false
+        show_user: true
         description: The prefix for a group of log group names. `region_name` is required when `log_group_name_prefix` is given. `log_group_name` and `log_group_name_prefix` cannot be given at the same time.
       - name: include_linked_accounts_with_prefix
         type: bool
@@ -193,7 +210,7 @@ streams:
         title: Region Name
         multi: false
         required: false
-        show_user: false
+        show_user: true
         description: Region that the specified log group or log group prefix belongs to.
       - name: log_streams
         type: text

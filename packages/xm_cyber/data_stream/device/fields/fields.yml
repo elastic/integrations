@@ -44,9 +44,6 @@
       type: keyword
       description: Enrichment labels applied by XM Cyber.
     # ----- Choke point / critical asset -----
-    - name: is_choke_point
-      type: boolean
-      description: Whether the device is classified as a choke point.
     - name: choke_point_score
       type: long
       description: Numeric choke-point score from XM Cyber.
@@ -110,53 +107,3 @@
     - name: last_compromised
       type: date
       description: Timestamp of the last simulated or observed compromise when provided; may be absent.
-    # ----- Installed applications / products (nested array) -----
-    - name: apps
-      type: group
-      description: Per-application vulnerability and exposure context reported for the device.
-      fields:
-        - name: name
-          type: keyword
-          description: Application or product display name.
-        - name: vendor
-          type: keyword
-          description: Application vendor.
-        - name: version
-          type: keyword
-          description: Installed application version.
-        - name: device_found_on
-          type: long
-          description: Number of devices where this application instance was observed.
-        - name: choke_point_found_on
-          type: keyword
-          description: >
-            Vendor count of choke-point occurrences for this app; may be sent as a numeric string (e.g. "4") from the API.
-
-        - name: affected_critical_assets
-          type: long
-          description: Number of critical assets affected by this application exposure.
-        - name: products_critical_assets_at_risk
-          type: long
-          description: Critical assets at risk attributed to this product context.
-        - name: product_vulnerabilities
-          type: long
-          description: Count of vulnerabilities associated with the product.
-        - name: active_cves
-          type: keyword
-          description: CVE identifiers currently active for this application.
-        - name: closed_cves
-          type: keyword
-          description: CVE identifiers remediated or closed for this application.
-        - name: product_operating_systems
-          type: keyword
-          description: Operating systems on which the product is reported.
-        - name: active_cves_safe_version
-          type: group
-          description: CVE-to-safe-version mappings suggested for active CVEs on this product.
-          fields:
-            - name: cve
-              type: keyword
-              description: CVE identifier.
-            - name: safe_version
-              type: keyword
-              description: Vendor-recommended safe version for the CVE.

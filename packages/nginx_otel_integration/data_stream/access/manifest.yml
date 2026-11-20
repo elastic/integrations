@@ -1,0 +1,38 @@
+title: "Nginx Access Logs"
+type: logs
+dataset: nginx.access
+streams:
+  - package: filelog_otel
+    title: Nginx Access Logs
+    description: >-
+      Tail Nginx access logs using the OTel Collector filelogreceiver.
+    template_path: processors.yml.hbs
+    vars:
+      - name: include
+        type: text
+        title: Access log paths
+        required: true
+        multi: true
+        description: File glob patterns that match Nginx access log files.
+        default:
+          - /var/log/nginx/access.log
+        show_user: true
+      - name: start_at
+        type: select
+        title: Start at
+        required: false
+        description: At startup, where to start reading logs from the file.
+        default: end
+        show_user: true
+        options:
+          - text: Beginning of files.
+            value: beginning
+          - text: End of files.
+            value: end
+      - name: include_file_path
+        type: bool
+        title: Include file path
+        required: false
+        description: Add the file path as the attribute log.file.path.
+        default: true
+        show_user: false

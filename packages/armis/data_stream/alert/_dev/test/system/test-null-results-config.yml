@@ -1,0 +1,17 @@
+# page_size 2 selects the length=2 rules in config.yml. The first search
+# returns data.results null, and the next poll returns one alert.
+wait_for_data_timeout: 1m
+input: cel
+service: armis
+vars:
+  url: http://{{Hostname}}:{{Port}}
+  secret_key: xxxx
+data_stream:
+  vars:
+    interval: 15s
+    initial_interval: 24h
+    page_size: 2
+    preserve_original_event: true
+    preserve_duplicate_custom_fields: true
+assert:
+  hit_count: 1

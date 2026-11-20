@@ -1,0 +1,108 @@
+# Check that upgrading from the latest published version leaves the
+# latest_asset transform running with the installing user's credentials
+# and able to write to its destination index.
+#
+# The kibana_system role has no privileges on logs-tenable_sc_latest.*,
+# so a latest_asset transform run as kibana_system is deferred at install
+# and cannot be reauthorized from the Fleet UI.
+#
+# The published version is installed from the registry, but add_package
+# installs the dev version as an upload. From Kibana 9.5.6, Fleet runs
+# every transform from an uploaded package with the installing user's
+# credentials, whatever its _meta says (elastic/kibana#297771). So on those
+# stacks the checks after the upgrade pass even without the package fix,
+# and the run_as_kibana_system value of the latest_cdr_vulnerabilities
+# transform cannot be checked here.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+[!exec:curl] skip 'Skipping test requiring absent curl command'
+[!exec:sh] skip 'Skipping test requiring absent sh command'
+[!env:LATEST_EPR_VERSION] skip 'no EPR release to upgrade from'
+[!is_latest_version] skip 'dev version is not newer than latest EPR release'
+[breaking_change] skip 'cannot upgrade across breaking change'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Remove a destination index left by an earlier run on this stack. Fleet's
+# package uninstall keeps the index but sets index.default_pipeline to "",
+# so the upgraded transform could not write to it.
+exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem -X DELETE 'https://localhost:9200/logs-tenable_sc_latest.asset-1?ignore_unavailable=true'
+stdout '"acknowledged":true'
+
+# Install the published version.
+install_package_from_registry -profile ${CONFIG_PROFILES}/${PROFILE} ${PACKAGE_NAME} ${LATEST_EPR_VERSION}
+
+exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem 'https://localhost:9200/_transform/logs-tenable_sc.latest_asset-default-*'
+cp stdout before.json
+exec jq -r '.count' before.json
+stdout '^1$'
+
+# Index an asset state document into the source data stream. It is
+# indexed before the upgrade and given time to pass the transform's
+# 120s sync delay, so the first checkpoint of the upgraded transform
+# includes it.
+date NOW
+exec jq -nc '{"@timestamp": env.NOW, "event": {"kind": "state"}, "data_stream": {"type": "logs", "dataset": "tenable_sc.asset", "namespace": "default"}, "tenable_sc": {"asset": {"custom_hash": ("upgrade-test-" + env.NOW)}}}'
+cp stdout asset.json
+exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem -X POST 'https://localhost:9200/logs-tenable_sc.asset-default/_doc?refresh=true&pipeline=_none' -H 'Content-Type: application/json' -d @asset.json
+stdout '"result":"created"'
+sleep 2m10s
+
+# Upgrade to the local (dev) version. add_package installs the package
+# over the published version; upgrade_package_latest is not used because
+# it only upgrades package policies, and this test needs none.
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem 'https://localhost:5601/api/fleet/epm/packages/'${PACKAGE_NAME}
+cp stdout pkg.json
+exec jq -r '.item.installationInfo.version' pkg.json
+stdout '^'${CURRENT_VERSION@R}'$'
+
+# The previous transform is replaced by a single transform that runs
+# with an API key for the installing user, not as kibana_system.
+exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem 'https://localhost:9200/_transform/logs-tenable_sc.latest_asset-default-*'
+cp stdout after.json
+exec jq -r '.count' after.json
+stdout '^1$'
+exec jq -r '.transforms[0]._meta.run_as_kibana_system' after.json
+stdout '^false$'
+exec jq -r '.transforms[0].authorization | keys[]' after.json
+stdout '^api_key$'
+! stdout 'service_account'
+
+# The upgraded transform writes the asset to the destination index.
+# Trigger a checkpoint now rather than waiting up to the 5m frequency for
+# the next one, in case the first checkpoint ran before the document was
+# older than the sync delay. If the document does not arrive, print the
+# transform stats to show why.
+exec jq -r '.transforms[0].id' after.json
+cp stdout transform_id
+exec sh -c 'curl -s -u elastic:changeme --cacert "$CONFIG_PROFILES/$PROFILE/certs/ca-cert.pem" -X POST "https://localhost:9200/_transform/$(cat transform_id)/_schedule_now"'
+stdout '"acknowledged":true'
+exec sh -c 'for i in $(seq 60); do n=$(curl -s -u elastic:changeme --cacert "$CONFIG_PROFILES/$PROFILE/certs/ca-cert.pem" -H "Content-Type: application/json" -d "{\"query\":{\"term\":{\"tenable_sc.asset.custom_hash\":\"upgrade-test-$NOW\"}}}" "https://localhost:9200/logs-tenable_sc_latest.asset/_count" | jq .count); [ "$n" = 1 ] && exit 0; sleep 5; done; echo "asset not found in destination index" >&2; curl -s -u elastic:changeme --cacert "$CONFIG_PROFILES/$PROFILE/certs/ca-cert.pem" "https://localhost:9200/_transform/$(cat transform_id)/_stats" >&2; exit 1'
+
+exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem 'https://localhost:9200/_transform/logs-tenable_sc.latest_asset-default-*/_stats'
+cp stdout stats.json
+exec jq -r '.transforms[0].health.status' stats.json
+stdout '^green$'
+
+# Record the destination index settings in the test log.
+exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem 'https://localhost:9200/logs-tenable_sc_latest.asset/_settings?flat_settings=true'
+
+# A later checkpoint also writes to the destination index. Index a second
+# asset after the first checkpoint, wait past the sync delay, and trigger
+# another checkpoint.
+date NOW2
+exec jq -nc '{"@timestamp": env.NOW2, "event": {"kind": "state"}, "data_stream": {"type": "logs", "dataset": "tenable_sc.asset", "namespace": "default"}, "tenable_sc": {"asset": {"custom_hash": ("upgrade-test-" + env.NOW2)}}}'
+cp stdout asset2.json
+exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem -X POST 'https://localhost:9200/logs-tenable_sc.asset-default/_doc?refresh=true&pipeline=_none' -H 'Content-Type: application/json' -d @asset2.json
+stdout '"result":"created"'
+sleep 2m10s
+exec sh -c 'curl -s -u elastic:changeme --cacert "$CONFIG_PROFILES/$PROFILE/certs/ca-cert.pem" -X POST "https://localhost:9200/_transform/$(cat transform_id)/_schedule_now"'
+stdout '"acknowledged":true'
+exec sh -c 'for i in $(seq 60); do n=$(curl -s -u elastic:changeme --cacert "$CONFIG_PROFILES/$PROFILE/certs/ca-cert.pem" -H "Content-Type: application/json" -d "{\"query\":{\"term\":{\"tenable_sc.asset.custom_hash\":\"upgrade-test-$NOW2\"}}}" "https://localhost:9200/logs-tenable_sc_latest.asset/_count" | jq .count); [ "$n" = 1 ] && exit 0; sleep 5; done; echo "second asset not found in destination index" >&2; curl -s -u elastic:changeme --cacert "$CONFIG_PROFILES/$PROFILE/certs/ca-cert.pem" "https://localhost:9200/_transform/$(cat transform_id)/_stats" >&2; exit 1'
+
+exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem 'https://localhost:9200/_transform/logs-tenable_sc.latest_asset-default-*/_stats'
+cp stdout stats2.json
+exec jq -r '.transforms[0].health.status' stats2.json
+stdout '^green$'

@@ -1,0 +1,142 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects three changes on the same ESXi host within 1 hour: SSH enabled, ExecInstalledOnly turned off, and a VIB install with `-f` or `--force` and `--no-sig-check`. Together they open a remote shell, allow unsigned code to run, and bypass VIB signature checks. That sequence prepares the host to receive and run a package the normal controls would reject.",
+        "false_positives": [
+            "A documented maintenance window can enable SSH, relax ExecInstalledOnly, and force-install a vendor VIB on the same host. Confirm the change ticket and the VIB name before treating the sequence as malicious."
+        ],
+        "from": "now-1h",
+        "investigation_fields": {
+            "field_names": [
+                "host.ip",
+                "Esql.ssh_enabled_count",
+                "Esql.exec_installed_only_disabled_count",
+                "Esql.vib_force_install_count",
+                "Esql.message_values",
+                "Esql.log_file_path_values",
+                "Esql.first_seen",
+                "Esql.last_seen"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "ESXi Host Prepared for an Unsigned Install",
+        "note": "## Triage and analysis\n\n### Investigating ESXi Host Prepared for an Unsigned Install\n\nThe rule counts three behaviors on one host and alerts only when all three occur in the same 1-hour window.\nSSH enablement is hostsvc/enable_ssh or the hostd sentence SSH access has been enabled. ExecInstalledOnly is\nthe kernel setting set to FALSE, or the advanced setting /User/ExecInstalledOnly set with -i 0. The install\nis vib install with the -f or --force switch and --no-sig-check.\n\n#### Possible investigation steps\n\n- Read Esql.message_values and confirm each count is at least 1.\n- Compare Esql.span_minutes with the change window. The three lines should sit close together.\n- On the host, run esxcli software vib list and look for a VIB that was not part of the approved image.\n- Check esxcli system settings kernel list -o execInstalledOnly and whether SSH is still enabled.\n\n### False positive analysis\n\nVendor recovery and lab image builds sometimes force a VIB while SSH is open. The VIB name and the ticket should match.\n\n### Response and remediation\n\n- If the change was not approved, remove the unexpected VIB and set ExecInstalledOnly back to TRUE.\n- Disable SSH when remote shell access is no longer required.\n- Preserve shell.log and hostd.log for the host before rotating credentials.\n",
+        "query": "FROM logs-vsphere.log-*\n| WHERE data_stream.dataset == \"vsphere.log\" AND event.module == \"vsphere\" and host.ip is not null\n| EVAL Esql.message_lower = TO_LOWER(message)\n| EVAL\n    Esql.ssh_enabled = CASE(\n      Esql.message_lower LIKE \"*ssh access has been enabled*\" OR Esql.message_lower LIKE \"*hostsvc/enable_ssh*\",\n      1, 0\n    ),\n    Esql.exec_installed_only_disabled = CASE(\n      Esql.message_lower LIKE \"*execinstalledonly*\" AND (\n        Esql.message_lower LIKE \"*false*\" OR Esql.message_lower LIKE \"* -i 0*\" OR Esql.message_lower LIKE \"* -v 0*\"\n      ),\n      1, 0\n    ),\n    Esql.vib_force_install = CASE(\n      Esql.message_lower LIKE \"*vib install*\" AND (\n        Esql.message_lower LIKE \"* -f *\" OR Esql.message_lower LIKE \"* -f\"\n        OR Esql.message_lower LIKE \"* --force *\" OR Esql.message_lower LIKE \"* --force\"\n      ),\n      1, 0\n    )\n| WHERE Esql.ssh_enabled == 1 OR Esql.exec_installed_only_disabled == 1 OR Esql.vib_force_install == 1\n| STATS\n    Esql.ssh_enabled_count = SUM(Esql.ssh_enabled),\n    Esql.exec_installed_only_disabled_count = SUM(Esql.exec_installed_only_disabled),\n    Esql.vib_force_install_count = SUM(Esql.vib_force_install),\n    Esql.message_values = VALUES(message),\n    Esql.log_file_path_values = VALUES(vsphere.log.file.path),\n    Esql.first_seen = MIN(@timestamp),\n    Esql.last_seen = MAX(@timestamp)\n  BY host.ip\n| WHERE Esql.ssh_enabled_count > 0\n    AND Esql.exec_installed_only_disabled_count > 0\n    AND Esql.vib_force_install_count > 0\n| KEEP host.ip, Esql.ssh_enabled_count, Esql.exec_installed_only_disabled_count, Esql.vib_force_install_count,\n    Esql.message_values, Esql.log_file_path_values, Esql.first_seen, Esql.last_seen\n",
+        "references": [
+            "https://lolesxi-project.github.io/LOLESXi/#",
+            "https://blogs.vmware.com/security/2022/10/esxi-targeting-ransomware-tactics-and-techniques-part-2.html",
+            "https://detect.fyi/vmware-esxi-logging-detection-opportunities-4fb56411ec21"
+        ],
+        "related_integrations": [
+            {
+                "package": "vsphere",
+                "version": ">=1.18.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "message",
+                "type": "match_only_text"
+            },
+            {
+                "ecs": false,
+                "name": "vsphere.log.file.path",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 99,
+        "rule_id": "12c56e4a-8d36-5dab-a5b6-5322db31c901",
+        "setup": "## Setup\n\nThis rule requires ESXi host logs collected by the Elastic vSphere integration: https://www.elastic.co/docs/reference/integrations/vsphere\n",
+        "severity": "critical",
+        "tags": [
+            "Domain: Endpoint",
+            "Data Source: VMware vSphere",
+            "Use Case: Threat Detection",
+            "Tactic: Lateral Movement",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Platform: VMware ESXi",
+            "Tactic: Defense Impairment"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0112",
+                    "name": "Defense Impairment",
+                    "reference": "https://attack.mitre.org/tactics/TA0112/"
+                },
+                "technique": [
+                    {
+                        "id": "T1685",
+                        "name": "Disable or Modify Tools",
+                        "reference": "https://attack.mitre.org/techniques/T1685/"
+                    },
+                    {
+                        "id": "T1553",
+                        "name": "Subvert Trust Controls",
+                        "reference": "https://attack.mitre.org/techniques/T1553/",
+                        "subtechnique": [
+                            {
+                                "id": "T1553.006",
+                                "name": "Code Signing Policy Modification",
+                                "reference": "https://attack.mitre.org/techniques/T1553/006/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1021",
+                        "name": "Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1021/",
+                        "subtechnique": [
+                            {
+                                "id": "T1021.004",
+                                "name": "SSH",
+                                "reference": "https://attack.mitre.org/techniques/T1021/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 2
+    },
+    "id": "12c56e4a-8d36-5dab-a5b6-5322db31c901_2",
+    "type": "security-rule"
+}

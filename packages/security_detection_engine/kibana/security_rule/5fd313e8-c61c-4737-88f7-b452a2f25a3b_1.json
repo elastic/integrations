@@ -1,0 +1,109 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Sending an organization user invite creates a path for a new member to join the Anthropic tenant with a chosen role. An adversary who compromises an administrator or admin API key can invite a mailbox they control and accept the invite to gain durable access. Invites may target internal corporate addresses or external domains; this rule does not distinguish them because invite events do not carry verified organization domains for reliable comparison.",
+        "false_positives": [
+            "IT administrators and hiring workflows routinely invite new members during onboarding, contractor access, or staffing changes. Verify the invited email, role, and that a hiring or access request exists when policy requires one."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "event.id",
+                "event.outcome",
+                "organization.id",
+                "user.target.email",
+                "related.user",
+                "anthropic.audit.invited_role",
+                "anthropic.audit.invite_id",
+                "anthropic.audit.actor.type",
+                "anthropic.audit.actor.admin_api_key_id",
+                "user.email",
+                "user.id",
+                "source.ip",
+                "user_agent.original"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Anthropic Organization User Invite Sent",
+        "note": "## Triage and analysis\n\n### Investigating Anthropic Organization User Invite Sent\n\nA successful `org_user_invite_sent` creates a path for a new member. Invitee is `user.target.email` (also\n`related.user`); role on accept is `anthropic.audit.invited_role` when present. Audit events do not include the org's\nverified domain list \u2014 domain judgment is triage's job.\n\nUnauthorized / high priority: invitee domain outside known corporate domains, `invited_role` of admin (or similarly\nprivileged), actor is unexpected / API key, or invite followed by accept + privileged activity. Close as FP when HR/IT\nticket names the invitee and role.\n\n#### Possible investigation steps\n\n- Compare invitee domain to trusted corporate domains; treat unexpected external domains as higher priority.\n- Branch actor: `user_actor` (email/IP/UA) vs `admin_api_key_actor`\n  (`anthropic.audit.actor.admin_api_key_id` in inventory?).\n- Search for `org_user_invite_accepted` for the same `anthropic.audit.invite_id` or invitee email.\n- Look nearby for role grants, SSO changes, or admin API key creation from the same actor.\n\n### False positive analysis\n\n- Routine onboarding invites are FP when an HR/IT ticket names the invitee domain and `invited_role`.\n\n### Response and remediation\n\n- On unauthorized invite: delete/revoke the pending invite (and remove the user if already accepted), review other IAM\n  changes by the same actor, and rotate compromised admin credentials or API keys.\n",
+        "query": "from logs-anthropic.audit-* metadata _id, _version, _index\n| where\n    data_stream.dataset == \"anthropic.audit\" and\n    mv_contains(event.category, \"iam\") and\n    event.action == \"org_user_invite_sent\" and\n    event.outcome == \"success\"\n| keep _id, _version, _index, @timestamp, event.*, organization.*, user.*, related.*, source.*, user_agent.*, anthropic.audit.*, data_stream.*\n",
+        "references": [
+            "https://platform.claude.com/docs/en/api/compliance/activities/list"
+        ],
+        "related_integrations": [
+            {
+                "package": "anthropic",
+                "version": ">=1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "5fd313e8-c61c-4737-88f7-b452a2f25a3b",
+        "severity": "medium",
+        "tags": [
+            "Domain: GenAI",
+            "Platform: Anthropic",
+            "Data Source: Anthropic Audit Logs",
+            "Use Case: Identity and Access Audit",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Tactic: Persistence"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1136",
+                        "name": "Create Account",
+                        "reference": "https://attack.mitre.org/techniques/T1136/",
+                        "subtechnique": [
+                            {
+                                "id": "T1136.003",
+                                "name": "Cloud Account",
+                                "reference": "https://attack.mitre.org/techniques/T1136/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "5fd313e8-c61c-4737-88f7-b452a2f25a3b_1",
+    "type": "security-rule"
+}
