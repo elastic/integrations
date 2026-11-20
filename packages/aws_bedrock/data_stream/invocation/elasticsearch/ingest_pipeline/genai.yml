@@ -101,6 +101,8 @@ processors:
           - input_type
           - dimensions
           - normalize
+          - singleEmbeddingParams
+          - segmentedEmbeddingParams
         embedding_response_keys:
           - embedding
           - embeddings
@@ -198,6 +200,11 @@ processors:
         String bodyKind(def req, def resp, Map p) {
           if (req instanceof Map && req.containsKey('documents') && req.containsKey('query') && !req.containsKey('messages') && !req.containsKey('message')) {
             return 'unmapped';
+          }
+          // Nova multimodal embeddings also send task_type, with SINGLE_EMBEDDING or
+          // SEGMENTED_EMBEDDING. Titan Image Generator task types name image tasks.
+          if (req instanceof Map && req.task_type instanceof String && req.task_type.endsWith('_EMBEDDING')) {
+            return 'embeddings';
           }
           if (hasAny(req, p.image_request_keys) || hasAny(resp, p.image_response_keys)) {
             return 'image';
