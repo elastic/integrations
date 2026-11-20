@@ -1,0 +1,58 @@
+title: Claude Desktop logs
+type: logs
+streams:
+- input: filestream
+  title: Claude Desktop app and MCP logs
+  template_path: filestream.yml.hbs
+  description: main.log, mcp.log and mcp-server-*.log (JSON-RPC traffic parsed into event.action, mcp.method, gen_ai.tool.*).
+  enabled: true
+  vars:
+  - name: paths
+    type: text
+    title: Paths
+    description: Claude Desktop log files (Windows %APPDATA% / %LOCALAPPDATA%, macOS ~/Library/Logs). There is no official Linux build.
+    multi: true
+    required: true
+    show_user: true
+    default:
+    - C:\Users\*\AppData\Roaming\Claude\logs\*.log
+    - C:\Users\*\AppData\Local\Claude\Logs\*.log
+    - /Users/*/Library/Logs/Claude/*.log
+  - name: ignore_older
+    type: text
+    title: Ignore older
+    description: Skip files not modified within this duration.
+    multi: false
+    required: false
+    show_user: false
+    default: 720h
+  - name: message_max_bytes
+    type: integer
+    title: Maximum event size (bytes)
+    description: MCP results can be large; the pipeline truncates message at 64 KB.
+    multi: false
+    required: false
+    show_user: false
+    default: 20971520
+  - name: tags
+    type: text
+    title: Tags
+    description: Extra tags.
+    multi: true
+    required: false
+    show_user: false
+    default: []
+  - name: processors
+    type: yaml
+    title: Processors
+    description: Agent-side processors applied before the ingest pipeline.
+    multi: false
+    required: false
+    show_user: false
+  - name: custom
+    type: yaml
+    title: Custom configurations
+    description: Extra filestream options, for example `take_over` when migrating from another filestream input (see the repository README).
+    multi: false
+    required: false
+    show_user: false

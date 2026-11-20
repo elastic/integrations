@@ -1,0 +1,30 @@
+paths:
+{{#each paths as |path|}}
+  - {{path}}
+{{/each}}
+parsers:
+  - multiline:
+      type: pattern
+      pattern: '^\[?\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}'
+      negate: true
+      match: after
+      max_lines: 2000
+message_max_bytes: {{message_max_bytes}}
+ignore_older: {{ignore_older}}
+close.on_state_change.inactive: 10m
+prospector.scanner.fingerprint.enabled: true
+{{#if tags}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{/if}}
+processors:
+- add_locale:
+    format: offset
+{{#if processors}}
+{{processors}}
+{{/if}}
+{{#if custom}}
+{{custom}}
+{{/if}}
