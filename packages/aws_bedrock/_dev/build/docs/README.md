@@ -73,7 +73,7 @@ either S3 or CloudWatch. For more details, check the
 
 1. Set up an [Amazon S3](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#setup-s3-destination) or [CloudWatch Logs](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#setup-cloudwatch-logs-destination) destination.
 2. Enable logging. You can do it either through the [Amazon Bedrock console](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#model-invocation-logging-console) or [the Amazon Bedrock API](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#using-apis-logging). 
-3. Choose the data types to log (`textDataDeliveryEnabled`, `imageDataDeliveryEnabled`, `embeddingDataDeliveryEnabled`, `videoDataDeliveryEnabled`, `audioDataDeliveryEnabled` in [LoggingConfig](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_LoggingConfig.html)). Enable at least Text. Without the data type that matches a model's modality, its log records carry only metadata (model, identity, token counts, errors): no prompts, no responses and no request parameters, so the content and request-parameter fields described below stay empty.
+3. Choose the data types to log (`textDataDeliveryEnabled`, `imageDataDeliveryEnabled`, `embeddingDataDeliveryEnabled`, `videoDataDeliveryEnabled`, `audioDataDeliveryEnabled` in [LoggingConfig](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_LoggingConfig.html)). Enable at least Text. Without the data type that matches a model's modality, its log records carry only metadata (model, identity, token counts, errors): no prompts, no responses and no request parameters, so the content and request-parameter fields stay empty.
 
 Logging is configured per AWS account and Region by an account administrator. Only calls to the `bedrock-runtime` endpoint are logged.
 
@@ -81,7 +81,7 @@ Logging is configured per AWS account and Region by an account administrator. On
 
 ### Large request and response bodies
 
-Bedrock writes request and response bodies over 100 KB, and binary data such as images, as separate objects under the `data/` prefix of the S3 destination, and points to them from the log record (`input.inputBodyS3Path`, `output.outputBodyS3Path`). With a CloudWatch Logs destination, these bodies are only delivered if a large-data S3 location (`largeDataDeliveryS3Config`) is configured; otherwise they are lost.
+Bedrock writes request and response bodies over 100 KB, and binary data such as images, as separate objects under the `data/` prefix of the S3 destination, and points to them from the log record (`input.inputBodyS3Path`, `output.outputBodyS3Path`). With a CloudWatch Logs destination, these bodies are only delivered if a large-data S3 location (`largeDataDeliveryS3Config`) is configured. Otherwise they are lost.
 
 The integration doesn't follow the `*BodyS3Path` references. When the S3 input reads the whole bucket, it also ingests the `data/` objects as their own documents. These documents have no envelope (no identity, account or operation). The integration takes `aws_bedrock.invocation.request_id` from the object key so they can be joined with their log record, and maps the GenAI fields it finds in the body. It doesn't set `gen_ai.usage.*` or `gen_ai.operation.name` on them, because the log record already counts the call. To skip these objects, set **File Selectors** to a regex that only matches the log files, which sit directly in the hour folder. For example:
 
@@ -93,7 +93,7 @@ The integration doesn't follow the `*BodyS3Path` references. When the S3 input r
 
 Reasoning text only appears in the logged responses when the caller asks for it. This is a setting of the application that calls Bedrock, not of the integration:
 
-- Anthropic Claude: `thinking` (`type: enabled` with `budget_tokens`, or `type: adaptive`) and `output_config.effort`. For adaptive thinking, also set `thinking.display: "summarized"`; the default `omitted` returns an empty thinking block. Claude 4 and later models return a summary of their thinking, not the full text. With the Converse API, these settings go in `additionalModelRequestFields`.
+- Anthropic Claude: `thinking` (`type: enabled` with `budget_tokens`, or `type: adaptive`) and `output_config.effort`. For adaptive thinking, also set `thinking.display: "summarized"`. The default, `omitted`, returns an empty thinking block. Claude 4 and later models return a summary of their thinking, not the full text. With the Converse API, these settings go in `additionalModelRequestFields`.
 - Amazon Nova: `reasoningConfig`.
 
 The requested reasoning settings are recorded in `aws_bedrock.invocation.request.reasoning_*`.
@@ -117,7 +117,7 @@ When CloudWatch log collection is enabled, you can retrieve logs from all log st
 
 ### GenAI fields
 
-The `invocation` data stream maps model invocations to the ECS `gen_ai.*` fields: provider (`aws.bedrock`), operation (`chat` or `embeddings`; unset for image, video and rerank models), request parameters, system instructions, tool definitions, the names and ids of the tool calls in the response, response model, id and finish reasons, output type, and token usage. The values come from the request and response bodies, so most of them need data delivery enabled (see Setup).
+The `invocation` data stream maps model invocations to the ECS `gen_ai.*` fields: provider (`aws.bedrock`), operation (`chat` or `embeddings`, or unset for image, video and rerank models), request parameters, system instructions, tool definitions, the names and ids of the tool calls in the response, response model, id and finish reasons, output type, and token usage. The values come from the request and response bodies, so most of them need data delivery enabled (see Setup).
 
 - `gen_ai.usage.input_tokens` includes cached input tokens (cache reads and cache writes). The cached counts are also kept separately in `aws_bedrock.invocation.usage.cache_read_input_tokens` and `aws_bedrock.invocation.usage.cache_write_input_tokens`.
 - `gen_ai.request.model` is not set yet. Use `aws_bedrock.invocation.model_id` for the requested model id, and `gen_ai.response.model` for the model that served the call, when Bedrock reports it.

@@ -21,6 +21,8 @@ processors:
         (<requestId>_input.json.gz or _output.json.gz) whose keys sit directly under
         aws_bedrock.invocation, or a bare SSE chunk list that
         normalize_streaming_invocation_list_b4e9a12c turned into output.output_body_json.
+        An E body object is a request or a response according to the _input or _output suffix
+        of aws.s3.object.key, or according to its keys when there is no object key.
         E records are flagged in _temp.genai.e so that token counts and
         gen_ai.operation.name are not set on them, because the matching envelope record
         already carries them. gen_ai.operation.name comes from the operation and the model
@@ -234,7 +236,13 @@ processors:
         def req = inv.input instanceof Map ? inv.input.input_body_json : null;
         def resp = inv.output instanceof Map ? inv.output.output_body_json : null;
         if (isE && req == null && resp == null) {
-          if (hasAny(inv, params.chat_response_keys) || hasAny(inv, params.image_response_keys) || hasAny(inv, params.embedding_response_keys)) {
+          def key = dig(ctx, ['aws', 's3', 'object', 'key']);
+          String name = key instanceof String ? key.substring(key.lastIndexOf('/') + 1) : '';
+          if (name.contains('_input.')) {
+            req = inv;
+          } else if (name.contains('_output.')) {
+            resp = inv;
+          } else if (hasAny(inv, params.chat_response_keys) || hasAny(inv, params.image_response_keys) || hasAny(inv, params.embedding_response_keys)) {
             resp = inv;
           } else {
             req = inv;

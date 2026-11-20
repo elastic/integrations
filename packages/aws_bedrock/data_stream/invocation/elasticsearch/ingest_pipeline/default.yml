@@ -81,6 +81,37 @@ processors:
 
         inv.output.outputBodyJson = chunks;
         ctx.aws_bedrock.invocation = inv;
+  - script:
+      tag: wrap_e_record_list_or_string_body_c3f8a1d6
+      description: >-
+        An S3 data-prefix body object without its invocation log record (no schemaType and no
+        operation) whose input or output is not an object, such as an OpenAI Responses body,
+        would clash with the input and output objects of an invocation record. Move the whole
+        body under input.inputBodyJson or output.outputBodyJson, where an invocation log record
+        keeps it. The _input or _output suffix of the S3 object key gives the direction.
+      if: >-
+        ctx.aws_bedrock?.invocation instanceof Map && ctx.aws_bedrock.invocation.schemaType == null &&
+        ctx.aws_bedrock.invocation.operation == null &&
+        ((ctx.aws_bedrock.invocation.input != null && !(ctx.aws_bedrock.invocation.input instanceof Map)) ||
+        (ctx.aws_bedrock.invocation.output != null && !(ctx.aws_bedrock.invocation.output instanceof Map)))
+      lang: painless
+      source: |
+        def body = ctx.aws_bedrock.invocation;
+        def key = ctx.aws?.s3?.object?.key;
+        String name = key instanceof String ? key.substring(key.lastIndexOf('/') + 1) : '';
+        boolean isOutput;
+        if (name.contains('_output.')) {
+          isOutput = true;
+        } else if (name.contains('_input.')) {
+          isOutput = false;
+        } else {
+          isOutput = body.output != null && !(body.output instanceof Map);
+        }
+        if (isOutput) {
+          ctx.aws_bedrock.invocation = ['output': ['outputBodyJson': body]];
+        } else {
+          ctx.aws_bedrock.invocation = ['input': ['inputBodyJson': body]];
+        }
   - set:
       tag: set_ecs_version_0f7334bb
       field: ecs.version
@@ -324,6 +355,12 @@ processors:
           for (def entry: src.entrySet()) {
             def key = entry.getKey();
             def value = entry.getValue();
+            // Tool definitions hold caller-defined parameter schemas. Renaming a property
+            // there (modelId to model_id) would no longer match its required list.
+            if (key == 'tools' || key == 'toolConfig') {
+              dst[key] = value;
+              continue;
+            }
             if (value instanceof Map) {
               if (keyMap.containsKey(key)) {
                 dst[keyMap[key]] = renameKeys(value, keyMap);

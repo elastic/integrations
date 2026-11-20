@@ -73,7 +73,7 @@ either S3 or CloudWatch. For more details, check the
 
 1. Set up an [Amazon S3](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#setup-s3-destination) or [CloudWatch Logs](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#setup-cloudwatch-logs-destination) destination.
 2. Enable logging. You can do it either through the [Amazon Bedrock console](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#model-invocation-logging-console) or [the Amazon Bedrock API](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#using-apis-logging). 
-3. Choose the data types to log (`textDataDeliveryEnabled`, `imageDataDeliveryEnabled`, `embeddingDataDeliveryEnabled`, `videoDataDeliveryEnabled`, `audioDataDeliveryEnabled` in [LoggingConfig](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_LoggingConfig.html)). Enable at least Text. Without the data type that matches a model's modality, its log records carry only metadata (model, identity, token counts, errors): no prompts, no responses and no request parameters, so the content and request-parameter fields described below stay empty.
+3. Choose the data types to log (`textDataDeliveryEnabled`, `imageDataDeliveryEnabled`, `embeddingDataDeliveryEnabled`, `videoDataDeliveryEnabled`, `audioDataDeliveryEnabled` in [LoggingConfig](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_LoggingConfig.html)). Enable at least Text. Without the data type that matches a model's modality, its log records carry only metadata (model, identity, token counts, errors): no prompts, no responses and no request parameters, so the content and request-parameter fields stay empty.
 
 Logging is configured per AWS account and Region by an account administrator. Only calls to the `bedrock-runtime` endpoint are logged.
 
@@ -81,7 +81,7 @@ Logging is configured per AWS account and Region by an account administrator. On
 
 ### Large request and response bodies
 
-Bedrock writes request and response bodies over 100 KB, and binary data such as images, as separate objects under the `data/` prefix of the S3 destination, and points to them from the log record (`input.inputBodyS3Path`, `output.outputBodyS3Path`). With a CloudWatch Logs destination, these bodies are only delivered if a large-data S3 location (`largeDataDeliveryS3Config`) is configured; otherwise they are lost.
+Bedrock writes request and response bodies over 100 KB, and binary data such as images, as separate objects under the `data/` prefix of the S3 destination, and points to them from the log record (`input.inputBodyS3Path`, `output.outputBodyS3Path`). With a CloudWatch Logs destination, these bodies are only delivered if a large-data S3 location (`largeDataDeliveryS3Config`) is configured. Otherwise they are lost.
 
 The integration doesn't follow the `*BodyS3Path` references. When the S3 input reads the whole bucket, it also ingests the `data/` objects as their own documents. These documents have no envelope (no identity, account or operation). The integration takes `aws_bedrock.invocation.request_id` from the object key so they can be joined with their log record, and maps the GenAI fields it finds in the body. It doesn't set `gen_ai.usage.*` or `gen_ai.operation.name` on them, because the log record already counts the call. To skip these objects, set **File Selectors** to a regex that only matches the log files, which sit directly in the hour folder. For example:
 
@@ -93,7 +93,7 @@ The integration doesn't follow the `*BodyS3Path` references. When the S3 input r
 
 Reasoning text only appears in the logged responses when the caller asks for it. This is a setting of the application that calls Bedrock, not of the integration:
 
-- Anthropic Claude: `thinking` (`type: enabled` with `budget_tokens`, or `type: adaptive`) and `output_config.effort`. For adaptive thinking, also set `thinking.display: "summarized"`; the default `omitted` returns an empty thinking block. Claude 4 and later models return a summary of their thinking, not the full text. With the Converse API, these settings go in `additionalModelRequestFields`.
+- Anthropic Claude: `thinking` (`type: enabled` with `budget_tokens`, or `type: adaptive`) and `output_config.effort`. For adaptive thinking, also set `thinking.display: "summarized"`. The default, `omitted`, returns an empty thinking block. Claude 4 and later models return a summary of their thinking, not the full text. With the Converse API, these settings go in `additionalModelRequestFields`.
 - Amazon Nova: `reasoningConfig`.
 
 The requested reasoning settings are recorded in `aws_bedrock.invocation.request.reasoning_*`.
@@ -117,7 +117,7 @@ When CloudWatch log collection is enabled, you can retrieve logs from all log st
 
 ### GenAI fields
 
-The `invocation` data stream maps model invocations to the ECS `gen_ai.*` fields: provider (`aws.bedrock`), operation (`chat` or `embeddings`; unset for image, video and rerank models), request parameters, system instructions, tool definitions, the names and ids of the tool calls in the response, response model, id and finish reasons, output type, and token usage. The values come from the request and response bodies, so most of them need data delivery enabled (see Setup).
+The `invocation` data stream maps model invocations to the ECS `gen_ai.*` fields: provider (`aws.bedrock`), operation (`chat` or `embeddings`, or unset for image, video and rerank models), request parameters, system instructions, tool definitions, the names and ids of the tool calls in the response, response model, id and finish reasons, output type, and token usage. The values come from the request and response bodies, so most of them need data delivery enabled (see Setup).
 
 - `gen_ai.usage.input_tokens` includes cached input tokens (cache reads and cache writes). The cached counts are also kept separately in `aws_bedrock.invocation.usage.cache_read_input_tokens` and `aws_bedrock.invocation.usage.cache_write_input_tokens`.
 - `gen_ai.request.model` is not set yet. Use `aws_bedrock.invocation.model_id` for the requested model id, and `gen_ai.response.model` for the model that served the call, when Bedrock reports it.
@@ -223,11 +223,11 @@ The `invocation` data stream maps model invocations to the ECS `gen_ai.*` fields
 | gen_ai.analysis.function | Name of the security or analysis function used. | keyword |
 | gen_ai.analysis.tool_names | Name of the security or analysis tools used. | keyword |
 | gen_ai.completion | The full text of the LLM's response. | text |
-| gen_ai.compliance.request_triggered | Lists compliance-related filters that were triggered during the processing of the request, such as data privacy filters or regulatory compliance checks. | keyword |
-| gen_ai.compliance.response_triggered | Lists compliance-related filters that were triggered during the processing of the response, such as data privacy filters or regulatory compliance checks. | keyword |
-| gen_ai.compliance.violation_code | Code identifying the specific compliance rule that was violated. | keyword |
-| gen_ai.compliance.violation_detected | Indicates if any compliance violation was detected during the interaction. | boolean |
-| gen_ai.guardrail_id | Guardrail ID if a guardrail was executed. | keyword |
+| gen_ai.compliance.request_triggered | Deprecated, with no replacement. Lists compliance-related filters that were triggered during the processing of the request, such as data privacy filters or regulatory compliance checks. | keyword |
+| gen_ai.compliance.response_triggered | Deprecated, with no replacement. Lists compliance-related filters that were triggered during the processing of the response, such as data privacy filters or regulatory compliance checks. | keyword |
+| gen_ai.compliance.violation_code | Deprecated, use `aws_bedrock.invocation.guardrail.compliance.violation_code` instead. Code identifying the specific compliance rule that was violated. | keyword |
+| gen_ai.compliance.violation_detected | Deprecated, use `aws_bedrock.invocation.guardrail.compliance.violation_detected` instead. Indicates if any compliance violation was detected during the interaction. | boolean |
+| gen_ai.guardrail_id | Deprecated, use `aws_bedrock.invocation.guardrail.id` instead. Guardrail ID if a guardrail was executed. | keyword |
 | gen_ai.input.messages | The chat history provided to the model as an input. | flattened |
 | gen_ai.operation.name | The name of the operation being performed. | keyword |
 | gen_ai.output.messages | Messages returned by the model where each message represents a specific model response (choice, candidate). | flattened |
@@ -236,15 +236,15 @@ The `invocation` data stream maps model invocations to the ECS `gen_ai.*` fields
 | gen_ai.owasp.id | Identifier for the OWASP risk addressed. | keyword |
 | gen_ai.performance.request_size | Size of the request payload in bytes. | long |
 | gen_ai.performance.response_size | Size of the response payload in bytes. | long |
-| gen_ai.performance.response_time | Time taken by the LLM to generate a response in milliseconds. | long |
-| gen_ai.performance.start_response_time | Time taken by the LLM to send first response byte in milliseconds. | long |
-| gen_ai.policy.action | Action taken due to a policy violation, such as blocking, alerting, or modifying the content. | keyword |
-| gen_ai.policy.confidence | Confidence level in the policy match that triggered the action, quantifying how closely the identified content matched the policy criteria. | keyword |
+| gen_ai.performance.response_time | Deprecated, use `event.duration` (nanoseconds) instead. Time taken by the LLM to generate a response in milliseconds. | long |
+| gen_ai.performance.start_response_time | Deprecated, use `aws_bedrock.invocation.first_byte_latency` instead. Time taken by the LLM to send first response byte in milliseconds. | long |
+| gen_ai.policy.action | Deprecated, use `aws_bedrock.invocation.guardrail.policy.action` instead. Action taken due to a policy violation, such as blocking, alerting, or modifying the content. | keyword |
+| gen_ai.policy.confidence | Deprecated, use `aws_bedrock.invocation.guardrail.policy.confidence` instead. Confidence level in the policy match that triggered the action, quantifying how closely the identified content matched the policy criteria. | keyword |
 | gen_ai.policy.match_detail.\* |  | object |
 | gen_ai.policy.match_detail.score |  | float |
 | gen_ai.policy.match_detail.threshold |  | float |
-| gen_ai.policy.name | Name of the specific policy that was triggered. | keyword |
-| gen_ai.policy.violation | Specifies if a security policy was violated. | boolean |
+| gen_ai.policy.name | Deprecated, use `aws_bedrock.invocation.guardrail.policy.name` instead. Name of the specific policy that was triggered. | keyword |
+| gen_ai.policy.violation | Deprecated, with no replacement. Specifies if a security policy was violated. | boolean |
 | gen_ai.prompt | The full text of the user's request to the gen_ai. | text |
 | gen_ai.provider.name | The Generative AI provider as identified by the client or server instrumentation. | constant_keyword |
 | gen_ai.request.choice.count | The target number of candidate completions to return. | long |
@@ -253,7 +253,7 @@ The `invocation` data stream maps model invocations to the ECS `gen_ai.*` fields
 | gen_ai.request.id | Unique identifier for the LLM request. | keyword |
 | gen_ai.request.max_tokens | The maximum number of tokens the model generates for a request. | long |
 | gen_ai.request.model.description | Description of the LLM model. | keyword |
-| gen_ai.request.model.id | Unique identifier for the LLM model. | keyword |
+| gen_ai.request.model.id | Deprecated, use `aws_bedrock.invocation.model_id` instead. Unique identifier for the LLM model. | keyword |
 | gen_ai.request.model.instructions | Custom instructions for the LLM model. | text |
 | gen_ai.request.model.role | Role of the LLM model in the interaction. | keyword |
 | gen_ai.request.model.type | Type of LLM model. | keyword |
@@ -265,7 +265,7 @@ The `invocation` data stream maps model invocations to the ECS `gen_ai.*` fields
 | gen_ai.request.timestamp | Timestamp when the request was made. | date |
 | gen_ai.request.top_k | The top_k sampling setting for the GenAI request. | double |
 | gen_ai.request.top_p | The top_p sampling setting for the GenAI request. | double |
-| gen_ai.response.error_code | Error code returned in the LLM response. | keyword |
+| gen_ai.response.error_code | Deprecated, use `error.code` instead. Error code returned in the LLM response. | keyword |
 | gen_ai.response.finish_reasons | Reason the LLM response stopped. | keyword |
 | gen_ai.response.id | The unique identifier for the completion. | keyword |
 | gen_ai.response.model | The name of the model that generated the response. | keyword |
@@ -279,7 +279,7 @@ The `invocation` data stream maps model invocations to the ECS `gen_ai.*` fields
 | gen_ai.sentiment.content_inappropriate | Whether the content was flagged as inappropriate or sensitive. | boolean |
 | gen_ai.sentiment.score | Sentiment analysis score. | float |
 | gen_ai.sentiment.toxicity_score | Toxicity analysis score. | float |
-| gen_ai.system | Name of the LLM foundation model vendor. | keyword |
+| gen_ai.system | Deprecated, use `gen_ai.provider.name` instead. Name of the LLM foundation model vendor. | keyword |
 | gen_ai.system_instructions | The system message or instructions provided to the GenAI model separately from the chat history. | flattened |
 | gen_ai.text.complexity_score | Evaluates the complexity of the text. | float |
 | gen_ai.text.readability_score | Measures the readability level of the text. | float |
@@ -296,11 +296,11 @@ The `invocation` data stream maps model invocations to the ECS `gen_ai.*` fields
 | gen_ai.tool.call.id | The tool call identifier. | keyword |
 | gen_ai.tool.definitions | The list of source system tool definitions available to the GenAI agent or model. | flattened |
 | gen_ai.tool.name | Name of the tool utilized by the agent. | keyword |
-| gen_ai.usage.completion_tokens | Number of tokens in the LLM's response. | integer |
+| gen_ai.usage.completion_tokens | Deprecated, use `gen_ai.usage.output_tokens` instead. Number of tokens in the LLM's response. | integer |
 | gen_ai.usage.input_tokens | The number of tokens used in the GenAI input (prompt). | long |
 | gen_ai.usage.output_tokens | The number of tokens used in the GenAI response (completion). | long |
-| gen_ai.usage.prompt_tokens | Number of tokens in the user's request. | integer |
-| gen_ai.user.id | Unique identifier for the user. | keyword |
+| gen_ai.usage.prompt_tokens | Deprecated, use `gen_ai.usage.input_tokens` instead. Number of tokens in the user's request. | integer |
+| gen_ai.user.id | Deprecated, use `user.id` instead. Unique identifier for the user. | keyword |
 | gen_ai.user.rn | Unique resource name for the user. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |

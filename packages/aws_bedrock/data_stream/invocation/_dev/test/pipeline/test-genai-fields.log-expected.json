@@ -4116,6 +4116,339 @@
                 "id": "arn:aws:iam::111122223333:user/bedrock-test",
                 "name": "bedrock-test"
             }
+        },
+        {
+            "@timestamp": "2026-10-01T09:40:00.000Z",
+            "aws_bedrock": {
+                "invocation": {
+                    "input": {
+                        "input_body_json": {
+                            "inferenceConfig": {
+                                "maxTokens": 512
+                            },
+                            "messages": [
+                                {
+                                    "content": [
+                                        {
+                                            "text": "Find a flight from Madrid to Oslo on 2026-12-03 and check the weather there."
+                                        }
+                                    ],
+                                    "role": "user"
+                                }
+                            ],
+                            "toolConfig": {
+                                "tools": [
+                                    {
+                                        "toolSpec": {
+                                            "description": "Search flights between two airports.",
+                                            "inputSchema": {
+                                                "json": {
+                                                    "properties": {
+                                                        "date": {
+                                                            "type": "string"
+                                                        },
+                                                        "from": {
+                                                            "type": "string"
+                                                        },
+                                                        "to": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "from",
+                                                        "to",
+                                                        "date"
+                                                    ],
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "name": "search_flights"
+                                        }
+                                    },
+                                    {
+                                        "toolSpec": {
+                                            "description": "Get the current weather for a city.",
+                                            "inputSchema": {
+                                                "json": {
+                                                    "properties": {
+                                                        "city": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "city"
+                                                    ],
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "name": "get_weather"
+                                        }
+                                    },
+                                    {
+                                        "toolSpec": {
+                                            "description": "Get the remaining quota for a Bedrock model.",
+                                            "inputSchema": {
+                                                "json": {
+                                                    "properties": {
+                                                        "modelId": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "modelId"
+                                                    ],
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "name": "get_model_quota"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "input_content_type": "application/json",
+                        "input_token_count": 410,
+                        "messages_content_kinds": [
+                            "text"
+                        ]
+                    },
+                    "model_id": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+                    "output": {
+                        "completion_text": "I'll search for flights and check the weather.",
+                        "output_body_json": {
+                            "metrics": {
+                                "latency_ms": 2140
+                            },
+                            "output": {
+                                "message": {
+                                    "content": [
+                                        {
+                                            "text": "I'll search for flights and check the weather."
+                                        },
+                                        {
+                                            "toolUse": {
+                                                "input": {
+                                                    "date": "2026-12-03",
+                                                    "from": "MAD",
+                                                    "to": "OSL"
+                                                },
+                                                "name": "search_flights",
+                                                "toolUseId": "tooluse_Zx9Yw8Vu7Ts6Rq5Po4Nm3L"
+                                            }
+                                        },
+                                        {
+                                            "toolUse": {
+                                                "input": {
+                                                    "city": "Oslo"
+                                                },
+                                                "name": "get_weather",
+                                                "toolUseId": "tooluse_Kj2Hg3Fd4Sa5Lk6Jh7Gf8D"
+                                            }
+                                        }
+                                    ],
+                                    "role": "assistant"
+                                }
+                            },
+                            "stop_reason": "tool_use",
+                            "usage": {
+                                "inputTokens": 410,
+                                "outputTokens": 95,
+                                "totalTokens": 505
+                            }
+                        },
+                        "output_content_type": "application/json",
+                        "output_token_count": 95
+                    },
+                    "request_id": "5b7d9f1a-2c4e-4a6b-8d0f-1a3c5e7b9d2f",
+                    "schema_type": "ModelInvocationLog",
+                    "schema_version": "1.0"
+                }
+            },
+            "cloud": {
+                "account": {
+                    "id": "111122223333"
+                },
+                "region": "us-east-1",
+                "service": {
+                    "name": "bedrock"
+                }
+            },
+            "ecs": {
+                "version": "9.5.0"
+            },
+            "event": {
+                "action": "ConverseStream",
+                "duration": 2140000000,
+                "original": "{\"schemaType\":\"ModelInvocationLog\",\"schemaVersion\":\"1.0\",\"timestamp\":\"2026-10-01T09:40:00Z\",\"accountId\":\"111122223333\",\"identity\":{\"arn\":\"arn:aws:sts::111122223333:assumed-role/BedrockDevRole/jane.doe@example.com\"},\"region\":\"us-east-1\",\"requestId\":\"5b7d9f1a-2c4e-4a6b-8d0f-1a3c5e7b9d2f\",\"operation\":\"ConverseStream\",\"modelId\":\"us.anthropic.claude-haiku-4-5-20251001-v1:0\",\"input\":{\"inputContentType\":\"application/json\",\"inputBodyJson\":{\"messages\":[{\"role\":\"user\",\"content\":[{\"text\":\"Find a flight from Madrid to Oslo on 2026-12-03 and check the weather there.\"}]}],\"inferenceConfig\":{\"maxTokens\":512},\"toolConfig\":{\"tools\":[{\"toolSpec\":{\"name\":\"search_flights\",\"description\":\"Search flights between two airports.\",\"inputSchema\":{\"json\":{\"type\":\"object\",\"properties\":{\"from\":{\"type\":\"string\"},\"to\":{\"type\":\"string\"},\"date\":{\"type\":\"string\"}},\"required\":[\"from\",\"to\",\"date\"]}}}},{\"toolSpec\":{\"name\":\"get_weather\",\"description\":\"Get the current weather for a city.\",\"inputSchema\":{\"json\":{\"type\":\"object\",\"properties\":{\"city\":{\"type\":\"string\"}},\"required\":[\"city\"]}}}},{\"toolSpec\":{\"name\":\"get_model_quota\",\"description\":\"Get the remaining quota for a Bedrock model.\",\"inputSchema\":{\"json\":{\"type\":\"object\",\"properties\":{\"modelId\":{\"type\":\"string\"}},\"required\":[\"modelId\"]}}}}]}},\"inputTokenCount\":410},\"output\":{\"outputContentType\":\"application/json\",\"outputBodyJson\":{\"output\":{\"message\":{\"role\":\"assistant\",\"content\":[{\"text\":\"I'll search for flights and check the weather.\"},{\"toolUse\":{\"toolUseId\":\"tooluse_Zx9Yw8Vu7Ts6Rq5Po4Nm3L\",\"name\":\"search_flights\",\"input\":{\"from\":\"MAD\",\"to\":\"OSL\",\"date\":\"2026-12-03\"}}},{\"toolUse\":{\"toolUseId\":\"tooluse_Kj2Hg3Fd4Sa5Lk6Jh7Gf8D\",\"name\":\"get_weather\",\"input\":{\"city\":\"Oslo\"}}}]}},\"stopReason\":\"tool_use\",\"usage\":{\"inputTokens\":410,\"outputTokens\":95,\"totalTokens\":505},\"metrics\":{\"latencyMs\":2140}},\"outputTokenCount\":95}}",
+                "outcome": "success"
+            },
+            "gen_ai": {
+                "completion": "{\"metrics\":{\"latencyMs\":2140},\"output\":{\"message\":{\"content\":[{\"text\":\"I'll search for flights and check the weather.\"},{\"toolUse\":{\"input\":{\"date\":\"2026-12-03\",\"from\":\"MAD\",\"to\":\"OSL\"},\"name\":\"search_flights\",\"toolUseId\":\"tooluse_Zx9Yw8Vu7Ts6Rq5Po4Nm3L\"}},{\"toolUse\":{\"input\":{\"city\":\"Oslo\"},\"name\":\"get_weather\",\"toolUseId\":\"tooluse_Kj2Hg3Fd4Sa5Lk6Jh7Gf8D\"}}],\"role\":\"assistant\"}},\"stopReason\":\"tool_use\",\"usage\":{\"inputTokens\":410,\"outputTokens\":95,\"totalTokens\":505}}",
+                "input": {
+                    "messages": [
+                        {
+                            "content": [
+                                {
+                                    "text": "Find a flight from Madrid to Oslo on 2026-12-03 and check the weather there."
+                                }
+                            ],
+                            "role": "user"
+                        }
+                    ]
+                },
+                "operation": {
+                    "name": "chat"
+                },
+                "output": {
+                    "messages": [
+                        {
+                            "content": [
+                                {
+                                    "text": "I'll search for flights and check the weather."
+                                },
+                                {
+                                    "toolUse": {
+                                        "input": {
+                                            "date": "2026-12-03",
+                                            "from": "MAD",
+                                            "to": "OSL"
+                                        },
+                                        "name": "search_flights",
+                                        "toolUseId": "tooluse_Zx9Yw8Vu7Ts6Rq5Po4Nm3L"
+                                    }
+                                },
+                                {
+                                    "toolUse": {
+                                        "input": {
+                                            "city": "Oslo"
+                                        },
+                                        "name": "get_weather",
+                                        "toolUseId": "tooluse_Kj2Hg3Fd4Sa5Lk6Jh7Gf8D"
+                                    }
+                                }
+                            ],
+                            "role": "assistant"
+                        }
+                    ]
+                },
+                "performance": {
+                    "request_size": 841,
+                    "response_size": 471
+                },
+                "prompt": "{\"inferenceConfig\":{\"maxTokens\":512},\"messages\":[{\"content\":[{\"text\":\"Find a flight from Madrid to Oslo on 2026-12-03 and check the weather there.\"}],\"role\":\"user\"}],\"toolConfig\":{\"tools\":[{\"toolSpec\":{\"description\":\"Search flights between two airports.\",\"inputSchema\":{\"json\":{\"properties\":{\"date\":{\"type\":\"string\"},\"from\":{\"type\":\"string\"},\"to\":{\"type\":\"string\"}},\"required\":[\"from\",\"to\",\"date\"],\"type\":\"object\"}},\"name\":\"search_flights\"}},{\"toolSpec\":{\"description\":\"Get the current weather for a city.\",\"inputSchema\":{\"json\":{\"properties\":{\"city\":{\"type\":\"string\"}},\"required\":[\"city\"],\"type\":\"object\"}},\"name\":\"get_weather\"}},{\"toolSpec\":{\"description\":\"Get the remaining quota for a Bedrock model.\",\"inputSchema\":{\"json\":{\"properties\":{\"modelId\":{\"type\":\"string\"}},\"required\":[\"modelId\"],\"type\":\"object\"}},\"name\":\"get_model_quota\"}}]}}",
+                "provider": {
+                    "name": "aws.bedrock"
+                },
+                "request": {
+                    "id": "5b7d9f1a-2c4e-4a6b-8d0f-1a3c5e7b9d2f",
+                    "max_tokens": 512,
+                    "model": {
+                        "id": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+                        "role": "assistant",
+                        "type": "us"
+                    }
+                },
+                "response": {
+                    "finish_reasons": "tool_use",
+                    "timestamp": "2026-10-01T09:40:00.000Z"
+                },
+                "system": "aws",
+                "tool": {
+                    "call": {
+                        "id": [
+                            "tooluse_Zx9Yw8Vu7Ts6Rq5Po4Nm3L",
+                            "tooluse_Kj2Hg3Fd4Sa5Lk6Jh7Gf8D"
+                        ]
+                    },
+                    "definitions": [
+                        {
+                            "description": "Search flights between two airports.",
+                            "name": "search_flights",
+                            "parameters": {
+                                "properties": {
+                                    "date": {
+                                        "type": "string"
+                                    },
+                                    "from": {
+                                        "type": "string"
+                                    },
+                                    "to": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "from",
+                                    "to",
+                                    "date"
+                                ],
+                                "type": "object"
+                            },
+                            "type": "function"
+                        },
+                        {
+                            "description": "Get the current weather for a city.",
+                            "name": "get_weather",
+                            "parameters": {
+                                "properties": {
+                                    "city": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "city"
+                                ],
+                                "type": "object"
+                            },
+                            "type": "function"
+                        },
+                        {
+                            "description": "Get the remaining quota for a Bedrock model.",
+                            "name": "get_model_quota",
+                            "parameters": {
+                                "properties": {
+                                    "modelId": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "modelId"
+                                ],
+                                "type": "object"
+                            },
+                            "type": "function"
+                        }
+                    ],
+                    "name": [
+                        "search_flights",
+                        "get_weather"
+                    ]
+                },
+                "usage": {
+                    "completion_tokens": 95,
+                    "input_tokens": 410,
+                    "output_tokens": 95,
+                    "prompt_tokens": 410
+                },
+                "user": {
+                    "id": "arn:aws:sts::111122223333:assumed-role/BedrockDevRole/jane.doe@example.com"
+                }
+            },
+            "related": {
+                "user": [
+                    "BedrockDevRole",
+                    "jane.doe@example.com",
+                    "jane.doe"
+                ]
+            },
+            "tags": [
+                "preserve_original_event",
+                "preserve_duplicate_custom_fields"
+            ],
+            "user": {
+                "email": "jane.doe@example.com",
+                "id": "arn:aws:sts::111122223333:assumed-role/BedrockDevRole/jane.doe@example.com",
+                "name": "BedrockDevRole"
+            }
         }
     ]
 }
