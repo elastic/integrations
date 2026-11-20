@@ -174,18 +174,6 @@ processors:
       field: json.tgt.process.name
       target_field: sentinel_one_cloud_funnel.event.tgt.process.name
       ignore_missing: true
-  - convert:
-      field: json.tgt.process.pid
-      tag: convert_json_tgt_process_pid_691575cb
-      target_field: sentinel_one_cloud_funnel.event.tgt.process.pid
-      type: string
-      ignore_missing: true
-      if: ctx.json?.tgt?.process?.pid != ''
-      on_failure:
-        - append:
-            tag: append_error_message_1dd51f92
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       tag: rename_json_tgt_process_publisher_to_sentinel_one_cloud_funnel_event_tgt_process_publisher_c8fa2f52
       field: json.tgt.process.publisher
@@ -218,8 +206,8 @@ processors:
       tag: date_json_tgt_process_startTime_63ee28d5
       target_field: sentinel_one_cloud_funnel.event.tgt.process.start_time
       formats:
-        - ISO8601
         - epoch_millis
+        - ISO8601
       if: ctx.json?.tgt?.process?.startTime != null && ctx.json.tgt.process.startTime != ''
       on_failure:
         - append:
@@ -235,11 +223,6 @@ processors:
       tag: rename_json_tgt_process_subsystem_to_sentinel_one_cloud_funnel_event_tgt_process_subsystem_f2387370
       field: json.tgt.process.subsystem
       target_field: sentinel_one_cloud_funnel.event.tgt.process.subsystem
-      ignore_missing: true
-  - rename:
-      tag: rename_json_tgt_process_uid_to_sentinel_one_cloud_funnel_event_tgt_process_uid_d0b00836
-      field: json.tgt.process.uid
-      target_field: sentinel_one_cloud_funnel.event.tgt.process.uid
       ignore_missing: true
   - rename:
       tag: rename_json_tgt_process_user_to_sentinel_one_cloud_funnel_event_tgt_process_user_name_b291e32f
