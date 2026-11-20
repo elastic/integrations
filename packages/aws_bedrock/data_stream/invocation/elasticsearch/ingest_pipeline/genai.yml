@@ -29,7 +29,8 @@ processors:
         family (modelId without its ARN and Region prefixes), or from the body shape when the
         modelId does not reveal the family (application inference profile, provisioned and
         custom model ARNs), and for OpenAI-compatible bodies logged under an undocumented
-        operation. Image and video models, rerank models (and rerank bodies: documents and
+        operation. Converse is chat. An InvokeModel chat body with a single prompt or
+        inputText string and no messages is text_completion. Image and video models, rerank models (and rerank bodies: documents and
         query without messages) and unknown operations leave it unset; OTel has no value for
         them. gen_ai.output.type comes
         from the requested output format, or is image for image models.
@@ -136,6 +137,7 @@ processors:
           - response
         operation_names:
           chat: chat
+          text_completion: text_completion
           embeddings: embeddings
         output_types:
           json_schema: json
@@ -265,6 +267,12 @@ processors:
           kind = idKind(inv.model_id, params);
           if (kind == null) {
             kind = bodyKind(req, resp, params);
+          }
+          // A single prompt string in, generated text out (Llama, Mistral, DeepSeek,
+          // Claude v2 prompt, Titan Text inputText) is a text completion, even when the
+          // prompt embeds a chat template.
+          if (kind == 'chat' && req instanceof Map && !req.containsKey('messages') && (req.prompt instanceof String || req.inputText instanceof String)) {
+            kind = 'text_completion';
           }
         } else if (isOpenAI(req, resp, params)) {
           kind = 'chat';
@@ -546,7 +554,12 @@ processors:
         {type, text} object by script_promote_system_to_object_70e74401, which is read as one
         text part. System and developer messages of Chat Completions bodies stay in the
         messages. Build gen_ai.tool.definitions from Anthropic, OpenAI, AI21 Jamba and Cohere
-        tools[] and from Converse and Nova toolConfig.tools[].toolSpec. A flattened field
+        tools[] and from Converse and Nova toolConfig.tools[].toolSpec. Each definition's type is
+        an OTel gen_ai.tool.type value: function for tools the caller runs (custom and function
+        tools, Converse toolSpec, the Anthropic bash, text editor, computer and memory tools,
+        OpenAI computer, shell and apply_patch tools), datastore for file search, and extension
+        for other built-in, server-side and MCP tools (web search, code execution, Converse
+        systemTool). A built-in tool without a name takes its native type as name. A flattened field
         rejects the whole document when an object is nested more than 20 levels deep, so a
         tool parameter schema subtree deeper than max_depth levels is stored as a JSON string.
         System instruction parts are always flat {type, content} objects and need no cap.
@@ -554,7 +567,35 @@ processors:
       if: ctx._temp?.genai?.req instanceof Map
       params:
         max_depth: 18
+        function_tool_types:
+          - function
+          - custom
+          - computer_use_preview
+          - local_shell
+          - shell
+          - apply_patch
+        function_tool_prefixes:
+          - bash_
+          - text_editor_
+          - computer_
+          - memory_
+        datastore_tool_types:
+          - file_search
       source: |
+        String toolType(def nativeType, Map p) {
+          if (!(nativeType instanceof String) || p.function_tool_types.contains(nativeType)) {
+            return 'function';
+          }
+          for (def x : p.function_tool_prefixes) {
+            if (nativeType.startsWith(x)) {
+              return 'function';
+            }
+          }
+          if (p.datastore_tool_types.contains(nativeType)) {
+            return 'datastore';
+          }
+          return 'extension';
+        }
         def cap(def v, int depth, int maxDepth) {
           if (v instanceof Map) {
             if (depth >= maxDepth) {
@@ -630,9 +671,11 @@ processors:
             }
             Map fn = t.function instanceof Map ? t.function : t;
             Map d = new HashMap();
-            d.type = t.type instanceof String ? t.type : 'function';
+            d.type = toolType(t.type, params);
             if (fn.name != null) {
               d.name = fn.name;
+            } else if (t.type instanceof String) {
+              d.name = t.type;
             }
             if (fn.description != null) {
               d.description = fn.description;
@@ -675,9 +718,11 @@ processors:
               def it = t.entrySet().iterator();
               if (it.hasNext()) {
                 def e = it.next();
-                Map d = ['type': e.getKey()];
+                Map d = ['type': toolType(e.getKey(), params)];
                 if (e.getValue() instanceof Map && e.getValue().name != null) {
                   d.name = e.getValue().name;
+                } else {
+                  d.name = e.getKey();
                 }
                 defs.add(d);
               }
@@ -697,8 +742,9 @@ processors:
         gen_ai.response.id (OpenAI, AI21 Jamba and E response id, Cohere response_id; Converse
         has none), gen_ai.response.finish_reasons (verbatim provider values: Anthropic stream
         message_delta, Titan completionReason, Mistral outputs, DeepSeek, OpenAI and Jamba
-        choices, Cohere finish_reason), the order-aligned gen_ai.tool.name and
-        gen_ai.tool.call.id arrays of the tool calls in the response, event.duration from the
+        choices, Cohere finish_reason), the order-aligned gen_ai.tool.name, gen_ai.tool.type
+        and gen_ai.tool.call.id arrays of the tool calls in the response (the type of the
+        request's tool definition with the same name, or function), event.duration from the
         Converse latency or the stream invocationLatency (ms to ns), and the vendor
         first_byte_latency and stop_details.category. Fields the default pipeline already set
         are kept as they are.
@@ -911,7 +957,20 @@ processors:
         }
         if (!toolNames.isEmpty() && (g.tool == null || g.tool.name == null)) {
           g.tool = g.tool instanceof Map ? g.tool : new HashMap();
+          Map defTypes = new HashMap();
+          if (g.tool.definitions instanceof List) {
+            for (def d : g.tool.definitions) {
+              if (d instanceof Map && d.name instanceof String && d.type instanceof String && !defTypes.containsKey(d.name)) {
+                defTypes.put(d.name, d.type);
+              }
+            }
+          }
+          List toolTypes = new ArrayList();
+          for (def n : toolNames) {
+            toolTypes.add(defTypes.getOrDefault(n, 'function'));
+          }
           g.tool.name = toolNames;
+          g.tool.type = toolTypes;
           if (!toolIds.isEmpty()) {
             g.tool.call = ['id': toolIds];
           }

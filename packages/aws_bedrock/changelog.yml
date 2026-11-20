@@ -1,19 +1,22 @@
 # newer versions go on top
 - version: "2.4.0"
   changes:
-    - description: Add ECS GenAI fields to the `invocation` data stream for every model family, including S3 large-body objects. Existing fields are unchanged.
+    - description: Add ECS GenAI fields to the `invocation`, `runtime` and `guardrails` data streams.
       type: enhancement
       link: https://github.com/elastic/integrations/pull/22284
-    - description: Add `aws_bedrock.invocation.guardrail.*`, `error.code`, `event.duration`, `user.name` and `aws_bedrock.invocation.first_byte_latency` to the `invocation` data stream, as replacements for the non-ECS `gen_ai.guardrail_id`, `gen_ai.policy.*`, `gen_ai.compliance.*`, `gen_ai.response.error_code` and `gen_ai.performance.*` fields. Those older fields are still written and are deprecated.
+    - description: Deprecate the non-ECS `gen_ai.*` fields of the `invocation` data stream, such as `gen_ai.system` (replaced by `gen_ai.provider.name`). They are still written. The README lists their replacements.
       type: enhancement
       link: https://github.com/elastic/integrations/pull/22284
-    - description: Collect the `CacheReadInputTokenCount` and `CacheWriteInputTokenCount` metrics in the `runtime` data stream, and add `gen_ai.provider.name`, `gen_ai.request.model` and `gen_ai.usage.input_tokens` and `gen_ai.usage.output_tokens` to its per-model rows.
+    - description: Collect the `CacheReadInputTokenCount` and `CacheWriteInputTokenCount` metrics in the `runtime` data stream.
       type: enhancement
       link: https://github.com/elastic/integrations/pull/22284
-    - description: Fix the `invocation` ingest pipeline failing on OpenAI Responses API records and their S3 data-prefix body objects, whose `input` can be a string and whose response `output` is a list, so that these records get the new GenAI fields.
+    - description: Tag `invocation` documents whose prompt or completion was removed or cut because of its size.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/22284
+    - description: Fix `invocation` ingest pipeline failures on OpenAI Responses API records.
       type: bugfix
       link: https://github.com/elastic/integrations/pull/22284
-    - description: Stop `invocation` documents from being rejected when `preserve_duplicate_custom_fields` is enabled and a request or response body is nested more than 20 levels deep. Objects below that depth are kept as JSON strings.
+    - description: Fix `invocation` documents being rejected when a message or body is nested more than 20 levels deep.
       type: bugfix
       link: https://github.com/elastic/integrations/pull/22284
 - version: "2.3.2"

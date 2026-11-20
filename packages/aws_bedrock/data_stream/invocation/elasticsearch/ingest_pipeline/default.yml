@@ -886,7 +886,9 @@ processors:
   # Remove massive fields only after the fields have been used.
   - script:
       tag: script_remove_massive_input_bodies_keep_9c28ef10
-      description: Remove massive input bodies and keep request perf stats.
+      description: >-
+        Remove massive input bodies and keep request perf stats. A removed gen_ai.prompt is
+        marked with the gen_ai_prompt_removed tag.
       if: ctx.gen_ai?.prompt instanceof String
       lang: painless
       source: |
@@ -897,11 +899,19 @@ processors:
           ctx.aws_bedrock.invocation.input.input_body_json_massive_hash = ctx.gen_ai.prompt.sha1();
           ctx.aws_bedrock.invocation.input.remove("input_body_json");
           ctx.gen_ai.remove("prompt");
+          if (!(ctx.tags instanceof List)) {
+            ctx.tags = new ArrayList();
+          }
+          if (!ctx.tags.contains('gen_ai_prompt_removed')) {
+            ctx.tags.add('gen_ai_prompt_removed');
+          }
         }
 
   - script:
       tag: script_convert_chat_completion_response_map_c45c8ed2
-      description: Convert chat completion response in map or list format to user friendly format
+      description: >-
+        Convert chat completion response in map or list format to user friendly format. A
+        completion_text cut to 32766 characters is marked with the completion_text_truncated tag.
       lang: painless
       source: |
         try {
@@ -966,6 +976,12 @@ processors:
           // Trim completionText if it exceeds 32766 characters
           if (completionText.length() > 32766) {
             completionText.setLength(32766);
+            if (!(ctx.tags instanceof List)) {
+              ctx.tags = new ArrayList();
+            }
+            if (!ctx.tags.contains('completion_text_truncated')) {
+              ctx.tags.add('completion_text_truncated');
+            }
           }
           ctx.aws_bedrock.invocation.output.completion_text = completionText.toString();
         }
@@ -977,7 +993,9 @@ processors:
 
   - script:
       tag: script_remove_massive_output_bodies_keep_d7d75f45
-      description: Remove massive output bodies and keep response perf stats.
+      description: >-
+        Remove massive output bodies and keep response perf stats. A removed gen_ai.completion
+        is marked with the gen_ai_completion_removed tag.
       if: ctx.gen_ai?.completion instanceof String
       lang: painless
       source: |
@@ -988,11 +1006,20 @@ processors:
           ctx.aws_bedrock.invocation.output.output_body_json_massive_hash = ctx.gen_ai.completion.sha1();
           ctx.aws_bedrock.invocation.output.remove("output_body_json");
           ctx.gen_ai.remove("completion");
+          if (!(ctx.tags instanceof List)) {
+            ctx.tags = new ArrayList();
+          }
+          if (!ctx.tags.contains('gen_ai_completion_removed')) {
+            ctx.tags.add('gen_ai_completion_removed');
+          }
         }
 
   - script:
       tag: script_drops_null_empty_values_recursively_7e38081f
-      description: Drops null/empty values recursively
+      description: >-
+        Drops null/empty values recursively. gen_ai.tool.definitions is left out, because empty
+        and null values in a tool's parameter schema (an enum value, a default, an empty
+        property schema) are part of the tool interface.
       lang: painless
       source: |
         boolean drop(Object o) {
@@ -1007,16 +1034,29 @@ processors:
           }
           return false;
         }
+        def toolDefs = null;
+        if (ctx.gen_ai?.tool instanceof Map && ctx.gen_ai.tool.definitions != null) {
+          toolDefs = ctx.gen_ai.tool.remove('definitions');
+        }
         drop(ctx);
+        if (toolDefs != null) {
+          if (!(ctx.gen_ai instanceof Map)) {
+            ctx.gen_ai = new HashMap();
+          }
+          if (!(ctx.gen_ai.tool instanceof Map)) {
+            ctx.gen_ai.tool = new HashMap();
+          }
+          ctx.gen_ai.tool.definitions = toolDefs;
+        }
   - script:
-      tag: script_cap_retained_body_depth_5e2b9c47
+      tag: script_cap_flattened_field_depth_5e2b9c47
       description: >-
         A flattened field rejects the whole document when an object is nested more than 20
-        levels deep, which a deep tool parameter schema or tool input can reach. When the
-        bodies are kept, store any object of input.input_body_json or output.output_body_json
-        (or of the stream chunks of a list body) that sits deeper than max_depth levels as a JSON
-        string. Bodies within the limit are not changed.
-      if: ctx.tags != null && ctx.tags.contains('preserve_duplicate_custom_fields') && ctx.aws_bedrock?.invocation instanceof Map
+        levels deep, which a deep tool parameter schema, tool input or tool result can reach.
+        Store any object of gen_ai.input.messages and gen_ai.output.messages, and, when the
+        bodies are kept, of input.input_body_json and output.output_body_json (or of the stream
+        chunks of a list body), that sits deeper than max_depth levels as a JSON string. Values
+        within the limit are not changed.
       lang: painless
       params:
         max_depth: 20
@@ -1062,13 +1102,22 @@ processors:
           }
           return v;
         }
-        Map inv = ctx.aws_bedrock.invocation;
         int maxDepth = params.max_depth;
-        if (inv.input instanceof Map && depth(inv.input.input_body_json) > maxDepth) {
-          inv.input.input_body_json = cap(inv.input.input_body_json, 1, maxDepth);
+        if (ctx.gen_ai instanceof Map) {
+          for (String f : ['input', 'output']) {
+            if (ctx.gen_ai[f] instanceof Map && depth(ctx.gen_ai[f].messages) > maxDepth) {
+              ctx.gen_ai[f].messages = cap(ctx.gen_ai[f].messages, 1, maxDepth);
+            }
+          }
         }
-        if (inv.output instanceof Map && depth(inv.output.output_body_json) > maxDepth) {
-          inv.output.output_body_json = cap(inv.output.output_body_json, 1, maxDepth);
+        if (ctx.tags instanceof List && ctx.tags.contains('preserve_duplicate_custom_fields') && ctx.aws_bedrock?.invocation instanceof Map) {
+          Map inv = ctx.aws_bedrock.invocation;
+          if (inv.input instanceof Map && depth(inv.input.input_body_json) > maxDepth) {
+            inv.input.input_body_json = cap(inv.input.input_body_json, 1, maxDepth);
+          }
+          if (inv.output instanceof Map && depth(inv.output.output_body_json) > maxDepth) {
+            inv.output.output_body_json = cap(inv.output.output_body_json, 1, maxDepth);
+          }
         }
   - remove:
       field:
