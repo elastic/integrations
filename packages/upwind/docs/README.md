@@ -94,7 +94,7 @@ For more information on architectures that can be used for scaling this integrat
 
 #### Data retention
 
-The `configuration_findings` and `vulnerability_findings` data streams re-list the current posture on every polling interval (default 24 hours). Configuration findings index a new document for every finding on each run. Vulnerability findings fingerprint unchanged documents, but status and scan-time changes still add new documents.
+The `configuration_findings` and `vulnerability_findings` data streams re-list the current posture on every polling interval (default 24 hours). Configuration findings index a new document for every finding on each run. Vulnerability findings set the document ID from a fingerprint of the finding, which drops an unchanged finding only while the same backing index is being written to. With the daily rollover of the ILM policy, an unchanged finding is indexed again about once a day.
 
 The package bounds that growth with a 30-day retention that depends on the deployment type:
 
