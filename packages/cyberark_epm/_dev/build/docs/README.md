@@ -6,8 +6,9 @@ The CyberArk EPM integration collects events (raw and aggregated), policy audit 
 
 ## Elastic Managed enabled integration
 
-Elastic Managed integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Elastic Managed integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
-Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it.
+
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ## Compatibility
 
@@ -66,6 +67,14 @@ This method uses the OAuth2 client credentials flow with a CyberArk Identity ser
 **Note**:
   - The default `[EPM] URL` is `https://login.epm.cyberark.com`, but this can vary depending on your region. Refer to the [Documentation](https://docs.cyberark.com/epm/latest/en/content/webservices/webservicesintro.htm#EPMdispatcherservername) to find the correct URL for your region. This URL is the EPM dispatcher server and is only used with the **EPM** authentication method. The **CyberArk Identity** method uses `[Identity] EPM Server URL` instead.
   - If you encounter an error indicating that the usage limit has been reached, consider lowering the "Resource Rate Limit" parameter in the advanced section. For more details, refer to the [documentation](https://docs.cyberark.com/epm/latest/en/content/webservices/webservicesintro.htm#APIlimitations).
+
+### Collection behavior
+
+The Raw Event, Policy Audit Raw Event, Aggregated Event and Policy Audit Aggregated Event data streams collect events by their CyberArk EPM arrival time (`arrivalTime`), which is when the EPM service received the event, not when it occurred on the endpoint. EPM agents upload events in batches, so an event can reach EPM long after it occurred. The `@timestamp` field is set from the arrival time.
+
+Consecutive polling windows overlap by the Lookback parameter in the advanced section (default `2m`). Events collected twice because of the overlap are deduplicated.
+
+To collect events from further back after setup, for example after upgrading from a version that filtered by event time and missed late-arriving events, add a new integration policy with a larger Initial Interval, such as `1440h` for 60 days. The Initial Interval only applies on the first run of a policy. Events already stored in older backing indices of the data stream may be indexed again.
 
 ## Logs reference
 

@@ -1,0 +1,402 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: ti_whoisfreaks
+      name: test-page-limit-ti_whoisfreaks
+      streams:
+        - data_stream:
+            dataset: ti_whoisfreaks.nrd_without_whois
+          interval: 1h
+          processors:
+            - drop_event.when.equals.retry: true
+          program: |-
+            // Each poll first reads the public status endpoint. By default each TLD feed
+            // (gtld, cctld) follows the status newly.<feed>.last_update, catching up one day
+            // at a time when it is behind. A configured file_date is validated and fetched
+            // once per feed (recorded in cursor.pinned_<feed>_date); after that, polls follow
+            // the latest file again. Pending feeds are paged with phase "gtld", then "cctld".
+            // At the end of each file the date is recorded and the cursor returns to "idle".
+            state.with(
+              {
+                "c": state.?cursor.orValue({}),
+                "pin": state.file_date.trim_space(),
+                "paging": state.?cursor.phase.orValue("") in ["gtld", "cctld"],
+                "phase": state.?cursor.phase.orValue(""),
+                "date": (state.?cursor.phase.orValue("") == "gtld") ? state.?cursor.gtld_date.orValue("") : state.?cursor.cctld_date.orValue(""),
+                "offset": int(state.?cursor.cur_offset.orValue(0)),
+              }.as(s,
+                s.with(
+                  {
+                    "pin_ok": s.pin == "" || s.pin.matches("^[0-9]{4}-[0-9]{2}-[0-9]{2}$") &&
+                    type(try(s.pin.parse_time("2006-01-02"))) != string,
+                    // Pinned files are tracked apart from cursor.last_<feed>_date, so fetching a
+                    // historical file never rewinds the latest-file cursors.
+                    "pin_done": s.pin != "" && s.pin == s.c.?pinned_gtld_date.orValue("") &&
+                    s.pin == s.c.?pinned_cctld_date.orValue(""),
+                    // Request target without the API key, also used in error messages.
+                    "target": s.paging ?
+                      (
+                        state.url + "/" + s.phase + "?" + {
+                          "whois": ["false"],
+                          "date": [s.date],
+                          "limit": [string(int(state.page_limit))],
+                          "offset": [string(s.offset)],
+                        }.format_query()
+                      )
+                    :
+                      state.status_url,
+                  }
+                )
+              ).as(s,
+                s.with(
+                  {
+                    // Every request is normalised to {ok, code, detail, body, json}. A code of 0
+                    // is a transport error. A 200 stream response with a JSON body is treated as
+                    // an error, using the body's numeric status when it has one.
+                    "r": (s.paging || s.pin_ok || s.pin_done) ?
+                      try(
+                        request(
+                          "GET",
+                          s.paging ? (s.target + "&" + {"apiKey": [state.api_key]}.format_query()) : s.target
+                        ).do_request()
+                      ).as(resp,
+                        (type(resp) == string) ?
+                          {
+                            "ok": false,
+                            "code": 0,
+                            "detail": "request failed: " + ((resp.index("\": ") >= 0) ? (resp.substring(resp.index("\": ") + 3, size(resp))) : resp).as(m, (state.api_key != "") ? (m.replace_all(state.api_key, "REDACTED")) : m),
+                          }
+                        :
+                          (
+                            (!s.paging || resp.StatusCode != 200 || resp.Body.to_valid_utf8("�").trim_space().startsWith("{")) ?
+                              try(resp.Body.decode_json())
+                            :
+                              ""
+                          ).as(j,
+                            {
+                              "ok": resp.StatusCode == 200 && (
+                                s.paging ?
+                                  !resp.Body.to_valid_utf8("�").trim_space().startsWith("{")
+                                :
+                                  !(
+                                    type(j) == map && type(j.?status.orValue(false)) == double &&
+                                    j.status >= 400.0
+                                  )
+                              ),
+                              "code": (
+                                resp.StatusCode == 200 && type(j) == map && type(j.?status.orValue(false)) == double &&
+                                j.status >= 400.0
+                              ) ?
+                                int(j.status)
+                              :
+                                int(resp.StatusCode),
+                              "detail": (
+                                (type(j) == map) ?
+                                  [j.?error.orValue(""), j.?message.orValue("")].map(v, (type(v) == string) ? v : v.encode_json()).filter(v, v != "").join(": ")
+                                :
+                                  ""
+                              ).as(d,
+                                (d != "") ?
+                                  d
+                                : (size(resp.Body.to_valid_utf8("�")) > 512) ?
+                                  (resp.Body.to_valid_utf8("�").substring(0, 512) + "...")
+                                : (size(resp.Body) != 0) ?
+                                  resp.Body.to_valid_utf8(
+                                    "�"
+                                  )
+                                :
+                                  string(resp.Status)
+                              ),
+                              "body": resp.Body,
+                              "json": j,
+                            }
+                          )
+                      )
+                    :
+                      {"ok": false, "code": -1},
+                  }
+                )
+              ).as(s,
+                s.with(
+                  {
+                    // Status analysis per TLD feed: status.newly.<feed>. A feed is skipped when
+                    // its target date is already ingested, has an error when the status entry is
+                    // unusable or the pinned date is out of range, and is pending otherwise.
+                    "feeds": (!s.paging && s.r.ok && type(s.r.json) == map) ?
+                      ["gtld", "cctld"].map(f,
+                        {
+                          "feed": f,
+                          "last": s.r.json.?newly[?f].?last_update.orValue(""),
+                          "from": s.r.json.?newly[?f].?available_from.orValue(""),
+                          "done": s.c[?"last_" + f + "_date"].orValue(""),
+                          // The pinned date is used for this feed until it has been handled once.
+                          "usepin": s.pin != "" && s.c[?"pinned_" + f + "_date"].orValue("") != s.pin,
+                        }
+                      ).map(x,
+                        x.with(
+                          {
+                            "valid": type(x.last) == string && type(x.from) == string && x.last.matches("^[0-9]{4}-[0-9]{2}-[0-9]{2}$") &&
+                            x.from.matches("^[0-9]{4}-[0-9]{2}-[0-9]{2}$"),
+                          }
+                        )
+                      ).map(x,
+                        x.with(
+                          {
+                            // Each daily file holds only that day's new domains, so after a gap
+                            // (an outage or a long retriable error) the feed catches up one day at
+                            // a time from the last ingested date instead of jumping to last_update.
+                            "want": x.usepin ?
+                              s.pin
+                            : (
+                              x.valid && x.done.matches("^[0-9]{4}-[0-9]{2}-[0-9]{2}$") &&
+                              x.done < x.last
+                            ) ?
+                              (timestamp(x.done + "T00:00:00Z") + duration("24h")).format("2006-01-02").as(n, (n < x.from) ? x.from : n)
+                            : (type(x.last) == string) ? x.last : "",
+                          }
+                        )
+                      ).map(x,
+                        x.with(
+                          {
+                            "skip": !x.usepin && x.valid && x.want <= x.done,
+                            // A pinned date outside the available range is reported once and
+                            // recorded as handled; the feed then follows the latest file.
+                            "pin_error": x.usepin && x.valid && (x.want < x.from || x.want > x.last),
+                          }
+                        )
+                      ).map(x,
+                        x.with(
+                          {
+                            "error": x.skip ?
+                              ""
+                            : !x.valid ?
+                              ("GET " + s.target + " did not report a usable newly." + x.feed + " date (last_update " + x.last.encode_json() + ", available_from " + x.from.encode_json() + "; will retry on the next poll)")
+                            : (x.want < x.from || x.want > x.last) ?
+                              ("file_date " + x.want + " is outside the available range " + x.from + ".." + x.last + " for " + x.feed + " (no stream request was made for it; following the latest file instead)")
+                            :
+                              "",
+                          }
+                        )
+                      ).map(x,
+                        x.with(
+                          {
+                            "pending": !x.skip && x.error == "",
+                          }
+                        )
+                      )
+                    :
+                      [],
+                  }
+                )
+              ).as(s,
+                (!s.paging && !s.pin_ok && !s.pin_done) ?
+                  // Pinned file_date with an invalid format: report it once, record it as
+                  // handled for both feeds, and continue with the latest files.
+                  {
+                    "events": [
+                      {
+                        "error": {
+                          "message": "file_date \"" + s.pin + "\" is not a valid date: expected yyyy-MM-dd, for example 2026-08-04 (no request was made for it; following the latest files instead)",
+                        },
+                      },
+                    ],
+                    "cursor": s.c.with({"pinned_gtld_date": s.pin, "pinned_cctld_date": s.pin}),
+                    "want_more": true,
+                  }
+                : !s.r.ok ?
+                  (
+                    // WhoisFreaks answers a missing or invalid apiKey with HTTP 400 and an
+                    // "Api Access Exception" error, so that is an auth error, not a permanent one.
+                    (s.r.code in [401, 403] || s.r.code == 400 && s.r.detail.contains("Api Access")) ?
+                      "auth"
+                    : (s.r.code >= 400 && s.r.code < 500 && !(s.r.code in [408, 429])) ?
+                      "permanent"
+                    :
+                      "retry"
+                  ).as(kind,
+                    (
+                      // Permanent client errors on a stream request (for example a file date
+                      // that is not available) never succeed on retry, so record the date as
+                      // done and continue with the pending ccTLD file. Every other error keeps
+                      // the cursor so the next poll retries the same request.
+                      (kind == "permanent" && s.paging) ?
+                        s.c.with(
+                          {
+                            "phase": (s.phase == "gtld" && s.c.?cctld_date.orValue("") != "") ? "cctld" : "idle",
+                            "cur_offset": 0,
+                            s.phase + "_date": "",
+                            (s.c[?s.phase + "_pinned"].orValue(false) ? "pinned_" : "last_") + s.phase + "_date": s.date,
+                          }
+                        )
+                      :
+                        s.c
+                    ).as(nc,
+                      {
+                        "events": [
+                          {
+                            "error": {
+                              ?"code": (s.r.code > 0) ? optional.of(string(s.r.code)) : optional.none(),
+                              "message": "GET " + s.target + ((s.r.code > 0) ? (" failed with HTTP " + string(s.r.code)) : " failed") + ": " + s.r.detail + (
+                                (kind == "auth") ?
+                                  " (check the API key and the WhoisFreaks Domainer subscription; will retry on the next poll)"
+                                : (kind == "permanent" && s.paging) ?
+                                  (" (permanent error: skipping the " + s.phase + " file for " + s.date + ")")
+                                :
+                                  " (will retry on the next poll)"
+                              ),
+                            },
+                          },
+                        ],
+                        "cursor": nc,
+                        // Deliberate continuation after a skipped file: on to the pending ccTLD
+                        // file, or back to the status check while a feed is still catching up.
+                        "want_more": kind == "permanent" && s.paging && (
+                          nc.phase == "cctld" || s.c[?s.phase + "_pinned"].orValue(false) ||
+                          nc.?last_gtld_date.orValue("") < nc.?gtld_last.orValue("") || nc.?last_cctld_date.orValue("") < nc.?cctld_last.orValue("")
+                        ),
+                      }
+                    )
+                  )
+                : s.paging ?
+                  // Stream page: one domain name per line, one event per domain.
+                  s.r.body.to_valid_utf8("�").split("\n").map(row, row.trim_space()).filter(row, row != "").as(rows,
+                    (
+                      (int(state.page_limit) > 0 && size(rows) >= int(state.page_limit)) ?
+                        s.c.with({"cur_offset": s.offset + int(state.page_limit)})
+                      :
+                        s.c.with(
+                          {
+                            "phase": (s.phase == "gtld" && s.c.?cctld_date.orValue("") != "") ? "cctld" : "idle",
+                            "cur_offset": 0,
+                            s.phase + "_date": "",
+                            (s.c[?s.phase + "_pinned"].orValue(false) ? "pinned_" : "last_") + s.phase + "_date": s.date,
+                          }
+                        )
+                    ).as(nc,
+                      {
+                        "events": (size(rows) > 0) ?
+                          dyn(
+                            rows.map(row,
+                              {
+                                "message": {
+                                  "domain_name": row,
+                                  "query_time": s.date + " 00:00:00",
+                                  "tld_type": s.phase,
+                                  "file_date": s.date,
+                                }.encode_json(),
+                              }
+                            )
+                          )
+                        :
+                          // The input ends the cycle on an empty events list even when want_more
+                          // is true; the placeholder is dropped by the drop_event processor.
+                          dyn([{"retry": true}]),
+                        "cursor": nc,
+                        // More pages, the pending ccTLD file, or (when a feed is behind the
+                        // status last_update) another status check to catch up the next day.
+                        "want_more": nc.phase != "idle" || s.c[?s.phase + "_pinned"].orValue(false) ||
+                        nc.?last_gtld_date.orValue("") < nc.?gtld_last.orValue("") || nc.?last_cctld_date.orValue("") < nc.?cctld_last.orValue(""),
+                      }
+                    )
+                  )
+                : (type(s.r.json) != map) ?
+                  {
+                    "events": [
+                      {
+                        "error": {
+                          "message": "GET " + s.target + " returned a body that is not a JSON object: " + s.r.detail + " (will retry on the next poll)",
+                        },
+                      },
+                    ],
+                    "cursor": s.c,
+                    "want_more": false,
+                  }
+                :
+                  // Status result: one error event for any unusable or out-of-range feed, and
+                  // paging starts for every pending feed. When one feed has an error and the
+                  // other is pending, the pending feed is still paged in this poll.
+                  {
+                    "events": s.feeds.exists(x, x.error != "") ?
+                      dyn(
+                        [
+                          {
+                            "error": {
+                              "message": s.feeds.map(x, x.error != "", x.error).join("; "),
+                            },
+                          },
+                        ]
+                      )
+                    : s.feeds.exists(x, x.pending) ?
+                      // Placeholder (dropped by the drop_event processor) so the new cursor is
+                      // persisted and paging starts in this cycle.
+                      dyn([{"retry": true}])
+                    :
+                      dyn([]),
+                    "cursor": (
+                      s.feeds.exists(x, x.pending) ?
+                        s.c.with(
+                          {
+                            "phase": s.feeds.filter(x, x.pending)[0].feed,
+                            "cur_offset": 0,
+                            "gtld_pinned": s.feeds[0].usepin && s.feeds[0].pending,
+                            "cctld_pinned": s.feeds[1].usepin && s.feeds[1].pending,
+                            "gtld_date": s.feeds[0].pending ? s.feeds[0].want : "",
+                            "cctld_date": s.feeds[1].pending ? s.feeds[1].want : "",
+                            // The status last_update per feed, used to keep catching up after a file.
+                            "gtld_last": s.feeds[0].valid ? s.feeds[0].last : "",
+                            "cctld_last": s.feeds[1].valid ? s.feeds[1].last : "",
+                          }
+                        )
+                      :
+                        s.c
+                    ).with(
+                      {
+                        ?"pinned_gtld_date": s.feeds[0].pin_error ? optional.of(s.pin) : optional.none(),
+                        ?"pinned_cctld_date": s.feeds[1].pin_error ? optional.of(s.pin) : optional.none(),
+                      }
+                    ),
+                    // Page the pending feeds now; after a recorded pinned-date error, re-check
+                    // the status to follow the latest file.
+                    "want_more": s.feeds.exists(x, x.pending || x.pin_error),
+                  }
+              )
+            )
+          publisher_pipeline.disable_host: true
+          redact:
+            fields:
+                - api_key
+          resource.ssl: null
+          resource.timeout: 10m
+          resource.tracer:
+            enabled: false
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
+          resource.url: https://files.whoisfreaks.com/v3.3/stream/domainer
+          state:
+            api_key: ${SECRET_0}
+            file_date: ""
+            page_limit: 100
+            status_url: https://files.whoisfreaks.com/v3.4/status
+          tags:
+            - forwarded
+            - whoisfreaks-nrd-without-whois
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-ti_whoisfreaks.nrd_without_whois-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

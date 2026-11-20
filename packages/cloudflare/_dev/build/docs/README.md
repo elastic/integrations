@@ -10,8 +10,9 @@ Users of [Cloudflare](https://www.cloudflare.com/en-au/learning/what-is-cloudfla
 
 ## Elastic Managed enabled integration
 
-Elastic Managed integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Elastic Managed integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
-Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it.
+
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ## Configuration
 
@@ -23,6 +24,8 @@ Elastic Managed deployments are only supported in Elastic Serverless and Elastic
 4. Click on **Add Cloudflare** button to add Cloudflare integration.
 
 ### Configure Cloudflare Audit logs
+
+Collect Audit logs with the **Collect Cloudflare Audit logs via API** input. The **Audit logs** option in the **Collect Cloudflare Logpull logs via API** input is **DEPRECATED** since version `2.31.0` and will be removed in a future release; it supports only Auth Email and Auth Key authentication. If you use it, deactivate it and enable Audit logs in the **Collect Cloudflare Audit logs via API** input instead.
 
 The integration can retrieve Cloudflare audit logs using -
 

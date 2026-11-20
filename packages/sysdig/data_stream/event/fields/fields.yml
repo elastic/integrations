@@ -145,6 +145,40 @@
                       type: keyword
                     - name: name
                       type: keyword
+                - name: jevt
+                  type: group
+                  description: Kubernetes audit JSON fields.
+                  fields:
+                    - name: obj
+                      type: keyword
+                      ignore_above: 1024
+                      description: Original JSON-serialized Kubernetes audit event (retained for backwards compatibility).
+                    - name: obj_parsed
+                      type: flattened
+                      description: Parsed JSON-serialized Kubernetes audit event.
+                - name: ka
+                  type: group
+                  description: Kubernetes audit fields.
+                  fields:
+                  - name: auth.decision
+                    type: keyword
+                  - name: response.code
+                    type: keyword
+                  - name: target.name
+                    type: keyword
+                  - name: target.namespace
+                    type: keyword
+                  - name: target.subresource
+                    type: keyword
+                  - name: uri
+                    type: keyword
+                  - name: uri_params
+                    type: flattened
+                    description: Kubernetes audit URI query parameters.
+                  - name: user.name
+                    type: keyword
+                  - name: verb
+                    type: keyword
                 - name: proc
                   type: group
                   fields:
@@ -369,6 +403,10 @@
         - name: labels
           type: group
           fields:
+            - name: agent.variant
+              type: keyword
+            - name: agent.version
+              type: keyword
             - name: aws.account_id
               type: keyword
             - name: aws.region
@@ -393,9 +431,13 @@
               type: keyword
             - name: cloud_provider.user
               type: keyword
+            - name: container.id
+              type: keyword
             - name: container.image.digest
               type: keyword
             - name: container.image.id
+              type: keyword
+            - name: container.image.name
               type: keyword
             - name: container.image.repo
               type: keyword
@@ -425,13 +467,19 @@
               type: keyword
             - name: host.host_name
               type: keyword
+            - name: host.id
+              type: keyword
             - name: host.mac
               type: keyword
             - name: kubernetes.cluster.name
               type: keyword
+            - name: kubernetes.cluster.distribution
+              type: keyword
             - name: kubernetes.cron_job.name
               type: keyword
             - name: kubernetes.daemon_set.name
+              type: keyword
+            - name: kubernetes.deployment.name
               type: keyword
             - name: kubernetes.job.name
               type: keyword
@@ -441,11 +489,15 @@
               type: keyword
             - name: kubernetes.pod.name
               type: keyword
+            - name: kubernetes.replica_set.name
+              type: keyword
             - name: kubernetes.service.name
               type: keyword
             - name: kubernetes.workload.name
               type: keyword
             - name: kubernetes.workload.type
+              type: keyword
+            - name: orchestrator.type
               type: keyword
             - name: source.ip
               type: ip

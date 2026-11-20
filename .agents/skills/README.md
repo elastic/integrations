@@ -30,3 +30,16 @@ npx skills@latest add https://github.com/elastic/integrations/tree/<branch>/.age
 Swap `<branch>` for the branch you want. Re-running `npx skills add`
 with a different branch URL re-installs from that source, so you can move
 between branches and `main` as needed.
+
+## Plugins
+
+Tools that need more than a skill (commands, agents, hooks, scripts) ship as
+Claude Code plugins under [`.agents/plugins/`](../plugins/). For example,
+[`integrations-triage`](../plugins/integrations-triage/README.md) is a
+draft-only triage of the daily CI jobs and the issues they file. Install it
+from the root of your checkout:
+
+```bash
+claude plugin marketplace add ./.agents/plugins/integrations-triage
+claude plugin install integrations-triage@integrations-triage
+```

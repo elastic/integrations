@@ -59,13 +59,13 @@ The instructions above assume that you wish to collect data from your own tenant
 
 ## How do I deploy this integration?
 
-This integration supports both Elastic Agentless-based and Agent-based installations.
+This integration supports both Elastic Managed and Agent-based installations.
 
-### Agentless-based installation
+### Elastic Managed enabled integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it.
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ### Agent-based installation
 
@@ -107,7 +107,7 @@ When debugging a permissions issue or unexpected API responses, it can be useful
 
 For the full list of API error codes and their meanings, see the official [Office 365 Management Activity API — Errors](https://learn.microsoft.com/en-us/office/office-365-management-api/office-365-management-activity-api-reference#errors).
 
-**Security warning:** request trace files are not redacted. They contain the `Authorization` header and, during OAuth2 token exchange, the client secret in clear text. Only enable request tracing in a controlled debugging session, restrict access to the trace files, disable it as soon as you are finished, and rotate the client secret if a trace file that may contain it was exposed. On agentless deployments this setting is not user-configurable.
+**Security warning:** request trace files are not redacted. They contain the `Authorization` header and, during OAuth2 token exchange, the client secret in clear text. Only enable request tracing in a controlled debugging session, restrict access to the trace files, disable it as soon as you are finished, and rotate the client secret if a trace file that may contain it was exposed. On Elastic Managed deployments this setting is not user-configurable.
 
 #### Authentication failures
 
@@ -124,6 +124,10 @@ If the integration is healthy but no data appears: confirm that at least one con
 #### Recovering after an outage
 
 On restart, the integration resumes from its saved position and backfills the missed window. Overlapping events are de-duplicated during ingest, so a resume does not create duplicates. The API retains data for a maximum of 7 days: outages shorter than that backfill automatically, but any window older than 7 days is purged by Microsoft and cannot be recovered.
+
+#### One tenant stops collecting and reports degraded
+
+If one integration policy reports a degraded status and stops collecting while others on the same agent stay healthy, check the logs for a `persistent transport failure fetching` error naming a URL whose host is not the configured **Base URL of Office Management API** — for example `http://localhost/...`. The API has occasionally returned a content URL built on a miscomputed base URL, which can never be fetched, and because it is saved in the integration's cursor, restarting the agent, re-enabling the integration and editing the policy all leave it in place. Version 3.11.1 rebuilds such URLs before use and repairs an affected cursor on the next poll, so upgrading is enough.
 
 #### Rate limiting
 

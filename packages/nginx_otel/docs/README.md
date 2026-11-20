@@ -1,21 +1,20 @@
-# NGINX metrics and logs from OpenTelemetry Collector
+# NGINX OpenTelemetry Assets
 
 The NGINX OpenTelemetry Assets package allows you to monitor [Nginx](https://nginx.org/), a high-performance web server, reverse proxy, and load balancer. NGINX is widely used for serving web content, proxying traffic, and load balancing across multiple servers.
 
-Use the NGINX OpenTelemetry Assets package to collect and analyze performance metrics and logs from your NGINX instances. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference metrics and logs when troubleshooting performance issues.
-
-For example, if you want to monitor the request rate or connection status of your NGINX server, you can use the [NGINX Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/nginxreceiver#nginx-receiver) to collect metrics such as `nginx.requests` or `nginx.connections_current`, and the [Filelog Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/filelogreceiver) to collect access and error logs. The NGINX OpenTelemetry Assets package lets you visualize these in Kibana dashboards, set up alerts for high error rates, or troubleshoot by analyzing metric and log trends.
+This content package provides dashboards, alerting rule templates, and SLO templates for NGINX metrics and logs collected by the **[Nginx (OpenTelemetry)](https://www.elastic.co/docs/reference/integrations/nginx_otel_integration)** integration package: `stub_status` metrics from the NGINX receiver, and access and error logs parsed from the NGINX log files.
 
 
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-1. Compatibility and supported versions: This package is compatible with systems running either [EDOT Collector](https://www.elastic.co/docs/reference/opentelemetry/quickstart/) or vanilla upstream Collector and NGINX with the `stub_status` module enabled. This package has been tested with OTEL collector version [v0.146.1](https://github.com/open-telemetry/opentelemetry-collector/tree/v0.146.1), EDOT collector version [9.0](https://www.elastic.co/docs/reference/opentelemetry/compatibility/collectors), and NGINX version 1.27.5. 
 
-2. Permissions required: The collector requires access to the NGINX `stub_status` endpoint (for example, http://localhost:80/nginx_status) and read access to the NGINX log files (typically `/var/log/nginx/access.log` and `/var/log/nginx/error.log`). When running the collector, make sure you have the appropriate permissions.
+## Setup
 
-3. NGINX configuration: The NGINX `stub_status` module must be enabled, and the status endpoint must be accessible. For example:
+### Prerequisites
+
+1. NGINX with the `stub_status` module enabled and the status endpoint reachable by Elastic Agent. For example:
 ```
 server {
     listen 80;
@@ -28,162 +27,34 @@ server {
 }
 ```
 
+2. Install the **[Nginx (OpenTelemetry)](https://www.elastic.co/docs/reference/integrations/nginx_otel_integration)** integration package and configure it with your `stub_status` endpoint and the paths of your NGINX access and error logs. The dashboards and templates rely on the fields that integration parses from the logs (for example `url.path`, `http.response.status_code`, and `log.level`), so collect the data through it rather than a custom Collector configuration.
 
-## Setup
+3. Optional: to populate the latency panels, configure the extended NGINX log format with request and upstream timings described in the [Nginx (OpenTelemetry)](https://www.elastic.co/docs/reference/integrations/nginx_otel_integration) integration package documentation.
 
-1. Make sure the NGINX `stub_status` module is enabled and the status endpoint is accessible.
-
-2. Make sure the NGINX access and error log files are readable by the collector.
-
-3. Install and configure the EDOT Collector or upstream Collector to export metrics and logs to Elasticsearch.
-
-### Receivers
-
-The collector configuration uses `nginx` and `filelog` receivers:
-
-- **`nginx`** — Scrapes performance metrics from the NGINX `stub_status` endpoint.
-- **`filelog/nginx_access`** — Tails the NGINX access log file.
-- **`filelog/nginx_error`** — Tails the NGINX error log file, with multiline support for entries that span multiple lines.
-
-```
-extensions:
-  file_storage:
-    directory: /var/otelcol/storage
-
-receivers:
-  nginx:
-    endpoint: "http://localhost:80/nginx_status"
-    collection_interval: 10s
-
-  filelog/nginx_access:
-    include: [/var/log/nginx/access.log]
-    include_file_path: true
-    start_at: beginning
-    storage: file_storage
-
-  filelog/nginx_error:
-    include: [/var/log/nginx/error.log]
-    include_file_path: true
-    start_at: beginning
-    multiline:
-      line_start_pattern: '^\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}'
-    storage: file_storage
-```
-
-The `file_storage` extension persists the filelog receiver checkpoints so log collection resumes from the correct position after a restart.
-
-### Processors
-
-The `transform` processors parse raw log lines into structured fields using grok patterns:
-
-- **`transform/parse_nginx_access/log`** — Parses the NGINX combined access log format and extracts fields such as `http.request.method`, `http.response.status_code`, `url.original`, `source.address`, `http.response.body.size`, `http.version`, and `user_agent.original`. It also runs user-agent parsing to populate `user_agent.name`.
-- **`transform/parse_nginx_error/log`** — Parses NGINX error log entries and extracts `log.level`, `process.pid`, `process.thread.id`, `nginx.error.connection_id`, and `message`.
-- **`resourcedetection/system`** — Detects and attaches host-level resource attributes such as `host.name` and `host.arch`.
-
-```
-processors:
-  transform/parse_nginx_access/log:
-    error_mode: ignore
-    log_statements:
-      - context: log
-        conditions:
-          - IsMatch(body, "^[\\d.]+ - .+ \\[.+\\] \".+\" \\d+ \\d+ \".+\" \".+\"")
-        statements:
-          - set(body, ExtractGrokPatterns(body, "%{IPORHOST:source.address} - (-|%{DATA:user.name}) \\[%{HTTPDATE:nginx.access.time}\\] \"%{WORD:http.request.method} %{DATA:url.original} HTTP/%{NUMBER:http.version}\" %{NUMBER:http.response.status_code:long} %{NUMBER:http.response.body.size:long} \"(-|%{DATA:http.request.referrer})\" \"(-|%{DATA:user_agent.original})\"", true))
-          - set(attributes["data_stream.dataset"], "nginx.access")
-          - set(attributes["event.name"], "nginx.access")
-          - set(time, Time(body["nginx.access.time"], "%d/%b/%Y:%H:%M:%S %z"))
-          - delete_key(body, "nginx.access.time")
-          - set(attributes["http.response.status_code"], body["http.response.status_code"])
-          - set(attributes["http.request.method"], body["http.request.method"])
-          - set(attributes["url.original"], body["url.original"])
-          - set(attributes["source.address"], body["source.address"])
-          - set(attributes["http.response.body.size"], body["http.response.body.size"])
-          - set(attributes["http.version"], body["http.version"])
-          - set(attributes["user_agent.original"], body["user_agent.original"])
-      - context: log
-        conditions:
-          - body["user_agent.original"] != nil
-        statements:
-          - merge_maps(body, UserAgent(body["user_agent.original"]), "upsert")
-          - set(attributes["user_agent.name"], body["user_agent.name"])
-
-  transform/parse_nginx_error/log:
-    error_mode: ignore
-    log_statements:
-      - context: log
-        conditions:
-          - IsMatch(body, "^\\d{4}/\\d{2}/\\d{2} \\d{2}:\\d{2}:\\d{2} \\[.+\\]")
-        statements:
-          - 'set(body, ExtractGrokPatterns(body, "%{DATA:nginx.error.time} \\[%{LOGLEVEL:log.level}\\] %{NUMBER:process.pid:long}#%{NUMBER:process.thread.id:long}: (\\*%{NUMBER:nginx.error.connection_id:long} )?%{GREEDYMULTILINE:message}", true, ["GREEDYMULTILINE=(.|\\n)*", "LOGLEVEL=[a-zA-Z]+"]))'
-          - set(attributes["data_stream.dataset"], "nginx.error")
-          - set(attributes["event.name"], "nginx.error")
-          - set(severity_text, body["log.level"])
-          - set(attributes["log.level"], body["log.level"])
-          - set(attributes["message"], body["message"])
-          - set(attributes["process.pid"], body["process.pid"])
-
-  resourcedetection/system:
-    detectors: ["system"]
-    system:
-      hostname_sources: ["os"]
-```
-
-### Exporters and pipelines
-
-Configure the exporter and wire the pipelines together:
-
-```
-exporters:
-  elasticsearch:
-    endpoint: https://localhost:9200
-    user: <userid>
-    password: <password>
-    # tls:
-    #  insecure_skip_verify: true
-    mapping:
-      mode: otel
-
-service:
-  extensions: [file_storage]
-  pipelines:
-    logs/nginx_access:
-      receivers: [filelog/nginx_access]
-      processors: [transform/parse_nginx_access/log, resourcedetection/system]
-      exporters: [elasticsearch]
-    logs/nginx_error:
-      receivers: [filelog/nginx_error]
-      processors: [transform/parse_nginx_error/log, resourcedetection/system]
-      exporters: [elasticsearch]
-    metrics:
-      receivers: [nginx]
-      processors: [resourcedetection/system]
-      exporters: [elasticsearch]
-```
-
-The `resourcedetection/system` processor is required across all pipelines to populate host information used by the dashboard.
 
 ## Dashboards
 
-This package includes three pre-built Kibana dashboards:
+This package includes four pre-built Kibana dashboards:
 
-- **[Nginx OTel] Request Health** — Golden signals overview: errors (4xx/5xx), throughput, and saturation. Monitors request rates from access logs, error log severity, and connection states from stub_status metrics.
-- **[Nginx OTel] Server Internals** — Deep-dive into connection handling: active/reading/writing/waiting states, accept and handled rates, request processing, and dropped connections.
-- **[Nginx OTel] Traffic & Capacity** — Traffic analysis with status code distribution, top URLs, top clients, HTTP methods and versions, plus capacity planning metrics and request rate trends.
+- **[Nginx OTel] Overview** — All NGINX instances at a glance: golden-signal KPIs, request rate, error rate and latency trends, an instance hexmap and table, error-log analysis, and top instances over time. Drill down from an instance to its details.
+- **[Nginx OTel] Request Health** — Latency (P50/P95/P99, upstream vs NGINX time, slowest URL paths), 4xx/5xx errors, and error logs.
+- **[Nginx OTel] Server Internals** — Connection states, accepted vs handled connections, request throughput, and per-instance `stub_status` metrics.
+- **[Nginx OTel] Traffic & Capacity** — Request volume, bytes served, top URL paths, clients, user agents, HTTP methods and protocol versions, plus peak capacity.
 
-Each dashboard includes a host filter control and cross-links to navigate between views.
+Request Health, Server Internals, and Traffic & Capacity share a tab bar and keep the instance selected on the Overview.
 
 ## Alerting rule templates
 
-This package ships five alerting rule templates that you can enable and customize:
+This package ships six alerting rule templates that you can enable and customize:
 
 | Rule | Default threshold | Window | Description |
 |------|-------------------|--------|-------------|
 | **[Nginx OTel] High 4xx error rate** | > 15% | 15 min | Fires when the share of HTTP 4xx client errors exceeds the threshold per host (minimum 50 requests). |
 | **[Nginx OTel] High 5xx error rate** | > 5% | 15 min | Fires when the share of HTTP 5xx server errors exceeds the threshold per host (minimum 50 requests). |
 | **[Nginx OTel] High active connections** | > 256 avg | 5 min | Fires when average active connections exceed the threshold. Adjust to match your NGINX `worker_connections` setting. |
-| **[Nginx OTel] Error log spike** | > 50 entries | 15 min | Fires when severe error log entries (`error`, `crit`, `alert`, `emerg`) exceed the threshold per host. |
+| **[Nginx OTel] Error log spike** | > 50 entries | 15 min | Fires when severe error log entries (`error`, `crit`, `alert`, `emerg`) exceed the threshold per host, excluding the error-level "No such file or directory" lines NGINX writes for every 404 (the same message at `crit` or above still counts). |
 | **[Nginx OTel] Dropped connections** | Any drop detected | 5 min | Fires when NGINX accepted more connections than it handled, indicating resource exhaustion. |
+| **[Nginx OTel] High P95 upstream response time** | > 1 s | 15 min | Fires when the 95th percentile of upstream response time exceeds the threshold per host (minimum 20 proxied requests). Requires the extended log format with timing fields. |
 
 All rules use ES|QL queries, run every 1 minute, and group by `host.name`. Thresholds can be adjusted to match your environment's baseline.
 
@@ -191,46 +62,16 @@ All rules use ES|QL queries, run every 1 minute, and group by `host.name`. Thres
 
 > **Note**: SLO templates require Elastic Stack version 9.4.0 or later.
 
-This package includes two SLO templates:
+This package includes three SLO templates:
 
 | SLO | Target | Window | Description |
 |-----|--------|--------|-------------|
 | **[Nginx OTel] Request availability** | 99% | Rolling 30 days | Percentage of requests that return a non-server-error response (status code < 500). Uses occurrence-based budgeting over access logs. |
 | **[Nginx OTel] Connection handling rate** | 99.5% | Rolling 30 days | Percentage of 1-minute time slices where all accepted connections are handled (no drops). Uses timeslice budgeting over stub_status metrics. |
+| **[Nginx OTel] Request latency** | 99% | Rolling 30 days | Percentage of requests that complete within 1 second (`$request_time`), excluding the collector's `/nginx_status` checks. Uses occurrence-based budgeting over access logs. Requires the extended log format with timing fields. |
 
-Both SLOs are grouped by `host.name`, allowing per-instance tracking.
+All SLOs are grouped by `host.name`, allowing per-instance tracking.
 
 ## Metrics reference
 
-### NGINX metrics
-The [NGINX receiver]((https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/nginxreceiver/documentation.md)) collects performance metrics from the NGINX `stub_status` module. Key metrics include:
-
-
-| Metric Name | Description | Type | Attributes |
-|-------------|-------------|------|------------|
-| `nginx.requests` | Total number of client requests | Counter | - |
-| `nginx.connections_accepted` | Total number of accepted client connections | Counter | - |
-| `nginx.connections_handled` | Total number of handled connections | Counter | - |
-| `nginx.connections_current` | Current number of client connections by state | Gauge | `state`: `active`, `reading`, `writing`, `waiting` |
-
-#### Connection States
-
-- `active`: Currently active client connections
-- `reading`: Connections currently reading request headers
-- `writing`: Connections currently writing response to client  
-- `waiting`: Idle client connections waiting for a request
-
-These metrics provide insights into:
-- **Request volume and patterns** through request counts
-- **Connection health** via accepted, and handled connection statistics  
-- **Server performance** using active, reading, writing, and waiting connection states
-
-For a complete list of all available metrics and their detailed descriptions, refer to the [NGINX Receiver documentation](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/nginxreceiver/documentation.md) in the upstream OpenTelemetry Collector repository.
-
-
-
-
-
-
-
-
+The dashboards use the `stub_status` metrics collected by the NGINX receiver. For the full list of metrics and their attributes, refer to the [NGINX receiver documentation](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/nginxreceiver/documentation.md) in the upstream OpenTelemetry Collector repository.

@@ -6,7 +6,7 @@
             "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
             "panelsJSON": "{\"a39da70b-3e4b-423e-9d31-44157ba73e16\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"agent.name\",\"title\":\"Agent Name\",\"id\":\"a39da70b-3e4b-423e-9d31-44157ba73e16\",\"enhancements\":{},\"selectedOptions\":[]}},\"5a2e229f-c0e7-4011-9712-112f4581936b\":{\"order\":1,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"client.ip\",\"title\":\"Client IP\",\"id\":\"5a2e229f-c0e7-4011-9712-112f4581936b\",\"enhancements\":{},\"selectedOptions\":[]}},\"4605d8f8-9169-43b4-a6d1-a24873d45ef3\":{\"order\":2,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"server.ip\",\"title\":\"Server IP\",\"id\":\"4605d8f8-9169-43b4-a6d1-a24873d45ef3\",\"enhancements\":{},\"selectedOptions\":[]}}}"
         },
-        "description": "PostgreSQL network traffic overview for use with the \"Map root Packetbeat fields to ECS\" option.",
+        "description": "PostgreSQL network traffic overview.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [],
@@ -96,7 +96,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "index": "01e5fa86-ac98-4a1e-a23a-ccb4bffc73ac",
-                                        "key": "status",
+                                        "key": "network_traffic.status",
                                         "negate": true,
                                         "params": {
                                             "query": "OK"
@@ -105,9 +105,28 @@
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "status": {
+                                            "network_traffic.status": {
                                                 "query": "OK"
                                             }
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "01e5fa86-ac98-4a1e-a23a-ccb4bffc73ac",
+                                        "key": "network_traffic.status",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "network_traffic.status"
                                         }
                                     }
                                 },
@@ -1070,7 +1089,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "index": "90567231-3080-4cb0-a806-74cf43d8838a",
-                                        "key": "method",
+                                        "key": "network_traffic.pgsql.method",
                                         "negate": false,
                                         "params": [
                                             "DELETE",
@@ -1092,22 +1111,22 @@
                                             "should": [
                                                 {
                                                     "match_phrase": {
-                                                        "method": "DELETE"
+                                                        "network_traffic.pgsql.method": "DELETE"
                                                     }
                                                 },
                                                 {
                                                     "match_phrase": {
-                                                        "method": "UPDATE"
+                                                        "network_traffic.pgsql.method": "UPDATE"
                                                     }
                                                 },
                                                 {
                                                     "match_phrase": {
-                                                        "method": "INSERT"
+                                                        "network_traffic.pgsql.method": "INSERT"
                                                     }
                                                 },
                                                 {
                                                     "match_phrase": {
-                                                        "method": "SELECT"
+                                                        "network_traffic.pgsql.method": "SELECT"
                                                     }
                                                 }
                                             ]

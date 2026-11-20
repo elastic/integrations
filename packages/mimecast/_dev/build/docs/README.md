@@ -2,14 +2,15 @@
 
 The Mimecast integration collects events from the [Mimecast API](https://developer.services.mimecast.com/apis).
 
-## Agentless Enabled Integration
+## Elastic Managed enabled integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it.
+
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ## Configuration
 
-### v2 API Endpoints
+### API 2.0 Endpoints
 
 Authorization parameters for the Mimecast API (`Client ID` and `Client Secret`) should
 be provided by a Mimecast representative for this integration. Under `Advanced options`
@@ -19,13 +20,15 @@ to change the defaults.
 
 > Note: Rate limit quotas may require you to set up different credentials for the different available log types.
 
-### v1 API Endpoints (deprecated)
+### API 1.0 Endpoints (DEPRECATED)
 
-> **Deprecated:** Mimecast API 1.0 is [end-of-life](https://mimecastsupport.zendesk.com/hc/en-us/articles/43572890309651-API-Integrations-API-1-0-End-of-Life-Project-Extension-Aug-2025).
-> New installations should use the v2 API. Existing v1 configurations continue
+> **DEPRECATED** since version `3.6.0` and will be removed in a future release. New integration policies should use `Collect Mimecast logs via API 2.0`. If an existing policy has `DEPRECATED - Collect Mimecast logs via API 1.0` enabled, edit the policy, disable that option, and enable `Collect Mimecast logs via API 2.0` instead.
+>
+> Mimecast API 1.0 is [end-of-life](https://mimecastsupport.zendesk.com/hc/en-us/articles/43572890309651-API-Integrations-API-1-0-End-of-Life-Project-Extension-Aug-2025).
+> New installations should use API 2.0. Existing API 1.0 configurations continue
 > to work but will stop functioning when Mimecast retires API 1.0 application
 > credentials. See the [API 1.0 to 2.0 Migration Guide](https://developer.services.mimecast.com/api-1-0-to-2-0-migration-guide)
-> for details on provisioning v2 API credentials.
+> for details on provisioning API 2.0 credentials.
 
 Authorization parameters for the Mimecast API (`Application Key`, `Application
 ID`, `Access Key`, and `Secret Key`) should be provided by a Mimecast

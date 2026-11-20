@@ -1,0 +1,238 @@
+{
+  "id": "nginx_otel-client-errors-ml",
+  "type": "ml-module",
+  "migrationVersion": {
+    "search": "7.9.3"
+  },
+  "references": [],
+  "attributes": {
+    "id": "nginx_otel-client-errors-ml",
+    "title": "[Nginx OTel] 4xx error rate anomalies",
+    "description": "Detect Nginx hosts whose percentage of authentication failures (401/403), not-found responses (404) or other client errors (4xx) rises above their own baseline, from the Nginx (OpenTelemetry) access logs.",
+    "type": "Web server logs",
+    "logo": {
+      "icon": "logoNginx"
+    },
+    "defaultIndexPattern": "logs-nginx.access.otel-*",
+    "query": {
+      "bool": {
+        "filter": [
+          {
+            "term": {
+              "data_stream.dataset": "nginx.access.otel"
+            }
+          },
+          {
+            "exists": {
+              "field": "host.name"
+            }
+          }
+        ],
+        "must_not": {
+          "terms": {
+            "_tier": [
+              "data_frozen",
+              "data_cold"
+            ]
+          }
+        }
+      }
+    },
+    "jobs": [
+      {
+        "id": "nginx_host_client_error_anomaly",
+        "config": {
+          "groups": [
+            "nginx",
+            "otel"
+          ],
+          "description": "Nginx OTel access logs: per-host percentage of 401/403, 404 and other 4xx responses above the host's own baseline. Percentages are computed in the datafeed every 15 minutes; 15-minute windows with fewer than 20 requests are skipped, and status-page requests are excluded.",
+          "analysis_config": {
+            "bucket_span": "15m",
+            "detectors": [
+              {
+                "detector_description": "High percentage of 401/403 authentication failures per host (computed in the datafeed)",
+                "function": "high_mean",
+                "field_name": "auth_error_pct",
+                "partition_field_name": "host.name"
+              },
+              {
+                "detector_description": "High percentage of 404 not-found responses per host (computed in the datafeed)",
+                "function": "high_mean",
+                "field_name": "not_found_pct",
+                "partition_field_name": "host.name"
+              },
+              {
+                "detector_description": "High percentage of other 4xx client errors (excluding 401/403/404) per host (computed in the datafeed)",
+                "function": "high_mean",
+                "field_name": "other_client_error_pct",
+                "partition_field_name": "host.name"
+              }
+            ],
+            "influencers": [
+              "host.name"
+            ],
+            "summary_count_field_name": "doc_count"
+          },
+          "analysis_limits": {
+            "model_memory_limit": "256mb"
+          },
+          "data_description": {
+            "time_field": "@timestamp",
+            "time_format": "epoch_ms"
+          },
+          "custom_settings": {
+            "created_by": "ml-module-nginx-otel-client-errors-ml",
+            "custom_urls": [
+              {
+                "url_name": "Request Health for this host",
+                "url_value": "dashboards#/view/nginx_otel-a1b2c3d4-e5f6-7890-abcd-ef1234567890?_g=(filters:!(),time:(from:'$earliest$',mode:absolute,to:'$latest$'))&_a=(filters:!(),query:(language:kuery,query:'host.name:\"$host.name$\"'))"
+              }
+            ]
+          },
+          "model_plot_config": {
+            "enabled": true,
+            "annotations_enabled": true
+          }
+        }
+      }
+    ],
+    "datafeeds": [
+      {
+        "id": "datafeed-nginx_host_client_error_anomaly",
+        "job_id": "nginx_host_client_error_anomaly",
+        "config": {
+          "job_id": "nginx_host_client_error_anomaly",
+          "indices": [
+            "INDEX_PATTERN_NAME"
+          ],
+          "query": {
+            "bool": {
+              "filter": [
+                {
+                  "term": {
+                    "data_stream.dataset": "nginx.access.otel"
+                  }
+                },
+                {
+                  "exists": {
+                    "field": "http.response.status_code"
+                  }
+                }
+              ],
+              "must_not": [
+                {
+                  "term": {
+                    "url.path": "/nginx_status"
+                  }
+                }
+              ]
+            }
+          },
+          "indices_options": {
+            "allow_no_indices": true
+          },
+          "aggregations": {
+            "buckets": {
+              "date_histogram": {
+                "field": "@timestamp",
+                "fixed_interval": "15m"
+              },
+              "aggregations": {
+                "@timestamp": {
+                  "max": {
+                    "field": "@timestamp"
+                  }
+                },
+                "host.name": {
+                  "terms": {
+                    "field": "host.name",
+                    "size": 1000
+                  },
+                  "aggregations": {
+                    "auth_errors": {
+                      "filter": {
+                        "terms": {
+                          "http.response.status_code": [
+                            401,
+                            403
+                          ]
+                        }
+                      }
+                    },
+                    "not_found": {
+                      "filter": {
+                        "term": {
+                          "http.response.status_code": 404
+                        }
+                      }
+                    },
+                    "other_client_errors": {
+                      "filter": {
+                        "bool": {
+                          "filter": [
+                            {
+                              "range": {
+                                "http.response.status_code": {
+                                  "gte": 400,
+                                  "lt": 500
+                                }
+                              }
+                            }
+                          ],
+                          "must_not": [
+                            {
+                              "terms": {
+                                "http.response.status_code": [
+                                  401,
+                                  403,
+                                  404
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "auth_error_pct": {
+                      "bucket_script": {
+                        "buckets_path": {
+                          "e": "auth_errors>_count",
+                          "n": "_count"
+                        },
+                        "script": "params.n >= 20 ? 100.0 * params.e / params.n : null"
+                      }
+                    },
+                    "not_found_pct": {
+                      "bucket_script": {
+                        "buckets_path": {
+                          "e": "not_found>_count",
+                          "n": "_count"
+                        },
+                        "script": "params.n >= 20 ? 100.0 * params.e / params.n : null"
+                      }
+                    },
+                    "other_client_error_pct": {
+                      "bucket_script": {
+                        "buckets_path": {
+                          "e": "other_client_errors>_count",
+                          "n": "_count"
+                        },
+                        "script": "params.n >= 20 ? 100.0 * params.e / params.n : null"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "frequency": "15m",
+          "chunking_config": {
+            "mode": "manual",
+            "time_span": "12h"
+          }
+        }
+      }
+    ]
+  }
+}

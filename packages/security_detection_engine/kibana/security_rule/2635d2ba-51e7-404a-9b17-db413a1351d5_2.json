@@ -1,0 +1,157 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a cloud CLI command that destroys infrastructure or identities, such as terminating EC2 instances, removing S3 buckets, or deleting IAM users, when it is spawned by a GenAI coding agent directly or through the agent's shell wrapper. A compromised or prompt-injected agent can be steered into wiping the developer's environment and cloud account using the credentials it already holds, as seen in the malicious Amazon Q Developer for VS Code v1.84.0 release (AWS-2025-015).",
+        "false_positives": [
+            "Authorized infrastructure teardown automation may legitimately invoke these commands. Correlate with change management records and known deployment pipeline identities before escalating.",
+            "Developers who explicitly instruct an agent to tear down a development environment or rotate access keys will trigger this rule. Confirm intent with the user before escalating."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Potential Destructive AWS CLI Command Executed by GenAI Agent",
+        "note": "## Triage and analysis\n\n### Investigating Potential Destructive AWS CLI Command Executed by GenAI Agent\n\nThis rule detects a GenAI coding agent spawning a cloud CLI command that destroys infrastructure or identities. A compromised or prompt-injected agent can be steered into wiping the developer's AWS account without any separate credential theft step, since the agent already holds the developer's credentials. The malicious Amazon Q Developer pull request in July 2025 (AWS-2025-015) is the canonical real-world example of this attack pattern.\n\n### Possible investigation steps\n\n- Identify the GenAI agent parent process and determine whether it was running in an autonomous or interactive mode at the time of the alert.\n- Review the full CLI command arguments to assess the scope of the destruction (resource IDs, `--recursive` flags, etc.).\n- Check for a preceding unusual or injected prompt in the agent's context, such as content from a recently cloned repository, an opened file, or a web fetch result.\n- Query AWS CloudTrail for the corresponding API call and confirm whether the destructive action was actually executed or was blocked.\n- Determine if the user initiated the teardown intentionally or if it was triggered autonomously.\n\n### False positive analysis\n\n- Authorized infrastructure teardown automation invoked through a GenAI interface may legitimately trigger this rule. Correlate with change management records and known deployment pipeline identities before escalating.\n- Developers who explicitly instruct a GenAI agent to clean up development environments will generate alerts for legitimate use.\n\n### Response and remediation\n\n- Initiate the incident response process based on the outcome of the triage.\n- If the destructive command executed, immediately assess which resources were deleted and begin recovery from backups or infrastructure-as-code.\n- Revoke the developer's AWS credentials and rotate them after confirming the scope of the compromise.\n- Review the agent's recent conversation history and any external content it processed to identify the prompt injection source.\n- Apply IAM permission boundaries on developer credentials to restrict the blast radius of future incidents.\n",
+        "query": "event.category : \"process\" and event.type : \"start\" and event.action : (start or exec) and\n(\n  process.parent.name : (\n    qterm or qterm.exe or qchat or qchat.exe or\n    kiro or \"kiro-cli\" or \"kiro-cli-chat\" or \"kiro-cli-term\" or\n    kiro.exe or \"kiro-cli.exe\" or \"kiro-cli-chat.exe\" or \"kiro-cli-term.exe\" or\n    claude or \"claude-bin\" or claude.exe or codex or codex.exe or\n    copilot or copilot.exe or cursor or cursor.exe or \"Cursor Helper (Plugin)\" or \"Cursor Helper\" or\n    \"gemini-cli\" or \"gemini-cli.exe\" or windsurf or windsurf.exe or\n    aider or aider.exe or cline or goose or goose.exe or opencode or opencode.exe\n  ) or\n  process.parent.executable : (\n    */.local/bin/q or */usr/local/bin/q or\n    *\\\\Users\\\\*\\\\AppData\\\\Local\\\\Programs\\\\Amazon Q\\\\q.exe or\n    *\\\\Users\\\\*\\\\AppData\\\\Local\\\\Programs\\\\Amazon Q\\\\*\\\\q.exe or\n    *\\\\Program Files\\\\Amazon Q\\\\q.exe or\n    *\\\\Program Files\\\\Amazon Q\\\\*\\\\q.exe\n  ) or\n  (\n    process.parent.name : (bash or zsh or sh or dash or cmd.exe or powershell.exe or pwsh or pwsh.exe) and\n    process.parent.command_line : (\n      */.claude/shell-snapshots/* or *\\\\.claude\\\\shell-snapshots\\\\* or\n      */.codex/* or *\\\\.codex\\\\* or\n      */.kiro/* or *\\\\.kiro\\\\* or\n      */.aws/amazonq/* or *\\\\.aws\\\\amazonq\\\\* or\n      */.goose/* or */.opencode/* or */.aider*\n    )\n  )\n) and\n(\n  (\n    process.name : (aws or aws.exe) and\n    process.command_line : (\n      *ec2 terminate-instances* or *ec2 delete-volume* or *ec2 delete-snapshot* or\n      *s3 rb* or *s3 rm*--recursive* or *s3api delete-bucket* or *s3api delete-objects* or\n      *iam delete-user* or *iam delete-role* or *iam delete-login-profile* or *iam delete-access-key* or\n      *rds delete-db-instance* or *rds delete-db-cluster* or *dynamodb delete-table* or\n      *efs delete-file-system* or *eks delete-cluster* or *ecs delete-cluster* or\n      *lambda delete-function* or *kms schedule-key-deletion* or\n      *cloudformation delete-stack* or\n      *cloudtrail delete-trail* or *cloudtrail stop-logging* or\n      *backup delete-recovery-point* or *organizations close-account*\n    )\n  ) or\n  (\n    process.name : (sam or sam.exe) and process.command_line : *sam delete*\n  ) or\n  (\n    process.name : (terraform or terraform.exe or tofu or tofu.exe) and\n    process.command_line : *destroy*-auto-approve*\n  ) or\n  (\n    process.name : (kubectl or kubectl.exe) and\n    process.command_line : (*delete*--all* or *delete namespace* or *delete ns*)\n  )\n) and not process.args : (\"--dry-run*\" or \"--help*\" or \"-help*\" or \"-h\" or \"help\" or \"--version*\")\n",
+        "references": [
+            "https://aws.amazon.com/security/security-bulletins/AWS-2025-015/",
+            "https://github.com/aws/aws-toolkit-vscode/security/advisories/GHSA-7g7f-ff96-5gcw",
+            "https://www.theregister.com/2025/07/24/amazon_q_ai_prompt/",
+            "https://www.pointguardai.com/blog/clean-to-factory-state-the-ai-prompt-that-nearly-wiped-aws-accounts"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": ">=9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "2635d2ba-51e7-404a-9b17-db413a1351d5",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the\nElastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can\n  click the \"Existing hosts\" tab and select an existing policy instead.\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and install Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "Domain: Cloud",
+            "Domain: GenAI",
+            "Platform: AWS",
+            "Platform: Linux",
+            "Platform: macOS",
+            "Platform: Windows",
+            "Platform: Kubernetes",
+            "OS: Linux",
+            "OS: macOS",
+            "OS: Windows",
+            "Service: AWS EC2",
+            "Service: AWS S3",
+            "Service: AWS IAM",
+            "Service: AWS RDS",
+            "Service: AWS Lambda",
+            "Tactic: Impact",
+            "Data Source: Elastic Defend",
+            "Rule Type: Custom Query (KQL)",
+            "Resources: Investigation Guide",
+            "Mitre Atlas: T0051",
+            "Tactic: Defense Impairment"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1485",
+                        "name": "Data Destruction",
+                        "reference": "https://attack.mitre.org/techniques/T1485/"
+                    },
+                    {
+                        "id": "T1531",
+                        "name": "Account Access Removal",
+                        "reference": "https://attack.mitre.org/techniques/T1531/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0112",
+                    "name": "Defense Impairment",
+                    "reference": "https://attack.mitre.org/tactics/TA0112/"
+                },
+                "technique": [
+                    {
+                        "id": "T1685",
+                        "name": "Disable or Modify Tools",
+                        "reference": "https://attack.mitre.org/techniques/T1685/",
+                        "subtechnique": [
+                            {
+                                "id": "T1685.002",
+                                "name": "Disable or Modify Cloud Log",
+                                "reference": "https://attack.mitre.org/techniques/T1685/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 2
+    },
+    "id": "2635d2ba-51e7-404a-9b17-db413a1351d5_2",
+    "type": "security-rule"
+}
