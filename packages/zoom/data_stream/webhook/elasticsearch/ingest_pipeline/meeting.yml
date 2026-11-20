@@ -172,6 +172,25 @@ processors:
     if: ctx.event?.action == 'meeting.started'
     ignore_failure: true
 - date:
+    tag: date_zoom_meeting_end_time_6b0c2f4e
+    field: zoom.meeting.end_time
+    target_field: zoom.meeting.end_time
+    formats:
+    - ISO8601
+    if: ctx.zoom?.meeting?.end_time != null
+    on_failure:
+    - remove:
+        tag: remove_zoom_meeting_end_time_3d91a7c5
+        field: zoom.meeting.end_time
+        ignore_missing: true
+    - append:
+        tag: append_error_message_e4a82b19
+        field: error.message
+        value: |-
+          Processor '{{{ _ingest.on_failure_processor_type }}}'
+          {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+          {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+- date:
     tag: date_zoom_participant_sharing_details_date_time_to_timestamp_8189a5fe
     field: zoom.participant.sharing_details.date_time
     target_field: '@timestamp'
