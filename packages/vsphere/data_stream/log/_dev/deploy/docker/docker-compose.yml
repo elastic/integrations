@@ -1,0 +1,18 @@
+version: '2.3'
+services:
+  vsphere-log-udp:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command: log --start-signal=SIGHUP --delay=10s --addr elastic-agent:9514 -p=udp /sample_logs/syslog.log
+  vsphere-log-tcp:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9515 -p=tcp /sample_logs/syslog.log
+  vsphere-log-tcp-octet:
+    image: python:3.12-alpine
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ./octet_sender.py:/octet_sender.py:ro
+    command: python /octet_sender.py elastic-agent 9516 /sample_logs/syslog.log

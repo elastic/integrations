@@ -1,0 +1,21 @@
+wait_for_data_timeout: 1m
+input: cel
+service: upwind-threat-detections-mock
+vars:
+  url: http://{{Hostname}}:{{Port}}
+  token_url: http://{{Hostname}}:{{Port}}/oauth/token
+  client_id: test-client-id
+  client_secret: test-client-secret
+  organization_id: org-example-0001
+data_stream:
+  vars:
+    interval: 2s
+    initial_interval: 24h
+    batch_size: 1
+    http_client_timeout: 60s
+    preserve_original_event: true
+assert:
+  # Page 1 and page 2 each return one detection. Page 3 is empty, so the
+  # agent commits max(last_seen_time) minus 1 minute. Later polls use that
+  # bookmark and return empty.
+  hit_count: 2

@@ -2,9 +2,9 @@
 description: Pipeline for processing user logs.
 processors:
   - set:
-      tag: set_ecs_version_to_9_3_0_3273339c
+      tag: set_ecs_version_to_9_5_0_3273339c
       field: ecs.version
-      value: 9.3.0
+      value: 9.5.0
   - terminate:
       description: error message set and no data to process.
       tag: terminate_data_collection_error_4c75f12b
@@ -42,9 +42,25 @@ processors:
 
   # Set event.* fields
   - set:
-      tag: set_event_kind_to_event_de80643c
+      tag: set_event_kind_to_asset_de80643c
       field: event.kind
-      value: event
+      value: asset
+  - append:
+      tag: append_event_category_iam_1f7c3a52
+      field: event.category
+      value: iam
+  - append:
+      tag: append_event_type_user_8b2e6d04
+      field: event.type
+      value:
+        - info
+        - user
+      allow_duplicates: false
+  - append:
+      tag: append_user_entity_type_user_4d9a7e31
+      field: user.entity.type
+      value: user
+      allow_duplicates: false
 
   # Date processors
   - date:
@@ -81,6 +97,11 @@ processors:
             tag: append_error_message_88d433ff
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_user_entity_lifecycle_last_activity_from_axonius_user_last_login_6c1f4b87
+      field: user.entity.lifecycle.last_activity
+      copy_from: axonius.user.last_login
+      ignore_empty_value: true
 
   # Map custom fields to corresponding ECS and related fields.
   - set:
@@ -98,6 +119,20 @@ processors:
       field: user.id
       copy_from: axonius.user.uuid
       ignore_empty_value: true
+  - set:
+      tag: set_user_entity_id_from_user_id_a5c03e91
+      field: user.entity.id
+      copy_from: user.id
+      ignore_empty_value: true
+  - set:
+      tag: set_user_entity_source_axonius_2e8d6f14
+      field: user.entity.source
+      value: axonius
+  - set:
+      tag: set_user_entity_last_seen_timestamp_from_timestamp_c8b1d7a3
+      field: user.entity.last_seen_timestamp
+      copy_from: '@timestamp'
+      ignore_empty_value: true
   - append:
       tag: append_user_roles_from_axonius_user_role_name_33de7d10
       if: ctx.axonius?.user?.role_name != null
@@ -114,6 +149,12 @@ processors:
       if: ctx.user?.email == null && ctx.user?.name != null && ctx.user?.name.contains('@')
       field: user.email
       copy_from: user.name
+  # Lowercase to match the identity data stream, which lowercases asset_mail,
+  # so a console account and its inventoried user resolve to one entity.
+  - lowercase:
+      tag: lowercase_user_email_4b7e2a19
+      field: user.email
+      ignore_missing: true
   - dissect:
       tag: dissect_user_email_6a0555c7
       if: ctx.user?.email != null && ctx.user.email.contains('@')
@@ -130,6 +171,12 @@ processors:
       if: ctx.axonius?.user?.email != null
       field: related.user
       value: '{{{axonius.user.email}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_related_user_from_user_email_9d3f6c21
+      if: ctx.user?.email != null
+      field: related.user
+      value: '{{{user.email}}}'
       allow_duplicates: false
   - append:
       tag: append_related_user_from_axonius_user_user_name_4cbc4dac

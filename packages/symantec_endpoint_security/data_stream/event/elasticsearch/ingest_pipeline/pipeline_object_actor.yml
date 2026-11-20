@@ -1,12 +1,13 @@
 ---
 description: Pipeline for processing actor object.
 processors:
+  # For process launches the command line is set by pipeline_ecs_process.
   - append:
       field: process.command_line
       tag: append_process_command_line_from_actor_cmd_line_bd3b433b
       value: '{{{ses.actor.cmd_line}}}'
       allow_duplicates: false
-      if: ctx.ses?.actor?.cmd_line != null
+      if: ctx.ses?.actor?.cmd_line != null && ctx._tmp_launch == null
   - date:
       field: ses.actor.file.accessed
       tag: date_actor_file_accessed_eb325474
@@ -1463,9 +1464,28 @@ processors:
       value: '{{{ses.actor.module.src_name}}}'
       allow_duplicates: false
       if: ctx.ses?.actor?.module?.src_name != null && ctx.ses.actor.module.src_name != ''
+  # For an 8001 launch the actor is the launcher, so it is the parent of the
+  # launched process.
+  - set:
+      field: process.parent.pid
+      tag: set_process_parent_pid_from_actor_pid_3e5191eb
+      copy_from: ses.actor.pid
+      ignore_empty_value: true
+      if: ctx._tmp_launch == '8001' && ctx.ses?.actor?.pid != null
+  - set:
+      field: process.parent.entity_id
+      tag: set_process_parent_entity_id_from_actor_uid_18d3814f
+      copy_from: ses.actor.uid
+      ignore_empty_value: true
+      if: ctx._tmp_launch == '8001' && ctx.ses?.actor?.uid != null
+  - set:
+      field: process.parent.start
+      tag: set_process_parent_start_from_actor_start_time_712d9ba7
+      copy_from: ses.actor.start_time
+      ignore_empty_value: true
+      if: ctx._tmp_launch == '8001' && ctx.ses?.actor?.start_time != null
   - remove:
       field:
-        - ses.actor.cmd_line
         - ses.actor.file.accessed
         - ses.actor.file.created
         - ses.actor.file.folder
@@ -1486,6 +1506,13 @@ processors:
       tag: remove_custom_duplicate_fields_63b48402
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  # For an 8027 launch the actor command line is copied to ECS only through the
+  # process command line, so keep it when that is a different value.
+  - remove:
+      field: ses.actor.cmd_line
+      tag: remove_actor_cmd_line_bee17804
+      ignore_missing: true
+      if: (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))) && !(ctx._tmp_launch == '8027' && ctx.ses.actor.cmd_line != ctx.ses.process.cmd_line)
 on_failure:
   - append:
       tag: append_error_message_6906b116
