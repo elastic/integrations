@@ -6,16 +6,18 @@ processors:
       field: message
       patterns:
         - '%{LOGLEVEL:log.level}: %{IP:source.address} %{HOSTNAME:_tmp.question.name}(\.) %{WORD:_tmp.question.type} %{WORD:_tmp.question.class}'
+        - 'query: %{IP:source.address} %{HOSTNAME:_tmp.question.name}(\.) %{WORD:_tmp.question.type} %{WORD:_tmp.question.class}'
+        - 'reply: %{IP:client.ip} %{HOSTNAME:_tmp.question.name}(\.) %{WORD:_tmp.question.type} %{WORD:_tmp.question.class} %{WORD:dns.response_code} %{NUMBER:_tmp.duration_s:double} %{NUMBER:unbound.cached:int} %{NUMBER:unbound.reply_size:int}'
       on_failure:
         - drop:
             tag: drop_5ac9753c
-            description: Drop if not a query log
+            description: Drop if not a query or reply log
   - append:
       tag: append_event_type_ac4d9a80
       field: event.type
       value: connection
       allow_duplicates: false
-      if: ctx.source?.address != null
+      if: ctx.source?.address != null || ctx.client?.ip != null
   - append:
       tag: append_event_type_6887ab9d
       field: event.type
@@ -30,7 +32,20 @@ processors:
       tag: set_dns_type_4812efdb
       field: dns.type
       value: question
-      if: ctx._tmp?.question?.name != null
+      if: ctx._tmp?.question?.name != null && ctx.dns?.response_code == null
+  - set:
+      tag: set_dns_type_answer_7c1e2b5d
+      field: dns.type
+      value: answer
+      if: ctx.dns?.response_code != null
+  - script:
+      tag: script_event_duration_3f9a6d12
+      description: Convert the reply duration from seconds to nanoseconds.
+      lang: painless
+      source: ctx.event.duration = Math.round(ctx._tmp.duration_s * params.scale)
+      params:
+        scale: 1000000000.0
+      if: ctx._tmp?.duration_s != null
   - registered_domain:
       tag: registered_domain__tmp_question_name_to_dns_question_a89b448b
       field: _tmp.question.name
