@@ -1,0 +1,456 @@
+---
+description: Pipeline for parsing Cloudflare SSH logs.
+processors:
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: '9.3.0'
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      tag: json_event_original_to_json
+      field: event.original
+      target_field: json
+      if: ctx.event?.original != null
+  - append:
+      field: event.category
+      tag: append_session_into_event_category
+      value: session
+  - append:
+      field: event.category
+      tag: append_network_into_event_category
+      value: network
+  - append:
+      field: event.type
+      tag: append_info_into_event_type
+      value: info
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+  - set:
+      tag: set_network_protocol
+      field: network.protocol
+      value: ssh
+  ## AWS S3 input does _id Based Deduplication and generates "_id" by default.
+  ## When "Data Deduplication" is not enabled, this field must be removed.
+  ## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
+  - remove:
+      field: _id
+      tag: remove_id_based_deduplication
+      description: >
+        When data deduplication is disabled, the _id field (used for _id Based Deduplication)
+        must be removed.
+      if: ctx._conf?.enable_deduplication == false && ctx.input?.type == 'aws-s3'
+      ignore_missing: true
+
+  # Timestamps
+  # Datetime and the session and program timestamps are documented as "int or
+  # string": RFC 3339, or an epoch in seconds, milliseconds or nanoseconds
+  # depending on the Logpush job's timestamp format. Numeric values (including
+  # numeric strings) are normalised to milliseconds so a single date processor
+  # handles every form. The finish timestamps are empty until the session or
+  # program ends, so empty and zero values are dropped.
+  - script:
+      lang: painless
+      tag: script_normalise_timestamps_to_milli
+      description: Normalises epoch timestamps (seconds/millis/nanos) to milliseconds and drops empty or zero values.
+      if: ctx.json != null
+      source: |
+        for (String key : params.fields) {
+          def v = ctx.json.get(key);
+          if (v == null) {
+            continue;
+          }
+          if (v instanceof String) {
+            String s = v.trim();
+            if (s.isEmpty()) {
+              ctx.json.remove(key);
+              continue;
+            }
+            if (!s.chars().allMatch(Character::isDigit)) {
+              continue;
+            }
+            v = Long.parseLong(s);
+          }
+          if (v instanceof Number) {
+            long t = ((Number)v).longValue();
+            if (t == 0) {
+              ctx.json.remove(key);
+              continue;
+            }
+            if (t > (long)(1e18)) {
+              t = t/(long)(1e6);
+            } else if (t < (long)(1e10)) {
+              t = t*(long)(1e3);
+            }
+            ctx.json.put(key, t);
+          }
+        }
+      params:
+        fields:
+          - Datetime
+          - SessionStartDatetime
+          - SessionFinishDatetime
+          - ProgramStartDatetime
+          - ProgramFinishDatetime
+      on_failure:
+        - append:
+            tag: append_error_message_timestamp_script
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_json_Datetime
+      field: json.Datetime
+      target_field: '@timestamp'
+      if: ctx.json?.Datetime != null
+      formats:
+        - UNIX_MS
+        - ISO8601
+      timezone: UTC
+      on_failure:
+        - remove:
+            tag: remove_json_Datetime
+            field: json.Datetime
+            ignore_missing: true
+        - append:
+            tag: append_error_message_date_datetime
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_json_SessionStartDatetime
+      field: json.SessionStartDatetime
+      target_field: cloudflare_logpush.ssh_logs.session.start
+      if: ctx.json?.SessionStartDatetime != null
+      formats:
+        - UNIX_MS
+        - ISO8601
+      timezone: UTC
+      on_failure:
+        - remove:
+            tag: remove_json_SessionStartDatetime
+            field: json.SessionStartDatetime
+            ignore_missing: true
+        - append:
+            tag: append_error_message_date_session_start
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_json_SessionFinishDatetime
+      field: json.SessionFinishDatetime
+      target_field: cloudflare_logpush.ssh_logs.session.end
+      if: ctx.json?.SessionFinishDatetime != null
+      formats:
+        - UNIX_MS
+        - ISO8601
+      timezone: UTC
+      on_failure:
+        - remove:
+            tag: remove_json_SessionFinishDatetime
+            field: json.SessionFinishDatetime
+            ignore_missing: true
+        - append:
+            tag: append_error_message_date_session_end
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_json_ProgramStartDatetime
+      field: json.ProgramStartDatetime
+      target_field: cloudflare_logpush.ssh_logs.program.start
+      if: ctx.json?.ProgramStartDatetime != null
+      formats:
+        - UNIX_MS
+        - ISO8601
+      timezone: UTC
+      on_failure:
+        - remove:
+            tag: remove_json_ProgramStartDatetime
+            field: json.ProgramStartDatetime
+            ignore_missing: true
+        - append:
+            tag: append_error_message_date_program_start
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_json_ProgramFinishDatetime
+      field: json.ProgramFinishDatetime
+      target_field: cloudflare_logpush.ssh_logs.program.end
+      if: ctx.json?.ProgramFinishDatetime != null
+      formats:
+        - UNIX_MS
+        - ISO8601
+      timezone: UTC
+      on_failure:
+        - remove:
+            tag: remove_json_ProgramFinishDatetime
+            field: json.ProgramFinishDatetime
+            ignore_missing: true
+        - append:
+            tag: append_error_message_date_program_end
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # cloudflare_logpush.ssh_logs.*
+  - convert:
+      tag: convert_json_AccountID_to_account_id
+      field: json.AccountID
+      target_field: cloudflare_logpush.ssh_logs.account_id
+      type: string
+      ignore_missing: true
+  - convert:
+      tag: convert_json_SessionID_to_session_id
+      field: json.SessionID
+      target_field: cloudflare_logpush.ssh_logs.session.id
+      type: string
+      ignore_missing: true
+  - convert:
+      tag: convert_json_ProgramID_to_program_id
+      field: json.ProgramID
+      target_field: cloudflare_logpush.ssh_logs.program.id
+      type: string
+      ignore_missing: true
+  - rename:
+      tag: rename_json_ProgramType_to_program_type
+      field: json.ProgramType
+      target_field: cloudflare_logpush.ssh_logs.program.type
+      ignore_missing: true
+  - set:
+      tag: set_event_action_from_program_type
+      field: event.action
+      copy_from: cloudflare_logpush.ssh_logs.program.type
+      ignore_empty_value: true
+  - convert:
+      tag: convert_json_TargetID_to_target_id
+      field: json.TargetID
+      target_field: cloudflare_logpush.ssh_logs.target_id
+      type: string
+      ignore_missing: true
+  - rename:
+      tag: rename_json_PTY_to_pty
+      field: json.PTY
+      target_field: cloudflare_logpush.ssh_logs.pty
+      ignore_missing: true
+  # Payload is the asciicast v2 recording of the program (newline-delimited
+  # JSON). Its content is terminal output, so it is kept as-is.
+  - rename:
+      tag: rename_json_Payload_to_payload
+      field: json.Payload
+      target_field: cloudflare_logpush.ssh_logs.payload
+      ignore_missing: true
+  # Error is only set when an SSH error occurred. It is kept in a custom field
+  # because error.message marks the document as a pipeline error.
+  - rename:
+      tag: rename_json_Error_to_error
+      field: json.Error
+      target_field: cloudflare_logpush.ssh_logs.error
+      ignore_missing: true
+  - set:
+      tag: set_event_outcome_failure
+      field: event.outcome
+      value: failure
+      if: ctx.cloudflare_logpush?.ssh_logs?.error instanceof String && !ctx.cloudflare_logpush.ssh_logs.error.trim().isEmpty()
+
+  # source.* and destination.*
+  # ClientAddress and ServerAddress are documented as addresses. They are kept
+  # in source.address and destination.address, and the IP (and port, when
+  # present) is extracted when the value is an IP address. The final catch-all
+  # pattern keeps non-IP values (for example host names) without failing.
+  - rename:
+      tag: rename_json_ClientAddress_to_source_address
+      field: json.ClientAddress
+      target_field: source.address
+      ignore_missing: true
+  - grok:
+      tag: grok_source_address
+      field: source.address
+      patterns:
+        - '^\[%{IPV6:source.ip}\]:%{POSINT:source.port:long}$'
+        - '^%{IPV4:source.ip}:%{POSINT:source.port:long}$'
+        - '^%{IP:source.ip}$'
+        - '^.+$'
+      ignore_missing: true
+  - rename:
+      tag: rename_json_ServerAddress_to_destination_address
+      field: json.ServerAddress
+      target_field: destination.address
+      ignore_missing: true
+  - grok:
+      tag: grok_destination_address
+      field: destination.address
+      patterns:
+        - '^\[%{IPV6:destination.ip}\]:%{POSINT:destination.port:long}$'
+        - '^%{IPV4:destination.ip}:%{POSINT:destination.port:long}$'
+        - '^%{IP:destination.ip}$'
+        - '^.+$'
+      ignore_missing: true
+  - geoip:
+      tag: geoip_source_ip_to_source_geo
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+      if: ctx.source?.ip != null
+  - geoip:
+      tag: geoip_source_ip_to_source_as
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+      if: ctx.source?.ip != null
+  - rename:
+      tag: rename_source_as_asn_to_source_as_number
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - geoip:
+      tag: geoip_destination_ip_to_destination_geo
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+      if: ctx.destination?.ip != null
+  - geoip:
+      tag: geoip_destination_ip_to_destination_as
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+      if: ctx.destination?.ip != null
+  - rename:
+      tag: rename_destination_as_asn_to_destination_as_number
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      tag: rename_destination_as_organization_name_to_destination_as_organization_name
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+
+  # user.* and destination.user.*
+  - rename:
+      tag: rename_json_UserEmail_to_user_email
+      field: json.UserEmail
+      target_field: user.email
+      ignore_missing: true
+  - convert:
+      tag: convert_json_UserID_to_user_id
+      field: json.UserID
+      target_field: user.id
+      type: string
+      ignore_missing: true
+  # Username is the principal user being accessed on the SSH server.
+  - rename:
+      tag: rename_json_Username_to_destination_user_name
+      field: json.Username
+      target_field: destination.user.name
+      ignore_missing: true
+
+  # related.*
+  - append:
+      tag: append_source_ip_into_related_ip
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+  - append:
+      tag: append_destination_ip_into_related_ip
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      if: ctx.destination?.ip != null
+      allow_duplicates: false
+  - append:
+      tag: append_user_email_into_related_user
+      field: related.user
+      value: '{{{user.email}}}'
+      if: ctx.user?.email != null
+      allow_duplicates: false
+  - append:
+      tag: append_user_id_into_related_user
+      field: related.user
+      value: '{{{user.id}}}'
+      if: ctx.user?.id != null
+      allow_duplicates: false
+  - append:
+      tag: append_destination_user_name_into_related_user
+      field: related.user
+      value: '{{{destination.user.name}}}'
+      if: ctx.destination?.user?.name != null
+      allow_duplicates: false
+  - remove:
+      tag: remove_json_conf
+      field:
+        - json
+        - _conf
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || v == 'N/A' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      tag: append_preserve_original_event_tag
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      tag: append_pipeline_error_message
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event_tag_on_failure
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
