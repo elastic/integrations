@@ -22,8 +22,9 @@ Chargeback costs are presented based on a configured rate and unit, used to conv
 
 **Monitoring cluster:**
 
-- Must be on Elasticsearch version **9.2.0+** due to the use of smart [ES|QL LOOKUP JOIN](https://www.elastic.co/docs/reference/query-languages/esql/esql-lookup-join) (conditional joins) in dashboard queries.
+- Must be on Elasticsearch version **9.2.0+** due to the use of smart [ES|QL LOOKUP JOIN](https://www.elastic.co/docs/reference/query-languages/esql/esql-lookup-join) (conditional joins) in dashboard queries, running on an **Elastic Cloud Hosted (ECH) or self-managed** monitoring cluster.
 - Run a single Fleet-managed **Elastic Agent** on an agent policy with the **Chargeback** integration enabled (or install assets alongside existing billing and monitoring producers).
+- **When to use Chargeback versus Chargeback Serverless:** Use **Chargeback** for ECH and On-Premises estates, including mixed Elastic Cloud organizations where you monitor **Serverless projects** alongside ECH or self-managed clusters from an ECH/self-managed monitoring cluster. For **Serverless-only** estates, or mixed estates where Chargeback itself is deployed onto a **Serverless project**, use the dedicated **Chargeback Serverless** integration instead.
 
 **Self-contained data collection, On-Premises billing prerequisite, and legacy coexistence:**
 
