@@ -27,6 +27,12 @@ Incoming telemetry is processed and forwarded to Elasticsearch for indexing and 
 
 For a complete list of configurations refer to the [OTLP Receiver documentation](https://github.com/open-telemetry/opentelemetry-collector/tree/main/receiver/otlpreceiver).
 
+### Receiving data from multiple hosts
+
+The package adds host information with the [resource detection processor](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/resourcedetectionprocessor) and its `system` detector. By default, it only fills in host attributes, such as `host.name`, that the incoming data doesn't already carry. Attributes that OTLP clients send are kept. So when Elastic Agent receives data from applications on other hosts, each service appears under its own host in Kibana, not under the host that runs Elastic Agent.
+
+To overwrite the attributes sent by clients with the host information of the Elastic Agent host, enable **Override resource attributes with Agent host information** (`resourcedetection_override`). Before version 0.3.0 of this package, this was the default behavior.
+
 ## Sample event
 
 An example event looks as following:

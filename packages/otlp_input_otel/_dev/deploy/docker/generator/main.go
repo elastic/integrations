@@ -55,8 +55,13 @@ func main() {
 
 	ctx := context.Background()
 
+	// host.name identifies the sending host. The receiver must keep it instead of
+	// replacing it with the host name of the Elastic Agent.
 	res, err := resource.New(ctx,
-		resource.WithAttributes(semconv.ServiceName("generator")),
+		resource.WithAttributes(
+			semconv.ServiceName("generator"),
+			semconv.HostName("otlp-test-source-host"),
+		),
 	)
 	if err != nil {
 		log.Fatalf("failed to create resource: %v", err)
