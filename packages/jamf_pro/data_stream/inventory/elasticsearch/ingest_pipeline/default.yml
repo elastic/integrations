@@ -60,6 +60,24 @@ processors:
         ctx.jamf_pro.inventory = keysToSnakeCase(ctx.jamf_pro.inventory);
       }
 
+# Jamf Pro API v4 renamed general.lastContactTime to general.lastContact.
+# Map it onto the existing last_contact_time field so dashboards and entity
+# mappings keep working.
+- rename:
+    tag: rename_last_contact_to_last_contact_time
+    field: jamf_pro.inventory.general.last_contact
+    target_field: jamf_pro.inventory.general.last_contact_time
+    ignore_missing: true
+
+# Jamf Pro API v4 removed general.lastReportedIp. Populate the existing
+# last_reported_ip field from lastReportedIpV4 when the v1 field is absent.
+- set:
+    tag: set_last_reported_ip_from_v4
+    field: jamf_pro.inventory.general.last_reported_ip
+    copy_from: jamf_pro.inventory.general.last_reported_ip_v4
+    override: false
+    ignore_empty_value: true
+
 - fingerprint:
     tag: fingerprint_to_id_a6dde3e1
     fields:
@@ -285,6 +303,18 @@ processors:
     field: related.ip
     copy_from: host.ip
     ignore_empty_value: true
+- append:
+    tag: append_last_reported_ip_v4_to_related_ip
+    field: related.ip
+    value: '{{{jamf_pro.inventory.general.last_reported_ip_v4}}}'
+    allow_duplicates: false
+    if: ctx.jamf_pro?.inventory?.general?.last_reported_ip_v4 != null && ctx.jamf_pro.inventory.general.last_reported_ip_v4 != ''
+- append:
+    tag: append_last_reported_ip_v6_to_related_ip
+    field: related.ip
+    value: '{{{jamf_pro.inventory.general.last_reported_ip_v6}}}'
+    allow_duplicates: false
+    if: ctx.jamf_pro?.inventory?.general?.last_reported_ip_v6 != null && ctx.jamf_pro.inventory.general.last_reported_ip_v6 != ''
 
 
 ####################
