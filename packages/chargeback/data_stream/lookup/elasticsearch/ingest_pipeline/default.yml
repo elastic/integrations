@@ -1,0 +1,24 @@
+---
+description: "Dispatcher pipeline for Chargeback lookup transform destination pipelines."
+processors:
+  - pipeline:
+      name: '{{ IngestPipeline "billing" }}'
+      if: "ctx._cb_lookup_pipeline == 'billing'"
+  - pipeline:
+      name: '{{ IngestPipeline "credits" }}'
+      if: "ctx._cb_lookup_pipeline == 'credits'"
+  - pipeline:
+      name: '{{ IngestPipeline "realized_pool" }}'
+      if: "ctx._cb_lookup_pipeline == 'realized_pool'"
+  - pipeline:
+      name: '{{ IngestPipeline "usage" }}'
+      if: "ctx._cb_lookup_pipeline == 'usage'"
+  - pipeline:
+      name: '{{ IngestPipeline "capacity_utilization" }}'
+      if: "ctx._cb_lookup_pipeline == 'capacity_utilization'"
+  - pipeline:
+      name: '{{ IngestPipeline "chargeback_conf" }}'
+      if: "ctx._cb_lookup_pipeline == 'chargeback_conf'"
+  - remove:
+      field: _cb_lookup_pipeline
+      ignore_missing: true
