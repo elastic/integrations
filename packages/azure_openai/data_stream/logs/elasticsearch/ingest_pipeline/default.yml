@@ -290,9 +290,16 @@ processors:
         - azure.open_ai.properties.request_body
       tag: remove-request-response-body
       ignore_missing: true
-  - rename:
+  - convert:
       field: azure.open_ai.duration_ms
+      tag: convert-duration-ms
       target_field: event.duration
+      type: long
+      ignore_failure: true
+      if: ctx.azure?.open_ai?.duration_ms != null
+  - remove:
+      field: azure.open_ai.duration_ms
+      tag: remove-duration-ms
       ignore_missing: true
   - script:
       lang: painless
