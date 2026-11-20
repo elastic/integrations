@@ -6,7 +6,7 @@ The integration collects metrics from [NATS monitoring server APIs](https://docs
 
 ## Compatibility
 
-The Nats package is tested with Nats 1.3.0, 2.0.4 and 2.1.4
+The NATS package is tested with NATS 2.10.27 and requires Elastic Agent 9.1+. The `jetstream` dataset requires NATS with JetStream enabled (NATS 2.2+), and consumer metrics require NATS 2.9+.
 
 ## Logs
 
@@ -24,8 +24,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ## Metrics
 
-The default datasets are `stats`, `connections`, `routes` and `subscriptions` while `connection` and `route`
-datasets can be enabled to collect detailed metrics per connection/route.
+The default datasets are `stats`, `connections`, `routes` and `subscriptions` while `connection`, `route`
+and `jetstream` datasets can be enabled to collect detailed metrics per connection/route and JetStream monitoring.
 
 ### stats
 
@@ -92,6 +92,30 @@ metrics per connection from a Nats instance.
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "connection"}}
+
+### jetstream
+
+This is the `jetstream` dataset of the Nats package, in charge of retrieving
+JetStream metrics from a NATS server. It collects data from the [/jsz](https://docs.nats.io/learn/monitoring/monitoring-endpoints#jsz-reports-jetstream-state) monitoring endpoint.
+
+The `jetstream` dataset supports four categories of metrics that can be enabled independently:
+
+* `stats` — General JetStream server stats (streams, consumers, messages, memory, storage).
+* `account` — Per-account JetStream metrics (memory, storage, API stats).
+* `stream` — Per-stream metrics (state, config, cluster info).
+* `consumer` — Per-consumer metrics (delivered, ack floor, pending, config). Requires NATS 2.9+.
+
+Account, stream, and consumer metrics can be filtered by name. Filters are cumulative and apply even if a category is not enabled but name filters are configured. When no names are configured, all entities are reported.
+
+This dataset requires Elastic Agent 9.1+ and a NATS server with JetStream enabled.
+
+{{event "jetstream"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "jetstream"}}
 
 ### route
 
