@@ -1,0 +1,61 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: aws
+      name: test-access-keys-aws
+      streams:
+        - access_key_id: ${SECRET_0}
+          data_stream:
+            dataset: aws.apigateway_metrics
+          default_region: us-east-1
+          include_linked_accounts: true
+          metrics:
+            - name:
+                - 4XXError
+                - 4xx
+                - 5XXError
+                - 5xx
+                - CacheHitCount
+                - CacheMissCount
+                - Count
+                - ConnectCount
+                - MessageCount
+                - IntegrationError
+                - ClientError
+                - ExecutionError
+              namespace: AWS/ApiGateway
+              statistic:
+                - Sum
+            - name:
+                - Latency
+                - IntegrationLatency
+                - DataProcessed
+              namespace: AWS/ApiGateway
+              statistic:
+                - Average
+          metricsets:
+            - cloudwatch
+          period: 5m
+          secret_access_key: ${SECRET_1}
+          tags_filter: null
+      type: aws/metrics
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - metrics-aws.apigateway_metrics-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}
+    - {}
