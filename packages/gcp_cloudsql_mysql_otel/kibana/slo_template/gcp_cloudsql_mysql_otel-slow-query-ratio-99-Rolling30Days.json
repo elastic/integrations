@@ -1,0 +1,70 @@
+{
+  "attributes": {
+    "name": "[GCP Cloud SQL MySQL OTel] Slow query ratio 99% rolling 30 days",
+    "description": "Tracks the share of SQL statements on each Cloud SQL for MySQL instance that finish within the instance's long_query_time threshold: database/mysql/queries minus database/mysql/slow_queries_count, divided by database/mysql/queries, the same definition as the Slow query % dashboard panel. The objective is that at least 99% of statements over a rolling 30-day window are not slow. When the error budget burns, applications are waiting seconds for query results, typically because of missing indexes, query plan regressions, lock waits, or CPU and memory pressure. What counts as slow depends on each instance's long_query_time flag (10 seconds by default), so lower that flag to match your latency expectations. Instances that intentionally run long reporting or batch statements may need a lower target or should be excluded. The filter requires a MySQL statement metric to be present, so the SLO only creates instances for MySQL databases and never for other Cloud SQL engines in the same data stream. Cloud Monitoring data reaches Elasticsearch up to about 9 minutes late with the default 5-minute collection interval, so set the SLO sync delay to at least 10m when you create it, and longer if you raise the collection interval.",
+    "indicator": {
+      "type": "sli.metric.custom",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"gcp.cloudsql_mysql.otel\" and resource.attributes.gcp.resource_type: \"cloudsql_database\" and (cloudsql.googleapis.com/database/mysql/queries: * or cloudsql.googleapis.com/database/mysql/slow_queries_count: *)",
+        "good": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "sum",
+              "field": "cloudsql.googleapis.com/database/mysql/queries"
+            },
+            {
+              "name": "B",
+              "aggregation": "sum",
+              "field": "cloudsql.googleapis.com/database/mysql/slow_queries_count"
+            }
+          ],
+          "equation": "A - B"
+        },
+        "total": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "sum",
+              "field": "cloudsql.googleapis.com/database/mysql/queries"
+            }
+          ],
+          "equation": "A"
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "occurrences",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.99
+    },
+    "tags": [
+      "gcp",
+      "cloudsql",
+      "mysql",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.project_id",
+      "resource.attributes.region",
+      "resource.attributes.database_id"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "gcp_cloudsql_mysql_otel-deda1e6a-80e7-49cd-ba2e-fff6be787503"
+        },
+        {
+          "id": "gcp_cloudsql_mysql_otel-244a7e1a-2f13-4f93-b534-20a10a5158a7"
+        }
+      ]
+    }
+  },
+  "id": "gcp_cloudsql_mysql_otel-slow-query-ratio-99-Rolling30Days",
+  "type": "slo_template"
+}

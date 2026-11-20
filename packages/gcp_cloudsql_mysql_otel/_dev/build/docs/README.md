@@ -24,3 +24,11 @@ Shared Cloud SQL metrics such as CPU, memory and disk are also emitted for Postg
 |-----------|-------------|
 | **[GCP OTel] Cloud SQL MySQL Overview** | Fleet view of Cloud SQL for MySQL instances. Availability, partial downtime, CPU, memory and disk saturation, instance state and fleet queries per second over time, an instance list with region, free disk and failed logins, and top 10 instance trends for CPU, memory, disk, connections, queries per second and slow queries. |
 | **[GCP OTel] Cloud SQL MySQL Instance Detail** | One Cloud SQL for MySQL instance. Instance metadata with queries per second, slow query, buffer pool hit and connection usage KPIs, then availability, capacity against quotas, traffic and errors (slow queries, lock waits, deadlocks), connections and threads, I/O and cache, and replication. Open it from the overview. |
+
+## Alerting Rule Templates
+{{alertRuleTemplates}}
+
+These templates use the Kibana Alerting v2 engine, so you need to enable the [experimental alerting system](https://www.elastic.co/docs/explore-analyze/alerting/experimental-alerting-system/get-started/setup) in Kibana before you can create rules from them. Alerts are grouped per Cloud SQL instance (`database_id`), and only MySQL instances are evaluated.
+
+## SLO Templates
+{{sloTemplates}}
