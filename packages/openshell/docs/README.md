@@ -289,6 +289,9 @@ An example event for `ocsf` looks as following:
 | http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.response.status_code | HTTP response status code. | long |
 | input.type | Type of filebeat input. | keyword |
+| log.file.device_id | Device ID of the log file the record was read from. | keyword |
+| log.file.fingerprint | SHA-256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.inode | Inode of the log file the record was read from. | keyword |
 | log.file.path | Path of the log file the record was read from. | keyword |
 | log.offset | Log offset. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
