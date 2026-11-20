@@ -3,23 +3,27 @@
   "processors": [
     {
       "drop": {
+        "tag": "drop_12f1bf1e",
         "if": "ctx.message ==~ /^# Time:.*/ || ctx.message ==~ /^[\\/\\w\\.]+, Version: .*\\. started with:.*/ms"
       }
     },
     {
       "set": {
+        "tag": "set_ecs_version_9e1884ba",
         "field": "ecs.version",
         "value": "8.5.1"
       }
     },
     {
       "set": {
+        "tag": "set_event_ingested_5f8a9124",
         "field": "event.ingested",
         "value": "{{_ingest.timestamp}}"
       }
     },
     {
       "grok": {
+        "tag": "grok_message_89440f9d",
         "field": "message",
         "patterns": [
           "^# User@Host: %{USER:user.name}(\\[%{USER:mysql.slowlog.current_user}\\])? @ %{HOSTNAME:source.domain}? \\[%{IP:source.ip}?\\]%{METRICSPACE}(Id:%{SPACE}%{NUMBER:mysql.thread_id:long}%{METRICSPACE})?(Thread_id:%{SPACE}%{NUMBER:mysql.thread_id:long}%{METRICSPACE})?(Schema:%{SPACE}%{NOTSPACE:mysql.slowlog.schema}?%{METRICSPACE})?(Last_errno: %{NUMBER:mysql.slowlog.last_errno}%{METRICSPACE})?(Killed: %{NUMBER:mysql.slowlog.killed}%{METRICSPACE})?(QC_hit: %{WORD:mysql.slowlog.query_cache_hit}%{METRICSPACE})?(Query_time: %{NUMBER:temp.duration:float}%{METRICSPACE})?(Lock_time: %{NUMBER:mysql.slowlog.lock_time.sec:float}%{METRICSPACE})?(Rows_sent: %{NUMBER:mysql.slowlog.rows_sent:long}%{METRICSPACE})?(Rows_examined: %{NUMBER:mysql.slowlog.rows_examined:long}%{METRICSPACE})?(Rows_affected: %{NUMBER:mysql.slowlog.rows_affected:long}%{METRICSPACE})?(Thread_id: %{NUMBER:mysql.thread_id:long}%{METRICSPACE})?(Errno: %{NUMBER:mysql.slowlog.last_errno}%{METRICSPACE})?(Killed: %{NUMBER:mysql.slowlog.killed}%{METRICSPACE})?(Bytes_received: %{NUMBER:mysql.slowlog.bytes_received:long}%{METRICSPACE})?(Bytes_sent: %{NUMBER:mysql.slowlog.bytes_sent:long}%{METRICSPACE})?(Read_first: %{NUMBER:mysql.slowlog.read_first:long}%{METRICSPACE})?(Read_last: %{NUMBER:mysql.slowlog.read_last:long}%{METRICSPACE})?(Read_key: %{NUMBER:mysql.slowlog.read_key:long}%{METRICSPACE})?(Read_next: %{NUMBER:mysql.slowlog.read_next:long}%{METRICSPACE})?(Read_prev: %{NUMBER:mysql.slowlog.read_prev:long}%{METRICSPACE})?(Read_rnd: %{NUMBER:mysql.slowlog.read_rnd:long}%{METRICSPACE})?(Read_rnd_next: %{NUMBER:mysql.slowlog.read_rnd_next:long}%{METRICSPACE})?(Sort_merge_passes: %{NUMBER:mysql.slowlog.sort_merge_passes:long}%{METRICSPACE})?(Sort_range_count: %{NUMBER:mysql.slowlog.sort_range_count:long}%{METRICSPACE})?(Sort_rows: %{NUMBER:mysql.slowlog.sort_rows:long}%{METRICSPACE})?(Sort_scan_count: %{NUMBER:mysql.slowlog.sort_scan_count:long}%{METRICSPACE})?(Created_tmp_disk_tables: %{NUMBER:mysql.slowlog.tmp_disk_tables:long}%{METRICSPACE})?(Created_tmp_tables: %{NUMBER:mysql.slowlog.tmp_tables:long}%{METRICSPACE})?(Tmp_tables: %{NUMBER:mysql.slowlog.tmp_tables:long}%{METRICSPACE})?(Tmp_disk_tables: %{NUMBER:mysql.slowlog.tmp_disk_tables:long}%{METRICSPACE})?(Tmp_table_sizes: %{NUMBER:mysql.slowlog.tmp_table_sizes:long}%{METRICSPACE})?(Start: %{TIMESTAMP_ISO8601:event.start}%{METRICSPACE})?(End: %{TIMESTAMP_ISO8601:event.end}%{METRICSPACE})?(InnoDB_trx_id: %{WORD:mysql.slowlog.innodb.trx_id}%{METRICSPACE})?(QC_Hit: %{WORD:mysql.slowlog.query_cache_hit}%{METRICSPACE})?(Full_scan: %{WORD:mysql.slowlog.full_scan}%{METRICSPACE})?(Full_join: %{WORD:mysql.slowlog.full_join}%{METRICSPACE})?(Tmp_table: %{WORD:mysql.slowlog.tmp_table}%{METRICSPACE})?(Tmp_table_on_disk: %{WORD:mysql.slowlog.tmp_table_on_disk}%{METRICSPACE})?(Filesort: %{WORD:mysql.slowlog.filesort}%{METRICSPACE})?(Filesort_on_disk: %{WORD:mysql.slowlog.filesort_on_disk}%{METRICSPACE})?(Merge_passes: %{NUMBER:mysql.slowlog.merge_passes:long}%{METRICSPACE})?(Priority_queue: %{WORD:mysql.slowlog.priority_queue}%{METRICSPACE})?(No InnoDB statistics available for this query%{METRICSPACE})?(InnoDB_IO_r_ops: %{NUMBER:mysql.slowlog.innodb.io_r_ops:long}%{METRICSPACE})?(InnoDB_IO_r_bytes: %{NUMBER:mysql.slowlog.innodb.io_r_bytes:long}%{METRICSPACE})?(InnoDB_IO_r_wait: %{NUMBER:mysql.slowlog.innodb.io_r_wait.sec:float}%{METRICSPACE})?(InnoDB_rec_lock_wait: %{NUMBER:mysql.slowlog.innodb.rec_lock_wait.sec:float}%{METRICSPACE})?(InnoDB_queue_wait: %{NUMBER:mysql.slowlog.innodb.queue_wait.sec:float}%{METRICSPACE})?(InnoDB_pages_distinct: %{NUMBER:mysql.slowlog.innodb.pages_distinct:long}%{METRICSPACE})?(Log_slow_rate_type: %{WORD:mysql.slowlog.log_slow_rate_type}%{METRICSPACE})?(Log_slow_rate_limit: %{NUMBER:mysql.slowlog.log_slow_rate_limit:long}%{METRICSPACE})?%{EXPLAIN}(use %{NOTSPACE:mysql.slowlog.schema};\n)?SET timestamp=%{NUMBER:mysql.slowlog.timestamp:long};\n%{GREEDYMULTILINE:mysql.slowlog.query}"
@@ -34,6 +38,7 @@
     },
     {
       "rename": {
+        "tag": "rename_message_dea58808",
         "field": "message",
         "target_field": "event.original",
         "ignore_missing": true,
@@ -43,6 +48,7 @@
     },
     {
       "remove": {
+        "tag": "remove_message_0cb37855",
         "field": "message",
         "if": "ctx.event?.original != null",
         "ignore_missing": true
@@ -50,6 +56,7 @@
     },
     {
       "script": {
+        "tag": "script_a3e37625",
         "lang": "painless",
         "if": "ctx?.mysql != null",
         "source": "for (field in params.fields) { if (ctx.mysql[field] instanceof List) { def vals = ctx.mysql[field]; vals = vals.stream().distinct().collect(Collectors.toList()); if (vals.size() == 1) { ctx.mysql[field] = vals[0] } else { ctx.mysql[field] = vals } } }",
@@ -62,6 +69,7 @@
     },
     {
       "script": {
+        "tag": "script_b3aae627",
         "lang": "painless",
         "if": "ctx?.mysql?.slowlog != null",
         "source": "for (field in params.fields) { if (ctx.mysql.slowlog[field] instanceof List) { def vals = ctx.mysql.slowlog[field]; vals = vals.stream().distinct().collect(Collectors.toList()); if (vals.size() == 1) { ctx.mysql.slowlog[field] = vals[0] } else { ctx.mysql.slowlog[field] = vals } } }",
@@ -74,6 +82,7 @@
     },
     {
       "script": {
+        "tag": "script_506737f6",
         "lang": "painless",
         "source": "for (field in params.fields) { def v = ctx.mysql.slowlog.get(field); if (v != null) { ctx.mysql.slowlog.put(field, params.mapping.get(v)) } }",
         "params": {
@@ -96,6 +105,7 @@
     },
     {
       "script": {
+        "tag": "script_d2c44527",
         "lang": "painless",
         "source": "ctx.event.duration = Math.round(ctx.temp.duration * 1000000) * 1000",
         "if": "ctx.temp?.duration != null"
@@ -103,12 +113,14 @@
     },
     {
       "remove": {
+        "tag": "remove_temp_e6147dda",
         "field": "temp",
         "ignore_missing": true
       }
     },
     {
       "date": {
+        "tag": "date_mysql_slowlog_timestamp_c08817d9",
         "field": "mysql.slowlog.timestamp",
         "target_field": "@timestamp",
         "formats": [
@@ -119,30 +131,35 @@
     },
     {
       "remove": {
+        "tag": "remove_mysql_slowlog_timestamp_1616e01e",
         "field": "mysql.slowlog.timestamp",
         "ignore_missing": true
       }
     },
     {
       "set": {
+        "tag": "set_event_kind_fa1160ee",
         "field": "event.kind",
         "value": "event"
       }
     },
     {
       "append": {
+        "tag": "append_event_category_85c1f2f3",
         "field": "event.category",
         "value": "database"
       }
     },
     {
       "append": {
+        "tag": "append_event_type_1b579139",
         "field": "event.type",
         "value": "info"
       }
     },
     {
       "remove": {
+        "tag": "remove_event_original_ca256d72",
         "field": "event.original",
         "if": "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))",
         "ignore_failure": true,
@@ -153,8 +170,16 @@
   "on_failure": [
     {
       "set": {
+        "tag": "set_event_kind_482a7cf1",
+        "field": "event.kind",
+        "value": "pipeline_error"
+      }
+    },
+    {
+      "append": {
+        "tag": "append_error_message_abd46e1f",
         "field": "error.message",
-        "value": "{{ _ingest.on_failure_message }}"
+        "value": "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
       }
     }
   ]

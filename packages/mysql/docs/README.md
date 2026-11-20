@@ -1092,17 +1092,16 @@ For more information, refer to the [Elastic documentation](https://www.elastic.c
 
 Alert rule templates require Elastic Stack version 9.2.0 or later.
 
-The following alert rule templates are available:
+**The following alert rule templates are available:**
 
-**[MySQL Galera] Cluster State Abnormal**
+<details>
+<summary>View the alert rule templates</summary>
 
+| Name | Description |
+|---|---|
+| [MySQL Galera] Cluster State Abnormal |  |
+| [MySQL Replica] Replication Lag High |  |
+| [MySQL Performance] Slow Query Latency High |  |
 
-
-**[MySQL Replica] Replication Lag High**
-
-
-
-**[MySQL Performance] Slow Query Latency High**
-
-
+</details>
 
