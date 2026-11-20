@@ -187,7 +187,7 @@ average of percentiles is a true percentile of all traffic.
 | openrouter.performance.api_key_id | API key identifier. | keyword |  |  |
 | openrouter.performance.avg_generation_time | Mean model token generation time in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.avg_inter_token_latency | Mean inter-token latency in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
-| openrouter.performance.avg_latency | Mean end-to-end request latency in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
+| openrouter.performance.avg_latency | Mean provider time to the first token in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.avg_router_latency | Mean OpenRouter routing overhead in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.avg_throughput | Mean streaming throughput in tokens per second. This is a rate metric — do not sum across time windows. | double |  | gauge |
 | openrouter.performance.avg_ttfb | Mean time-to-first-token (TTFT) in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
@@ -196,25 +196,25 @@ average of percentiles is a true percentile of all traffic.
 | openrouter.performance.model | LLM model identifier (for example openai/gpt-4o). | keyword |  |  |
 | openrouter.performance.p50_generation_time | 50th-percentile model token generation time in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.p50_inter_token_latency | 50th-percentile inter-token latency in milliseconds (streaming responsiveness). This is a rate metric — do not sum across time windows. | double | ms | gauge |
-| openrouter.performance.p50_latency | 50th-percentile end-to-end request latency in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
+| openrouter.performance.p50_latency | 50th-percentile provider time to the first token in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.p50_router_latency | 50th-percentile OpenRouter routing overhead in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.p50_throughput | 50th-percentile streaming throughput in tokens per second. This is a rate metric — do not sum across time windows. | double |  | gauge |
 | openrouter.performance.p50_ttfb | 50th-percentile time-to-first-token (TTFT) in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.p90_generation_time | 90th-percentile model token generation time in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.p90_inter_token_latency | 90th-percentile inter-token latency in milliseconds (streaming responsiveness). This is a rate metric — do not sum across time windows. | double | ms | gauge |
-| openrouter.performance.p90_latency | 90th-percentile end-to-end request latency in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
+| openrouter.performance.p90_latency | 90th-percentile provider time to the first token in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.p90_router_latency | 90th-percentile OpenRouter routing overhead in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.p90_throughput | 90th-percentile streaming throughput in tokens per second. This is a rate metric — do not sum across time windows. | double |  | gauge |
 | openrouter.performance.p90_ttfb | 90th-percentile time-to-first-token (TTFT) in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.p95_generation_time | 95th-percentile model token generation time in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.p95_inter_token_latency | 95th-percentile inter-token latency in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
-| openrouter.performance.p95_latency | 95th-percentile end-to-end request latency in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
+| openrouter.performance.p95_latency | 95th-percentile provider time to the first token in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.p95_router_latency | 95th-percentile OpenRouter routing overhead in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.p95_throughput | 95th-percentile streaming throughput in tokens per second. This is a rate metric — do not sum across time windows. | double |  | gauge |
 | openrouter.performance.p95_ttfb | 95th-percentile time-to-first-token (TTFT) in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.p99_generation_time | 99th-percentile model token generation time in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.p99_inter_token_latency | 99th-percentile inter-token latency in milliseconds (streaming responsiveness). This is a rate metric — do not sum across time windows. | double | ms | gauge |
-| openrouter.performance.p99_latency | 99th-percentile end-to-end request latency in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
+| openrouter.performance.p99_latency | 99th-percentile provider time to the first token in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.p99_router_latency | 99th-percentile OpenRouter routing overhead in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.p99_throughput | 99th-percentile streaming throughput in tokens per second. This is a rate metric — do not sum across time windows. | double |  | gauge |
 | openrouter.performance.p99_ttfb | 99th-percentile time-to-first-token (TTFT) in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
