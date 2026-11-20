@@ -1,0 +1,131 @@
+- name: qdrant
+  type: group
+  fields:
+    - name: labels.*
+      type: object
+      object_type: keyword
+      object_type_mapping_type: "*"
+      description: >-
+        Prometheus labels of the series, such as `id` (collection name), `endpoint`, `method` and `status`.
+    - name: labels_fingerprint
+      type: keyword
+      dimension: true
+      description: >-
+        Fingerprint of the series labels, used to tell series apart.
+    - name: collections.total
+      type: long
+      metric_type: gauge
+      description: >-
+        Number of collections (`collections_total`).
+    - name: collections.vectors
+      type: long
+      metric_type: gauge
+      description: >-
+        Number of vectors across all collections (`collections_vector_total`).
+    - name: collection.points
+      type: long
+      metric_type: gauge
+      description: >-
+        Approximate number of points in the collection, by `id` label (`collection_points`).
+    - name: collection.vectors
+      type: long
+      metric_type: gauge
+      description: >-
+        Number of vectors in the collection, by `collection` and `vector` labels (`collection_vectors`).
+    - name: collection.optimizations.running
+      type: long
+      metric_type: gauge
+      description: >-
+        Number of optimizations running in the collection (`collection_running_optimizations`).
+    - name: collection.update_queue.length
+      type: long
+      metric_type: gauge
+      description: >-
+        Number of update operations waiting in the collection update queue (`collection_update_queue_length`).
+    - name: collection.update_queue.deferred_points
+      type: long
+      metric_type: gauge
+      description: >-
+        Number of points whose update is deferred until indexing catches up (`collection_update_queue_deferred_points`).
+    - name: replicas.active.min
+      type: long
+      metric_type: gauge
+      description: >-
+        Lowest number of active replicas across the shards of the node (`collection_active_replicas_min`).
+    - name: replicas.active.max
+      type: long
+      metric_type: gauge
+      description: >-
+        Highest number of active replicas across the shards of the node (`collection_active_replicas_max`).
+    - name: replicas.dead
+      type: long
+      metric_type: gauge
+      description: >-
+        Number of replicas that are not active (`collection_dead_replicas`).
+    - name: shard_transfers.incoming
+      type: long
+      metric_type: gauge
+      description: >-
+        Shard transfers into this node in progress (`collection_shard_transfer_incoming`).
+    - name: shard_transfers.outgoing
+      type: long
+      metric_type: gauge
+      description: >-
+        Shard transfers out of this node in progress (`collection_shard_transfer_outgoing`).
+    - name: shard_transfers.failed
+      type: long
+      metric_type: gauge
+      description: >-
+        Failed shard transfers (`collection_shard_transfer_failed`).
+    - name: snapshots.creation_running
+      type: long
+      metric_type: gauge
+      description: >-
+        Snapshot creations in progress, by collection (`snapshot_creation_running`).
+    - name: snapshots.recovery_running
+      type: long
+      metric_type: gauge
+      description: >-
+        Snapshot recoveries in progress, by collection (`snapshot_recovery_running`).
+    - name: snapshots.created.count
+      type: long
+      metric_type: counter
+      description: >-
+        Number of snapshots created, by collection (`snapshot_created_total`).
+    - name: rest.responses.count
+      type: long
+      metric_type: counter
+      description: >-
+        Number of REST responses, by `method`, `endpoint` and `status` labels (`rest_responses_total`).
+    - name: rest.duration.histogram
+      type: histogram
+      description: >-
+        REST response time, in seconds, by `method`, `endpoint` and `status` labels (`rest_responses_duration_seconds`).
+    - name: rest.duration.max.sec
+      type: double
+      metric_type: gauge
+      unit: s
+      description: >-
+        Longest REST response time, in seconds (`rest_responses_max_duration_seconds`).
+    - name: memory.resident.bytes
+      type: long
+      metric_type: gauge
+      unit: byte
+      description: >-
+        Resident memory of the process, as reported by the allocator (`memory_resident_bytes`).
+    - name: memory.allocated.bytes
+      type: long
+      metric_type: gauge
+      unit: byte
+      description: >-
+        Memory allocated by the application (`memory_allocated_bytes`).
+    - name: cluster.enabled
+      type: long
+      metric_type: gauge
+      description: >-
+        1 when distributed mode is enabled, 0 otherwise (`cluster_enabled`).
+    - name: recovery_mode
+      type: long
+      metric_type: gauge
+      description: >-
+        1 when the node runs in recovery mode, 0 otherwise (`app_status_recovery_mode`).

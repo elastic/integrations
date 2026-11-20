@@ -1,0 +1,179 @@
+rules:
+  - path: /metrics
+    methods: ['GET']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "text/plain; version=0.0.4; charset=utf-8"
+        body: |-
+          # HELP app_info information about qdrant server
+          # TYPE app_info gauge
+          app_info{name="qdrant",version="1.20.0"} 1
+          # HELP app_status_recovery_mode features enabled in qdrant server
+          # TYPE app_status_recovery_mode gauge
+          app_status_recovery_mode 0
+          # HELP collections_total number of collections
+          # TYPE collections_total gauge
+          collections_total 2
+          # HELP collections_vector_total total number of vectors in all collections
+          # TYPE collections_vector_total gauge
+          collections_vector_total 2000
+          # HELP collection_vectors amount of vectors grouped by vector name
+          # TYPE collection_vectors gauge
+          collection_vectors{collection="docs",vector=""} 1000
+          collection_vectors{collection="products",vector=""} 1000
+          # HELP collection_indexed_only_excluded_points amount of points excluded in indexed_only requests
+          # TYPE collection_indexed_only_excluded_points gauge
+          collection_indexed_only_excluded_points{id="docs",vector=""} 0
+          collection_indexed_only_excluded_points{id="products",vector=""} 0
+          # HELP collection_active_replicas_min minimum number of active replicas across all shards
+          # TYPE collection_active_replicas_min gauge
+          collection_active_replicas_min 1
+          # HELP collection_active_replicas_max maximum number of active replicas across all shards
+          # TYPE collection_active_replicas_max gauge
+          collection_active_replicas_max 1
+          # HELP collection_running_optimizations number of currently running optimization tasks per collection
+          # TYPE collection_running_optimizations gauge
+          collection_running_optimizations{id="docs"} 0
+          collection_running_optimizations{id="products"} 0
+          # HELP collection_points approximate amount of points per collection
+          # TYPE collection_points gauge
+          collection_points{id="docs"} 1000
+          collection_points{id="products"} 1000
+          # HELP collection_dead_replicas total amount of shard replicas in non-active state
+          # TYPE collection_dead_replicas gauge
+          collection_dead_replicas 0
+          # HELP snapshot_creation_running amount of snapshot creations that are currently running
+          # TYPE snapshot_creation_running gauge
+          snapshot_creation_running{id="docs"} 0
+          snapshot_creation_running{id="products"} 0
+          # HELP snapshot_recovery_running amount of snapshot recovery operations currently running
+          # TYPE snapshot_recovery_running gauge
+          snapshot_recovery_running{id="docs"} 0
+          snapshot_recovery_running{id="products"} 0
+          # HELP snapshot_created_total total amount of snapshots created
+          # TYPE snapshot_created_total counter
+          snapshot_created_total{id="docs"} 1
+          snapshot_created_total{id="products"} 0
+          # HELP collection_shard_transfer_incoming incoming shard transfers currently running
+          # TYPE collection_shard_transfer_incoming gauge
+          collection_shard_transfer_incoming{id="docs"} 0
+          collection_shard_transfer_incoming{id="products"} 0
+          # HELP collection_shard_transfer_outgoing outgoing shard transfers currently running
+          # TYPE collection_shard_transfer_outgoing gauge
+          collection_shard_transfer_outgoing{id="docs"} 0
+          collection_shard_transfer_outgoing{id="products"} 0
+          # HELP collection_shard_transfer_failed number of failed shard transfers
+          # TYPE collection_shard_transfer_failed gauge
+          collection_shard_transfer_failed{id="docs"} 0
+          collection_shard_transfer_failed{id="products"} 0
+          # HELP collection_update_queue_length number of pending operations in update queues per collection
+          # TYPE collection_update_queue_length gauge
+          collection_update_queue_length{id="docs"} 0
+          collection_update_queue_length{id="products"} 0
+          # HELP collection_update_queue_deferred_points number of points currently hidden during read operations as they're not yet optimized
+          # TYPE collection_update_queue_deferred_points gauge
+          collection_update_queue_deferred_points{id="docs"} 0
+          collection_update_queue_deferred_points{id="products"} 0
+          # HELP cluster_enabled is cluster support enabled
+          # TYPE cluster_enabled gauge
+          cluster_enabled 0
+          # HELP rest_responses_total total number of responses
+          # TYPE rest_responses_total counter
+          rest_responses_total{method="PUT",endpoint="/collections/{collection_name}/points",status="200"} 20
+          rest_responses_total{method="POST",endpoint="/collections/{collection_name}/points/query",status="400"} 1
+          rest_responses_total{method="POST",endpoint="/collections/{collection_name}/points/query",status="200"} 340
+          rest_responses_total{method="POST",endpoint="/collections/{collection_name}/points/query",status="404"} 1
+          # HELP rest_responses_avg_duration_seconds average response duration
+          # TYPE rest_responses_avg_duration_seconds gauge
+          rest_responses_avg_duration_seconds{method="PUT",endpoint="/collections/{collection_name}/points",status="200"} 0.00247936669921875
+          rest_responses_avg_duration_seconds{method="POST",endpoint="/collections/{collection_name}/points/query",status="200"} 0.00021410446166992186
+          # HELP rest_responses_min_duration_seconds minimum response duration
+          # TYPE rest_responses_min_duration_seconds gauge
+          rest_responses_min_duration_seconds{method="PUT",endpoint="/collections/{collection_name}/points",status="200"} 0.000848
+          rest_responses_min_duration_seconds{method="POST",endpoint="/collections/{collection_name}/points/query",status="200"} 0.000046
+          # HELP rest_responses_max_duration_seconds maximum response duration
+          # TYPE rest_responses_max_duration_seconds gauge
+          rest_responses_max_duration_seconds{method="PUT",endpoint="/collections/{collection_name}/points",status="200"} 0.004766
+          rest_responses_max_duration_seconds{method="POST",endpoint="/collections/{collection_name}/points/query",status="200"} 0.002899
+          # HELP rest_responses_duration_seconds response duration histogram
+          # TYPE rest_responses_duration_seconds histogram
+          rest_responses_duration_seconds_bucket{method="PUT",endpoint="/collections/{collection_name}/points",status="200",le="0.001"} 4
+          rest_responses_duration_seconds_bucket{method="PUT",endpoint="/collections/{collection_name}/points",status="200",le="0.005"} 20
+          rest_responses_duration_seconds_bucket{method="PUT",endpoint="/collections/{collection_name}/points",status="200",le="0.01"} 20
+          rest_responses_duration_seconds_bucket{method="PUT",endpoint="/collections/{collection_name}/points",status="200",le="0.02"} 20
+          rest_responses_duration_seconds_bucket{method="PUT",endpoint="/collections/{collection_name}/points",status="200",le="0.05"} 20
+          rest_responses_duration_seconds_bucket{method="PUT",endpoint="/collections/{collection_name}/points",status="200",le="0.1"} 20
+          rest_responses_duration_seconds_bucket{method="PUT",endpoint="/collections/{collection_name}/points",status="200",le="0.5"} 20
+          rest_responses_duration_seconds_bucket{method="PUT",endpoint="/collections/{collection_name}/points",status="200",le="1"} 20
+          rest_responses_duration_seconds_bucket{method="PUT",endpoint="/collections/{collection_name}/points",status="200",le="5"} 20
+          rest_responses_duration_seconds_bucket{method="PUT",endpoint="/collections/{collection_name}/points",status="200",le="10"} 20
+          rest_responses_duration_seconds_bucket{method="PUT",endpoint="/collections/{collection_name}/points",status="200",le="50"} 20
+          rest_responses_duration_seconds_bucket{method="PUT",endpoint="/collections/{collection_name}/points",status="200",le="+Inf"} 20
+          rest_responses_duration_seconds_sum{method="PUT",endpoint="/collections/{collection_name}/points",status="200"} 0.040663
+          rest_responses_duration_seconds_count{method="PUT",endpoint="/collections/{collection_name}/points",status="200"} 20
+          rest_responses_duration_seconds_bucket{method="POST",endpoint="/collections/{collection_name}/points/query",status="200",le="0.001"} 299
+          rest_responses_duration_seconds_bucket{method="POST",endpoint="/collections/{collection_name}/points/query",status="200",le="0.005"} 340
+          rest_responses_duration_seconds_bucket{method="POST",endpoint="/collections/{collection_name}/points/query",status="200",le="0.01"} 340
+          rest_responses_duration_seconds_bucket{method="POST",endpoint="/collections/{collection_name}/points/query",status="200",le="0.02"} 340
+          rest_responses_duration_seconds_bucket{method="POST",endpoint="/collections/{collection_name}/points/query",status="200",le="0.05"} 340
+          rest_responses_duration_seconds_bucket{method="POST",endpoint="/collections/{collection_name}/points/query",status="200",le="0.1"} 340
+          rest_responses_duration_seconds_bucket{method="POST",endpoint="/collections/{collection_name}/points/query",status="200",le="0.5"} 340
+          rest_responses_duration_seconds_bucket{method="POST",endpoint="/collections/{collection_name}/points/query",status="200",le="1"} 340
+          rest_responses_duration_seconds_bucket{method="POST",endpoint="/collections/{collection_name}/points/query",status="200",le="5"} 340
+          rest_responses_duration_seconds_bucket{method="POST",endpoint="/collections/{collection_name}/points/query",status="200",le="10"} 340
+          rest_responses_duration_seconds_bucket{method="POST",endpoint="/collections/{collection_name}/points/query",status="200",le="50"} 340
+          rest_responses_duration_seconds_bucket{method="POST",endpoint="/collections/{collection_name}/points/query",status="200",le="+Inf"} 340
+          rest_responses_duration_seconds_sum{method="POST",endpoint="/collections/{collection_name}/points/query",status="200"} 0.101735
+          rest_responses_duration_seconds_count{method="POST",endpoint="/collections/{collection_name}/points/query",status="200"} 340
+          # HELP collection_hardware_metric_cpu CPU measurements of a collection
+          # TYPE collection_hardware_metric_cpu counter
+          collection_hardware_metric_cpu{id="docs"} 245944320
+          collection_hardware_metric_cpu{id="missing"} 0
+          collection_hardware_metric_cpu{id="products"} 82073600
+          # HELP collection_hardware_metric_payload_io_read Total IO payload read metrics of a collection
+          # TYPE collection_hardware_metric_payload_io_read counter
+          collection_hardware_metric_payload_io_read{id="docs"} 360000
+          collection_hardware_metric_payload_io_read{id="missing"} 0
+          collection_hardware_metric_payload_io_read{id="products"} 360000
+          # HELP collection_hardware_metric_payload_index_io_read Total IO payload index read metrics of a collection
+          # TYPE collection_hardware_metric_payload_index_io_read counter
+          collection_hardware_metric_payload_index_io_read{id="docs"} 0
+          collection_hardware_metric_payload_index_io_read{id="missing"} 0
+          collection_hardware_metric_payload_index_io_read{id="products"} 0
+          # HELP collection_hardware_metric_payload_index_io_write Total IO payload index write metrics of a collection
+          # TYPE collection_hardware_metric_payload_index_io_write counter
+          collection_hardware_metric_payload_index_io_write{id="docs"} 0
+          collection_hardware_metric_payload_index_io_write{id="missing"} 0
+          collection_hardware_metric_payload_index_io_write{id="products"} 0
+          # HELP collection_hardware_metric_payload_io_write Total IO payload write metrics of a collection
+          # TYPE collection_hardware_metric_payload_io_write counter
+          collection_hardware_metric_payload_io_write{id="docs"} 18000
+          collection_hardware_metric_payload_io_write{id="missing"} 0
+          collection_hardware_metric_payload_io_write{id="products"} 18000
+          # HELP collection_hardware_metric_vector_io_read Total IO vector read metrics of a collection
+          # TYPE collection_hardware_metric_vector_io_read counter
+          collection_hardware_metric_vector_io_read{id="docs"} 0
+          collection_hardware_metric_vector_io_read{id="missing"} 0
+          collection_hardware_metric_vector_io_read{id="products"} 0
+          # HELP collection_hardware_metric_vector_io_write Total IO vector write metrics of a collection
+          # TYPE collection_hardware_metric_vector_io_write counter
+          collection_hardware_metric_vector_io_write{id="docs"} 1536000
+          collection_hardware_metric_vector_io_write{id="missing"} 0
+          collection_hardware_metric_vector_io_write{id="products"} 512000
+          # HELP memory_active_bytes Total number of bytes in active pages allocated by the application
+          # TYPE memory_active_bytes gauge
+          memory_active_bytes 60833792
+          # HELP memory_allocated_bytes Total number of bytes allocated by the application
+          # TYPE memory_allocated_bytes gauge
+          memory_allocated_bytes 53546744
+          # HELP memory_metadata_bytes Total number of bytes dedicated to metadata
+          # TYPE memory_metadata_bytes gauge
+          memory_metadata_bytes 4350696
+          # HELP memory_resident_bytes Maximum number of bytes in physically resident data pages mapped
+          # TYPE memory_resident_bytes gauge
+          memory_resident_bytes 72400896
+          # HELP memory_retained_bytes Total number of bytes in virtual memory mappings
+          # TYPE memory_retained_bytes gauge
+          memory_retained_bytes 10272768
