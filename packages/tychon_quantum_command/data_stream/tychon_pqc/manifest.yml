@@ -1,0 +1,56 @@
+title: Tychon Quantum Command
+type: logs
+streams:
+  - input: filestream
+    title: Tychon Quantum Command logs
+    description: Collect TQC NDJSON output files.
+    template_path: stream.yml.hbs
+    vars:
+      - name: paths
+        type: text
+        title: Additional paths
+        description: Extra file paths or globs containing TYCHON Quantum Command output, collected in addition to the Windows and Linux paths.
+        multi: true
+        required: false
+        show_user: true
+        default: []
+      - name: windows_paths
+        type: text
+        title: Windows paths
+        description: Windows file paths or globs containing TYCHON Quantum Command output.
+        multi: true
+        required: false
+        show_user: true
+        default:
+          - C:\ProgramData\Tychon\output\*.ndjson
+      - name: linux_paths
+        type: text
+        title: Linux paths
+        description: Linux file paths or globs containing TYCHON Quantum Command output.
+        multi: true
+        required: false
+        show_user: true
+        default:
+          - /var/log/tychon-pqc/*.ndjson
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Preserves a raw copy of the original event in event.original.
+        required: true
+        show_user: true
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to add to collected events. When set, these replace the default tychon and quantum tags.
+        multi: true
+        required: false
+        show_user: true
+        default: []
+      - name: processors
+        type: yaml
+        title: Processors
+        description: Processors to apply to events.
+        multi: false
+        required: false
+        show_user: false

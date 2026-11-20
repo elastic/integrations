@@ -1,0 +1,14 @@
+version: "2.3"
+services:
+  tychon_quantum_command:
+    image: busybox:1.36
+    volumes:
+      - ./sample.ndjson:/fixtures/sample.ndjson:ro
+      - ${SERVICE_LOGS_DIR}:/logs
+    command: >
+      sh -c "cp /fixtures/sample.ndjson /logs/tqc.ndjson && tail -f /dev/null"
+    healthcheck:
+      test: ["CMD", "test", "-s", "/logs/tqc.ndjson"]
+      interval: 1s
+      timeout: 5s
+      retries: 30
