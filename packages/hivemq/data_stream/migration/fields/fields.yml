@@ -1,0 +1,46 @@
+- name: hivemq.migration
+  type: group
+  fields:
+    - name: hivemq_version
+      type: keyword
+      description: Version of the running HiveMQ broker that checks its persistence for needed migrations, for example `2026.5`. The version recorded in the metadata file is in `hivemq.migration.metadata.hivemq_version`.
+    - name: needed
+      type: keyword
+      description: Migration units HiveMQ found it needs to run, for example `retained message payload id` and `client queue payload id`.
+    - name: unit
+      type: keyword
+      description: Migration unit that is migrated, for example `retained message payload id` or `publish payload file persistence`.
+    - name: target_type
+      type: keyword
+      description: Persistence type a file persistence is migrated to, for example `FILE_NATIVE`.
+    - name: persistence_folder
+      type: keyword
+      description: Name of the old persistence folder whose absence made HiveMQ skip a migration unit, as HiveMQ logs it.
+    - name: metadata
+      type: group
+      description: Persistence versions and types read from or written to the HiveMQ metadata file. A value HiveMQ logs as `null` is not set.
+      fields:
+        - name: hivemq_version
+          type: keyword
+          description: HiveMQ version recorded in the metadata file, that is the version that last wrote the persistence.
+        - name: client_session_persistence_version
+          type: keyword
+          description: Version of the client session persistence.
+        - name: queued_messages_persistence_version
+          type: keyword
+          description: Version of the queued messages persistence.
+        - name: subscription_persistence_version
+          type: keyword
+          description: Version of the subscription persistence.
+        - name: retained_messages_persistence_version
+          type: keyword
+          description: Version of the retained messages persistence.
+        - name: publish_payload_persistence_version
+          type: keyword
+          description: Version of the publish payload persistence.
+        - name: retained_messages_persistence_type
+          type: keyword
+          description: Storage type of the retained messages persistence, for example `FILE_NATIVE`.
+        - name: publish_payload_persistence_type
+          type: keyword
+          description: Storage type of the publish payload persistence, for example `FILE_NATIVE`.

@@ -1,0 +1,46 @@
+- name: hivemq.event
+  type: group
+  fields:
+    - name: client_id
+      type: keyword
+      description: MQTT client identifier of the client the event refers to. Not set when HiveMQ logs the client ID as `UNKNOWN`.
+    - name: clean_start
+      type: boolean
+      description: Whether the client requested a clean start (MQTT 5) or a clean session (MQTT 3) on connect.
+    - name: session_expiry
+      type: long
+      unit: s
+      description: Session expiry interval of the connected client, in seconds. `0` means the session ends when the client disconnects, `4294967295` means it never expires.
+    - name: disconnect
+      type: group
+      fields:
+        - name: type
+          type: keyword
+          description: How the client was disconnected. One of `graceful` (the client sent a DISCONNECT packet), `ungraceful` (the connection closed without a DISCONNECT packet) or `broker_initiated` (HiveMQ disconnected the client).
+    - name: reason
+      type: keyword
+      description: Reason given by the client on a graceful disconnect, by HiveMQ on a broker-initiated disconnect, or for a dropped message or packet.
+      multi_fields:
+        - name: text
+          type: match_only_text
+    - name: listener
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: Name of the HiveMQ listener the client was connected to on an ungraceful disconnect, for example `TCP Listener`. The listener port is in `destination.port`.
+    - name: topic
+      type: keyword
+      description: Topic of the dropped publish message.
+    - name: qos
+      type: keyword
+      description: Quality of service level (0, 1 or 2) of the dropped publish message.
+    - name: shared_subscription_group
+      type: keyword
+      description: Shared subscription group a dropped publish message was addressed to.
+    - name: message_type
+      type: keyword
+      description: MQTT packet type of the dropped outgoing packet.
+    - name: reason_code
+      type: keyword
+      description: Reason code of an AUTH packet sent to or received from the client.

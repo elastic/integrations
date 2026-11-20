@@ -1,0 +1,52 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: hivemq
+      name: test-container-hivemq
+      streams:
+        - data_stream:
+            dataset: hivemq.log
+          fields:
+            _conf:
+                tz_offset: Europe/Amsterdam
+          fields_under_root: true
+          parsers:
+            - container:
+                format: auto
+                stream: all
+            - multiline:
+                match: after
+                max_lines: 500
+                negate: true
+                pattern: '^\d{4}-\d{2}-\d{2} '
+                timeout: 5s
+                type: pattern
+          paths:
+            - /var/log/containers/*hivemq*.log
+          processors:
+            - add_locale: null
+          prospector.scanner.exclude_files:
+            - \.gz$
+            - \.zip$
+          prospector.scanner.symlinks: true
+          tags:
+            - hivemq-log
+      type: filestream
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-hivemq.log-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []

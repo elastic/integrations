@@ -1,0 +1,36 @@
+title: HiveMQ broker metrics
+type: metrics
+streams:
+  - input: prometheus/metrics
+    enabled: false
+    template_path: stream.yml.hbs
+    title: HiveMQ broker metrics
+    description: Collect HiveMQ broker metrics (connections, sessions, subscriptions, message and byte counts) from the HiveMQ Prometheus Extension
+    vars:
+      - name: period
+        type: text
+        title: Period
+        description: How often to fetch the metrics, for example 10s, 1m or 1h.
+        multi: false
+        required: true
+        show_user: true
+        default: 10s
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to include in the published event.
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - hivemq-metrics
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the metrics are parsed. See [Processors](https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html) for details.
+elasticsearch:
+  index_mode: time_series

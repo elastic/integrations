@@ -1,0 +1,288 @@
+---
+description: Pipeline for parsing HiveMQ Community Edition client event logs (event.log).
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+
+  # HiveMQ writes a timezone-less timestamp in the local timezone of the broker's
+  # JVM, so an explicit offset from the integration policy wins over the Elastic
+  # Agent host timezone supplied by `add_locale`.
+  - set:
+      field: event.timezone
+      tag: set_event_timezone_from_tz_offset
+      value: '{{{_conf.tz_offset}}}'
+      if: ctx._conf?.tz_offset != null && ctx._conf.tz_offset != ''
+
+  # Logback pattern `%-24(%d)- %msg%n%ex`: the timestamp is right-padded to 24
+  # characters and followed by `- ` and the message. HiveMQ does not log a level
+  # in this file. The Elastic Agent multiline parser joins any line that does not
+  # start with a date to the event before it, so the event can span several lines.
+  # `\A` and `\z` anchor to the start and end of the whole event: in grok, `^` and
+  # `$` match at every line boundary and would accept a partial match. `[ ]` is
+  # used instead of `\s` so the separator can never consume a line break.
+  # The second pattern keeps text that carries no HiveMQ header in `message`; its
+  # `@timestamp` stays the time the agent read it.
+  - grok:
+      field: event.original
+      tag: grok_header
+      patterns:
+        - '\A(?<_temp.timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3})[ ]+-[ ]?(?<_temp.body>(?<_temp.first_line>[^\r\n]*)(?:\r?\n[\s\S]*)?)\z'
+        - '\A(?<message>[\s\S]*)\z'
+      if: ctx.event?.original != null
+
+  - date:
+      field: _temp.timestamp
+      tag: date_timestamp_with_timezone
+      target_field: '@timestamp'
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss,SSS'
+      timezone: '{{{event.timezone}}}'
+      if: ctx._temp?.timestamp != null && ctx.event?.timezone != null
+  - date:
+      field: _temp.timestamp
+      tag: date_timestamp
+      target_field: '@timestamp'
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss,SSS'
+      if: ctx._temp?.timestamp != null && ctx.event?.timezone == null
+
+  - set:
+      field: message
+      tag: set_message_from_body
+      copy_from: _temp.body
+      if: ctx._temp?.body != null
+  - trim:
+      field: message
+      tag: trim_message
+      ignore_missing: true
+
+  # Message templates from HiveMQ's EventLog class. Each pattern captures a
+  # literal marker in `_temp.kind` that the categorization script below maps to
+  # `event.action` and the ECS categorization fields.
+  # - Client IDs and topics are free text: lazy captures are bounded by the next
+  #   fixed separator of the template (`, IP: `, `, topic: `, ...).
+  # - Reasons are free text that can contain commas and periods. Where HiveMQ
+  #   appends a period after the reason, the greedy capture followed by `\.\z`
+  #   strips exactly that one period. A reason given by the client on a graceful
+  #   disconnect has no period appended, so it is kept as is.
+  # - The last pattern accepts any other message, so a template added in a
+  #   later HiveMQ version is still indexed with its `message`.
+  - grok:
+      field: _temp.first_line
+      tag: grok_event_message
+      pattern_definitions:
+        HIVEMQ_CLIENT: '(?<_temp.client_id>.*?), IP: (?<_temp.ip>[^\s,]+)'
+        HIVEMQ_BOOLEAN: 'true|false'
+      patterns:
+        - '\AClient ID: %{HIVEMQ_CLIENT}, Clean Start: %{HIVEMQ_BOOLEAN:hivemq.event.clean_start:boolean}, Session Expiry: %{NONNEGINT:hivemq.event.session_expiry:long} (?<_temp.kind>connected)\.\z'
+        - '\AClient ID: %{HIVEMQ_CLIENT} (?<_temp.kind>disconnected gracefully)\.(?: Reason given by client: (?<_temp.reason>.*))?\z'
+        - '\AClient ID: %{HIVEMQ_CLIENT} (?<_temp.kind>disconnected ungracefully)(?: from (?<hivemq.event.listener.name>.+?) on port: %{NONNEGINT:destination.port:long})?\.\z'
+        - '\AClient ID: %{HIVEMQ_CLIENT} (?<_temp.kind>was disconnected)\. reason: (?<_temp.reason>.*)\.\z'
+        - '\AClient ID: (?<_temp.client_id>.*?) (?<_temp.kind>session has expired) at (?<_temp.expired_at>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\. All persistent data for this client has been removed\.\z'
+        - '\AOutgoing (?<_temp.kind>publish message) was dropped\. Receiving client: (?<_temp.client_id>.*?), topic: (?<hivemq.event.topic>.*?), qos: (?<hivemq.event.qos>\d+), reason: (?<_temp.reason>.*)\.\z'
+        - '\AOutgoing (?<_temp.kind>publish message) was dropped\. Receiving shared subscription group: (?<hivemq.event.shared_subscription_group>.*?), topic: (?<hivemq.event.topic>.*?), qos: (?<hivemq.event.qos>\d+), reason: (?<_temp.reason>.*)\.\z'
+        - '\AOutgoing (?<_temp.kind>MQTT packet) was dropped\. Receiving client: (?<_temp.client_id>.*?), messageType: (?<hivemq.event.message_type>.*?), reason: (?<_temp.reason>.*)\.\z'
+        - '\A(?<_temp.kind>Received) AUTH from Client ID: %{HIVEMQ_CLIENT}, reason code: (?<hivemq.event.reason_code>.*?)\.\z'
+        - '\A(?<_temp.kind>Sent) AUTH to Client ID: %{HIVEMQ_CLIENT}, reason code: (?<hivemq.event.reason_code>.*?)\.\z'
+        - '\A[\s\S]*\z'
+      if: ctx._temp?.first_line != null
+
+  # HiveMQ writes `UNKNOWN` when the client ID or the IP address is not known,
+  # for example when a connection closes before a valid MQTT CONNECT packet.
+  - rename:
+      field: _temp.client_id
+      tag: rename_client_id
+      target_field: hivemq.event.client_id
+      ignore_missing: true
+      if: ctx._temp?.client_id != null && ctx._temp.client_id != '' && ctx._temp.client_id != 'UNKNOWN'
+  - rename:
+      field: _temp.reason
+      tag: rename_reason
+      target_field: hivemq.event.reason
+      ignore_missing: true
+      if: ctx._temp?.reason != null && ctx._temp.reason != ''
+  # The client IP address is the source of the MQTT connection. A value that is
+  # not an IP address is kept in `source.address` instead of failing the event.
+  - convert:
+      field: _temp.ip
+      tag: convert_source_ip
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+      if: ctx._temp?.ip != null && ctx._temp.ip != 'UNKNOWN'
+      on_failure:
+        - rename:
+            field: _temp.ip
+            tag: rename_source_address
+            target_field: source.address
+            ignore_missing: true
+
+  # EventLog always formats the session expiry time in UTC, independent of the
+  # JVM timezone used for the line timestamp.
+  - date:
+      field: _temp.expired_at
+      tag: date_session_expired_at
+      target_field: event.end
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss'
+      timezone: UTC
+      if: ctx._temp?.expired_at != null
+
+  - geoip:
+      field: source.ip
+      tag: geoip_source_ip
+      target_field: source.geo
+      ignore_missing: true
+      if: ctx.source?.ip != null
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      tag: geoip_source_asn
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+      if: ctx.source?.ip != null
+  - rename:
+      field: source.as.asn
+      tag: rename_source_as_asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      tag: rename_source_as_organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - append:
+      field: related.ip
+      tag: append_source_ip_to_related_ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - script:
+      lang: painless
+      tag: script_event_categorization
+      description: Map the matched EventLog message template to event.action, the ECS categorization fields and the disconnect type.
+      if: ctx._temp?.kind != null
+      params:
+        connected:
+          action: client-connected
+          category: [network]
+          type: [connection, start]
+          outcome: success
+        disconnected gracefully:
+          action: client-disconnected
+          category: [network]
+          type: [connection, end]
+          disconnect_type: graceful
+        disconnected ungracefully:
+          action: client-disconnected
+          category: [network]
+          type: [connection, end]
+          disconnect_type: ungraceful
+        was disconnected:
+          action: client-disconnected
+          category: [network]
+          type: [connection, end]
+          disconnect_type: broker_initiated
+        session has expired:
+          action: client-session-expired
+          category: [session]
+          type: [end]
+        publish message:
+          action: message-dropped
+          category: [network]
+          type: [info]
+          outcome: failure
+        MQTT packet:
+          action: packet-dropped
+          category: [network]
+          type: [info]
+          outcome: failure
+        Received:
+          action: authentication-received
+          category: [authentication]
+          type: [info]
+        Sent:
+          action: authentication-sent
+          category: [authentication]
+          type: [info]
+      source: |-
+        def mapping = params[ctx._temp.kind];
+        if (mapping == null) {
+          return;
+        }
+        ctx.event.action = mapping.action;
+        ctx.event.category = new ArrayList(mapping.category);
+        ctx.event.type = new ArrayList(mapping.type);
+        if (mapping.containsKey('outcome')) {
+          ctx.event.outcome = mapping.outcome;
+        }
+        if (mapping.containsKey('disconnect_type')) {
+          if (ctx.hivemq == null) {
+            ctx.hivemq = new HashMap();
+          }
+          if (ctx.hivemq.event == null) {
+            ctx.hivemq.event = new HashMap();
+          }
+          Map disconnect = new HashMap();
+          disconnect.put('type', mapping.disconnect_type);
+          ctx.hivemq.event.disconnect = disconnect;
+        }
+
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
+  - remove:
+      field:
+        - _temp
+        - _conf
+      tag: remove_temp_fields
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - remove:
+      field:
+        - _temp
+        - _conf
+      tag: remove_temp_fields_on_failure
+      ignore_missing: true
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

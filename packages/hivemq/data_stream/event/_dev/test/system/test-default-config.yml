@@ -1,0 +1,12 @@
+wait_for_data_timeout: 1m
+service: hivemq-event-filestream
+input: filestream
+data_stream:
+  vars:
+    paths:
+      - "{{SERVICE_LOGS_DIR}}/event.log"
+    preserve_original_event: true
+    tz_offset: "UTC"
+assert:
+  # 29 physical lines, each one a complete event (no multiline continuation).
+  hit_count: 29
