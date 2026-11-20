@@ -1,0 +1,74 @@
+title: BitDefender GravityZone Endpoints
+type: logs
+streams:
+  - input: cel
+    template_path: cel.yml.hbs
+    title: BitDefender GravityZone Endpoints
+    description: Collect endpoint, virtual machine, EC2 instance, and container inventory from the GravityZone Public API.
+    enabled: false
+    vars:
+      - name: interval
+        type: text
+        title: Polling Interval
+        description: Duration between full endpoint inventory snapshots. Supported units for this parameter are h/m/s.
+        required: true
+        show_user: true
+        default: 1h
+      - name: page_size
+        type: integer
+        title: Page Size
+        description: Number of inventory items requested per page. The API supports values from 1 through 1000.
+        required: true
+        show_user: false
+        default: 500
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before an HTTP request is declared timed out. Supported units for this parameter are h/m/s.
+        required: false
+        show_user: false
+        default: 60s
+      - name: proxy_url
+        type: url
+        title: Proxy URL
+        description: HTTP proxy URL used for outbound API requests.
+        required: false
+        show_user: false
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: SSL configuration options. See the Elastic Agent SSL configuration documentation for supported settings.
+        required: false
+        show_user: false
+      - name: enable_request_tracer
+        type: bool
+        title: Enable Request Tracer
+        description: Enabling request tracing can expose sensitive request and response data and compromise security. Enable it only for debugging.
+        required: false
+        show_user: false
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+      - name: preserve_original_event
+        type: bool
+        title: Preserve Original Event
+        description: Preserve a raw copy of the original event in event.original.
+        required: true
+        show_user: true
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        description: Processors applied by Elastic Agent before events are sent to Elasticsearch.
+        required: false
+        show_user: false
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false
