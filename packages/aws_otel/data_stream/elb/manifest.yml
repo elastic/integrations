@@ -1,0 +1,52 @@
+title: "AWS Load Balancer Metrics (OpenTelemetry)"
+type: metrics
+# Pins the dataset so documents land in metrics-aws.elb.otel-* instead of
+# metrics-aws_otel.elb.otel-*. Matches the content package dataset `aws.elb.otel`.
+# One data stream for all four load balancer types: the stream template renders
+# one awscloudwatch receiver per enabled type.
+dataset: aws.elb
+streams:
+  - package: aws_cloudwatch_input_otel
+    title: AWS Load Balancer Metrics (OpenTelemetry)
+    description: >-
+      Application, Network, Classic and Gateway Load Balancer CloudWatch metrics, discovered from the AWS/ApplicationELB, AWS/NetworkELB, AWS/ELB and AWS/GatewayELB namespaces.
+    template_path: stream.yml.hbs
+    vars:
+      # Definitions come from aws_cloudwatch_input_otel; only the values that
+      # differ for this service are overridden here.
+      # Left empty so the input package receiver stays idle; the stream template
+      # renders one receiver per enabled load balancer type instead.
+      - name: namespace
+        required: false
+        show_user: false
+      - name: period
+        default: 1m
+        show_user: false
+      - name: collect_application
+        type: bool
+        title: Application Load Balancers
+        description: Collect metrics from the AWS/ApplicationELB namespace.
+        default: true
+        required: false
+        show_user: true
+      - name: collect_network
+        type: bool
+        title: Network Load Balancers
+        description: Collect metrics from the AWS/NetworkELB namespace.
+        default: true
+        required: false
+        show_user: true
+      - name: collect_classic
+        type: bool
+        title: Classic Load Balancers
+        description: Collect metrics from the AWS/ELB namespace.
+        default: true
+        required: false
+        show_user: true
+      - name: collect_gateway
+        type: bool
+        title: Gateway Load Balancers
+        description: Collect metrics from the AWS/GatewayELB namespace.
+        default: true
+        required: false
+        show_user: true

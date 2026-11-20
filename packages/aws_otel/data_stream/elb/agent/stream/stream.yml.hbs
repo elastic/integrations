@@ -1,0 +1,111 @@
+# One awscloudwatch receiver per enabled load balancer type, all in the aws.elb
+# dataset. The data stream leaves the input package's namespace empty, so the
+# input's own awscloudwatch receiver has no discovery and stays idle; it keeps
+# the pipeline valid when every type is turned off.
+# The receiver settings mirror the input package template (including the
+# credentials provider switch) and must be kept in sync with it.
+receivers:
+  # Merges into the input package receiver without changing it; keeps this key
+  # non-empty when every load balancer type is turned off.
+  awscloudwatch: {}
+{{#if collect_application}}
+  awscloudwatch/alb:
+{{#if supports_identity_federation}}
+    credentials_provider: awsidentityfederation
+{{else}}
+    credentials_provider: awscredentialsprovider
+{{/if}}
+    region: {{region}}
+    metrics:
+      collection_interval: {{collection_interval}}
+      period: {{period}}
+      delay: {{delay}}
+      discovery:
+        filters:
+          namespace: "AWS/ApplicationELB"
+        limit: {{autodiscover_limit}}
+        recently_active: true
+{{#if autodiscover_aggregation}}
+        stats:
+{{#each autodiscover_aggregation}}
+          - "{{this}}"
+{{/each}}
+{{/if}}
+{{/if}}
+{{#if collect_network}}
+  awscloudwatch/nlb:
+{{#if supports_identity_federation}}
+    credentials_provider: awsidentityfederation
+{{else}}
+    credentials_provider: awscredentialsprovider
+{{/if}}
+    region: {{region}}
+    metrics:
+      collection_interval: {{collection_interval}}
+      period: {{period}}
+      delay: {{delay}}
+      discovery:
+        filters:
+          namespace: "AWS/NetworkELB"
+        limit: {{autodiscover_limit}}
+        recently_active: true
+{{#if autodiscover_aggregation}}
+        stats:
+{{#each autodiscover_aggregation}}
+          - "{{this}}"
+{{/each}}
+{{/if}}
+{{/if}}
+{{#if collect_classic}}
+  awscloudwatch/classic:
+{{#if supports_identity_federation}}
+    credentials_provider: awsidentityfederation
+{{else}}
+    credentials_provider: awscredentialsprovider
+{{/if}}
+    region: {{region}}
+    metrics:
+      collection_interval: {{collection_interval}}
+      period: {{period}}
+      delay: {{delay}}
+      discovery:
+        filters:
+          namespace: "AWS/ELB"
+        limit: {{autodiscover_limit}}
+        recently_active: true
+{{#if autodiscover_aggregation}}
+        stats:
+{{#each autodiscover_aggregation}}
+          - "{{this}}"
+{{/each}}
+{{/if}}
+{{/if}}
+{{#if collect_gateway}}
+  awscloudwatch/gateway:
+{{#if supports_identity_federation}}
+    credentials_provider: awsidentityfederation
+{{else}}
+    credentials_provider: awscredentialsprovider
+{{/if}}
+    region: {{region}}
+    metrics:
+      collection_interval: {{collection_interval}}
+      period: {{period}}
+      delay: {{delay}}
+      discovery:
+        filters:
+          namespace: "AWS/GatewayELB"
+        limit: {{autodiscover_limit}}
+        recently_active: true
+{{#if autodiscover_aggregation}}
+        stats:
+{{#each autodiscover_aggregation}}
+          - "{{this}}"
+{{/each}}
+{{/if}}
+{{/if}}
+
+service:
+  pipelines:
+    metrics:
+      receivers: [{{#if collect_application}}awscloudwatch/alb, {{/if}}{{#if collect_network}}awscloudwatch/nlb, {{/if}}{{#if collect_classic}}awscloudwatch/classic, {{/if}}{{#if collect_gateway}}awscloudwatch/gateway, {{/if}}]
