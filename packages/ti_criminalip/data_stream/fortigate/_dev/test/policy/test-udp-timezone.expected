@@ -1,0 +1,35 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: ti_criminalip
+      name: test-udp-timezone-ti_criminalip
+      streams:
+        - data_stream:
+            dataset: ti_criminalip.fortigate
+          fields:
+            _conf:
+                tz_offset: "+09:00"
+          fields_under_root: true
+          host: 127.0.0.1:19515
+          publisher_pipeline.disable_host: true
+          tags:
+            - forwarded
+      type: udp
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-ti_criminalip.fortigate-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []
