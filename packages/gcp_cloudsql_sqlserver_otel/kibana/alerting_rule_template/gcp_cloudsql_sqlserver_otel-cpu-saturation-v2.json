@@ -1,0 +1,74 @@
+{
+  "id": "gcp_cloudsql_sqlserver_otel-cpu-saturation-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud SQL SQL Server OTel] CPU saturated with runnable task queue",
+        "description": "Alerts when the average CPU utilization of a SQL Server instance is at or above 90% of its reserved vCPUs over 15 minutes and, at the same time, the SQL Server scheduler run queue (runnable_tasks summed across schedulers) averages at least 1 task, for 3 consecutive checks. High CPU with an empty run queue is a busy but healthy server and does not fire. Requires at least 5 minutes of samples and applies the SQL Server engine marker. Grouped by database_id.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudsql",
+          "sqlserver"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "15m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudsql_sqlserver.otel-*\n| WHERE gcp.resource_type == \"cloudsql_database\"\n// Per minute: exact CPU sums across fragments, and the instance run queue\n// (runnable_tasks has one series per scheduler_id; one sample per series per minute).\n| STATS cpu_sum = SUM(SUM_OVER_TIME(`cloudsql.googleapis.com/database/cpu/utilization`)),\n        cpu_n = SUM(COUNT_OVER_TIME(`cloudsql.googleapis.com/database/cpu/utilization`)),\n        cpu_peak = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/cpu/utilization`)),\n        run_queue = SUM(SUM_OVER_TIME(`cloudsql.googleapis.com/database/sqlserver/schedulers/runnable_tasks`)),\n        rq_n = SUM(COUNT_OVER_TIME(`cloudsql.googleapis.com/database/sqlserver/schedulers/runnable_tasks`)),\n        cores = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/cpu/reserved_cores`)),\n        ss = SUM(COUNT_OVER_TIME(`cloudsql.googleapis.com/database/sqlserver/memory/page_life_expectancy`))\n    BY `@timestamp` = TBUCKET(1 minute), database_id\n// Ignore minutes without scheduler samples instead of counting them as an empty queue\n| EVAL run_queue = CASE(rq_n > 0, run_queue, NULL)\n| STATS cpu_sum = SUM(cpu_sum), cpu_n = SUM(cpu_n), cpu_peak = MAX(cpu_peak),\n        rq_avg = AVG(run_queue), rq_peak = MAX(run_queue),\n        cores = MAX(cores), ss = SUM(ss)\n    BY database_id",
+        "breach": {
+          "segment": "// SQL Server engine marker: excludes MySQL / PostgreSQL instances that share cpu metrics\nWHERE ss > 0 AND cpu_n > 0\n// Minimum samples: ~5 minutes of CPU data so a single late sample cannot trigger\n| WHERE cpu_n >= 5\n// Exact mean across fragments: SUM(SUM_OVER_TIME) / SUM(COUNT_OVER_TIME)\n| EVAL cpu_avg_pct = ROUND(cpu_sum / cpu_n * 100.0, 1),\n       cpu_peak_pct = ROUND(cpu_peak * 100.0, 1),\n       rq_avg = ROUND(rq_avg, 2)\n// Alert thresholds:\n//  - average CPU utilization (percent of reserved vCPUs) over the rule window\n//  - average runnable tasks (queries waiting for a CPU). Remove this line to alert on\n//    CPU utilization alone; raise it (e.g. to the vCPU count) for large instances.\n| WHERE cpu_avg_pct >= 90\n| WHERE rq_avg >= 1\n| KEEP database_id, cpu_avg_pct, cpu_peak_pct, rq_avg, rq_peak, cores\n| SORT cpu_avg_pct DESC\n| LIMIT 100"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 2
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "database_id"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudsql_sqlserver_otel-cpu-saturation-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud SQL for SQL Server CPU saturated\n\nThe instance used at least 90% of its reserved vCPUs on average over 15 minutes, and SQL Server's schedulers had runnable tasks queued (`rq_avg`), so queries are waiting for CPU. Every query slows down.\n\n### Triage\n1. Open the Instance Detail dashboard: compare CPU, runnable tasks, batch requests and login attempts. Did traffic rise (more batches) or did per-query cost rise (same batches, more CPU)?\n2. A login spike with flat batches points to a connection storm (poor pooling); authentication consumes CPU.\n3. Memory pressure (falling page life expectancy, rising read IOPS) often precedes CPU rises; check the memory pressure alert.\n4. Use Query Insights / `sys.dm_exec_query_stats` to find the top CPU consumers; look for plan regressions or missing indexes.\n5. If load is legitimate, scale the tier (more vCPUs).\n\n### Tuning\n- `cpu_avg_pct >= 90`: CPU threshold. Lower to 80 for earlier warning.\n- `rq_avg >= 1`: run-queue threshold. Remove the line to alert on CPU utilization alone, or raise it on large instances (e.g. to `cores`).\n\n### Behaviour notes\n- Healthy: average CPU below 90%, or high CPU with an average run queue below 1. Breaching: both CPU >= 90% and run queue >= 1 (equality breaches), for 3 consecutive checks (about 25 minutes sustained).\n- Missing data: instances with fewer than 5 CPU samples or no scheduler samples in the window are not evaluated."
+          }
+        },
+        {
+          "id": "gcp_cloudsql_sqlserver_otel-cpu-saturation-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_sqlserver_otel-46d11bef-3642-4b3f-b979-d748c687acd6"
+          }
+        },
+        {
+          "id": "gcp_cloudsql_sqlserver_otel-cpu-saturation-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_sqlserver_otel-0953c329-69c9-4605-9c7c-b2c2d5b10846"
+          }
+        }
+      ]
+    }
+  }
+}
