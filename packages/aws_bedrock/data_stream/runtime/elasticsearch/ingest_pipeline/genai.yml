@@ -1,0 +1,76 @@
+---
+description: >-
+  Map Amazon Bedrock runtime metrics (CloudWatch namespace AWS/Bedrock) to the ECS gen_ai fields
+  (ECS 9.5.0). Called by the default pipeline after the metrics and dimensions are renamed under
+  aws_bedrock.runtime. It only adds fields. CloudWatch publishes every metric both per model
+  (ModelId dimension) and as an account total (no dimension), and again per model split by
+  ContextWindow, ImageSize, Quality or BucketedStepSize. Those split rows are subsets of the
+  per-model row, so gen_ai.request.model and gen_ai.usage.* are set only on the per-model row,
+  and summing gen_ai.usage.* over all documents does not count a token twice.
+processors:
+  - set:
+      tag: set_gen_ai_provider_name_9fd85687
+      description: Bedrock is the provider whatever the model vendor (OTel aws.bedrock).
+      field: gen_ai.provider.name
+      value: aws.bedrock
+  - script:
+      tag: script_set_gen_ai_request_model_and_usage_2dd69ce4
+      description: >-
+        On per-model rows only (ModelId and no ContextWindow, ImageSize, Quality or
+        BucketedStepSize dimension), copy the ModelId dimension to gen_ai.request.model and set
+        the token totals. AWS InputTokenCount excludes cached tokens, so gen_ai.usage.input_tokens
+        is InputTokenCount + CacheReadInputTokenCount + CacheWriteInputTokenCount, a missing
+        metric counting as 0, and is set only when at least one of the three is present.
+        gen_ai.usage.output_tokens is OutputTokenCount. The ContextWindow dimension is not
+        renamed by the default pipeline, so it is tested at aws.dimensions.ContextWindow.
+      lang: painless
+      if: >-
+        ctx.aws_bedrock?.runtime?.model_id instanceof String
+        && ctx.aws_bedrock.runtime.model_id != ''
+        && ctx.aws?.dimensions?.ContextWindow == null
+        && ctx.aws_bedrock.runtime.image_size == null
+        && ctx.aws_bedrock.runtime.quality == null
+        && ctx.aws_bedrock.runtime.bucketed_step_size == null
+      params:
+        input_token_fields:
+          - input_token_count
+          - cache_read_input_token_count
+          - cache_write_input_token_count
+      source: |
+        def rt = ctx.aws_bedrock.runtime;
+        ctx.gen_ai = ctx.gen_ai ?: new HashMap();
+        ctx.gen_ai.request = ctx.gen_ai.request ?: new HashMap();
+        ctx.gen_ai.request.model = rt.model_id;
+        Map usage = new HashMap();
+        long input = 0;
+        boolean hasInput = false;
+        for (String k : params.input_token_fields) {
+          def v = rt[k];
+          if (v instanceof Number) {
+            input += ((Number) v).longValue();
+            hasInput = true;
+          }
+        }
+        if (hasInput) {
+          usage.input_tokens = input;
+        }
+        if (rt.output_token_count instanceof Number) {
+          usage.output_tokens = ((Number) rt.output_token_count).longValue();
+        }
+        if (!usage.isEmpty()) {
+          ctx.gen_ai.usage = usage;
+        }
+on_failure:
+  - append:
+      tag: append_error_message_genai_40a7f584
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_event_kind_genai_768d3a5d
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_tags_genai_0be25642
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
