@@ -1,0 +1,28 @@
+- name: dentigrid
+  type: group
+  description: "DentiGrid specific deception and threat telemetry fields."
+  fields:
+    - name: category
+      type: keyword
+      description: "Threat category (reconnaissance, lateral_movement, credential_access, ransomware_staging)."
+      example: "lateral_movement"
+    - name: deception
+      type: group
+      description: "Deep deception context and decoy parameters."
+      fields:
+        - name: honey_service
+          type: keyword
+          description: "Name of the emulated decoy service or fabric component."
+          example: "DentiGrid Active Deception Fabric"
+        - name: share_path
+          type: keyword
+          description: "Decoy network share path accessed by attacker."
+          example: '\\\\198.51.100.190\\ADMIN$'
+        - name: raw_payload
+          type: text
+          description: "Raw protocol command, payload, or binary snippet captured by sensor."
+          example: 'SMB2_TREE_CONNECT_REQ Path: \\\\198.51.100.190\\ADMIN$'
+        - name: heuristic_classification
+          type: keyword
+          description: "Edge-AI classification for staged payloads."
+          example: "Ransomware.Win64.LockBitVariant.Stager"
