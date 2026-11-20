@@ -1,0 +1,142 @@
+# Reject nested values and changed fixed classification before promotion or original preservation.
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default nested-module-preserved.json
+cp stdout actual-nested-module-preserved.json
+exec jq -e --slurpfile expected expected-nested-module-preserved.json -f assertion.jq actual-nested-module-preserved.json
+stdout true
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default nested-module-default.json
+cp stdout actual-nested-module-default.json
+exec jq -e --slurpfile expected expected-nested-module-default.json -f assertion.jq actual-nested-module-default.json
+stdout true
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default nested-category-list.json
+cp stdout actual-nested-category-list.json
+exec jq -e --slurpfile expected expected-nested-category-list.json -f assertion.jq actual-nested-category-list.json
+stdout true
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default wrong-fixed-module.json
+cp stdout actual-wrong-fixed-module.json
+exec jq -e --slurpfile expected expected-wrong-fixed-module.json -f assertion.jq actual-wrong-fixed-module.json
+stdout true
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default wrong-fixed-dataset.json
+cp stdout actual-wrong-fixed-dataset.json
+exec jq -e --slurpfile expected expected-wrong-fixed-dataset.json -f assertion.jq actual-wrong-fixed-dataset.json
+stdout true
+uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+
+-- assertion.jq --
+. == $expected[0]
+-- nested-module-preserved.json --
+{
+  "@timestamp": "2026-08-14T10:05:00.000Z",
+  "tags": [
+    "preserve_original_event"
+  ],
+  "message": "{\"@timestamp\":\"2026-08-14T10:00:00.000Z\",\"ecs\":{\"version\":\"9.4.0\"},\"event\":{\"id\":\"leakdata-elastic-synthetic-example\",\"kind\":\"alert\",\"category\":[\"threat\"],\"type\":[\"indicator\"],\"action\":\"verified-exposure-detected\",\"module\":{\"extra_secret\":\"synthetic-review-marker\"},\"dataset\":\"leakdata.exposure\",\"severity\":90,\"risk_score\":90,\"risk_score_norm\":90,\"created\":\"2026-08-14T10:00:00.000Z\"},\"message\":\"LeakData detected 2 new verified exposure sources at or above the configured threshold. This event contains no monitored identity, source name, credential, exposed value, or raw record.\",\"observer\":{\"vendor\":\"LeakData\",\"product\":\"Exposure Monitoring\",\"type\":\"saas\"},\"rule\":{\"id\":\"leakdata-verified-exposure-v1\",\"name\":\"Verified identity exposure\",\"category\":\"Data Exposure\",\"ruleset\":\"LeakData verified exposure policy\",\"version\":\"1\"},\"tags\":[\"leakdata\",\"verified-exposure\",\"privacy-minimized\"],\"leakdata\":{\"exposure\":{\"finding_count\":2,\"minimum_severity\":\"high\",\"maximum_severity\":\"critical\",\"evidence_scope\":\"verified_source_and_verified_email_ownership\",\"contains_personal_data\":false}}}"
+}
+-- expected-nested-module-preserved.json --
+{
+  "@timestamp": "2026-08-14T10:05:00.000Z",
+  "event": {
+    "kind": "pipeline_error",
+    "module": "leakdata",
+    "dataset": "leakdata.exposure"
+  },
+  "error": {
+    "message": "LeakData feed event could not be parsed or was outside the allowlist."
+  },
+  "tags": [
+    "preserve_original_event"
+  ]
+}
+-- nested-module-default.json --
+{
+  "@timestamp": "2026-08-14T10:05:00.000Z",
+  "tags": [
+    "forwarded"
+  ],
+  "message": "{\"@timestamp\":\"2026-08-14T10:00:00.000Z\",\"ecs\":{\"version\":\"9.4.0\"},\"event\":{\"id\":\"leakdata-elastic-synthetic-example\",\"kind\":\"alert\",\"category\":[\"threat\"],\"type\":[\"indicator\"],\"action\":\"verified-exposure-detected\",\"module\":{\"extra_secret\":\"synthetic-review-marker\"},\"dataset\":\"leakdata.exposure\",\"severity\":90,\"risk_score\":90,\"risk_score_norm\":90,\"created\":\"2026-08-14T10:00:00.000Z\"},\"message\":\"LeakData detected 2 new verified exposure sources at or above the configured threshold. This event contains no monitored identity, source name, credential, exposed value, or raw record.\",\"observer\":{\"vendor\":\"LeakData\",\"product\":\"Exposure Monitoring\",\"type\":\"saas\"},\"rule\":{\"id\":\"leakdata-verified-exposure-v1\",\"name\":\"Verified identity exposure\",\"category\":\"Data Exposure\",\"ruleset\":\"LeakData verified exposure policy\",\"version\":\"1\"},\"tags\":[\"leakdata\",\"verified-exposure\",\"privacy-minimized\"],\"leakdata\":{\"exposure\":{\"finding_count\":2,\"minimum_severity\":\"high\",\"maximum_severity\":\"critical\",\"evidence_scope\":\"verified_source_and_verified_email_ownership\",\"contains_personal_data\":false}}}"
+}
+-- expected-nested-module-default.json --
+{
+  "@timestamp": "2026-08-14T10:05:00.000Z",
+  "event": {
+    "kind": "pipeline_error",
+    "module": "leakdata",
+    "dataset": "leakdata.exposure"
+  },
+  "error": {
+    "message": "LeakData feed event could not be parsed or was outside the allowlist."
+  },
+  "tags": [
+    "forwarded"
+  ]
+}
+-- nested-category-list.json --
+{
+  "@timestamp": "2026-08-14T10:05:00.000Z",
+  "tags": [
+    "preserve_original_event"
+  ],
+  "message": "{\"@timestamp\":\"2026-08-14T10:00:00.000Z\",\"ecs\":{\"version\":\"9.4.0\"},\"event\":{\"id\":\"leakdata-elastic-synthetic-example\",\"kind\":\"alert\",\"category\":[{\"extra_secret\":\"synthetic-review-marker\"}],\"type\":[\"indicator\"],\"action\":\"verified-exposure-detected\",\"module\":\"leakdata\",\"dataset\":\"leakdata.exposure\",\"severity\":90,\"risk_score\":90,\"risk_score_norm\":90,\"created\":\"2026-08-14T10:00:00.000Z\"},\"message\":\"LeakData detected 2 new verified exposure sources at or above the configured threshold. This event contains no monitored identity, source name, credential, exposed value, or raw record.\",\"observer\":{\"vendor\":\"LeakData\",\"product\":\"Exposure Monitoring\",\"type\":\"saas\"},\"rule\":{\"id\":\"leakdata-verified-exposure-v1\",\"name\":\"Verified identity exposure\",\"category\":\"Data Exposure\",\"ruleset\":\"LeakData verified exposure policy\",\"version\":\"1\"},\"tags\":[\"leakdata\",\"verified-exposure\",\"privacy-minimized\"],\"leakdata\":{\"exposure\":{\"finding_count\":2,\"minimum_severity\":\"high\",\"maximum_severity\":\"critical\",\"evidence_scope\":\"verified_source_and_verified_email_ownership\",\"contains_personal_data\":false}}}"
+}
+-- expected-nested-category-list.json --
+{
+  "@timestamp": "2026-08-14T10:05:00.000Z",
+  "event": {
+    "kind": "pipeline_error",
+    "module": "leakdata",
+    "dataset": "leakdata.exposure"
+  },
+  "error": {
+    "message": "LeakData feed event could not be parsed or was outside the allowlist."
+  },
+  "tags": [
+    "preserve_original_event"
+  ]
+}
+-- wrong-fixed-module.json --
+{
+  "@timestamp": "2026-08-14T10:05:00.000Z",
+  "tags": [
+    "preserve_original_event"
+  ],
+  "message": "{\"@timestamp\":\"2026-08-14T10:00:00.000Z\",\"ecs\":{\"version\":\"9.4.0\"},\"event\":{\"id\":\"leakdata-elastic-synthetic-example\",\"kind\":\"alert\",\"category\":[\"threat\"],\"type\":[\"indicator\"],\"action\":\"verified-exposure-detected\",\"module\":\"unexpected-module\",\"dataset\":\"leakdata.exposure\",\"severity\":90,\"risk_score\":90,\"risk_score_norm\":90,\"created\":\"2026-08-14T10:00:00.000Z\"},\"message\":\"LeakData detected 2 new verified exposure sources at or above the configured threshold. This event contains no monitored identity, source name, credential, exposed value, or raw record.\",\"observer\":{\"vendor\":\"LeakData\",\"product\":\"Exposure Monitoring\",\"type\":\"saas\"},\"rule\":{\"id\":\"leakdata-verified-exposure-v1\",\"name\":\"Verified identity exposure\",\"category\":\"Data Exposure\",\"ruleset\":\"LeakData verified exposure policy\",\"version\":\"1\"},\"tags\":[\"leakdata\",\"verified-exposure\",\"privacy-minimized\"],\"leakdata\":{\"exposure\":{\"finding_count\":2,\"minimum_severity\":\"high\",\"maximum_severity\":\"critical\",\"evidence_scope\":\"verified_source_and_verified_email_ownership\",\"contains_personal_data\":false}}}"
+}
+-- expected-wrong-fixed-module.json --
+{
+  "@timestamp": "2026-08-14T10:05:00.000Z",
+  "event": {
+    "kind": "pipeline_error",
+    "module": "leakdata",
+    "dataset": "leakdata.exposure"
+  },
+  "error": {
+    "message": "LeakData feed event could not be parsed or was outside the allowlist."
+  },
+  "tags": [
+    "preserve_original_event"
+  ]
+}
+-- wrong-fixed-dataset.json --
+{
+  "@timestamp": "2026-08-14T10:05:00.000Z",
+  "tags": [
+    "preserve_original_event"
+  ],
+  "message": "{\"@timestamp\":\"2026-08-14T10:00:00.000Z\",\"ecs\":{\"version\":\"9.4.0\"},\"event\":{\"id\":\"leakdata-elastic-synthetic-example\",\"kind\":\"alert\",\"category\":[\"threat\"],\"type\":[\"indicator\"],\"action\":\"verified-exposure-detected\",\"module\":\"leakdata\",\"dataset\":\"other.dataset\",\"severity\":90,\"risk_score\":90,\"risk_score_norm\":90,\"created\":\"2026-08-14T10:00:00.000Z\"},\"message\":\"LeakData detected 2 new verified exposure sources at or above the configured threshold. This event contains no monitored identity, source name, credential, exposed value, or raw record.\",\"observer\":{\"vendor\":\"LeakData\",\"product\":\"Exposure Monitoring\",\"type\":\"saas\"},\"rule\":{\"id\":\"leakdata-verified-exposure-v1\",\"name\":\"Verified identity exposure\",\"category\":\"Data Exposure\",\"ruleset\":\"LeakData verified exposure policy\",\"version\":\"1\"},\"tags\":[\"leakdata\",\"verified-exposure\",\"privacy-minimized\"],\"leakdata\":{\"exposure\":{\"finding_count\":2,\"minimum_severity\":\"high\",\"maximum_severity\":\"critical\",\"evidence_scope\":\"verified_source_and_verified_email_ownership\",\"contains_personal_data\":false}}}"
+}
+-- expected-wrong-fixed-dataset.json --
+{
+  "@timestamp": "2026-08-14T10:05:00.000Z",
+  "event": {
+    "kind": "pipeline_error",
+    "module": "leakdata",
+    "dataset": "leakdata.exposure"
+  },
+  "error": {
+    "message": "LeakData feed event could not be parsed or was outside the allowlist."
+  },
+  "tags": [
+    "preserve_original_event"
+  ]
+}

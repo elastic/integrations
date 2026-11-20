@@ -1,0 +1,67 @@
+config_version: 2
+interval: {{interval}}
+resource.url: {{url}}
+resource.timeout: 30s
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+
+state:
+  token: {{token}}
+  batch_size: {{batch_size}}
+  want_more: false
+redact:
+  fields:
+    - token
+
+program: |-
+  request(
+    "GET",
+    state.url.trim_right("/") + "/api/integrations/elastic-security/v1/events?" + {
+      "limit": [string(int(state.batch_size))],
+      ?"cursor": state.?cursor.value.optMap(v, [v]),
+    }.format_query()
+  ).with({
+    "Header": {
+      "Authorization": ["Bearer " + state.token],
+      "Accept": ["application/json"],
+    },
+  }).do_request().as(resp, resp.StatusCode != 200 ?
+    state.with({
+      "events": {
+        "error": {
+          "code": string(resp.StatusCode),
+          "id": resp.Status,
+          // A response body is not guaranteed to honor the feed allowlist.
+          // Keep errors actionable without indexing a reflected token/body.
+          "message": "GET LeakData feed: " + resp.Status,
+        },
+      },
+      "want_more": false,
+    })
+  :
+    resp.Body.decode_json().as(body,
+      state.with({
+        "events": body.events.map(e, {"message": e.encode_json()}),
+        "cursor": {"value": body.next_cursor},
+        "want_more": body.has_more && size(body.events) > 0,
+      })
+    )
+  )
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
