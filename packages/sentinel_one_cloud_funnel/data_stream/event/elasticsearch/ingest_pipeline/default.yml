@@ -56,10 +56,42 @@ processors:
       description: >-
         Expand the dotted keys in json into objects. Keys listed in params.renames
         are moved to the given field instead. Nested objects are walked so their
-        fields are handled the same way as dotted keys. Other keys stay under json
-        for the processors below. This is done in Painless as a performance
-        optimization.
+        fields are handled the same way as dotted keys. Values that reach the same
+        field are merged as dot_expander would: objects are combined and other
+        values are collected into an array, with values from nested objects
+        first. Other keys stay under json for the processors below. This is done
+        in Painless as a performance optimization.
       source: |-
+        boolean add(Map m, String key, def value) {
+          def existing = m.putIfAbsent(key, value);
+          if (existing == null) {
+            return true;
+          }
+          if (existing instanceof Map && value instanceof Map) {
+            for (def e : value.entrySet()) {
+              if (!add(existing, e.getKey(), e.getValue())) {
+                return false;
+              }
+            }
+            return true;
+          }
+          if (existing instanceof Map || value instanceof Map) {
+            return false;
+          }
+          List merged = new ArrayList();
+          if (existing instanceof List) {
+            merged.addAll(existing);
+          } else {
+            merged.add(existing);
+          }
+          if (value instanceof List) {
+            merged.addAll(value);
+          } else {
+            merged.add(value);
+          }
+          m.put(key, merged);
+          return true;
+        }
         boolean put(Map m, String path, def value) {
           int start = 0;
           for (int dot = path.indexOf('.'); dot != -1; dot = path.indexOf('.', start)) {
@@ -74,21 +106,26 @@ processors:
             m = (Map) child;
             start = dot + 1;
           }
-          String leaf = path.substring(start);
-          if (m.get(leaf) instanceof Map) {
-            return false;
-          }
-          m.put(leaf, value);
-          return true;
+          return add(m, path.substring(start), value);
         }
         void expand(Map ctx, Map renames, String prefix, Map src, List conflicts) {
+          for (def e : src.entrySet()) {
+            def value = e.getValue();
+            if (value instanceof Map && !value.isEmpty()) {
+              String key = prefix + e.getKey();
+              if (renames[key] == null) {
+                expand(ctx, renames, key + '.', value, conflicts);
+              }
+            }
+          }
           for (def e : src.entrySet()) {
             String key = prefix + e.getKey();
             def value = e.getValue();
             String dest = renames[key];
             if (dest == null && value instanceof Map && !value.isEmpty()) {
-              expand(ctx, renames, key + '.', value, conflicts);
-            } else if (!put(ctx, dest ?: 'json.' + key, value)) {
+              continue;
+            }
+            if (!put(ctx, dest ?: 'json.' + key, value)) {
               conflicts.add(key);
             }
           }
