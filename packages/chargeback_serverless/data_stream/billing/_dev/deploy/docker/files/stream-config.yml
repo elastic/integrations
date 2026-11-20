@@ -1,0 +1,220 @@
+rules:
+  - path: /api/v2/billing/organizations/1111/costs/instances
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "ApiKey test-cloud-api-key"
+    query_params:
+      from: "{from:.+}"
+      to: "{to:.+}"
+      include_names: "true"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+            {
+              "total_ecu": 99.8,
+              "instances": [
+                {
+                  "id": "proj-es-1",
+                  "name": "Search Production",
+                  "type": "elasticsearch",
+                  "total_ecu": 56.1,
+                  "product_line_items": [
+                    {
+                      "sku": "es.ingest-vcu",
+                      "total_ecu": 12.5,
+                      "quantity": { "value": 12.5 }
+                    },
+                    {
+                      "sku": "es.search-vcu",
+                      "total_ecu": 28.0,
+                      "quantity": { "value": 28.0 }
+                    },
+                    {
+                      "sku": "es.retained-gb",
+                      "total_ecu": 6.4,
+                      "quantity": { "value": 480.0 }
+                    },
+                    {
+                      "sku": "es.ml-vcu",
+                      "total_ecu": 9.2,
+                      "quantity": { "value": 9.2 }
+                    }
+                  ]
+                },
+                {
+                  "id": "proj-obs-1",
+                  "name": "Observability Production",
+                  "type": "observability",
+                  "total_ecu": 4.7,
+                  "product_line_items": [
+                    {
+                      "sku": "observability.synthetic-pings",
+                      "total_ecu": 1.5,
+                      "quantity": { "value": 1500.0 }
+                    },
+                    {
+                      "sku": "observability.synthetic-executions",
+                      "total_ecu": 2.4,
+                      "quantity": { "value": 48.0 }
+                    },
+                    {
+                      "sku": "aws.data-transfer-out",
+                      "total_ecu": 0.8,
+                      "quantity": { "value": 16.0 }
+                    }
+                  ]
+                },
+                {
+                  "id": "proj-sec-1",
+                  "name": "Security Production",
+                  "type": "security",
+                  "total_ecu": 15.0,
+                  "product_line_items": [
+                    {
+                      "sku": "security.ingest_gb",
+                      "total_ecu": 15.0,
+                      "quantity": { "value": 50.0 }
+                    }
+                  ]
+                },
+                {
+                  "id": "hosted-dep-1",
+                  "name": "Example Hosted Deployment",
+                  "type": "deployment",
+                  "total_ecu": 24.0,
+                  "product_line_items": [
+                    {
+                      "sku": "aws.es.datahot.c6gd_us-east-1_4096_2",
+                      "total_ecu": 24.0,
+                      "quantity": { "value": 24.0 }
+                    }
+                  ]
+                }
+              ]
+            }
+          `}}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"instances":[]}'
+
+  - path: /api/v2/billing/organizations/1111/costs/items
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "ApiKey test-cloud-api-key"
+    query_params:
+      from: "{from:.+}"
+      to: "{to:.+}"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+            {
+              "products": [
+                {
+                  "type": "elasticsearch",
+                  "product_line_items": [
+                    { "sku": "es.ingest-vcu", "total_ecu": 12.5, "quantity": { "value": 12.5 } },
+                    { "sku": "es.search-vcu", "total_ecu": 28.0, "quantity": { "value": 28.0 } },
+                    { "sku": "es.retained-gb", "total_ecu": 6.4, "quantity": { "value": 480.0 } },
+                    { "sku": "es.ml-vcu", "total_ecu": 9.2, "quantity": { "value": 9.2 } }
+                  ]
+                },
+                {
+                  "type": "observability",
+                  "product_line_items": [
+                    { "sku": "observability.synthetic-pings", "total_ecu": 1.5, "quantity": { "value": 1500.0 } },
+                    { "sku": "observability.synthetic-executions", "total_ecu": 2.4, "quantity": { "value": 48.0 } },
+                    { "sku": "aws.data-transfer-out", "total_ecu": 0.8, "quantity": { "value": 16.0 } },
+                    { "sku": "observability.ingest_gb", "total_ecu": 5.0, "quantity": { "value": 5.0 } }
+                  ]
+                },
+                {
+                  "type": "security",
+                  "product_line_items": [
+                    { "sku": "security.ingest_gb", "total_ecu": 15.0, "quantity": { "value": 50.0 } }
+                  ]
+                }
+              ]
+            }
+          `}}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"products":[]}'
+
+  - path: /api/v1/serverless/projects/elasticsearch
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "ApiKey test-cloud-api-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"items":[{"id":"proj-es-1","name":"Search Production"}]}'
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"items":[]}'
+
+  - path: /api/v1/serverless/projects/observability
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "ApiKey test-cloud-api-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"items":[{"id":"proj-obs-1","name":"Observability Production"}]}'
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"items":[]}'
+
+  - path: /api/v1/serverless/projects/security
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "ApiKey test-cloud-api-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"items":[{"id":"proj-sec-1","name":"Security Production"}]}'
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"items":[]}'
+
+  - path: /api/v1/serverless/projects/vectordb
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "ApiKey test-cloud-api-key"
+    responses:
+      - status_code: 204
+        body: ''
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"items":[]}'
