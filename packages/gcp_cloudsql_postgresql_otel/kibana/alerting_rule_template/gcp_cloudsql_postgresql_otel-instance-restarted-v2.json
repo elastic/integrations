@@ -1,0 +1,74 @@
+{
+  "id": "gcp_cloudsql_postgresql_otel-instance-restarted-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud SQL PostgreSQL OTel] Instance restarted",
+        "description": "Alerts when a PostgreSQL instance started again within the last 30 minutes, detected as a partial `uptime` minute (0 < uptime < 58 seconds; running minutes read 59-61) followed by a full minute. The last partial minute before a stop is not counted, and starts within 10 minutes of an owner stop (RUNNABLE) are skipped because the instance down rule covers the stop. Unexpected restarts usually mean an OOM kill or crash; Google maintenance restarts also fire. The engine marker is evaluated over the 1-hour rule window. Each restart keeps the alert active for about 30 minutes, then it recovers. Grouped by database_id.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudsql",
+          "postgresql"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "1h"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudsql_postgresql.otel-*\n| WHERE gcp.resource_type == \"cloudsql_database\"\n// Only the documents the rule needs: uptime, the engine marker and stopped states.\n| WHERE `cloudsql.googleapis.com/database/uptime` IS NOT NULL\n     OR `cloudsql.googleapis.com/database/postgresql/num_backends` IS NOT NULL\n     OR (`cloudsql.googleapis.com/database/instance_state` == 1 AND attributes.state == \"RUNNABLE\")\n// uptime is a DELTA metric: seconds the instance ran within each 60 s sample. Running\n// minutes read 59-61 s. MIN per minute, so a duplicated sample cannot add up past the\n// partial-minute threshold. Only stopped instance_state samples pass the filter above,\n// so their count marks stopped minutes.\n| STATS uptime_s = MIN(MIN_OVER_TIME(`cloudsql.googleapis.com/database/uptime`)),\n        pg = SUM(COUNT_OVER_TIME(`cloudsql.googleapis.com/database/postgresql/num_backends`)),\n        stopped = SUM(COUNT_OVER_TIME(`cloudsql.googleapis.com/database/instance_state`))\n    BY minute = TBUCKET(1 minute), database_id\n// The PostgreSQL engine marker covers the whole 1-hour rule window, so the minutes around\n// a restart stay in scope.\n| INLINE STATS pg_total = SUM(pg),\n               last_full = MAX(minute) WHERE uptime_s >= 58,\n               first_stopped = MIN(minute) WHERE stopped > 0,\n               last_stopped = MAX(minute) WHERE stopped > 0\n    BY database_id\n| WHERE pg_total > 0\n// A start is a partial minute (0 < uptime < 58 s, one second below the healthy 59-61 s\n// jitter) followed by at least one full minute.\n// A partial minute with no full minute after it is the instance stopping, which the\n// instance down rule covers.\n| WHERE uptime_s > 0 AND uptime_s < 58 AND minute < last_full\n// Signal window: starts in the last 30 minutes (>= 15 min for ingestion delay)\n| WHERE minute >= NOW() - 30 minutes\n// Owner stop and start: ignore partial minutes within 10 minutes of a stopped (RUNNABLE)\n// period. Remove this filter to alert on those starts too.\n| WHERE first_stopped IS NULL\n     OR minute < first_stopped - 10 minutes\n     OR minute > last_stopped + 10 minutes\n| STATS restarts = COUNT(*), last_restart = MAX(minute) BY database_id",
+        "breach": {
+          "segment": "// Alert threshold: number of starts in the signal window (default: any)\nWHERE restarts >= 1\n| KEEP database_id, restarts, last_restart\n| SORT restarts DESC\n| LIMIT 100"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "database_id"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudsql_postgresql_otel-instance-restarted-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud SQL PostgreSQL instance restarted\n\n`uptime` shows a partial minute followed by full minutes, which means the database process (re)started.\n\n### Triage\n1. Check whether the restart lines up with a maintenance window, a flag change, a tier change or an owner restart (Cloud SQL operations log). Those are expected.\n2. If not planned, check memory utilization before the restart on the Instance Detail dashboard: memory near 100% followed by a restart points to an OOM kill. Review `work_mem`, connection count and large queries.\n3. Check the PostgreSQL error log in Cloud Logging for `terminated by signal 9`, `out of memory` or `PANIC`.\n4. `restarts` counts partial-uptime minutes: a restart without downtime shows 1, a restart with downtime up to 2 (the minute it stopped and the minute it started). Higher counts in 30 minutes indicate a crash loop: escalate.\n\n### Tuning\n- Change `restarts >= 1` to `>= 3` to page only on repeated restarts (crash loops).\n- Owner stops and starts (RUNNABLE) are skipped; remove the RUNNABLE filter to alert on those starts too.\n- A sample of `uptime` = 0 means reporting but not running; that is downtime and is covered by the instance down rule."
+          }
+        },
+        {
+          "id": "gcp_cloudsql_postgresql_otel-instance-restarted-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_postgresql_otel-86472830-c83c-4f8b-8753-5d275d1d9391"
+          }
+        },
+        {
+          "id": "gcp_cloudsql_postgresql_otel-instance-restarted-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_postgresql_otel-b8e67303-561a-4a0c-9acf-b35357a26541"
+          }
+        }
+      ]
+    }
+  }
+}
