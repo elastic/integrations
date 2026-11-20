@@ -118,10 +118,10 @@ processors:
   #
   - fail:
       tag: fail_unsupported_csv_schema
-      if: ctx.json != null && ctx.json.Name == null
+      if: ctx.json != null && (ctx.json.Name == null || (ctx.json.Name instanceof String && ctx.json.Name.trim().isEmpty()))
       message: >-
         Unsupported Recorded Future CSV schema: the required indicator column
-        `Name` (or `ip` for VPN/proxy lists) is missing. The threat data stream
+        `Name` (or `ip` for VPN/proxy lists) is missing or blank. The threat data stream
         expects the risklist columns Name, Risk, RiskString, EvidenceDetails
         (and Algorithm for hashes). See event.original for the received row.
 
@@ -267,6 +267,38 @@ processors:
   #
   # An indicator is of type `hash` when the Algorithm field is present.
   #
+  # The CEL input decodes every CSV column, so a blank Algorithm cell arrives
+  # as an empty string (the logfile input leaves it null). For hash-list rows,
+  # infer a blank Algorithm from the length when Name is a hexadecimal hash;
+  # otherwise remove it so the IP, URL and domain detection below applies.
+  #
+  - script:
+      tag: script_normalize_blank_hash_algorithm
+      lang: painless
+      description: Infers a blank Algorithm from the length of a hexadecimal hash Name, or removes it when Name is not a hash.
+      if: ctx.json?.containsKey('Algorithm') == true && (ctx.json.Algorithm == null || (ctx.json.Algorithm instanceof String && ctx.json.Algorithm.trim().isEmpty()))
+      params:
+        '32': MD5
+        '40': SHA-1
+        '64': SHA-256
+        '96': SHA-384
+        '128': SHA-512
+      source: |-
+        def name = ctx.json.Name;
+        if (name instanceof String && name =~ /^[0-9a-fA-F]+$/) {
+          def algorithm = params[String.valueOf(name.length())];
+          // A hex Name of another length keeps a blank (not null) Algorithm so
+          // the hash mapping below reports the unsupported algorithm for both
+          // the CEL ("") and logfile (null) inputs.
+          ctx.json.Algorithm = algorithm != null ? algorithm : '';
+          return;
+        }
+        ctx.json.remove('Algorithm');
+      on_failure:
+        - append:
+            tag: append_error_message_normalize_blank_hash_algorithm
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       tag: set_threat_indicator_type_90fc6e8a
       field: threat.indicator.type
@@ -414,6 +446,7 @@ processors:
       target_field: event.risk_score
       ignore_missing: true
       type: float
+      if: ctx.json?.Risk != null && ctx.json.Risk != ''
       on_failure:
         - append:
             tag: append_error_message_316a0d8e
