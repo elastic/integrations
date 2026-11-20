@@ -261,6 +261,9 @@ IF (`binDirExeMods` OR `etcFileChanges`) AND NOT `nginx` = RUN ACTIONS `alert` a
 
 The following fields are populated for all events where `event.category: process`
 
+Each `process.args` value is indexed up to 2,048 characters. Longer values remain in `_source` but are not searchable through this field.
+Use `process.command_line` to search captured command lines up to 4,096 characters, including those that contain longer arguments. Longer command lines remain in `_source` but are not searchable through this field. This field requires a cloud-defend binary that populates it.
+
 | Field | Examples |
 | --------- | ----------- |
 | [@timestamp](https://www.elastic.co/guide/en/ecs/current/ecs-base.html#field-timestamp) | '2023-03-20T16:03:59.520Z' |
@@ -322,6 +325,7 @@ The following fields are populated for all events where `event.category: process
 | [orchestrator.resource.parent.type](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-parent-type) | 'DaemonSet', 'ReplicaSet' etc... |
 | [orchestrator.resource.type](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-type) | pod |
 | [process.args](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-args) | ['ls', '--color=auto'] |
+| [process.command_line](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-command-line) | 'ls --color=auto' |
 | [process.end](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-end) | '2023-03-20T16:04:12Z' |
 | [process.entity_id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-entity-id) | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ==' |
 | [process.entry_leader.args](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-args) | ['bash'] |
