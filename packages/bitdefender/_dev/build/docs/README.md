@@ -9,8 +9,9 @@ This integration additionally provides:
 2. Collection of push notification statistics via API polling, which includes the number of events sent, and counters for errors of different types, which you may wish to use to troubleshoot lost push notification events and for alerting purposes.
 3. Support for multiple instances of the integration, which may be needed for MSP/MSSP scenarios where multiple BitDefender GravityZone tenants exist.
 4. BitDefender company ID to your own company name/description mapping, in order to determine to which tenant the event relates to in a human friendly way. This is very useful for MSP/MSSP environments or for large organisations with multiple sub-organisations.
+5. GravityZone Public API polling for EDR/XDR incidents and individual incident alerts, endpoint quarantine, endpoint and account entity inventories, patch posture, PHASR posture, and EDR blocklist state.
 
-This allows you to search, observe and visualize the BitDefender GravityZone events through Elastic, trigger alerts and monitor the BitDefender GravityZone Push Notification service for state and errors.
+This allows you to search, observe and visualize BitDefender GravityZone events, entities, and posture through Elastic, trigger alerts, and monitor the BitDefender GravityZone Push Notification service for state and errors.
 
 For more information about BitDefender GravityZone, refer to [BitDefender GravityZone](https://www.bitdefender.com/business/products/security-products.html) and refer to the [Public API - Push](https://www.bitdefender.com/business/support/en/77209-135318-push.html) documentation.
 
@@ -30,7 +31,9 @@ The package collects BitDefender GravityZone push notification transported event
 
 The `jsonrpc` format is recommended default, but the ingest pipeline will attempt to detect if `qradar` or `splunk` format events have been received and process them accordingly.
 
-The integration can also collect the push notification configuration and statistics by polling the BitDefender GravityZone API.
+The integration can also collect the push notification configuration and statistics and poll higher-level security, inventory, and posture objects from the BitDefender GravityZone Public API.
+
+Public API polling in this integration targets GravityZone Cloud. GravityZone On-Premises has a different API surface, authentication model, and service-specific paths and is not supported by the Public API polling data streams.
 
 ## How do I deploy this integration?
 
@@ -70,6 +73,37 @@ Click the Key value that is shown in blue.
 Click the clipboard icon to copy the API key to your PC's clipboard.
 
 ![Example Configuration 4](../img/bitdefender-gravityzone-api-key-4.png)
+
+### Create an API key for Public API polling
+
+The Public API polling data streams support either of these authentication types:
+
+- A Service API key, configured with `x_api_key`, from **Accounts → Service API keys**. Enable only the API areas required by the selected data streams. Service API keys are independent of human accounts, expire after at most one year, and do not support the Event Push Service API.
+- A Personal API key, configured with `basic`, from the account menu under **API keys**. Personal API keys are required for the existing Push API streams. Patch Management might also require a Personal API key because the current Service API key permission list does not document Patch Management.
+
+Copy the exact Control Center API Access URL from the account menu under **Control Center API**. The URL normally ends in `/api`. GravityZone uses multiple regional instances, including `https://cloudgz.gravityzone.bitdefender.com/api`, `https://cloud.gravityzone.bitdefender.com/api`, and `https://cloudap.gravityzone.bitdefender.com/api`. An API key is valid only on the Control Center instance where it was created. If GravityZone reports an invalid API key, verify the Access URL before replacing the key.
+
+For partner or MSP collection, optionally set the target company ID. The integration places that ID in the method-specific request field required by each API.
+
+If Push and Public API polling require different key types or permissions, create separate integration policies and enable only the relevant data streams in each policy.
+
+The Public API data streams require the corresponding GravityZone API permissions and product licenses:
+
+- Incidents and blocklist: **Incidents API** and an EDR/XDR-capable subscription.
+- Quarantine: **Quarantine API**.
+- Endpoint inventory: **Network API**.
+- Account inventory: **Accounts API** and the required user-management rights.
+- Patch posture: **Patch Management API** and the Patch Management add-on.
+- PHASR posture: **PHASR API**, Network Administrator rights, and the PHASR add-on.
+
+Selecting an API area when creating a key does not grant the corresponding product license or user rights. For example, Patch Management requests are rejected when the user does not have the Patch Management feature, and PHASR requests are rejected when the company does not have PHASR access.
+
+GravityZone rate limits vary by API method and tenant. A throttled request returns HTTP `429` and can include a `Retry-After` header. The integration retries throttled requests. Each polling cycle fetches every paginated response page for the enabled stream:
+
+- Incidents runs paginated `getIncidentsList` requests for the window and then resolves full details with `getIncidentsByIds` in batches of up to 10 incident IDs per request.
+- Patch posture runs all pages of `getMissingPatches` followed by all pages of `getInstalledPatches` in each cycle.
+- PHASR posture runs all pages of `getPhasrRecommendations` followed by all pages of `getMonitoredRules` in each cycle (subject to GravityZone's 5 requests per minute PHASR limit).
+- Endpoint inventory, account inventory, patch posture, PHASR posture, and blocklist append a full snapshot of the active inventory or posture on every polling interval. Size retention and polling intervals according to your tenant's object counts and API rate limits, or split streams across separate API keys when needed.
 
 ### Creating the push notification configuration via BitDefender GravityZone API
 
@@ -182,3 +216,67 @@ All BitDefender GravityZone push notification statistics are available in the `b
 {{fields "push_statistics"}}
 
 {{event "push_statistics"}}
+
+### Log stream incidents
+
+The incidents dataset collects changed EDR and XDR incidents and retrieves their complete details, including alert graphs, affected entities, MITRE ATT&CK metadata, status, priority, and analyst notes. Each polling cycle pages through `getIncidentsList` and fetches full incident objects with `getIncidentsByIds` in batches of up to 10 IDs. Parent incident documents use a revision-aware document ID derived from `incidentId` and `lastIncidentChange`, so unchanged boundary overlaps collapse onto the same document while status, action, or severity updates are preserved as new revisions in the append-only data stream.
+
+The same poll emits each object in an incident's `details.alerts` array as a separate document in the `bitdefender.incident_alert` dataset. Individual alert documents include compact parent-incident context and alert-level process, file, network, registry, user, host, and related indicator fields. Alert documents use a revision-aware document ID derived from the parent incident ID, alert ID, and parent incident state so unchanged re-polls deduplicate cleanly without dropping later incident status, action, or severity updates. This fan-out does not make additional GravityZone API requests.
+
+{{fields "incident"}}
+
+{{event "incident"}}
+
+### Log stream incident alerts
+
+The incident alerts dataset contains one document for each endpoint EDR or organization XDR alert embedded in an incident. Enable the incidents data stream to collect both the parent incident and these individual alert documents. Use `data_stream.dataset: bitdefender.incident_alert` to search the alert-level events. Alert titles, identifiers, risk scores, and normalized severities are populated for compatibility with the Elastic Security External Alerts rule.
+
+{{fields "incident_alert"}}
+
+### Log stream quarantine
+
+The quarantine dataset collects quarantined files from the GravityZone computers quarantine service across all pages in each polling window and reconciles active quarantined items on subsequent polls so later `actionStatus` transitions (such as pending or failed restore and removal actions) are emitted without re-indexing unchanged items. Exchange quarantine is not included. GravityZone returns `quarantinedOn` without a timezone, so the integration preserves it as a source string and uses the collection time for `@timestamp`.
+
+{{fields "quarantine"}}
+
+{{event "quarantine"}}
+
+### Log stream endpoints
+
+The endpoint dataset collects bulk network inventory as host and container entity snapshots across all inventory pages on each polling interval. Each poll appends a full snapshot of matching endpoints and containers, including endpoint identity, addresses, operating system, policy, protection modules, management state, last successful scan, and risk posture without per-endpoint detail fan-out. GravityZone returns `firstSeen` without a timezone, so the integration preserves it as a source string and uses the collection time as the entity observation timestamp.
+
+{{fields "endpoint"}}
+
+{{event "endpoint"}}
+
+### Log stream accounts
+
+The account dataset collects Control Center users as entity snapshots across all pages on each polling interval, including roles, enabled permissions, authentication method, and MFA state. When authenticated with a Personal API key (`basic`), the cycle also calls `getAccountDetails` once to include the key owner's account.
+
+{{fields "account"}}
+
+{{event "account"}}
+
+### Log stream patches
+
+The patch dataset collects full snapshots of missing and installed patch posture (`getMissingPatches` and `getInstalledPatches`) across all pages on each polling interval, including endpoint IDs, package names, CVEs, bulletin references, vendors, and operating-system families.
+
+{{fields "patch"}}
+
+{{event "patch"}}
+
+### Log stream PHASR
+
+The PHASR dataset collects full snapshots of Proactive Hardening and Attack Surface Reduction recommendations (`getPhasrRecommendations`) and monitored-rule posture (`getMonitoredRules`) across all pages on each polling interval.
+
+{{fields "phasr"}}
+
+{{event "phasr"}}
+
+### Log stream blocklist
+
+The blocklist dataset collects full snapshots of active EDR hash, path, and connection blocklist rules across all pages on each polling interval. An empty response is valid when the company has no active blocklist rules.
+
+{{fields "blocklist"}}
+
+{{event "blocklist"}}
