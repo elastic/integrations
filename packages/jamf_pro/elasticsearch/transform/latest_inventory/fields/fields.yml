@@ -28,6 +28,26 @@
               type: keyword
             - name: last_contact_time
               type: date
+              description: Last contact time reported by the computer. Mapped from Jamf Pro API v4 `general.lastContact` (v1 `general.lastContactTime`).
+            - name: last_check_in
+              type: date
+              description: Last check-in time reported by the computer (`general.lastCheckIn` in Jamf Pro API v4).
+            - name: last_logged_in_username_binary
+              type: keyword
+            - name: last_logged_in_username_binary_timestamp
+              type: date
+            - name: last_logged_in_username_mdm
+              type: keyword
+            - name: last_logged_in_username_mdm_timestamp
+              type: date
+            - name: last_logged_in_username_self_service
+              type: keyword
+            - name: last_logged_in_username_self_service_timestamp
+              type: date
+            - name: apple_enrollment_type
+              type: keyword
+            - name: awaiting_configuration
+              type: boolean
             - name: management_id
               type: keyword
             - name: mdm_capable
@@ -37,6 +57,13 @@
                   type: boolean
                 - name: capable_users
                   type: keyword
+                - name: user_management_info
+                  type: nested
+                  fields:
+                    - name: capable_user
+                      type: keyword
+                    - name: management_id
+                      type: keyword
             - name: platform
               type: keyword
             - name: name
@@ -62,6 +89,13 @@
                   type: geo_point
             - name: last_reported_ip
               type: ip
+              description: Last reported IPv4 address. Mapped from Jamf Pro API v4 `general.lastReportedIpV4` (v1 `general.lastReportedIp`).
+            - name: last_reported_ip_v4
+              type: ip
+              description: Last reported IPv4 address (`general.lastReportedIpV4`).
+            - name: last_reported_ip_v6
+              type: ip
+              description: Last reported IPv6 address (`general.lastReportedIpV6`).
             - name: asset_tag
               type: keyword
             - name: barcode1
@@ -188,6 +222,14 @@
               type: boolean
             - name: bootstrap_token_escrowed_status
               type: keyword
+            - name: attestation_status
+              type: keyword
+            - name: last_attestation_attempt
+              type: date
+            - name: last_successful_attestation
+              type: date
+            - name: lockdown_mode_enabled
+              type: boolean
             - name: external_boot_level
               type: keyword
             - name: firewall_enabled
@@ -224,6 +266,8 @@
               type: keyword
             - name: file_vault2eligibility_message
               type: text
+            - name: file_vault2enabled
+              type: boolean
             - name: file_vault2enabled_user_names
               type: keyword
         - name: operating_system
@@ -275,6 +319,10 @@
               type: keyword
             - name: size_megabytes
               type: float
+            - name: cf_bundle_short_version_string
+              type: keyword
+            - name: cf_bundle_version
+              type: keyword
         - name: user_and_location
           type: group
           fields:
@@ -310,6 +358,35 @@
                   type: keyword
                 - name: model
                   type: keyword
+                - name: revision
+                  type: keyword
+                - name: serial_number
+                  type: keyword
+                - name: size_megabytes
+                  type: long
+                - name: smart_status
+                  type: keyword
+                - name: type
+                  type: keyword
+                - name: partitions
+                  type: nested
+                  fields:
+                    - name: name
+                      type: keyword
+                    - name: size_megabytes
+                      type: long
+                    - name: available_megabytes
+                      type: long
+                    - name: partition_type
+                      type: keyword
+                    - name: percent_used
+                      type: integer
+                    - name: file_vault2state
+                      type: keyword
+                    - name: file_vault2progress_percent
+                      type: integer
+                    - name: lvm_managed
+                      type: boolean
         - name: hardware
           type: group
           fields:
@@ -363,6 +440,10 @@
               type: boolean
             - name: apple_silicon
               type: boolean
+            - name: battery_health
+              type: keyword
+            - name: provisioning_udid
+              type: keyword
             - name: extension_attributes
               type: group
         - name: package_receipts
@@ -378,6 +459,27 @@
           type: nested
         - name: certificates
           type: nested
+          fields:
+            - name: certificate_status
+              type: keyword
+            - name: common_name
+              type: keyword
+            - name: expiration_date
+              type: date
+            - name: identity
+              type: boolean
+            - name: issued_date
+              type: date
+            - name: lifecycle_status
+              type: keyword
+            - name: serial_number
+              type: keyword
+            - name: sha1fingerprint
+              type: keyword
+            - name: subject_name
+              type: keyword
+            - name: username
+              type: keyword
         - name: configuration_profiles
           type: nested
           fields:
@@ -393,6 +495,8 @@
               type: keyword
             - name: removable
               type: boolean
+            - name: uuid
+              type: keyword
         - name: content_caching
           type: group
         - name: extension_attributes
@@ -408,6 +512,8 @@
               type: keyword
             - name: group_id
               type: keyword
+            - name: group_description
+              type: keyword
         - name: ibeacons
           type: nested
         - name: licensed_software
@@ -418,3 +524,6 @@
           type: nested
         - name: services
           type: nested
+          fields:
+            - name: name
+              type: keyword
