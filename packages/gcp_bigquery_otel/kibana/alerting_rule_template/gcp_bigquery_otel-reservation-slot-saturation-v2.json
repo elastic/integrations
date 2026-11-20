@@ -1,0 +1,71 @@
+{
+  "id": "gcp_bigquery_otel-reservation-slot-saturation-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP BigQuery OTel] Reservation slot saturation",
+        "description": "Alerts when a BigQuery reservation's reserved slot usage is at or above 95% of its autoscale maximum (slots/max_assigned) for at least 15 one-minute samples in the last 30 minutes. One alert per reservation and location. On-demand projects report no reservation capacity and never match.",
+        "tags": [
+          "observability",
+          "gcp",
+          "bigquery",
+          "otel",
+          "saturation",
+          "slots",
+          "reservations"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "30m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.bigquery.otel-*\n// slots/allocated is dual-reported on `global`; keep the bigquery_project copy only.\n// Reserved usage only: on-demand usage has no reservation label and no reported ceiling.\n| WHERE resource.attributes.gcp.resource_type == \"bigquery_project\"\n  AND attributes.reservation IS NOT NULL AND attributes.reservation != \"\"\n// Stage 1: one value per minute per logical series (MAX collapses fragmented TSIDs of the same series)\n| STATS allocated = MAX(MAX_OVER_TIME(`metrics.bigquery.googleapis.com/slots/allocated`)),\n        ceiling = MAX(MAX_OVER_TIME(`metrics.bigquery.googleapis.com/slots/max_assigned`))\n    BY @timestamp = TBUCKET(1 minute), attributes.reservation, resource.attributes.location, resource.attributes.project_id, attributes.job_type\n// Stage 2: per reservation per minute. Usage adds up across assigned projects and job types;\n// the autoscale ceiling is the same reservation value on every assignment, so take MAX (not SUM).\n| STATS allocated = SUM(allocated), ceiling = MAX(ceiling)\n    BY @timestamp, attributes.reservation, resource.attributes.location\n// Skip minutes without a published ceiling (on-demand pseudo-reservations, not-yet-published data); never treat them as 0\n| WHERE ceiling IS NOT NULL AND ceiling > 0\n// A minute with a ceiling but no reported allocation is an idle reservation\n| EVAL allocated = COALESCE(allocated, 0)\n| EVAL utilisation_pct = allocated * 100.0 / ceiling\n// Customise: a minute counts as saturated at >= 95% of the autoscale max (slots/max_assigned)\n| STATS saturated_minutes = COUNT(*) WHERE utilisation_pct >= 95.0,\n        observed_minutes = COUNT(*),\n        avg_utilisation_pct = ROUND(AVG(utilisation_pct), 1),\n        peak_allocated_slots = MAX(allocated),\n        max_assigned_slots = LAST(ceiling, @timestamp)\n    BY attributes.reservation, resource.attributes.location",
+        "breach": {
+          "segment": "// Customise: alert when saturated for >= 15 one-minute samples in the window\n// (slot metrics publish up to ~7 minutes late, so a 30-minute window holds ~23 visible minutes)\nWHERE saturated_minutes >= 15\n| SORT saturated_minutes DESC, avg_utilisation_pct DESC\n| LIMIT 50"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "attributes.reservation",
+          "resource.attributes.location"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_bigquery_otel-reservation-slot-saturation-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## BigQuery reservation slot saturation\n\nA reservation has been using (almost) all of its autoscale ceiling for a sustained period. Queries in the projects assigned to it get fewer slots, run longer, and interactive jobs start to queue.\n\n### Condition\n- Per minute: reserved `slots/allocated` (summed over assigned projects and job types, `bigquery_project` resource only) divided by the reservation's `slots/max_assigned`.\n- Alert when that ratio is >= 95% in >= 15 one-minute samples within the 30-minute look-back (slot metrics publish ~7 minutes late, so about 23 minutes are visible).\n- Minutes without a published ceiling are ignored. A minute with a ceiling and no allocation counts as idle (0%).\n\n### Triage\n1. Open the [GCP OTel] BigQuery dashboard, filter to the reservation, and compare reserved allocation with baseline (`slots/assigned`) and autoscale max.\n2. Check pending jobs (`job/num_in_flight`, state `pending`) for the assigned projects. Saturation with no queueing is often acceptable for batch-heavy reservations.\n3. Find the projects or job types driving usage (slots by job type). A single large query or a new scheduled workload is a common cause.\n4. In BigQuery, use `INFORMATION_SCHEMA.JOBS_TIMELINE_BY_ORGANIZATION` to find the top slot consumers for this period.\n\n### Remediation\n- Raise the reservation's autoscale max or baseline, or move low-priority work to another reservation or to batch priority.\n- Optimise the heaviest queries (partition filters, clustering, avoiding `SELECT *`).\n\n### Tuning\n- `utilisation_pct >= 95.0`: per-minute saturation level.\n- `saturated_minutes >= 15`: persistence. Keep this below about 23 (the visible minutes in a 30-minute look-back) or extend the look-back.\n- If idle slot sharing is enabled, usage can exceed the reservation max by borrowing idle slots. In that case, sustained values over 100% indicate dependency on other reservations' idle capacity.\n- Reservation identity is name + location. GCP labels do not carry the administration project, so identically named reservations in different administration projects in the same location are combined.\n\n### Notes\n- Data: `metrics-gcp.bigquery.otel-*` (OTel `googlecloudmonitoring` receiver). Dashboard: [GCP OTel] BigQuery.\n- GCP publishes BigQuery metrics with a delay, so the look-back is longer than the condition and the newest minutes are never treated as zero.\n- The query returns at most 50 breaching rows; each returned row is one alert. Thresholds are marked `// Customise:` in the query."
+          }
+        },
+        {
+          "id": "gcp_bigquery_otel-reservation-slot-saturation-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_bigquery_otel-600aa5b2-b9c4-4a6f-88a6-065d465b968d"
+          }
+        }
+      ]
+    }
+  }
+}

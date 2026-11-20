@@ -21,3 +21,6 @@ When configuring the input package, set the dataset name to `gcp.bigquery.otel` 
 | Dashboard | Description |
 |-----------|-------------|
 | **[GCP OTel] BigQuery** | Workload health across BigQuery projects. Covers slot capacity and saturation, query demand, query cost, ingestion, and storage. |
+
+## Alerting Rule Templates
+{{alertRuleTemplates}}
