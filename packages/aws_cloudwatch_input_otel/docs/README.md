@@ -98,7 +98,7 @@ Guidance:
 
 This integration automatically discovers and collects CloudWatch metrics published for the configured namespaces. The CloudWatch API bills per metric requested, so the more resources that exist in your account, the more metrics are discovered and the higher the collection cost.
 
-To avoid unexpectedly large bills, the number of metrics collected is capped by the **Autodiscover Limit**, which defaults to 10,000, high enough to capture all metrics in a typical deployment. The limit applies to each namespace separately. It is a ceiling, not a fixed value - you are billed only for the metrics that actually exist, so smaller accounts cost proportionally less. With the 10,000 limit, the maximum cost per namespace is ~$2,600 per month at the default 5-minute collection interval.
+To avoid unexpectedly large bills, the number of metrics collected is capped by the **Autodiscover Limit**, which defaults to 10,000, high enough to capture all metrics in a typical deployment. The limit applies to each namespace separately. It is a ceiling, not a fixed value - you are billed only for the metrics that actually exist, so smaller accounts cost proportionally less. CloudWatch charges $0.01 per 1,000 metrics requested and bills up to five statistics of the same metric as one metric. With the 10,000 limit, the maximum cost per namespace is about $860 per month at the default 5-minute collection interval; a namespace with 500 metrics costs about $43 per month. Selecting more than five **Aggregation Statistics** counts each metric more than once.
 
 If you need to reduce cost, you can lower the **Autodiscover Limit** in the integration's advanced settings. Reducing the limit below the number of metrics in your account means some metrics will not be collected, and which ones are dropped is not predictable. We recommend changing this value only if you understand the metric volume in your AWS account, and lowering it gradually while verifying that the metrics you rely on are still present.
 
@@ -117,6 +117,13 @@ Use an identity scoped to read-only CloudWatch access wherever possible.
 
 For the complete list of metrics available in each namespace, see the [Amazon CloudWatch metrics and dimensions reference](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CW_Support_For_AWS.html).
 
+## Known limitations
+
+- **Data arrives with a delay.** CloudWatch publishes metrics a few minutes after they are recorded, so the integration requests each time window after the **Delay** (5 minutes by default) and polls once per **Collection Interval**. With the defaults, a data point reaches Elasticsearch about 5 to 10 minutes after its timestamp.
+- **No backfill.** The integration doesn't track what it has already collected. Data points from periods when it isn't running, for example during an outage or a restart that takes longer than one **Collection Interval**, are not collected afterwards, even though CloudWatch still holds them.
+- **Overlaps after a restart.** After a quick restart, the first poll can re-read up to one **Collection Interval** of data points that were already collected. On Elastic Managed deployments these data points are stored a second time, so sums and counts over those few minutes can be slightly higher.
+- **No dashboard for AWS Classic ELB.** Metrics from the `AWS/ELB` namespace are collected, but no prebuilt dashboard is available for them.
+
 ## Troubleshooting
 
 ### No metrics appear
@@ -124,7 +131,9 @@ For the complete list of metrics available in each namespace, see the [Amazon Cl
 1. Confirm the AWS Region matches where your resources are running.
 2. Verify the credentials are valid and not expired (temporary credentials require a session token).
 3. Ensure the credentials have `cloudwatch:ListMetrics` and `cloudwatch:GetMetricData` permissions.
-4. Allow time for the first collection cycle to complete, and remember that CloudWatch publishes metrics with a short delay.
+4. Allow 5 to 10 minutes for the first data points to arrive (see [Known limitations](#known-limitations)).
+
+Collection errors, such as invalid or expired credentials or missing permissions, don't change the integration's status in Fleet, which keeps showing it as healthy. If no data arrives, work through the checks above.
 
 ### Authentication errors
 
