@@ -1,0 +1,276 @@
+dashboards:
+  - id: vllm-overview
+    name: '[Metrics vLLM] Overview'
+    description: >-
+      vLLM inference servers: load and queueing, KV cache and prefix cache, token throughput, finished requests and latency.
+    minimum_kibana_version: "9.2.0"
+    time_range:
+      from: "now-1h"
+      to: "now"
+    filters:
+      - field: data_stream.dataset
+        equals: vllm.metrics
+    controls:
+      - type: options
+        label: Model
+        data_view: metrics-*
+        field: vllm.labels.model_name
+      - type: options
+        label: Server
+        data_view: metrics-*
+        field: service.address
+    panels:
+      - hide_title: true
+        size: {w: 16, h: 10}
+        markdown:
+          content: |
+            ## [Metrics vLLM] Overview
+
+            Metrics scraped from the vLLM `/metrics` endpoint.
+
+            - **Load**: requests running and waiting, KV cache usage, preemptions
+            - **Throughput**: prompt and generation tokens per second
+            - **Latency**: time to first token, inter-token latency, end to end and queue time
+
+            A growing waiting queue together with a full KV cache and preemptions means the server needs more KV cache or more replicas.
+      - title: Requests waiting
+        description: >-
+          Requests in the queue, waiting to be scheduled, across all servers and models.
+        size: {w: 8, h: 5}
+        esql:
+          type: metric
+          query:
+            - TS metrics-vllm.metrics-*
+            - WHERE data_stream.dataset == "vllm.metrics"
+            - STATS waiting = SUM(LAST_OVER_TIME(vllm.requests.waiting))
+          primary:
+            field: waiting
+            label: Waiting
+            format:
+              type: number
+              decimals: 0
+      - title: Max KV cache usage
+        description: >-
+          Highest KV cache usage among servers. Close to 100% the scheduler starts to preempt requests.
+        size: {w: 8, h: 5}
+        esql:
+          type: metric
+          query:
+            - TS metrics-vllm.metrics-*
+            - WHERE data_stream.dataset == "vllm.metrics"
+            - STATS kv = MAX(LAST_OVER_TIME(vllm.kv_cache.usage.pct))
+          primary:
+            field: kv
+            label: KV cache
+            format:
+              type: percent
+              decimals: 1
+      - title: Generation tokens/s
+        description: >-
+          Output tokens generated per second, across all servers and models.
+        size: {w: 8, h: 5}
+        esql:
+          type: metric
+          query:
+            - TS metrics-vllm.metrics-*
+            - WHERE data_stream.dataset == "vllm.metrics"
+            - STATS tps = SUM(RATE(vllm.tokens.generation.count))
+          primary:
+            field: tps
+            label: Tokens/s
+            format:
+              type: number
+              decimals: 1
+      - title: Prefix cache hit rate
+        description: >-
+          Share of prompt tokens served from the prefix cache.
+        size: {w: 8, h: 5}
+        esql:
+          type: metric
+          query:
+            - TS metrics-vllm.metrics-*
+            - WHERE data_stream.dataset == "vllm.metrics"
+            - STATS hits = SUM(RATE(vllm.prefix_cache.hits.count)), queries = SUM(RATE(vllm.prefix_cache.queries.count))
+            - EVAL hit_rate = CASE(queries > 0, hits / queries, 0.0)
+            - KEEP hit_rate
+          primary:
+            field: hit_rate
+            label: Hit rate
+            format:
+              type: percent
+              decimals: 1
+      - title: Preemptions
+        description: >-
+          Requests preempted per second because the KV cache ran out of space. Preempted requests are recomputed later, which adds latency.
+        size: {w: 16, h: 10}
+        esql:
+          type: bar
+          query:
+            - TS metrics-vllm.metrics-*
+            - WHERE data_stream.dataset == "vllm.metrics"
+            - STATS preemptions = SUM(RATE(vllm.preemptions.count)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), vllm.labels.model_name
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+            label: Time
+          metrics:
+            - field: preemptions
+              label: Preemptions/s
+          breakdown:
+            field: vllm.labels.model_name
+          legend:
+            position: bottom
+      - title: Requests running and waiting
+        description: >-
+          Requests in the running batch and in the waiting queue.
+        size: {w: 16, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-vllm.metrics-*
+            - WHERE data_stream.dataset == "vllm.metrics"
+            - STATS running = SUM(AVG_OVER_TIME(vllm.requests.running)), waiting = SUM(AVG_OVER_TIME(vllm.requests.waiting)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+            label: Time
+          legend:
+            position: bottom
+          metrics:
+            - field: running
+            - field: waiting
+      - title: KV cache usage by model
+        description: >-
+          Fraction of the KV cache in use, by model.
+        size: {w: 16, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-vllm.metrics-*
+            - WHERE data_stream.dataset == "vllm.metrics"
+            - STATS kv_cache = MAX(MAX_OVER_TIME(vllm.kv_cache.usage.pct)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), vllm.labels.model_name
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+            label: Time
+          legend:
+            position: bottom
+          metrics:
+            - field: kv_cache
+              format:
+                type: percent
+          breakdown:
+            field: vllm.labels.model_name
+      - title: Token throughput
+        description: >-
+          Prompt (prefill) and generation tokens processed per second.
+        size: {w: 16, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-vllm.metrics-*
+            - WHERE data_stream.dataset == "vllm.metrics"
+            - STATS prompt = SUM(RATE(vllm.tokens.prompt.count)), generation = SUM(RATE(vllm.tokens.generation.count)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+            label: Time
+          legend:
+            position: bottom
+          metrics:
+            - field: prompt
+              label: Prompt tokens/s
+            - field: generation
+              label: Generation tokens/s
+      - title: Finished requests by reason
+        description: >-
+          Finished requests per second by reason: stop, length, abort, error or repetition. A rise of abort usually means clients timing out.
+        size: {w: 16, h: 10}
+        esql:
+          type: bar
+          query:
+            - TS metrics-vllm.metrics-*
+            - WHERE data_stream.dataset == "vllm.metrics" AND vllm.labels.finished_reason IS NOT NULL
+            - STATS finished = SUM(RATE(vllm.requests.finished.count)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), vllm.labels.finished_reason
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+            label: Time
+          legend:
+            position: bottom
+          metrics:
+            - field: finished
+              label: Requests/s
+          breakdown:
+            field: vllm.labels.finished_reason
+      - title: Time to first token
+        description: >-
+          Time from request arrival to the first output token, from the vllm:time_to_first_token_seconds histogram.
+        size: {w: 16, h: 10}
+        lens:
+          type: line
+          data_view: metrics-*
+          dimension:
+            type: date_histogram
+            field: "@timestamp"
+            label: Time
+          legend:
+            position: bottom
+          metrics:
+            - aggregation: percentile
+              field: vllm.latency.time_to_first_token.histogram
+              percentile: 50
+              label: p50 (s)
+            - aggregation: percentile
+              field: vllm.latency.time_to_first_token.histogram
+              percentile: 95
+              label: p95 (s)
+      - title: Inter-token latency
+        description: >-
+          Time between consecutive output tokens, from the vllm:inter_token_latency_seconds histogram.
+        size: {w: 16, h: 10}
+        lens:
+          type: line
+          data_view: metrics-*
+          dimension:
+            type: date_histogram
+            field: "@timestamp"
+            label: Time
+          legend:
+            position: bottom
+          metrics:
+            - aggregation: percentile
+              field: vllm.latency.inter_token.histogram
+              percentile: 50
+              label: p50 (s)
+            - aggregation: percentile
+              field: vllm.latency.inter_token.histogram
+              percentile: 95
+              label: p95 (s)
+      - title: End to end and queue time (p95)
+        description: >-
+          95th percentile of end to end request latency and of time spent waiting in the queue.
+        size: {w: 16, h: 10}
+        lens:
+          type: line
+          data_view: metrics-*
+          dimension:
+            type: date_histogram
+            field: "@timestamp"
+            label: Time
+          legend:
+            position: bottom
+          metrics:
+            - aggregation: percentile
+              field: vllm.latency.e2e.histogram
+              percentile: 95
+              label: End to end p95 (s)
+            - aggregation: percentile
+              field: vllm.latency.queue.histogram
+              percentile: 95
+              label: Queue time p95 (s)
