@@ -1,0 +1,85 @@
+{
+  "id": "gcp_gke_otel-container-crash-looping-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP GKE OTel] Container restarting repeatedly",
+        "description": "Fires for each container that restarted at least 3 times in the last 30 minutes: the signature of a crash loop (CrashLoopBackOff caps the back-off at 5 minutes, so a container that keeps crashing restarts about 6 times in 30 minutes) or of repeated OOM kills. Restarts are the increase of the cumulative `container/restart_count` counter in the window, rounded to whole restarts. Uses GKE system metrics, so it covers every cluster and system namespaces. The `peak_memory_limit_utilization` column is the container's highest non-evictable memory against its limit in the window: near 1.0 points to OOM kills, because termination reasons aren't available. Raise the threshold or exclude namespaces for workloads that restart by design. Containers that stopped reporting more than 5 minutes before their cluster's newest sample (deleted pods, for example after a rollout) are ignored, so the alert recovers soon after the pod is replaced.",
+        "tags": [
+          "observability",
+          "gcp",
+          "gke"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "30m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-*\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\"\n    // Keep the non-evictable memory series (working set) and the unlabelled series (restart_count)\n    AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n// restart_count is a cumulative counter: INCREASE gives restarts in the rule window (needs 2+ samples per series).\n// Peak memory against the limit is context only: near 1.0 next to restarts suggests OOM kills.\n| STATS restarts = SUM(INCREASE(`metrics.kubernetes.io/container/restart_count`)),\n        peak_memory_limit_utilization = MAX(MAX_OVER_TIME(`metrics.kubernetes.io/container/memory/limit_utilization`)),\n        last_seen = MAX(@timestamp)\n    BY resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster_name,\n       resource.attributes.namespace_name, resource.attributes.pod_name, resource.attributes.container_name\n// Newest container sample of each cluster, for the per-cluster freshness rule\n| INLINE STATS cluster_newest = MAX(last_seen)\n    BY resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster_name\n// Kibana takes alert identity from the BY of the last STATS or INLINE STATS, so regroup per container\n// (one row each already)\n| STATS restarts = MAX(restarts), peak_memory_limit_utilization = MAX(peak_memory_limit_utilization),\n        last_seen = MAX(last_seen), cluster_newest = MAX(cluster_newest)\n    BY resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster_name,\n       resource.attributes.namespace_name, resource.attributes.pod_name, resource.attributes.container_name\n// INCREASE extrapolates to the window edges, so round to whole restarts\n| EVAL restarts = ROUND(restarts)",
+        "breach": {
+          "segment": "// Ignore containers that stopped reporting (deleted pods) more than 5 minutes before their cluster's newest sample\nWHERE last_seen >= cluster_newest - 5 minutes\n// Threshold: restarts in the rule window. CrashLoopBackOff caps the back-off at 5 minutes,\n// so a container that keeps crashing restarts about 6 times in 30 minutes.\n| WHERE restarts >= 3\n| KEEP resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster_name,\n       resource.attributes.namespace_name, resource.attributes.pod_name, resource.attributes.container_name,\n       restarts, peak_memory_limit_utilization, last_seen\n| SORT restarts DESC"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.project_id",
+          "resource.attributes.location",
+          "resource.attributes.cluster_name",
+          "resource.attributes.namespace_name",
+          "resource.attributes.pod_name",
+          "resource.attributes.container_name"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_gke_otel-container-crash-looping-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Container restarting repeatedly\n\nThe container restarted at least 3 times in the last 30 minutes.\n\n### Triage\n1. Open **[GCP OTel] GKE Pod Detail** for the pod. **Restarts over time** shows the restart pattern per container; **Memory used by container** shows whether memory climbs to the limit before each restart.\n2. Read `peak_memory_limit_utilization` on the alert:\n   - Near 1.0: the container is most likely OOM-killed. Raise its memory limit or fix the leak.\n   - Low or empty (no memory limit): the process exits or fails its liveness probe. Check the container's logs and recent deployments.\n3. On **[GCP OTel] GKE Cluster Detail**, check whether many containers in the cluster restart together. That points to a node, network or shared-dependency problem rather than one workload.\n4. Check `kubectl describe pod` and the container logs (Cloud Logging) for the last termination reason and exit code; this data doesn't carry them.\n\n### Impact\nWhile a container crash-loops, its pod isn't ready, so Deployments and StatefulSets can drop below desired replicas.\n\n### Notes\n- Restarts come from `INCREASE` on a cumulative counter, which extrapolates to the window edges; the value is rounded.\n- Covers system namespaces too. To exclude namespaces, add `AND resource.attributes.namespace_name NOT IN (...)` to the first `WHERE`.\n- Recovers once the container restarts fewer than 3 times in the trailing 30 minutes, or once it stops reporting (pod deleted or replaced by a rollout) for more than 5 minutes."
+          }
+        },
+        {
+          "id": "gcp_gke_otel-container-crash-looping-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_gke_otel-31ed370d-b0bd-4e83-821d-c7b1481edcc9"
+          }
+        },
+        {
+          "id": "gcp_gke_otel-container-crash-looping-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_gke_otel-f4e74d4e-c3b1-40aa-872f-901840e8d3fb"
+          }
+        },
+        {
+          "id": "gcp_gke_otel-container-crash-looping-v2-dashboard-2",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_gke_otel-a8c033b4-994a-4ec7-9b6f-82d41ea34078"
+          }
+        }
+      ]
+    }
+  }
+}

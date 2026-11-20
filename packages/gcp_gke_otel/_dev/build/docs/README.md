@@ -170,3 +170,13 @@ Start from **[GCP OTel] GKE At a glance**. The tabs under the dashboard title op
 | **[GCP OTel] GKE Node Detail** | One GKE node. Readiness and pressure conditions, CPU, memory, ephemeral storage, PID, and network capacity, log volume, and node daemon resource use. Open it from a hexagon or a node name on GKE Nodes or on Cluster Detail. |
 | **[GCP OTel] GKE Namespace Detail** | One namespace in one cluster. CPU and memory against requests and limits, PersistentVolumeClaim fill, pod phases, and the pods and workloads in the namespace. Open it from a hexagon or a namespace name on GKE Namespaces or GKE Workloads, or from Cluster Detail. |
 | **[GCP OTel] GKE Pod Detail** | One pod. Phase, restarts, time to ready, CPU and memory against requests and limits, volume usage, a container breakdown, network I/O, memory composition, and restarts and page faults by container. Open it from a hexagon or a pod name on GKE Pods, or from Cluster Detail or Namespace Detail. |
+
+## Alerting Rule Templates
+{{alertRuleTemplates}}
+
+## SLO Templates
+{{sloTemplates}}
+
+The **Deployment replica availability** SLO needs [kube state metrics](#kube-state-metrics). Clusters without them have no SLO instances. The **Node readiness** SLO uses system metrics only.
+
+GKE metrics reach Elasticsearch several minutes after they are sampled (the Cloud Monitoring delay plus the receiver's collection interval). When you create an SLO from a template, set its sync delay to at least 10 minutes so that late documents are counted.
