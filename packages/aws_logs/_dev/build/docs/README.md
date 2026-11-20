@@ -21,6 +21,8 @@ or `non_aws_bucket_name` configuration values and `number_of_workers` value.
 `queue_url`, `bucket_arn`, `access_point_arn` and `non_aws_bucket_name` cannot be set 
 at the same time and at least one of these value must be set.
 
+To ingest Apache Parquet (`.parquet` or `.gz.parquet`) objects from S3, enable **Parquet Codec** (`decode_parquet_enabled`) and optionally tune **Batch Size of Parquet Decoding** (`decoding_parquet_batch_size`) and **Process Parallel of Parquet Decoding** (`decoding_parquet_process_parallel`) under advanced options. See [Filebeat AWS S3 input Parquet configuration](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#attrib-decoding-parquet) for details.
+
 NOTE: To access SQS and S3, these [specific AWS permissions](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#_aws_permissions_2) are required.
 
 ## Collecting logs from CloudWatch
