@@ -19,7 +19,7 @@ simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default data
 cp stdout got.json
 
 exec jq -s 'length' got.json
-stdout '^3$'
+stdout '^4$'
 
 # Both documents are marked as pipeline errors and keep the original event.
 exec jq -s 'all(.event.kind == "pipeline_error")' got.json
@@ -46,6 +46,22 @@ exec jq -s '(.[1].panw_cortex.xdr.event.action.file // {}) | has("mode")' got.js
 stdout '^false$'
 exec jq -s '.[1].panw_cortex.xdr.event.action.process.token.user_id' got.json
 stdout '^"S-1-5-18"$'
+
+# Record 4: arrays of objects are valid for flattened fields, whether sent as an
+# array or as a string that decodes to one, and are kept. An array with a
+# scalar entry is dropped and reported.
+exec jq -s '.[3].panw_cortex.xdr.event.action.process.fds | length' got.json
+stdout '^1$'
+exec jq -s '.[3].panw_cortex.xdr.event.action.process.fds[0].stdin' got.json
+stdout '^"0"$'
+exec jq -s '.[3].panw_cortex.xdr.event.action.file.pe_info[0].kind' got.json
+stdout '^"pe"$'
+exec jq -s '.[3].panw_cortex.xdr.event.action.process | has("pe_load_info")' got.json
+stdout '^false$'
+exec jq -s -r '[.[3].error.message] | flatten | join(" ")' got.json
+stdout 'Field json.action_process_pe_load_info is not an object'
+exec jq -s -r '[.[3].error.message] | flatten | map(select(contains("action_process_fds") or contains("action_file_pe_info"))) | length' got.json
+stdout '^0$'
 
 # Record 3: values that parse, or already are, but are not objects are dropped
 # too, and each one is reported. The valid token string is still parsed.
@@ -76,4 +92,7 @@ uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
 }
 {
 	"message": "{\"event_type\":1,\"event_sub_type\":1,\"event_version\":29,\"event_id\":\"synthetic-invalid-json-003\",\"action_process_image_name\":\"cmd.exe\",\"action_file_mode\":\"420\",\"action_file_pe_info\":[1,2],\"action_process_fds\":7,\"action_process_token\":\"{\\\"user_id\\\":\\\"S-1-5-18\\\",\\\"session_id\\\":0}\"}"
+}
+{
+	"message": "{\"event_type\":1,\"event_sub_type\":1,\"event_version\":29,\"event_id\":\"synthetic-invalid-json-004\",\"action_process_image_name\":\"cmd.exe\",\"action_process_fds\":[{\"stdin\":\"0\"}],\"action_file_pe_info\":\"[{\\\"kind\\\":\\\"pe\\\"}]\",\"action_process_pe_load_info\":[{\"image_base\":\"16384000\"},5]}"
 }

@@ -122,7 +122,7 @@ processors:
       tag: script_drop_non_object_records_7c881364
       lang: painless
       if: ctx.json instanceof Map
-      description: These record fields are mapped as flattened, which only accepts objects. Drop any value that is still not an object after JSON parsing, and record an error so the document is still indexed.
+      description: These record fields are mapped as flattened, which only accepts objects and arrays of objects. Drop any value that is still neither after JSON parsing, and record an error so the document is still indexed.
       params:
         fields:
           - action_file_mode
@@ -136,11 +136,23 @@ processors:
           if (v == null || v instanceof Map) {
             continue;
           }
+          if (v instanceof List) {
+            boolean ok = true;
+            for (def e : v) {
+              if (e != null && !(e instanceof Map)) {
+                ok = false;
+                break;
+              }
+            }
+            if (ok) {
+              continue;
+            }
+          }
           ctx.json.remove(f);
           if (!(ctx.error instanceof Map)) {
             ctx.error = new HashMap();
           }
-          def msg = 'Field json.' + f + ' is not an object and cannot be indexed as flattened.';
+          def msg = 'Field json.' + f + ' is not an object or an array of objects and cannot be indexed as flattened.';
           def em = ctx.error.message;
           if (em == null) {
             ctx.error.message = [msg];
