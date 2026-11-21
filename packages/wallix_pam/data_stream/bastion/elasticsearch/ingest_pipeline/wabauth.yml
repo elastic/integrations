@@ -1,0 +1,73 @@
+---
+description: Parse Wallix PAM authentication events
+processors:
+  - grok:
+      field: message
+      patterns:
+        - '^\[wabauth\] %{GREEDYDATA:_tmp.kv}$'
+      ignore_failure: true
+  - kv:
+      field: _tmp.kv
+      field_split: ' (?=(?:[^"]*"[^"]*")*[^"]*$)(?=[A-Za-z_][A-Za-z0-9_]*=)'
+      value_split: '='
+      target_field: wallix_pam
+      trim_value: '"'
+      ignore_missing: true
+      ignore_failure: true
+  - grok:
+      field: wallix_pam.infos
+      patterns:
+        - '^diagnostic \[%{GREEDYDATA:wallix_pam.diagnostic}\]$'
+      ignore_failure: true
+      if: ctx.wallix_pam?.infos instanceof String
+  - set:
+      field: user.name
+      copy_from: wallix_pam.user
+      if: ctx.wallix_pam?.user != null && ctx.user?.name == null
+  - set:
+      field: source.address
+      copy_from: wallix_pam.client_ip
+      if: ctx.wallix_pam?.client_ip != null && ctx.source?.address == null
+  - grok:
+      field: source.address
+      patterns:
+        - '^%{IP:source.ip}$'
+      ignore_failure: true
+      if: ctx.source?.address != null
+  - append:
+      field: event.category
+      value: authentication
+      allow_duplicates: false
+  - set:
+      field: event.action
+      copy_from: wallix_pam.action
+      if: ctx.wallix_pam?.action != null && ctx.event?.action == null
+  - append:
+      field: event.type
+      value: start
+      allow_duplicates: false
+      if: ctx.wallix_pam?.status == 'started'
+  - append:
+      field: event.type
+      value: end
+      allow_duplicates: false
+      if: ctx.wallix_pam?.status == 'success' || ctx.wallix_pam?.status == 'failure'
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.wallix_pam?.status == 'success'
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.wallix_pam?.status == 'failure'
+  - set:
+      field: event.reason
+      copy_from: wallix_pam.diagnostic
+      if: ctx.wallix_pam?.diagnostic != null && ctx.event?.reason == null
+  - remove:
+      field:
+        - _tmp
+        - wallix_pam.action
+        - wallix_pam.client_ip
+        - wallix_pam.user
+      ignore_missing: true
