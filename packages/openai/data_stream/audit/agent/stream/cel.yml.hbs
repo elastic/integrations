@@ -26,7 +26,9 @@ program: |-
     state.?want_more.orValue(false) ?
       state
     :
-      state.with({
+      // A new window. Drop the page cursor and newest timestamp of the
+      // previous window, which are left in state if its paging ended early.
+      state.drop(["next", "newest_timestamp"]).with({
         "start_time": state.?cursor.last_timestamp.orValue(int(now - duration(state.initial_interval))),
         "end_time": int(now),
       })
@@ -42,7 +44,10 @@ program: |-
         "Authorization": ["Bearer " + string(state.admin_token)]
       }
     }).do_request().as(resp, resp.StatusCode == 200 ?
-      bytes(resp.Body).decode_json().as(body, {
+      bytes(resp.Body).decode_json().as(body, (
+        [?state.?cursor.last_timestamp, ?state.?newest_timestamp] +
+        ((has(body.data) && size(body.data) > 0) ? [body.data[0].effective_at] : [])
+      ).as(seen, {
         "events": (
             has(body.data)
           ?
@@ -52,21 +57,20 @@ program: |-
           :
             []
         ),
+        // Records are returned newest first, so last_timestamp only moves
+        // after the last page of the window. Until then the newest timestamp
+        // is kept in state, and a window that is interrupted by an error or
+        // a restart is read again from the start.
         "cursor": {
-          ?"last_timestamp": (has(body.data) && size(body.data) > 0) ?
-            (has(state.?cursor.last_timestamp) ?
-              optional.of(
-                max([
-                  state.cursor.last_timestamp,
-                  body.data[0].effective_at
-                ])
-              )
-            :
-              optional.of(body.data[0].effective_at)
-            )
-          :
+          ?"last_timestamp": (body.?has_more.orValue(false) || size(seen) == 0) ?
             state.?cursor.last_timestamp
+          :
+            optional.of(max(seen))
         },
+        ?"newest_timestamp": (body.?has_more.orValue(false) && size(seen) > 0) ?
+          optional.of(max(seen))
+        :
+          optional.none(),
         "want_more": body.?has_more.orValue(false),
         "next": {
           ?"before_cursor": body.?has_more.orValue(false) ?
@@ -74,7 +78,7 @@ program: |-
           :
             optional.none(),
         },
-      })
+      }))
     :
       {
         "events": {
