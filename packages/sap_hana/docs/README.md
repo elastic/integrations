@@ -134,3 +134,8 @@ Follow-ups before GA:
 ### Catalog and asset specs
 
 The full Prometheus metric catalog (exposed `hanadb_*_<unit>` names), family map, field map, and proposed dashboard/alert/ML/SLO asset specs are attached to this PR discussion and maintained alongside the field Prom-gap pack. Percentage metrics are stored as fractions (0–1) for Kibana `unit: percent`. Availability SLOs should use a scrape heartbeat, not absent alert samples.
+
+
+## Metric catalog (draft)
+
+Draft Prom metric catalog, families, field map, and asset specs for Product follow-up live under [`_dev/docs/`](../_dev/docs/) (`metric-catalog.json`, `metric-families.json`, `field-map.json`, `asset-specs.json`). These are development references — packaged Kibana assets remain a follow-up before GA.

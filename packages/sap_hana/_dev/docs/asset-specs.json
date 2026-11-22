@@ -1,0 +1,55 @@
+{
+  "dashboard": {
+    "id": "sap_hana-overview",
+    "title": "[Metrics SAP HANA] Overview",
+    "panels": [
+      {
+        "title": "Connections",
+        "metric": "sap_hana.connections.total",
+        "prom": "hanadb_connections_total_count"
+      },
+      {
+        "title": "Host memory used (MB)",
+        "metric": "sap_hana.memory.host_memory_used_total",
+        "prom": "hanadb_host_memory_used_total_mb"
+      },
+      {
+        "title": "HANA alerts",
+        "metric": "sap_hana.alerts.current",
+        "prom": "hanadb_alerts_current_rating"
+      }
+    ]
+  },
+  "alerts": [
+    {
+      "name": "SAP HANA Memory High",
+      "condition": "MAX(sap_hana.memory.host_memory_used_total) >= 50000"
+    },
+    {
+      "name": "SAP HANA Connections High",
+      "condition": "MAX(sap_hana.connections.total) above threshold"
+    },
+    {
+      "name": "SAP HANA Alerts Current",
+      "condition": "MAX(sap_hana.alerts.current) > 0"
+    }
+  ],
+  "ml": [
+    {
+      "job_id": "sap-hana-memory",
+      "metric": "sap_hana.memory.host_memory_used_total"
+    }
+  ],
+  "slos": [
+    {
+      "name": "SAP HANA scrape health",
+      "note": "Do not use absent alert samples as zero. Prefer a per-database scrape heartbeat (documents present for sid/database_name each period) as the availability indicator.",
+      "indicator": "time-bucketed good/total where good = periods with successful scrape heartbeat",
+      "objective": 0.99
+    }
+  ],
+  "collect_notes": [
+    "Category (2) Prom source: proprietary HANA views \u2192 SUSE hanadb_exporter (default port 9668) \u2192 Agent prometheus/metrics.",
+    "Longer-term: OTel receiver \u2192 collector-contrib \u2192 Agent builds."
+  ]
+}
