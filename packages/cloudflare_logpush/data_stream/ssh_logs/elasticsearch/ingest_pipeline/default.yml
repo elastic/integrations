@@ -278,8 +278,11 @@ processors:
         - '^\[%{IPV6:source.ip}\]:%{POSINT:source.port:long}$'
         - '^%{IPV4:source.ip}:%{POSINT:source.port:long}$'
         - '^%{IP:source.ip}$'
+        - '^%{HOSTNAME:source.domain}:%{POSINT:source.port:long}$'
+        - '^%{HOSTNAME:source.domain}$'
         - '^.+$'
       ignore_missing: true
+      if: ctx.source?.address instanceof String && ctx.source.address != ''
   - rename:
       tag: rename_json_ServerAddress_to_destination_address
       field: json.ServerAddress
@@ -292,8 +295,11 @@ processors:
         - '^\[%{IPV6:destination.ip}\]:%{POSINT:destination.port:long}$'
         - '^%{IPV4:destination.ip}:%{POSINT:destination.port:long}$'
         - '^%{IP:destination.ip}$'
+        - '^%{HOSTNAME:destination.domain}:%{POSINT:destination.port:long}$'
+        - '^%{HOSTNAME:destination.domain}$'
         - '^.+$'
       ignore_missing: true
+      if: ctx.destination?.address instanceof String && ctx.destination.address != ''
   - geoip:
       tag: geoip_source_ip_to_source_geo
       field: source.ip
