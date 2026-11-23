@@ -123,9 +123,14 @@ These environment variables can be defined:
 
 Pipeline in charge of testing all packages with an Elastic Serverless project (https://buildkite.com/elastic/integrations-serverless). 
 
-This pipeline follows these steps:
+The test step is split into several parallel Buildkite jobs (set by `parallelism` in
+[`pipeline.serverless.yml`](../.buildkite/pipeline.serverless.yml)). Each job creates its own Serverless project and
+tests a round-robin slice of the sorted package list, so the number of projects created per build equals the number of
+parallel jobs.
+
+Each parallel job follows these steps:
 1. Create an Elastic Serverless project of a given type. Currently supported: Observability or Security
-1. For each package in the repository:
+1. For each package in its slice of the repository packages:
     1. Check if the package is supported in the given Elastic Serverless project.
         1. Packages can define which capabilities they need. Depending on those, the package could be available or not in the Serverless project, and therefore they will be tested or not.
             - [Capabilities defined for Observability projects](https://github.com/elastic/kibana/blob/40a2bdf651b0eabe5977367ad1b875e7581f0e31/config/serverless.oblt.yml#L145).
