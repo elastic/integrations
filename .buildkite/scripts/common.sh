@@ -594,6 +594,10 @@ prepare_serverless_stack() {
     if [[ "${BUILDKITE_PULL_REQUEST}" != "false" ]]; then
         profile_name="integrations-${BUILDKITE_PULL_REQUEST}-${BUILDKITE_BUILD_NUMBER}-${SERVERLESS_PROJECT}"
     fi
+    # Parallel jobs in the same build need distinct project names
+    if [[ -n "${BUILDKITE_PARALLEL_JOB:-}" ]]; then
+        profile_name="${profile_name}-${BUILDKITE_PARALLEL_JOB}"
+    fi
     create_elastic_package_profile "${profile_name}"
 
     echo "Boot up the Elastic stack"
@@ -991,8 +995,9 @@ test_package_in_local_stack() {
 }
 
 # Currently, system tests are not run in serverless to avoid lasting the build
-# too much time, since all packages are run in the same step one by one.
-# Packages are tested one by one to avoid creating more than 100 projects for one build.
+# too much time, since packages are run one by one within each job.
+# Packages are split into a few parallel jobs (see "parallelism" in pipeline.serverless.yml),
+# each testing its slice one by one in a single project, to avoid creating more than 100 projects for one build.
 test_package_in_serverless() {
     local package_name="$1"
     TEST_OPTIONS="${ELASTIC_PACKAGE_VERBOSITY} --report-format xUnit --report-output file"

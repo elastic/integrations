@@ -59,9 +59,15 @@ steps:
       cpu: "8"
       memory: "4G"
 
-  - label: "Check integrations in serverless"
+  - label: "Check integrations in serverless (%n/%t)"
+    # The key must start with "test-integrations-" so the pre-exit hook takes down each shard's project.
     key: "test-integrations-serverless-project"
     command: ".buildkite/scripts/test_integrations_with_serverless.sh"
+    # Each parallel job creates its own Serverless project and tests a round-robin slice of the packages.
+    parallelism: 4
+    # Sized for a single job testing every package. With sharding each job should need much less
+    # (~2.3h, ~3h for the heaviest shard); review this and the AWS/GCP credential lifetimes below once
+    # real shard durations are known.
     timeout_in_minutes: 360
     env:
       FORCE_CHECK_ALL: true
