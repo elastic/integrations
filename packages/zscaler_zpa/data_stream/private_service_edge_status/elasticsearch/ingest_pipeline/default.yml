@@ -1,0 +1,407 @@
+---
+description: Pipeline for Zscaler Private Service Edge Status logs.
+processors:
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: '8.11.0'
+  - rename:
+      tag: rename_message_to_event_original
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      tag: remove_message
+      field: message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      tag: json_event_original_to_json
+      field: event.original
+      target_field: json
+  - fail:
+      tag: fail_json_not_object
+      message: 'expected event.original to be a JSON object'
+      if: '!(ctx.json instanceof Map)'
+  - script:
+      tag: script_check_template
+      description: In strict mode, reports records that don't match the expected log template.
+      lang: painless
+      if: ctx._conf?.strict_fields == true
+      params:
+        expect:
+          version: v1
+          sourcetype: zscaler_zpa.private_service_edge_status
+      source: |-
+        List msgs = new ArrayList();
+        def version = ctx.json.version;
+        def sourcetype = ctx.json.sourcetype;
+        if (version == null) {
+          msgs.add("template version missing: expected " + params.expect.version);
+        } else if (version != params.expect.version) {
+          msgs.add("template version mismatch: " + version + " is not expected version " + params.expect.version);
+        }
+        if (sourcetype == null) {
+          msgs.add("sourcetype missing: expected " + params.expect.sourcetype);
+        } else if (sourcetype != params.expect.sourcetype) {
+          msgs.add("sourcetype mismatch: " + sourcetype + " is not expected sourcetype " + params.expect.sourcetype);
+        }
+        if (!msgs.isEmpty()) {
+          ctx.error = ctx.error ?: [:];
+          ctx.error.message = ctx.error.message ?: [];
+          if (!(ctx.error.message instanceof List)) {
+            ctx.error.message = new ArrayList([ctx.error.message]);
+          }
+          ctx.error.message.addAll(msgs);
+        }
+  - remove:
+      tag: remove_json_template_keys
+      description: Removes the log template keys after the strict check. They are not kept as vendored fields; event.original still has them.
+      field:
+        - json.version
+        - json.sourcetype
+      ignore_missing: true
+  - script:
+      tag: script_drop_empty_and_snake_case_json_keys
+      description: >-
+        Drops null, empty string, empty array and empty object values from the top level of the parsed record,
+        and converts the remaining keys to snake_case. The record is flat, so this is the only empty-value
+        handling the pipeline needs. If two keys have the same snake_case name, the first in sorted order
+        is kept and the other is dropped and reported (the parsed record has no key order).
+      lang: painless
+      source: |-
+        String snakeCase(String s) {
+          StringBuilder b = new StringBuilder();
+          int n = s.length();
+          for (int i = 0; i < n; i++) {
+            char c = s.charAt(i);
+            if (i > 0 && Character.isUpperCase(c)) {
+              char prev = s.charAt(i - 1);
+              boolean nextLower = i + 1 < n && Character.isLowerCase(s.charAt(i + 1));
+              if (Character.isLowerCase(prev) || Character.isDigit(prev) || (Character.isUpperCase(prev) && nextLower)) {
+                b.append('_');
+              }
+            }
+            b.append(Character.toLowerCase(c));
+          }
+          return b.toString();
+        }
+        Map out = new LinkedHashMap();
+        Map from = new HashMap();
+        List msgs = new ArrayList();
+        List keys = new ArrayList(ctx.json.keySet());
+        Collections.sort(keys);
+        for (String k : keys) {
+          def v = ctx.json.get(k);
+          if (v == null || v == '' || (v instanceof List && ((List) v).isEmpty()) || (v instanceof Map && ((Map) v).isEmpty())) {
+            continue;
+          }
+          String sk = snakeCase(k);
+          if (out.containsKey(sk)) {
+            msgs.add("dropped key '" + k + "' because its snake_case name '" + sk + "' is already used by key '" + from.get(sk) + "'");
+            continue;
+          }
+          out.put(sk, v);
+          from.put(sk, k);
+        }
+        ctx.json = out;
+        if (!msgs.isEmpty()) {
+          ctx.error = ctx.error ?: [:];
+          ctx.error.message = ctx.error.message ?: [];
+          if (!(ctx.error.message instanceof List)) {
+            ctx.error.message = new ArrayList([ctx.error.message]);
+          }
+          ctx.error.message.addAll(msgs);
+        }
+  - date:
+      tag: date_json_log_timestamp_to_timestamp
+      field: json.log_timestamp
+      target_field: '@timestamp'
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+      if: ctx.json.log_timestamp != null
+      on_failure:
+        - append:
+            tag: append_error_message_date_json_log_timestamp_to_timestamp
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      tag: rename_json_customer_to_organization_name
+      field: json.customer
+      target_field: organization.name
+      ignore_missing: true
+  - set:
+      tag: set_observer_vendor
+      field: observer.vendor
+      value: Zscaler
+  - set:
+      tag: set_observer_product
+      field: observer.product
+      value: Private Service Edge
+  - rename:
+      tag: rename_json_service_edge_to_observer_name
+      field: json.service_edge
+      target_field: observer.name
+      ignore_missing: true
+  - rename:
+      tag: rename_json_version_to_observer_version
+      field: json.version
+      target_field: observer.version
+      ignore_missing: true
+  - rename:
+      tag: rename_json_platform_to_observer_os_platform
+      field: json.platform
+      target_field: observer.os.platform
+      ignore_missing: true
+  - convert:
+      tag: convert_json_private_ip_to_ip
+      field: json.private_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_error_message_convert_json_private_ip_to_ip
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            tag: remove_json_private_ip_on_failure
+            field: json.private_ip
+            ignore_missing: true
+  - convert:
+      tag: convert_json_public_ip_to_ip
+      field: json.public_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_error_message_convert_json_public_ip_to_ip
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            tag: remove_json_public_ip_on_failure
+            field: json.public_ip
+            ignore_missing: true
+  - convert:
+      tag: convert_json_def_route_gw_to_ip
+      field: json.def_route_gw
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_error_message_convert_json_def_route_gw_to_ip
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            tag: remove_json_def_route_gw_on_failure
+            field: json.def_route_gw
+            ignore_missing: true
+  - convert:
+      tag: convert_json_primary_dns_resolver_to_ip
+      field: json.primary_dns_resolver
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_error_message_convert_json_primary_dns_resolver_to_ip
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            tag: remove_json_primary_dns_resolver_on_failure
+            field: json.primary_dns_resolver
+            ignore_missing: true
+  - append:
+      tag: append_observer_ip_json_private_ip
+      field: observer.ip
+      value: '{{{json.private_ip}}}'
+      allow_duplicates: false
+      if: ctx.json.private_ip != null
+  - append:
+      tag: append_observer_ip_json_public_ip
+      field: observer.ip
+      value: '{{{json.public_ip}}}'
+      allow_duplicates: false
+      if: ctx.json.public_ip != null
+  - set:
+      tag: set_observer_geo_location_lat_from_json_latitude
+      field: observer.geo.location.lat
+      copy_from: json.latitude
+      if: ctx.json.latitude != null && ctx.json.longitude != null && (ctx.json.latitude != 0 || ctx.json.longitude != 0)
+  - set:
+      tag: set_observer_geo_location_lon_from_json_longitude
+      field: observer.geo.location.lon
+      copy_from: json.longitude
+      if: ctx.observer.geo?.location?.lat != null
+  - rename:
+      tag: rename_json_country_code_to_observer_geo_country_iso_code
+      field: json.country_code
+      target_field: observer.geo.country_iso_code
+      ignore_missing: true
+  - remove:
+      tag: remove_json_host_up_time_unknown
+      description: Drops start times of "0", which means the start time is unknown.
+      field: json.host_up_time
+      if: ctx.json.host_up_time == '0'
+  - remove:
+      tag: remove_json_service_edge_start_time_unknown
+      description: Drops start times of "0", which means the start time is unknown.
+      field: json.service_edge_start_time
+      if: ctx.json.service_edge_start_time == '0'
+  - date:
+      tag: date_json_host_up_time
+      field: json.host_up_time
+      target_field: json.host_up_time
+      formats:
+        - UNIX
+      if: ctx.json.host_up_time != null
+      on_failure:
+        - append:
+            tag: append_error_message_date_json_host_up_time
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            tag: remove_json_host_up_time_on_failure
+            field: json.host_up_time
+            ignore_missing: true
+  - date:
+      tag: date_json_service_edge_start_time
+      field: json.service_edge_start_time
+      target_field: json.service_edge_start_time
+      formats:
+        - UNIX
+      if: ctx.json.service_edge_start_time != null
+      on_failure:
+        - append:
+            tag: append_error_message_date_json_service_edge_start_time
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            tag: remove_json_service_edge_start_time_on_failure
+            field: json.service_edge_start_time
+            ignore_missing: true
+  - script:
+      tag: script_set_host_cpu_usage_from_json_cpu_utilization
+      description: Sets host.cpu.usage from the CPU utilization percentage, scaled to the range 0 to 1.
+      lang: painless
+      if: ctx.json.cpu_utilization != null
+      source: |-
+        ctx.host = ctx.host ?: [:];
+        ctx.host.cpu = ctx.host.cpu ?: [:];
+        ctx.host.cpu.usage = ctx.json.cpu_utilization / 100.0;
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+  - set:
+      tag: set_event_category
+      field: event.category
+      value: [host]
+  - set:
+      tag: set_event_type
+      field: event.type
+      value: [info]
+  - lowercase:
+      tag: lowercase_json_session_status_to_event_action
+      field: json.session_status
+      target_field: event.action
+      ignore_missing: true
+  - set:
+      tag: set_event_outcome_success
+      description: >-
+        The documented session statuses are ZPN_STATUS_AUTHENTICATED, ZPN_STATUS_DISCONNECTED and
+        ZPN_STATUS_AUTH_FAILED. Zscaler's LSS status codes class the first two as successes.
+      field: event.outcome
+      value: success
+      if: ctx.json.session_status == 'ZPN_STATUS_AUTHENTICATED' || ctx.json.session_status == 'ZPN_STATUS_DISCONNECTED'
+  - set:
+      tag: set_event_outcome_failure
+      description: >-
+        Zscaler's LSS status codes class ZPN_STATUS_AUTH_FAILED as an error. Other statuses are undocumented
+        and leave event.outcome unset.
+      field: event.outcome
+      value: failure
+      if: ctx.json.session_status == 'ZPN_STATUS_AUTH_FAILED'
+  - append:
+      tag: append_related_ip_json_private_ip
+      field: related.ip
+      value: '{{{json.private_ip}}}'
+      allow_duplicates: false
+      if: ctx.json.private_ip != null
+  - append:
+      tag: append_related_ip_json_public_ip
+      field: related.ip
+      value: '{{{json.public_ip}}}'
+      allow_duplicates: false
+      if: ctx.json.public_ip != null
+  - append:
+      tag: append_related_ip_json_def_route_gw
+      field: related.ip
+      value: '{{{json.def_route_gw}}}'
+      allow_duplicates: false
+      if: ctx.json.def_route_gw != null
+  - append:
+      tag: append_related_ip_json_primary_dns_resolver
+      field: related.ip
+      value: '{{{json.primary_dns_resolver}}}'
+      allow_duplicates: false
+      if: ctx.json.primary_dns_resolver != null
+  - append:
+      tag: append_related_hosts_observer_name
+      field: related.hosts
+      value: '{{{observer.name}}}'
+      allow_duplicates: false
+      if: ctx.observer?.name != null
+  - remove:
+      tag: remove_json_fields_mapped_to_ecs
+      description: Removes the json keys whose values were written to ECS fields only, so they are not kept as vendored fields.
+      field:
+        - json.log_timestamp
+        - json.latitude
+        - json.longitude
+        - json.cpu_utilization
+      ignore_missing: true
+  - rename:
+      tag: rename_json_to_zscaler_zpa_private_service_edge_status
+      field: json
+      target_field: zscaler_zpa.private_service_edge_status
+      description: Keeps the remaining keys, which all have snake_case names now.
+      if: ctx.json instanceof Map && !ctx.json.isEmpty()
+  - remove:
+      tag: remove_conf
+      field: _conf
+      ignore_missing: true
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      tag: append_error_message_on_failure
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event_on_failure
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - remove:
+      tag: remove_json_and_conf_on_failure
+      description: Remove undefined fields to avoid dynamic mappings.
+      field:
+        - json
+        - _conf
+      ignore_missing: true
