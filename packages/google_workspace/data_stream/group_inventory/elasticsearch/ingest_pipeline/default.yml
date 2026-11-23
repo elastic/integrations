@@ -1,0 +1,533 @@
+---
+description: Pipeline for processing the Google Workspace group inventory from the Admin SDK Directory API.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 9.5.0
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      if: ctx.event?.original != null
+
+  # Records carry no event time: @timestamp is the collection time. The CEL
+  # input already sets it when the group is published; fall back to the ingest
+  # time otherwise.
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_from_ingest_timestamp
+      value: '{{{_ingest.timestamp}}}'
+      override: false
+
+  # Categorization: one entity snapshot per group per collection cycle.
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: asset
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: iam
+  - append:
+      field: event.type
+      tag: append_event_type
+      value:
+        - group
+        - info
+      allow_duplicates: false
+
+  # Group identity. The group ID is the stable key, and equals user.group.id
+  # on google_workspace.users documents. The name is the display name, as in
+  # user.group.name on those documents.
+  - rename:
+      field: json.id
+      tag: rename_id_to_group_id
+      target_field: group.id
+      ignore_missing: true
+  - rename:
+      field: json.name
+      tag: rename_name_to_group_name
+      target_field: group.name
+      ignore_missing: true
+
+  # Directory fields, renamed to snake_case under google_workspace.group_inventory.
+  - rename:
+      field: json.email
+      tag: rename_email
+      target_field: google_workspace.group_inventory.email
+      ignore_missing: true
+  - rename:
+      field: json.kind
+      tag: rename_kind
+      target_field: google_workspace.group_inventory.kind
+      ignore_missing: true
+  - rename:
+      field: json.etag
+      tag: rename_etag
+      target_field: google_workspace.group_inventory.etag
+      ignore_missing: true
+  - gsub:
+      field: google_workspace.group_inventory.etag
+      tag: gsub_etag_unquote
+      pattern: '^"(.*)"$'
+      replacement: '$1'
+      ignore_missing: true
+      description: Removes the HTTP entity-tag quotes from the value.
+  - rename:
+      field: json.description
+      tag: rename_description
+      target_field: google_workspace.group_inventory.description
+      ignore_missing: true
+  - convert:
+      field: json.directMembersCount
+      tag: convert_direct_members_count_to_long
+      target_field: google_workspace.group_inventory.direct_members_count
+      type: long
+      ignore_missing: true
+      description: The API sends the int64 count as a string.
+      if: ctx.json?.directMembersCount != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_direct_members_count
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.adminCreated
+      tag: convert_admin_created_to_boolean
+      target_field: google_workspace.group_inventory.admin_created
+      type: boolean
+      ignore_missing: true
+      description: May be absent when false.
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_admin_created
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.aliases
+      tag: rename_aliases
+      target_field: google_workspace.group_inventory.aliases
+      ignore_missing: true
+  - rename:
+      field: json.nonEditableAliases
+      tag: rename_non_editable_aliases
+      target_field: google_workspace.group_inventory.non_editable_aliases
+      ignore_missing: true
+  - script:
+      lang: painless
+      tag: script_normalize_aliases
+      description: >-
+        Turns the alias lists into lists of addresses. The API documents them
+        as strings, but Google's examples show `{"alias": "..."}` objects, so
+        both forms are accepted. Empty values and duplicates are dropped, and an
+        empty list is removed.
+      if: ctx.google_workspace?.group_inventory instanceof Map
+      params:
+        fields:
+          - aliases
+          - non_editable_aliases
+      source: |-
+        Map gi = ctx.google_workspace.group_inventory;
+        for (String f : params.fields) {
+          if (!gi.containsKey(f)) {
+            continue;
+          }
+          def v = gi.get(f);
+          List items = v instanceof List ? v : [v];
+          Set out = new LinkedHashSet();
+          for (def item : items) {
+            def a = item;
+            if (item instanceof Map) {
+              a = item.get('alias');
+            }
+            if (a instanceof String && !a.isEmpty()) {
+              out.add(a);
+            }
+          }
+          if (out.isEmpty()) {
+            gi.remove(f);
+          } else {
+            gi.put(f, new ArrayList(out));
+          }
+        }
+  - rename:
+      field: json.externalIds
+      tag: rename_external_ids
+      target_field: google_workspace.group_inventory.external_ids
+      ignore_missing: true
+
+  # Facts derived from the direct members by the CEL input. members_error is
+  # present instead when the members could not be read.
+  - rename:
+      field: json.owners
+      tag: rename_owners
+      target_field: google_workspace.group_inventory.owners
+      ignore_missing: true
+  - rename:
+      field: json.managers
+      tag: rename_managers
+      target_field: google_workspace.group_inventory.managers
+      ignore_missing: true
+  - rename:
+      field: json.member_groups
+      tag: rename_member_groups
+      target_field: google_workspace.group_inventory.member_groups
+      ignore_missing: true
+  - rename:
+      field: json.external_members
+      tag: rename_external_members
+      target_field: google_workspace.group_inventory.external_members
+      ignore_missing: true
+  - rename:
+      field: json.has_customer_member
+      tag: rename_has_customer_member
+      target_field: google_workspace.group_inventory.has_customer_member
+      ignore_missing: true
+  - rename:
+      field: json.customer_member_ids
+      tag: rename_customer_member_ids
+      target_field: google_workspace.group_inventory.customer_member_ids
+      ignore_missing: true
+  - rename:
+      field: json.member_counts
+      tag: rename_member_counts
+      target_field: google_workspace.group_inventory.member_counts
+      ignore_missing: true
+  - rename:
+      field: json.members_error
+      tag: rename_members_error
+      target_field: google_workspace.group_inventory.members_error
+      ignore_missing: true
+      description: Added by the CEL input when the group's members could not be read. The document is kept so that it shows what is missing.
+
+  # Optional enrichments.
+  - rename:
+      field: json.role_assignments
+      tag: rename_role_assignments
+      target_field: google_workspace.group_inventory.role_assignments
+      ignore_missing: true
+      description: Added by the CEL input when the admin roles enrichment succeeded. `[]` means checked, with no assignments.
+  - rename:
+      field: json.settings_error
+      tag: rename_settings_error
+      target_field: google_workspace.group_inventory.settings_error
+      ignore_missing: true
+      description: Added by the CEL input when the group's settings could not be read. The document is kept so that it shows what is missing.
+  - script:
+      lang: painless
+      tag: script_settings_to_snake_case
+      description: >-
+        Moves the Groups Settings object to google_workspace.group_inventory.settings,
+        converting its camelCase keys to snake_case, the boolean settings from
+        the strings "true" and "false" to booleans, and dropping null or empty
+        values. Keys that are already snake_case are taken first, so that
+        `default_sender` (discovery) wins over `defaultSender` (reference) when
+        both are present. A boolean setting with any other value is dropped and
+        reported in error.message.
+      if: ctx.json?.settings instanceof Map
+      params:
+        booleans:
+          - allow_external_members
+          - allow_google_communication
+          - allow_web_posting
+          - archive_only
+          - custom_roles_enabled_for_settings_to_be_merged
+          - enable_collaborative_inbox
+          - favorite_replies_on_top
+          - include_custom_footer
+          - include_in_global_address_list
+          - is_archived
+          - members_can_post_as_the_group
+          - send_message_deny_notification
+          - show_in_group_directory
+      source: |-
+        String snake(String s) {
+          StringBuilder sb = new StringBuilder();
+          for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (Character.isUpperCase(c)) {
+              if (i > 0) {
+                sb.append('_');
+              }
+              sb.append(Character.toLowerCase(c));
+            } else {
+              sb.append(c);
+            }
+          }
+          return sb.toString();
+        }
+        Map src = ctx.json.remove('settings');
+        Map out = new HashMap();
+        List bad = new ArrayList();
+        for (int pass = 0; pass < 2; pass++) {
+          for (def e : src.entrySet()) {
+            String k = e.getKey();
+            String sk = snake(k);
+            if ((pass == 0) != sk.equals(k) || out.containsKey(sk)) {
+              continue;
+            }
+            def v = e.getValue();
+            if (v == null || (v instanceof String && v.isEmpty())) {
+              continue;
+            }
+            if (params.booleans.contains(sk) && !(v instanceof Boolean)) {
+              String s = v.toString();
+              if (s.equalsIgnoreCase('true')) {
+                v = true;
+              } else if (s.equalsIgnoreCase('false')) {
+                v = false;
+              } else {
+                bad.add('settings.' + k + ' is not a boolean: ' + s);
+                continue;
+              }
+            }
+            out.put(sk, v);
+          }
+        }
+        if (!out.isEmpty()) {
+          if (ctx.google_workspace == null) {
+            ctx.google_workspace = new HashMap();
+          }
+          if (ctx.google_workspace.group_inventory == null) {
+            ctx.google_workspace.group_inventory = new HashMap();
+          }
+          ctx.google_workspace.group_inventory.settings = out;
+        }
+        if (!bad.isEmpty()) {
+          if (ctx.error == null) {
+            ctx.error = new HashMap();
+          }
+          def msg = ctx.error.message;
+          List msgs = new ArrayList();
+          if (msg instanceof List) {
+            msgs.addAll(msg);
+          } else if (msg != null) {
+            msgs.add(msg);
+          }
+          msgs.addAll(bad);
+          ctx.error.message = msgs;
+        }
+  - convert:
+      field: google_workspace.group_inventory.settings.max_message_bytes
+      tag: convert_settings_max_message_bytes_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_workspace.group_inventory.settings.max_message_bytes
+            tag: remove_settings_max_message_bytes_on_failure
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_error_message_settings_max_message_bytes
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # The email domain, for primary vs secondary domain analysis.
+  - dissect:
+      field: google_workspace.group_inventory.email
+      tag: dissect_email_domain
+      pattern: '%{}@%{google_workspace.group_inventory.email_domain}'
+      if: ctx.google_workspace?.group_inventory?.email instanceof String && ctx.google_workspace.group_inventory.email.contains('@')
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_email_domain
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - lowercase:
+      field: google_workspace.group_inventory.email_domain
+      tag: lowercase_email_domain
+      ignore_missing: true
+
+  # Root entity. ECS has no group entity type and no group.entity field set,
+  # so the group is described by root entity.* without entity.type. The ID is
+  # the raw group ID, so that user documents can reference it.
+  - set:
+      field: entity.id
+      tag: set_entity_id_from_group_id
+      copy_from: group.id
+      ignore_empty_value: true
+  - set:
+      field: entity.name
+      tag: set_entity_name_from_email
+      copy_from: google_workspace.group_inventory.email
+      ignore_empty_value: true
+  - set:
+      field: entity.display_name
+      tag: set_entity_display_name_from_group_name
+      copy_from: group.name
+      ignore_empty_value: true
+  - set:
+      field: entity.sub_type
+      tag: set_entity_sub_type
+      value: google_workspace_group
+  - set:
+      field: entity.source
+      tag: set_entity_source
+      value: google_workspace
+  - set:
+      field: entity.last_seen_timestamp
+      tag: set_entity_last_seen_timestamp
+      copy_from: '@timestamp'
+      ignore_empty_value: true
+
+  # Admin roles assigned to the group (optional enrichment).
+  - script:
+      lang: painless
+      tag: script_role_assignments_to_permissions_administers
+      description: >-
+        Adds the union of the privileges of the group's roles to
+        entity.attributes.permissions, and the org unit ID of each ORG_UNIT
+        assignment to entity.relationships.administers.entity.id, without
+        duplicates. CUSTOMER assignments add no ID: the Directory group
+        resource has no customer ID.
+      if: ctx.google_workspace?.group_inventory?.role_assignments instanceof List
+      source: |-
+        Set permissions = new LinkedHashSet();
+        Set administers = new LinkedHashSet();
+        for (def a : ctx.google_workspace.group_inventory.role_assignments) {
+          if (!(a instanceof Map)) {
+            continue;
+          }
+          if (a.privileges instanceof List) {
+            for (def p : a.privileges) {
+              if (p instanceof String && !p.isEmpty()) {
+                permissions.add(p);
+              }
+            }
+          }
+          if (a.scope_type == 'ORG_UNIT' && a.org_unit_id instanceof String && !a.org_unit_id.isEmpty()) {
+            administers.add(a.org_unit_id);
+          }
+        }
+        if (permissions.isEmpty() && administers.isEmpty()) {
+          return;
+        }
+        if (ctx.entity == null) {
+          ctx.entity = new HashMap();
+        }
+        if (!permissions.isEmpty()) {
+          if (ctx.entity.attributes == null) {
+            ctx.entity.attributes = new HashMap();
+          }
+          ctx.entity.attributes.permissions = new ArrayList(permissions);
+        }
+        if (!administers.isEmpty()) {
+          ctx.entity.relationships = ['administers': ['entity': ['id': new ArrayList(administers)]]];
+        }
+
+  # related.user: owners, managers and external members. Member identities do
+  # not go to user.*, which would create or merge Entity Store user entities.
+  - script:
+      lang: painless
+      tag: script_members_to_related_user
+      description: >-
+        Adds the IDs and email addresses of the owners and managers, and the
+        email addresses of the external members, to related.user without
+        duplicates. Rows of type GROUP are skipped: a group is not a user.
+      if: ctx.google_workspace?.group_inventory instanceof Map
+      params:
+        sources:
+          - field: owners
+            keys:
+              - id
+              - email
+          - field: managers
+            keys:
+              - id
+              - email
+          - field: external_members
+            keys:
+              - email
+      source: |-
+        Map gi = ctx.google_workspace.group_inventory;
+        Set users = new LinkedHashSet();
+        if (ctx.related != null && ctx.related.user instanceof List) {
+          users.addAll(ctx.related.user);
+        }
+        int before = users.size();
+        for (def src : params.sources) {
+          def rows = gi.get(src.field);
+          if (!(rows instanceof List)) {
+            continue;
+          }
+          for (def r : rows) {
+            if (!(r instanceof Map)) {
+              continue;
+            }
+            if (r.type instanceof String && r.type.equalsIgnoreCase('GROUP')) {
+              continue;
+            }
+            for (String k : src.keys) {
+              def v = r.get(k);
+              if (v instanceof String && !v.isEmpty()) {
+                users.add(v);
+              }
+            }
+          }
+        }
+        if (users.size() == before) {
+          return;
+        }
+        if (ctx.related == null) {
+          ctx.related = new HashMap();
+        }
+        ctx.related.user = new ArrayList(users);
+
+  # Cleanup.
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      tag: append_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event
+      value: preserve_original_event
+      allow_duplicates: false

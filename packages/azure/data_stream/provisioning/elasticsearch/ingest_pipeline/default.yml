@@ -102,10 +102,16 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
-  - rename:
-      tag: rename_azure_provisioning_durationMs_to_event_duration_63215b30
+  - convert:
       field: azure.provisioning.durationMs
+      tag: convert_provisioning_durationms_to_event_duration
       target_field: event.duration
+      type: long
+      ignore_failure: true
+      if: ctx.azure?.provisioning?.durationMs != null
+  - remove:
+      field: azure.provisioning.durationMs
+      tag: remove_provisioning_durationms
       ignore_missing: true
   - script:
       tag: script_7f8b9902

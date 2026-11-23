@@ -1420,6 +1420,15 @@ processors:
       field: "message"
       patterns:
         - "Local:%{IPORHOST:source.address}:%{NUMBER:source.port} Remote:%{IPORHOST:destination.address}:%{NUMBER:destination.port} Username:%{DATA:user.name} %{GREEDYDATA:event.reason}"
+  # 750006 and 750007 report IKEv2 SA state changes with the same
+  # Local/Remote/Username layout as 750002 and 750003.
+  - grok:
+      if: '["750006", "750007"].contains(ctx._temp_.cisco.message_id)'
+      tag: parse_750006-750007
+      description: "750006, 750007"
+      field: "message"
+      patterns:
+        - "Local:%{IPORHOST:source.address}:%{NUMBER:source.port} Remote:%{IPORHOST:destination.address}:%{NUMBER:destination.port} Username:%{DATA:user.name} %{GREEDYDATA:event.reason}"
   - grok:
       if: '["713905", "713904", "713906", "713902", "713901"].contains(ctx._temp_.cisco.message_id)'
       tag: parse_713901-713906
@@ -3291,6 +3300,14 @@ processors:
         "750003":
           type: [connection, start]
           outcome: failure
+        "750006":
+          type: [connection, start]
+          outcome: success
+          action: sa-created
+        "750007":
+          type: [connection, end]
+          outcome: success
+          action: sa-deleted
         "805001":
           type: [connection, start]
           outcome: success

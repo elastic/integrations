@@ -43,51 +43,7 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "attributes": {
-                        "layout": "horizontal",
-                        "links": [
-                            {
-                                "destinationRefName": "link_a7cbb9e7-f002-519a-830a-d57756f230c6_dashboard",
-                                "id": "a7cbb9e7-f002-519a-830a-d57756f230c6",
-                                "label": "Vulnerabilities",
-                                "options": {
-                                    "openInNewTab": false,
-                                    "useCurrentDateRange": true,
-                                    "useCurrentFilters": true
-                                },
-                                "order": 0,
-                                "type": "dashboardLink"
-                            },
-                            {
-                                "destinationRefName": "link_6d9ca6c2-a6ce-5956-8eb0-33ba6734ba17_dashboard",
-                                "id": "6d9ca6c2-a6ce-5956-8eb0-33ba6734ba17",
-                                "label": "Assets",
-                                "options": {
-                                    "openInNewTab": false,
-                                    "useCurrentDateRange": true,
-                                    "useCurrentFilters": true
-                                },
-                                "order": 1,
-                                "type": "dashboardLink"
-                            }
-                        ]
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": true
-                },
-                "gridData": {
-                    "h": 3,
-                    "i": "f86b5504-0250-5a62-8029-2b2af6cfa4bb",
-                    "w": 24,
-                    "x": 0,
-                    "y": 0
-                },
-                "panelIndex": "f86b5504-0250-5a62-8029-2b2af6cfa4bb",
-                "type": "links"
-            },
-            {
-                "embeddableConfig": {
-                    "content": "Triage findings in **[Security › Findings › Vulnerabilities](security/cloud_security_posture/findings/vulnerabilities)**. Panels show open findings unless you select a status in the **Status** control.",
+                    "content": "Triage findings in **[Security › Findings › Vulnerabilities](/app/security/cloud_security_posture/findings/vulnerabilities)**. Panels show open findings unless you select a status in the **Status** control.",
                     "hidePanelTitles": true
                 },
                 "gridData": {
@@ -2798,7 +2754,7 @@
                             "searchSourceJSON": {
                                 "filter": [],
                                 "query": {
-                                    "esql": "FROM security_solution-projectdiscovery.vulnerability_latest METADATA _id, _index\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| SORT @timestamp DESC"
+                                    "esql": "FROM security_solution-projectdiscovery.vulnerability_latest METADATA _id, _index\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\n| WHERE (?status IS NULL AND projectdiscovery.vulnerability.vuln_status == \"open\") OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\n| SORT @timestamp DESC"
                                 }
                             }
                         },
@@ -2824,7 +2780,7 @@
                                     "hideChart": true,
                                     "isTextBasedQuery": true,
                                     "kibanaSavedObjectMeta": {
-                                        "searchSourceJSON": "{\"query\": {\"esql\": \"FROM security_solution-projectdiscovery.vulnerability_latest METADATA _id, _index\\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\\n| WHERE ?status IS NULL OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\\n| SORT @timestamp DESC\"}, \"filter\": []}"
+                                        "searchSourceJSON": "{\"query\": {\"esql\": \"FROM security_solution-projectdiscovery.vulnerability_latest METADATA _id, _index\\n| WHERE ?severity IS NULL OR MV_INTERSECTS(?severity, vulnerability.severity)\\n| WHERE (?status IS NULL AND projectdiscovery.vulnerability.vuln_status == \\\"open\\\") OR MV_INTERSECTS(?status, projectdiscovery.vulnerability.vuln_status)\\n| WHERE ?protocol IS NULL OR MV_INTERSECTS(?protocol, projectdiscovery.vulnerability.event.type)\\n| WHERE ?host IS NULL OR MV_INTERSECTS(?host, host.name)\\n| SORT @timestamp DESC\"}, \"filter\": []}"
                                     },
                                     "sort": [
                                         [
@@ -2985,18 +2941,7 @@
     "coreMigrationVersion": "8.8.0",
     "created_at": "2026-11-11T00:23:07.579Z",
     "id": "projectdiscovery-1160392d-f45d-5bfe-a22d-c218bc8c2af3",
-    "references": [
-        {
-            "id": "projectdiscovery-1160392d-f45d-5bfe-a22d-c218bc8c2af3",
-            "name": "f86b5504-0250-5a62-8029-2b2af6cfa4bb:link_a7cbb9e7-f002-519a-830a-d57756f230c6_dashboard",
-            "type": "dashboard"
-        },
-        {
-            "id": "projectdiscovery-f86bd7ed-bcc4-5e1f-9d1d-d360dd96fd92",
-            "name": "f86b5504-0250-5a62-8029-2b2af6cfa4bb:link_6d9ca6c2-a6ce-5956-8eb0-33ba6734ba17_dashboard",
-            "type": "dashboard"
-        }
-    ],
+    "references": [],
     "type": "dashboard",
     "typeMigrationVersion": "10.3.0"
 }

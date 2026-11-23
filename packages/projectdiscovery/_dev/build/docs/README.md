@@ -99,7 +99,7 @@ API keys have no scopes. A key acts with the team role of the user who owns it.
    - **Interval**: How often to poll the API. The defaults are `15m` for vulnerabilities and `1h` for assets.
    - **Initial Interval**: How far back to collect data on the first run, based on `updated_at`. The default is `720h` (30 days). If your tenant has not been scanned recently, increase this value. Otherwise, the first run collects nothing.
    - **Batch Size**: The number of records to request per page (maximum 100).
-   - **Severity** (vulnerability only): The severities to collect. The default includes `info`. Remove `info` to reduce the volume by about 90%.
+   - **Severity** (vulnerability only): The severities to collect. The default includes `info`. Remove `info` to reduce the volume.
 5. Click **Save and continue**.
 
 ### Validation
@@ -117,7 +117,7 @@ API keys have no scopes. A key acts with the team role of the user who owns it.
 - A finding is missing from the latest index or the Findings page: The `latest_cdr_vulnerabilities` transform only reads documents from the last 90 days and removes findings that have no new document for 90 days (based on `@timestamp`). Check that the finding is present in `logs-projectdiscovery.vulnerability-*` and that its `projectdiscovery.vulnerability.vuln_status` is not what you filter out.
 - Fixed or dismissed findings appear in the latest index or the Findings page: The latest index keeps the latest state of every finding, including `fixed`, `false_positive`, `duplicate` and `accepted_risk`. Filter on `projectdiscovery.vulnerability.vuln_status: open` to see only current open findings.
 - The Findings flyout has an empty **Vulnerability Score** section: This section only displays CVSS vectors attributed to NVD, Red Hat or GHSA (`vulnerability.cvss.*`). Nuclei templates don't state the source of their CVSS data, so the integration doesn't populate these fields. The **CVSS** badge in the flyout header shows the template score from `vulnerability.score.base` and `vulnerability.score.version`.
-- Assets disappear from the latest index: The `latest_asset` transform removes assets that have not been seen for 3 days (based on `entity.last_seen_timestamp`). This matches the asset expiry rules of ProjectDiscovery.
+- Assets disappear from the latest index: The `latest_asset` transform removes assets that have not been seen for 3 days (based on `entity.last_seen_timestamp`). 
 - HTTP 401 or 403 errors: Check the API key, and check that its user is a member of the team in **Team ID**.
 - HTTP 429 errors: ProjectDiscovery limits requests per minute. The integration throttles requests and retries with backoff. If errors persist, increase **Interval** or check whether other API clients share the same key.
 - Missing team data: Check that **Team ID** is set to the team workspace that holds your scans and assets.

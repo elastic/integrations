@@ -1,0 +1,19 @@
+wait_for_data_timeout: 1m
+input: cel
+service: google_workspace
+vars:
+  jwt_file: "{{SERVICE_LOGS_DIR}}/credentials.json"
+  delegated_account: test@example.com
+  enable_request_tracer: true
+data_stream:
+  vars:
+    directory_api_host: http://{{Hostname}}:{{Port}}
+    # Every settings call under this path answers 403 forbidden, as when the
+    # delegated account lacks the Groups privilege.
+    groups_settings_api_host: http://{{Hostname}}:{{Port}}/denied
+    batch_size: 2
+    collect_group_settings: true
+assert:
+  # 5 group documents plus one error document: no settings call succeeded
+  # in the cycle, so the first refusal is published once.
+  hit_count: 6

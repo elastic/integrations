@@ -1,0 +1,57 @@
+{
+    "id": "ti_polyswarm-search-current-indicators",
+    "type": "search",
+    "namespaces": [
+        "default"
+    ],
+    "typeMigrationVersion": "10.5.0",
+    "attributes": {
+        "title": "[PolySwarm] Current indicators (re-asserted in the last 48h)",
+        "description": "Deduplicated PolySwarm indicators that PolySwarm has re-asserted within the last 48 hours, newest first. The latest transform expires indicators only when a checkpoint completes, and a checkpoint completes only when new artifacts arrive, so indicators already in the latest index are not removed while collection is stopped. The event.ingested bound in this search enforces that freshness at query time instead, so an outage removes stale indicators from this view regardless of whether the transform has run. Use this as the source for indicator-match rules that must not fire on stale intelligence. The stored 30-day time range is deliberately wide: Discover applies the time picker to @timestamp, which here is the artifact's creation time rather than a freshness signal, so a narrow range would hide indicators that are still being re-asserted. Freshness is decided by the event.ingested bound, not by the time range.",
+        "columns": [
+            "threat.indicator.name",
+            "threat.indicator.confidence",
+            "polyswarm.polyscore",
+            "polyswarm.malware_family",
+            "threat.indicator.file.extension",
+            "threat.indicator.last_seen",
+            "event.ingested"
+        ],
+        "sort": [
+            [
+                "event.ingested",
+                "desc"
+            ]
+        ],
+        "timeRestore": true,
+        "timeRange": {
+            "from": "now-30d/d",
+            "to": "now"
+        },
+        "refreshInterval": {
+            "pause": true,
+            "value": 60000
+        },
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": "{\"filter\": [{\"$state\": {\"store\": \"appState\"}, \"meta\": {\"alias\": null, \"disabled\": false, \"field\": \"event.module\", \"indexRefName\": \"kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index\", \"key\": \"event.module\", \"negate\": false, \"params\": {\"query\": \"ti_polyswarm\"}, \"type\": \"phrase\"}, \"query\": {\"match_phrase\": {\"event.module\": \"ti_polyswarm\"}}}, {\"$state\": {\"store\": \"appState\"}, \"meta\": {\"alias\": null, \"disabled\": false, \"field\": \"labels.is_ioc_transform_source\", \"indexRefName\": \"kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index\", \"key\": \"labels.is_ioc_transform_source\", \"negate\": false, \"params\": {\"query\": \"false\"}, \"type\": \"phrase\"}, \"query\": {\"match_phrase\": {\"labels.is_ioc_transform_source\": \"false\"}}}], \"query\": {\"language\": \"kuery\", \"query\": \"event.ingested >= now-48h\"}, \"indexRefName\": \"kibanaSavedObjectMeta.searchSourceJSON.index\"}"
+        }
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        }
+    ],
+    "coreMigrationVersion": "8.8.0"
+}

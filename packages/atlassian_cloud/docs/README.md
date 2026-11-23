@@ -25,7 +25,7 @@ These integrations are **complementary** and can be used together. For example, 
 This integration is compatible with the Atlassian Cloud Organizations REST API v1, accessed via the `/admin/v1/orgs/{orgId}/events-stream` endpoint. Atlassian Cloud Organization admin access and an API key with the `read:events:admin` scope are required.
 
 ### How it works
-The integration polls the Atlassian Organizations API on a configurable interval using cursor-based pagination. Each poll cycle retrieves new audit events since the last successful poll, parses them, and ships the documents to Elasticsearch where the ingest pipeline maps fields to ECS and enriches them with categorization, related entities, and geo information.
+The integration polls the Atlassian Organizations API on a configurable interval using cursor-based pagination. Each poll cycle retrieves new audit events since the last collected event, parses them, and ships the documents to Elasticsearch where the ingest pipeline maps fields to ECS and enriches them with categorization, related entities, and geo information. Atlassian can make an event visible in the API some time after it is processed, so each poll only collects events processed at least the configured delay ago (1 minute by default).
 
 ## What data does this integration collect?
 The Atlassian Cloud integration collects organization-wide audit events of the following types:

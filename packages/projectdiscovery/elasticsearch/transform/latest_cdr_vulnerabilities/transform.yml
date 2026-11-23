@@ -30,7 +30,9 @@ latest:
   unique_key:
     - event.id
     - data_stream.namespace
-  sort: "@timestamp"
+  # Not @timestamp: it is truncated to milliseconds, so updates to a finding within
+  # the same millisecond would tie. updated_at keeps the API's microsecond precision.
+  sort: "projectdiscovery.vulnerability.updated_at"
 description: >-
   Latest ProjectDiscovery vulnerability findings. As findings are rescanned or triaged, this transform keeps only the latest state of each finding in a lookup index.
 frequency: 5m
