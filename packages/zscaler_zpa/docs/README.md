@@ -1540,7 +1540,7 @@ An example event for `microsegmentation_flow` looks as following:
 | zscaler_zpa.private_service_edge_status.service_edge_start_time | The time at which the Private Service Edge was started. | date |
 | zscaler_zpa.private_service_edge_status.session_id | The TLS session ID. | keyword |
 | zscaler_zpa.private_service_edge_status.session_status | The status of the session: `ZPN_STATUS_AUTHENTICATED` (the Private Service Edge successfully authenticated), `ZPN_STATUS_AUTH_FAILED` (the Private Service Edge failed to authenticate) or `ZPN_STATUS_DISCONNECTED` (the Private Service Edge disconnected from a Service Edge). | keyword |
-| zscaler_zpa.private_service_edge_status.session_type | The type of session, such as `ZPN_TUNNEL_CONTROL` for the session from the Private Service Edge towards the closest Public Service Edge. | keyword |
+| zscaler_zpa.private_service_edge_status.session_type | The type of session, such as `ZPN_TUNNEL_CONTROL` for the session from the Private Service Edge toward the closest Public Service Edge. | keyword |
 | zscaler_zpa.private_service_edge_status.timestamp_authentication | The timestamp when the Private Service Edge was authenticated. | date |
 | zscaler_zpa.private_service_edge_status.timestamp_un_authentication | The timestamp when the Private Service Edge was unauthenticated. | date |
 | zscaler_zpa.private_service_edge_status.total_bytes_rx | The total bytes received. | long |
@@ -1702,7 +1702,7 @@ An example event for `private_service_edge_status` looks as following:
 | zscaler_zpa.private_cloud_controller_status.public_ip | The public IP address of the Private Cloud Controller. | ip |
 | zscaler_zpa.private_cloud_controller_status.session_id | The TLS session ID. | keyword |
 | zscaler_zpa.private_cloud_controller_status.session_status | The status of the session: `ZPN_STATUS_AUTHENTICATED` (the Private Cloud Controller successfully authenticated), `ZPN_STATUS_AUTH_FAILED` (the Private Cloud Controller failed to authenticate) or `ZPN_STATUS_DISCONNECTED` (the Private Cloud Controller disconnected from a Service Edge). | keyword |
-| zscaler_zpa.private_cloud_controller_status.session_type | The type of session, such as `ZPN_TUNNEL_CONTROL` for the session from the Private Cloud Controller towards the closest Public Service Edge. | keyword |
+| zscaler_zpa.private_cloud_controller_status.session_type | The type of session, such as `ZPN_TUNNEL_CONTROL` for the session from the Private Cloud Controller toward the closest Public Service Edge. | keyword |
 | zscaler_zpa.private_cloud_controller_status.timestamp_authentication | The timestamp when the Private Cloud Controller was authenticated. | date |
 | zscaler_zpa.private_cloud_controller_status.timestamp_un_authentication | The timestamp when the Private Cloud Controller was unauthenticated. | date |
 | zscaler_zpa.private_cloud_controller_status.total_bytes_rx | The total bytes received. | long |
