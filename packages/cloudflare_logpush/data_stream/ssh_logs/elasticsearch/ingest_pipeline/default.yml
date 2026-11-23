@@ -260,6 +260,11 @@ processors:
       field: event.outcome
       value: failure
       if: ctx.cloudflare_logpush?.ssh_logs?.error instanceof String && !ctx.cloudflare_logpush.ssh_logs.error.trim().isEmpty()
+  - set:
+      tag: set_event_outcome_success
+      field: event.outcome
+      value: success
+      if: ctx.cloudflare_logpush?.ssh_logs?.error == null || (ctx.cloudflare_logpush.ssh_logs.error instanceof String && ctx.cloudflare_logpush.ssh_logs.error.isEmpty())
 
   # source.* and destination.*
   # ClientAddress and ServerAddress are documented as addresses. They are kept
@@ -384,6 +389,18 @@ processors:
       field: related.ip
       value: '{{{destination.ip}}}'
       if: ctx.destination?.ip != null
+      allow_duplicates: false
+  - append:
+      tag: append_source_domain_into_related_hosts
+      field: related.hosts
+      value: '{{{source.domain}}}'
+      if: ctx.source?.domain != null
+      allow_duplicates: false
+  - append:
+      tag: append_destination_domain_into_related_hosts
+      field: related.hosts
+      value: '{{{destination.domain}}}'
+      if: ctx.destination?.domain != null
       allow_duplicates: false
   - append:
       tag: append_user_email_into_related_user

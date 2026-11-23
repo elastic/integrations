@@ -5501,9 +5501,9 @@ An example event for `ssh` looks as following:
 {
     "@timestamp": "2025-02-27T23:15:06.000Z",
     "agent": {
-        "ephemeral_id": "ded3d7b7-eb47-450f-9e02-09af2a6e1785",
-        "id": "8dbf5727-2874-4c58-89a7-a0d780d7bbaa",
-        "name": "elastic-agent-24406",
+        "ephemeral_id": "9882a2a4-fb58-4d30-b352-c3a6ce9a6eb4",
+        "id": "7504ea33-885c-48da-9a5f-32a037680213",
+        "name": "elastic-agent-27695",
         "type": "filebeat",
         "version": "8.17.1"
     },
@@ -5527,7 +5527,7 @@ An example event for `ssh` looks as following:
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.ssh_logs",
-        "namespace": "70990",
+        "namespace": "84507",
         "type": "logs"
     },
     "destination": {
@@ -5553,7 +5553,7 @@ An example event for `ssh` looks as following:
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "8dbf5727-2874-4c58-89a7-a0d780d7bbaa",
+        "id": "7504ea33-885c-48da-9a5f-32a037680213",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -5565,9 +5565,10 @@ An example event for `ssh` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.ssh_logs",
-        "ingested": "2026-11-23T05:58:42Z",
+        "ingested": "2026-11-23T18:51:36Z",
         "kind": "event",
         "original": "{\"AccountID\":\"a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6\",\"ClientAddress\":\"89.160.20.128\",\"Datetime\":\"2025-02-27T23:15:06Z\",\"Error\":\"\",\"PTY\":\"\",\"Payload\":\"{\\\"version\\\":2,\\\"width\\\":80,\\\"height\\\":24,\\\"timestamp\\\":1740698100,\\\"command\\\":\\\"uptime\\\",\\\"env\\\":{\\\"SHELL\\\":\\\"/bin/bash\\\"}}\\n[0.112,\\\"o\\\",\\\" 23:15:00 up 12 days,  3:04,  1 user,  load average: 0.08, 0.03, 0.01\\\\r\\\\n\\\"]\\n\",\"ProgramFinishDatetime\":\"2025-02-27T23:15:01Z\",\"ProgramID\":\"p-6f1c2a9e-0d3b-4e8a-9c71-2b5d8e4f0a13\",\"ProgramStartDatetime\":\"2025-02-27T23:15:00Z\",\"ProgramType\":\"exec\",\"ServerAddress\":\"81.2.69.142\",\"SessionFinishDatetime\":\"2025-02-27T23:15:02Z\",\"SessionID\":\"s-3e9b7d21-8c4f-4a6e-b1d0-5f2a9c7e1b34\",\"SessionStartDatetime\":\"2025-02-27T23:14:58Z\",\"TargetID\":\"t-0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d\",\"UserEmail\":\"user@example.com\",\"UserID\":\"89a1d5c1-2b3e-4f67-8a9b-0c1d2e3f4a5b\",\"Username\":\"ubuntu\"}",
+        "outcome": "success",
         "type": [
             "info"
         ]
