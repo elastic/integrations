@@ -115,13 +115,27 @@ processors:
             }
           }
         }
-        ctx.vulnerability.put('id', cveIds);
-        ctx.vulnerability.put('severity', importance);
-        ctx.vulnerability.put('description', header);
-        ctx.vulnerability.put('description', summary);
-        ctx.rule.put('name', ruleName);
-        ctx.rule.put('reference', ruleRef);
-        ctx.threat.enrichments.indicator.put('reference', threatRef);
+        def cveIdsList = new ArrayList(cveIds);
+        Collections.sort(cveIdsList);
+        def importanceList = new ArrayList(importance);
+        Collections.sort(importanceList);
+        def headerList = new ArrayList(header);
+        Collections.sort(headerList);
+        def summaryList = new ArrayList(summary);
+        Collections.sort(summaryList);
+        def ruleNameList = new ArrayList(ruleName);
+        Collections.sort(ruleNameList);
+        def ruleRefList = new ArrayList(ruleRef);
+        Collections.sort(ruleRefList);
+        def threatRefList = new ArrayList(threatRef);
+        Collections.sort(threatRefList);
+        ctx.vulnerability.put('id', cveIdsList);
+        ctx.vulnerability.put('severity', importanceList);
+        ctx.vulnerability.put('description', headerList);
+        ctx.vulnerability.put('description', summaryList);
+        ctx.rule.put('name', ruleNameList);
+        ctx.rule.put('reference', ruleRefList);
+        ctx.threat.enrichments.indicator.put('reference', threatRefList);
   - rename:
       field: json
       tag: rename_json_to_f5_bigip.log

@@ -74,6 +74,10 @@ processors:
           }
         }
 
+        if (var instanceof Set) {
+          var = new ArrayList(var);
+          Collections.sort(var);
+        }
         ctx.file.put('attributes', var)
       on_failure:
         - append:
@@ -526,6 +530,10 @@ processors:
         if (params.containsKey(type_id.toString())) {
             def type = params.get(type_id.toString());
             var.add(type);
+        }
+        if (var instanceof Set) {
+          var = new ArrayList(var);
+          Collections.sort(var);
         }
         ctx.file.put('type', var);
       on_failure:
