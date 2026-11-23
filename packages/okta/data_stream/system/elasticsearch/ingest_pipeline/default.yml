@@ -471,6 +471,36 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_risk_level_fc64240d
+      field: json.securityContext.risk.level
+      target_field: okta.security_context.risk.level
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      tag: rename_tlsFingerprint_ja4_9ab21073
+      field: json.securityContext.tlsFingerprint.ja4
+      target_field: okta.security_context.tls_fingerprint.ja4
+      ignore_missing: true
+      ignore_failure: true
+  - script:
+      tag: script_userBehaviors_7a9ea601
+      description: Map securityContext.userBehaviors to behavior results keyed by behavior name.
+      lang: painless
+      if: ctx.json?.securityContext?.userBehaviors instanceof List
+      source: |
+        def dst = new HashMap();
+        for (def b: ctx.json.securityContext.userBehaviors) {
+          if (b instanceof Map && b.name instanceof String && b.result instanceof String) {
+            dst[/[ .-]/.matcher(b.name).replaceAll('_')] = b.result;
+          }
+        }
+        if (dst.size() != 0) {
+          if (ctx.okta.security_context == null) {
+            ctx.okta.security_context = new HashMap();
+          }
+          ctx.okta.security_context.user_behaviors = dst;
+        }
+  - rename:
       tag: rename_ipChain_05b272ea
       field: json.request.ipChain
       target_field: okta.request.ip_chain
@@ -579,11 +609,15 @@ processors:
             arr[i].remove("alternateId");
             arr[i]["display_name"] = arr[i]["displayName"];
             arr[i].remove("displayName");
+            // Ensure that all entries in detailEntry.* are strings.
             def de = arr[i].get("detailEntry");
             if (de != null) {
-              de.entrySet().removeIf(entry -> 
-                entry.getKey() != "methodTypeUsed" && 
-                entry.getKey() != "methodUsedVerifiedProperties");
+              for (def e: de.entrySet()) {
+                def v = e.getValue();
+                if (v != null && !(v instanceof String)) {
+                  de[e.getKey()] = Json.dump(v);
+                }
+              }
               if (de.size() == 0) {
                 arr[i].remove("detailEntry");
               }
