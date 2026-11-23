@@ -760,6 +760,16 @@ pr_has_package_related_files() {
     grep -Evf <(grep -Ev '^[[:space:]]*(#|$)' "${SCRIPTS_BUILDKITE_PATH}/non_package_patterns.txt") > /dev/null
 }
 
+# select_shard_packages reads package paths from stdin (one per line) and prints the
+# round-robin slice assigned to shard <index> (0-based) out of <total> shards.
+# Each parallel job computes its slice independently, so the sort order is pinned with
+# LC_ALL=C: a locale-dependent order could put some packages in two shards and others in none.
+select_shard_packages() {
+    local index="$1"
+    local total="$2"
+    { grep -v '^$' || true; } | LC_ALL=C sort | awk -v i="${index}" -v n="${total}" '(NR-1) % n == i'
+}
+
 # is_pr_affected accepts a package path and returns true if the package is affected by the PR
 # it expects that the working directory is the package path to be checked
 # Example:

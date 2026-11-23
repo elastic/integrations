@@ -110,7 +110,7 @@ else
 fi
 
 echo "--- Select packages for ${SHARD_LABEL}"
-PACKAGE_LIST=$(echo "${PACKAGE_LIST}" | grep -v '^$' | sort | awk -v i="${SHARD_INDEX}" -v n="${SHARD_TOTAL}" '(NR-1) % n == i' || true)
+PACKAGE_LIST=$(echo "${PACKAGE_LIST}" | select_shard_packages "${SHARD_INDEX}" "${SHARD_TOTAL}")
 echo "Packages in ${SHARD_LABEL}: $(echo "${PACKAGE_LIST}" | grep -c -v '^$' || true)"
 
 if [[ -z "${PACKAGE_LIST}" ]]; then
