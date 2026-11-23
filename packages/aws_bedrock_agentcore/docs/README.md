@@ -750,7 +750,7 @@ An example event for `code_interpreter_application` looks as following:
 | aws.bedrock_agentcore.code_interpreter.request_payload.code | Source code submitted for execution in the sandbox. | text |
 | aws.bedrock_agentcore.code_interpreter.request_payload.content.blob | Base64-encoded binary file contents for a write block. | keyword |
 | aws.bedrock_agentcore.code_interpreter.request_payload.content.path | Target file path for a write block. | keyword |
-| aws.bedrock_agentcore.code_interpreter.request_payload.content.text | File contents for a write block. | wildcard |
+| aws.bedrock_agentcore.code_interpreter.request_payload.content.text | File contents for a write block. | text |
 | aws.bedrock_agentcore.code_interpreter.request_payload.directory_path | Directory path targeted by a file listing operation. | keyword |
 | aws.bedrock_agentcore.code_interpreter.request_payload.language | Programming language of the submitted code. | keyword |
 | aws.bedrock_agentcore.code_interpreter.request_payload.paths | File paths targeted by a file operation. | keyword |
@@ -764,11 +764,11 @@ An example event for `code_interpreter_application` looks as following:
 | aws.bedrock_agentcore.code_interpreter.response_payload.content.path | File path when returned as part of a content block. | keyword |
 | aws.bedrock_agentcore.code_interpreter.response_payload.content.resource.blob | Base64-encoded binary contents of the embedded resource. | keyword |
 | aws.bedrock_agentcore.code_interpreter.response_payload.content.resource.mimeType | MIME type of the embedded resource. | keyword |
-| aws.bedrock_agentcore.code_interpreter.response_payload.content.resource.text | Text or file contents of the embedded resource. | wildcard |
+| aws.bedrock_agentcore.code_interpreter.response_payload.content.resource.text | Text or file contents of the embedded resource. | text |
 | aws.bedrock_agentcore.code_interpreter.response_payload.content.resource.type | Embedded resource type (for example text). | keyword |
 | aws.bedrock_agentcore.code_interpreter.response_payload.content.resource.uri | URI of the embedded resource. | keyword |
 | aws.bedrock_agentcore.code_interpreter.response_payload.content.size | Size in bytes of the content block. | long |
-| aws.bedrock_agentcore.code_interpreter.response_payload.content.text | Text payload when the block type is text. | wildcard |
+| aws.bedrock_agentcore.code_interpreter.response_payload.content.text | Text payload when the block type is text. | text |
 | aws.bedrock_agentcore.code_interpreter.response_payload.content.type | Content block type (for example text, resource, or resource_link). | keyword |
 | aws.bedrock_agentcore.code_interpreter.response_payload.content.uri | Resource URI for resource_link blocks. | keyword |
 | aws.bedrock_agentcore.code_interpreter.response_payload.execution_time | Execution time reported by the Code Interpreter. | double |
