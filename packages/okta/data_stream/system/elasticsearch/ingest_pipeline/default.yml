@@ -308,6 +308,12 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_postalCode_7df79887
+      field: json.client.geographicalContext.postalCode
+      target_field: client.geo.postal_code
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
       tag: rename_id_2_6a1cb3a5
       field: json.client.id
       target_field: okta.client.id
@@ -762,6 +768,31 @@ processors:
       value: "{{{destination.ip}}}"
       allow_duplicates: false
       if: ctx.destination?.ip != null
+  - script:
+      tag: script_ip_chain_related_ip_93c380f2
+      lang: painless
+      description: Add the IP addresses in okta.request.ip_chain to related.ip.
+      if: ctx.okta?.request?.ip_chain instanceof List
+      source: |
+        for (def hop : ctx.okta.request.ip_chain) {
+          if (!(hop instanceof Map) || !(hop.ip instanceof String) || hop.ip == "") {
+            continue;
+          }
+          if (!(ctx.related instanceof Map)) {
+            ctx.related = new HashMap();
+          }
+          def ips = ctx.related.ip;
+          if (ips == null) {
+            ips = new ArrayList();
+            ctx.related.ip = ips;
+          } else if (!(ips instanceof List)) {
+            ips = new ArrayList([ips]);
+            ctx.related.ip = ips;
+          }
+          if (!ips.contains(hop.ip)) {
+            ips.add(hop.ip);
+          }
+        }
   - remove:
       tag: remove_json_94dc55cd
       field: json

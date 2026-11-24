@@ -1,0 +1,88 @@
+title: "FortiGate firewall logs"
+type: logs
+streams:
+  - input: tcp
+    title: "FortiGate logs (TCP)"
+    description: Collect RFC 6587 octet-counted or newline-delimited FortiGate syslog messages over TCP.
+    template_path: tcp.yml.hbs
+    vars:
+      - name: tz_offset
+        type: text
+        title: Default timezone
+        description: Timezone used when a FortiGate event has no timezone, for example +09:00 or UTC. Defaults to UTC.
+        required: false
+        show_user: true
+      - name: host
+        type: text
+        title: Listen address
+        description: Address and port on which Elastic Agent listens for FortiGate TCP syslog.
+        default: 0.0.0.0:9514
+        required: true
+      - name: tags
+        type: text
+        title: Tags
+        description: Additional event tags. Use synthetic only for a dedicated test input. The forwarded tag is always included.
+        multi: true
+        show_user: true
+        default: []
+      - name: preserve_original_event
+        required: false
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: Processors are applied by the agent before the logs are parsed.
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        multi: false
+        required: false
+        show_user: false
+        description: SSL configuration for secure TCP connections.
+  - input: udp
+    title: "FortiGate logs (UDP)"
+    description: Collect newline-delimited FortiGate syslog messages over UDP.
+    template_path: udp.yml.hbs
+    vars:
+      - name: tz_offset
+        type: text
+        title: Default timezone
+        description: Timezone used when a FortiGate event has no timezone, for example +09:00 or UTC. Defaults to UTC.
+        required: false
+        show_user: true
+      - name: host
+        type: text
+        title: Listen address
+        description: Address and port on which Elastic Agent listens for FortiGate UDP syslog.
+        default: 0.0.0.0:9514
+        required: true
+      - name: tags
+        type: text
+        title: Tags
+        description: Additional event tags. Use synthetic only for a dedicated test input. The forwarded tag is always included.
+        multi: true
+        show_user: true
+        default: []
+      - name: preserve_original_event
+        required: false
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: Processors are applied by the agent before the logs are parsed.
