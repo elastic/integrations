@@ -6,6 +6,7 @@ processors:
       tag: set_ecs_version
       value: 8.11.0
   - rename:
+      tag: rename_message_884825fd
       field: message
       target_field: event.original
       ignore_missing: true
@@ -16,28 +17,34 @@ processors:
       tag: remove_message
       if: ctx.event?.original != null
   - json:
+      tag: json_event_original_03a603e3
       field: event.original
       target_field: netbox.ip
   - gsub:
+      tag: gsub_netbox_ip_address_c2ad1a95
       field: netbox.ip.address
       pattern: "/\\d+$"
       replacement: ""
       ignore_missing: true
   - append:
+      tag: append_related_ip_db0c0eed
       field: related.ip
       value: "{{{netbox.ip.address}}}"
       allow_duplicates: false
   - gsub:
+      tag: gsub_netbox_ip_nat_inside_address_74a3b546
       field: netbox.ip.nat_inside.address
       pattern: "/\\d+$"
       replacement: ""
       ignore_missing: true
   - append:
+      tag: append_related_ip_8cf5b64a
       field: related.ip
       value: "{{{netbox.ip.nat_inside.address}}}"
       if: ctx.netbox?.ip?.nat_inside?.address != null
       allow_duplicates: false
   - foreach:
+      tag: foreach_netbox_ip_nat_outside_396ec174
       field: netbox.ip.nat_outside
       ignore_missing: true
       processor:
@@ -47,6 +54,7 @@ processors:
           replacement: ""
           ignore_missing: true
   - foreach:
+      tag: foreach_netbox_ip_nat_outside_b2ca4c37
       field: netbox.ip.nat_outside
       ignore_missing: true
       processor:
@@ -56,60 +64,74 @@ processors:
           if: ctx._ingest?._value != null
           allow_duplicates: false
   - rename:
+      tag: rename_netbox_ip_url_825e13a4
       field: netbox.ip.url
       target_field: netbox.url
       ignore_missing: true
   - rename:
+      tag: rename_netbox_ip_display_url_6499639b
       field: netbox.ip.display_url
       target_field: netbox.display_url
       ignore_missing: true
   - rename:
+      tag: rename_netbox_ip_display_69e7c7cb
       field: netbox.ip.display
       target_field: netbox.display
       ignore_missing: true
   - rename:
+      tag: rename_netbox_ip_comments_edc72232
       field: netbox.ip.comments
       target_field: netbox.comments
       ignore_missing: true
   - rename:
+      tag: rename_netbox_ip_created_a4f3d322
       field: netbox.ip.created
       target_field: netbox.created
       ignore_missing: true
   - rename:
+      tag: rename_netbox_ip_last_updated_0062ae21
       field: netbox.ip.last_updated
       target_field: netbox.last_updated
       ignore_missing: true
   - rename:
+      tag: rename_netbox_ip_custom_fields_90c35d83
       field: netbox.ip.custom_fields
       target_field: netbox.custom_fields
       ignore_missing: true
   - rename:
+      tag: rename_netbox_ip_tags_fca8c3b5
       field: netbox.ip.tags
       target_field: netbox.tags
       ignore_missing: true
   - rename:
+      tag: rename_netbox_ip_tenant_7d7503a6
       field: netbox.ip.tenant
       target_field: netbox.tenant
       ignore_missing: true
   - set:
+      tag: set_event_kind_fe4c7b0c
       field: event.kind
       value: asset
   - append:
+      tag: append_event_category_d90fee92
       field: event.category
       value: [configuration]
   - date:
+      tag: date_netbox_created_4756945d
       field: netbox.created
       target_field: netbox.created
       if: ctx.netbox?.created != null
       formats:
         - ISO8601
   - date:
+      tag: date_netbox_last_updated_beee5bcf
       field: netbox.last_updated
       target_field: netbox.last_updated
       if: ctx.netbox?.last_updated != null
       formats:
         - ISO8601
   - script:
+      tag: script_b6239a9b
       description: Drops null/empty values recursively.
       lang: painless
       source: |
