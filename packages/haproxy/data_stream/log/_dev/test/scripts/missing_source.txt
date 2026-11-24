@@ -1,28 +1,44 @@
-# Non-connection logs leave source absent after grok fails. Script tests allow
-# checking this failure path while preserving the original parsing errors.
+# Non-connection logs leave source absent after grok fails, and upstream inputs
+# may also carry an explicit null source. Script tests verify that both append
+# conditions skip safely (even when destination.ip is present), preserving the
+# original parsing errors and allowing downstream cleanup to run.
+
 [!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
 
 use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
 install_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+! stderr .
+
 simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default events.json
+! stderr .
+cp stdout got.json
 
-stdout 'Provided Grok expressions do not match field value'
-stdout 'haproxy.request_date'
-stdout '"kind": "event"'
-! stdout 'null def reference'
-! stdout '"category":'
-! stdout '"type":'
+exec jq -s 'length' got.json
+stdout '^2$'
 
-# Both append conditions must skip safely, allowing downstream cleanup to run.
-# The final script also removes the explicitly null source in the second event.
-! stdout '"_conf":'
-! stdout '"source":'
+# Original grok and date errors are preserved on every document, with no Painless NPE.
+exec jq -s 'all((.error.message | tostring | contains("Provided Grok expressions do not match field value")) and (.error.message | tostring | contains("haproxy.request_date")) and (.error.message | tostring | contains("null def reference") | not))' got.json
+stdout '^true$'
+
+# Both append conditions skip safely despite destination.ip being present.
+exec jq -s 'all(.event.kind == "event" and .related.ip == ["10.0.0.1"] and (.event | has("category") | not) and (.event | has("type") | not))' got.json
+stdout '^true$'
+
+# Downstream cleanup removes _conf and strips the explicit null source field.
+exec jq -s 'all((has("_conf") | not) and (has("source") | not))' got.json
+stdout '^true$'
 
 uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+! stderr .
 
 -- events.json --
 {
   "message": "Nov 11 12:00:00 localhost haproxy[1234]: Proxy http-in started.",
+  "destination": {
+    "ip": "10.0.0.1"
+  },
   "_conf": {
     "tz_offset": "+0000"
   }
@@ -30,6 +46,9 @@ uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
 {
   "message": "Nov 11 12:00:00 localhost haproxy[1234]: Proxy http-in started.",
   "source": null,
+  "destination": {
+    "ip": "10.0.0.1"
+  },
   "_conf": {
     "tz_offset": "+0000"
   }
