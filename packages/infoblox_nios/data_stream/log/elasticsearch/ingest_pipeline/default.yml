@@ -12,10 +12,16 @@ processors:
   - grok:
       field: event.original
       patterns:
-        - "^<%{NUMBER:log.syslog.priority:long}>(?:%{SYSLOGTIMESTAMP:event.created}|%{TIMESTAMP_ISO8601:event.created})\\s+(?:%{IP:_tmp.ip}\\s+)?%{NOTSPACE:host.domain}\\s+%{IP:_tmp.host.ip}\\s+%{DATA:infoblox_nios.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:message}$"
-        - "^<%{NUMBER:log.syslog.priority:long}>(?:%{SYSLOGTIMESTAMP:event.created}|%{TIMESTAMP_ISO8601:event.created})\\s+(%{IP:_tmp.host.ip}|%{NOTSPACE:host.domain})\\s+%{DATA:infoblox_nios.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:message}$"
+        - "^<%{NUMBER:log.syslog.priority:long}>(?:%{SYSLOGTIMESTAMP:event.created}|%{TIMESTAMP_ISO8601:event.created})\\s+(?:%{IP:_tmp.ip}\\s+)?%{NOTSPACE:host.name}\\s+%{IP:_tmp.host.ip}\\s+%{DATA:infoblox_nios.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:message}$"
+        - "^<%{NUMBER:log.syslog.priority:long}>(?:%{SYSLOGTIMESTAMP:event.created}|%{TIMESTAMP_ISO8601:event.created})\\s+(%{IP:_tmp.host.ip}|%{NOTSPACE:host.name})\\s+%{DATA:infoblox_nios.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:message}$"
         - "^<%{NUMBER:log.syslog.priority:long}>(?:%{SYSLOGTIMESTAMP:event.created}|%{TIMESTAMP_ISO8601:event.created})\\s+%{IP:_tmp.host.ip}\\s+%{GREEDYDATA:message}$"
         - "^%{GREEDYDATA:message}$"
+  # The syslog header carries the appliance host name (usually its FQDN),
+  # which belongs in host.name. ECS recommends the lowercase FQDN.
+  - lowercase:
+      field: host.name
+      tag: lowercase_host_name
+      ignore_missing: true
   - rename:
       field: _conf.tz_offset
       target_field: event.timezone
@@ -146,8 +152,9 @@ processors:
       ignore_failure: true
   - append:
       field: related.hosts
-      value: '{{{host.domain}}}'
-      if: ctx.host?.domain != null
+      tag: append_host_name_to_related_hosts
+      value: '{{{host.name}}}'
+      if: ctx.host?.name != null
       allow_duplicates: false
       ignore_failure: true
   - append:
