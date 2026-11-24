@@ -2,89 +2,112 @@
 description: Pipeline for processing Apache Tomcat Session metrics.
 processors:
   - set:
+      tag: set_ecs_version_89eb3494
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_kind_4194046b
       field: event.kind
       value: metric
   - set:
+      tag: set_event_module_5c67f4ef
       field: event.module
       value: apache_tomcat
   - set:
+      tag: set_event_type_5e1b0552
       field: event.type
       value: [info]
   - set:
+      tag: set_event_category_6a2219da
       field: event.category
       value: [web]
   - set:
+      tag: set_apache_tomcat_session_persist_authentication_b69294a6
       field: apache_tomcat.session.persist_authentication
       value: true
       if: ctx.prometheus?.metrics?.Catalina_Manager_persistAuthentication == 1
   - set:
+      tag: set_apache_tomcat_session_persist_authentication_272a4d71
       field: apache_tomcat.session.persist_authentication
       value: false
       if: ctx.prometheus?.metrics?.Catalina_Manager_persistAuthentication == 0
   - rename:
+      tag: rename_prometheus_labels_context_78f94398
       field: prometheus.labels.context
       target_field: apache_tomcat.session.application_name
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_Manager_maxActiveSessions_d859d66d
       field: prometheus.metrics.Catalina_Manager_maxActiveSessions
       target_field: apache_tomcat.session.active.allowed.max
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_Manager_maxActive_0a299c71
       field: prometheus.metrics.Catalina_Manager_maxActive
       target_field: apache_tomcat.session.active.max
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_Manager_activeSessions_6f96c24b
       field: prometheus.metrics.Catalina_Manager_activeSessions
       target_field: apache_tomcat.session.active.total
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_Manager_sessionAverageAliveTime_13f03640
       field: prometheus.metrics.Catalina_Manager_sessionAverageAliveTime
       target_field: apache_tomcat.session.alive_time.avg
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_Manager_sessionMaxAliveTime_2488671f
       field: prometheus.metrics.Catalina_Manager_sessionMaxAliveTime
       target_field: apache_tomcat.session.alive_time.max
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_Manager_sessionCreateRate_a568ac99
       field: prometheus.metrics.Catalina_Manager_sessionCreateRate
       target_field: apache_tomcat.session.create.rate
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_Manager_sessionCounter_cccd77e5
       field: prometheus.metrics.Catalina_Manager_sessionCounter
       target_field: apache_tomcat.session.create.total
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_Manager_duplicates_3d827d1a
       field: prometheus.metrics.Catalina_Manager_duplicates
       target_field: apache_tomcat.session.duplicate_ids.count
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_Manager_sessionExpireRate_bd80decc
       field: prometheus.metrics.Catalina_Manager_sessionExpireRate
       target_field: apache_tomcat.session.expire.rate
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_Manager_expiredSessions_db872bb9
       field: prometheus.metrics.Catalina_Manager_expiredSessions
       target_field: apache_tomcat.session.expire.total
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_Manager_rejectedSessions_b796fa30
       field: prometheus.metrics.Catalina_Manager_rejectedSessions
       target_field: apache_tomcat.session.rejected.count
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_Manager_processExpiresFrequency_b8921b2a
       field: prometheus.metrics.Catalina_Manager_processExpiresFrequency
       target_field: apache_tomcat.session.process_expires_frequency.count
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_Manager_processingTime_207c4f0b
       field: prometheus.metrics.Catalina_Manager_processingTime
       target_field: apache_tomcat.session.processing_time
       ignore_missing: true
   - remove:
+      tag: remove_prometheus_b2a1fb7e
       field:
         - prometheus
       ignore_missing: true
   - script:
+      tag: script_8af65738
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -103,9 +126,14 @@ processors:
           drop(ctx);
 on_failure:
   - set:
-      field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
-  - append:
+      tag: set_event_kind_d44da628
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
+  - append:
+      tag: append_error_message_3961fa65
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

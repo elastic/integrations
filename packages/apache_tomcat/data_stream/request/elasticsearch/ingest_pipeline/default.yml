@@ -2,18 +2,23 @@
 description: Pipeline for processing Apache Tomcat Request metrics.
 processors:
   - set:
+      tag: set_ecs_version_d5e11bc5
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_kind_67926da7
       field: event.kind
       value: metric
   - set:
+      tag: set_event_module_481bdb94
       field: event.module
       value: apache_tomcat
   - set:
+      tag: set_event_type_af3b51a9
       field: event.type
       value: [info]
   - set:
+      tag: set_event_category_15e3d136
       field: event.category
       value: [web]
   - dissect:
@@ -23,37 +28,46 @@ processors:
       ignore_missing: true
       on_failure:
       - append:
+          tag: append_error_message_17b305db
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_prometheus_metrics_Catalina_GlobalRequestProcessor_requestCount_34e2db78
       field: prometheus.metrics.Catalina_GlobalRequestProcessor_requestCount
       target_field: apache_tomcat.request.count
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_GlobalRequestProcessor_errorCount_804b3b8a
       field: prometheus.metrics.Catalina_GlobalRequestProcessor_errorCount
       target_field: apache_tomcat.request.error.count
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_GlobalRequestProcessor_maxTime_eb04a3f2
       field: prometheus.metrics.Catalina_GlobalRequestProcessor_maxTime
       target_field: apache_tomcat.request.time.max
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_GlobalRequestProcessor_bytesReceived_fc7b3b34
       field: prometheus.metrics.Catalina_GlobalRequestProcessor_bytesReceived
       target_field: apache_tomcat.request.received.bytes
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_GlobalRequestProcessor_bytesSent_558fa4e3
       field: prometheus.metrics.Catalina_GlobalRequestProcessor_bytesSent
       target_field: apache_tomcat.request.sent.bytes
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_GlobalRequestProcessor_processingTime_ea759042
       field: prometheus.metrics.Catalina_GlobalRequestProcessor_processingTime
       target_field: apache_tomcat.request.time.total
       ignore_missing: true
   - remove:
+      tag: remove_prometheus_7b7c3ba0
       field:
       - prometheus
       ignore_missing: true
   - script:
+      tag: script_dfced4ce
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -71,14 +85,20 @@ processors:
           }
           drop(ctx);
   - set:
+      tag: set_event_kind_497c7db4
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
 on_failure:
   - set:
-      field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
-  - append:
+      tag: set_event_kind_53f09e0b
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
+  - append:
+      tag: append_error_message_a1ff6a93
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
