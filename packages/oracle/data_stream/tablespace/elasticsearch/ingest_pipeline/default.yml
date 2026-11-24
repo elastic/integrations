@@ -2,98 +2,126 @@
 description: Pipeline for processing oracle tablespace metrics
 processors:
     - remove:
+        tag: remove_sql_driver_cc81158e
         field: sql.driver
         ignore_missing: true
         ignore_failure: true
     - rename:
+        tag: rename_sql_3ee789fa
         field: sql
         target_field: oracle
         ignore_missing: true
         ignore_failure: true
     - rename:
+        tag: rename_oracle_metrics_d830bd21
         field: oracle.metrics
         target_field: oracle.tablespace
         ignore_missing: true
     - rename:
+        tag: rename_oracle_tablespace_file_id_a901fd98
         field: oracle.tablespace.file_id
         target_field: oracle.tablespace.data_file.id
         ignore_failure: true
         ignore_missing: true
     - rename:
+        tag: rename_oracle_tablespace_file_name_fa021297
         field: oracle.tablespace.file_name
         target_field: oracle.tablespace.data_file.name
         ignore_failure: true
         ignore_missing: true
     - rename:
+        tag: rename_oracle_tablespace_status_a6fd2fdd
         field: oracle.tablespace.status
         target_field: oracle.tablespace.data_file.status
         ignore_failure: true
         ignore_missing: true
     - rename:
+        tag: rename_oracle_tablespace_online_status_3a3e7f5d
         field: oracle.tablespace.online_status
         target_field: oracle.tablespace.data_file.online_status
         ignore_failure: true
         ignore_missing: true
     - rename:
+        tag: rename_oracle_tablespace_bytes_e20bd578
         field: oracle.tablespace.bytes
         target_field: oracle.tablespace.data_file.size.bytes
         ignore_failure: true
         ignore_missing: true
     - rename:
+        tag: rename_oracle_tablespace_maxbytes_7e058069
         field: oracle.tablespace.maxbytes
         target_field: oracle.tablespace.data_file.size.max.bytes
         ignore_failure: true
         ignore_missing: true
     - rename:
+        tag: rename_2cd4181b
         field : oracle.tablespace.user_bytes
         target_field: oracle.tablespace.data_file.size.free.bytes
         ignore_failure: true
         ignore_missing: true
     - rename:
+        tag: rename_8a1ccf57
         field : oracle.tablespace.tb_size_free
         target_field: oracle.tablespace.space.free.bytes
         ignore_failure: true
         ignore_missing: true
     - rename:
+        tag: rename_oracle_tablespace_tb_size_used_cac3d674
         field: oracle.tablespace.tb_size_used
         target_field: oracle.tablespace.space.used.bytes
         ignore_failure: true
         ignore_missing: true
     - rename:
+        tag: rename_oracle_tablespace_tablespace_name_513c3367
         field: oracle.tablespace.tablespace_name
         target_field: oracle.tablespace.name
         ignore_failure: true
         ignore_missing: true
     - rename:
+        tag: rename_oracle_tablespace_total_bytes_2339eb2f
         field: oracle.tablespace.total_bytes
         target_field: oracle.tablespace.space.total.bytes
         ignore_failure: true
         ignore_missing: true
     - rename:
+        tag: rename_oracle_tablespace_tb_extended_total_8ee7f269
         field: oracle.tablespace.tb_extended_total
         target_field: oracle.tablespace.extended_space.total.bytes
         ignore_failure: true
         ignore_missing: true
     - rename:
+        tag: rename_oracle_tablespace_tb_extended_free_186f5ed8
         field: oracle.tablespace.tb_extended_free
         target_field: oracle.tablespace.extended_space.free.bytes
         ignore_failure: true
         ignore_missing: true
     - rename:
+        tag: rename_oracle_tablespace_tb_extended_used_a093d2c1
         field: oracle.tablespace.tb_extended_used
         target_field: oracle.tablespace.extended_space.used.bytes
         ignore_failure: true
         ignore_missing: true
     - fingerprint:
+        tag: fingerprint_6aceed13
         fields: ["oracle.query"]
         target_field: oracle.tablespace.query_id
         ignore_failure: true
         ignore_missing: true
     - remove:
+        tag: remove_oracle_query_cfaa5f5b
         field: oracle.query
         ignore_missing: true
         ignore_failure: true
 on_failure:
-- set:
-    field: error.message
-    value: "{{ _ingest.on_failure_message }}"
+  - set:
+      tag: set_event_kind_3a52299d
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_d1e2e418
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
