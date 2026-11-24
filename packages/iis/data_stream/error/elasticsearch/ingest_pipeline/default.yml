@@ -2,14 +2,22 @@
 description: Pipeline for parsing IIS error logs. Requires the geoip plugin.
 processors:
   - set:
+      tag: set_ecs_version_406ea18e
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_cafbf77d
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_367cb2bd
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   - grok:
+      tag: grok_event_original_6d8f0703
       field: event.original
       patterns:
       - '%{TIMESTAMP_ISO8601:iis.error.time} %{IPORHOST:source.address} %{NUMBER:source.port:long}
@@ -23,45 +31,55 @@ processors:
         (?:%{NUMBER}|-) (?:-|%{NOTSPACE:iis.error.reason_phrase}) (?:-|%{NOTSPACE:iis.error.queue_name})'
       ignore_missing: true
   - uri_parts:
+      tag: uri_parts_tmp_url_orig_98788d70
       field: _tmp.url_orig
       ignore_failure: true
   - set:
+      tag: set_url_original_9abf646b
       field: url.original
       value: "{{{_tmp.url_orig}}}"
       ignore_failure: true
       if: ctx?._tmp?.url_orig != null && ctx?.url?.original == null
   - remove:
+      tag: remove_tmp_fbff9d28
       field: 
         - _tmp
       ignore_missing: true
   - rename:
+      tag: rename_timestamp_5af1ca99
       field: '@timestamp'
       target_field: event.created
       ignore_missing: true
   - date:
+      tag: date_iis_error_time_40042b13
       field: iis.error.time
       target_field: '@timestamp'
       formats:
       - yyyy-MM-dd HH:mm:ss
   - remove:
+      tag: remove_iis_error_time_72356e12
       field: iis.error.time
   - grok:
+      tag: grok_destination_address_0ab56da0
       field: destination.address
       patterns:
       - '%{NOZONEIP:destination.ip}'
       pattern_definitions:
         NOZONEIP: '[^%]*'
   - grok:
+      tag: grok_source_address_68399c93
       field: source.address
       patterns:
       - '%{NOZONEIP:source.ip}'
       pattern_definitions:
         NOZONEIP: '[^%]*'
   - geoip:
+      tag: geoip_source_ip_865af390
       field: source.ip
       target_field: source.geo
       ignore_failure: true
   - geoip:
+      tag: geoip_source_ip_8b919aca
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -70,44 +88,55 @@ processors:
       - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_dea70664
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_0d14c7f3
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - set:
+      tag: set_event_kind_00758270
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_86baf486
       field: event.category
       value: web
   - append:
+      tag: append_event_category_b2dab754
       field: event.category
       value: network
       if: "ctx?.source?.ip != null && ctx?.destination?.ip != null"
   - append:
+      tag: append_event_type_decd3d05
       field: event.type
       value: connection
       if: "ctx?.source?.ip != null && ctx?.destination?.ip != null"
   - append:
+      tag: append_related_ip_d14caab0
       field: related.ip
       value: "{{source.ip}}"
       if: "ctx?.source?.ip != null"
   - append:
+      tag: append_related_ip_5ea05afb
       field: related.ip
       value: "{{destination.ip}}"
       if: "ctx?.destination?.ip != null"
   - set:
+      tag: set_event_outcome_effee299
       field: event.outcome
       value: success
       if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code < 400"
   - set:
+      tag: set_event_outcome_f4b52e1e
       field: event.outcome
       value: failure
       if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code >= 400"
   - script:
+      tag: script_658a32cf
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -133,5 +162,14 @@ processors:
         handleMap(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_612f3c55
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_94d5ee02
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
