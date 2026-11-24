@@ -1,0 +1,17 @@
+# Primary scenario: the strict / storage-conscious default configuration.
+# Covers all three promotion paths + the drop path + keep_engine_results=false + no preserve tag:
+#   doc 1 VERDICT_MALICIOUS           -> promoted (verdict rule); also exercises PE-section coercion
+#   doc 2 VERDICT_SUSPICIOUS score 75 -> promoted (suspicious + threat_score >= 70)   [hand-edited]
+#   doc 3 VERDICT_SUSPICIOUS score 50 -> NOT promoted (< 70), malicious 0 -> dropped  [hand-edited]
+#   doc 4 VERDICT_UNDETECTED mal 11   -> promoted (malicious >= 5 fallback)
+#   doc 5 VERDICT_UNDETECTED mal 0    -> NOT promoted -> dropped
+fields:
+  tags:
+    - forwarded
+  _conf:
+    drop_below_threshold: true
+    keep_engine_results: false
+    indicator_verdicts:
+      - VERDICT_MALICIOUS
+    indicator_min_threat_score: 70
+    indicator_min_malicious_detections: 5

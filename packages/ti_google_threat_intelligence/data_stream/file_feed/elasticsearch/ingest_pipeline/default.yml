@@ -1,0 +1,3435 @@
+---
+description: Pipeline for processing file_feed logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.17.0
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      if: ctx.event?.original == null
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message.
+  - remove:
+      field:
+        - message
+      tag: remove_message
+      if: ctx.event?.original != null
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: gti.file_feed
+  - script:
+      tag: sanitize_json_keys
+      lang: painless
+      description: >-
+        Sanitize gti.file_feed keys (strip '#', '~' -> 'tilde', non [A-Za-z0-9_] runs -> '_'),
+        recursively, so the generated processors resolve. Case preserved.
+      if: ctx.gti?.file_feed instanceof Map
+      source: |-
+        String norm(String k) {
+          String t = /#/.matcher(k).replaceAll('');
+          t = /~/.matcher(t).replaceAll('tilde');
+          return /[^A-Za-z0-9_]+/.matcher(t).replaceAll('_');
+        }
+        void walk(def obj) {
+          if (obj instanceof Map) {
+            Map m = (Map) obj;
+            Map renames = [:];
+            for (def e : m.entrySet()) {
+              walk(e.getValue());
+              if (e.getKey() instanceof String) {
+                String nk = norm((String) e.getKey());
+                if (!nk.equals(e.getKey())) { renames[e.getKey()] = nk; }
+              }
+            }
+            for (def r : renames.entrySet()) {
+              m.put(r.getValue(), m.remove(r.getKey()));
+            }
+          } else if (obj instanceof List) {
+            for (def item : (List) obj) { walk(item); }
+          }
+        }
+        walk(ctx.gti.file_feed);
+  - script:
+      tag: prune_relationship_navigation
+      lang: painless
+      description: Keep only `data` under each gti.file_feed.relationships.<x>.
+      if: ctx.gti?.file_feed?.relationships instanceof Map
+      source: |-
+        for (def e : ctx.gti.file_feed.relationships.entrySet()) {
+          if (e.getValue() instanceof Map) {
+            ((Map) e.getValue()).keySet().removeIf(k -> !k.equals('data'));
+          }
+        }
+  - script:
+      tag: gti_file_feed_indicator_gating
+      lang: painless
+      description: >-
+        Decide indicator promotion and storage drop from configurable thresholds injected by the
+        integration settings (ctx._conf). Defaults follow the GTI team recommendations:
+        verdict in indicator_verdicts (default VERDICT_MALICIOUS), or VERDICT_SUSPICIOUS with
+        threat_score >= indicator_min_threat_score (default 70), or last_analysis_stats.malicious
+        >= indicator_min_malicious_detections (default 5).
+      source: |-
+        def conf = ctx._conf instanceof Map ? ctx._conf : [:];
+        def verdicts = conf.indicator_verdicts instanceof List && conf.indicator_verdicts.size() > 0 ? conf.indicator_verdicts : ['VERDICT_MALICIOUS'];
+        def minScore = conf.indicator_min_threat_score != null ? conf.indicator_min_threat_score : 70;
+        def minMal = conf.indicator_min_malicious_detections != null ? conf.indicator_min_malicious_detections : 5;
+        def dropBelow = conf.drop_below_threshold != null ? conf.drop_below_threshold : true;
+        def attrs = ctx.gti?.file_feed?.attributes;
+        boolean ind = false;
+        if (attrs != null) {
+          def v = attrs.gti_assessment != null && attrs.gti_assessment.verdict != null ? attrs.gti_assessment.verdict.value : null;
+          def score = attrs.gti_assessment != null && attrs.gti_assessment.threat_score != null ? attrs.gti_assessment.threat_score.value : null;
+          def mal = attrs.last_analysis_stats != null ? attrs.last_analysis_stats.malicious : null;
+          if (v != null && verdicts.contains(v)) { ind = true; }
+          if (!ind && v == 'VERDICT_SUSPICIOUS' && score != null && score >= minScore) { ind = true; }
+          if (!ind && mal != null && mal >= minMal) { ind = true; }
+        }
+        ctx._is_indicator = ind;
+        boolean drop = false;
+        if (!ind && dropBelow) { drop = true; }
+        if (!drop && conf.type_tags_include instanceof List && conf.type_tags_include.size() > 0) {
+          def tt = attrs != null ? attrs.type_tag : null;
+          if (tt == null || !conf.type_tags_include.contains(tt)) { drop = true; }
+        }
+        if (!drop && conf.tags_exclude instanceof List && conf.tags_exclude.size() > 0 && attrs != null && attrs.tags instanceof List) {
+          for (t in attrs.tags) { if (conf.tags_exclude.contains(t)) { drop = true; break; } }
+        }
+        ctx._should_drop = drop;
+  - drop:
+      tag: drop_filtered_file_feed_records
+      if: ctx._should_drop == true
+  # Event timestamp from last_modification_date (the sheet maps both @timestamp and
+  # threat.indicator.modified_at in one cell, which the generator cannot split).
+  - date:
+      field: gti.file_feed.attributes.last_modification_date
+      tag: set_@timestamp_from_last_modification_date
+      target_field: '@timestamp'
+      formats:
+        - UNIX
+        - ISO8601
+      if: ctx.gti?.file_feed?.attributes?.last_modification_date != null && ctx.gti.file_feed.attributes.last_modification_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # related.hosts + related.ip from the IDS results. crowdsourced_ids_results is an ARRAY of rule
+  # hits, and each hit's alert_context is itself an ARRAY of context objects (hostname/src_ip/
+  # dest_ip/url). A mustache/dotted path cannot walk a list-of-lists, so collect in painless.
+  - script:
+      tag: enrich_related_from_crowdsourced_ids_results
+      lang: painless
+      if: ctx.gti?.file_feed?.attributes?.crowdsourced_ids_results instanceof List
+      description: >-
+        Collect alert_context hostnames into related.hosts and src/dest IPs into related.ip from the
+        nested crowdsourced_ids_results[].alert_context[] arrays (deduplicated).
+      source: |-
+        def hosts = new ArrayList();
+        def ips = new ArrayList();
+        for (def hit : ctx.gti.file_feed.attributes.crowdsourced_ids_results) {
+          if (!(hit instanceof Map)) { continue; }
+          def acs = hit.get('alert_context');
+          if (!(acs instanceof List)) { continue; }
+          for (def ac : acs) {
+            if (!(ac instanceof Map)) { continue; }
+            def h = ac.get('hostname');
+            if (h != null && !hosts.contains(h)) { hosts.add(h); }
+            def dip = ac.get('dest_ip');
+            if (dip != null && !ips.contains(dip)) { ips.add(dip); }
+            def sip = ac.get('src_ip');
+            if (sip != null && !ips.contains(sip)) { ips.add(sip); }
+          }
+        }
+        if (!hosts.isEmpty()) {
+          if (!(ctx.related instanceof Map)) { ctx.related = new HashMap(); }
+          if (!(ctx.related.hosts instanceof List)) { ctx.related.hosts = new ArrayList(); }
+          for (def h : hosts) { if (!ctx.related.hosts.contains(h)) { ctx.related.hosts.add(h); } }
+        }
+        if (!ips.isEmpty()) {
+          if (!(ctx.related instanceof Map)) { ctx.related = new HashMap(); }
+          if (!(ctx.related.ip instanceof List)) { ctx.related.ip = new ArrayList(); }
+          for (def ip : ips) { if (!ctx.related.ip.contains(ip)) { ctx.related.ip.add(ip); } }
+        }
+  # Fingerprint uses the raw id BEFORE the generated duplicate-removal strips gti.file_feed.id.
+  - fingerprint:
+      fields:
+        - gti.file_feed.id
+        - gti.file_feed.attributes.last_modification_date
+      tag: fingerprint_file_feed
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: event.module
+      tag: set_event_module
+      value: ti_google_threat_intelligence
+  - set:
+      field: event.dataset
+      tag: set_event_dataset
+      value: ti_google_threat_intelligence.file_feed
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: enrichment
+  - append:
+      field: event.category
+      tag: append_threat_into_event_category
+      value: threat
+  - append:
+      field: event.type
+      tag: append_indicator_into_event_type
+      value: indicator
+  - append:
+      field: event.type
+      tag: append_info_into_event_type
+      value: info
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Google
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Threat Intelligence
+  - set:
+      field: threat.feed.name
+      tag: set_threat_feed_name
+      value: GTI File Feed
+  - convert:
+      field: gti.file_feed.attributes.androguard.AndroidApplication
+      tag: convert_attributes_androguard_AndroidApplication_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.androguard.AndroidApplicationError
+      tag: convert_attributes_androguard_AndroidApplicationError_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.androguard.RiskIndicator.APK.APK
+      tag: convert_attributes_androguard_RiskIndicator_APK_APK_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.androguard.RiskIndicator.APK.DEX
+      tag: convert_attributes_androguard_RiskIndicator_APK_DEX_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.androguard.RiskIndicator.APK.SHARED_LIBRARIES
+      tag: convert_attributes_androguard_RiskIndicator_APK_SHARED_LIBRARIES_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.androguard.RiskIndicator.APK.ZIP
+      tag: convert_attributes_androguard_RiskIndicator_APK_ZIP_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.androguard.VTAndroidInfo
+      tag: convert_attributes_androguard_VTAndroidInfo_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.hash
+      tag: append_file_feed_attributes_androguard_certificate_thumbprint_into_related_hash
+      if: ctx.gti?.file_feed?.attributes?.androguard?.certificate?.thumbprint != null
+      value: '{{{gti.file_feed.attributes.androguard.certificate.thumbprint}}}'
+      allow_duplicates: false
+  - date:
+      field: gti.file_feed.attributes.androguard.certificate.validfrom
+      tag: date_attributes_androguard_certificate_validfrom
+      if: ctx.gti?.file_feed?.attributes?.androguard?.certificate?.validfrom != null && ctx.gti.file_feed.attributes.androguard.certificate.validfrom != ''
+      target_field: gti.file_feed.attributes.androguard.certificate.validfrom
+      formats:
+        - yyyy-MM-dd HH:mm:ss
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: gti.file_feed.attributes.androguard.certificate.validto
+      tag: date_attributes_androguard_certificate_validto
+      if: ctx.gti?.file_feed?.attributes?.androguard?.certificate?.validto != null && ctx.gti.file_feed.attributes.androguard.certificate.validto != ''
+      target_field: gti.file_feed.attributes.androguard.certificate.validto
+      formats:
+        - yyyy-MM-dd HH:mm:ss
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.hash
+      tag: append_file_feed_attributes_authentihash_into_related_hash
+      if: ctx.gti?.file_feed?.attributes?.authentihash != null
+      value: '{{{gti.file_feed.attributes.authentihash}}}'
+      allow_duplicates: false
+  - date:
+      field: gti.file_feed.attributes.bundle_info.highest_datetime
+      tag: date_attributes_bundle_info_highest_datetime
+      if: ctx.gti?.file_feed?.attributes?.bundle_info?.highest_datetime != null && ctx.gti.file_feed.attributes.bundle_info.highest_datetime != ''
+      target_field: gti.file_feed.attributes.bundle_info.highest_datetime
+      formats:
+        - yyyy-MM-dd HH:mm:ss
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: gti.file_feed.attributes.bundle_info.lowest_datetime
+      tag: date_attributes_bundle_info_lowest_datetime
+      if: ctx.gti?.file_feed?.attributes?.bundle_info?.lowest_datetime != null && ctx.gti.file_feed.attributes.bundle_info.lowest_datetime != ''
+      target_field: gti.file_feed.attributes.bundle_info.lowest_datetime
+      formats:
+        - yyyy-MM-dd HH:mm:ss
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.bundle_info.num_children
+      tag: convert_attributes_bundle_info_num_children_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.bundle_info.uncompressed_size
+      tag: convert_attributes_bundle_info_uncompressed_size_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.hash
+      tag: append_file_feed_attributes_contenthash_into_related_hash
+      if: ctx.gti?.file_feed?.attributes?.contenthash != null
+      value: '{{{gti.file_feed.attributes.contenthash}}}'
+      allow_duplicates: false
+  - date:
+      field: gti.file_feed.attributes.creation_date
+      tag: date_attributes_creation_date
+      if: ctx.gti?.file_feed?.attributes?.creation_date != null && ctx.gti.file_feed.attributes.creation_date != ''
+      target_field: gti.file_feed.attributes.creation_date
+      formats:
+        - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: threat.indicator.file.created
+      tag: set_threat_indicator_file_created_from_file_feed_attributes_creation_date
+      copy_from: gti.file_feed.attributes.creation_date
+      ignore_empty_value: true
+  - foreach:
+      field: gti.file_feed.attributes.crowdsourced_ids_results
+      tag: foreach_attributes_crowdsourced_ids_results_alert_context_dest_ip
+      if: ctx.gti?.file_feed?.attributes?.crowdsourced_ids_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.alert_context
+          tag: foreach_attributes_crowdsourced_ids_results_alert_context_dest_ip
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.dest_ip
+              tag: convert_attributes_crowdsourced_ids_results_alert_context_dest_ip_to_ip
+              type: ip
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field:
+                      - _ingest._value.dest_ip
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.attributes.crowdsourced_ids_results
+      tag: foreach_attributes_crowdsourced_ids_results_alert_context_dest_ip
+      if: ctx.gti?.file_feed?.attributes?.crowdsourced_ids_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.alert_context
+          tag: foreach_attributes_crowdsourced_ids_results_alert_context_dest_ip
+          ignore_missing: true
+          processor:
+            append:
+              field: related.ip
+              tag: append_attributes_crowdsourced_ids_results_alert_context_dest_ip_into_related_ip
+              value: '{{{_ingest._value.dest_ip}}}'
+              allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.attributes.crowdsourced_ids_results
+      tag: foreach_attributes_crowdsourced_ids_results_alert_context_dest_port
+      if: ctx.gti?.file_feed?.attributes?.crowdsourced_ids_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.alert_context
+          tag: foreach_attributes_crowdsourced_ids_results_alert_context_dest_port
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.dest_port
+              tag: convert_attributes_crowdsourced_ids_results_alert_context_dest_port_to_long
+              type: long
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field:
+                      - _ingest._value.dest_port
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.attributes.crowdsourced_ids_results
+      tag: foreach_attributes_crowdsourced_ids_results_alert_context_src_ip
+      if: ctx.gti?.file_feed?.attributes?.crowdsourced_ids_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.alert_context
+          tag: foreach_attributes_crowdsourced_ids_results_alert_context_src_ip
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.src_ip
+              tag: convert_attributes_crowdsourced_ids_results_alert_context_src_ip_to_ip
+              type: ip
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field:
+                      - _ingest._value.src_ip
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.attributes.crowdsourced_ids_results
+      tag: foreach_attributes_crowdsourced_ids_results_alert_context_src_ip
+      if: ctx.gti?.file_feed?.attributes?.crowdsourced_ids_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.alert_context
+          tag: foreach_attributes_crowdsourced_ids_results_alert_context_src_ip
+          ignore_missing: true
+          processor:
+            append:
+              field: related.ip
+              tag: append_attributes_crowdsourced_ids_results_alert_context_src_ip_into_related_ip
+              value: '{{{_ingest._value.src_ip}}}'
+              allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.attributes.crowdsourced_ids_results
+      tag: foreach_attributes_crowdsourced_ids_results_alert_context_src_port
+      if: ctx.gti?.file_feed?.attributes?.crowdsourced_ids_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.alert_context
+          tag: foreach_attributes_crowdsourced_ids_results_alert_context_src_port
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.src_port
+              tag: convert_attributes_crowdsourced_ids_results_alert_context_src_port_to_long
+              type: long
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field:
+                      - _ingest._value.src_port
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.crowdsourced_ids_stats.high
+      tag: convert_attributes_crowdsourced_ids_stats_high_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.crowdsourced_ids_stats.info
+      tag: convert_attributes_crowdsourced_ids_stats_info_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.crowdsourced_ids_stats.low
+      tag: convert_attributes_crowdsourced_ids_stats_low_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.crowdsourced_ids_stats.medium
+      tag: convert_attributes_crowdsourced_ids_stats_medium_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.attributes.crowdsourced_yara_results
+      tag: foreach_attributes_crowdsourced_yara_results_match_date
+      if: ctx.gti?.file_feed?.attributes?.crowdsourced_yara_results instanceof List
+      processor:
+        date:
+          field: _ingest._value.match_date
+          tag: date_attributes_crowdsourced_yara_results_match_date
+          target_field: _ingest._value.match_date
+          formats:
+            - UNIX
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.match_date
+                ignore_missing: true
+  - foreach:
+      field: gti.file_feed.attributes.crowdsourced_yara_results
+      tag: foreach_attributes_crowdsourced_yara_results_match_in_subfile
+      if: ctx.gti?.file_feed?.attributes?.crowdsourced_yara_results instanceof List
+      processor:
+        convert:
+          field: _ingest._value.match_in_subfile
+          tag: convert_attributes_crowdsourced_yara_results_match_in_subfile_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.match_in_subfile
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: gti.file_feed.attributes.deb_info.changelog.Date
+      tag: date_attributes_deb_info_changelog_Date
+      if: ctx.gti?.file_feed?.attributes?.deb_info?.changelog?.Date != null && ctx.gti.file_feed.attributes.deb_info.changelog.Date != ''
+      target_field: gti.file_feed.attributes.deb_info.changelog.Date
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss Z
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.deb_info.structural_metadata.contained_files
+      tag: convert_attributes_deb_info_structural_metadata_contained_files_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.deb_info.structural_metadata.contained_items
+      tag: convert_attributes_deb_info_structural_metadata_contained_items_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: gti.file_feed.attributes.deb_info.structural_metadata.max_date
+      tag: date_attributes_deb_info_structural_metadata_max_date
+      if: ctx.gti?.file_feed?.attributes?.deb_info?.structural_metadata?.max_date != null && ctx.gti.file_feed.attributes.deb_info.structural_metadata.max_date != ''
+      target_field: gti.file_feed.attributes.deb_info.structural_metadata.max_date
+      formats:
+        - yyyy-MM-dd HH:mm:ss
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: gti.file_feed.attributes.deb_info.structural_metadata.min_date
+      tag: date_attributes_deb_info_structural_metadata_min_date
+      if: ctx.gti?.file_feed?.attributes?.deb_info?.structural_metadata?.min_date != null && ctx.gti.file_feed.attributes.deb_info.structural_metadata.min_date != ''
+      target_field: gti.file_feed.attributes.deb_info.structural_metadata.min_date
+      formats:
+        - yyyy-MM-dd HH:mm:ss
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.dot_net_assembly.assembly_data.buildnumber
+      tag: convert_attributes_dot_net_assembly_assembly_data_buildnumber_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.dot_net_assembly.assembly_data.flags
+      tag: convert_attributes_dot_net_assembly_assembly_data_flags_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.dot_net_assembly.assembly_data.hashalgid
+      tag: convert_attributes_dot_net_assembly_assembly_data_hashalgid_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.dot_net_assembly.assembly_data.majorversion
+      tag: convert_attributes_dot_net_assembly_assembly_data_majorversion_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.dot_net_assembly.assembly_data.minorversion
+      tag: convert_attributes_dot_net_assembly_assembly_data_minorversion_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.dot_net_assembly.assembly_data.revisionnumber
+      tag: convert_attributes_dot_net_assembly_assembly_data_revisionnumber_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.dot_net_assembly.assembly_flags
+      tag: convert_attributes_dot_net_assembly_assembly_flags_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.dot_net_assembly.entry_point_rva
+      tag: convert_attributes_dot_net_assembly_entry_point_rva_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.dot_net_assembly.entry_point_token
+      tag: convert_attributes_dot_net_assembly_entry_point_token_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.dot_net_assembly.metadata_header_rva
+      tag: convert_attributes_dot_net_assembly_metadata_header_rva_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.dot_net_assembly.resources_va
+      tag: convert_attributes_dot_net_assembly_resources_va_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.dot_net_assembly.streams.Blob.chi2
+      tag: convert_attributes_dot_net_assembly_streams_Blob_chi2_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.dot_net_assembly.streams.Blob.entropy
+      tag: convert_attributes_dot_net_assembly_streams_Blob_entropy_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.hash
+      tag: append_file_feed_attributes_dot_net_assembly_streams_Blob_md5_into_related_hash
+      if: ctx.gti?.file_feed?.attributes?.dot_net_assembly?.streams?.Blob?.md5 != null
+      value: '{{{gti.file_feed.attributes.dot_net_assembly.streams.Blob.md5}}}'
+      allow_duplicates: false
+  - convert:
+      field: gti.file_feed.attributes.dot_net_assembly.streams.Blob.size
+      tag: convert_attributes_dot_net_assembly_streams_Blob_size_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.dot_net_assembly.streams.GUID.chi2
+      tag: convert_attributes_dot_net_assembly_streams_GUID_chi2_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.dot_net_assembly.streams.GUID.entropy
+      tag: convert_attributes_dot_net_assembly_streams_GUID_entropy_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.hash
+      tag: append_file_feed_attributes_dot_net_assembly_streams_GUID_md5_into_related_hash
+      if: ctx.gti?.file_feed?.attributes?.dot_net_assembly?.streams?.GUID?.md5 != null
+      value: '{{{gti.file_feed.attributes.dot_net_assembly.streams.GUID.md5}}}'
+      allow_duplicates: false
+  - convert:
+      field: gti.file_feed.attributes.dot_net_assembly.streams.GUID.size
+      tag: convert_attributes_dot_net_assembly_streams_GUID_size_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.dot_net_assembly.streams.Schema.chi2
+      tag: convert_attributes_dot_net_assembly_streams_Schema_chi2_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.dot_net_assembly.streams.Schema.entropy
+      tag: convert_attributes_dot_net_assembly_streams_Schema_entropy_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.hash
+      tag: append_file_feed_attributes_dot_net_assembly_streams_Schema_md5_into_related_hash
+      if: ctx.gti?.file_feed?.attributes?.dot_net_assembly?.streams?.Schema?.md5 != null
+      value: '{{{gti.file_feed.attributes.dot_net_assembly.streams.Schema.md5}}}'
+      allow_duplicates: false
+  - convert:
+      field: gti.file_feed.attributes.dot_net_assembly.streams.Schema.size
+      tag: convert_attributes_dot_net_assembly_streams_Schema_size_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.dot_net_assembly.streams.Strings.chi2
+      tag: convert_attributes_dot_net_assembly_streams_Strings_chi2_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.dot_net_assembly.streams.Strings.entropy
+      tag: convert_attributes_dot_net_assembly_streams_Strings_entropy_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.hash
+      tag: append_file_feed_attributes_dot_net_assembly_streams_Strings_md5_into_related_hash
+      if: ctx.gti?.file_feed?.attributes?.dot_net_assembly?.streams?.Strings?.md5 != null
+      value: '{{{gti.file_feed.attributes.dot_net_assembly.streams.Strings.md5}}}'
+      allow_duplicates: false
+  - convert:
+      field: gti.file_feed.attributes.dot_net_assembly.streams.Strings.size
+      tag: convert_attributes_dot_net_assembly_streams_Strings_size_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.dot_net_assembly.streams.US.chi2
+      tag: convert_attributes_dot_net_assembly_streams_US_chi2_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.dot_net_assembly.streams.US.entropy
+      tag: convert_attributes_dot_net_assembly_streams_US_entropy_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.hash
+      tag: append_file_feed_attributes_dot_net_assembly_streams_US_md5_into_related_hash
+      if: ctx.gti?.file_feed?.attributes?.dot_net_assembly?.streams?.US?.md5 != null
+      value: '{{{gti.file_feed.attributes.dot_net_assembly.streams.US.md5}}}'
+      allow_duplicates: false
+  - convert:
+      field: gti.file_feed.attributes.dot_net_assembly.streams.US.size
+      tag: convert_attributes_dot_net_assembly_streams_US_size_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.dot_net_assembly.streams.tilde.chi2
+      tag: convert_attributes_dot_net_assembly_streams_tilde_chi2_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.dot_net_assembly.streams.tilde.entropy
+      tag: convert_attributes_dot_net_assembly_streams_tilde_entropy_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.hash
+      tag: append_file_feed_attributes_dot_net_assembly_streams_tilde_md5_into_related_hash
+      if: ctx.gti?.file_feed?.attributes?.dot_net_assembly?.streams?.tilde?.md5 != null
+      value: '{{{gti.file_feed.attributes.dot_net_assembly.streams.tilde.md5}}}'
+      allow_duplicates: false
+  - convert:
+      field: gti.file_feed.attributes.dot_net_assembly.streams.tilde.size
+      tag: convert_attributes_dot_net_assembly_streams_tilde_size_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.dot_net_assembly.strongname_va
+      tag: convert_attributes_dot_net_assembly_strongname_va_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.dot_net_assembly.tables_present
+      tag: convert_attributes_dot_net_assembly_tables_present_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.downloadable
+      tag: convert_attributes_downloadable_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.elf_info.header.abi_version
+      tag: convert_attributes_elf_info_header_abi_version_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: threat.indicator.file.elf.header.abi_version
+      tag: set_threat_indicator_file_elf_header_abi_version_from_file_feed_attributes_elf_info_header_abi_version
+      copy_from: gti.file_feed.attributes.elf_info.header.abi_version
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.file.elf.header.class
+      tag: set_threat_indicator_file_elf_header_class_from_file_feed_attributes_elf_info_header_class
+      copy_from: gti.file_feed.attributes.elf_info.header.class
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.file.elf.header.data
+      tag: set_threat_indicator_file_elf_header_data_from_file_feed_attributes_elf_info_header_data
+      copy_from: gti.file_feed.attributes.elf_info.header.data
+      ignore_empty_value: true
+  - convert:
+      field: gti.file_feed.attributes.elf_info.header.entrypoint
+      tag: convert_attributes_elf_info_header_entrypoint_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: threat.indicator.file.elf.header.entrypoint
+      tag: set_threat_indicator_file_elf_header_entrypoint_from_file_feed_attributes_elf_info_header_entrypoint
+      copy_from: gti.file_feed.attributes.elf_info.header.entrypoint
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.file.elf.header.version
+      tag: set_threat_indicator_file_elf_header_version_from_file_feed_attributes_elf_info_header_hdr_version
+      copy_from: gti.file_feed.attributes.elf_info.header.hdr_version
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.file.elf.architecture
+      tag: set_threat_indicator_file_elf_architecture_from_file_feed_attributes_elf_info_header_machine
+      copy_from: gti.file_feed.attributes.elf_info.header.machine
+      ignore_empty_value: true
+  - convert:
+      field: gti.file_feed.attributes.elf_info.header.num_prog_headers
+      tag: convert_attributes_elf_info_header_num_prog_headers_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.elf_info.header.num_section_headers
+      tag: convert_attributes_elf_info_header_num_section_headers_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: threat.indicator.file.elf.header.object_version
+      tag: set_threat_indicator_file_elf_header_object_version_from_file_feed_attributes_elf_info_header_obj_version
+      copy_from: gti.file_feed.attributes.elf_info.header.obj_version
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.file.elf.header.os_abi
+      tag: set_threat_indicator_file_elf_header_os_abi_from_file_feed_attributes_elf_info_header_os_abi
+      copy_from: gti.file_feed.attributes.elf_info.header.os_abi
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.file.elf.header.type
+      tag: set_threat_indicator_file_elf_header_type_from_file_feed_attributes_elf_info_header_type
+      copy_from: gti.file_feed.attributes.elf_info.header.type
+      ignore_empty_value: true
+  - foreach:
+      field: gti.file_feed.attributes.elf_info.section_list
+      tag: foreach_attributes_elf_info_section_list_flags
+      if: ctx.gti?.file_feed?.attributes?.elf_info?.section_list instanceof List
+      processor:
+        append:
+          field: threat.indicator.file.elf.sections.flags
+          tag: append_attributes_elf_info_section_list_flags_into_threat_indicator_file_elf_sections_flags
+          value: '{{{_ingest._value.flags}}}'
+          allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.attributes.elf_info.section_list
+      tag: foreach_attributes_elf_info_section_list_name
+      if: ctx.gti?.file_feed?.attributes?.elf_info?.section_list instanceof List
+      processor:
+        append:
+          field: threat.indicator.file.elf.sections.name
+          tag: append_attributes_elf_info_section_list_name_into_threat_indicator_file_elf_sections_name
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.attributes.elf_info.section_list
+      tag: foreach_attributes_elf_info_section_list_physical_offset
+      if: ctx.gti?.file_feed?.attributes?.elf_info?.section_list instanceof List
+      processor:
+        convert:
+          field: _ingest._value.physical_offset
+          tag: convert_attributes_elf_info_section_list_physical_offset_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.physical_offset
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.attributes.elf_info.section_list
+      tag: foreach_attributes_elf_info_section_list_physical_offset
+      if: ctx.gti?.file_feed?.attributes?.elf_info?.section_list instanceof List
+      processor:
+        append:
+          field: threat.indicator.file.elf.sections.physical_offset
+          tag: append_attributes_elf_info_section_list_physical_offset_into_threat_indicator_file_elf_sections_physical_offset
+          value: '{{{_ingest._value.physical_offset}}}'
+          allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.attributes.elf_info.section_list
+      tag: foreach_attributes_elf_info_section_list_section_type
+      if: ctx.gti?.file_feed?.attributes?.elf_info?.section_list instanceof List
+      processor:
+        append:
+          field: threat.indicator.file.elf.sections.type
+          tag: append_attributes_elf_info_section_list_section_type_into_threat_indicator_file_elf_sections_type
+          value: '{{{_ingest._value.section_type}}}'
+          allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.attributes.elf_info.section_list
+      tag: foreach_attributes_elf_info_section_list_size
+      if: ctx.gti?.file_feed?.attributes?.elf_info?.section_list instanceof List
+      processor:
+        convert:
+          field: _ingest._value.size
+          tag: convert_attributes_elf_info_section_list_size_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.size
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.attributes.elf_info.section_list
+      tag: foreach_attributes_elf_info_section_list_size
+      if: ctx.gti?.file_feed?.attributes?.elf_info?.section_list instanceof List
+      processor:
+        append:
+          field: threat.indicator.file.elf.sections.physical_size
+          tag: append_attributes_elf_info_section_list_size_into_threat_indicator_file_elf_sections_physical_size
+          value: '{{{_ingest._value.size}}}'
+          allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.attributes.elf_info.section_list
+      tag: foreach_attributes_elf_info_section_list_virtual_address
+      if: ctx.gti?.file_feed?.attributes?.elf_info?.section_list instanceof List
+      processor:
+        convert:
+          field: _ingest._value.virtual_address
+          tag: convert_attributes_elf_info_section_list_virtual_address_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.virtual_address
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.attributes.elf_info.section_list
+      tag: foreach_attributes_elf_info_section_list_virtual_address
+      if: ctx.gti?.file_feed?.attributes?.elf_info?.section_list instanceof List
+      processor:
+        append:
+          field: threat.indicator.file.elf.sections.virtual_address
+          tag: append_attributes_elf_info_section_list_virtual_address_into_threat_indicator_file_elf_sections_virtual_address
+          value: '{{{_ingest._value.virtual_address}}}'
+          allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.attributes.elf_info.segment_list
+      tag: foreach_attributes_elf_info_segment_list_resources
+      if: ctx.gti?.file_feed?.attributes?.elf_info?.segment_list instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.resources
+          tag: foreach_attributes_elf_info_segment_list_resources
+          ignore_missing: true
+          processor:
+            append:
+              field: threat.indicator.file.elf.segments.sections
+              tag: append_attributes_elf_info_segment_list_resources_into_threat_indicator_file_elf_segments_sections
+              value: '{{{_ingest._value}}}'
+              allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.attributes.elf_info.segment_list
+      tag: foreach_attributes_elf_info_segment_list_segment_type
+      if: ctx.gti?.file_feed?.attributes?.elf_info?.segment_list instanceof List
+      processor:
+        append:
+          field: threat.indicator.file.elf.segments.type
+          tag: append_attributes_elf_info_segment_list_segment_type_into_threat_indicator_file_elf_segments_type
+          value: '{{{_ingest._value.segment_type}}}'
+          allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.attributes.elf_info.shared_libraries
+      tag: foreach_attributes_elf_info_shared_libraries
+      if: ctx.gti?.file_feed?.attributes?.elf_info?.shared_libraries instanceof List
+      processor:
+        append:
+          field: threat.indicator.file.elf.shared_libraries
+          tag: append_attributes_elf_info_shared_libraries_into_threat_indicator_file_elf_shared_libraries
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_file_feed_attributes_filecondis_dhash_into_related_hash
+      if: ctx.gti?.file_feed?.attributes?.filecondis?.dhash != null
+      value: '{{{gti.file_feed.attributes.filecondis.dhash}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_file_feed_attributes_filecondis_raw_md5_into_related_hash
+      if: ctx.gti?.file_feed?.attributes?.filecondis?.raw_md5 != null
+      value: '{{{gti.file_feed.attributes.filecondis.raw_md5}}}'
+      allow_duplicates: false
+  - date:
+      field: gti.file_feed.attributes.first_seen_itw_date
+      tag: date_attributes_first_seen_itw_date
+      if: ctx.gti?.file_feed?.attributes?.first_seen_itw_date != null && ctx.gti.file_feed.attributes.first_seen_itw_date != ''
+      target_field: gti.file_feed.attributes.first_seen_itw_date
+      formats:
+        - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: threat.indicator.first_seen
+      tag: set_threat_indicator_first_seen_from_file_feed_attributes_first_seen_itw_date
+      copy_from: gti.file_feed.attributes.first_seen_itw_date
+      ignore_empty_value: true
+  - date:
+      field: gti.file_feed.attributes.first_submission_date
+      tag: date_attributes_first_submission_date
+      if: ctx.gti?.file_feed?.attributes?.first_submission_date != null && ctx.gti.file_feed.attributes.first_submission_date != ''
+      target_field: gti.file_feed.attributes.first_submission_date
+      formats:
+        - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.goresym.summary.total_dependencies
+      tag: convert_attributes_goresym_summary_total_dependencies_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.goresym.summary.total_files
+      tag: convert_attributes_goresym_summary_total_files_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.goresym.summary.total_interfaces
+      tag: convert_attributes_goresym_summary_total_interfaces_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.goresym.summary.total_stdFunctions
+      tag: convert_attributes_goresym_summary_total_stdFunctions_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.goresym.summary.total_types
+      tag: convert_attributes_goresym_summary_total_types_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.goresym.summary.total_userFunctions
+      tag: convert_attributes_goresym_summary_total_userFunctions_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.gti_assessment.contributing_factors.associated_malware_configuration
+      tag: convert_attributes_gti_assessment_contributing_factors_associated_malware_configuration_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.gti_assessment.contributing_factors.gavs_detections
+      tag: convert_attributes_gti_assessment_contributing_factors_gavs_detections_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.gti_assessment.contributing_factors.google_malware_analysis
+      tag: convert_attributes_gti_assessment_contributing_factors_google_malware_analysis_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.gti_assessment.contributing_factors.gti_confidence_score
+      tag: convert_attributes_gti_assessment_contributing_factors_gti_confidence_score_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.gti_assessment.contributing_factors.malicious_sandbox_verdict
+      tag: convert_attributes_gti_assessment_contributing_factors_malicious_sandbox_verdict_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.gti_assessment.contributing_factors.mandiant_analyst_malicious
+      tag: convert_attributes_gti_assessment_contributing_factors_mandiant_analyst_malicious_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.gti_assessment.contributing_factors.mandiant_confidence_score
+      tag: convert_attributes_gti_assessment_contributing_factors_mandiant_confidence_score_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.gti_assessment.contributing_factors.matched_malicious_yara
+      tag: convert_attributes_gti_assessment_contributing_factors_matched_malicious_yara_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: threat.indicator.description
+      tag: set_threat_indicator_description_from_file_feed_attributes_gti_assessment_description
+      copy_from: gti.file_feed.attributes.gti_assessment.description
+      ignore_empty_value: true
+  - convert:
+      field: gti.file_feed.attributes.gti_assessment.threat_score.value
+      tag: convert_attributes_gti_assessment_threat_score_value_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.risk_score
+      tag: set_event_risk_score_from_file_feed_attributes_gti_assessment_threat_score_value
+      copy_from: gti.file_feed.attributes.gti_assessment.threat_score.value
+      ignore_empty_value: true
+  - foreach:
+      field: gti.file_feed.attributes.html_info.iframes
+      tag: foreach_attributes_html_info_iframes_sha256
+      if: ctx.gti?.file_feed?.attributes?.html_info?.iframes instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_attributes_html_info_iframes_sha256_into_related_hash
+          value: '{{{_ingest._value.sha256}}}'
+          allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.attributes.html_info.scripts
+      tag: foreach_attributes_html_info_scripts_sha256
+      if: ctx.gti?.file_feed?.attributes?.html_info?.scripts instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_attributes_html_info_scripts_sha256_into_related_hash
+          value: '{{{_ingest._value.sha256}}}'
+          allow_duplicates: false
+  - convert:
+      field: gti.file_feed.attributes.jar_info.files_by_type.ascii
+      tag: convert_attributes_jar_info_files_by_type_ascii_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.jar_info.files_by_type.binary
+      tag: convert_attributes_jar_info_files_by_type_binary_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.jar_info.files_by_type.class
+      tag: convert_attributes_jar_info_files_by_type_class_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.jar_info.files_by_type.elf
+      tag: convert_attributes_jar_info_files_by_type_elf_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.jar_info.files_by_type.pdf
+      tag: convert_attributes_jar_info_files_by_type_pdf_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.jar_info.files_by_type.png
+      tag: convert_attributes_jar_info_files_by_type_png_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: gti.file_feed.attributes.jar_info.max_date
+      tag: date_attributes_jar_info_max_date
+      if: ctx.gti?.file_feed?.attributes?.jar_info?.max_date != null && ctx.gti.file_feed.attributes.jar_info.max_date != ''
+      target_field: gti.file_feed.attributes.jar_info.max_date
+      formats:
+        - yyyy-MM-dd HH:mm:ss
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.jar_info.max_depth
+      tag: convert_attributes_jar_info_max_depth_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: gti.file_feed.attributes.jar_info.min_date
+      tag: date_attributes_jar_info_min_date
+      if: ctx.gti?.file_feed?.attributes?.jar_info?.min_date != null && ctx.gti.file_feed.attributes.jar_info.min_date != ''
+      target_field: gti.file_feed.attributes.jar_info.min_date
+      formats:
+        - yyyy-MM-dd HH:mm:ss
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.jar_info.total_dirs
+      tag: convert_attributes_jar_info_total_dirs_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.jar_info.total_files
+      tag: convert_attributes_jar_info_total_files_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: gti.file_feed.attributes.last_analysis_date
+      tag: date_attributes_last_analysis_date
+      if: ctx.gti?.file_feed?.attributes?.last_analysis_date != null && ctx.gti.file_feed.attributes.last_analysis_date != ''
+      target_field: gti.file_feed.attributes.last_analysis_date
+      formats:
+        - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.last_analysis_stats.confirmed_timeout
+      tag: convert_attributes_last_analysis_stats_confirmed_timeout_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.last_analysis_stats.failure
+      tag: convert_attributes_last_analysis_stats_failure_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.last_analysis_stats.harmless
+      tag: convert_attributes_last_analysis_stats_harmless_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.last_analysis_stats.malicious
+      tag: convert_attributes_last_analysis_stats_malicious_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: threat.indicator.scanner_stats
+      tag: set_threat_indicator_scanner_stats_from_file_feed_attributes_last_analysis_stats_malicious
+      copy_from: gti.file_feed.attributes.last_analysis_stats.malicious
+      ignore_empty_value: true
+  - convert:
+      field: gti.file_feed.attributes.last_analysis_stats.suspicious
+      tag: convert_attributes_last_analysis_stats_suspicious_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.last_analysis_stats.timeout
+      tag: convert_attributes_last_analysis_stats_timeout_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.last_analysis_stats.type_unsupported
+      tag: convert_attributes_last_analysis_stats_type_unsupported_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.last_analysis_stats.undetected
+      tag: convert_attributes_last_analysis_stats_undetected_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: gti.file_feed.attributes.last_modification_date
+      tag: date_attributes_last_modification_date
+      if: ctx.gti?.file_feed?.attributes?.last_modification_date != null && ctx.gti.file_feed.attributes.last_modification_date != ''
+      target_field: gti.file_feed.attributes.last_modification_date
+      formats:
+        - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: gti.file_feed.attributes.last_submission_date
+      tag: date_attributes_last_submission_date
+      if: ctx.gti?.file_feed?.attributes?.last_submission_date != null && ctx.gti.file_feed.attributes.last_submission_date != ''
+      target_field: gti.file_feed.attributes.last_submission_date
+      formats:
+        - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: gti.file_feed.attributes.lnk_info.access_date
+      tag: date_attributes_lnk_info_access_date
+      if: ctx.gti?.file_feed?.attributes?.lnk_info?.access_date != null && ctx.gti.file_feed.attributes.lnk_info.access_date != ''
+      target_field: gti.file_feed.attributes.lnk_info.access_date
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: gti.file_feed.attributes.lnk_info.creation_date
+      tag: date_attributes_lnk_info_creation_date
+      if: ctx.gti?.file_feed?.attributes?.lnk_info?.creation_date != null && ctx.gti.file_feed.attributes.lnk_info.creation_date != ''
+      target_field: gti.file_feed.attributes.lnk_info.creation_date
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.lnk_info.header.file_size
+      tag: convert_attributes_lnk_info_header_file_size_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.lnk_info.header.show_window
+      tag: convert_attributes_lnk_info_header_show_window_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.attributes.lnk_info.link_target_id_list
+      tag: foreach_attributes_lnk_info_link_target_id_list_item_type
+      if: ctx.gti?.file_feed?.attributes?.lnk_info?.link_target_id_list instanceof List
+      processor:
+        convert:
+          field: _ingest._value.item_type
+          tag: convert_attributes_lnk_info_link_target_id_list_item_type_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.item_type
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: gti.file_feed.attributes.lnk_info.modification_date
+      tag: date_attributes_lnk_info_modification_date
+      if: ctx.gti?.file_feed?.attributes?.lnk_info?.modification_date != null && ctx.gti.file_feed.attributes.lnk_info.modification_date != ''
+      target_field: gti.file_feed.attributes.lnk_info.modification_date
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.attributes.macho_info
+      tag: foreach_attributes_macho_info_headers_cpu_subtype_lib64
+      if: ctx.gti?.file_feed?.attributes?.macho_info instanceof List
+      processor:
+        convert:
+          field: _ingest._value.headers.cpu_subtype_lib64
+          tag: convert_attributes_macho_info_headers_cpu_subtype_lib64_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.headers.cpu_subtype_lib64
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.attributes.macho_info
+      tag: foreach_attributes_macho_info_headers_num_cmds
+      if: ctx.gti?.file_feed?.attributes?.macho_info instanceof List
+      processor:
+        convert:
+          field: _ingest._value.headers.num_cmds
+          tag: convert_attributes_macho_info_headers_num_cmds_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.headers.num_cmds
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.attributes.macho_info
+      tag: foreach_attributes_macho_info_headers_size_cmds
+      if: ctx.gti?.file_feed?.attributes?.macho_info instanceof List
+      processor:
+        convert:
+          field: _ingest._value.headers.size_cmds
+          tag: convert_attributes_macho_info_headers_size_cmds_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.headers.size_cmds
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.attributes.macho_info
+      tag: foreach_attributes_macho_info_info_sha256
+      if: ctx.gti?.file_feed?.attributes?.macho_info instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_attributes_macho_info_info_sha256_into_related_hash
+          value: '{{{_ingest._value.info.sha256}}}'
+          allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.attributes.macho_info
+      tag: foreach_attributes_macho_info_platform
+      if: ctx.gti?.file_feed?.attributes?.macho_info instanceof List
+      processor:
+        convert:
+          field: _ingest._value.platform
+          tag: convert_attributes_macho_info_platform_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.platform
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.hash
+      tag: append_file_feed_attributes_main_icon_dhash_into_related_hash
+      if: ctx.gti?.file_feed?.attributes?.main_icon?.dhash != null
+      value: '{{{gti.file_feed.attributes.main_icon.dhash}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_file_feed_attributes_main_icon_raw_md5_into_related_hash
+      if: ctx.gti?.file_feed?.attributes?.main_icon?.raw_md5 != null
+      value: '{{{gti.file_feed.attributes.main_icon.raw_md5}}}'
+      allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.attributes.malware_config.families
+      tag: foreach_attributes_malware_config_families_configs_extra_info_http_settings_get_hash
+      if: ctx.gti?.file_feed?.attributes?.malware_config?.families instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.configs
+          tag: foreach_attributes_malware_config_families_configs_extra_info_http_settings_get_hash
+          ignore_missing: true
+          processor:
+            append:
+              field: related.hash
+              tag: append_attributes_malware_config_families_configs_extra_info_http_settings_get_hash_into_related_hash
+              value: '{{{_ingest._value.extra_info.http_settings_get_hash}}}'
+              allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.attributes.malware_config.families
+      tag: foreach_attributes_malware_config_families_configs_extra_info_http_settings_post_hash
+      if: ctx.gti?.file_feed?.attributes?.malware_config?.families instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.configs
+          tag: foreach_attributes_malware_config_families_configs_extra_info_http_settings_post_hash
+          ignore_missing: true
+          processor:
+            append:
+              field: related.hash
+              tag: append_attributes_malware_config_families_configs_extra_info_http_settings_post_hash_into_related_hash
+              value: '{{{_ingest._value.extra_info.http_settings_post_hash}}}'
+              allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.attributes.malware_config.families
+      tag: foreach_attributes_malware_config_families_configs_files_dropped_sha256
+      if: ctx.gti?.file_feed?.attributes?.malware_config?.families instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.configs
+          tag: foreach_attributes_malware_config_families_configs_files_dropped_sha256
+          ignore_missing: true
+          processor:
+            foreach:
+              field: _ingest._value.files_dropped
+              tag: foreach_attributes_malware_config_families_configs_files_dropped_sha256
+              ignore_missing: true
+              processor:
+                append:
+                  field: related.hash
+                  tag: append_attributes_malware_config_families_configs_files_dropped_sha256_into_related_hash
+                  value: '{{{_ingest._value.sha256}}}'
+                  allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.attributes.malware_config.families
+      tag: foreach_attributes_malware_config_families_configs_net_info_connections_host
+      if: ctx.gti?.file_feed?.attributes?.malware_config?.families instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.configs
+          tag: foreach_attributes_malware_config_families_configs_net_info_connections_host
+          ignore_missing: true
+          processor:
+            foreach:
+              field: _ingest._value.net_info.connections
+              tag: foreach_attributes_malware_config_families_configs_net_info_connections_host
+              ignore_missing: true
+              processor:
+                append:
+                  field: related.hosts
+                  tag: append_attributes_malware_config_families_configs_net_info_connections_host_into_related_hosts
+                  value: '{{{_ingest._value.host}}}'
+                  allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.attributes.malware_config.families
+      tag: foreach_attributes_malware_config_families_configs_net_info_connections_port
+      if: ctx.gti?.file_feed?.attributes?.malware_config?.families instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.configs
+          tag: foreach_attributes_malware_config_families_configs_net_info_connections_port
+          ignore_missing: true
+          processor:
+            foreach:
+              field: _ingest._value.net_info.connections
+              tag: foreach_attributes_malware_config_families_configs_net_info_connections_port
+              ignore_missing: true
+              processor:
+                convert:
+                  field: _ingest._value.port
+                  tag: convert_attributes_malware_config_families_configs_net_info_connections_port_to_long
+                  type: long
+                  ignore_missing: true
+                  on_failure:
+                    - remove:
+                        field:
+                          - _ingest._value.port
+                        ignore_missing: true
+                    - append:
+                        field: error.message
+                        value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: threat.indicator.file.hash.md5
+      tag: set_threat_indicator_file_hash_md5_from_file_feed_attributes_md5
+      copy_from: gti.file_feed.attributes.md5
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_file_feed_attributes_md5_into_related_hash
+      if: ctx.gti?.file_feed?.attributes?.md5 != null
+      value: '{{{gti.file_feed.attributes.md5}}}'
+      allow_duplicates: false
+  - set:
+      field: threat.indicator.file.name
+      tag: set_threat_indicator_file_name_from_file_feed_attributes_meaningful_name
+      copy_from: gti.file_feed.attributes.meaningful_name
+      ignore_empty_value: true
+  - foreach:
+      field: gti.file_feed.attributes.office_info.entries
+      tag: foreach_attributes_office_info_entries_sid
+      if: ctx.gti?.file_feed?.attributes?.office_info?.entries instanceof List
+      processor:
+        convert:
+          field: _ingest._value.sid
+          tag: convert_attributes_office_info_entries_sid_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.sid
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.attributes.office_info.entries
+      tag: foreach_attributes_office_info_entries_size
+      if: ctx.gti?.file_feed?.attributes?.office_info?.entries instanceof List
+      processor:
+        convert:
+          field: _ingest._value.size
+          tag: convert_attributes_office_info_entries_size_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.size
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: gti.file_feed.attributes.office_info.summary_info.creation_datetime
+      tag: date_attributes_office_info_summary_info_creation_datetime
+      if: ctx.gti?.file_feed?.attributes?.office_info?.summary_info?.creation_datetime != null && ctx.gti.file_feed.attributes.office_info.summary_info.creation_datetime != ''
+      target_field: gti.file_feed.attributes.office_info.summary_info.creation_datetime
+      formats:
+        - yyyy-MM-dd HH:mm:ss
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: gti.file_feed.attributes.office_info.summary_info.last_saved
+      tag: date_attributes_office_info_summary_info_last_saved
+      if: ctx.gti?.file_feed?.attributes?.office_info?.summary_info?.last_saved != null && ctx.gti.file_feed.attributes.office_info.summary_info.last_saved != ''
+      target_field: gti.file_feed.attributes.office_info.summary_info.last_saved
+      formats:
+        - yyyy-MM-dd HH:mm:ss
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.office_info.summary_info.page_count
+      tag: convert_attributes_office_info_summary_info_page_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.office_info.summary_info.security
+      tag: convert_attributes_office_info_summary_info_security_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.office_info.summary_info.word_count
+      tag: convert_attributes_office_info_summary_info_word_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.pdf_info.acroform
+      tag: convert_attributes_pdf_info_acroform_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.pdf_info.autoaction
+      tag: convert_attributes_pdf_info_autoaction_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.pdf_info.embedded_file
+      tag: convert_attributes_pdf_info_embedded_file_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.pdf_info.encrypted
+      tag: convert_attributes_pdf_info_encrypted_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.pdf_info.flash
+      tag: convert_attributes_pdf_info_flash_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.pdf_info.javascript
+      tag: convert_attributes_pdf_info_javascript_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.pdf_info.jbig2_compression
+      tag: convert_attributes_pdf_info_jbig2_compression_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.pdf_info.js
+      tag: convert_attributes_pdf_info_js_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.pdf_info.num_endobj
+      tag: convert_attributes_pdf_info_num_endobj_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.pdf_info.num_endstream
+      tag: convert_attributes_pdf_info_num_endstream_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.pdf_info.num_launch_actions
+      tag: convert_attributes_pdf_info_num_launch_actions_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.pdf_info.num_obj
+      tag: convert_attributes_pdf_info_num_obj_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.pdf_info.num_object_streams
+      tag: convert_attributes_pdf_info_num_object_streams_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.pdf_info.num_pages
+      tag: convert_attributes_pdf_info_num_pages_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.pdf_info.num_stream
+      tag: convert_attributes_pdf_info_num_stream_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.pdf_info.openaction
+      tag: convert_attributes_pdf_info_openaction_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.pdf_info.startxref
+      tag: convert_attributes_pdf_info_startxref_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.pdf_info.suspicious_colors
+      tag: convert_attributes_pdf_info_suspicious_colors_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.pdf_info.trailer
+      tag: convert_attributes_pdf_info_trailer_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.pdf_info.xfa
+      tag: convert_attributes_pdf_info_xfa_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.pdf_info.xref
+      tag: convert_attributes_pdf_info_xref_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.attributes.pe_info.debug
+      tag: foreach_attributes_pe_info_debug_codeview_age
+      if: ctx.gti?.file_feed?.attributes?.pe_info?.debug instanceof List
+      processor:
+        convert:
+          field: _ingest._value.codeview.age
+          tag: convert_attributes_pe_info_debug_codeview_age_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.codeview.age
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.attributes.pe_info.debug
+      tag: foreach_attributes_pe_info_debug_codeview_offset
+      if: ctx.gti?.file_feed?.attributes?.pe_info?.debug instanceof List
+      processor:
+        convert:
+          field: _ingest._value.codeview.offset
+          tag: convert_attributes_pe_info_debug_codeview_offset_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.codeview.offset
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.attributes.pe_info.debug
+      tag: foreach_attributes_pe_info_debug_codeview_timestamp
+      if: ctx.gti?.file_feed?.attributes?.pe_info?.debug instanceof List
+      processor:
+        date:
+          field: _ingest._value.codeview.timestamp
+          tag: date_attributes_pe_info_debug_codeview_timestamp
+          target_field: _ingest._value.codeview.timestamp
+          formats:
+            - EEE MMM dd HH:mm:ss yyyy
+            - EEE MMM d HH:mm:ss yyyy
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.codeview.timestamp
+                ignore_missing: true
+  - foreach:
+      field: gti.file_feed.attributes.pe_info.debug
+      tag: foreach_attributes_pe_info_debug_offset
+      if: ctx.gti?.file_feed?.attributes?.pe_info?.debug instanceof List
+      processor:
+        convert:
+          field: _ingest._value.offset
+          tag: convert_attributes_pe_info_debug_offset_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.offset
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.attributes.pe_info.debug
+      tag: foreach_attributes_pe_info_debug_size
+      if: ctx.gti?.file_feed?.attributes?.pe_info?.debug instanceof List
+      processor:
+        convert:
+          field: _ingest._value.size
+          tag: convert_attributes_pe_info_debug_size_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.size
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.attributes.pe_info.debug
+      tag: foreach_attributes_pe_info_debug_timestamp
+      if: ctx.gti?.file_feed?.attributes?.pe_info?.debug instanceof List
+      processor:
+        date:
+          field: _ingest._value.timestamp
+          tag: date_attributes_pe_info_debug_timestamp
+          target_field: _ingest._value.timestamp
+          formats:
+            - EEE MMM dd HH:mm:ss yyyy
+            - EEE MMM d HH:mm:ss yyyy
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.timestamp
+                ignore_missing: true
+  - foreach:
+      field: gti.file_feed.attributes.pe_info.debug
+      tag: foreach_attributes_pe_info_debug_type
+      if: ctx.gti?.file_feed?.attributes?.pe_info?.debug instanceof List
+      processor:
+        convert:
+          field: _ingest._value.type
+          tag: convert_attributes_pe_info_debug_type_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.type
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.pe_info.entry_point
+      tag: convert_attributes_pe_info_entry_point_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: threat.indicator.file.pe.imphash
+      tag: set_threat_indicator_file_pe_imphash_from_file_feed_attributes_pe_info_imphash
+      copy_from: gti.file_feed.attributes.pe_info.imphash
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_file_feed_attributes_pe_info_imphash_into_related_hash
+      if: ctx.gti?.file_feed?.attributes?.pe_info?.imphash != null
+      value: '{{{gti.file_feed.attributes.pe_info.imphash}}}'
+      allow_duplicates: false
+  - convert:
+      field: gti.file_feed.attributes.pe_info.machine_type
+      tag: convert_attributes_pe_info_machine_type_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.pe_info.overlay.chi2
+      tag: convert_attributes_pe_info_overlay_chi2_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.pe_info.overlay.entropy
+      tag: convert_attributes_pe_info_overlay_entropy_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.hash
+      tag: append_file_feed_attributes_pe_info_overlay_md5_into_related_hash
+      if: ctx.gti?.file_feed?.attributes?.pe_info?.overlay?.md5 != null
+      value: '{{{gti.file_feed.attributes.pe_info.overlay.md5}}}'
+      allow_duplicates: false
+  - convert:
+      field: gti.file_feed.attributes.pe_info.overlay.offset
+      tag: convert_attributes_pe_info_overlay_offset_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.pe_info.overlay.size
+      tag: convert_attributes_pe_info_overlay_size_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.attributes.pe_info.resource_details
+      tag: foreach_attributes_pe_info_resource_details_chi2
+      if: ctx.gti?.file_feed?.attributes?.pe_info?.resource_details instanceof List
+      processor:
+        convert:
+          field: _ingest._value.chi2
+          tag: convert_attributes_pe_info_resource_details_chi2_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.chi2
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.attributes.pe_info.resource_details
+      tag: foreach_attributes_pe_info_resource_details_entropy
+      if: ctx.gti?.file_feed?.attributes?.pe_info?.resource_details instanceof List
+      processor:
+        convert:
+          field: _ingest._value.entropy
+          tag: convert_attributes_pe_info_resource_details_entropy_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.entropy
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.attributes.pe_info.resource_details
+      tag: foreach_attributes_pe_info_resource_details_sha256
+      if: ctx.gti?.file_feed?.attributes?.pe_info?.resource_details instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_attributes_pe_info_resource_details_sha256_into_related_hash
+          value: '{{{_ingest._value.sha256}}}'
+          allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_file_feed_attributes_pe_info_rich_pe_header_hash_into_related_hash
+      if: ctx.gti?.file_feed?.attributes?.pe_info?.rich_pe_header_hash != null
+      value: '{{{gti.file_feed.attributes.pe_info.rich_pe_header_hash}}}'
+      allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.attributes.pe_info.sections
+      tag: foreach_attributes_pe_info_sections_chi2
+      if: ctx.gti?.file_feed?.attributes?.pe_info?.sections instanceof List
+      processor:
+        convert:
+          field: _ingest._value.chi2
+          tag: convert_attributes_pe_info_sections_chi2_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.chi2
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.attributes.pe_info.sections
+      tag: foreach_attributes_pe_info_sections_entropy
+      if: ctx.gti?.file_feed?.attributes?.pe_info?.sections instanceof List
+      processor:
+        convert:
+          field: _ingest._value.entropy
+          tag: convert_attributes_pe_info_sections_entropy_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.entropy
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.attributes.pe_info.sections
+      tag: foreach_attributes_pe_info_sections_entropy
+      if: ctx.gti?.file_feed?.attributes?.pe_info?.sections instanceof List
+      processor:
+        append:
+          field: threat.indicator.file.pe.sections.entropy
+          tag: append_attributes_pe_info_sections_entropy_into_threat_indicator_file_pe_sections_entropy
+          value: '{{{_ingest._value.entropy}}}'
+          allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.attributes.pe_info.sections
+      tag: foreach_attributes_pe_info_sections_md5
+      if: ctx.gti?.file_feed?.attributes?.pe_info?.sections instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_attributes_pe_info_sections_md5_into_related_hash
+          value: '{{{_ingest._value.md5}}}'
+          allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.attributes.pe_info.sections
+      tag: foreach_attributes_pe_info_sections_name
+      if: ctx.gti?.file_feed?.attributes?.pe_info?.sections instanceof List
+      processor:
+        append:
+          field: threat.indicator.file.pe.sections.name
+          tag: append_attributes_pe_info_sections_name_into_threat_indicator_file_pe_sections_name
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.attributes.pe_info.sections
+      tag: foreach_attributes_pe_info_sections_raw_size
+      if: ctx.gti?.file_feed?.attributes?.pe_info?.sections instanceof List
+      processor:
+        convert:
+          field: _ingest._value.raw_size
+          tag: convert_attributes_pe_info_sections_raw_size_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.raw_size
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.attributes.pe_info.sections
+      tag: foreach_attributes_pe_info_sections_raw_size
+      if: ctx.gti?.file_feed?.attributes?.pe_info?.sections instanceof List
+      processor:
+        append:
+          field: threat.indicator.file.pe.sections.physical_size
+          tag: append_attributes_pe_info_sections_raw_size_into_threat_indicator_file_pe_sections_physical_size
+          value: '{{{_ingest._value.raw_size}}}'
+          allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.attributes.pe_info.sections
+      tag: foreach_attributes_pe_info_sections_virtual_address
+      if: ctx.gti?.file_feed?.attributes?.pe_info?.sections instanceof List
+      processor:
+        convert:
+          field: _ingest._value.virtual_address
+          tag: convert_attributes_pe_info_sections_virtual_address_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.virtual_address
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.attributes.pe_info.sections
+      tag: foreach_attributes_pe_info_sections_virtual_size
+      if: ctx.gti?.file_feed?.attributes?.pe_info?.sections instanceof List
+      processor:
+        convert:
+          field: _ingest._value.virtual_size
+          tag: convert_attributes_pe_info_sections_virtual_size_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.virtual_size
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.attributes.pe_info.sections
+      tag: foreach_attributes_pe_info_sections_virtual_size
+      if: ctx.gti?.file_feed?.attributes?.pe_info?.sections instanceof List
+      processor:
+        append:
+          field: threat.indicator.file.pe.sections.virtual_size
+          tag: append_attributes_pe_info_sections_virtual_size_into_threat_indicator_file_pe_sections_virtual_size
+          value: '{{{_ingest._value.virtual_size}}}'
+          allow_duplicates: false
+  - date:
+      field: gti.file_feed.attributes.pe_info.timestamp
+      tag: date_attributes_pe_info_timestamp
+      if: ctx.gti?.file_feed?.attributes?.pe_info?.timestamp != null && ctx.gti.file_feed.attributes.pe_info.timestamp != ''
+      target_field: gti.file_feed.attributes.pe_info.timestamp
+      formats:
+        - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.hash
+      tag: append_file_feed_attributes_permhash_into_related_hash
+      if: ctx.gti?.file_feed?.attributes?.permhash != null
+      value: '{{{gti.file_feed.attributes.permhash}}}'
+      allow_duplicates: false
+  - convert:
+      field: gti.file_feed.attributes.picklescan.contains_invalid_pickle
+      tag: convert_attributes_picklescan_contains_invalid_pickle_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.picklescan.issues_count
+      tag: convert_attributes_picklescan_issues_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.attributes.popular_threat_classification.popular_threat_category
+      tag: foreach_attributes_popular_threat_classification_popular_threat_category_count
+      if: ctx.gti?.file_feed?.attributes?.popular_threat_classification?.popular_threat_category instanceof List
+      processor:
+        convert:
+          field: _ingest._value.count
+          tag: convert_attributes_popular_threat_classification_popular_threat_category_count_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.count
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.attributes.popular_threat_classification.popular_threat_name
+      tag: foreach_attributes_popular_threat_classification_popular_threat_name_count
+      if: ctx.gti?.file_feed?.attributes?.popular_threat_classification?.popular_threat_name instanceof List
+      processor:
+        convert:
+          field: _ingest._value.count
+          tag: convert_attributes_popular_threat_classification_popular_threat_name_count_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.count
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.attributes.popular_threat_classification.popular_threat_name
+      tag: foreach_attributes_popular_threat_classification_popular_threat_name_value
+      if: ctx.gti?.file_feed?.attributes?.popular_threat_classification?.popular_threat_name instanceof List
+      processor:
+        append:
+          field: threat.software.name
+          tag: append_attributes_popular_threat_classification_popular_threat_name_value_into_threat_software_name
+          value: '{{{_ingest._value.value}}}'
+          allow_duplicates: false
+  - convert:
+      field: gti.file_feed.attributes.reputation
+      tag: convert_attributes_reputation_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: threat.indicator.file.hash.sha1
+      tag: set_threat_indicator_file_hash_sha1_from_file_feed_attributes_sha1
+      copy_from: gti.file_feed.attributes.sha1
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_file_feed_attributes_sha1_into_related_hash
+      if: ctx.gti?.file_feed?.attributes?.sha1 != null
+      value: '{{{gti.file_feed.attributes.sha1}}}'
+      allow_duplicates: false
+  - set:
+      field: threat.indicator.file.hash.sha256
+      tag: set_threat_indicator_file_hash_sha256_from_file_feed_attributes_sha256
+      copy_from: gti.file_feed.attributes.sha256
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_file_feed_attributes_sha256_into_related_hash
+      if: ctx.gti?.file_feed?.attributes?.sha256 != null
+      value: '{{{gti.file_feed.attributes.sha256}}}'
+      allow_duplicates: false
+  - convert:
+      field: gti.file_feed.attributes.sigma_analysis_stats.critical
+      tag: convert_attributes_sigma_analysis_stats_critical_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.sigma_analysis_stats.high
+      tag: convert_attributes_sigma_analysis_stats_high_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.sigma_analysis_stats.low
+      tag: convert_attributes_sigma_analysis_stats_low_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.sigma_analysis_stats.medium
+      tag: convert_attributes_sigma_analysis_stats_medium_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: threat.indicator.file.hash.cdhash
+      tag: set_threat_indicator_file_hash_cdhash_from_file_feed_attributes_signature_info_CDHash
+      copy_from: gti.file_feed.attributes.signature_info.CDHash
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_file_feed_attributes_signature_info_CDHash_into_related_hash
+      if: ctx.gti?.file_feed?.attributes?.signature_info?.CDHash != null
+      value: '{{{gti.file_feed.attributes.signature_info.CDHash}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_file_feed_attributes_signature_info_CMSDigest_into_related_hash
+      if: ctx.gti?.file_feed?.attributes?.signature_info?.CMSDigest != null
+      value: '{{{gti.file_feed.attributes.signature_info.CMSDigest}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_file_feed_attributes_signature_info_CandidateCDHashFull_sha256_into_related_hash
+      if: ctx.gti?.file_feed?.attributes?.signature_info?.CandidateCDHashFull_sha256 != null
+      value: '{{{gti.file_feed.attributes.signature_info.CandidateCDHashFull_sha256}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_file_feed_attributes_signature_info_CandidateCDHash_sha256_into_related_hash
+      if: ctx.gti?.file_feed?.attributes?.signature_info?.CandidateCDHash_sha256 != null
+      value: '{{{gti.file_feed.attributes.signature_info.CandidateCDHash_sha256}}}'
+      allow_duplicates: false
+  - set:
+      field: threat.indicator.file.code_signature.signing_id
+      tag: set_threat_indicator_file_code_signature_signing_id_from_file_feed_attributes_signature_info_Identifier
+      copy_from: gti.file_feed.attributes.signature_info.Identifier
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.file.code_signature.team_id
+      tag: set_threat_indicator_file_code_signature_team_id_from_file_feed_attributes_signature_info_TeamIdentifier
+      copy_from: gti.file_feed.attributes.signature_info.TeamIdentifier
+      ignore_empty_value: true
+  - foreach:
+      field: gti.file_feed.attributes.signature_info.counter_signers_details
+      tag: foreach_attributes_signature_info_counter_signers_details_thumbprint
+      if: ctx.gti?.file_feed?.attributes?.signature_info?.counter_signers_details instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_attributes_signature_info_counter_signers_details_thumbprint_into_related_hash
+          value: '{{{_ingest._value.thumbprint}}}'
+          allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.attributes.signature_info.counter_signers_details
+      tag: foreach_attributes_signature_info_counter_signers_details_valid_from
+      if: ctx.gti?.file_feed?.attributes?.signature_info?.counter_signers_details instanceof List
+      processor:
+        date:
+          field: _ingest._value.valid_from
+          tag: date_attributes_signature_info_counter_signers_details_valid_from
+          target_field: _ingest._value.valid_from
+          formats:
+            - hh:mm a MM/dd/yyyy
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.valid_from
+                ignore_missing: true
+  - foreach:
+      field: gti.file_feed.attributes.signature_info.counter_signers_details
+      tag: foreach_attributes_signature_info_counter_signers_details_valid_to
+      if: ctx.gti?.file_feed?.attributes?.signature_info?.counter_signers_details instanceof List
+      processor:
+        date:
+          field: _ingest._value.valid_to
+          tag: date_attributes_signature_info_counter_signers_details_valid_to
+          target_field: _ingest._value.valid_to
+          formats:
+            - hh:mm a MM/dd/yyyy
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.valid_to
+                ignore_missing: true
+  - set:
+      field: threat.indicator.file.pe.description
+      tag: set_threat_indicator_file_pe_description_from_file_feed_attributes_signature_info_description
+      copy_from: gti.file_feed.attributes.signature_info.description
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.file.pe.file_version
+      tag: set_threat_indicator_file_pe_file_version_from_file_feed_attributes_signature_info_file_version
+      copy_from: gti.file_feed.attributes.signature_info.file_version
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.file.pe.original_file_name
+      tag: set_threat_indicator_file_pe_original_file_name_from_file_feed_attributes_signature_info_original_name
+      copy_from: gti.file_feed.attributes.signature_info.original_name
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.file.pe.product
+      tag: set_threat_indicator_file_pe_product_from_file_feed_attributes_signature_info_product
+      copy_from: gti.file_feed.attributes.signature_info.product
+      ignore_empty_value: true
+  - foreach:
+      field: gti.file_feed.attributes.signature_info.signers_details
+      tag: foreach_attributes_signature_info_signers_details_thumbprint
+      if: ctx.gti?.file_feed?.attributes?.signature_info?.signers_details instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_attributes_signature_info_signers_details_thumbprint_into_related_hash
+          value: '{{{_ingest._value.thumbprint}}}'
+          allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.attributes.signature_info.signers_details
+      tag: foreach_attributes_signature_info_signers_details_valid_from
+      if: ctx.gti?.file_feed?.attributes?.signature_info?.signers_details instanceof List
+      processor:
+        date:
+          field: _ingest._value.valid_from
+          tag: date_attributes_signature_info_signers_details_valid_from
+          target_field: _ingest._value.valid_from
+          formats:
+            - hh:mm a MM/dd/yyyy
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.valid_from
+                ignore_missing: true
+  - foreach:
+      field: gti.file_feed.attributes.signature_info.signers_details
+      tag: foreach_attributes_signature_info_signers_details_valid_to
+      if: ctx.gti?.file_feed?.attributes?.signature_info?.signers_details instanceof List
+      processor:
+        date:
+          field: _ingest._value.valid_to
+          tag: date_attributes_signature_info_signers_details_valid_to
+          target_field: _ingest._value.valid_to
+          formats:
+            - hh:mm a MM/dd/yyyy
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.valid_to
+                ignore_missing: true
+  - date:
+      field: gti.file_feed.attributes.signature_info.signing_date
+      tag: date_attributes_signature_info_signing_date
+      if: ctx.gti?.file_feed?.attributes?.signature_info?.signing_date != null && ctx.gti.file_feed.attributes.signature_info.signing_date != ''
+      target_field: gti.file_feed.attributes.signature_info.signing_date
+      formats:
+        - hh:mm a MM/dd/yyyy
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: threat.indicator.file.code_signature.status
+      tag: set_threat_indicator_file_code_signature_status_from_file_feed_attributes_signature_info_verified
+      copy_from: gti.file_feed.attributes.signature_info.verified
+      ignore_empty_value: true
+  - foreach:
+      field: gti.file_feed.attributes.signature_info.x509
+      tag: foreach_attributes_signature_info_x509_thumbprint
+      if: ctx.gti?.file_feed?.attributes?.signature_info?.x509 instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_attributes_signature_info_x509_thumbprint_into_related_hash
+          value: '{{{_ingest._value.thumbprint}}}'
+          allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.attributes.signature_info.x509
+      tag: foreach_attributes_signature_info_x509_thumbprint_md5
+      if: ctx.gti?.file_feed?.attributes?.signature_info?.x509 instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_attributes_signature_info_x509_thumbprint_md5_into_related_hash
+          value: '{{{_ingest._value.thumbprint_md5}}}'
+          allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.attributes.signature_info.x509
+      tag: foreach_attributes_signature_info_x509_thumbprint_sha256
+      if: ctx.gti?.file_feed?.attributes?.signature_info?.x509 instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_attributes_signature_info_x509_thumbprint_sha256_into_related_hash
+          value: '{{{_ingest._value.thumbprint_sha256}}}'
+          allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.attributes.signature_info.x509
+      tag: foreach_attributes_signature_info_x509_valid_from
+      if: ctx.gti?.file_feed?.attributes?.signature_info?.x509 instanceof List
+      processor:
+        date:
+          field: _ingest._value.valid_from
+          tag: date_attributes_signature_info_x509_valid_from
+          target_field: _ingest._value.valid_from
+          formats:
+            - yyyy-MM-dd HH:mm:ss
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.valid_from
+                ignore_missing: true
+  - foreach:
+      field: gti.file_feed.attributes.signature_info.x509
+      tag: foreach_attributes_signature_info_x509_valid_to
+      if: ctx.gti?.file_feed?.attributes?.signature_info?.x509 instanceof List
+      processor:
+        date:
+          field: _ingest._value.valid_to
+          tag: date_attributes_signature_info_x509_valid_to
+          target_field: _ingest._value.valid_to
+          formats:
+            - yyyy-MM-dd HH:mm:ss
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.valid_to
+                ignore_missing: true
+  - convert:
+      field: gti.file_feed.attributes.size
+      tag: convert_attributes_size_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: threat.indicator.file.size
+      tag: set_threat_indicator_file_size_from_file_feed_attributes_size
+      copy_from: gti.file_feed.attributes.size
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.file.hash.ssdeep
+      tag: set_threat_indicator_file_hash_ssdeep_from_file_feed_attributes_ssdeep
+      copy_from: gti.file_feed.attributes.ssdeep
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_file_feed_attributes_ssdeep_into_related_hash
+      if: ctx.gti?.file_feed?.attributes?.ssdeep != null
+      value: '{{{gti.file_feed.attributes.ssdeep}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_file_feed_attributes_symhash_into_related_hash
+      if: ctx.gti?.file_feed?.attributes?.symhash != null
+      value: '{{{gti.file_feed.attributes.symhash}}}'
+      allow_duplicates: false
+  - set:
+      field: threat.indicator.file.elf.telfhash
+      tag: set_threat_indicator_file_elf_telfhash_from_file_feed_attributes_telfhash
+      copy_from: gti.file_feed.attributes.telfhash
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_file_feed_attributes_telfhash_into_related_hash
+      if: ctx.gti?.file_feed?.attributes?.telfhash != null
+      value: '{{{gti.file_feed.attributes.telfhash}}}'
+      allow_duplicates: false
+  - date:
+      field: gti.file_feed.attributes.threat_severity.last_analysis_date
+      tag: date_attributes_threat_severity_last_analysis_date
+      if: ctx.gti?.file_feed?.attributes?.threat_severity?.last_analysis_date != null && ctx.gti.file_feed.attributes.threat_severity.last_analysis_date != ''
+      target_field: gti.file_feed.attributes.threat_severity.last_analysis_date
+      formats:
+        - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.threat_severity.threat_severity_data.is_matched_by_crowdsourced_yara_with_detections
+      tag: convert_attributes_threat_severity_threat_severity_data_is_matched_by_crowdsourced_yara_with_detections_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.threat_severity.threat_severity_data.num_av_detections
+      tag: convert_attributes_threat_severity_threat_severity_data_num_av_detections_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.threat_severity.threat_severity_data.num_gav_detections
+      tag: convert_attributes_threat_severity_threat_severity_data_num_gav_detections_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.threat_severity.version
+      tag: convert_attributes_threat_severity_version_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.times_submitted
+      tag: convert_attributes_times_submitted_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: threat.indicator.sightings
+      tag: set_threat_indicator_sightings_from_file_feed_attributes_times_submitted
+      copy_from: gti.file_feed.attributes.times_submitted
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.file.hash.tlsh
+      tag: set_threat_indicator_file_hash_tlsh_from_file_feed_attributes_tlsh
+      copy_from: gti.file_feed.attributes.tlsh
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_file_feed_attributes_tlsh_into_related_hash
+      if: ctx.gti?.file_feed?.attributes?.tlsh != null
+      value: '{{{gti.file_feed.attributes.tlsh}}}'
+      allow_duplicates: false
+  - convert:
+      field: gti.file_feed.attributes.total_votes.harmless
+      tag: convert_attributes_total_votes_harmless_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gti.file_feed.attributes.total_votes.malicious
+      tag: convert_attributes_total_votes_malicious_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.attributes.trid
+      tag: foreach_attributes_trid_probability
+      if: ctx.gti?.file_feed?.attributes?.trid instanceof List
+      processor:
+        convert:
+          field: _ingest._value.probability
+          tag: convert_attributes_trid_probability_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.probability
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: threat.indicator.file.extension
+      tag: set_threat_indicator_file_extension_from_file_feed_attributes_type_extension
+      copy_from: gti.file_feed.attributes.type_extension
+      ignore_empty_value: true
+  - convert:
+      field: gti.file_feed.attributes.unique_sources
+      tag: convert_attributes_unique_sources_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.hash
+      tag: append_file_feed_attributes_vhash_into_related_hash
+      if: ctx.gti?.file_feed?.attributes?.vhash != null
+      value: '{{{gti.file_feed.attributes.vhash}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_file_feed_context_attributes_submitter_id_into_related_user
+      if: ctx.gti?.file_feed?.context_attributes?.submitter?.id != null
+      value: '{{{gti.file_feed.context_attributes.submitter.id}}}'
+      allow_duplicates: false
+  - append:
+      field: threat.indicator.id
+      tag: append_gti_file_feed_id_into_threat_indicator_id
+      if: ctx.gti?.file_feed?.id != null
+      value: '{{{gti.file_feed.id}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_file_feed_id_into_related_hash
+      if: ctx.gti?.file_feed?.id != null
+      value: '{{{gti.file_feed.id}}}'
+      allow_duplicates: false
+  - set:
+      field: threat.indicator.reference
+      tag: set_threat_indicator_reference_from_file_feed_links_self
+      copy_from: gti.file_feed.links.self
+      ignore_empty_value: true
+  - foreach:
+      field: gti.file_feed.relationships.contacted_domains.data
+      tag: foreach_relationships_contacted_domains_data_id
+      if: ctx.gti?.file_feed?.relationships?.contacted_domains?.data instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_relationships_contacted_domains_data_id_into_related_hosts
+          value: '{{{_ingest._value.id}}}'
+          allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.relationships.contacted_ips.data
+      tag: foreach_relationships_contacted_ips_data_id
+      if: ctx.gti?.file_feed?.relationships?.contacted_ips?.data instanceof List
+      processor:
+        convert:
+          field: _ingest._value.id
+          tag: convert_relationships_contacted_ips_data_id_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.id
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.relationships.contacted_ips.data
+      tag: foreach_relationships_contacted_ips_data_id
+      if: ctx.gti?.file_feed?.relationships?.contacted_ips?.data instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_relationships_contacted_ips_data_id_into_related_ip
+          value: '{{{_ingest._value.id}}}'
+          allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.relationships.embedded_domains.data
+      tag: foreach_relationships_embedded_domains_data_id
+      if: ctx.gti?.file_feed?.relationships?.embedded_domains?.data instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_relationships_embedded_domains_data_id_into_related_hosts
+          value: '{{{_ingest._value.id}}}'
+          allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.relationships.embedded_ips.data
+      tag: foreach_relationships_embedded_ips_data_id
+      if: ctx.gti?.file_feed?.relationships?.embedded_ips?.data instanceof List
+      processor:
+        convert:
+          field: _ingest._value.id
+          tag: convert_relationships_embedded_ips_data_id_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.id
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: gti.file_feed.relationships.embedded_ips.data
+      tag: foreach_relationships_embedded_ips_data_id
+      if: ctx.gti?.file_feed?.relationships?.embedded_ips?.data instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_relationships_embedded_ips_data_id_into_related_ip
+          value: '{{{_ingest._value.id}}}'
+          allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.relationships.itw_domains.data
+      tag: foreach_relationships_itw_domains_data_id
+      if: ctx.gti?.file_feed?.relationships?.itw_domains?.data instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_relationships_itw_domains_data_id_into_related_hosts
+          value: '{{{_ingest._value.id}}}'
+          allow_duplicates: false
+  - foreach:
+      field: gti.file_feed.relationships.memory_pattern_domains.data
+      tag: foreach_relationships_memory_pattern_domains_data_id
+      if: ctx.gti?.file_feed?.relationships?.memory_pattern_domains?.data instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_relationships_memory_pattern_domains_data_id_into_related_hosts
+          value: '{{{_ingest._value.id}}}'
+          allow_duplicates: false
+  - set:
+      field: threat.indicator.type
+      tag: set_threat_indicator_type_from_file_feed_type
+      copy_from: gti.file_feed.type
+      ignore_empty_value: true
+  - foreach:
+      field: gti.file_feed.attributes.elf_info.section_list
+      tag: foreach_attributes_elf_info_section_list
+      if: ctx.gti?.file_feed?.attributes?.elf_info?.section_list instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.flags
+            - _ingest._value.name
+            - _ingest._value.physical_offset
+            - _ingest._value.section_type
+            - _ingest._value.size
+            - _ingest._value.virtual_address
+          tag: remove_custom_duplicate_fields_from_attributes_elf_info_section_list
+          if: ctx._is_indicator == true && (ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields'))
+          ignore_missing: true
+  - foreach:
+      field: gti.file_feed.attributes.elf_info.segment_list
+      tag: foreach_attributes_elf_info_segment_list
+      if: ctx.gti?.file_feed?.attributes?.elf_info?.segment_list instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.resources
+            - _ingest._value.segment_type
+          tag: remove_custom_duplicate_fields_from_attributes_elf_info_segment_list
+          if: ctx._is_indicator == true && (ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields'))
+          ignore_missing: true
+  - foreach:
+      field: gti.file_feed.attributes.pe_info.sections
+      tag: foreach_attributes_pe_info_sections
+      if: ctx.gti?.file_feed?.attributes?.pe_info?.sections instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.entropy
+            - _ingest._value.name
+            - _ingest._value.raw_size
+            - _ingest._value.virtual_size
+          tag: remove_custom_duplicate_fields_from_attributes_pe_info_sections
+          if: ctx._is_indicator == true && (ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields'))
+          ignore_missing: true
+  - foreach:
+      field: gti.file_feed.attributes.popular_threat_classification.popular_threat_name
+      tag: foreach_attributes_popular_threat_classification_popular_threat_name
+      if: ctx.gti?.file_feed?.attributes?.popular_threat_classification?.popular_threat_name instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.value
+          tag: remove_custom_duplicate_fields_from_attributes_popular_threat_classification_popular_threat_name
+          if: ctx._is_indicator == true && (ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields'))
+          ignore_missing: true
+  - remove:
+      field:
+        - gti.file_feed.attributes.creation_date
+        - gti.file_feed.attributes.elf_info.header.abi_version
+        - gti.file_feed.attributes.elf_info.header.class
+        - gti.file_feed.attributes.elf_info.header.data
+        - gti.file_feed.attributes.elf_info.header.entrypoint
+        - gti.file_feed.attributes.elf_info.header.hdr_version
+        - gti.file_feed.attributes.elf_info.header.machine
+        - gti.file_feed.attributes.elf_info.header.obj_version
+        - gti.file_feed.attributes.elf_info.header.os_abi
+        - gti.file_feed.attributes.elf_info.header.type
+        - gti.file_feed.attributes.elf_info.shared_libraries
+        - gti.file_feed.attributes.first_seen_itw_date
+        - gti.file_feed.attributes.gti_assessment.description
+        - gti.file_feed.attributes.gti_assessment.threat_score.value
+        - gti.file_feed.attributes.last_analysis_stats.malicious
+        - gti.file_feed.attributes.md5
+        - gti.file_feed.attributes.meaningful_name
+        - gti.file_feed.attributes.pe_info.imphash
+        - gti.file_feed.attributes.sha1
+        - gti.file_feed.attributes.sha256
+        - gti.file_feed.attributes.signature_info.CDHash
+        - gti.file_feed.attributes.signature_info.Identifier
+        - gti.file_feed.attributes.signature_info.TeamIdentifier
+        - gti.file_feed.attributes.signature_info.description
+        - gti.file_feed.attributes.signature_info.file_version
+        - gti.file_feed.attributes.signature_info.original_name
+        - gti.file_feed.attributes.signature_info.product
+        - gti.file_feed.attributes.signature_info.verified
+        - gti.file_feed.attributes.size
+        - gti.file_feed.attributes.ssdeep
+        - gti.file_feed.attributes.telfhash
+        - gti.file_feed.attributes.times_submitted
+        - gti.file_feed.attributes.tlsh
+        - gti.file_feed.attributes.type_extension
+        - gti.file_feed.id
+        - gti.file_feed.links.self
+        - gti.file_feed.type
+      tag: remove_custom_duplicate_fields
+      if: ctx._is_indicator == true && (ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_missing: true
+  - append:
+      field: event.category
+      tag: append_file_into_event_category
+      value: file
+      allow_duplicates: false
+  - script:
+      tag: gti_file_feed_non_indicator_event_cleanup
+      lang: painless
+      description: For non-indicators, drop the indicator/threat relationship terms the generator added.
+      source: |-
+        if (ctx._is_indicator != true && ctx.event != null) {
+          if (ctx.event.type instanceof List) { ctx.event.type.removeIf(t -> t == 'indicator'); }
+          if (ctx.event.category instanceof List) { ctx.event.category.removeIf(c -> c == 'threat'); }
+        }
+  - remove:
+      field: threat.indicator
+      tag: remove_threat_indicator_for_non_indicators
+      ignore_missing: true
+      if: ctx._is_indicator != true
+  - set:
+      field: threat.indicator.modified_at
+      tag: set_threat_indicator_modified_at_from_last_modification_date
+      copy_from: gti.file_feed.attributes.last_modification_date
+      ignore_empty_value: true
+      if: ctx._is_indicator == true
+  - remove:
+      field: gti.file_feed.attributes.last_analysis_results
+      tag: remove_last_analysis_results_unless_kept
+      ignore_missing: true
+      if: ctx._conf == null || ctx._conf.keep_engine_results != true
+  - remove:
+      field: event.original
+      tag: remove_event_original_unless_preserved
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+  - remove:
+      field:
+        - _conf
+        - _is_indicator
+        - _should_drop
+      tag: remove_gti_internal_fields
+      ignore_missing: true
+  - script:
+      tag: coerce_pe_sections_numeric_arrays
+      lang: painless
+      if: ctx.threat?.indicator?.file?.pe?.sections instanceof Map
+      description: Coerce the stringified PE section numeric arrays to the ECS long type.
+      source: |-
+        def s = ctx.threat.indicator.file.pe.sections;
+        for (def key : ['entropy', 'physical_size', 'virtual_size']) {
+          if (s.get(key) instanceof List) {
+            def lst = s.get(key);
+            for (int i = 0; i < lst.size(); i++) {
+              def v = lst.get(i);
+              if (v != null) {
+                try { lst.set(i, (long) Double.parseDouble(v.toString())); }
+                catch (Exception e) {}
+              }
+            }
+          }
+        }
+  - script:
+      tag: snake_case_json_keys
+      lang: painless
+      description: >-
+        Recursively convert gti.file_feed keys to snake_case: split acronym/camelCase
+        boundaries, collapse and trim '_', and lowercase.
+      if: ctx.gti?.file_feed instanceof Map
+      source: |-
+        String snake(String k) {
+          // inflection.underscore, implemented char-by-char (no regex) to avoid painless
+          // regex backtracking limits on long all-caps keys (e.g. BULK_SIGNALS).
+          StringBuilder sb = new StringBuilder();
+          int n = k.length();
+          for (int i = 0; i < n; i++) {
+            char c = k.charAt(i);
+            if (i > 0 && Character.isUpperCase(c)) {
+              char prev = k.charAt(i - 1);
+              boolean prevLowerOrDigit = Character.isLowerCase(prev) || Character.isDigit(prev);
+              boolean nextLower = (i + 1 < n) && Character.isLowerCase(k.charAt(i + 1));
+              if (prevLowerOrDigit || (Character.isUpperCase(prev) && nextLower)) {
+                sb.append((char) '_');
+              }
+            }
+            sb.append(Character.toLowerCase(c));
+          }
+          String s = sb.toString();
+          while (s.contains('__')) { s = s.replace('__', '_'); }
+          while (s.startsWith('_')) { s = s.substring(1); }
+          while (s.endsWith('_')) { s = s.substring(0, s.length() - 1); }
+          return s;
+        }
+        void walk(def obj) {
+          if (obj instanceof Map) {
+            Map m = (Map) obj;
+            Map renames = [:];
+            for (def e : m.entrySet()) {
+              walk(e.getValue());
+              if (e.getKey() instanceof String) {
+                String nk = snake((String) e.getKey());
+                if (nk.length() > 0 && !nk.equals(e.getKey())) { renames[e.getKey()] = nk; }
+              }
+            }
+            for (def r : renames.entrySet()) {
+              m.put(r.getValue(), m.remove(r.getKey()));
+            }
+          } else if (obj instanceof List) {
+            for (def item : (List) obj) { walk(item); }
+          }
+        }
+        walk(ctx.gti.file_feed);
+  - script:
+      tag: remove_null_values
+      lang: painless
+      description: Remove null or empty values from the document
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_tags
+      if: ctx.error?.message != null
+      value: preserve_original_event
+      allow_duplicates: false
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{_ingest.on_failure_processor_type}}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{_ingest.on_failure_processor_tag}}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_tags
+      value: preserve_original_event
+      allow_duplicates: false

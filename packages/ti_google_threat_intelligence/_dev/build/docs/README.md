@@ -210,6 +210,16 @@ This is the `Cryptominer` dataset.
 
 {{fields "cryptominer"}}
 
+### File Feed
+
+This is the `File Feed` dataset. It collects Google Threat Intelligence File Feed records from files on disk using the filestream input. The File Feed is distributed as bzip2-compressed NDJSON; decompress each package to NDJSON on disk before pointing the input at it.
+
+#### Example
+
+{{event "file_feed"}}
+
+{{fields "file_feed"}}
+
 ### First Stage Delivery Vectors
 
 This is the `First Stage Delivery Vectors` dataset.

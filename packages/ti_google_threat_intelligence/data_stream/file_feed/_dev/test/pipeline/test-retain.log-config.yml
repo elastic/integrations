@@ -1,0 +1,17 @@
+# Opposing scenario: the air-gapped / hunting "retain everything" configuration.
+# drop_below_threshold=false keeps non-indicators, which is the only way to observe:
+#   - a kept VERDICT_UNDETECTED record retaining its raw gti.file_feed.* source fields
+#     (the conditional removal of threat.indicator-mapped duplicates), and
+#   - keep_engine_results=true and preserve_original_event behaviour.
+#   doc 1 VERDICT_MALICIOUS   -> indicator; last_analysis_results and event.original retained
+#   doc 2 VERDICT_UNDETECTED  -> kept non-indicator; raw gti.file_feed.* retained, threat.indicator absent
+fields:
+  tags:
+    - preserve_original_event
+  _conf:
+    drop_below_threshold: false
+    keep_engine_results: true
+    indicator_verdicts:
+      - VERDICT_MALICIOUS
+    indicator_min_threat_score: 70
+    indicator_min_malicious_detections: 5
