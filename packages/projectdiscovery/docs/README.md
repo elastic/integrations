@@ -674,22 +674,22 @@ An example event for `asset` looks as following:
 {
     "@timestamp": "2026-03-01T12:00:00.250Z",
     "agent": {
-        "ephemeral_id": "d101b451-610a-4628-9fc5-e597f19ed83a",
-        "id": "19cd3bb3-52f2-4974-99d1-d6b1352be33c",
-        "name": "elastic-agent-43397",
+        "ephemeral_id": "2e672147-210e-4a04-99b6-b18d32564a97",
+        "id": "6b421445-9ab2-4e46-9e68-ca52fb4d1058",
+        "name": "elastic-agent-19879",
         "type": "filebeat",
         "version": "9.5.6"
     },
     "data_stream": {
         "dataset": "projectdiscovery.asset",
-        "namespace": "82288",
+        "namespace": "42606",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "19cd3bb3-52f2-4974-99d1-d6b1352be33c",
+        "id": "6b421445-9ab2-4e46-9e68-ca52fb4d1058",
         "snapshot": false,
         "version": "9.5.6"
     },
@@ -705,12 +705,11 @@ An example event for `asset` looks as following:
     "event": {
         "agent_id_status": "verified",
         "category": [
-            "host",
             "network"
         ],
         "dataset": "projectdiscovery.asset",
         "id": "4204700004",
-        "ingested": "2026-11-11T22:02:27Z",
+        "ingested": "2026-11-24T21:47:11Z",
         "kind": "asset",
         "module": "projectdiscovery",
         "original": "{\"asset_hash\":\"c3d4e5f60718293a4b5c6d7e8f90a1b2\",\"created_at\":\"2025-10-15T15:45:00.5Z\",\"domain_name\":\"example.com\",\"enumeration_id\":\"d0abcdefgh1234567890\",\"enumeration_name\":\"example.com\",\"host\":\"mail.example.com\",\"id\":4204700004,\"ip\":[\"192.0.2.25\"],\"is_new\":false,\"name\":\"mail.example.com\",\"port\":7785,\"source_type\":\"dns_passive\",\"technology_details\":{},\"tls_not_after\":\"0001-01-01T00:00:00Z\",\"tls_not_before\":\"0001-01-01T00:00:00Z\",\"updated_at\":\"2026-03-01T12:00:00.25Z\"}",
@@ -775,6 +774,12 @@ An example event for `asset` looks as following:
         ]
     },
     "server": {
+        "as": {
+            "number": 64500,
+            "organization": {
+                "name": "Documentation ASN"
+            }
+        },
         "domain": "mail.example.com",
         "port": 7785,
         "registered_domain": "example.com",
