@@ -2,16 +2,24 @@
 description: Pipeline for parsing Azure Functions metrics.
 processors:
   - set:
+      tag: set_ecs_version_bec23f34
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_azure_monitor_afb34996
       field: azure.monitor
       target_field: azure.functions
       ignore_missing: true
 on_failure:
   - set:
+      tag: set_event_kind_c0fbc857
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_35f7748c
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'      
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
