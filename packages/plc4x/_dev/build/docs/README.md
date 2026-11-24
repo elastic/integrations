@@ -102,3 +102,7 @@ The `tag` data stream provides one document per configured tag and collection pe
 ##### tag fields
 
 {{ fields "tag" }}
+
+##### tag sample event
+
+{{ event "tag" }}

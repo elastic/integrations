@@ -127,3 +127,85 @@ The `tag` data stream provides one document per configured tag and collection pe
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
+
+##### tag sample event
+
+An example event for `tag` looks as following:
+
+```json
+{
+    "@timestamp": "2026-11-24T12:04:11.168Z",
+    "agent": {
+        "ephemeral_id": "03677b53-e72b-45cd-998b-04a3cd7bb515",
+        "id": "7af02d7a-0bf5-428c-abed-ef6a4a661a52",
+        "name": "elastic-agent-17865",
+        "type": "metricbeat",
+        "version": "9.5.6"
+    },
+    "data_stream": {
+        "dataset": "plc4x.tag",
+        "namespace": "13502",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "7af02d7a-0bf5-428c-abed-ef6a4a661a52",
+        "snapshot": false,
+        "version": "9.5.6"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "plc4x.tag",
+        "duration": 35814531,
+        "ingested": "2026-11-24T12:04:12Z",
+        "module": "plc4x"
+    },
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-17865",
+        "id": "ec2aab89f00036c3fce5836236116a68",
+        "ip": [
+            "192.0.2.10",
+            "2001:db8::10"
+        ],
+        "mac": [
+            "02-00-00-00-00-01"
+        ],
+        "name": "elastic-agent-17865",
+        "os": {
+            "codename": "Plow",
+            "family": "redhat",
+            "kernel": "6.17.7-300.fc43.aarch64",
+            "name": "Red Hat Enterprise Linux",
+            "platform": "rhel",
+            "type": "linux",
+            "version": "9.8 (Plow)"
+        }
+    },
+    "metricset": {
+        "name": "tag",
+        "period": 5000
+    },
+    "plc4x": {
+        "tag": {
+            "address": "holding-register:1:REAL",
+            "data_type": "REAL",
+            "name": "temperature",
+            "response_code": "OK",
+            "value": {
+                "double": 21.5
+            }
+        }
+    },
+    "service": {
+        "address": "modbus-tcp://svc-plc4x:5020",
+        "type": "plc4x"
+    },
+    "tags": [
+        "plc4x-tag"
+    ]
+}
+```

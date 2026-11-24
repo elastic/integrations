@@ -104,3 +104,7 @@ The `node` data stream provides one document per configured node and collection 
 ##### node fields
 
 {{ fields "node" }}
+
+##### node sample event
+
+{{ event "node" }}
