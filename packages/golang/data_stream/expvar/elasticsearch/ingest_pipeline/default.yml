@@ -2,93 +2,122 @@
 description: Pipeline for parsing Golang expvar metrics.
 processors:
   - set:
+      tag: set_ecs_version_baf87870
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_dataset_2e656bf9
       field: event.dataset
       value: golang.expvar
   - set:
+      tag: set_event_type_eaeac6d4
       field: event.type
       value: [info]
   - set:
+      tag: set_event_kind_e0d63a84
       field: event.kind
       value: metric
   - set:
+      tag: set_event_module_89863cab
       field: event.module
       value: golang
   - rename:
+      tag: rename_message_0a2f4672
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_5b4c6c25
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   - json:
+      tag: json_event_original_6d68eaa1
       field: event.original
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_474f6ab3
             field: error.message
             value: "{{{_ingest.on_failure_message}}}"
   - rename: 
+      tag: rename_json_memstats_BuckHashSys_91df0d36
       field: json.memstats.BuckHashSys
       target_field: golang.expvar.buck_hash_sys.bytes
       ignore_missing: true
   - rename: 
+      tag: rename_json_cmdline_b8099aff
       field: json.cmdline
       target_field: golang.expvar.cmdline
       ignore_missing: true  
   - rename: 
+      tag: rename_json_memstats_LastGC_1e3360e4
       field: json.memstats.LastGC
       target_field: golang.expvar.gc.last_finished.ns
       ignore_missing: true      
   - rename: 
+      tag: rename_json_memstats_NumForcedGC_f2a8b331
       field: json.memstats.NumForcedGC
       target_field: golang.expvar.gc.forced
       ignore_missing: true
   - rename: 
+      tag: rename_json_memstats_GCSys_d380f4bb
       field: json.memstats.GCSys
       target_field: golang.expvar.gc.metadata.memory.bytes
       ignore_missing: true
   - rename: 
+      tag: rename_json_memstats_MCacheInuse_afbc48a2
       field: json.memstats.MCacheInuse
       target_field: golang.expvar.mcache.allocated.bytes
       ignore_missing: true
   - rename: 
+      tag: rename_json_memstats_MCacheSys_729576e0
       field: json.memstats.MCacheSys
       target_field: golang.expvar.mcache.obtained.bytes
       ignore_missing: true
   - rename: 
+      tag: rename_json_memstats_MSpanInuse_41342a79
       field: json.memstats.MSpanInuse
       target_field: golang.expvar.mspan.allocated.bytes
       ignore_missing: true
   - rename: 
+      tag: rename_json_memstats_MSpanSys_1c719ca6
       field: json.memstats.MSpanSys
       target_field: golang.expvar.mspan.obtained.bytes
       ignore_missing: true
   - rename: 
+      tag: rename_json_memstats_OtherSys_a97e55aa
       field: json.memstats.OtherSys
       target_field: golang.expvar.obtained.miscellaneous.bytes
       ignore_missing: true
   - rename: 
+      tag: rename_json_memstats_Sys_66adcc9b
       field: json.memstats.Sys
       target_field: golang.expvar.obtained.total.bytes
       ignore_missing: true
   - rename: 
+      tag: rename_json_memstats_Lookups_25358c40
       field: json.memstats.Lookups
       target_field: golang.expvar.pointer.lookups
       ignore_missing: true
   - rename: 
+      tag: rename_json_memstats_StackInuse_88c0a0b3
       field: json.memstats.StackInuse
       target_field: golang.expvar.stack.bytes
       ignore_missing: true
   - remove:
+      tag: remove_json_memstats_0530b73a
       field:
         - json.memstats
       ignore_missing: true
   - rename:
+      tag: rename_json_8765347a
       field: json
       target_field: golang.expvar.custom
       ignore_missing: true
   - script:
+      tag: script_91ac433b
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -107,9 +136,14 @@ processors:
         drop(ctx);
 on_failure:
   - set:
-      field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
-  - append:
+      tag: set_event_kind_7e17220e
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
+  - append:
+      tag: append_error_message_01d937f4
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

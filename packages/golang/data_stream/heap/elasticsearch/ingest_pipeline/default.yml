@@ -2,97 +2,127 @@
 description: Pipeline for parsing Golang heap metrics.
 processors:
   - set:
+      tag: set_ecs_version_6e2bf86d
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_dataset_182585d9
       field: event.dataset
       value: golang.heap
   - set:
+      tag: set_event_type_54853a3a
       field: event.type
       value: [info]
   - set:
+      tag: set_event_kind_e092746e
       field: event.kind
       value: metric
   - set:
+      tag: set_event_module_e4f18162
       field: event.module
       value: golang
   - rename:
+      tag: rename_message_f0dc59cf
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_f3c3805b
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   - json:
+      tag: json_event_original_650403ad
       field: event.original
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_0ab4570c
             field: error.message
             value: "{{{_ingest.on_failure_message}}}"
   - rename: 
+      tag: rename_json_memstats_HeapInuse_767d9d6e
       field: json.memstats.HeapInuse
       target_field: golang.heap.allocations.active.bytes
       ignore_missing: true
   - rename: 
+      tag: rename_json_memstats_Frees_a29d3e94
       field: json.memstats.Frees
       target_field: golang.heap.allocations.frees.count
       ignore_missing: true
   - rename: 
+      tag: rename_json_memstats_HeapIdle_df222c72
       field: json.memstats.HeapIdle
       target_field: golang.heap.allocations.idle.bytes
       ignore_missing: true
   - rename: 
+      tag: rename_json_memstats_HeapAlloc_1621550c
       field: json.memstats.HeapAlloc
       target_field: golang.heap.allocations.object.bytes
       ignore_missing: true
   - rename: 
+      tag: rename_json_memstats_HeapObjects_dfdd42e5
       field: json.memstats.HeapObjects
       target_field: golang.heap.allocations.object.count
       ignore_missing: true
   - rename: 
+      tag: rename_json_memstats_TotalAlloc_602e359b
       field: json.memstats.TotalAlloc
       target_field: golang.heap.allocations.total.bytes
       ignore_missing: true
   - rename: 
+      tag: rename_json_cmdline_626c93e2
       field: json.cmdline
       target_field: golang.heap.cmdline
       ignore_missing: true
   - rename: 
+      tag: rename_json_memstats_GCCPUFraction_f4dd86fa
       field: json.memstats.GCCPUFraction
       target_field: golang.heap.gc.cpu_fraction
       ignore_missing: true
   - rename: 
+      tag: rename_json_memstats_NextGC_be2daae5
       field: json.memstats.NextGC
       target_field: golang.heap.gc.next_gc_limit
       ignore_missing: true
   - rename: 
+      tag: rename_json_memstats_NumGC_c0e1ab16
       field: json.memstats.NumGC
       target_field: golang.heap.gc.total.count
       ignore_missing: true
   - rename: 
+      tag: rename_json_memstats_PauseTotalNs_a3129170
       field: json.memstats.PauseTotalNs
       target_field: golang.heap.gc.pause.total.ns
       ignore_missing: true
   - rename: 
+      tag: rename_json_memstats_Mallocs_a4105868
       field: json.memstats.Mallocs
       target_field: golang.heap.mallocs.count
       ignore_missing: true
   - rename: 
+      tag: rename_json_memstats_HeapReleased_ff708dca
       field: json.memstats.HeapReleased
       target_field: golang.heap.system.released.bytes
       ignore_missing: true
   - rename: 
+      tag: rename_json_memstats_StackSys_4f39bfff
       field: json.memstats.StackSys
       target_field: golang.heap.system.stack.bytes
       ignore_missing: true
   - rename: 
+      tag: rename_json_memstats_HeapSys_601f04bf
       field: json.memstats.HeapSys
       target_field: golang.heap.system.total.bytes
       ignore_missing: true
   - remove:
+      tag: remove_json_e0e63ad3
       field:
         - json
       ignore_missing: true
   - script:
+      tag: script_88f561f1
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -111,9 +141,14 @@ processors:
         drop(ctx);
 on_failure:
   - set:
-      field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
-  - append:
+      tag: set_event_kind_a61b2f78
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
+  - append:
+      tag: append_error_message_2e951b5c
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
