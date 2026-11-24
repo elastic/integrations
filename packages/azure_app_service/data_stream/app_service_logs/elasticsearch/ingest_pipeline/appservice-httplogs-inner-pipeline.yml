@@ -2,105 +2,143 @@
 description: Pipeline for processing Azure App Service HTTP logs.
 processors:
   - rename:
+      tag: rename_azure_app_service_resourceId_a4d5f29b
       field: azure.app_service.resourceId
       target_field: azure.resource.id
       ignore_missing: true
   - rename:
+      tag: rename_azure_app_service_properties_CIp_9f0bccbc
       field: azure.app_service.properties.CIp
       target_field: azure.app_service.properties.client_ip
   - rename:
+      tag: rename_azure_app_service_properties_Protocol_f21e85db
       field: azure.app_service.properties.Protocol
       target_field: azure.app_service.properties.protocol
       ignore_missing: true
   - rename:
+      tag: rename_azure_app_service_properties_ComputerName_8218f755
       field: azure.app_service.properties.ComputerName
       target_field: azure.app_service.properties.computer_name
   - rename:
+      tag: rename_azure_app_service_properties_Cookie_1d5b2bd8
       field: azure.app_service.properties.Cookie
       target_field: azure.app_service.properties.cookie
   - rename:
+      tag: rename_azure_app_service_properties_CsBytes_152dba81
       field: azure.app_service.properties.CsBytes
       target_field: azure.app_service.properties.cs_bytes
   - convert:
+      tag: convert_azure_app_service_properties_cs_bytes_9c4d733c
       field: azure.app_service.properties.cs_bytes
       type: long
       ignore_missing: true
   - rename:
+      tag: rename_azure_app_service_properties_CsHost_03ed8069
       field: azure.app_service.properties.CsHost
       target_field: azure.app_service.properties.cs_host
   - rename:
+      tag: rename_azure_app_service_properties_CsMethod_c672d719
       field: azure.app_service.properties.CsMethod
       target_field: azure.app_service.properties.cs_method
   - rename:
+      tag: rename_azure_app_service_properties_CsUriQuery_16437fc5
       field: azure.app_service.properties.CsUriQuery
       target_field: azure.app_service.properties.cs_uri_query
   - rename:
+      tag: rename_azure_app_service_properties_CsUriStem_7d0d9752
       field: azure.app_service.properties.CsUriStem
       target_field: azure.app_service.properties.cs_uri_stem
   - rename:
+      tag: rename_azure_app_service_properties_CsUsername_e76131b5
       field: azure.app_service.properties.CsUsername
       target_field: azure.app_service.properties.cs_username
   - rename:
+      tag: rename_azure_app_service_properties_Referer_b0a1e33d
       field: azure.app_service.properties.Referer
       target_field: azure.app_service.properties.referer
   - rename:
+      tag: rename_azure_app_service_properties_Result_f347e3ab
       field: azure.app_service.properties.Result
       target_field: azure.app_service.properties.result
   - rename:
+      tag: rename_azure_app_service_properties_SPort_126f7050
       field: azure.app_service.properties.SPort
       target_field: azure.app_service.properties.s_port
   - rename:
+      tag: rename_azure_app_service_properties_ScBytes_b09d4ca4
       field: azure.app_service.properties.ScBytes
       target_field: azure.app_service.properties.sc_bytes
   - convert:
+      tag: convert_azure_app_service_properties_sc_bytes_71cec53c
       field: azure.app_service.properties.sc_bytes
       type: long
       ignore_missing: true
   - rename:
+      tag: rename_azure_app_service_properties_ScStatus_83e342c1
       field: azure.app_service.properties.ScStatus
       target_field: azure.app_service.properties.sc_status
   - convert:
+      tag: convert_azure_app_service_properties_sc_status_bb5bec7c
       field: azure.app_service.properties.sc_status
       type: long
       ignore_missing: true
   - rename:
+      tag: rename_azure_app_service_properties_ScSubStatus_8107fd85
       field: azure.app_service.properties.ScSubStatus
       target_field: azure.app_service.properties.sc_substatus
       ignore_missing: true
   - rename:
+      tag: rename_azure_app_service_properties_ScWin32Status_c75bec72
       field: azure.app_service.properties.ScWin32Status
       target_field: azure.app_service.properties.sc_win32status
       ignore_missing: true
   - rename:
+      tag: rename_azure_app_service_properties_TimeTaken_1d5cfa22
       field: azure.app_service.properties.TimeTaken
       target_field: azure.app_service.properties.time_taken
   - rename:
+      tag: rename_azure_app_service_properties_UserAgent_a38c5d70
       field: azure.app_service.properties.UserAgent
       target_field: azure.app_service.properties.user_agent
   - rename:
+      tag: rename_azure_app_service_EventIpAddress_fc5e7e4f
       field: azure.app_service.EventIpAddress
       target_field: azure.app_service.event_ip_address
       ignore_missing: true
   - rename:
+      tag: rename_azure_app_service_EventPrimaryStampName_80ab8d49
       field: azure.app_service.EventPrimaryStampName
       target_field: azure.app_service.event_primary_stamp_name
       ignore_missing: true
   - rename:
+      tag: rename_azure_app_service_EventStampName_f9be53be
       field: azure.app_service.EventStampName
       target_field: azure.app_service.event_stamp_name
       ignore_missing: true
   - rename:
+      tag: rename_azure_app_service_EventStampType_af6c0dd5
       field: azure.app_service.EventStampType
       target_field: azure.app_service.event_stamp_type
       ignore_missing: true
   - rename:
+      tag: rename_azure_app_service_Host_06317008
       field: azure.app_service.Host
       target_field: azure.app_service.host
       ignore_missing: true
   - remove:
+      tag: remove_azure_app_service_EventTime_d148afdb
       field: azure.app_service.EventTime
       ignore_missing: true
 on_failure:
+  - set:
+      tag: set_event_kind_fd83b353
+      field: event.kind
+      value: pipeline_error
   - append:
-      field: "error.message"
-      value: "{{ _ingest.on_failure_message }} {{ _ingest.on_failure_processor_type }}"
+      tag: append_error_message_cf4ac009
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

@@ -2,28 +2,44 @@
 description: Pipeline for processing Azure App Service App logs.
 processors:
   - rename:
+      tag: rename_azure_app_service_resourceId_d2d61fee
       field: azure.app_service.resourceId
       target_field: azure.resource.id
       ignore_missing: true
   - rename:
+      tag: rename_azure_app_service_resultDescription_033949aa
       field: azure.app_service.resultDescription
       target_field: azure.app_service.result_description
   - rename:
+      tag: rename_azure_app_service_EventStampType_cc808b6e
       field: azure.app_service.EventStampType
       target_field: azure.app_service.event_stamp_type
   - rename:
+      tag: rename_azure_app_service_EventPrimaryStampName_8df3ddff
       field: azure.app_service.EventPrimaryStampName
       target_field: azure.app_service.event_primary_stamp_name
   - rename:
+      tag: rename_azure_app_service_EventStampName_7c39a72c
       field: azure.app_service.EventStampName
       target_field: azure.app_service.event_stamp_name
   - rename:
+      tag: rename_azure_app_service_Host_2381e52d
       field: azure.app_service.Host
       target_field: azure.app_service.host
   - rename:
+      tag: rename_azure_app_service_EventIpAddress_4a48b1bc
       field: azure.app_service.EventIpAddress
       target_field: azure.app_service.event_ip_address
 on_failure:
+  - set:
+      tag: set_event_kind_80729bd0
+      field: event.kind
+      value: pipeline_error
   - append:
-      field: "error.message"
-      value: "{{ _ingest.on_failure_message }} {{ _ingest.on_failure_processor_type }}"
+      tag: append_error_message_9c378992
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

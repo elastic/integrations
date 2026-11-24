@@ -2,34 +2,52 @@
 description: Pipeline for processing Azure App Service Platform logs.
 processors:
   - rename:
+      tag: rename_azure_app_service_resourceId_0abe831a
       field: azure.app_service.resourceId
       target_field: azure.resource.id
       ignore_missing: true
   - rename:
+      tag: rename_azure_app_service_operationName_cf952483
       field: azure.app_service.operationName
       target_field: azure.app_service.operation_name
   - rename:
+      tag: rename_azure_app_service_EventStampType_6d997342
       field: azure.app_service.EventStampType
       target_field: azure.app_service.event_stamp_type
   - rename:
+      tag: rename_azure_app_service_EventPrimaryStampName_95759cdb
       field: azure.app_service.EventPrimaryStampName
       target_field: azure.app_service.event_primary_stamp_name
   - rename:
+      tag: rename_azure_app_service_EventStampName_a0070e24
       field: azure.app_service.EventStampName
       target_field: azure.app_service.event_stamp_name
   - rename:
+      tag: rename_azure_app_service_Host_88d89a38
       field: azure.app_service.Host
       target_field: azure.app_service.host
   - rename:
+      tag: rename_azure_app_service_EventIpAddress_1eb69f52
       field: azure.app_service.EventIpAddress
       target_field: azure.app_service.event_ip_address
   - rename:
+      tag: rename_azure_app_service_properties_raw_1a72ef8e
       field: azure.app_service.properties_raw
       target_field: azure.app_service.log
   - remove:
+      tag: remove_azure_app_service_properties_7fbbbf4d
       field: azure.app_service.properties
       ignore_missing: true
 on_failure:
+  - set:
+      tag: set_event_kind_c5c6f8b6
+      field: event.kind
+      value: pipeline_error
   - append:
-      field: "error.message"
-      value: "{{ _ingest.on_failure_message }} {{ _ingest.on_failure_processor_type }}"
+      tag: append_error_message_83a0943a
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

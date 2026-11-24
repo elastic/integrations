@@ -2,68 +2,95 @@
 description: Pipeline for processing Azure App Service IPSec Audit logs.
 processors:
   - rename:
+      tag: rename_azure_app_service_ResourceId_6bc9062b
       field: azure.app_service.ResourceId
       target_field: azure.resource.id
       ignore_missing: true
   - rename:
+      tag: rename_azure_app_service_Category_92a15989
       field: azure.app_service.Category
       target_field: azure.app_service.category
   - rename:
+      tag: rename_azure_app_service_OperationName_e94a9ff7
       field: azure.app_service.OperationName
       target_field: azure.app_service.operation_name
   - rename:
+      tag: rename_azure_app_service_Properties_e175481c
       field: azure.app_service.Properties
       target_field: azure.app_service.properties
       ignore_missing: true
   - rename:
+      tag: rename_azure_app_service_properties_CIp_9d9e6a9f
       field: azure.app_service.properties.CIp
       target_field: azure.app_service.properties.client_ip
   - rename:
+      tag: rename_azure_app_service_properties_CsHost_4a5eb404
       field: azure.app_service.properties.CsHost
       target_field: azure.app_service.properties.cs_host
   - rename:
+      tag: rename_azure_app_service_properties_Result_68ae9108
       field: azure.app_service.properties.Result
       target_field: azure.app_service.properties.result
   - rename:
+      tag: rename_azure_app_service_properties_Details_808e99a3
       field: azure.app_service.properties.Details
       target_field: azure.app_service.properties.details
   - rename:
+      tag: rename_azure_app_service_properties_ServiceEndpoint_93b4b585
       field: azure.app_service.properties.ServiceEndpoint
       target_field: azure.app_service.properties.service_endpoint
   - rename:
+      tag: rename_azure_app_service_properties_XForwardedFor_486b3356
       field: azure.app_service.properties.XForwardedFor
       target_field: azure.app_service.properties.xforwarded_for
   - rename:
+      tag: rename_azure_app_service_properties_XForwardedHost_2de961c7
       field: azure.app_service.properties.XForwardedHost
       target_field: azure.app_service.properties.xforwarded_host
   - rename:
+      tag: rename_azure_app_service_properties_XAzureFDID_762b33a0
       field: azure.app_service.properties.XAzureFDID
       target_field: azure.app_service.properties.xazurefdid
   - rename:
+      tag: rename_azure_app_service_properties_XFDHealthProbe_066afaa0
       field: azure.app_service.properties.XFDHealthProbe
       target_field: azure.app_service.properties.xfdhealth_probe
   - rename:
+      tag: rename_azure_app_service_properties_Type_19c67308
       field: azure.app_service.properties.Type
       target_field: azure.app_service.properties.type
       ignore_missing: true
   - rename:
+      tag: rename_azure_app_service_properties_TimeGenerated_64c603f0
       field: azure.app_service.properties.TimeGenerated
       target_field: azure.app_service.properties.time_generated
       ignore_missing: true
   - rename:
+      tag: rename_azure_app_service_properties_SourceSystem_c1856a03
       field: azure.app_service.properties.SourceSystem
       target_field: azure.app_service.properties.source_system
       ignore_missing: true
   - grok:
+      tag: grok_azure_app_service_properties_client_ip_8a969716
       field: azure.app_service.properties.client_ip
       patterns:
         - '%{IPORHOST:azure.app_service.properties.client_ip}:%{POSINT:azure.app_service.properties.client_port:long}'
       ignore_failure: true
   - convert:
+      tag: convert_azure_app_service_properties_client_ip_98b8d6bf
       field: azure.app_service.properties.client_ip
       type: ip
       ignore_missing: true
 on_failure:
+  - set:
+      tag: set_event_kind_6c9d2e27
+      field: event.kind
+      value: pipeline_error
   - append:
-      field: "error.message"
-      value: "{{ _ingest.on_failure_message }} {{ _ingest.on_failure_processor_type }}"
+      tag: append_error_message_7309475f
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
