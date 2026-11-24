@@ -571,24 +571,24 @@ An example event for `knowledge_base` looks as following:
 {
     "@timestamp": "2023-06-29T12:20:46.000Z",
     "agent": {
-        "ephemeral_id": "da0816f0-0acb-432d-aabc-40ff74ab0b83",
-        "id": "af521d3d-fb8f-4a9e-b30a-9c41a680f7d2",
-        "name": "elastic-agent-33894",
+        "ephemeral_id": "5e038f32-b203-48ff-899f-1c46ae1b9988",
+        "id": "f4519db5-d61f-441a-90ab-a64e69a85f9d",
+        "name": "elastic-agent-46146",
         "type": "filebeat",
-        "version": "8.19.11"
+        "version": "9.5.6"
     },
     "data_stream": {
         "dataset": "qualys_vmdr.knowledge_base",
-        "namespace": "64767",
+        "namespace": "67212",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "af521d3d-fb8f-4a9e-b30a-9c41a680f7d2",
+        "id": "f4519db5-d61f-441a-90ab-a64e69a85f9d",
         "snapshot": false,
-        "version": "8.19.11"
+        "version": "9.5.6"
     },
     "event": {
         "agent_id_status": "verified",
@@ -597,8 +597,9 @@ An example event for `knowledge_base` looks as following:
         ],
         "dataset": "qualys_vmdr.knowledge_base",
         "id": "11830",
-        "ingested": "2026-02-25T04:32:39Z",
+        "ingested": "2026-11-24T22:45:02Z",
         "kind": "alert",
+        "module": "qualys_vmdr",
         "original": "{\"CATEGORY\":\"CGI\",\"CONSEQUENCE\":\"\",\"CVE_LIST\":[\"CVE-2022-31629\",\"CVE-2022-31628\"],\"DIAGNOSIS\":\"\",\"DISCOVERY\":{\"REMOTE\":\"1\"},\"LAST_SERVICE_MODIFICATION_DATETIME\":\"2023-06-29T12:20:46Z\",\"PATCHABLE\":\"0\",\"PCI_FLAG\":\"1\",\"PUBLISHED_DATETIME\":\"2017-06-05T21:34:49Z\",\"QID\":\"11830\",\"SEVERITY_LEVEL\":\"2\",\"SOFTWARE_LIST\":{\"SOFTWARE\":[{\"PRODUCT\":\"\",\"VENDOR\":\"\"}]},\"SOLUTION\":\"\",\"THREAT_INTELLIGENCE\":{\"THREAT_INTEL\":[{\"id\":\"8\"}]},\"TITLE\":\"\",\"VULN_TYPE\":\"Vulnerability\"}",
         "type": [
             "info"
@@ -626,11 +627,9 @@ An example event for `knowledge_base` looks as following:
             "qid": "11830",
             "severity_level": "2",
             "threat_intelligence": {
-                "intel": [
-                    {
-                        "id": "8"
-                    }
-                ]
+                "intel": {
+                    "id": "8"
+                }
             },
             "vuln_type": "Vulnerability"
         }
