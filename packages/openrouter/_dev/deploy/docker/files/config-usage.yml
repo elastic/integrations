@@ -1,0 +1,100 @@
+rules:
+  - path: /api/v1/analytics/query
+    methods: ['POST']
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+      Content-Type:
+        - 'application/json'
+    responses:
+      # First request: the API reports a truncated result. The integration discards it and retries
+      # the same window with a smaller span. The following responses are complete.
+      # The row of this response has an invalid date on purpose: if the integration indexed it, the
+      # ingest pipeline would set error.message and the system test would fail.
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "data": [
+                {
+                  "created_at__day": "not-a-date",
+                  "model": "truncated/discarded-response",
+                  "api_key_id": "key_truncated",
+                  "request_count": "1"
+                }
+              ],
+              "metadata": {
+                "query_time_ms": 45,
+                "row_count": 1,
+                "truncated": true
+              }
+            }
+          }
+          ` }}
+      - &complete
+        status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "data": [
+                {
+                  "created_at__day": "2026-09-21",
+                  "model": "openai/gpt-4o",
+                  "api_key_id": "key_openai",
+                  "request_count": "1523",
+                  "tokens_prompt": "4250000",
+                  "tokens_completion": "875000",
+                  "tokens_total": "5125000",
+                  "cached_tokens": "850000",
+                  "reasoning_tokens": "0",
+                  "total_usage": 42.75,
+                  "credits_usage": 42.75,
+                  "openrouter_usage": 0.0,
+                  "guardrail_invoked_count": "0"
+                },
+                {
+                  "created_at__day": "2026-09-21",
+                  "model": "anthropic/claude-sonnet-4-5",
+                  "api_key_id": "key_anthropic",
+                  "request_count": "301",
+                  "tokens_prompt": "1200000",
+                  "tokens_completion": "250000",
+                  "tokens_total": "1450000",
+                  "cached_tokens": "400000",
+                  "reasoning_tokens": "0",
+                  "total_usage": 18.5,
+                  "credits_usage": 18.5,
+                  "openrouter_usage": 0.0,
+                  "guardrail_invoked_count": "0"
+                }
+              ],
+              "metadata": {
+                "query_time_ms": 45,
+                "row_count": 2,
+                "truncated": false
+              }
+            }
+          }
+          ` }}
+      # The mock cycles through the responses. Repeat the complete one so that the sequence never
+      # returns to the truncated response during the test.
+      - *complete
+      - *complete
+      - *complete
+      - *complete
+      - *complete
+      - *complete
+      - *complete
+      - *complete
+      - *complete
+      - *complete
+      - *complete
+      - *complete
