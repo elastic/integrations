@@ -134,6 +134,8 @@ To customize filters in the Privileged Access Detection transform, follow the be
 | pad_okta_rare_region_name_by_user_ea                          | Detects an unusual region name for a user.                                                     | Okta Integration   | `data_stream.dataset: okta.system`    |
 | pad_okta_rare_host_name_by_user_ea                            | Detects an unusual host name for a user.                                                       | Okta Integration   | `data_stream.dataset: okta.system`    |
 
+**Note**: The `pad_okta_spike_in_group_privilege_changes_ea` job uses `okta.debug_context.debug_data.privilege_granted` and `okta.debug_context.debug_data.privilege_revoked` as influencers. These fields are available from version 3.19.0 of the Okta integration.
+
 ## Customize ML jobs for Privileged Access Detection
 
 To customize the datafeed query and other settings such as model memory limit, frequency, query delay, bucket span and influencers for the Privileged Access Detection ML jobs, follow the steps below.
