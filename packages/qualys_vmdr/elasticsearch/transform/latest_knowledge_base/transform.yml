@@ -1,0 +1,33 @@
+source:
+  index:
+    - "logs-qualys_vmdr.knowledge_base-*"
+  query:
+    bool:
+      filter:
+        - exists:
+            field: event.id # from qualys_vmdr.knowledge_base.qid
+      must_not:
+        - exists:
+            field: error.message
+dest:
+  index: "logs-qualys_vmdr_latest.dest_knowledge_base-1"
+  aliases:
+    - alias: "logs-qualys_vmdr_latest.knowledge_base"
+      move_on_creation: true
+latest:
+  unique_key:
+    - event.id # from qualys_vmdr.knowledge_base.qid
+    - data_stream.namespace
+  sort: qualys_vmdr.knowledge_base.last.service_modification_datetime
+description: Latest Qualys VMDR Knowledge Base document per QID and data-stream namespace.
+frequency: 5m
+sync:
+  time:
+    field: event.ingested
+    delay: 120s
+settings:
+  deduce_mappings: false
+  unattended: true
+_meta:
+  managed: true
+  fleet_transform_version: 0.0.1
