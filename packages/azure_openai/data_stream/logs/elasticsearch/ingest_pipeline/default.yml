@@ -2,24 +2,29 @@
 description: Pipeline for parsing azure open_ai logs.
 processors:
   - rename:
+      tag: rename_message_94589b81
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
       description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
   - remove:
+      tag: remove_message_bc1a5a7d
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_17a65b85
       field: event.original
       target_field: azure.open_ai
   - rename:
+      tag: rename_azure_open_ai_resourceId_2c4191c5
       field: azure.open_ai.resourceId
       target_field: azure.resource.id
       ignore_missing: true
   - drop:
+      tag: drop_340031df
       description: Drop non Azure OpenAI logs.
       if: "ctx.azure.open_ai.category != 'Audit' && ctx.azure.open_ai.category != 'RequestResponse' && ctx.azure.open_ai.category != 'GatewayLogs'"
       ignore_failure: true
@@ -29,8 +34,10 @@ processors:
       if: ctx.azure?.open_ai?.properties instanceof String
       on_failure:
         - remove:
+            tag: remove_azure_open_ai_properties_293a5855
             field: azure.open_ai.properties
         - append:
+            tag: append_error_message_7269ded8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
@@ -66,10 +73,12 @@ processors:
 
         ctx.azure['open_ai'] = keysToSnakeCase(ctx.azure.open_ai);
   - json:
+      tag: json_azure_open_ai_properties_backend_request_body_f0f6137c
       field: azure.open_ai.properties.backend_request_body
       if: "ctx.azure?.open_ai?.properties?.backend_request_body instanceof String"
   # GatewayLogs: Extract the backend_request body content as key value pairs. Logs the actual request input, model name information.
   - script:
+      tag: script_f08a0ed3
       lang: painless
       source: >-
         if (ctx.azure.open_ai.properties.backend_request != null) {
@@ -80,11 +89,13 @@ processors:
           ctx.azure.open_ai.properties.backend_request = ctx.temp_request; ctx.remove('temp_request');
         }
   - json:
+      tag: json_azure_open_ai_properties_backend_response_body_6f8748b4
       field: azure.open_ai.properties.backend_response_body
       if: "ctx.azure?.open_ai?.properties?.backend_response_body instanceof String"
       ignore_failure: true
   # GatewayLogs: Extract the backend_response body content as key value pairs. This logs the actual response input, usage tokens and the content filter information from the chat API.
   - script:
+      tag: script_4cbb60ed
       lang: painless
       source: >-
         if (ctx.azure.open_ai.properties.backend_response != null) {
@@ -96,12 +107,14 @@ processors:
         }
       ignore_failure: true
   - date:
+      tag: date_azure_open_ai_time_3f934a69
       field: azure.open_ai.time
       target_field: '@timestamp'
       ignore_failure: true
       formats:
         - ISO8601
   - remove:
+      tag: remove_azure_open_ai_time_ce0a3c2b
       field: azure.open_ai.time
       ignore_missing: true
   - convert:
@@ -130,6 +143,7 @@ processors:
             tag: rename-caller_ip_address
             on_failure:
               - append:
+                  tag: append_error_message_3adc30db
                   field: error.message
                   value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
@@ -139,11 +153,13 @@ processors:
       tag: remove-gatewaylog-caller_ip_address
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_81956bfd
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   # IP Autonomous System (AS) Lookup
   - geoip:
+      tag: geoip_source_ip_89b73474
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -152,18 +168,22 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_5daed7a9
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_48d317af
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - set:
+      tag: set_event_outcome_560a647a
       field: event.outcome
       value: success
       if: ctx?.azure?.open_ai?.result_type != null && ctx?.azure?.open_ai?.result_type instanceof String && ctx?.azure?.open_ai?.result_type.toLowerCase() == "succeeded"
   - set:
+      tag: set_event_outcome_c67493e1
       field: event.outcome
       value: failure
       if: ctx?.azure?.open_ai?.result_type != null && ctx?.azure?.open_ai?.result_type instanceof String && ctx?.azure?.open_ai?.result_type.toLowerCase() == "failed"
@@ -174,28 +194,34 @@ processors:
       ignore_missing: true
   ## Make the request, response sizes fields same for both categories.
   - rename:
+      tag: rename_azure_open_ai_properties_request_size_57124f6a
       field: azure.open_ai.properties.request_size
       target_field: azure.open_ai.properties.request_length
       ignore_missing: true
   - rename:
+      tag: rename_azure_open_ai_properties_response_size_6064b2a5
       field: azure.open_ai.properties.response_size
       target_field: azure.open_ai.properties.response_length
       ignore_missing: true
   - rename:
+      tag: rename_azure_open_ai_properties_backend_response_body_usage_prompt_tokens_7f920e9d
       field: azure.open_ai.properties.backend_response_body.usage.prompt_tokens
       target_field: azure.open_ai.properties.backend_response_body.usage.input_tokens
       ignore_missing: true
   - rename:
+      tag: rename_azure_open_ai_properties_backend_response_body_usage_completion_tokens_7a5df142
       field: azure.open_ai.properties.backend_response_body.usage.completion_tokens
       target_field: azure.open_ai.properties.backend_response_body.usage.output_tokens
       ignore_missing: true
   - rename:
+      tag: rename_azure_open_ai_properties_backend_response_body_choices_content_filter_results_protected_material_code_citation_URL_8346fbc7
       field: azure.open_ai.properties.backend_response_body.choices.content_filter_results.protected_material_code.citation.URL
       target_field: azure.open_ai.properties.backend_response_body.choices.content_filter_results.protected_material_code.citation.url
       ignore_missing: true
   ## Get content filtered results category and severity level for prompt blockers. The category name comes as field name so it is not possible to visualize the category.
   ## Performing this only for standard categories, hate, self_harm, violence and sexual. Picked based on the values displayed in Azure.
   - script:
+      tag: script_99208bc5
       lang: painless
       ignore_failure: true
       source: >-
@@ -229,6 +255,7 @@ processors:
 
 ## Get content filtered results category and severity level for response blockers. The category name comes as field name so it is not possible to visualize the category.
   - script:
+      tag: script_c7f347f5
       lang: painless
       ignore_failure: true
       if: ctx.azure?.open_ai?.properties?.backend_response_body?.choices != null
@@ -263,10 +290,12 @@ processors:
           }
           ctx.azure.open_ai.properties.backend_response_body.content_filtered_categories = response_categories;
   - rename:
+      tag: rename_azure_open_ai_properties_method_e070ea16
       field: azure.open_ai.properties.method
       target_field: http.request.method
       ignore_missing: true
   - rename:
+      tag: rename_azure_open_ai_properties_response_code_4a3a2bf7
       field: azure.open_ai.properties.response_code
       target_field: http.response.status_code
       ignore_missing: true
@@ -277,6 +306,7 @@ processors:
       tag: uri_parts-properties-request_uri
       on_failure:
         - append:
+            tag: append_error_message_db1f80bd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
@@ -291,10 +321,12 @@ processors:
       tag: remove-request-response-body
       ignore_missing: true
   - rename:
+      tag: rename_azure_open_ai_duration_ms_0e280978
       field: azure.open_ai.duration_ms
       target_field: event.duration
       ignore_missing: true
   - script:
+      tag: script_e2bbdd6a
       lang: painless
       source: if (ctx.event.duration!= null) {ctx.event.duration = ctx.event.duration
         * params.param_nano;}
@@ -302,9 +334,11 @@ processors:
         param_nano: 1000000
       ignore_failure: true
   - pipeline:
+      tag: pipeline_7b739d8a
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
       ignore_failure: true
   - script:
+      tag: script_f8436aaf
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -323,5 +357,14 @@ processors:
         drop(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_9bac184a
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_0b913e06
       field: error.message
-      value: "{{ _ingest.on_failure_message }} {{ _ingest.on_failure_processor_type }}"
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
