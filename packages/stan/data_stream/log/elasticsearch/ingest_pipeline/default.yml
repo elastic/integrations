@@ -2,17 +2,26 @@
 description: Pipeline for parsing stan log logs
 processors:
   - set:
+      tag: set_event_ingested_54ff049d
       field: event.ingested
       value: '{{_ingest.timestamp}}'
   - set:
+      tag: set_ecs_version_7c1ec480
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_8bdbfd8c
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_0609e473
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   - grok:
+      tag: grok_event_original_3d56327d
       field: event.original
       patterns:
       - \[%{POSINT:process.pid}\]( %{STANTIME:stan.log.timestamp})? \[%{STANLOGLEVEL:log.level}\]
@@ -22,6 +31,7 @@ processors:
         STANLOGLEVEL: (INF|DBG|WRN|ERR|FTL|TRC)
       ignore_missing: true
   - grok:
+      tag: grok_stan_log_info_7a9c0ea2
       field: stan.log.info
       patterns:
       - '%{IPV4:client.ip}:%{POSINT:client.port} - cid:%{POSINT:stan.log.client.id}
@@ -29,6 +39,7 @@ processors:
       - '%{GREEDYDATA:stan.log.msg.data}'
       ignore_missing: true
   - grok:
+      tag: grok_stan_log_msg_info_c01bf281
       field: stan.log.msg.info
       patterns:
       - '%{STANDIRECTION:network.direction} %{STANPAYLOAD:stan.log.msg.type}: \[%{GREEDYDATA:stan.log.msg.payload}\]'
@@ -57,16 +68,19 @@ processors:
         STANNOINFO: (?:%{STANPING}|%{STANPONG}|%{STANOK})
       ignore_missing: true
   - remove:
+      tag: remove_stan_log_info_42bca17f
       field: 
         - stan.log.info
         - stan.log.msg.info
         - stan.log.msg.payload
       ignore_missing: true
   - rename:
+      tag: rename_stan_log_msg_data_51c74ef0
       field: stan.log.msg.data
       target_field: message
       ignore_missing: true
   - script:
+      tag: script_b034d7a0
       lang: painless
       source: |-
         if (ctx.log.level == params.inf) {
@@ -96,6 +110,7 @@ processors:
         trc: TRC
         trace: trace
   - script:
+      tag: script_d4d8a185
       lang: painless
       source: |-
         if (ctx.stan.log.msg.type == params.msg) {
@@ -146,6 +161,7 @@ processors:
         information: information
       if: ctx.stan.log.msg?.type != null
   - script:
+      tag: script_5dabf481
       lang: painless
       source: |-
         if (ctx.network.direction == params.in) {
@@ -160,42 +176,61 @@ processors:
         outbound: outbound
       if: ctx.network?.direction != null
   - rename:
+      tag: rename_timestamp_4b639419
       field: '@timestamp'
       target_field: event.created
   - date:
+      tag: date_stan_log_timestamp_0a116595
       field: stan.log.timestamp
       target_field: '@timestamp'
       formats:
       - yyyy/MM/dd HH:mm:ss.SSSSSS
   - remove:
+      tag: remove_stan_log_timestamp_26ea3fc3
       field: stan.log.timestamp
   - set:
+      tag: set_event_kind_7e8297e0
       field: event.kind
       value: event
   - append:
+      tag: append_event_type_80738b7a
       field: event.type
       value: info
   - append:
+      tag: append_event_type_6a1523d9
       field: event.type
       value: error
       if: "ctx?.log?.level != null && (ctx.log.level == 'error' || ctx.log.level == 'fatal')"
   - append:
+      tag: append_related_ip_c9602b5b
       field: related.ip
       value: "{{client.ip}}"
       if: "ctx?.client?.ip != null"
   - convert:
+      tag: convert_process_pid_065d19b8
       ignore_missing: true
       field: process.pid
       type: long
   - convert:
+      tag: convert_client_port_b5c7a859
       ignore_missing: true
       field: client.port
       type: long
   - convert:
+      tag: convert_stan_log_msg_bytes_3dd50e86
       ignore_missing: true
       field: stan.log.msg.bytes
       type: long
 on_failure:
   - set:
+      tag: set_event_kind_18704a60
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_6377bc6a
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
