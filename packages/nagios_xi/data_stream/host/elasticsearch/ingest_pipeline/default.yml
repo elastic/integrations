@@ -2,429 +2,516 @@
 description: Pipeline for processing Nagios XI Hosts metrics
 processors:
 - set:
+    tag: set_ecs_version_4c9b2ab0
     field: ecs.version
     value: 8.11.0
 - rename:
+    tag: rename_message_bba2dc53
     field: message
     target_field: event.original
     ignore_missing: true
     if: 'ctx.event?.original == null'
+- remove:
+    tag: remove_message_d443a607
+    field: message
+    ignore_missing: true
+    if: 'ctx.event?.original != null'
 - json:
+    tag: json_event_original_7703c70e
     field: event.original
     target_field: json
     ignore_failure: true
 - dissect:
+    tag: dissect_json_perfdata_b7776e75
     field: json.perfdata
     pattern: rta=%{json.rta}ms%{json.temp1}pl=%{json.pl}%%{json.temp2}
     ignore_missing: true
     ignore_failure: true
 - dissect:
+    tag: dissect_json_perfdata_840cdce7
     field: json.perfdata
     pattern: time=%{nagios_xi.host.performance_data.time}s%{}size=%{nagios_xi.host.performance_data.size}B%{}
     ignore_missing: true
     ignore_failure: true
 - remove:
+    tag: remove_json_perfdata_9738e195
     ignore_failure: true
     field: json.perfdata
     ignore_missing: true
 - date:
+    tag: date_json_status_update_time_ef58175a
     field: json.status_update_time
     formats:
     - yyyy-MM-dd HH:mm:ss
     target_field: "@timestamp"
     ignore_failure: true
 - set:
+    tag: set_json_status_update_time_90c436f7
     field: json.status_update_time
     value: "{{{@timestamp}}}"
     ignore_empty_value: true
     ignore_failure: true
 - date:
+    tag: date_json_status_update_time_626a519d
     field: json.status_update_time
     formats:
     - yyyy-MM-dd'T'HH:mm:ss.SSSXXX
     target_field: json.status_update_time
     ignore_failure: true
 - date:
+    tag: date_json_last_check_6bf2699b
     field: json.last_check
     formats:
     - yyyy-MM-dd HH:mm:ss
     target_field: nagios_xi.host.last_check
     ignore_failure: true
 - date:
+    tag: date_json_next_check_f0d724ee
     field: json.next_check
     formats:
     - yyyy-MM-dd HH:mm:ss
     target_field: nagios_xi.host.next_check
     ignore_failure: true
 - date:
+    tag: date_json_last_time_up_c7ae443a
     field: json.last_time_up
     formats:
     - yyyy-MM-dd HH:mm:ss
     target_field: nagios_xi.host.last_time_up
     ignore_failure: true
 - date:
+    tag: date_json_last_state_change_0ace85d5
     field: json.last_state_change
     formats:
     - yyyy-MM-dd HH:mm:ss
     target_field: nagios_xi.host.last_state_change
     ignore_failure: true
 - date:
+    tag: date_json_last_hard_state_change_c0893b28
     field: json.last_hard_state_change
     formats:
     - yyyy-MM-dd HH:mm:ss
     target_field: nagios_xi.host.last_hard_state_change
     ignore_failure: true
 - date:
+    tag: date_json_last_time_up_9b1526fa
     field: json.last_time_up
     formats:
     - yyyy-MM-dd HH:mm:ss
     target_field: nagios_xi.host.last_time_up
     ignore_failure: true
 - date:
+    tag: date_json_last_time_down_7ba0a162
     field: json.last_time_down
     formats:
     - yyyy-MM-dd HH:mm:ss
     target_field: nagios_xi.host.last_time_down
     ignore_failure: true
 - date:
+    tag: date_json_last_time_unreachable_b0d9f2bd
     field: json.last_time_unreachable
     formats:
     - yyyy-MM-dd HH:mm:ss
     target_field: nagios_xi.host.last_time_unreachable
     ignore_failure: true
 - date:
+    tag: date_json_last_notification_daa4ced6
     field: json.last_notification
     formats:
     - yyyy-MM-dd HH:mm:ss
     target_field: nagios_xi.host.last_notification
     ignore_failure: true
 - date:
+    tag: date_json_next_notification_c51c0fed
     field: json.next_notification
     formats:
     - yyyy-MM-dd HH:mm:ss
     target_field: nagios_xi.host.next_notification
     ignore_failure: true
 - date:
+    tag: date_json_next_notification_910b8e3f
     field: json.next_notification
     formats:
     - yyyy-MM-dd HH:mm:ss
     target_field: nagios_xi.host.next_notification
     ignore_failure: true
 - convert:
+    tag: convert_json_pl_2f60e836
     field: json.pl
     target_field: nagios_xi.host.performance_data.pl
     type: double
     ignore_missing: true
     ignore_failure: true
 - convert:
+    tag: convert_json_rta_409bf582
     field: json.rta
     target_field: nagios_xi.host.performance_data.rta
     type: double
     ignore_missing: true
     ignore_failure: true
 - convert:
+    tag: convert_nagios_xi_host_performance_data_time_ca7c497d
     field: nagios_xi.host.performance_data.time
     type: double
     ignore_missing: true
     ignore_failure: true
 - convert:
+    tag: convert_nagios_xi_host_performance_data_size_22e0a9e6
     field: nagios_xi.host.performance_data.size
     type: double
     target_field: nagios_xi.host.performance_data.size
     ignore_missing: true
     ignore_failure: true
 - convert:
+    tag: convert_json_address_e9a276ac
     field: json.address
     type: ip
     ignore_missing: true
     on_failure:
         - rename:
+            tag: rename_json_address_c881e0bd
             field: json.address
             target_field: nagios_xi.host.address
 - append:
+    tag: append_host_ip_55c3b7eb
     field: host.ip
     value: '{{{json.address}}}'
     if: ctx.json?.address != null
     allow_duplicates: false
 - append:
+    tag: append_related_ip_d44c78c0
     field: related.ip
     value: '{{{json.address}}}'
     if: ctx.json?.address != null
     allow_duplicates: false
 - convert:
+    tag: convert_json_normal_check_interval_382aa075
     field: json.normal_check_interval
     target_field: nagios_xi.host.normal_check_interval
     type: double
     ignore_missing: true
     ignore_failure: true
 - convert:
+    tag: convert_json_retry_check_interval_72fbcd33
     field: json.retry_check_interval
     target_field: nagios_xi.host.retry_check_interval
     type: double
     ignore_missing: true
     ignore_failure: true
 - convert:
+    tag: convert_json_latency_88dd13f9
     field: json.latency
     target_field: nagios_xi.host.latency
     type: double
     ignore_missing: true
     ignore_failure: true
 - convert:
+    tag: convert_json_execution_time_3089b976
     field: json.execution_time
     target_field: nagios_xi.host.execution_time
     type: double
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_status_update_time_d853f075
     field: json.status_update_time
     target_field: nagios_xi.host.status_update_time
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_check_command_ba095d25
     field: json.check_command
     target_field: nagios_xi.host.check_command
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_host_object_id_45cf23ef
     field: json.host_object_id
     target_field: nagios_xi.host.host_object_id
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_host_name_42b5580a
     field: json.host_name
     target_field: nagios_xi.host.host_name
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_host_alias_fb11f331
     field: json.host_alias
     target_field: nagios_xi.host.host_alias
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_display_name_33e6331d
     field: json.display_name
     target_field: nagios_xi.host.display_name
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_icon_image_05f9cc9b
     field: json.icon_image
     target_field: nagios_xi.host.icon_image
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_icon_image_alt_68b550ab
     field: json.icon_image_alt
     target_field: nagios_xi.host.icon_image_alt
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_notes_d01acbc8
     field: json.notes
     target_field: nagios_xi.host.notes
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_notes_url_3168d66d
     field: json.notes_url
     target_field: nagios_xi.host.notes_url
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_action_url_c3e5c2e6
     field: json.action_url
     target_field: nagios_xi.host.action_url
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_hoststatus_id_0811d47c
     field: json.hoststatus_id
     target_field: nagios_xi.host.hoststatus_id
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_instance_id_817a33bc
     field: json.instance_id
     target_field: nagios_xi.host.instance_id
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_output_21de53f8
     field: json.output
     target_field: nagios_xi.host.output
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_long_output_ddabcd2a
     field: json.long_output
     target_field: nagios_xi.host.long_output
     ignore_missing: true
     ignore_failure: true
 - set:
+    tag: set_nagios_xi_host_current_state_8b7dbd48
     field: nagios_xi.host.current_state
     value: Up/Pending
     ignore_empty_value: true
     ignore_failure: true
     if: ctx.json?.current_state?.contains("0") == true
 - set:
+    tag: set_nagios_xi_host_current_state_8b276929
     field: nagios_xi.host.current_state
     value: Warning
     ignore_empty_value: true
     ignore_failure: true
     if: ctx.json?.current_state?.contains("1") == true
 - set:
+    tag: set_nagios_xi_host_current_state_77f94dfe
     field: nagios_xi.host.current_state
     value: Critical
     ignore_empty_value: true
     ignore_failure: true
     if: ctx.json?.current_state?.contains("2") == true
 - set:
+    tag: set_nagios_xi_host_current_state_c5b3f79f
     field: nagios_xi.host.current_state
     value: Unknown
     ignore_empty_value: true
     ignore_failure: true
     if: ctx.json?.current_state?.contains("3") == true
 - rename:
+    tag: rename_json_has_been_checked_b6531df1
     field: json.has_been_checked
     target_field: nagios_xi.host.has_been_checked
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_should_be_scheduled_4f4e0542
     field: json.should_be_scheduled
     target_field: nagios_xi.host.should_be_scheduled
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_current_check_attempt_816d1999
     field: json.current_check_attempt
     target_field: nagios_xi.host.current_check_attempt
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_max_check_attempts_7ca30a8f
     field: json.max_check_attempts
     target_field: nagios_xi.host.max_check_attempts
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_check_type_484dd6f2
     field: json.check_type
     target_field: nagios_xi.host.check_type
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_check_options_63beefd8
     field: json.check_options
     target_field: nagios_xi.host.check_options
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_last_hard_state_7d22ed8d
     field: json.last_hard_state
     target_field: nagios_xi.host.last_hard_state
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_state_type_3c0a61d4
     field: json.state_type
     target_field: nagios_xi.host.state_type
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_no_more_notifications_e118af4b
     field: json.no_more_notifications
     target_field: nagios_xi.host.no_more_notifications
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_notifications_enabled_5b51c1d5
     field: json.notifications_enabled
     target_field: nagios_xi.host.notifications_enabled
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_problem_has_been_acknowledged_8809aa89
     field: json.problem_has_been_acknowledged
     target_field: nagios_xi.host.problem_has_been_acknowledged
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_acknowledgement_type_408f3d28
     field: json.acknowledgement_type
     target_field: nagios_xi.host.acknowledgement_type
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_current_notification_number_47cd53d9
     field: json.current_notification_number
     target_field: nagios_xi.host.current_notification_number
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_passive_checks_enabled_ba84ab81
     field: json.passive_checks_enabled
     target_field: nagios_xi.host.passive_checks_enabled
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_active_checks_enabled_fa8d9d45
     field: json.active_checks_enabled
     target_field: nagios_xi.host.active_checks_enabled
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_event_handler_enabled_dca288aa
     field: json.event_handler_enabled
     target_field: nagios_xi.host.event_handler_enabled
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_flap_detection_enabled_a7af26b5
     field: json.flap_detection_enabled
     target_field: nagios_xi.host.flap_detection_enabled
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_is_flapping_0adc5280
     field: json.is_flapping
     target_field: nagios_xi.host.is_flapping
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_percent_state_change_e85dc219
     field: json.percent_state_change
     target_field: nagios_xi.host.percent_state_change
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_scheduled_downtime_depth_f640c862
     field: json.scheduled_downtime_depth
     target_field: nagios_xi.host.scheduled_downtime_depth
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_failure_prediction_enabled_7f04f8f3
     field: json.failure_prediction_enabled
     target_field: nagios_xi.host.failure_prediction_enabled
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_process_performance_data_92d6a0e1
     field: json.process_performance_data
     target_field: nagios_xi.host.process_performance_data
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_obsess_over_host_17ff9b5d
     field: json.obsess_over_host
     target_field: nagios_xi.host.obsess_over_host
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_modified_host_attributes_a4311022
     field: json.modified_host_attributes
     target_field: nagios_xi.host.modified_host_attributes
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_event_handler_4bc0ed2d
     field: json.event_handler
     target_field: nagios_xi.host.event_handler
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_check_timeperiod_object_id_a73c7d58
     field: json.check_timeperiod_object_id
     target_field: nagios_xi.host.check_timeperiod_object_id
     ignore_missing: true
     ignore_failure: true
 - set:
+    tag: set_event_dataset_f23a9fe2
     field: event.dataset
     value: nagios_xi.host
     ignore_empty_value: true
     ignore_failure: true
 - set:
+    tag: set_event_kind_794bbb38
     field: event.kind
     value: metric
     ignore_empty_value: true
     ignore_failure: true
 - set:
+    tag: set_event_module_c04e1075
     field: event.module
     value: nagios_xi
     ignore_empty_value: true
     ignore_failure: true
 - set:
+    tag: set_event_type_6a8fb31b
     field: event.type
     value: [info]
     ignore_empty_value: true
     ignore_failure: true
 - script:
+    tag: script_ef8f53b2
     description: Drops null/empty values recursively
     lang: painless
     source: |
@@ -442,12 +529,22 @@ processors:
       }
       drop(ctx);
 - remove:
+    tag: remove_json_53abe68f
     field:
     - json
     ignore_missing: true
     ignore_failure: true
 
 on_failure:
-- set:
-    field: error.message
-    value: "{{{ _ingest.on_failure_message }}}"
+  - set:
+      tag: set_event_kind_1437a20e
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_2af8fe3c
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
