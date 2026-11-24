@@ -2,33 +2,50 @@
 description: Pipeline for parsing Spring Boot Memory metrics.
 processors:
   - set:
+      tag: set_ecs_version_6403378b
       field: ecs.version
       value: "8.11.0"
   - rename:
+      tag: rename_jolokia_metrics_d657766e
       field: jolokia.metrics
       target_field: spring_boot.memory
       ignore_missing: true
       ignore_failure: true
   - set:
+      tag: set_event_type_35a1e209
       field: event.type
       value: [info]
   - set:
+      tag: set_event_kind_014404c6
       field: event.kind
       value: metric
   - set:
+      tag: set_event_category_52d0c0f5
       field: event.category
       value: [web]
   - set:
+      tag: set_event_module_5ed188ce
       field: event.module
       value: spring_boot
   - set:
+      tag: set_event_dataset_58087b5f
       field: event.dataset
       value: spring_boot.memory
   - remove:
+      tag: remove_jolokia_b7976b07
       field: jolokia
       ignore_missing: true
       ignore_failure: true      
 on_failure:
   - set:
+      tag: set_event_kind_250181b9
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_7b053c44
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

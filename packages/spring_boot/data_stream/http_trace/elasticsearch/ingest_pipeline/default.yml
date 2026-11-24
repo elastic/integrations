@@ -2,85 +2,109 @@
 description: Pipeline for processing http_trace logs
 processors:
   - set:
+      tag: set_ecs_version_c2f2a134
       field: ecs.version
       value: "8.11.0"
   - rename:
+      tag: rename_message_b43f415a
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_37c255f8
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   - json:
+      tag: json_event_original_4712d03d
       field: event.original
       target_field: json
       ignore_failure: true
   - fingerprint:
+      tag: fingerprint_79de01d8
       fields:
         - json.timestamp
         - json.request.uri
       target_field: _id
       ignore_missing: true
   - set:
+      tag: set_event_type_3502e209
       field: event.type
       value: [info]
   - set:
+      tag: set_event_kind_550d10b4
       field: event.kind
       value: event
   - set:
+      tag: set_event_category_91b60bd5
       field: event.category
       value: [web]
   - set:
+      tag: set_event_dataset_1ac77079
       field: event.dataset
       value: spring_boot.http_trace
   - set:
+      tag: set_event_module_591734e7
       field: event.module
       value: spring_boot     
   - rename:
+      tag: rename_json_principal_ea92130d
       field: json.principal
       target_field: spring_boot.http_trace.principal
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_session_f0845337
       field: json.session
       target_field: spring_boot.http_trace.session
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_timeTaken_3a7a76ae
       field: json.timeTaken
       target_field: event.duration
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_request_method_335c13c7
       field: json.request.method
       target_field: http.request.method
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_request_uri_5ab04bcd
       field: json.request.uri
       target_field: http.request.referrer
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_request_remoteAddress_abfd80d9
       field: json.request.remoteAddress
       target_field: host.ip
       ignore_missing: true
       ignore_failure: true
   - set:
+      tag: set_host_ip_bc55b76d
       field: host.ip
       value: ["{{{host.ip}}}"]
       ignore_empty_value: true
       ignore_failure: true
   - rename:
+      tag: rename_json_response_status_3f2b7d10
       field: json.response.status
       target_field: http.response.status_code
       ignore_missing: true
       ignore_failure: true
   - remove:
+      tag: remove_json_8e1e24c7
       field:
        - json
        - input.type
       ignore_missing: true
       ignore_failure: true
   - script:
+      tag: script_ac7d01b0
       description: Drops null/empty values recursively
       lang: painless
       source: |
@@ -99,5 +123,14 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_e040509c
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_01b1a5c5
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
