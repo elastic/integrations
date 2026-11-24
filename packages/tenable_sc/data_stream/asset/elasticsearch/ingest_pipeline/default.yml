@@ -4,7 +4,7 @@ processors:
   - set:
       tag: set_ecs_version_6b2cef5e
       field: ecs.version
-      value: '8.11.0'
+      value: '9.5.0'
   - remove:
       field:
         - organization
@@ -81,6 +81,52 @@ processors:
         - tenable_sc.asset.custom_hash
       target_field: tenable_sc.asset.custom_hash
       method: SHA-256
+      ignore_missing: true
+  - script:
+      tag: set_asset_ingest_day_a91c4e72
+      description: >-
+        Collection day used only in the document id so that when Tenable
+        reports an asset again on a later day, a new document is indexed even
+        if scan state is unchanged. The latest transform can then refresh
+        @timestamp without waiting for the backing index to roll over.
+      if: ctx['@timestamp'] != null && ctx.tenable_sc?.asset?.custom_hash != null
+      lang: painless
+      source: >-
+        def ts = ctx['@timestamp'].toString();
+        if (ts.length() >= 10) {
+          ctx.tenable_sc.asset.ingest_day = ts.substring(0, 10);
+        }
+      ignore_failure: true
+  - fingerprint:
+      tag: fingerprint_to_id_asset_state_8a3c2f1e
+      description: >-
+        Document id from stable asset identity, mutable scan state, and the
+        collection day. Severity or score changes index as new documents.
+        Unchanged assets from the same Tenable report on the same day
+        deduplicate. A later Tenable report on a new day indexes a new
+        document even if scan state is unchanged.
+      if: ctx.tenable_sc?.asset?.custom_hash != null
+      fields:
+        - tenable_sc.asset.custom_hash
+        - tenable_sc.asset.ingest_day
+        - json.score
+        - json.total
+        - json.severityInfo
+        - json.severityLow
+        - json.severityMedium
+        - json.severityHigh
+        - json.severityCritical
+        - json.macAddress
+        - json.policyName
+        - json.pluginSet
+        - json.lastAuthRun
+        - json.lastUnauthRun
+      target_field: _id
+      method: SHA-256
+      ignore_missing: true
+  - remove:
+      tag: remove_asset_ingest_day_b72d5f03
+      field: tenable_sc.asset.ingest_day
       ignore_missing: true
   - convert:
       tag: convert_json_ip_to_tenable_sc_asset_ip_0a1cb325
@@ -227,29 +273,67 @@ processors:
       copy_from: json.netbiosName
       ignore_failure: true
   - set:
-      tag: set_host_hostname_43388377
-      field: host.hostname
-      copy_from: json.dnsName
-      ignore_failure: true
-  - set:
       tag: set_tenable_sc_asset_dns_name_92a3b74e
       field: tenable_sc.asset.dns.name
       copy_from: json.dnsName
       ignore_failure: true
-  - script:
-      tag: script_befb7a8a
-      lang: painless
-      if: ctx.json?.dnsName != null && ctx.json.dnsName != ''
-      source: |
-        def domain = '';
-        def nameArray = ctx.json.dnsName.toString().splitOnToken('.');
-        if (nameArray?.length != null && nameArray.length > 0) {
-          for (int i = 1; i < nameArray.length; i++) {
-            domain += nameArray[i] + (i < nameArray.length - 1 ? '.' : '');
-          }
-          ctx.host.name = nameArray[0];
-          ctx.host.domain = domain;
-        }
+  # host.name is set the same way as in the vulnerability data stream, so that an asset and its
+  # vulnerabilities have the same host.name.
+  - set:
+      tag: set_host_name_from_json_dns_name
+      field: host.name
+      copy_from: json.dnsName
+      if: ctx.json?.dnsName instanceof String && ctx.json.dnsName.trim() != ''
+  - trim:
+      tag: trim_host_name
+      field: host.name
+      ignore_missing: true
+  - grok:
+      tag: grok_host_name_to_host_hostname_and_host_domain
+      description: Split the FQDN into its first label (host.hostname) and the rest (host.domain). IP addresses are not split.
+      field: host.name
+      patterns:
+        - '^%{IP}$'
+        - '^%{HOST_LABEL:host.hostname}(?:\.%{GREEDYDATA:host.domain})?$'
+      pattern_definitions:
+        HOST_LABEL: '[^.]+'
+      ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_error_message_grok_host_name_to_host_hostname_and_host_domain
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - grok:
+      tag: grok_tenable_sc_asset_netbios_name_to_host_hostname
+      description: Fall back to the NetBIOS name, without its domain prefix (DOMAIN\NAME), when the asset has no DNS name.
+      field: tenable_sc.asset.netbios.name
+      patterns:
+        - '^(?:%{DATA}\\)?%{NETBIOS_NAME:host.hostname}$'
+      pattern_definitions:
+        NETBIOS_NAME: '[^\\]+'
+      if: ctx.host?.name == null && ctx.tenable_sc?.asset?.netbios?.name instanceof String && ctx.tenable_sc.asset.netbios.name != ''
+      on_failure:
+        - append:
+            tag: append_error_message_grok_tenable_sc_asset_netbios_name_to_host_hostname
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_host_name_from_host_hostname
+      field: host.name
+      copy_from: host.hostname
+      if: ctx.host?.name == null
+      ignore_empty_value: true
+  - lowercase:
+      tag: lowercase_host_name
+      field: host.name
+      ignore_missing: true
+  - set:
+      tag: set_host_name_from_tenable_sc_asset_ip
+      description: Fall back to the asset IP address when the asset has neither a DNS nor a NetBIOS name.
+      field: host.name
+      copy_from: tenable_sc.asset.ip
+      if: ctx.host?.name == null
+      ignore_empty_value: true
   - append:
       tag: append_related_hosts_abea24b8
       field: related.hosts
@@ -260,6 +344,7 @@ processors:
       tag: append_related_hosts_1f2f5357
       field: related.hosts
       value: '{{{host.name}}}'
+      if: ctx.host?.name != null && ctx.host.name != ctx.tenable_sc?.asset?.ip
       allow_duplicates: false
       ignore_failure: true
   - append:

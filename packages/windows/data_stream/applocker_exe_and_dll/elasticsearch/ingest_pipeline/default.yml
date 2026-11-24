@@ -151,40 +151,91 @@ processors:
             ignore_failure: true
 
     ## Fully Qualified Binary Name (FQBN) / File Fields
-    ## ECS now requires some fields to be arrays, so extract
-    ## them into a temporary field
+    ## The FQBN is PUBLISHER\PRODUCT\FILE NAME\VERSION. Split it from the
+    ## right, then parse the X.500 attributes of the publisher with kv so
+    ## that any subset and order of attributes is handled.
   - grok:
       field: winlog.user_data.Fqbn
+      tag: grok_fqbn
       ignore_missing: true
       patterns:
-      - "^O=(?<tmp.file.x509.subject.organization>.*),%{SPACE}L=(?<file.x509.subject.locality>.*),%{SPACE}S=(?<tmp.file.x509.subject.state_or_province>.*),%{SPACE}C=(?<tmp.file.x509.subject.country>[^\\\\]*)\\\\(?<file.pe.product>[^\\\\]*)\\\\(?<file.pe.original_file_name>[^\\\\]*)\\\\(?<file.pe.file_version>.*)$"
-      - "^O=(?<tmp.file.x509.subject.organization>.*),%{SPACE}L=(?<file.x509.subject.locality>.*),%{SPACE}C=(?<tmp.file.x509.subject.country>[^\\\\]*)\\\\(?<file.pe.product>[^\\\\]*)\\\\(?<file.pe.original_file_name>[^\\\\]*)\\\\(?<file.pe.file_version>.*)$"
-      - "^O=(?<tmp.file.x509.subject.organization>.*),%{SPACE}S=(?<tmp.file.x509.subject.state_or_province>.*),%{SPACE}C=(?<tmp.file.x509.subject.country>[^\\\\]*)\\\\(?<file.pe.product>[^\\\\]*)\\\\(?<file.pe.original_file_name>[^\\\\]*)\\\\(?<file.pe.file_version>.*)$"
-      - "^CN=(?<tmp.file.x509.subject.common_name>.*)\\\\(?<file.pe.product>[^\\\\]*)\\\\(?<file.pe.original_file_name>[^\\\\]*)\\\\(?<file.pe.file_version>.*)$"
-      - "^CN=(?<tmp.file.x509.subject.common_name>.*),%{SPACE}O=(?<tmp.file.x509.subject.organization>.*),%{SPACE}L=(?<file.x509.subject.locality>.*),%{SPACE}S=(?<tmp.file.x509.subject.state_or_province>.*),%{SPACE}C=(?<tmp.file.x509.subject.country>[^\\\\]*)\\\\(?<file.pe.product>[^\\\\]*)\\\\(?<file.pe.original_file_name>[^\\\\]*)\\\\(?<file.pe.file_version>.*)$"
+      - '^(?<tmp.fqbn.publisher>.*)\\(?<file.pe.product>[^\\]*)\\(?<file.pe.original_file_name>[^\\]*)\\(?<file.pe.file_version>[^\\]*)$'
       if: ctx.winlog?.user_data?.Fqbn != "-"
-
-    ## Use the append processor to create arrays from the single
-    ## strings extracted by the previous grok processor
-  - append:
-      field: file.x509.subject.common_name
-      value: "{{tmp.file.x509.subject.common_name}}"
-      ignore_failure: true
-
-  - append:
-      field: file.x509.subject.country
-      value: "{{tmp.file.x509.subject.country}}"
-      ignore_failure: true
-
-  - append:
-      field: file.x509.subject.state_or_province
-      value: "{{tmp.file.x509.subject.state_or_province}}"
-      ignore_failure: true
-
-  - append:
-      field: file.x509.subject.organization
-      value: "{{tmp.file.x509.subject.organization}}"
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
+    ## Only split on commas that start a new attribute, so that quoted
+    ## values such as O="EXAMPLE, INC." stay intact.
+  - kv:
+      field: tmp.fqbn.publisher
+      tag: kv_fqbn_publisher
+      target_field: tmp.fqbn.subject
+      field_split: ',\s*(?=[A-Za-z0-9.]+=)'
+      value_split: '='
+      trim_value: ' '
+      include_keys:
+        - CN
+        - O
+        - L
+        - S
+        - C
+      ignore_missing: true
+      if: ctx.tmp?.fqbn?.publisher instanceof String && ctx.tmp.fqbn.publisher != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
+  - script:
+      tag: script_fqbn_subject
+      description: Copy the FQBN publisher attributes into the file.x509.subject arrays.
+      lang: painless
+      if: ctx.tmp?.fqbn?.subject instanceof Map
+      params:
+        CN: common_name
+        O: organization
+        L: locality
+        S: state_or_province
+        C: country
+      source: |
+        Map subject = ctx.tmp.fqbn.subject;
+        for (def entry : params.entrySet()) {
+          def value = subject.get(entry.getKey());
+          if (value == null) {
+            continue;
+          }
+          List values = value instanceof List ? value : [value];
+          for (def v : values) {
+            if (!(v instanceof String)) {
+              continue;
+            }
+            String s = v;
+            // Quoted values are enclosed in double quotes, with embedded quotes doubled.
+            if (s.length() > 1 && s.startsWith('"') && s.endsWith('"')) {
+              s = s.substring(1, s.length() - 1).replace('""', '"');
+            }
+            if (s.isEmpty()) {
+              continue;
+            }
+            if (ctx.file == null) {
+              ctx.file = [:];
+            }
+            if (ctx.file.x509 == null) {
+              ctx.file.x509 = [:];
+            }
+            if (ctx.file.x509.subject == null) {
+              ctx.file.x509.subject = [:];
+            }
+            List target = ctx.file.x509.subject.computeIfAbsent(entry.getValue(), k -> new ArrayList());
+            if (!target.contains(s)) {
+              target.add(s);
+            }
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
 
     ## Remove all temporary fields
   - remove:

@@ -1,4 +1,26 @@
 # newer versions go on top
+- version: "1.18.0"
+  changes:
+    - description: Populate `process.name`, `process.executable`, `process.command_line`, `process.args`, `process.args_count` and the `process.parent` equivalents for process launch events (types 8001 and 8027). Arguments are split with the Windows quoting rules, so only for Windows endpoints. For type 8001 launches the SES actor is the launcher, so `process.parent.pid`, `process.parent.entity_id` and `process.parent.start` come from the actor. For these events `process.command_line` now holds only the launched process command line, not the actor command line as well.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/22455
+    - description: Set `event.type` to `start` and `end` for process activity events (type 8001) only when the event is a launch or a termination, and add `start` and `end` for process detection events (type 8027) with the launch and terminate activities.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/22455
+    - description: Upper-case `host.mac` values, so that MAC addresses in lower case in the source events match the ECS pattern, and convert `ses.device_vhost` to a string to match its field definition.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/22455
+    - description: Add field definitions for `ses.edr_enriched_data`, `ses.is_npvdi_client`, `ses.legacy_product_uid`, `ses.on_prem_domain_id`, `ses.site_id`, `ses.trans_event_raw_length` and `cmd_line_raw_length` of the actor and process objects.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/22455
+    - description: Remove the explicit `winlog.event_data.*` field definitions, which the `winlog.event_data` object declaration already covers, to stay within the 2048 field limit of a data stream. All values of `winlog.event_data` are now mapped as keyword, including numbers and booleans, so event data keys that carry numbers are no longer mapped as long.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/22455
+- version: "1.17.0"
+  changes:
+    - description: Update Elastic Managed integration documentation to the current wording and docs links.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/20987
 - version: "1.16.0"
   changes:
     - description: Add tags to ingest pipeline processors and add `preserve_original_event` to pipeline-level `on_failure` handlers.

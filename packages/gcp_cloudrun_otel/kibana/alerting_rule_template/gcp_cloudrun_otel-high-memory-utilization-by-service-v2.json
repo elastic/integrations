@@ -1,0 +1,75 @@
+{
+  "id": "gcp_cloudrun_otel-high-memory-utilization-by-service-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud Run OTel] High memory utilization by service",
+        "description": "Fires when the p95 per-instance memory utilisation of a Cloud Run service is 85% or higher over a 30-minute window. Instances that exceed the memory limit are OOM-killed, which causes HTTP 500s and cold starts.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudrun"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "30m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudrun.otel-*\n// Services only: cloud_run_job documents have no service_name\n| WHERE `metrics.run.googleapis.com/container/memory/utilizations` IS NOT NULL\n  AND resource.attributes.service_name IS NOT NULL\n// Utilisation is a fraction 0-1 of the memory limit (in-memory filesystem writes count against it)\n| STATS\n    memory_p95 = PERCENTILE(`metrics.run.googleapis.com/container/memory/utilizations`::exponential_histogram, 95),\n    memory_samples = COUNT(`metrics.run.googleapis.com/container/memory/utilizations`::exponential_histogram)\n  BY resource.attributes.project_id, resource.attributes.location, resource.attributes.service_name",
+        "breach": {
+          "segment": "// Minimum sample guard: ignore services that ran only briefly in the window\nWHERE memory_samples >= 5\n| EVAL memory_p95_pct = ROUND(memory_p95 * 100.0, 1)\n// Alert threshold in percent (healthy services stay below ~70%)\n| WHERE memory_p95_pct >= 85.0\n| KEEP resource.attributes.project_id, resource.attributes.location, resource.attributes.service_name,\n    memory_p95_pct, memory_samples\n| SORT memory_p95_pct DESC\n| LIMIT 50"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 1
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.project_id",
+          "resource.attributes.location",
+          "resource.attributes.service_name"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudrun_otel-high-memory-utilization-by-service-v2-overview-dashboard",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudrun_otel-a22d34c2-3c04-47a0-bf52-cf1e20a36f1d"
+          }
+        },
+        {
+          "id": "gcp_cloudrun_otel-high-memory-utilization-by-service-v2-details-dashboard",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudrun_otel-7d96ccf8-44dc-4987-8835-7ec93a922d04"
+          }
+        },
+        {
+          "id": "gcp_cloudrun_otel-high-memory-utilization-by-service-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud Run high memory utilisation\n\nThe p95 per-instance memory utilisation was 85% or higher over the last 30 minutes. Instances that exceed their memory limit are terminated (OOM). In-flight requests then fail with HTTP 500s and the replacement instances cold-start.\n\n### Triage\n1. Check the 5xx error rate (500 responses) and startup latency for the same service. These confirm whether OOM kills are already happening. Container logs show the memory-limit termination message.\n2. Check whether usage climbs steadily (a leak) or tracks traffic (per-request memory multiplied by concurrency).\n3. Writes to the in-memory filesystem (`/tmp`) count against the memory limit. Check for growing temporary files.\n4. Check for a new revision (`resource.attributes.revision_name`) with a higher memory footprint.\n5. Remediate by raising the memory limit, lowering per-instance concurrency, or fixing the leak.\n\n### Caveats\n- The configured memory limit is not in the telemetry. Utilisation is relative to whatever limit is set.\n\n### Tuning\n- Adjust `memory_p95_pct >= 85.0`. Use a lower value for an earlier warning, but keep it above your normal steady state (healthy services usually stay below 70%).\n- Adjust the `memory_samples >= 5` guard."
+          }
+        }
+      ]
+    }
+  }
+}

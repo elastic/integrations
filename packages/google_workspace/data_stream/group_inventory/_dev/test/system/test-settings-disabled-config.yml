@@ -1,0 +1,20 @@
+wait_for_data_timeout: 1m
+input: cel
+service: google_workspace
+vars:
+  jwt_file: "{{SERVICE_LOGS_DIR}}/credentials.json"
+  delegated_account: test@example.com
+  enable_request_tracer: true
+data_stream:
+  vars:
+    directory_api_host: http://{{Hostname}}:{{Port}}
+    # Every settings call under this path answers 403 SERVICE_DISABLED.
+    groups_settings_api_host: http://{{Hostname}}:{{Port}}/disabled
+    batch_size: 2
+    customer: C0rolesdenied
+    collect_group_settings: true
+    collect_admin_roles: true
+assert:
+  # 5 group documents plus one error document each for the admin roles
+  # enrichment (403) and the Groups Settings API (not enabled).
+  hit_count: 7

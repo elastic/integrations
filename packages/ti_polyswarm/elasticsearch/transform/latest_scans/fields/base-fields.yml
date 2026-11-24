@@ -1,0 +1,26 @@
+# Not linked to _dev/shared/fields/base-fields.yml: the transform's destination
+# is a single index fed from logs-ti_polyswarm.scans-* across every namespace,
+# so data_stream.namespace must be a plain keyword here. As constant_keyword the
+# first indexed document would fix the value and documents from any other
+# namespace would be rejected, never reaching the deduplicated index that the
+# detection rules read. type and dataset are identical for every source
+# document, so they stay constant_keyword.
+- name: data_stream.type
+  type: constant_keyword
+  description: Data stream type.
+- name: data_stream.dataset
+  type: constant_keyword
+  description: Data stream dataset name.
+- name: data_stream.namespace
+  type: keyword
+  description: Data stream namespace.
+- name: event.module
+  type: constant_keyword
+  description: Event module
+  value: ti_polyswarm
+- name: event.dataset
+  type: constant_keyword
+  description: Event dataset
+  value: ti_polyswarm.scans
+- name: '@timestamp'
+  external: ecs

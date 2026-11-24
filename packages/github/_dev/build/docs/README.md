@@ -1,11 +1,12 @@
 # GitHub Integration
 
-The GitHub integration collects events from the [GitHub API](https://docs.github.com/en/rest) and Azure Eventhub. It can also retrieve global advisories (reviewed or unreviewed) from the GitHub Security Advisories database, and collect an inventory of organization members for entity analytics.
+The GitHub integration collects events from the [GitHub API](https://docs.github.com/en/rest) and Azure Eventhub. It can also retrieve global advisories (reviewed or unreviewed) from the GitHub Security Advisories database, and collect an inventory of organization members and teams for entity analytics.
 
-## Agentless Enabled Integration
+## Elastic Managed enabled integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ## What do I need to use this integration?
 
@@ -150,7 +151,7 @@ Data collected per member includes: organization role (MEMBER or ADMIN), two-fac
 The data stream issues two GraphQL queries per collection cycle against `POST https://api.github.com/graphql`:
 
 1. **`organization.membersWithRole`** — paginated list of all org members with their role and 2FA status.
-2. **`organization.teams`** (with nested `team.members`) — paginated list of all teams and their members, used to populate team membership and entity relationship fields.
+2. **`organization.teams`** (with nested `team.members`) — paginated list of all teams and their members, used to populate team membership. For each team where the member is a `MAINTAINER`, the pipeline sets `user.entity.relationships.administers.entity.id` to that team's GitHub node id. The same id is `entity.id` on the teams data stream.
 
 **Authentication:** This data stream requires a **Classic Personal Access Token (PAT)**. Fine-grained PATs do not support the `admin:org` scope or the `membersWithRole` GraphQL query reliably and cannot be used.
 
@@ -177,3 +178,15 @@ Refer to [Creating a personal access token (classic)](https://docs.github.com/en
 {{fields "members"}}
 
 {{event "members"}}
+
+### Teams
+
+The GitHub Teams data stream collects one document per organization team using the [GitHub GraphQL API](https://docs.github.com/en/graphql) `organization.teams` query. Each document is a generic entity (`event.kind: asset`). It does not set `user.*` fields, so team documents do not create user entities.
+
+`entity.id` is the team's GitHub node id (for example `T_kgDOAABBCC`). That value is the same id written to `user.entity.relationships.administers.entity.id` on the member document of each maintainer of the team. `github.teams.combined_slug` keeps the `org/team-slug` value, which can change on rename.
+
+**Authentication:** Classic personal access token with the `read:org` scope. Fine-grained PATs are not supported. For GitHub Enterprise Server, set **API URL** to the instance API root (for example `https://github.example.com/api`). This data stream calls `<API URL>/graphql`.
+
+{{fields "teams"}}
+
+{{event "teams"}}
