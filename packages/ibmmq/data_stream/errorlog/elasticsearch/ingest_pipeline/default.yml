@@ -2,55 +2,67 @@
 description: Pipeline for parsing MQ Queue Manager Error logs.
 processors:
 - set:
+    tag: set_event_ingested_cdb7106c
     field: event.ingested
     value: "{{{_ingest.timestamp}}}"
     ignore_failure: true
 - set:
+    tag: set_ecs_version_7019674d
     field: ecs.version
     value: 8.11.0
     ignore_empty_value: true
     ignore_failure: true
 - set:
+    tag: set_event_module_ac1799f3
     field: event.module
     value: ibmmq
     ignore_empty_value: true
     ignore_failure: true
 - set:
+    tag: set_event_kind_3a41c0d0
     field: event.kind
     value: event
     ignore_empty_value: true
     ignore_failure: true
 - set:
+    tag: set_event_type_0bc1c95a
     field: event.type
     value: [error]
     ignore_empty_value: true
     ignore_failure: true
 - gsub:
+    tag: gsub_message_d96d3db7
     field: message
     pattern: "^[\\-]{5}[a-z0-9\\. :]*[\\-]{5,}"
     replacement: ''
 - gsub:
+    tag: gsub_message_329d748e
     field: message
     pattern: "\n"
     replacement: " "
 - gsub:
+    tag: gsub_message_a4867a49
     field: message
     pattern: "[ ]{2,}"
     replacement: " "
 - trim:
+    tag: trim_message_011d4b19
     field: message
 - drop:
     if: ctx.message == null || ctx.message == ""
     tag: drop_empty_event
 - set:
+    tag: set_event_created_eababd93
     copy_from: "@timestamp"
     field: event.created
     ignore_failure: true
 - grok:
+    tag: grok_message_7caf1128
     field: message
     patterns:
     - "^%{DATA:log_timestamp} -"
 - grok:
+    tag: grok_message_c2fc57c3
     field: message
     patterns:
     - 'Process\(%{DATA:process.pid}\) User\(%{WORD:user.name}\) Program\(%{DATA:process.title}\)
@@ -62,10 +74,12 @@ processors:
       (?=AMQ[0-9]{4})%{DATA:ibmmq.errorlog.error.code}((?<=AMQ[0-9]{4}[A-Z])%{DATA:log.level})?:
       %{DATA:ibmmq.errorlog.error.description}( EXPLANATION: %{DATA:ibmmq.errorlog.error.explanation})?( ACTION: %{DATA:ibmmq.errorlog.error.action})?$'
 - convert:
+    tag: convert_process_pid_9e2866a5
     field: process.pid
     type: float
     ignore_failure: true
 - date:
+    tag: date_log_timestamp_497f6f50
     field: log_timestamp
     target_field: "@timestamp"
     formats:
@@ -75,6 +89,7 @@ processors:
     - dd.MM.yyyy HH:mm:ss
     ignore_failure: true
 - append:
+    tag: append_ibmmq_errorlog_insert_comment_1fa9e0a0
     field: ibmmq.errorlog.insert.comment
     value:
     - "{{ibmmq.errorlog.commentinsert1}}"
@@ -82,17 +97,25 @@ processors:
     - "{{ibmmq.errorlog.commentinsert3}}"
     ignore_failure: true
 - append:
+    tag: append_ibmmq_errorlog_insert_arith_77763053
     field: ibmmq.errorlog.insert.arith
     value:
     - "{{ibmmq.errorlog.arithinsert1}}"
     - "{{ibmmq.errorlog.arithinsert2}}"
     ignore_failure: true
 - rename:
+    tag: rename_message_4978132f
     field: message
     target_field: event.original
     ignore_missing: true
     if: 'ctx.event?.original == null'
 - remove:
+    tag: remove_message_eedfbb3f
+    field: message
+    ignore_missing: true
+    if: 'ctx.event?.original != null'
+- remove:
+    tag: remove_log_timestamp_03ef0126
     field:
     - log_timestamp
     - ibmmq.errorlog.arithinsert1
@@ -103,6 +126,7 @@ processors:
     ignore_missing: true
     ignore_failure: true
 - script:
+    tag: script_9e9fd6cb
     description: Drops null/empty values recursively.
     lang: painless
     source: |
@@ -121,5 +145,14 @@ processors:
         drop(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_cee9c2c2
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_91ac0990
       field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
