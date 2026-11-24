@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, Audit Logs v2, CASB, Device Posture, DEX Application Tests, DEX Device State Events, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, SSH Logs, WARP Config Changes, WARP Toggle Changes, Zero Trust Network Session, and Workers Trace Events logs.
+The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, Audit Logs v2, CASB, Device Posture, DEX Application Tests, DEX Device State Events, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, SSH Logs, WARP Config Changes, WARP Toggle Changes, Zaraz Events, Zero Trust Network Session, and Workers Trace Events logs.
 
 Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
 
@@ -67,6 +67,7 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 - `sinkhole_http`: HTTP traffic captured by Cloudflare sinkholes. See [Sinkhole HTTP logs schema](https://developers.cloudflare.com/logs/reference/log-fields/account/sinkhole_http_logs/).
 - `spectrum_event`: Cloudflare Spectrum events for TCP/UDP applications proxied through Cloudflare. See [Spectrum Events schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/spectrum_events/).
 - `workers_trace`: Cloudflare Workers Trace Events with execution logs and exceptions for Workers scripts. See [Workers Trace Events schema](https://developers.cloudflare.com/logs/reference/log-fields/account/workers_trace_events/).
+- `zaraz_events`: Cloudflare Zaraz events for third-party tools loaded through Zaraz, including the incoming request URL, client IP, headers and body, and the Zaraz event type and details. See [Zaraz Events schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/zone/zaraz_events/).
 
 ### Supported use cases
 
@@ -78,6 +79,7 @@ Integrating Cloudflare Logpush with Elastic provides centralized visibility acro
 - Detecting data exfiltration and SaaS misconfigurations (`dlp_forensic_copies`, `casb`, `email_security_alerts`).
 - Auditing administrative activity on the Cloudflare account (`audit`, `audit_logs_v2`).
 - Troubleshooting DNS and client-side performance issues (`dns`, `dns_firewall`, `nel_report`, `workers_trace`).
+- Auditing third-party tools, tags, and analytics requests loaded through Cloudflare Zaraz (`zaraz_events`).
 
 ## What do I need to use this integration?
 
@@ -93,7 +95,7 @@ To use this integration, you must be able to create and manage [Cloudflare Logpu
 
 Creating and managing Logpush jobs requires an API token or user role with the `Logs Write` permission (or a role that includes it, such as **Super Administrator**, **Administrator**, or **Log Share** with edit permissions). Refer to [Cloudflare Logpush permissions](https://developers.cloudflare.com/logs/logpush/permissions/) for details.
 
-- **Zone-scoped datasets** (for example, `http_requests`, `firewall_events`, `dns_logs`, `spectrum_events`, `nel_reports`, `page_shield_events`) require a **zone-scoped token**.
+- **Zone-scoped datasets** (for example, `http_requests`, `firewall_events`, `dns_logs`, `spectrum_events`, `nel_reports`, `page_shield_events`, `zaraz_events`) require a **zone-scoped token**.
 - **Account-scoped datasets** (for example, `audit_logs`, `audit_logs_v2`, `access_requests`, `casb_findings`, `device_posture_results`, `dlp_forensic_copies`, `email_security_alerts`, `gateway_*`, `dns_firewall_logs`, `magic_ids_detections`, `network_analytics_logs`, `sinkhole_http_logs`, `ssh_logs`, `workers_trace_events`, `zero_trust_network_sessions`) require an **account-scoped token**.
 - Zero Trust datasets (Access, Gateway, DEX) additionally require `Zero Trust: PII Read`.
 
@@ -152,6 +154,7 @@ Configure one of the following delivery pipelines before enabling the integratio
   | WARP Config Changes        | warp_config_changes     |
   | WARP Toggle Changes        | warp_toggle_changes     |
   | Workers Trace Events       | workers_trace           |
+  | Zaraz Events               | zaraz_events            |
 
 **Note:** Upgrading the integration does not change a Bucket Prefix that is already saved in a policy. Before version 2.3.0, the default prefix of the Audit Logs data stream was `audit_logs`, which also matches `audit_logs_v2/` objects. If your existing policy uses `audit_logs` and you enable Audit Logs v2 on the same bucket, set the **[S3] Bucket Prefix** of the Audit Logs data stream to `audit_logs/` first, so that Audit Logs v2 objects are not collected twice.
 
@@ -565,6 +568,16 @@ This is the `workers_trace` dataset.
 {{event "workers_trace"}}
 
 {{fields "workers_trace"}}
+
+#### zaraz_events
+
+This is the `zaraz_events` dataset.
+
+##### Example
+
+{{event "zaraz_events"}}
+
+{{fields "zaraz_events"}}
 
 ### Inputs used
 
