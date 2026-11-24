@@ -13,6 +13,7 @@ processors:
         throw new Exception("Not a valid envoyproxy access log");
       }
 - dissect:
+    tag: dissect_temp_message_b350202c
     field: temp_message
     pattern: '%{envoyproxy.log.log_type} [%{timestamp}] "%{method} %{path} %{proto}" %{response_code}
       %{envoyproxy.log.response_flags} %{bytes_received} %{bytes_sent} %{duration} %{upstream_service_time}
@@ -20,6 +21,7 @@ processors:
       "%{dest}"'
     on_failure:
     - script:
+        tag: script_65d2b2a5
         lang: painless
         source: 'ctx.remove(''temp_message''); throw new Exception("Dissect error:
           Not a valid envoyproxy access log");'
@@ -39,10 +41,12 @@ processors:
       ctx.remove('dest');
     if: ctx.dest != null
 - convert:
+    tag: convert_destination_port_da41ff96
     field: destination.port
     type: integer
     if: ctx.destination?.port != null
 - convert:
+    tag: convert_duration_dd9a1b1e
     field: duration
     type: double
     if: ctx.duration != null
@@ -54,6 +58,7 @@ processors:
       scale: 1000000
     if: ctx.duration != null
 - remove:
+    tag: remove_json_1e563326
     field:
     - json
     - duration
@@ -61,31 +66,39 @@ processors:
     - temp_message
     ignore_missing: true
 - pipeline:
+    tag: pipeline_712b9206
     if: ctx.proto.charAt(0) != (char)("-")
     name: '{{ IngestPipeline "http"}}'
 - pipeline:
+    tag: pipeline_20ec3ef4
     if: ctx.proto.charAt(0) == (char)("-")
     name: '{{ IngestPipeline "tcp"}}'
 - remove:
+    tag: remove_proto_d915c2d7
     field:
     - proto
     - upstream_service_time
     ignore_missing: true
 - remove:
+    tag: remove_source_address_8f845756
     field: source.address
     if: ctx.source.address == '-'
 - remove:
+    tag: remove_envoyproxy_log_response_flags_c362e16c
     field: envoyproxy.log.response_flags
     if: ctx.envoyproxy?.log.response_flags== '-'
 - split:
+    tag: split_envoyproxy_log_response_flags_d7e055b9
     field: envoyproxy.log.response_flags
     separator: ','
     if: ctx.envoyproxy?.log.response_flags != null
 - set:
+    tag: set_destination_ip_59b1492d
     field: destination.ip
     value: '{{destination.address}}'
     if: ctx.destination?.address != null
 - set:
+    tag: set_source_ip_c5eaa1a3
     field: source.ip
     value: '{{source.address}}'
     if: ctx.source?.address != null

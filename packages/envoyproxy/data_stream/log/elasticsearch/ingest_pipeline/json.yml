@@ -2,22 +2,28 @@
 description: Pipeline for normalizing envoyproxy access logs
 processors:
 - json:
+    tag: json_message_19712945
     field: message
     target_field: json
 - remove:
+    tag: remove_message_e147a0eb
     field:
     - message
 - rename:
+    tag: rename_json_message_be0d60dc
     field: json.message
     target_field: message
 - rename:
+    tag: rename_json_kubernetes_91811613
     field: json.kubernetes
     target_field: kubernetes
     ignore_failure: true
 - remove:
+    tag: remove_json_1d22fecd
     field:
     - json
 - pipeline:
+    tag: pipeline_a7de3619
     name: '{{ IngestPipeline "plaintext"}}'
 on_failure:
   - set:

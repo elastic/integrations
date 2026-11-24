@@ -2,6 +2,7 @@
 description: Pipeline for normalizing envoy TCP ACCESS logs
 processors:
 - remove:
+    tag: remove_upstream_service_time_f867abb6
     field:
     - upstream_service_time
     - method
@@ -9,27 +10,34 @@ processors:
     - path
     - response_code
 - rename:
+    tag: rename_bytes_received_57c3491b
     field: bytes_received
     target_field: destination.bytes
 - convert:
+    tag: convert_destination_bytes_d758eb38
     field: destination.bytes
     type: long
 - rename:
+    tag: rename_bytes_sent_0d0bc734
     field: bytes_sent
     target_field: source.bytes
     override: true
 - convert:
+    tag: convert_source_bytes_081f77b6
     field: source.bytes
     type: long
 - set:
+    tag: set_envoyproxy_log_proxy_type_66607c20
     field: envoyproxy.log.proxy_type
     value: tcp
 - append:
+    tag: append_event_type_09ed6a80
     field: event.type
     allow_duplicates: false
     value:
       - connection
 - set:
+    tag: set_network_transport_7b089a3e
     field: network.transport
     value: tcp
 on_failure:
