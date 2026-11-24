@@ -2,6 +2,7 @@
 description: Pipeline for parsing PostgreSQL logs.
 processors:
   - grok:
+      tag: grok_raw_message_f275f2c4
       field: raw_message
       ignore_missing: true
       patterns:
@@ -25,23 +26,42 @@ processors:
       ignore_failure: true
       on_failure:
         - append:
+            tag: append_error_message_fcfe695b
             field: error.message
             value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
         - fail:
+            tag: fail_58112e00
             message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - rename:
+      tag: rename_temp_database_connection_obj_app_a26e0917
       field: _temp_.database_connection_obj.app
       target_field: postgresql.log.application_name
       ignore_missing: true
   - rename:
+      tag: rename_temp_database_connection_obj_client_72fbefab
       field: _temp_.database_connection_obj.client
       target_field: postgresql.log.client_addr
       ignore_missing: true
   - rename:
+      tag: rename_temp_database_connection_obj_db_343a579a
       field: _temp_.database_connection_obj.db
       target_field: postgresql.log.database
       ignore_missing: true
   - rename:
+      tag: rename_temp_database_connection_obj_user_a346cf76
       field: _temp_.database_connection_obj.user
       target_field: user.name
       ignore_missing: true
+on_failure:
+  - set:
+      tag: set_event_kind_87eeb99b
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_fab67a7e
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

@@ -2,7 +2,21 @@
 description: Pipeline for processing postgres activity datastream
 processors:
     - fingerprint:
+        tag: fingerprint_088ca2c8
         fields: ["postgresql.activity.query"]
         target_field: postgresql.activity.query_id
         ignore_failure: true
         ignore_missing: true
+on_failure:
+  - set:
+      tag: set_event_kind_6e0ea049
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_4e35912f
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
