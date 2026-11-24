@@ -2,10 +2,20 @@
   "description": "Pipeline for parsing redis slowlog logs",
   "processors": [
     ],
-  "on_failure" : [{
-    "set" : {
-      "field" : "error.message",
-      "value" : "{{ _ingest.on_failure_message }}"
+  "on_failure": [
+    {
+      "set": {
+        "tag": "set_event_kind_0c0bdf90",
+        "field": "event.kind",
+        "value": "pipeline_error"
+      }
+    },
+    {
+      "append": {
+        "tag": "append_error_message_ad24fbb1",
+        "field": "error.message",
+        "value": "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
+      }
     }
-  }]
+  ]
 }
