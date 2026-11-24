@@ -30,6 +30,29 @@ The Upwind integration collects log messages of the following types:
 
 Use threat detections to investigate runtime and cloud-control-plane alerts in Elastic Security. Use vulnerability findings to prioritize CVEs that are present on running workloads. Use configuration findings to review the current cloud configuration posture, including passed and failed checks and the frameworks they map to.
 
+Vulnerability findings appear on the Elastic Security [Vulnerabilities Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page-3) and in vulnerability Insights on the Alert and Entity details flyouts. Configuration findings appear on the [Misconfigurations Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page) and in misconfiguration Insights.
+
+### Transforms
+
+The Upwind integration creates latest transforms that copy current findings into destination indexes used by Elastic Security CDR workflows:
+
+| Data stream | Transform destination alias |
+| --- | --- |
+| `logs-upwind.vulnerability_findings-*` | `security_solution-upwind.vulnerability_latest` |
+| `logs-upwind.configuration_findings-*` | `security_solution-upwind.misconfiguration_latest` |
+
+The source data streams keep historical events. The aliased transform destinations hold the latest finding per unique key so the Findings pages and flyouts show current posture. Vulnerability findings are retained for 90 days. Configuration findings are a full 24-hour posture sync and are retained for 26 hours.
+
+The transforms sync on `event.ingested`. Elasticsearch sets this field on ingest through the Fleet final pipeline, including Elastic Managed deployments.
+
+Using these transforms requires:
+
+- [Elastic Security](https://www.elastic.co/docs/solutions/security)
+- at least one [transform node](https://www.elastic.co/docs/deploy-manage/distributed-architecture/clusters-nodes-shards/node-roles#transform-node-role)
+- privileges to use transforms and to read the source and destination indexes
+
+See [Transform setup](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup) for details. Because the latest copy of each finding is stored in both the source data stream and the destination index, plan storage accordingly.
+
 ## What do I need to use this integration?
 
 ### From Upwind

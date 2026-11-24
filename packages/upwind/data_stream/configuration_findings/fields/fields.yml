@@ -10,15 +10,33 @@
     - name: type
       type: keyword
       description: The type of the resource evaluated by this finding.
+    - name: sub_type
+      type: keyword
+      description: The sub-type of the resource evaluated by this finding.
 - name: result
   type: group
   fields:
     - name: evaluation
       type: keyword
-      description: The evaluation result of the configuration check, either passed or failed.
-- name: rule.remediation
-  type: keyword
-  description: Remediation guidance for the configuration check.
+      description: The evaluation result of the configuration check, either passed, failed, or unknown.
+- name: rule
+  type: group
+  fields:
+    - name: benchmark
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: The name of the compliance benchmark this check maps to.
+        - name: version
+          type: keyword
+          description: The version of the compliance benchmark this check maps to.
+        - name: rule_number
+          type: keyword
+          description: The rule number of this check within the compliance benchmark.
+    - name: remediation
+      type: keyword
+      description: Remediation guidance for the configuration check.
 - name: organization.id
   external: ecs
 - name: upwind.configuration_findings

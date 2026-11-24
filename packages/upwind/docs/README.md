@@ -31,6 +31,29 @@ The Upwind integration collects log messages of the following types:
 
 Use threat detections to investigate runtime and cloud-control-plane alerts in Elastic Security. Use vulnerability findings to prioritize CVEs that are present on running workloads. Use configuration findings to review the current cloud configuration posture, including passed and failed checks and the frameworks they map to.
 
+Vulnerability findings appear on the Elastic Security [Vulnerabilities Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page-3) and in vulnerability Insights on the Alert and Entity details flyouts. Configuration findings appear on the [Misconfigurations Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page) and in misconfiguration Insights.
+
+### Transforms
+
+The Upwind integration creates latest transforms that copy current findings into destination indexes used by Elastic Security CDR workflows:
+
+| Data stream | Transform destination alias |
+| --- | --- |
+| `logs-upwind.vulnerability_findings-*` | `security_solution-upwind.vulnerability_latest` |
+| `logs-upwind.configuration_findings-*` | `security_solution-upwind.misconfiguration_latest` |
+
+The source data streams keep historical events. The aliased transform destinations hold the latest finding per unique key so the Findings pages and flyouts show current posture. Vulnerability findings are retained for 90 days. Configuration findings are a full 24-hour posture sync and are retained for 26 hours.
+
+The transforms sync on `event.ingested`. Elasticsearch sets this field on ingest through the Fleet final pipeline, including Elastic Managed deployments.
+
+Using these transforms requires:
+
+- [Elastic Security](https://www.elastic.co/docs/solutions/security)
+- at least one [transform node](https://www.elastic.co/docs/deploy-manage/distributed-architecture/clusters-nodes-shards/node-roles#transform-node-role)
+- privileges to use transforms and to read the source and destination indexes
+
+See [Transform setup](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup) for details. Because the latest copy of each finding is stored in both the source data stream and the destination index, plan storage accordingly.
+
 ## What do I need to use this integration?
 
 ### From Upwind
@@ -211,11 +234,11 @@ An example event for `threat_detections` looks as following:
 {
     "@timestamp": "2026-02-16T09:06:02.000Z",
     "agent": {
-        "ephemeral_id": "7a842ca8-21ab-4f7a-b0e8-3ed39e1c5132",
-        "id": "a1c7c438-9abd-48b4-b968-91cf66ae060c",
-        "name": "elastic-agent-74915",
+        "ephemeral_id": "bf695222-9127-48ca-a64a-fa6f5bd79e84",
+        "id": "86435fbc-2740-4030-baf0-56121df4311e",
+        "name": "elastic-agent-20665",
         "type": "filebeat",
-        "version": "9.4.0"
+        "version": "9.4.4"
     },
     "cloud": {
         "account": {
@@ -226,16 +249,16 @@ An example event for `threat_detections` looks as following:
     },
     "data_stream": {
         "dataset": "upwind.threat_detections",
-        "namespace": "18637",
+        "namespace": "22506",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "a1c7c438-9abd-48b4-b968-91cf66ae060c",
+        "id": "86435fbc-2740-4030-baf0-56121df4311e",
         "snapshot": false,
-        "version": "9.4.0"
+        "version": "9.4.4"
     },
     "event": {
         "agent_id_status": "verified",
@@ -245,7 +268,7 @@ An example event for `threat_detections` looks as following:
         "dataset": "upwind.threat_detections",
         "end": "2026-02-16T09:06:02.000Z",
         "id": "uwd-22222222222222bb",
-        "ingested": "2026-11-17T15:08:04Z",
+        "ingested": "2026-11-24T09:58:49Z",
         "kind": "alert",
         "module": "upwind",
         "original": "{\"category\":\"API_SECURITY\",\"description\":\"An XML input containing external entity references was detected.\",\"first_seen_time\":\"2026-01-31T03:03:11Z\",\"id\":\"uwd-22222222222222bb\",\"last_seen_time\":\"2026-02-16T09:06:02Z\",\"occurrence_count\":33,\"resource\":{\"cloud_account_id\":\"222222222222\",\"cloud_provider\":\"AWS\",\"cluster_id\":\"00000000-0000-0000-0000-000000000001\",\"id\":\"i-00000000000000000\",\"name\":\"host-2.example.com\",\"namespace\":\"app-stage\",\"region\":\"ap-southeast-1\",\"type\":\"KUBERNETES_DEPLOYMENT\"},\"severity\":\"CRITICAL\",\"status\":\"OPEN\",\"title\":\"OWASP API10:2023 XML External Entity (XXE) Injection Detected\",\"type\":\"custom_api_security\"}",
@@ -263,14 +286,14 @@ An example event for `threat_detections` looks as following:
     "observer": {
         "vendor": "Upwind"
     },
-    "organization": {
-        "id": "org-example-0001"
-    },
     "orchestrator": {
         "cluster": {
             "id": "00000000-0000-0000-0000-000000000001"
         },
         "namespace": "app-stage"
+    },
+    "organization": {
+        "id": "org-example-0001"
     },
     "resource": {
         "id": "i-00000000000000000",
@@ -307,6 +330,8 @@ The `vulnerability_findings` data stream collects CVE findings from `GET /v1/org
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host, resource, or service is located. | keyword |
 | container.image.hash.all | An array of digests of the image the container was built on. Each digest consists of the hash algorithm and value in this format: `algorithm:value`. Algorithm names should align with the field names in the ECS hash field set. | keyword |
@@ -318,6 +343,7 @@ The `vulnerability_findings` data stream collects CVE findings from `GET /v1/org
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
@@ -326,6 +352,9 @@ The `vulnerability_findings` data stream collects CVE findings from `GET /v1/org
 | event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
 | event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
@@ -333,6 +362,7 @@ The `vulnerability_findings` data stream collects CVE findings from `GET /v1/org
 | orchestrator.cluster.name | Name of the cluster. | keyword |
 | orchestrator.namespace | Namespace in which the action is taking place. | keyword |
 | organization.id | Unique identifier for the organization. | keyword |
+| package.fixed_version | Package version where the vulnerability was fixed. | keyword |
 | package.name | Package name | keyword |
 | package.type | Type of package. This should contain the package file type, rather than the package manager name. Examples: rpm, dpkg, brew, npm, gem, nupkg, jar. | keyword |
 | package.version | Package version | keyword |
@@ -340,6 +370,7 @@ The `vulnerability_findings` data stream collects CVE findings from `GET /v1/org
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | resource.id | The unique identifier of the resource affected by this finding. | keyword |
 | resource.name | The name of the resource affected by this finding. | keyword |
+| resource.sub_type | The sub-type of the resource affected by this finding. | keyword |
 | resource.type | The type of the resource affected by this finding. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | upwind.vulnerability_findings.image.os_name | The operating system name of the container image. | keyword |
@@ -379,9 +410,15 @@ The `vulnerability_findings` data stream collects CVE findings from `GET /v1/org
 | vulnerability.description.text | Multi-field of `vulnerability.description`. | match_only_text |
 | vulnerability.enumeration | The type of identifier used for this vulnerability. For example (https://cve.mitre.org/about/) | keyword |
 | vulnerability.id | The identification (ID) is the number portion of a vulnerability entry. It includes a unique identification number for the vulnerability. For example (https://cve.mitre.org/about/faqs.html#what_is_cve_id) | keyword |
+| vulnerability.package.fixed_version | Package version where the vulnerability was fixed. | keyword |
+| vulnerability.package.name | Name of the affected package. | keyword |
+| vulnerability.package.version | Version of the affected package. | keyword |
+| vulnerability.published_date | When the vulnerability was published in the NVD. | date |
+| vulnerability.scanner.vendor | The name of the vulnerability scanner vendor. | constant_keyword |
 | vulnerability.score.base | Scores can range from 0.0 to 10.0, with 10.0 being the most severe. Base scores cover an assessment for exploitability metrics (attack vector, complexity, privileges, and user interaction), impact metrics (confidentiality, integrity, and availability), and scope. For example (https://www.first.org/cvss/specification-document) | float |
 | vulnerability.score.version | The National Vulnerability Database (NVD) provides qualitative severity rankings of "Low", "Medium", and "High" for CVSS v2.0 base score ranges in addition to the severity ratings for CVSS v3.0 as they are defined in the CVSS v3.0 specification. CVSS is owned and managed by FIRST.Org, Inc. (FIRST), a US-based non-profit organization, whose mission is to help computer security incident response teams across the world. For example (https://nvd.nist.gov/vuln-metrics/cvss) | keyword |
 | vulnerability.severity | The severity of the vulnerability can help with metrics and internal prioritization regarding remediation. For example (https://nvd.nist.gov/vuln-metrics/cvss) | keyword |
+| vulnerability.title | The human-readable title of the vulnerability. | keyword |
 
 
 ##### Vulnerability findings sample event
@@ -390,60 +427,61 @@ An example event for `vulnerability_findings` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-03-01T08:30:00.000Z",
+    "@timestamp": "2026-11-20T09:00:00.000Z",
     "agent": {
-        "ephemeral_id": "aba0ea9e-471b-4e44-871e-eb95ebd0ce56",
-        "id": "b04cde78-f84c-4242-8fef-0d7e7cb02aee",
-        "name": "elastic-agent-61577",
+        "ephemeral_id": "4578d19c-b47d-4185-8edf-c0bcde7f0214",
+        "id": "8e005a92-d8b4-4e9c-a59c-037ad1bbc551",
+        "name": "elastic-agent-81333",
         "type": "filebeat",
-        "version": "9.4.0"
+        "version": "9.4.4"
     },
     "cloud": {
         "account": {
-            "id": "111111111111"
+            "id": "222222222222"
         },
         "provider": "aws",
-        "region": "us-east-1"
+        "region": "ap-southeast-1"
     },
     "container": {
         "image": {
             "hash": {
                 "all": [
-                    "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+                    "sha256:2222222222222222222222222222222222222222222222222222222222222222"
                 ]
             },
-            "name": "payments-api",
+            "name": "checkout-frontend",
             "tag": [
-                "1.4.2"
+                "2.0.1"
             ]
         }
     },
     "data_stream": {
         "dataset": "upwind.vulnerability_findings",
-        "namespace": "92680",
+        "namespace": "82561",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "b04cde78-f84c-4242-8fef-0d7e7cb02aee",
+        "id": "8e005a92-d8b4-4e9c-a59c-037ad1bbc551",
         "snapshot": false,
-        "version": "9.4.0"
+        "version": "9.4.4"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "vulnerability"
         ],
+        "created": "2026-11-20T09:00:00.000Z",
         "dataset": "upwind.vulnerability_findings",
-        "id": "uvf-11111111111111aa",
-        "ingested": "2026-11-17T15:09:06Z",
+        "id": "uvf-22222222222222bb",
+        "ingested": "2026-11-24T09:59:40Z",
         "kind": "state",
         "module": "upwind",
-        "original": "{\"first_seen_time\":\"2026-02-01T10:00:00Z\",\"id\":\"uvf-11111111111111aa\",\"image\":{\"digest\":\"sha256:1111111111111111111111111111111111111111111111111111111111111111\",\"name\":\"payments-api\",\"tag\":\"1.4.2\"},\"last_scan_time\":\"2026-03-01T08:30:00Z\",\"package\":{\"in_use\":true,\"name\":\"openssl\",\"type\":\"dpkg\",\"version\":\"1.1.1k\"},\"remediation\":[{\"description\":\"Upgrade openssl to 1.1.1w or later.\",\"type\":\"UPGRADE_PACKAGE\"}],\"resource\":{\"cloud_account_id\":\"111111111111\",\"cloud_provider\":\"AWS\",\"id\":\"i-00000000000000000\",\"name\":\"payments-api\",\"namespace\":\"production\",\"region\":\"us-east-1\",\"type\":\"AwsInstance\",\"upwind_asset_id\":\"asset-example-001\"},\"source\":\"RUNTIME_SCAN\",\"status\":\"OPEN\",\"vulnerability\":{\"description\":\"Example vulnerability description.\",\"epss_score\":\"0.42\",\"epss_severity\":\"high\",\"exploitable\":true,\"known_exploit_sources\":[\"cisa\"],\"name\":\"CVE-2024-0000\",\"nvd_cve_id\":\"CVE-2024-0000\",\"nvd_cvss_v3_score\":\"9.8\",\"nvd_cvss_v3_severity\":\"critical\"}}",
-        "severity": 99,
-        "start": "2026-02-01T10:00:00.000Z",
+        "original": "{\"first_seen_time\":\"2026-02-15T12:00:00Z\",\"id\":\"uvf-22222222222222bb\",\"image\":{\"digest\":\"sha256:2222222222222222222222222222222222222222222222222222222222222222\",\"name\":\"checkout-frontend\",\"tag\":\"2.0.1\"},\"last_scan_time\":\"2026-11-20T09:00:00Z\",\"package\":{\"in_use\":true,\"name\":\"lodash\",\"type\":\"npm\",\"version\":\"4.17.20\"},\"remediation\":[{\"description\":\"Upgrade lodash to 4.17.21 or later.\",\"type\":\"UPGRADE_PACKAGE\"}],\"resource\":{\"cloud_account_id\":\"222222222222\",\"cloud_provider\":\"AWS\",\"cluster_id\":\"00000000-0000-0000-0000-000000000001\",\"id\":\"deploy-0000000000000001\",\"name\":\"checkout-frontend\",\"namespace\":\"app-stage\",\"region\":\"ap-southeast-1\",\"type\":\"KubernetesDeployment\",\"upwind_asset_id\":\"asset-example-002\"},\"source\":\"AGENTLESS_SCAN\",\"status\":\"IN_PROGRESS\",\"vulnerability\":{\"description\":\"Example command injection via template in lodash.\",\"epss_score\":\"0.03\",\"epss_severity\":\"low\",\"exploitable\":false,\"known_exploit_sources\":[],\"name\":\"CVE-2021-23337\",\"nvd_cve_id\":\"CVE-2021-23337\",\"nvd_cvss_v3_score\":\"7.2\",\"nvd_cvss_v3_severity\":\"high\"}}",
+        "severity": 73,
+        "start": "2026-02-15T12:00:00.000Z",
         "type": [
             "info"
         ]
@@ -454,29 +492,30 @@ An example event for `vulnerability_findings` looks as following:
     "observer": {
         "vendor": "Upwind"
     },
+    "orchestrator": {
+        "cluster": {
+            "id": "00000000-0000-0000-0000-000000000001"
+        },
+        "namespace": "app-stage"
+    },
     "organization": {
         "id": "org-example-0001"
     },
-    "orchestrator": {
-        "namespace": "production"
-    },
     "package": {
-        "name": "openssl",
-        "type": "dpkg",
-        "version": "1.1.1k"
+        "name": "lodash",
+        "type": "npm",
+        "version": "4.17.20"
     },
     "related": {
         "hash": [
-            "sha256:1111111111111111111111111111111111111111111111111111111111111111"
-        ],
-        "hosts": [
-            "payments-api"
+            "sha256:2222222222222222222222222222222222222222222222222222222222222222"
         ]
     },
     "resource": {
-        "id": "i-00000000000000000",
-        "name": "payments-api",
-        "type": "AwsInstance"
+        "id": "deploy-0000000000000001",
+        "name": "checkout-frontend",
+        "sub_type": "KubernetesDeployment",
+        "type": "KubernetesDeployment"
     },
     "tags": [
         "preserve_original_event",
@@ -485,38 +524,45 @@ An example event for `vulnerability_findings` looks as following:
     ],
     "upwind": {
         "vulnerability_findings": {
-            "last_scan_time": "2026-03-01T08:30:00.000Z",
+            "last_scan_time": "2026-11-20T09:00:00.000Z",
             "package": {
                 "in_use": true
             },
             "remediation": {
-                "description": "Upgrade openssl to 1.1.1w or later.",
+                "description": "Upgrade lodash to 4.17.21 or later.",
                 "type": "UPGRADE_PACKAGE"
             },
             "resource": {
-                "upwind_asset_id": "asset-example-001"
+                "upwind_asset_id": "asset-example-002"
             },
-            "source": "RUNTIME_SCAN",
-            "status": "OPEN",
+            "source": "AGENTLESS_SCAN",
+            "status": "IN_PROGRESS",
             "vulnerability": {
-                "epss_score": 0.42,
-                "epss_severity": "high",
-                "exploitable": true,
-                "known_exploit_sources": "cisa",
-                "name": "CVE-2024-0000"
+                "epss_score": 0.03,
+                "epss_severity": "low",
+                "exploitable": false,
+                "name": "CVE-2021-23337"
             }
         }
     },
     "vulnerability": {
         "classification": "CVSS",
-        "description": "Example vulnerability description.",
+        "description": "Example command injection via template in lodash.",
         "enumeration": "CVE",
-        "id": "CVE-2024-0000",
+        "id": "CVE-2021-23337",
+        "package": {
+            "name": "lodash",
+            "version": "4.17.20"
+        },
+        "scanner": {
+            "vendor": "Upwind"
+        },
         "score": {
-            "base": 9.8,
+            "base": 7.2,
             "version": "3"
         },
-        "severity": "Critical"
+        "severity": "High",
+        "title": "CVE-2021-23337"
     }
 }
 ```
@@ -532,20 +578,53 @@ The `configuration_findings` data stream collects the current CSPM posture from 
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.id | Unique ID to describe the event. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| event.reason | Reason why this event happened, according to the source. This describes the why of a particular action or outcome captured in the event. Where `event.action` captures the action from the event, `event.reason` describes why that action was taken. For example, a web proxy with an `event.action` which denied the request may also populate `event.reason` with the reason why (e.g. `blocked site`). | keyword |
+| event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
+| event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
+| orchestrator.cluster.id | Unique ID of the cluster. | keyword |
+| orchestrator.namespace | Namespace in which the action is taking place. | keyword |
 | organization.id | Unique identifier for the organization. | keyword |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | resource.id | The unique identifier of the resource evaluated by this finding. | keyword |
 | resource.name | The name of the resource evaluated by this finding. | keyword |
+| resource.sub_type | The sub-type of the resource evaluated by this finding. | keyword |
 | resource.type | The type of the resource evaluated by this finding. | keyword |
-| result.evaluation | The evaluation result of the configuration check, either passed or failed. | keyword |
+| result.evaluation | The evaluation result of the configuration check, either passed, failed, or unknown. | keyword |
+| rule.benchmark.name | The name of the compliance benchmark this check maps to. | keyword |
+| rule.benchmark.rule_number | The rule number of this check within the compliance benchmark. | keyword |
+| rule.benchmark.version | The version of the compliance benchmark this check maps to. | keyword |
+| rule.description | The description of the rule generating the event. | keyword |
+| rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
+| rule.name | The name of the rule or signature generating the event. | keyword |
 | rule.remediation | Remediation guidance for the configuration check. | keyword |
+| rule.ruleset | Name of the ruleset, policy, group, or parent category in which the rule used to generate this event is a member. | keyword |
+| rule.uuid | A rule ID that is unique within the scope of a set or group of agents, observers, or other entities using the rule for detection of this event. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 | upwind.configuration_findings.framework.cloud_provider | The cloud provider the compliance framework applies to. | keyword |
 | upwind.configuration_findings.framework.description | A description of the compliance framework. | keyword |
 | upwind.configuration_findings.framework.id | The unique identifier for the compliance framework. | keyword |
@@ -560,6 +639,8 @@ The `configuration_findings` data stream collects the current CSPM posture from 
 | upwind.configuration_findings.resource.upwind_asset_id | The Upwind asset identifier for this resource. | keyword |
 | upwind.configuration_findings.severity | The severity level of this finding. | keyword |
 | upwind.configuration_findings.status | The evaluation status of this finding as reported by Upwind, PASS or FAIL. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 
 
 ##### Configuration findings sample event
@@ -568,13 +649,13 @@ An example event for `configuration_findings` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-03-20T06:00:00.000Z",
+    "@timestamp": "2026-11-24T09:57:11.662Z",
     "agent": {
-        "ephemeral_id": "549648f5-defe-4b01-9c8a-a8b2a668966e",
-        "id": "1784acff-c8b3-4ab5-8d35-9aa03e22052f",
-        "name": "elastic-agent-12140",
+        "ephemeral_id": "93244345-b622-4a92-80cc-5a5ed65b96d2",
+        "id": "c05af90d-1ead-456d-a4ea-eb9cdebcf152",
+        "name": "elastic-agent-58477",
         "type": "filebeat",
-        "version": "9.4.0"
+        "version": "9.4.4"
     },
     "cloud": {
         "account": {
@@ -586,28 +667,30 @@ An example event for `configuration_findings` looks as following:
     },
     "data_stream": {
         "dataset": "upwind.configuration_findings",
-        "namespace": "59240",
+        "namespace": "62085",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "1784acff-c8b3-4ab5-8d35-9aa03e22052f",
+        "id": "c05af90d-1ead-456d-a4ea-eb9cdebcf152",
         "snapshot": false,
-        "version": "9.4.0"
+        "version": "9.4.4"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "configuration"
         ],
+        "created": "2026-01-15T12:00:00.000Z",
         "dataset": "upwind.configuration_findings",
         "id": "ucf-11111111111111aa",
-        "ingested": "2026-11-17T15:07:04Z",
+        "ingested": "2026-11-24T09:57:11Z",
         "kind": "state",
         "module": "upwind",
-        "original": "{\"check\":{\"description\":\"Detects bucket policies or ACLs that expose objects publicly.\",\"id\":\"check-s3-public-read\",\"remediation\":\"Remove public principals from the bucket policy and enable Block Public Access.\",\"title\":\"S3 bucket should not allow public read access\"},\"description\":\"The S3 bucket policy grants public read access to objects.\",\"first_seen_time\":\"2026-01-15T12:00:00Z\",\"framework\":{\"cloud_provider\":\"AWS\",\"id\":\"cis-aws-v1\",\"status\":\"ENABLED\",\"title\":\"CIS AWS Foundations\",\"version\":\"1.5.0\"},\"id\":\"ucf-11111111111111aa\",\"last_seen_time\":\"2026-03-20T06:00:00Z\",\"last_sync_time\":\"2026-03-20T06:05:00Z\",\"resource\":{\"arn\":\"arn:aws:s3:::example-logs-bucket\",\"cloud_account_id\":\"111111111111\",\"cloud_account_name\":\"production\",\"cloud_provider\":\"AWS\",\"id\":\"arn:aws:s3:::example-logs-bucket\",\"name\":\"example-logs-bucket\",\"region\":\"us-east-1\",\"risk_categories\":[\"DATA_EXPOSURE\"],\"type\":\"AwsS3Bucket\",\"upwind_asset_id\":\"asset-s3-001\"},\"severity\":\"HIGH\",\"status\":\"FAIL\",\"title\":\"S3 bucket allows public read access\"}",
+        "original": "{\"check\":{\"description\":\"Detects bucket policies or ACLs that expose objects publicly.\",\"id\":\"check-s3-public-read\",\"remediation\":\"Remove public principals from the bucket policy and enable Block Public Access.\",\"title\":\"S3 bucket should not allow public read access\"},\"description\":\"The S3 bucket policy grants public read access to objects.\",\"first_seen_time\":\"2026-01-15T12:00:00Z\",\"framework\":{\"cloud_provider\":\"AWS\",\"id\":\"cis-aws-v1\",\"status\":\"ENABLED\",\"title\":\"CIS AWS Foundations\",\"version\":\"1.5.0\"},\"id\":\"ucf-11111111111111aa\",\"last_seen_time\":\"2026-11-24T08:57:08Z\",\"last_sync_time\":\"2026-11-24T08:57:08Z\",\"resource\":{\"arn\":\"arn:aws:s3:::example-logs-bucket\",\"cloud_account_id\":\"111111111111\",\"cloud_account_name\":\"production\",\"cloud_provider\":\"AWS\",\"id\":\"arn:aws:s3:::example-logs-bucket\",\"name\":\"example-logs-bucket\",\"region\":\"us-east-1\",\"risk_categories\":[\"DATA_EXPOSURE\"],\"type\":\"AwsS3Bucket\",\"upwind_asset_id\":\"asset-s3-001\"},\"severity\":\"HIGH\",\"status\":\"FAIL\",\"title\":\"S3 bucket allows public read access\"}",
+        "outcome": "failure",
         "reason": "The S3 bucket policy grants public read access to objects.",
         "severity": 73,
         "start": "2026-01-15T12:00:00.000Z",
@@ -625,21 +708,32 @@ An example event for `configuration_findings` looks as following:
     "organization": {
         "id": "org-example-0001"
     },
+    "related": {
+        "hosts": [
+            "example-logs-bucket"
+        ]
+    },
     "resource": {
         "id": "arn:aws:s3:::example-logs-bucket",
         "name": "example-logs-bucket",
+        "sub_type": "AwsS3Bucket",
         "type": "AwsS3Bucket"
     },
     "result": {
         "evaluation": "failed"
     },
     "rule": {
+        "benchmark": {
+            "name": "CIS AWS Foundations",
+            "rule_number": "check-s3-public-read",
+            "version": "1.5.0"
+        },
         "description": "Detects bucket policies or ACLs that expose objects publicly.",
         "id": "check-s3-public-read",
         "name": "S3 bucket should not allow public read access",
         "remediation": "Remove public principals from the bucket policy and enable Block Public Access.",
         "ruleset": "CIS AWS Foundations",
-        "uuid": "check-s3-public-read"
+        "uuid": "cis-aws-v1-check-s3-public-read"
     },
     "tags": [
         "preserve_original_event",
@@ -654,8 +748,8 @@ An example event for `configuration_findings` looks as following:
                 "status": "ENABLED",
                 "version": "1.5.0"
             },
-            "last_seen_time": "2026-03-20T06:00:00.000Z",
-            "last_sync_time": "2026-03-20T06:05:00.000Z",
+            "last_seen_time": "2026-11-24T08:57:08.000Z",
+            "last_sync_time": "2026-11-24T08:57:08.000Z",
             "resource": {
                 "arn": "arn:aws:s3:::example-logs-bucket",
                 "risk_categories": "DATA_EXPOSURE",
