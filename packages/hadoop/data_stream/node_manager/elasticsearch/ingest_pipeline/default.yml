@@ -2,77 +2,94 @@
 description: Pipeline for parsing Hadoop Datanode metrics
 processors:
   - set:
+      tag: set_ecs_version_dbaae54f
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_type_edcd37b3
       field: event.type
       value: [info]
   - set:
+      tag: set_event_kind_3c7b105e
       field: event.kind
       value: metric
   - set:
+      tag: set_event_category_a222ba81
       field: event.category
       value: [database]
   - rename:
+      tag: rename_http_7c602fb2
       field: http
       target_field: hadoop
       ignore_missing: true
       ignore_failure: true
   - script:
+      tag: script_29ec1e04
       source: >
         ctx.hadoop.node_manager.temp = ctx.hadoop.node_manager.beans[0];
         ctx.hadoop.node_manager.remove("beans")
   - rename:
+      tag: rename_hadoop_node_manager_temp_ContainerLaunchDurationAvgTime_5aefab6a
       field: hadoop.node_manager.temp.ContainerLaunchDurationAvgTime
       target_field: hadoop.node_manager.container_launch_duration_avg_time
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_node_manager_temp_ContainerLaunchDurationNumOps_435ad0ea
       field: hadoop.node_manager.temp.ContainerLaunchDurationNumOps
       target_field: hadoop.node_manager.container_launch_duration_num_ops
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_node_manager_temp_AllocatedContainers_9b10646c
       field: hadoop.node_manager.temp.AllocatedContainers
       target_field: hadoop.node_manager.allocated_containers
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_node_manager_temp_ContainersCompleted_bab9f834
       field: hadoop.node_manager.temp.ContainersCompleted
       target_field: hadoop.node_manager.containers.completed
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_node_manager_temp_ContainersFailed_1957d2d4
       field: hadoop.node_manager.temp.ContainersFailed
       target_field: hadoop.node_manager.containers.failed
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_node_manager_temp_ContainersIniting_34af4d22
       field: hadoop.node_manager.temp.ContainersIniting
       target_field: hadoop.node_manager.containers.initing
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_node_manager_temp_ContainersKilled_b94a8c40
       field: hadoop.node_manager.temp.ContainersKilled
       target_field: hadoop.node_manager.containers.killed
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_node_manager_temp_ContainersLaunched_7b634326
       field: hadoop.node_manager.temp.ContainersLaunched
       target_field: hadoop.node_manager.containers.launched
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_node_manager_temp_ContainersRunning_0dc77eb7
       field: hadoop.node_manager.temp.ContainersRunning
       target_field: hadoop.node_manager.containers.running
       ignore_missing: true
       ignore_failure: true
   - remove:
+      tag: remove_hadoop_node_manager_temp_fd69860a
       field:
         - hadoop.node_manager.temp
       ignore_missing: true
       ignore_failure: true
   - script:
+      tag: script_15d5f623
       description: Drops null/empty values recursively
       lang: painless
       source: |
@@ -91,5 +108,14 @@ processors:
         drop(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_82543e23
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_a5ca0ea4
       field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

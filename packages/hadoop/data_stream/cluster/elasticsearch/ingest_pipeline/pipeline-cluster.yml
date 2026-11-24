@@ -2,60 +2,80 @@
 description: Pipeline for parsing hadoop cluster metrics
 processors:
   - script:
+      tag: script_1581018a
       source: >
         ctx.hadoop.cluster.temp = ctx.hadoop.cluster.beans[0];
         ctx.hadoop.cluster.remove("beans")
   - rename:
+      tag: rename_hadoop_cluster_temp_AMLaunchDelayAvgTime_4ad361f2
       field: hadoop.cluster.temp.AMLaunchDelayAvgTime
       target_field: hadoop.cluster.application_main.launch_delay_avg_time
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_AMLaunchDelayNumOps_a148f1f2
       field: hadoop.cluster.temp.AMLaunchDelayNumOps
       target_field: hadoop.cluster.application_main.launch_delay_num_ops
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_AMRegisterDelayAvgTime_284f6a2e
       field: hadoop.cluster.temp.AMRegisterDelayAvgTime
       target_field: hadoop.cluster.application_main.register_delay_avg_time
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_AMRegisterDelayNumOps_fdbcfd59
       field: hadoop.cluster.temp.AMRegisterDelayNumOps
       target_field: hadoop.cluster.application_main.register_delay_num_ops
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_NumActiveNMs_3a47e562
       field: hadoop.cluster.temp.NumActiveNMs
       target_field: hadoop.cluster.node_managers.num_active
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_NumDecommissionedNMs_ada6ce5a
       field: hadoop.cluster.temp.NumDecommissionedNMs
       target_field: hadoop.cluster.node_managers.num_decommissioned
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_NumLostNMs_3ea2e119
       field: hadoop.cluster.temp.NumLostNMs
       target_field: hadoop.cluster.node_managers.num_lost
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_NumRebootedNMs_c0292410
       field: hadoop.cluster.temp.NumRebootedNMs
       target_field: hadoop.cluster.node_managers.num_rebooted
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_NumUnhealthyNMs_fc63f201
       field: hadoop.cluster.temp.NumUnhealthyNMs
       target_field: hadoop.cluster.node_managers.num_unhealthy
       ignore_missing: true
       ignore_failure: true
   - remove:
+      tag: remove_hadoop_cluster_temp_010f83c0
       field:
         - hadoop.cluster.temp
       ignore_missing: true
       ignore_failure: true
 on_failure:
   - set:
+      tag: set_event_kind_06868b64
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_14745f51
       field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

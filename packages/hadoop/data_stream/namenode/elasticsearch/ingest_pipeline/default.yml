@@ -2,142 +2,172 @@
 description: Pipeline for parsing Hadoop Namenode metrics
 processors:
   - set:
+      tag: set_ecs_version_cff1161f
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_type_5ba1f6ed
       field: event.type
       value: [info]
   - set:
+      tag: set_event_kind_82f5ab1c
       field: event.kind
       value: metric
   - set:
+      tag: set_event_category_a0c3e1be
       field: event.category
       value: [database]
   - rename:
+      tag: rename_http_e4a494c9
       field: http
       target_field: hadoop
       ignore_missing: true
       ignore_failure: true
   - script:
+      tag: script_56b68f3b
       source: >
         ctx.hadoop.namenode.temp = ctx.hadoop.namenode.beans[0];
         ctx.hadoop.namenode.remove("beans")
   - rename:
+      tag: rename_hadoop_namenode_temp_CapacityTotal_bc9ffab0
       field: hadoop.namenode.temp.CapacityTotal
       target_field: hadoop.namenode.capacity.total
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_namenode_temp_CapacityUsed_9ef481b9
       field: hadoop.namenode.temp.CapacityUsed
       target_field: hadoop.namenode.capacity.used
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_namenode_temp_CapacityRemaining_2652dcd1
       field: hadoop.namenode.temp.CapacityRemaining
       target_field: hadoop.namenode.capacity.remaining
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_namenode_temp_TotalLoad_64b9a37d
       field: hadoop.namenode.temp.TotalLoad
       target_field: hadoop.namenode.total_load
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_namenode_temp_LockQueueLength_048880b3
       field: hadoop.namenode.temp.LockQueueLength
       target_field: hadoop.namenode.lock_queue_length
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_namenode_temp_BlocksTotal_14802adb
       field: hadoop.namenode.temp.BlocksTotal
       target_field: hadoop.namenode.blocks.total
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_namenode_temp_CorruptBlocks_23fe408a
       field: hadoop.namenode.temp.CorruptBlocks
       target_field: hadoop.namenode.blocks.corrupt
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_namenode_temp_FilesTotal_6e5eba31
       field: hadoop.namenode.temp.FilesTotal
       target_field: hadoop.namenode.files_total
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_namenode_temp_PendingReplicationBlocks_d7adad15
       field: hadoop.namenode.temp.PendingReplicationBlocks
       target_field: hadoop.namenode.blocks.pending_replication
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_namenode_temp_UnderReplicatedBlocks_8389335f
       field: hadoop.namenode.temp.UnderReplicatedBlocks
       target_field: hadoop.namenode.blocks.under_replicated
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_namenode_temp_ScheduledReplicationBlocks_63214df5
       field: hadoop.namenode.temp.ScheduledReplicationBlocks
       target_field: hadoop.namenode.blocks.scheduled_replication
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_namenode_temp_PendingDeletionBlocks_dfbcf5c2
       field: hadoop.namenode.temp.PendingDeletionBlocks
       target_field: hadoop.namenode.blocks.pending_deletion
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_namenode_temp_NumLiveDataNodes_36526b8d
       field: hadoop.namenode.temp.NumLiveDataNodes
       target_field: hadoop.namenode.nodes.num_live_data
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_namenode_temp_NumDeadDataNodes_11f5a924
       field: hadoop.namenode.temp.NumDeadDataNodes
       target_field: hadoop.namenode.nodes.num_dead_data
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_namenode_temp_NumDecomLiveDataNodes_a4f1b77a
       field: hadoop.namenode.temp.NumDecomLiveDataNodes
       target_field: hadoop.namenode.nodes.num_decom_live_data
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_namenode_temp_NumDecomDeadDataNodes_c0ee6618
       field: hadoop.namenode.temp.NumDecomDeadDataNodes
       target_field: hadoop.namenode.nodes.num_decom_dead_data
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_namenode_temp_VolumeFailuresTotal_bd3e24e0
       field: hadoop.namenode.temp.VolumeFailuresTotal
       target_field: hadoop.namenode.volume_failures_total
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_namenode_temp_EstimatedCapacityLostTotal_0755324b
       field: hadoop.namenode.temp.EstimatedCapacityLostTotal
       target_field: hadoop.namenode.estimated_capacity_lost_total
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_namenode_temp_NumDecommissioningDataNodes_015f1e64
       field: hadoop.namenode.temp.NumDecommissioningDataNodes
       target_field: hadoop.namenode.nodes.num_decommissioning_data
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_namenode_temp_StaleDataNodes_937a4286
       field: hadoop.namenode.temp.StaleDataNodes
       target_field: hadoop.namenode.stale_data_nodes
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_namenode_temp_NumStaleStorages_91608e32
       field: hadoop.namenode.temp.NumStaleStorages
       target_field: hadoop.namenode.num_stale_storages
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_namenode_temp_MissingReplOneBlocks_85fb00c2
       field: hadoop.namenode.temp.MissingReplOneBlocks
       target_field: hadoop.namenode.blocks.missing_repl_one
       ignore_missing: true
       ignore_failure: true
   - remove:
+      tag: remove_hadoop_namenode_temp_9cf33298
       field:
         - hadoop.namenode.temp
       ignore_missing: true
       ignore_failure: true
   - script:
+      tag: script_a24877f3
       description: Drops null/empty values recursively
       lang: painless
       source: |
@@ -156,5 +186,14 @@ processors:
         drop(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_fc72923a
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_fb416808
       field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

@@ -2,38 +2,48 @@
 description: Pipeline for parsing Hadoop Datanode metrics
 processors:
   - set:
+      tag: set_ecs_version_73a1cb38
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_type_807a0ff8
       field: event.type
       value: [info]
   - set:
+      tag: set_event_kind_9685abb3
       field: event.kind
       value: metric
   - set:
+      tag: set_event_category_9cc03a61
       field: event.category
       value: [database]
   - rename:
+      tag: rename_http_fa4bf523
       field: http
       target_field: hadoop
       ignore_missing: true
       ignore_failure: true
   - script:
+      tag: script_835a8a91
       source: >
         ctx.hadoop.datanode.temp = ctx.hadoop.datanode.beans[0];
         ctx.hadoop.datanode.remove("beans")
   - pipeline:
+      tag: pipeline_1eae2a55
       if: ctx.hadoop.datanode.temp["tag.Context"] == 'FSDatasetState'
       name: '{{ IngestPipeline "pipeline-dataset" }}' 
   - pipeline:
+      tag: pipeline_235d9738
       if: ctx.hadoop.datanode.temp["tag.Context"] == 'dfs'
       name: '{{ IngestPipeline "pipeline-dfs" }}' 
   - remove:
+      tag: remove_hadoop_datanode_temp_3a973029
       field:
         - hadoop.datanode.temp
       ignore_missing: true
       ignore_failure: true
   - script:
+      tag: script_d9878643
       description: Drops null/empty values recursively
       lang: painless
       source: |
@@ -52,5 +62,14 @@ processors:
         drop(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_e1f713a5
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_ced345a9
       field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

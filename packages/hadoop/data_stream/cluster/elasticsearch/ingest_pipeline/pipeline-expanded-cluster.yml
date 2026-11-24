@@ -2,140 +2,176 @@
 description: Pipeline for parsing hadoop expanded cluster metrics
 processors:
   - script:
+      tag: script_86b01416
       source: >
         ctx.hadoop.cluster.temp = ctx.hadoop.cluster.clusterMetrics;
         ctx.hadoop.cluster.remove("clusterMetrics")
   - rename:
+      tag: rename_hadoop_cluster_temp_appsSubmitted_ac697740
       field: hadoop.cluster.temp.appsSubmitted
       target_field: hadoop.cluster.applications.submitted
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_appsCompleted_38506b50
       field: hadoop.cluster.temp.appsCompleted
       target_field: hadoop.cluster.applications.completed
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_appsPending_ad27d995
       field: hadoop.cluster.temp.appsPending
       target_field: hadoop.cluster.applications.pending
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_appsRunning_a345e2a6
       field: hadoop.cluster.temp.appsRunning
       target_field: hadoop.cluster.applications.running
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_appsFailed_91d7052b
       field: hadoop.cluster.temp.appsFailed
       target_field: hadoop.cluster.applications.failed
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_appsKilled_c0ecdf7d
       field: hadoop.cluster.temp.appsKilled
       target_field: hadoop.cluster.applications.killed
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_reservedMB_fd86496b
       field: hadoop.cluster.temp.reservedMB
       target_field: hadoop.cluster.memory.reserved
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_availableMB_7d705aa0
       field: hadoop.cluster.temp.availableMB
       target_field: hadoop.cluster.memory.available
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_allocatedMB_4ebbb048
       field: hadoop.cluster.temp.allocatedMB
       target_field: hadoop.cluster.memory.allocated
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_totalMB_5fb0c928
       field: hadoop.cluster.temp.totalMB
       target_field: hadoop.cluster.memory.total
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_reservedVirtualCores_1073e6ce
       field: hadoop.cluster.temp.reservedVirtualCores
       target_field: hadoop.cluster.virtual_cores.reserved
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_availableVirtualCores_412c4661
       field: hadoop.cluster.temp.availableVirtualCores
       target_field: hadoop.cluster.virtual_cores.available
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_allocatedVirtualCores_da3f7162
       field: hadoop.cluster.temp.allocatedVirtualCores
       target_field: hadoop.cluster.virtual_cores.allocated
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_totalVirtualCores_fda0f029
       field: hadoop.cluster.temp.totalVirtualCores
       target_field: hadoop.cluster.virtual_cores.total
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_containersAllocated_ed3b2356
       field: hadoop.cluster.temp.containersAllocated
       target_field: hadoop.cluster.containers.allocated
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_containersReserved_74638427
       field: hadoop.cluster.temp.containersReserved
       target_field: hadoop.cluster.containers.reserved
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_containersPending_1d00e15f
       field: hadoop.cluster.temp.containersPending
       target_field: hadoop.cluster.containers.pending
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_totalNodes_4e167e55
       field: hadoop.cluster.temp.totalNodes
       target_field: hadoop.cluster.nodes.total
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_activeNodes_5ee1dbb5
       field: hadoop.cluster.temp.activeNodes
       target_field: hadoop.cluster.nodes.active
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_lostNodes_702cc2a0
       field: hadoop.cluster.temp.lostNodes
       target_field: hadoop.cluster.nodes.lost
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_unhealthyNodes_8a261d98
       field: hadoop.cluster.temp.unhealthyNodes
       target_field: hadoop.cluster.nodes.unhealthy
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_decommissioningNodes_4f193eef
       field: hadoop.cluster.temp.decommissioningNodes
       target_field: hadoop.cluster.nodes.decommissioning
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_decommissionedNodes_9ba2d197
       field: hadoop.cluster.temp.decommissionedNodes
       target_field: hadoop.cluster.nodes.decommissioned
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_rebootedNodes_b20e4a4b
       field: hadoop.cluster.temp.rebootedNodes
       target_field: hadoop.cluster.nodes.rebooted
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_cluster_temp_shutdownNodes_76c8fc25
       field: hadoop.cluster.temp.shutdownNodes
       target_field: hadoop.cluster.nodes.shutdown
       ignore_missing: true
       ignore_failure: true
   - remove:
+      tag: remove_hadoop_cluster_temp_81c72fcd
       field:
         - hadoop.cluster.temp
       ignore_missing: true
       ignore_failure: true
 on_failure:
   - set:
+      tag: set_event_kind_fddfcff0
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_90f2d828
       field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
