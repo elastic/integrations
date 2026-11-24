@@ -262,7 +262,9 @@ IF (`binDirExeMods` OR `etcFileChanges`) AND NOT `nginx` = RUN ACTIONS `alert` a
 The following fields are populated for all events where `event.category: process`
 
 Each `process.args` value is indexed up to 2,048 characters. Longer values remain in `_source` but are not searchable through this field.
-Use `process.command_line` to search captured command lines up to 4,096 characters, including those that contain longer arguments. Longer command lines remain in `_source` but are not searchable through this field. This field requires a cloud-defend binary that populates it.
+Use `process.command_line` to search captured command lines up to 8,191 characters, including those that contain longer arguments. Longer command lines remain in `_source` and are searchable through `process.command_line.text`, but not through wildcard queries on `process.command_line`. This field requires a cloud-defend binary that populates it.
+The same `args` limit applies to `process.parent.args`, `process.entry_leader.args`, `process.session_leader.args`, `process.group_leader.args`, and `process.previous.args`.
+`process.parent.command_line` is mapped the same way as `process.command_line`, but only `process.command_line` is currently populated.
 
 | Field | Examples |
 | --------- | ----------- |
