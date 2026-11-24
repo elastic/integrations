@@ -2,20 +2,32 @@
 description: Pipeline for processing mssql always on availability group metrics
 processors:
 - remove:
+    tag: remove_sql_driver_839b5384
     field: sql.driver
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_sql_af8a77bd
     field: sql
     target_field: mssql
     ignore_missing: true
     ignore_failure: true
 - remove:
+    tag: remove_mssql_query_b1f39a6c
     field: mssql.query
     if: "ctx?.tags == null || !(ctx.tags.contains('preserve_sql_queries'))"
     ignore_missing: true
     ignore_failure: true
 on_failure:
-- set:
-    field: error.message
-    value: "{{ _ingest.on_failure_message }}"
+  - set:
+      tag: set_event_kind_0189b682
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_df6d9424
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

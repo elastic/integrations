@@ -2,20 +2,24 @@
 description: Pipeline for processing mssql performance
 processors:
 - remove:
+    tag: remove_sql_driver_b56f06df
     field: sql.driver
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_sql_ecbee116
     field: sql
     target_field: mssql
     ignore_missing: true
     ignore_failure: true
 - remove:
+    tag: remove_mssql_query_d385120a
     field: mssql.query
     if: "ctx?.tags == null || !(ctx.tags.contains('preserve_sql_queries'))"
     ignore_missing: true
     ignore_failure: true
 - foreach:
+    tag: foreach_mssql_metrics_e7ab36cc
     field: mssql.metrics
     ignore_missing: true
     processor:
@@ -23,6 +27,7 @@ processors:
             field: "_ingest._key"
             ignore_missing: true
 - foreach:
+    tag: foreach_mssql_metrics_377fba0d
     field: mssql.metrics
     ignore_missing: true
     processor:
@@ -31,6 +36,7 @@ processors:
             pattern: " "
             replacement: "_"
 - foreach:
+    tag: foreach_mssql_metrics_d6e03ae8
     field: mssql.metrics
     ignore_missing: true
     ignore_failure: true
@@ -40,6 +46,7 @@ processors:
             pattern: "/"
             replacement: "_"
 - foreach:
+    tag: foreach_mssql_metrics_3779d53b
     field: mssql.metrics
     ignore_missing: true
     ignore_failure: true
@@ -49,6 +56,7 @@ processors:
             pattern: ">"
             replacement: "_"
 - foreach:
+    tag: foreach_mssql_metrics_7bf7bb3e
     field: mssql.metrics
     ignore_missing: true
     ignore_failure: true
@@ -58,6 +66,7 @@ processors:
             pattern: "\\("
             replacement: ""
 - foreach:
+    tag: foreach_mssql_metrics_3395a6e3
     field: mssql.metrics
     ignore_missing: true
     ignore_failure: true
@@ -67,6 +76,7 @@ processors:
             pattern: "%"
             replacement: "pct"
 - foreach:
+    tag: foreach_mssql_metrics_0864dc49
     field: mssql.metrics
     ignore_missing: true
     ignore_failure: true
@@ -80,19 +90,31 @@ processors:
 # as per ECS recommendation
 ##
 - gsub:
+    tag: gsub_host_mac_29b9e88e
     field: host.mac
     pattern: '[-:.]'
     replacement: ''
     ignore_missing: true
 - gsub:
+    tag: gsub_host_mac_a1689319
     field: host.mac
     pattern: '(..)(?!$)'
     replacement: '$1-'
     ignore_missing: true
 - uppercase:
+    tag: uppercase_host_mac_b52e2120
     field: host.mac
     ignore_missing: true
 on_failure:
-- set:
-    field: error.message
-    value: "{{ _ingest.on_failure_message }}"
+  - set:
+      tag: set_event_kind_e3dfa54f
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_ff1e1958
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

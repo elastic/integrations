@@ -2,23 +2,28 @@
 description: Pipeline for processing SQL Server audit logs
 processors:
 - set:
+    tag: set_ecs_version_1e5ae7d6
     field: ecs.version
     value: '8.11.0'
 - gsub:
+    tag: gsub_winlog_event_data_param1_d9517574
     description: Strip final dot from param1.
     field: winlog.event_data.param1
     pattern: '(?m)^\.$'
     replacement: ''
     if: ctx?.winlog?.event_id == "33205"
 - dissect:
+    tag: dissect_winlog_event_data_param1_c7cc2c8c
     description: Extract statement
     pattern: "%{}statement:%{_temp.stmt}\nadditional_information:%{}"
     field: winlog.event_data.param1
 - gsub:
+    tag: gsub_winlog_event_data_param1_97a47f1c
     field: winlog.event_data.param1
     pattern: 'statement:(.*\s)*(?=additional_information:)'
     replacement: ''
 - kv:
+    tag: kv_winlog_event_data_param1_111e81b3
     field: winlog.event_data.param1
     field_split: \n
     value_split: ':'
@@ -26,14 +31,17 @@ processors:
     trim_key: \n
     trim_value: \n
 - set:
+    tag: set_sqlserver_audit_statement_e6476638
     field: sqlserver.audit.statement
     copy_from: _temp.stmt
 - set:
+    tag: set_log_level_9258379c
     field: log.level
     copy_from: winlog.log.level
     ignore_empty_value: true
     if: ctx?.winlog?.log?.level != ""
 - date:
+    tag: date_sqlserver_audit_event_time_707e6f28
     field: sqlserver.audit.event_time
     formats:
       - "yyyy-MM-dd HH:mm:ss.SSSSSSS"
@@ -42,40 +50,50 @@ processors:
 # as per ECS recommendation
 ##
 - gsub:
+    tag: gsub_host_mac_8ff2f200
     field: host.mac
     pattern: '[-:.]'
     replacement: ''
     ignore_missing: true
 - gsub:
+    tag: gsub_host_mac_9abc0945
     field: host.mac
     pattern: '(..)(?!$)'
     replacement: '$1-'
     ignore_missing: true
 - uppercase:
+    tag: uppercase_host_mac_74b387e7
     field: host.mac
     ignore_missing: true
 ##
 # Event kind, code and action
 ##
 - set:
+    tag: set_event_kind_01d0e934
     field: event.kind
     value: event
 - append:
+    tag: append_event_category_dcbec8f2
     field: event.category
     value: database
 - trim:
+    tag: trim_sqlserver_audit_action_id_e36b7426
     field: sqlserver.audit.action_id
     ignore_missing: true
 - trim:
+    tag: trim_sqlserver_audit_class_type_4fe60894
     field: sqlserver.audit.class_type
     ignore_missing: true
 - uppercase:
+    tag: uppercase_sqlserver_audit_action_id_2f0c56b6
     field: sqlserver.audit.action_id
     ignore_missing: true
 - uppercase:
+    tag: uppercase_sqlserver_audit_class_type_e4cbde8d
     field: sqlserver.audit.class_type
     ignore_missing: true
 - script:
+    tag: script_23a60a40
     lang: painless
     description: The script processor enables setting event type, action and category based on action_id and class_type fields.
     params:
@@ -1164,26 +1182,32 @@ processors:
            ctx.event.action = action;
          }
 - convert:
+    tag: convert_sqlserver_audit_sequence_number_27cdcecd
     field: sqlserver.audit.sequence_number
     type: integer
     ignore_missing: true
 - convert:
+    tag: convert_sqlserver_audit_succeeded_0f6eaf5e
     field: sqlserver.audit.succeeded
     type: boolean
     ignore_missing: true
 - convert:
+    tag: convert_sqlserver_audit_affected_rows_2ea188e2
     field: sqlserver.audit.affected_rows
     type: long
     ignore_missing: true
 - convert:
+    tag: convert_sqlserver_audit_response_rows_88895511
     field: sqlserver.audit.response_rows
     type: long
     ignore_missing: true
 - convert:
+    tag: convert_sqlserver_audit_is_column_permission_43ede995
     field: sqlserver.audit.is_column_permission
     type: boolean
     ignore_missing: true
 - script:
+    tag: script_45aa24d3
     lang: painless
     description: Convert ms to ns and set it to event.duration
     source: |-
@@ -1192,6 +1216,7 @@ processors:
             ctx.event.duration = Long.parseLong(v) * 1000000;
         }
 - rename:
+    tag: rename_winlog_process_51b2cf29
     field: winlog.process
     target_field: process
     ignore_missing: true
@@ -1200,42 +1225,51 @@ processors:
 # SPN
 ##
 - dissect:
+    tag: dissect_sqlserver_audit_server_principal_name_b4aaca77
     description: Extract user domain and name
     pattern: "%{_temp.domain}\\%{_temp.username}"
     field: sqlserver.audit.server_principal_name
     if: 'ctx?.sqlserver?.audit?.server_principal_name != null && ctx?.sqlserver?.audit?.server_principal_name.contains("\\")'
     ignore_missing: true
 - set:
+    tag: set_user_name_d313a1b5
     description: Set username as is if domain is not present
     field: user.name
     copy_from: sqlserver.audit.server_principal_name
     if: 'ctx?.sqlserver?.audit?.server_principal_name != null && !ctx?.sqlserver?.audit?.server_principal_name.contains("\\")'
 - set:
+    tag: set_user_name_faa152d4
     description: Set username if it was extracted from Domain\User format
     field: user.name
     copy_from: _temp.username
     if: "ctx?._temp?.username != null"
 - set:
+    tag: set_user_domain_05844373
     description: Set domain if it was extracted from Domain\User format
     field: user.domain
     copy_from: _temp.domain
     if: "ctx?._temp?.domain != null"
 - set:
+    tag: set_user_id_5470e6fe
     field: user.id
     copy_from: sqlserver.audit.server_principal_sid
 - set:
+    tag: set_user_target_name_bca790b6
     field: user.target.name
     copy_from: sqlserver.audit.target_server_principal_name
 - set:
+    tag: set_user_target_id_04339136
     field: user.target.id
     copy_from: sqlserver.audit.target_server_principal_sid
     
 - convert:
+    tag: convert_winlog_record_id_7d3dbc8e
     field: winlog.record_id
     type: string
     ignore_missing: true
 
 - convert:
+    tag: convert_error_code_4e93f2e6
     field: error.code
     type: string
     ignore_missing: true
@@ -1244,6 +1278,7 @@ processors:
 # Clean up
 ##
 - remove:
+    tag: remove_temp_28799acf
     field:
       - _temp
       - winlog.event_data.param1
@@ -1256,6 +1291,7 @@ processors:
       - sqlserver.audit.target_server_principal_sid
     ignore_missing: true
 - script:
+    tag: script_cf06d8b2
     lang: painless
     description: This script processor iterates over the whole document to remove fields with null values.
     source: |
@@ -1281,6 +1317,15 @@ processors:
       }
       handleMap(ctx);
 on_failure:
-- set:
-    field: error.message
-    value: "{{ _ingest.on_failure_message }}"
+  - set:
+      tag: set_event_kind_26fbeee2
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_fec602d3
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
