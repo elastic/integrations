@@ -2,32 +2,41 @@
 description: "Pipeline for parsing CoreDNS logs."
 processors:
   - set:
+      tag: set_ecs_version_dd5dd797
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_original_0af69831
       field: event.original
       copy_from: message
       ignore_empty_value: true
       if: 'ctx.event?.original == null'
   - set:
+      tag: set_event_created_9ab3178e
       field: event.created
       copy_from: "@timestamp"
       ignore_empty_value: true
   - pipeline:
+      tag: pipeline_a7fc6e19
       if: ctx.event.original.charAt(0) == (char)("{")
       name: '{{ IngestPipeline "json" }}'
   - set:
+      tag: set_event_kind_a5eaa1de
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_7df02c38
       field: event.category
       value: network
   - append:
+      tag: append_event_type_d1e7bc75
       field: event.type
       value: protocol
   - drop:
+      tag: drop_a1983f19
       if: "!ctx.message.startsWith('[')"
   - grok:
+      tag: grok_message_7c30c39a
       field: message
       patterns:
       # Query log
@@ -41,28 +50,35 @@ processors:
       ignore_missing: true
       ecs_compatibility: v1
   - lowercase:
+      tag: lowercase_log_level_0f9bfb67
       field: log.level
       ignore_missing: true
   - lowercase:
+      tag: lowercase_network_transport_4ef116b2
       field: network.transport
       ignore_missing: true
   - set:
+      tag: set_network_iana_number_ea70a8a1
       field: network.iana_number
       value: '6'
       if: ctx.network?.transport != null && ctx.network.transport == "tcp"
   - set:
+      tag: set_network_iana_number_9a9339af
       field: network.iana_number
       value: '17'
       if: ctx.network?.transport != null && ctx.network.transport == "udp"
   - script:
+      tag: script_c14e9d4f
       lang: painless
       source: "ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes"
       if: ctx?.source?.bytes != null && ctx?.destination?.bytes != null && ctx?.network?.bytes == null
       ignore_failure: true
   - set:
+      tag: set_network_protocol_66022aa5
       field: network.protocol
       value: dns
   - script:
+      tag: script_0f2439b1
       description: Converts numerical response codes to strings
       lang: painless
       if: ctx.dns?.response_code != null && ctx.dns.response_code instanceof Integer
@@ -82,20 +98,25 @@ processors:
         def response_code = ctx.dns.response_code;
         ctx.dns.response_code = params.codes[response_code];
   - registered_domain:
+      tag: registered_domain_dns_question_name_caeddd87
       field: dns.question.name
       target_field: dns.question
       ignore_missing: true
   - remove:
+      tag: remove_dns_question_domain_98a5ad8a
       field: dns.question.domain
       ignore_missing: true
   - uppercase:
+      tag: uppercase_dns_header_flags_47bfe797
       field: dns.header_flags
       ignore_missing: true
   - split:
+      tag: split_dns_header_flags_6d2a9944
       field: dns.header_flags
       separator: ","
       ignore_missing: true
   - script:
+      tag: script_68ef4085
       lang: painless
       ignore_failure: true
       description: remove QR header since it is not allowed per ECS spec in 8.4.0
@@ -107,21 +128,26 @@ processors:
           }
         }
   - append:
+      tag: append_dns_header_flags_5d5d5bab
       if: ctx.coredns?.log?.dnssec_ok != null && ctx.coredns.log.dnssec_ok   
       field: dns.header_flags
       value: DO
   - remove:
+      tag: remove_dns_header_flags_9ef9241c
       field: dns.header_flags
       if: ctx.coredns?.log?.dnssec_ok != null && ctx.coredns.log.dnssec_ok      
   - set: 
+      tag: set_event_outcome_37f93b6b
       field: event.outcome
       value: success
       if: ctx?.dns?.response_code != null && ctx.dns.response_code == "NOERROR"
   - set: 
+      tag: set_event_outcome_44eb01c4
       field: event.outcome
       value: failure
       if: ctx?.dns?.response_code != null && ctx.dns.response_code != "NOERROR"
   - script:
+      tag: script_e67a8ee2
       lang: painless
       if: ctx.event?.duration != null
       params:
@@ -130,16 +156,19 @@ processors:
         double f = Double.parseDouble(ctx.event.duration);
         ctx.event.duration = f * params.S_TO_NS;
   - convert:
+      tag: convert_source_address_53885069
       field: source.address
       target_field: source.ip
       type: ip
       ignore_failure: true
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_1c22c4e9
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_b288ca6d
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -148,34 +177,41 @@ processors:
       - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_c1df1146
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_bb7a620b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - append:
+      tag: append_related_ip_d3fc8b4c
       field: related.ip
       value: "{{source.ip}}"
       allow_duplicates: false
       if: ctx.source?.ip != null
   - append:
+      tag: append_related_hosts_24f0052a
       field: related.hosts
       value: "{{dns.question.name}}"
       allow_duplicates: false
       if: ctx.dns?.question?.name != null && ctx.dns?.question?.type != 'PTR'
   - append:
+      tag: append_related_ip_0807246e
       field: related.ip
       value: "{{dns.question.name}}"
       allow_duplicates: false
       if: ctx.dns?.question?.name != null && ctx.dns?.question?.type == 'PTR'
   - remove:
+      tag: remove_message_78ba0992
       field:
         - message
         - _tmp
       ignore_missing: true
   - script:
+      tag: script_ea04ee97
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -201,5 +237,14 @@ processors:
         handleMap(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_6bada04b
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_ac618476
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
