@@ -3,6 +3,7 @@ description: Pipeline for processing Kafka topic metrics
 processors:
   # Extract topic name and partition ID from kafka.cluster MBeans
   - grok:
+      tag: grok_jolokia_metrics_mbean_f7077e4d
       field: "jolokia.metrics.mbean"
       patterns:
         - "kafka.cluster:type=Partition,name=%{NOTSPACE:metric_name},topic=%{NOTSPACE:topic_name},partition=%{NUMBER:partition_id}"
@@ -11,6 +12,7 @@ processors:
 
   # Extract topic name and partition ID from kafka.log MBeans
   - grok:
+      tag: grok_jolokia_metrics_mbean_e2863133
       field: "jolokia.metrics.mbean"
       patterns:
         - "kafka.log:type=Log,name=%{NOTSPACE:metric_name},topic=%{NOTSPACE:topic_name},partition=%{NUMBER:partition_id}"
@@ -19,6 +21,7 @@ processors:
 
   # Extract topic name from kafka.server MBeans (no partition)
   - grok:
+      tag: grok_jolokia_metrics_mbean_d45e73da
       field: "jolokia.metrics.mbean"
       patterns:
         - "kafka.server:type=BrokerTopicMetrics,name=%{NOTSPACE:metric_name},topic=%{NOTSPACE:topic_name}"
@@ -27,6 +30,7 @@ processors:
 
   # Set topic name field directly in jolokia.metrics
   - set:
+      tag: set_jolokia_metrics_topic_name_8bb37798
       field: "jolokia.metrics.topic.name"
       copy_from: "topic_name"
       if: "ctx.topic_name != null"
@@ -34,6 +38,7 @@ processors:
 
   # Set partition ID field directly in jolokia.metrics
   - set:
+      tag: set_jolokia_metrics_partition_id_19209d5a
       field: "jolokia.metrics.partition.id"
       copy_from: "partition_id"
       if: "ctx.partition_id != null"
@@ -41,38 +46,47 @@ processors:
 
   # Remove temporary fields
   - remove:
+      tag: remove_topic_name_5434cc8d
       field: "topic_name"
       ignore_missing: true
   
   - remove:
+      tag: remove_partition_id_98fa7a7a
       field: "partition_id"
       ignore_missing: true
       
   - remove:
+      tag: remove_metric_name_32adad8f
       field: "metric_name"
       ignore_missing: true
 
   - set:
+      tag: set_ecs_version_9bed3e7e
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_jolokia_metrics_5995eaf3
       field: jolokia.metrics
       target_field: kafka.topic
       ignore_missing: true
       ignore_failure: true
   - set:
+      tag: set_event_kind_c6ad5fd2
       field: event.kind
       value: metric
   - set:
+      tag: set_event_type_d8d5e7ca
       field: event.type
       value: [info]
   - set:
+      tag: set_service_type_3846c5cd
       field: service.type
       value: kafka
   
 
   # Add metric fingerprint list
   - script:
+      tag: script_6afdb0de
       lang: painless
       source: |
         def queue = new ArrayList();
@@ -102,27 +116,37 @@ processors:
         }
 
   - fingerprint:
+      tag: fingerprint_241835e1
       fields: [kafka_topic_metric_fingerprint]
       target_field: kafka.topic.metric_fingerprint
       ignore_failure: true
 
   # Cleanup
   - remove:
+      tag: remove_kafka_topic_metric_fingerprint_9d334e13
       field: kafka_topic_metric_fingerprint
       ignore_missing: true
 
   - remove:
+      tag: remove_kafka_topic_mbean_b02ac16a
       field: kafka.topic.mbean
       ignore_missing: true
 
   - remove:
+      tag: remove_jolokia_metrics_fdb6cbb1
       field: jolokia.metrics
       ignore_missing: true
 
 on_failure:
   - set:
+      tag: set_event_kind_237807f8
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_14ce2244
       field: error.message
       value: >-
-        Processor '{{{ _ingest.on_failure_processor_type }}}'
-        {{{#_ingest.on_failure_processor_tag}}} with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}} failed with message '{{{ _ingest.on_failure_message }}}'
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

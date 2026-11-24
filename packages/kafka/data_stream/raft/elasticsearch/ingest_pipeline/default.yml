@@ -2,18 +2,26 @@
 description: Pipeline for processing Kafka Raft metrics.
 processors:
   - rename:
+      tag: rename_jolokia_metrics_ae7cf9c6
       field: jolokia.metrics
       target_field: kafka.raft
       ignore_missing: true
       ignore_failure: true
   - remove:
+      tag: remove_jolokia_34927d05
       field: jolokia
       ignore_missing: true
       ignore_failure: true
 on_failure:
   - set:
+      tag: set_event_kind_de18e6bf
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_4fea23b3
       field: error.message
       value: >-
-        Processor '{{{ _ingest.on_failure_processor_type }}}'
-        {{{#_ingest.on_failure_processor_tag}}} with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}} failed with message '{{{ _ingest.on_failure_message }}}'
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
