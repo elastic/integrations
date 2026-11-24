@@ -15,6 +15,10 @@ processors:
   - json:
       field: event.original
       target_field: azure.open_ai
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.5.0'
   - rename:
       field: azure.open_ai.resourceId
       target_field: azure.resource.id
@@ -304,6 +308,9 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
       ignore_failure: true
+  - pipeline:
+      name: '{{ IngestPipeline "genai" }}'
+      tag: pipeline_genai
   - script:
       description: Drops null/empty values recursively.
       lang: painless

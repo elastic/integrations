@@ -83,6 +83,14 @@ For more information on how to implement the comprehensive solution using API Ma
 
 The logs collected using the API Management services for the enterprise customer of the Azure OpenAI services are listed on the [Monitor OpenAI models](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/openai/architecture/log-monitor-azure-openai#:~:text=Azure%20OpenAI%20logging-,This%20solution,-Request%20count) page. This records the inputs and outputs of the request, like prompts, tokens, and model usage.
 
+#### Generative AI fields
+
+`gen_ai.provider.name` is `azure.ai.openai`. `event.action` keeps the Azure operation name, such as `ChatCompletions_Create`. `gen_ai.operation.name` is the OpenTelemetry value for that operation, such as `chat`.
+
+Prompt text, response text, token counts, and tool calls are taken from API Management Gateway logs. RequestResponse logs provide the deployment name and the model name. These logs do not include a caller principal, so `user.name` is not set.
+
+When a response contains several tool calls, `gen_ai.tool.name`, `gen_ai.tool.type`, and `gen_ai.tool.call.id` are arrays in the order the model generated them. That pairing exists only in `_source`. Keyword aggregations sort and deduplicate the values. `MV_COUNT(gen_ai.tool.call.id)` counts the calls. Metric documents copy the model and the bucket token totals only.
+
 ##### Content Filtering
 
 Azure OpenAI Content Filter's sophisticated algorithms analyze text and multimedia content to identify potential issues related to violence, explicit language, or other sensitive topics.
