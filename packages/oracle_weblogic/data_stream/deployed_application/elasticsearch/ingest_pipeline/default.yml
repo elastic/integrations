@@ -2,40 +2,54 @@
 description: Pipeline for parsing Oracle WebLogic Deployed Application metrics.
 processors:
   - set:
+      tag: set_ecs_version_c2f2c256
       field: ecs.version
       value: "8.11.0"
       ignore_failure: true
   - rename:
+      tag: rename_message_19b00cbf
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_a227b93a
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   - rename:
+      tag: rename_jolokia_metrics_a16147e3
       field: jolokia.metrics
       target_field: oracle_weblogic
       ignore_missing: true
       ignore_failure: true
   - set:
+      tag: set_event_type_3d5e9818
       field: event.type
       value: [info]
       ignore_failure: true
   - set:
+      tag: set_event_kind_8951a102
       field: event.kind
       value: metric
       ignore_failure: true
   - set:
+      tag: set_event_category_6ee11428
       field: event.category
       value: [web]
       ignore_failure: true
   - set:
+      tag: set_event_module_557dc81b
       field: event.module
       value: oracle_weblogic
       ignore_failure: true
   - set:
+      tag: set_event_dataset_bb6a6f26
       field: event.dataset
       value: oracle_weblogic.deployed_application
       ignore_failure: true
   - script:
+      tag: script_d7ae1551
       description: Set deployed application deployment state.
       lang: painless
       ignore_failure: true
@@ -46,6 +60,7 @@ processors:
         m.put(2, "Running");
         ctx.oracle_weblogic.deployed_application.deployment.state.name = m.get(ctx.oracle_weblogic.deployed_application.deployment.state.value);
   - remove:
+      tag: remove_jolokia_dfd15285
       field:
         - jolokia
         - oracle_weblogic.mbean
@@ -53,6 +68,14 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      tag: set_event_kind_6594a5c5
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_72799560
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
-      ignore_failure: true
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
