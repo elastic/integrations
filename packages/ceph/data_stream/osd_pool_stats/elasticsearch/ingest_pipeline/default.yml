@@ -2,30 +2,43 @@
 description: Pipeline for processing Ceph OSD Pool Stats metrics.
 processors:
   - set:
+      tag: set_ecs_version_6fe8d548
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_type_33583468
       field: event.type
       value: [info]
   - set:
+      tag: set_event_kind_02271fd4
       field: event.kind
       value: metric
   - set:
+      tag: set_event_module_787ddcc6
       field: event.module
       value: ceph
   - rename:
+      tag: rename_message_6b7b030d
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_c5dca552
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   - json:
+      tag: json_event_original_03f46b21
       field: event.original
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_ae06f9f3
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - script:
+      tag: script_c7821c95
       description: Calculate total client I/O rates read and write operations.
       lang: painless
       source: |
@@ -34,34 +47,42 @@ processors:
             ctx.total_activity = totalOperation + ctx.json?.client_io_rate?.write_op_per_sec + ctx.json?.client_io_rate?.read_op_per_sec;
         }
   - rename:
+      tag: rename_total_activity_7e53f306
       field: total_activity
       target_field: ceph.osd_pool_stats.client_io_rate.count
       ignore_missing: true
   - rename:
+      tag: rename_json_client_io_rate_read_bytes_sec_e4096d42
       field: json.client_io_rate.read_bytes_sec
       target_field: ceph.osd_pool_stats.client_io_rate.read.bytes
       ignore_missing: true
   - rename:
+      tag: rename_json_client_io_rate_read_op_per_sec_898d7350
       field: json.client_io_rate.read_op_per_sec
       target_field: ceph.osd_pool_stats.client_io_rate.read.count
       ignore_missing: true
   - rename:
+      tag: rename_json_client_io_rate_write_bytes_sec_ec74a80f
       field: json.client_io_rate.write_bytes_sec
       target_field: ceph.osd_pool_stats.client_io_rate.write.bytes
       ignore_missing: true
   - rename:
+      tag: rename_json_client_io_rate_write_op_per_sec_fe5165dd
       field: json.client_io_rate.write_op_per_sec
       target_field: ceph.osd_pool_stats.client_io_rate.write.count
       ignore_missing: true
   - rename:
+      tag: rename_json_pool_id_76d8a319
       field: json.pool_id
       target_field: ceph.osd_pool_stats.pool_id
       ignore_missing: true
   - rename:
+      tag: rename_json_pool_name_ca147126
       field: json.pool_name
       target_field: ceph.osd_pool_stats.pool_name
       ignore_missing: true
   - script:
+      tag: script_1b52d1e3
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -79,14 +100,20 @@ processors:
         }
         drop(ctx);
   - remove:
+      tag: remove_json_4e76ce44
       field:
         - json
       ignore_missing: true
 on_failure:
   - set:
-      field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
-  - append:
+      tag: set_event_kind_0bb84066
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
+  - append:
+      tag: append_error_message_c966bf3d
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

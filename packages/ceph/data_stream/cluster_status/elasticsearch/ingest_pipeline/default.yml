@@ -2,147 +2,189 @@
 description: Pipeline for processing Ceph Cluster Status metrics.
 processors:
   - set:
+      tag: set_ecs_version_0832f32d
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_type_41d26908
       field: event.type
       value: [info]
   - set:
+      tag: set_event_kind_886d78d6
       field: event.kind
       value: metric
   - set:
+      tag: set_event_module_06a8ef6b
       field: event.module
       value: ceph
   - rename:
+      tag: rename_message_dced8689
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_4b7a9456
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   - json:
+      tag: json_event_original_2ce8c895
       field: event.original
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_e36d3786
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_outb_health_status_fcae8921
       field: json.outb.health.status
       target_field: ceph.cluster_status.health
       ignore_missing: true
   - rename:
+      tag: rename_json_outb_monmap_min_mon_release_name_3651a81b
       field: json.outb.monmap.min_mon_release_name
       target_field: ceph.cluster_status.cluster_version
       ignore_missing: true
   - rename:
+      tag: rename_json_outb_monmap_num_mons_ceb1b86f
       field: json.outb.monmap.num_mons
       target_field: ceph.cluster_status.monitor.count
       ignore_missing: true
   - rename:
+      tag: rename_json_outb_osdmap_epoch_a25b8a26
       field: json.outb.osdmap.epoch
       target_field: ceph.cluster_status.osd.epoch
       ignore_missing: true
   - rename:
+      tag: rename_json_outb_osdmap_num_osds_980141f2
       field: json.outb.osdmap.num_osds
       target_field: ceph.cluster_status.osd.count
       ignore_missing: true
   - rename:
+      tag: rename_json_outb_osdmap_num_up_osds_96f592ee
       field: json.outb.osdmap.num_up_osds
       target_field: ceph.cluster_status.osd.up.count
       ignore_missing: true
   - rename:
+      tag: rename_json_outb_osdmap_num_in_osds_8286e35e
       field: json.outb.osdmap.num_in_osds
       target_field: ceph.cluster_status.osd.in.count
       ignore_missing: true
   - rename:
+      tag: rename_json_outb_osdmap_num_remapped_pgs_d1a1f1ea
       field: json.outb.osdmap.num_remapped_pgs
       target_field: ceph.cluster_status.pg.remapped.count
       ignore_missing: true
   - rename:
+      tag: rename_json_outb_pgmap_num_objects_39c78803
       field: json.outb.pgmap.num_objects
       target_field: ceph.cluster_status.object.count
       ignore_missing: true
   - rename:
+      tag: rename_json_outb_pgmap_pgs_by_state_fb3aac75
       field: json.outb.pgmap.pgs_by_state
       target_field: ceph.cluster_status.pg.state
       ignore_missing: true
   - rename:
+      tag: rename_json_outb_pgmap_data_bytes_8f140f0b
       field: json.outb.pgmap.data_bytes
       target_field: ceph.cluster_status.pg.data.bytes
       ignore_missing: true
   - rename:
+      tag: rename_json_outb_pgmap_bytes_used_53abd357
       field: json.outb.pgmap.bytes_used
       target_field: ceph.cluster_status.pg.used.bytes
       ignore_missing: true
   - rename:
+      tag: rename_json_outb_pgmap_bytes_avail_dbc26804
       field: json.outb.pgmap.bytes_avail
       target_field: ceph.cluster_status.pg.available.bytes
       ignore_missing: true
   - rename:
+      tag: rename_json_outb_pgmap_bytes_total_3294e3ff
       field: json.outb.pgmap.bytes_total
       target_field: ceph.cluster_status.pg.total.bytes
       ignore_missing: true
   - rename:
+      tag: rename_json_outb_pgmap_degraded_objects_57219e4d
       field: json.outb.pgmap.degraded_objects
       target_field: ceph.cluster_status.pg.degraded.object.count
       ignore_missing: true
   - rename:
+      tag: rename_json_outb_pgmap_degraded_total_85f4a3d9
       field: json.outb.pgmap.degraded_total
       target_field: ceph.cluster_status.pg.degraded.total.count
       ignore_missing: true
   - rename:
+      tag: rename_json_outb_pgmap_degraded_ratio_87e73d8d
       field: json.outb.pgmap.degraded_ratio
       target_field: ceph.cluster_status.pg.degraded.ratio
       ignore_missing: true
   - rename:
+      tag: rename_json_outb_pgmap_num_pgs_6d42a3de
       field: json.outb.pgmap.num_pgs
       target_field: ceph.cluster_status.pg.count
       ignore_missing: true
   - rename:
+      tag: rename_json_outb_pgmap_num_pools_ec647908
       field: json.outb.pgmap.num_pools
       target_field: ceph.cluster_status.pool.count
       ignore_missing: true
   - rename:
+      tag: rename_json_outb_pgmap_read_bytes_sec_c4fa9fa5
       field: json.outb.pgmap.read_bytes_sec
       target_field: ceph.cluster_status.traffic.read.bytes
       ignore_missing: true
   - rename:
+      tag: rename_json_outb_pgmap_write_bytes_sec_f14f231e
       field: json.outb.pgmap.write_bytes_sec
       target_field: ceph.cluster_status.traffic.write.bytes
       ignore_missing: true
   - rename:
+      tag: rename_json_outb_pgmap_read_op_per_sec_4b936b68
       field: json.outb.pgmap.read_op_per_sec
       target_field: ceph.cluster_status.traffic.read.operation.count
       ignore_missing: true
   - rename:
+      tag: rename_json_outb_pgmap_write_op_per_sec_a31eb081
       field: json.outb.pgmap.write_op_per_sec
       target_field: ceph.cluster_status.traffic.write.operation.count
       ignore_missing: true
   # Events returned from the Nautilus API has the different hierarchy for osdmap
   - rename:
+      tag: rename_json_outb_osdmap_osdmap_epoch_08e06969
       field: json.outb.osdmap.osdmap.epoch
       target_field: ceph.cluster_status.osd.epoch
       ignore_missing: true
   - rename:
+      tag: rename_json_outb_osdmap_osdmap_num_osds_e4ab0232
       field: json.outb.osdmap.osdmap.num_osds
       target_field: ceph.cluster_status.osd.count
       ignore_missing: true
   - rename:
+      tag: rename_json_outb_osdmap_osdmap_num_up_osds_3b68e503
       field: json.outb.osdmap.osdmap.num_up_osds
       target_field: ceph.cluster_status.osd.up.count
       ignore_missing: true
   - rename:
+      tag: rename_json_outb_osdmap_osdmap_num_in_osds_50265d58
       field: json.outb.osdmap.osdmap.num_in_osds
       target_field: ceph.cluster_status.osd.in.count
       ignore_missing: true
   - rename:
+      tag: rename_json_outb_osdmap_osdmap_num_remapped_pgs_7dce911a
       field: json.outb.osdmap.osdmap.num_remapped_pgs
       target_field: ceph.cluster_status.pg.remapped.count
       ignore_missing: true
   - remove:
+      tag: remove_json_7e542f2c
       field:
         - json
       ignore_missing: true
   - script:
+      tag: script_8a666af2
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -161,9 +203,14 @@ processors:
         drop(ctx);
 on_failure:
   - set:
-      field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
-  - append:
+      tag: set_event_kind_7d8d87ba
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
+  - append:
+      tag: append_error_message_c54095bb
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

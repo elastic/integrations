@@ -2,46 +2,63 @@
 description: Pipeline for processing Ceph Cluster Disk metrics.
 processors:
   - set:
+      tag: set_ecs_version_1b69c342
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_type_bb88c0b6
       field: event.type
       value: [info]
   - set:
+      tag: set_event_kind_2b242bb8
       field: event.kind
       value: metric
   - set:
+      tag: set_event_module_b5c8161f
       field: event.module
       value: ceph
   - rename:
+      tag: rename_message_7ff09689
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_a0a12582
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   - json:
+      tag: json_event_original_69d74f1d
       field: event.original
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_dd59ad0b
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename: 
+      tag: rename_json_outb_stats_total_avail_bytes_11e4d748
       field: json.outb.stats.total_avail_bytes
       target_field: ceph.cluster_disk.available.bytes
       ignore_missing: true
   - rename: 
+      tag: rename_json_outb_stats_total_bytes_d779e51a
       field: json.outb.stats.total_bytes
       target_field: ceph.cluster_disk.total.bytes
       ignore_missing: true
   - rename: 
+      tag: rename_json_outb_stats_total_used_raw_bytes_cfa0390e
       field: json.outb.stats.total_used_raw_bytes
       target_field: ceph.cluster_disk.used.raw.bytes
       ignore_missing: true
   - rename: 
+      tag: rename_json_outb_stats_total_used_bytes_bcd40a55
       field: json.outb.stats.total_used_bytes
       target_field: ceph.cluster_disk.used.bytes
       ignore_missing: true
   - script:
+      tag: script_92df4735
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -59,14 +76,20 @@ processors:
         }
         drop(ctx);
   - remove:
+      tag: remove_json_be918e13
       field:
         - json
       ignore_missing: true
 on_failure:
   - set:
-      field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
-  - append:
+      tag: set_event_kind_8caab858
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
+  - append:
+      tag: append_error_message_50f7293b
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
