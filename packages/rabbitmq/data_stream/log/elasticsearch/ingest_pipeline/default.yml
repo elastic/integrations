@@ -2,23 +2,34 @@
 description: Pipeline for parsing RabbitMQ logs
 processors:
   - set:
+      tag: set_event_ingested_46afa6ea
       field: event.ingested
       value: '{{_ingest.timestamp}}'
   - set:
+      tag: set_ecs_version_576480b9
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_kind_73e0a042
       field: event.kind
       value: event
   - set:
+      tag: set_event_type_b361d3ff
       field: event.type
       value: ["info"]
   - rename:
+      tag: rename_message_0376e92e
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_8e1824ec
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   - grok:
+      tag: grok_event_original_1784d2b3
       field: event.original
       pattern_definitions:
         GREEDYMULTILINE: "(.|\n)*"
@@ -28,12 +39,14 @@ processors:
         %{GREEDYMULTILINE:message}"
       ignore_missing: true
   - date:
+      tag: date_timestamp_905f2176
       if: "ctx.event.timezone == null"
       field: timestamp
       target_field: "@timestamp"
       formats:
       - yyyy-MM-dd HH:mm:ss.SSSSSSZZZZZ
   - date:
+      tag: date_timestamp_d1c40e50
       if: "ctx.event.timezone != null"
       field: "timestamp"
       target_field: "@timestamp"
@@ -41,9 +54,19 @@ processors:
       formats:
       - yyyy-MM-dd HH:mm:ss.SSSSSSZZZZZ
   - remove:
+      tag: remove_timestamp_6ed9b271
       field:
         - timestamp
 on_failure:
-- set:
-    field: error.message
-    value: "{{ _ingest.on_failure_message }}"
+  - set:
+      tag: set_event_kind_f17eb841
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_3933a452
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
