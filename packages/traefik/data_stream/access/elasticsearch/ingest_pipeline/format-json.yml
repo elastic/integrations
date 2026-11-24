@@ -3,96 +3,118 @@ description: Pipeline for parsing Traefik's access logs in JSON format. Requires
   plugins.
 processors:
   - json:
+      tag: json_event_original_cf6367b5
       field: event.original
       target_field: temp
   - rename:
+      tag: rename_temp_time_4bc57674
       field: temp.time
       target_field: "@timestamp"
       ignore_missing: true
   - set:
+      tag: set_timestamp_be75e7cd
       field: "@timestamp"
       copy_from: temp.StartUTC
       if: 'ctx?.temp?.StartUTC != null'
       override: true
   - set:
+      tag: set_timestamp_75b4a25e
       field: "@timestamp"
       copy_from: temp.StartLocal
       override: true
       if: 'ctx?.temp?.StartUTC == null && ctx?.temp?.StarLocal != null'
   - rename:
+      tag: rename_temp_Duration_300b08a5
       field: temp.Duration
       target_field: event.duration
       ignore_missing: true
   - rename:
+      tag: rename_temp_RouterName_cf227c6f
       field: temp.RouterName
       target_field: traefik.access.router.name
       ignore_missing: true
   - rename:
+      tag: rename_temp_FrontendName_03f74ce1
       field: temp.FrontendName
       target_field: traefik.access.router.name
       ignore_missing: true
       description: traefik 1.x backwards compatibility
       if: 'ctx?.traefik?.access?.router?.name == null'
   - rename:
+      tag: rename_temp_ClientUsername_439a3177
       field: temp.ClientUsername
       target_field: user.name
       ignore_missing: true
   - rename:
+      tag: rename_temp_ServiceName_7fe2538e
       field: temp.ServiceName
       target_field: observer.egress.interface.name
       ignore_missing: true
   - rename:
+      tag: rename_temp_BackendName_6ca4989a
       field: temp.BackendName
       target_field: observer.egress.interface.name
       ignore_missing: true
       description: traefik 1.x backwards compatibility
       if: 'ctx?.observer?.egress?.interface?.name == null'
   - rename:
+      tag: rename_temp_BackendURL_5f12d7b6
       field: temp.BackendURL
       target_field: temp.ServiceURL
       ignore_missing: true
       if: 'ctx?.temp?.ServiceURL == null'
   - rename:
+      tag: rename_temp_ServiceURL_Opaque_3f2a278b
       field: temp.ServiceURL.Opaque
       target_field: traefik.access.service.url.opaque
       ignore_missing: true
   - rename:
+      tag: rename_temp_ServiceURL_User_a1ae3b7e
       field: temp.ServiceURL.User
       target_field: traefik.access.service.url.user
       ignore_missing: true
   - rename:
+      tag: rename_temp_ServiceURL_Host_51ab0625
       field: temp.ServiceURL.Host
       target_field: traefik.access.service.url.domain
       ignore_missing: true
   - rename:
+      tag: rename_temp_ServiceURL_Path_42d32c47
       field: temp.ServiceURL.Path
       target_field: traefik.access.service.url.path
       ignore_missing: true
   - rename:
+      tag: rename_temp_ServiceURL_RawPath_64b94644
       field: temp.ServiceURL.RawPath
       target_field: traefik.access.service.url.raw_path
       ignore_missing: true
   - rename:
+      tag: rename_temp_ServiceURL_ForceQuery_fd24e01d
       field: temp.ServiceURL.ForceQuery
       target_field: traefik.access.service.url.force_query
       ignore_missing: true
   - rename:
+      tag: rename_temp_ServiceURL_RawQuery_abadd868
       field: temp.ServiceURL.RawQuery
       target_field: traefik.access.service.url.raw_query
       ignore_missing: true
   - rename:
+      tag: rename_temp_ServiceURL_Fragment_4d35690b
       field: temp.ServiceURL.Fragment
       target_field: traefik.access.service.url.fragment
       ignore_missing: true
   - rename:
+      tag: rename_temp_RequestCount_84a63bab
       field: temp.RequestCount
       target_field: traefik.access.request_count
       ignore_missing: true
   - rename:
+      tag: rename_temp_ClientAddr_fe69d5e2
       field: temp.ClientAddr
       target_field: source.address
       ignore_missing: true
   - grok:
+      tag: grok_source_address_a6531e57
       description: IPv6 '[]' notation must be removed to avoid ip field mapping errors.
       field: source.address
       patterns:
@@ -100,6 +122,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_temp_ClientHost_3ad442b9
       field: temp.ClientHost
       target_field: source.ip
       type: ip
@@ -107,135 +130,167 @@ processors:
       ignore_failure: true
       if: 'ctx?.source?.ip == null'
   - convert:
+      tag: convert_temp_ClientHost_79e61bd4
       field: temp.ClientHost
       target_field: network.forwarded_ip
       type: ip
       ignore_missing: true
       if: 'ctx?.source?.ip != null && ctx?.source?.ip != ctx?.temp?.ClientHost'
   - append:
+      tag: append_related_ip_07ba78d7
       field: related.ip
       value: "{{{network.forwarded_ip}}}"
       if: 'ctx?.network?.forwarded_ip != null'
   - rename:
+      tag: rename_temp_ClientPort_b47b98e6
       field: temp.ClientPort
       target_field: source.port
       ignore_missing: true
       if: 'ctx?.source?.port == null'
   - convert:
+      tag: convert_source_port_4d8ac118
       field: source.port
       type: long
       ignore_missing: true
   - dissect:
+      tag: dissect_temp_ServiceAddr_8fc69c84
       field: temp.ServiceAddr
       pattern: "%{destination.ip}:%{destination.port}"
       ignore_missing: true
       ignore_failure: true
   - dissect:
+      tag: dissect_temp_BackendAddr_75b4da98
       field: temp.BackendAddr
       pattern: "%{destination.ip}:%{destination.port}"
       ignore_missing: true
       ignore_failure: true
       if: 'ctx?.temp.SourceAddr == null'
   - convert:
+      tag: convert_destination_port_13c5b25f
       field: destination.port
       type: long
       if: "ctx?.destination?.port != null"
   - set:
+      tag: set_destination_address_4329fc58
       field: destination.address
       copy_from: destination.ip
       if: "ctx?.destination?.ip != null"
   - rename:
+      tag: rename_temp_RequestPath_c335ff4c
       field: temp.RequestPath
       target_field: url.path
       ignore_missing: true
   - rename:
+      tag: rename_temp_RequestMethod_3e3f17f7
       field: temp.RequestMethod
       target_field: http.request.method
       ignore_missing: true
   - rename:
+      tag: rename_temp_RequestHost_28ab2cb9
       field: temp.RequestHost
       target_field: url.domain
       ignore_missing: true
   - rename:
+      tag: rename_temp_RequestAddr_98daae88
       field: temp.RequestAddr
       target_field: url.domain
       ignore_missing: true
       if: 'ctx?.url?.domain == null'
   - convert:
+      tag: convert_temp_RequestPort_fa509a99
       field: temp.RequestPort
       target_field: url.port
       type: long
       if: 'ctx?.temp?.RequestPort != null && ctx?.temp?.RequestPort != "-"'
   - dissect:
+      tag: dissect_temp_RequestProtocol_a4bb5c41
       field: temp.RequestProtocol
       pattern: "HTTP/%{http.version}"
   - rename:
+      tag: rename_temp_RequestScheme_7c19a30e
       field: temp.RequestScheme
       target_field: url.scheme
       ignore_missing: true
   - append:
+      tag: append_url_original_63c88774
       field: url.original
       value: "{{{url.scheme}}}://"
       if: 'ctx?.url?.scheme != null'
   - append:
+      tag: append_url_original_6bc460fc
       field: url.original
       value: "{{{url.domain}}}"
       if: 'ctx?.url?.domain != null'
   - append:
+      tag: append_url_original_fadb4cc5
       field: url.original
       value: ":{{{url.port}}}"
       if: 'ctx?.url?.port != null'
   - append:
+      tag: append_url_original_1a70e112
       field: url.original
       value: "{{{url.path}}}"
       if: 'ctx?.url?.path != null'
   - join:
+      tag: join_url_original_cbd92581
       field: url.original
       separator: ""
   - remove:
+      tag: remove_url_original_334a6071
       field: url.original
       if: 'ctx?.url?.original == ""'
   - rename:
+      tag: rename_temp_DownstreamStatus_4c6d1d6e
       field: temp.DownstreamStatus
       target_field: http.response.status_code
       if: 'ctx?.temp?.DownstreamStatus != null && ctx?.temp?.DownstreamStatus != "-"'
   - rename:
+      tag: rename_temp_DownstreamContentSize_9d885a10
       field: temp.DownstreamContentSize
       target_field: http.response.body.bytes
       ignore_missing: true
   - rename:
+      tag: rename_temp_request_User_Agent_64a6a641
       field: temp.request_User-Agent
       target_field: user_agent.original
       ignore_missing: true
   - rename:
+      tag: rename_temp_OriginContentSize_4ad5ab88
       field: temp.OriginContentSize
       target_field: traefik.access.origin.content_size
       ignore_missing: true
   - rename:
+      tag: rename_temp_OriginDuration_d44d4128
       field: temp.OriginDuration
       target_field: traefik.access.origin.duration
       ignore_missing: true
   - rename:
+      tag: rename_temp_OriginStatus_894712a2
       field: temp.OriginStatus
       target_field: traefik.access.origin.status_code
       if: 'ctx?.temp?.OriginStatus != null && ctx?.temp?.OriginStatus != "-"'
   - rename:
+      tag: rename_temp_Overhead_fd681a5b
       field: temp.Overhead
       target_field: traefik.access.overhead
       ignore_missing: true
   - rename:
+      tag: rename_temp_RequestContentSize_53ac1100
       field: temp.RequestContentSize
       target_field: http.request.body.bytes
       ignore_missing: true
   - rename:
+      tag: rename_temp_RetryAttempts_cda3f256
       field: temp.RetryAttempts
       target_field: traefik.access.retry_attempts
       ignore_missing: true
   - user_agent:
+        tag: user_agent_1632445a
         field : temp.request_User-Agent
         ignore_missing: true
         extract_device_type: true
   - script:
+      tag: script_5353d15c
       source: |
         Map downstream_headers = new HashMap();
         Map origin_headers = new HashMap();
@@ -295,42 +350,60 @@ processors:
         }
 
   - rename:
+      tag: rename_temp_TLSCipher_bde135d5
       field: temp.TLSCipher
       target_field: tls.cipher
       ignore_missing: true
   - rename:
+      tag: rename_temp_TLSVersion_cdb1f111
       field: temp.TLSVersion
       target_field: tls.version
       ignore_missing: true
   - rename:
+      tag: rename_temp_GzipRatio_f9cd9707
       field: temp.GzipRatio
       target_field: traefik.access.gzip_ratio
       ignore_missing: true
   - rename:
+      tag: rename_temp_entryPointName_7ee8160e
       field: temp.entryPointName
       target_field: observer.ingress.interface.name
       ignore_missing: true
   - set:
+      tag: set_log_level_3b06af08
       field: log.level
       copy_from: temp.level
       override: true
       ignore_empty_value: true
   - set:
+      tag: set_message_d7994cea
       field: message
       copy_from: temp.msg
       override: true
       ignore_empty_value: true
   - set:
+      tag: set_observer_vendor_e45b3f78
       field: observer.vendor
       value: traefik
   - set:
+      tag: set_observer_product_ef0932c5
       field: observer.product
       value: traefik
   - set:
+      tag: set_observer_type_941941af
       field: observer.type
       value: proxy
 
 on_failure:
   - set:
+      tag: set_event_kind_7f07b04e
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_8c5ad95c
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

@@ -3,16 +3,19 @@ description: Pipeline for parsing Traefik access logs in commonlog format. Requi
   plugins.
 processors:
 - dissect:
+    tag: dissect_event_original_72b08bfd
     field: event.original
     pattern: '%{source.address} %{traefik.access.user_identifier} %{user.name} [%{traefik.access.time}]
       "%{http.request.method} %{url.original} HTTP/%{http.version}" %{http.response.status_code}
       %{traefik.access.message}'
 - remove:
+    tag: remove_http_response_status_code_76d85159
     description: Remove http.response.status_code it is not available ('-')
     field:
       http.response.status_code
     if: ctx.http?.response?.status_code != null && ctx.http?.response?.status_code == '-'
 - grok:
+    tag: grok_traefik_access_message_cf99a23f
     field: traefik.access.message
     patterns:
     - (?:%{NUMBER:http.response.body.bytes:long}|-)( (?:"%{DATA:http.request.referrer}"|-)?(
@@ -21,30 +24,37 @@ processors:
       %{NUMBER:temp.duration:long}ms)?)?
     ignore_missing: true
 - remove:
+    tag: remove_traefik_access_message_241fb4fd
     field: traefik.access.message
     ignore_missing: true
 - date:
+    tag: date_traefik_access_time_6eb9e849
     field: traefik.access.time
     target_field: '@timestamp'
     formats:
     - dd/MMM/yyyy:H:m:s Z
 - remove:
+    tag: remove_traefik_access_time_c0044e72
     field: traefik.access.time
 - grok:
+    tag: grok_source_address_f54fb8de
     field: source.address
     patterns:
     - ^(%{IP:source.ip}|%{HOSTNAME:source.domain})$
 - grok:
+    tag: grok_traefik_access_service_address_0bb0301b
     field: traefik.access.service.address
     patterns:
     - ^(https?://)?%{DATA:destination.address}$
     ignore_missing: true
 - grok:
+    tag: grok_destination_address_768fb4f4
     field: destination.address
     patterns:
     - ^(%{IP:destination.ip}|%{HOSTNAME:destination.domain})(:%{POSINT:destination.port:long})?$
     ignore_failure: true
 - script:
+    tag: script_775aefe1
     lang: painless
     source: ctx.event.duration = Math.round(ctx.temp.duration * params.scale)
     params:
@@ -52,6 +62,15 @@ processors:
     if: ctx.temp?.duration != null
 
 on_failure:
-- set:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - set:
+      tag: set_event_kind_57026212
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_b903acb5
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

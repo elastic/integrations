@@ -2,50 +2,68 @@
 description: Pipeline for parsing Traefik access logs.
 processors:
   - set:
+      tag: set_event_ingested_c4ed45e9
       field: event.ingested
       value: '{{_ingest.timestamp}}'
   - set:
+      tag: set_ecs_version_14f82b76
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_timestamp_c6d597f3
       field: '@timestamp'
       target_field: event.created
       ignore_missing: true
   - rename:
+      tag: rename_message_e075a452
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_f4de653e
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   - grok:
+      tag: grok_event_original_b550f74a
       field: event.original
       patterns:
         - ^%{CHAR:first_char}
       pattern_definitions:
         CHAR: .
   - pipeline:
+      tag: pipeline_2b4b3c89
       if: ctx.first_char != '{'
       name: '{{ IngestPipeline "format-common" }}'
   - pipeline:
+      tag: pipeline_9146c8db
       if: ctx.first_char == '{'
       name: '{{ IngestPipeline "format-json" }}'
   - remove:
+      tag: remove_first_char_fdb69534
       field:
         - first_char
   - remove:
+      tag: remove_temp_7af12a0f
       field: temp
       ignore_missing: true
   - convert:
+      tag: convert_http_response_status_code_968bdd12
       field: http.response.status_code
       type: long
       ignore_missing: true
   - user_agent:
+      tag: user_agent_user_agent_original_6f1efba5
       field: user_agent.original
       ignore_failure: true
   - geoip:
+      tag: geoip_source_ip_27849e62
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_3e719a78
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -54,55 +72,68 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_5cea2d69
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_d3697ef1
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - set:
+      tag: set_event_kind_a9b1a56b
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_85a5ea52
       field: event.category
       value: web
       allow_duplicates: false
       if: "ctx?.http?.request?.method != null && ctx.http.request.method != '-'"
   - append:
+      tag: append_event_type_6c784da7
       field: event.type
       value: access
       allow_duplicates: false
       if: "ctx?.http?.request?.method != null && ctx.http.request.method != '-'"
   - set:
+      tag: set_event_outcome_64d3a41b
       field: event.outcome
       value: success
       if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code < 400"
   - set:
+      tag: set_event_outcome_79a747f9
       field: event.outcome
       value: failure
       if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code >= 400"
   - append:
+      tag: append_related_ip_0419f1a8
       field: related.ip
       value: "{{source.ip}}"
       allow_duplicates: false
       if: "ctx?.source?.ip != null"
   - append:
+      tag: append_related_ip_4f839b10
       field: related.ip
       value: "{{destination.ip}}"
       allow_duplicates: false
       if: "ctx?.destination?.ip != null"
   - append:
+      tag: append_related_user_89434834
       field: related.user
       value: "{{user.name}}"
       allow_duplicates: false
       if: "ctx?.user?.name != null && ctx.user.name != '-'"
   - set:
+      tag: set_network_transport_9fc200d2
       field: network.transport
       value: tcp
   - community_id:
+      tag: community_id_4df62ce5
       if: "ctx?.source?.ip != null && ctx?.source?.port != null && ctx?.destination?.ip != null && ctx?.destination?.port != null"
   - script:
+      tag: script_1ed7cf51
       lang: painless
       source: |-
         boolean drop(Object o) {
@@ -121,5 +152,14 @@ processors:
       description: Drops null/empty values recursively.
 on_failure:
   - set:
+      tag: set_event_kind_9a0b0929
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_896d69b1
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
