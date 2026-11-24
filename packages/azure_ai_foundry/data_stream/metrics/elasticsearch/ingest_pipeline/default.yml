@@ -2,22 +2,27 @@
 description: Pipeline for parsing azure ai foundry metrics.
 processors:
   - rename:
+      tag: rename_azure_metrics_da8ee845
       field: azure.metrics
       target_field: azure.ai_foundry
       ignore_missing: true
   - rename:
+      tag: rename_azure_ai_foundry_time_toresponse_avg_5910edbc
       field: azure.ai_foundry.time_toresponse.avg
       target_field: azure.ai_foundry.time_to_response.avg
       ignore_missing: true
   - rename:
+      tag: rename_azure_ai_foundry_normalized_time_tofirst_token_avg_85080d43
       field: azure.ai_foundry.normalized_time_tofirst_token.avg
       target_field: azure.ai_foundry.normalized_time_to_first_token.avg
       ignore_missing: true
   - rename:
+      tag: rename_azure_ai_foundry_time_tolast_byte_avg_0dce1de5
       field: azure.ai_foundry.time_tolast_byte.avg
       target_field: azure.ai_foundry.time_to_last_byte.avg
       ignore_missing: true
   - script:
+      tag: script_051a2e51
       lang: painless
       description: Normalize unit percent field values. The normalized scale value between 0-1.
       if: ctx.azure?.ai_foundry?.model_availability_rate?.avg != null
@@ -28,6 +33,7 @@ processors:
                 / params.param_percent;
       ignore_failure: true
   - script:
+      tag: script_35edc28e
       lang: painless
       description: Normalize unit percent field values. The normalized scale value between 0-1.
       if: ctx.azure?.ai_foundry?.provisioned_utilization?.avg != null
@@ -39,5 +45,14 @@ processors:
       ignore_failure: true
 on_failure:
   - set:
+      tag: set_event_kind_1c730b73
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_37b5b96b
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
