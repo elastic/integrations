@@ -81,7 +81,9 @@ processors:
             if (i > 0 && Character.isUpperCase(c)) {
               char prev = s.charAt(i - 1);
               boolean nextLower = i + 1 < n && Character.isLowerCase(s.charAt(i + 1));
-              if (Character.isLowerCase(prev) || Character.isDigit(prev) || (Character.isUpperCase(prev) && nextLower)) {
+              // An acronym followed by one lowercase letter and a digit stays one word: IPv4 -> ipv4.
+              boolean versionSuffix = nextLower && i + 2 < n && Character.isDigit(s.charAt(i + 2));
+              if (Character.isLowerCase(prev) || Character.isDigit(prev) || (Character.isUpperCase(prev) && nextLower && !versionSuffix)) {
                 b.append('_');
               }
             }
