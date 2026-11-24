@@ -21,6 +21,57 @@
 #
 # Error and robustness rules (selected by X-API-Key) are used for CEL error-path testing only.
 rules:
+  # Used by the standalone CEL regression checks.
+  - path: /v1/asset/enumerate/contents
+    methods: [GET]
+    request_headers:
+      X-API-Key:
+        - '^cel-regression-key$'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {"data":[{"id":"invalid-date","updated_at":"2026-02-30T12:00:00Z"},{"id":"invalid-month","updated_at":"2026-13-01T12:00:00Z"},{"id":"missing"},{"id":"null","updated_at":null},{"id":"number","updated_at":42},{"id":"object","updated_at":{}},{"id":"valid-offset","updated_at":"2026-04-11T11:00:00+02:00"},{"id":"valid-no-zone","updated_at":"2026-04-11T10:00:00.123456"},{"id":"valid-utc","updated_at":"2026-04-11T09:30:00Z"},{"id":"valid-no-zone-seconds","updated_at":"2026-04-11T09:30:00"},{"id":"old","updated_at":"2026-04-09T00:00:00Z"}]}
+  - path: /v1/asset/enumerate/contents
+    methods: [GET]
+    request_headers:
+      X-API-Key:
+        - '^cel-invalid-only-key$'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {"data":[{"id":"invalid-date","updated_at":"2026-02-30T12:00:00Z"},{"id":"missing"},{"id":"number","updated_at":42}]}
+  - path: /v1/asset/enumerate/contents
+    methods: [GET]
+    request_headers:
+      X-API-Key:
+        - '^cel-zero-pagination-key$'
+    query_params:
+      limit: "1"
+      offset: "0"
+      sort_desc: updated_at
+    responses:
+      - status_code: 200
+        body: |-
+          {"data":[{"id":"only","updated_at":"2026-04-11T00:00:00Z"}]}
+  - path: /v1/asset/enumerate/contents
+    methods: [GET]
+    request_headers:
+      X-API-Key:
+        - '^cel-zero-pagination-key$'
+    query_params:
+      limit: "1"
+      offset: "1"
+      sort_desc: updated_at
+    responses:
+      - status_code: 200
+        body: |-
+          {"data":[]}
   # Credential check used by the research test-api.py script.
   - path: /v1/user
     methods: [GET]

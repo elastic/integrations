@@ -78,11 +78,6 @@ processors:
       tag: set_event_kind
       value: asset
   - append:
-      field: event.category
-      tag: append_event_category
-      value: host
-      allow_duplicates: false
-  - append:
       field: event.type
       tag: append_event_type
       value: info
@@ -406,18 +401,25 @@ processors:
       tag: convert_chain_status_codes_to_string
       type: string
       ignore_missing: true
-  - append:
+  - set:
       field: event.category
-      tag: append_event_category_web
-      value: web
-      allow_duplicates: false
-      if: ctx.http?.response?.status_code != null || ctx.url?.scheme == 'http' || ctx.url?.scheme == 'https'
-  - append:
+      tag: set_event_category_host
+      value: [host]
+      if: ctx.entity?.type instanceof List && ctx.entity.type.contains('host')
+  - set:
       field: event.category
-      tag: append_event_category_network
-      value: network
-      allow_duplicates: false
-      if: ctx.entity?.type instanceof List && ctx.entity.type.contains('service') && !ctx.event.category.contains('web')
+      tag: set_event_category_web
+      value: [web]
+      if: >-
+        ctx.entity?.type instanceof List && ctx.entity.type.contains('service') && !ctx.entity.type.contains('host') &&
+        (ctx.http?.response?.status_code != null || ctx.url?.scheme == 'http' || ctx.url?.scheme == 'https')
+  - set:
+      field: event.category
+      tag: set_event_category_network
+      value: [network]
+      if: >-
+        ctx.entity?.type instanceof List && ctx.entity.type.contains('service') && !ctx.entity.type.contains('host') &&
+        !(ctx.http?.response?.status_code != null || ctx.url?.scheme == 'http' || ctx.url?.scheme == 'https')
 
   # TLS certificate.
   - append:
