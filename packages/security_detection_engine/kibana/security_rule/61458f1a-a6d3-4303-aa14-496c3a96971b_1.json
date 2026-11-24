@@ -1,0 +1,94 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a burst of failed tool invocations against a single AWS Bedrock AgentCore Gateway within a short window. Individual tool calls fail routinely from bad input or transient upstream errors, but a concentrated run of failures against one gateway can indicate an attacker, or a compromised tool wrapper, probing a tool's parameter surface for an injection point, an authorization bypass, or a schema weakness. Failures can be attributed only to the gateway, not to a specific tool, target, or caller, and a target that is broken for every caller produces the same burst as one caller probing it, so confirm gateway and target health before treating a burst as malicious.",
+        "false_positives": [
+            "A tool or target that is broken or misconfigured for all callers (an upstream outage, a bad deployment, or an expired credential) produces the same failure burst as a single caller probing it, and the error events carry no caller, target, or tool identity to tell them apart. Confirm the gateway's target health and recent change history before treating a burst as adversarial, and add an exception by gateway (resource_arn) for gateways fronting known-flaky upstreams."
+        ],
+        "from": "now-60m",
+        "index": [
+            "logs-aws_bedrock_agentcore.gateway_application_logs-*"
+        ],
+        "interval": "10m",
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS Bedrock AgentCore Gateway Tool Invocation Failure Burst",
+        "note": "## Triage and analysis\n\n### Investigating AWS Bedrock AgentCore Gateway Tool Invocation Failure Burst\n\nThis rule detects many failed tool invocations against one AgentCore Gateway in a short window.\n\n### Possible investigation steps\n\n- Determine whether the gateway's target is simply unhealthy: review the target's upstream service, recent deployments,\n  and any credential or permission changes. A target failing for every caller is the most common cause.\n- Review `aws.bedrock_agentcore.gateway.payload_object` on the failing events; the nested `log` field contains the\n  underlying error (message, type, stack) and helps separate a genuine fault from probing.\n- Identify the gateway from `aws.bedrock_agentcore.gateway.resource_arn` and confirm which tools and targets it fronts.\n- The alert count reflects distinct failed invocations (deduplicated by `aws.bedrock_agentcore.gateway.request_id`),\n  not raw log lines.\n- Correlate with the AgentCore runtime logs for the same window to identify the agent or session driving the calls,\n  since the gateway error events do not carry a caller identity.\n\n### False positive analysis\n\n- A broken or misconfigured target fails identically for all callers and will trigger this rule. The error events carry\n  no caller, target, or tool identity, so separating probing from an outage requires reviewing target health.\n\n### Response and remediation\n\n- If the underlying errors indicate varied or malformed inputs rather than a plain outage, treat the calling agent\n  context as potentially compromised, review its tool configuration and input validation, and restrict the gateway\n  target's permissions.\n",
+        "query": "data_stream.dataset: \"aws_bedrock_agentcore.gateway_application_logs\" and\naws.bedrock_agentcore.gateway.payload_object.isError: \"true\"\n",
+        "references": [
+            "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway.html"
+        ],
+        "related_integrations": [
+            {
+                "package": "aws_bedrock_agentcore",
+                "version": ">=0.7.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.bedrock_agentcore.gateway.payload_object.isError",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "61458f1a-a6d3-4303-aa14-496c3a96971b",
+        "setup": "The AWS Bedrock AgentCore integration must be enabled with the gateway_application_logs data stream collecting into logs-aws_bedrock_agentcore.gateway_application_logs-*.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: GenAI",
+            "Platform: AWS",
+            "Data Source: AWS Bedrock",
+            "Service: AWS Bedrock",
+            "Use Case: Threat Detection",
+            "Tactic: Initial Access",
+            "Threat: Unauthorized AI Usage",
+            "Rule Type: Threshold",
+            "Mitre Atlas: AML.T0053",
+            "Resources: Investigation Guide",
+            "Profile: Beta"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1190",
+                        "name": "Exploit Public-Facing Application",
+                        "reference": "https://attack.mitre.org/techniques/T1190/"
+                    }
+                ]
+            }
+        ],
+        "threshold": {
+            "cardinality": [
+                {
+                    "field": "aws.bedrock_agentcore.gateway.request_id",
+                    "value": 10
+                }
+            ],
+            "field": [
+                "aws.bedrock_agentcore.gateway.resource_arn"
+            ],
+            "value": 1
+        },
+        "timestamp_override": "event.ingested",
+        "type": "threshold",
+        "version": 1
+    },
+    "id": "61458f1a-a6d3-4303-aa14-496c3a96971b_1",
+    "type": "security-rule"
+}

@@ -1,0 +1,131 @@
+{
+    "attributes": {
+        "alert_suppression": {
+            "duration": {
+                "unit": "h",
+                "value": 1
+            },
+            "group_by": [
+                "gcp.vertexai.prompt_response_logs.model",
+                "cloud.project.id"
+            ],
+            "missing_fields_strategy": "suppress"
+        },
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects a high number of Vertex AI prompt-response log rows and high total token usage for one model in the lookback window. Totals use provider usage_metadata.total_token_count (includes thinking tokens when billed). High request and token volume can indicate model extraction, quota abuse, or a compromised caller. Tune thresholds for your baseline.",
+        "false_positives": [
+            "Approved batch evaluation or high-traffic applications. Raise thresholds above the normal peak per model."
+        ],
+        "from": "now-60m",
+        "interval": "10m",
+        "investigation_fields": {
+            "field_names": [
+                "gcp.vertexai.prompt_response_logs.model",
+                "cloud.project.id",
+                "Esql.event_count",
+                "Esql.prompt_tokens_sum",
+                "Esql.candidates_tokens_sum",
+                "Esql.total_tokens_sum",
+                "Esql.timestamp_first_seen",
+                "Esql.timestamp_last_seen"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "GCP Vertex AI High Request and Token Volume",
+        "note": "## Triage and analysis\n\n### Investigating GCP Vertex AI High Request and Token Volume\n\nOne model exceeded both the request-count and total-token thresholds in the lookback window.\n`Esql.total_tokens_sum` comes from `usage_metadata.total_token_count`, which includes thinking tokens\nwhen the provider reports them. High volume can indicate model extraction, quota abuse, cost impact,\nor a compromised caller. This rule aggregates usage metadata; individual prompt text is not required\non the alert.\n\n#### Possible investigation steps\n\n- Note `gcp.vertexai.prompt_response_logs.model`, `cloud.project.id`, `Esql.event_count`,\n  `Esql.prompt_tokens_sum`, `Esql.candidates_tokens_sum`, and `Esql.total_tokens_sum`.\n- Compare request count vs token sums: many short calls (scraping/extraction) vs fewer huge prompts\n  (context stuffing / data exfil via prompt). When `Esql.total_tokens_sum` is much larger than\n  prompt+candidates, thinking tokens may dominate usage.\n- Pivot to `logs-gcp_vertexai.auditlogs-*` GenerateContent for `source.ip` and `client.user.email`\n  concentration in the same window.\n- Sample `prompt_response_logs` for that model/time range to see whether content looks like\n  systematic extraction.\n- Check for recent `SetPublisherModelConfig` changes that might have altered logging visibility.\n\n### False positive analysis\n\n- Approved batch evaluation, fine-tuning data prep, or high-traffic production apps. Raise\n  `Esql.event_count` and token thresholds above the normal peak per model before broad enablement.\n\n### Response and remediation\n\n- Restrict or rotate caller credentials, apply quotas, and review spend/billing for the model.\n- If compromise is suspected, hunt lateral use of the same principal across other GCP services.\n",
+        "query": "from logs-gcp_vertexai.prompt_response_logs-*\n| where\n    data_stream.dataset == \"gcp_vertexai.prompt_response_logs\" and\n    gcp.vertexai.prompt_response_logs.full_response.usage_metadata.prompt_token_count > 0\n| stats\n    Esql.event_count = count(*),\n    Esql.prompt_tokens_sum = sum(gcp.vertexai.prompt_response_logs.full_response.usage_metadata.prompt_token_count),\n    Esql.candidates_tokens_sum = sum(gcp.vertexai.prompt_response_logs.full_response.usage_metadata.candidates_token_count),\n    Esql.total_tokens_sum = sum(gcp.vertexai.prompt_response_logs.full_response.usage_metadata.total_token_count),\n    Esql.timestamp_first_seen = min(@timestamp),\n    Esql.timestamp_last_seen = max(@timestamp)\n  by\n    gcp.vertexai.prompt_response_logs.model,\n    cloud.project.id\n| where Esql.event_count >= 100 and Esql.total_tokens_sum >= 10000\n| keep\n    gcp.vertexai.prompt_response_logs.model,\n    cloud.project.id,\n    Esql.event_count,\n    Esql.prompt_tokens_sum,\n    Esql.candidates_tokens_sum,\n    Esql.total_tokens_sum,\n    Esql.timestamp_first_seen,\n    Esql.timestamp_last_seen\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/gcp_vertexai"
+        ],
+        "related_integrations": [
+            {
+                "package": "gcp_vertexai",
+                "version": ">=1.4.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.project.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.vertexai.prompt_response_logs.full_response.usage_metadata.candidates_token_count",
+                "type": "integer"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.vertexai.prompt_response_logs.full_response.usage_metadata.prompt_token_count",
+                "type": "integer"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.vertexai.prompt_response_logs.full_response.usage_metadata.total_token_count",
+                "type": "integer"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.vertexai.prompt_response_logs.model",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "9bd7c550-5d7f-43ed-969a-76eb50f9e553",
+        "setup": "## Setup\n\nRequires GCP Vertex AI `prompt_response_logs` with usage_metadata token counts. Raise `Esql.event_count` and token\nthresholds above your normal peak before broad enablement.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: GenAI",
+            "Domain: Cloud",
+            "Data Source: GCP Vertex AI",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Platform: GCP",
+            "Service: GCP Vertex AI",
+            "Use Case: Potential Overload",
+            "Use Case: Threat Detection",
+            "Tactic: Impact",
+            "Threat: LLMjacking",
+            "Threat: Unauthorized AI Usage",
+            "Mitre Atlas: AML.T0029",
+            "Mitre Atlas: AML.T0034",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1496",
+                        "name": "Resource Hijacking",
+                        "reference": "https://attack.mitre.org/techniques/T1496/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "9bd7c550-5d7f-43ed-969a-76eb50f9e553_1",
+    "type": "security-rule"
+}

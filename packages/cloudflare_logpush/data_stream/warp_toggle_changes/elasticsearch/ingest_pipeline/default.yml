@@ -1,0 +1,233 @@
+---
+description: Pipeline for parsing Cloudflare WARP Toggle Changes logs.
+processors:
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: '9.3.0'
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      tag: json_event_original_to_json
+      field: event.original
+      target_field: json
+      if: ctx.event?.original != null
+  - set:
+      tag: set_event_category
+      field: event.category
+      value: [configuration]
+  - set:
+      tag: set_event_type
+      field: event.type
+      value: [change]
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+  - set:
+      tag: set_event_action
+      field: event.action
+      value: warp-toggle-change
+  ## AWS S3 input does _id Based Deduplication and generates "_id" by default.
+  ## When "Data Deduplication" is not enabled, this field must be removed.
+  ## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
+  - remove:
+      field: _id
+      tag: remove_id_based_deduplication
+      description: >
+        When data deduplication is disabled, the _id field (used for _id Based Deduplication)
+        must be removed.
+      if: ctx._conf?.enable_deduplication == false && ctx.input?.type == 'aws-s3'
+      ignore_missing: true
+  - convert:
+      tag: convert_json_Timestamp_to_long
+      field: json.Timestamp
+      type: long
+      if: ctx.json?.Timestamp != null && ctx.json.Timestamp != ''
+      ignore_failure: true
+  - script:
+      lang: painless
+      tag: script_timestamp_to_milli
+      if: ctx.json?.Timestamp != null && ctx.json.Timestamp instanceof Number
+      source: |
+        long t = (long)(ctx.json.Timestamp);
+        if (t > (long)(1e18)) {
+          ctx.json.Timestamp = t/(long)(1e6)
+        } else if (t < (long)(1e10))  {
+          ctx.json.Timestamp = t*(long)(1e3)
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_timestamp_script
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_json_Timestamp
+      field: json.Timestamp
+      target_field: '@timestamp'
+      if: ctx.json?.Timestamp != null && ctx.json.Timestamp != ''
+      formats:
+        - UNIX_MS
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ssZ
+      timezone: UTC
+      on_failure:
+        - remove:
+            tag: remove_json_Timestamp
+            field: json.Timestamp
+            ignore_missing: true
+        - append:
+            tag: append_error_message_date
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # cloudflare_logpush.warp_toggle_changes.account.*
+  - rename:
+      tag: rename_json_AccountID_to_account_id
+      field: json.AccountID
+      target_field: cloudflare_logpush.warp_toggle_changes.account.id
+      ignore_missing: true
+  - rename:
+      tag: rename_json_AccountName_to_account_name
+      field: json.AccountName
+      target_field: cloudflare_logpush.warp_toggle_changes.account.name
+      ignore_missing: true
+
+  # device.* and host.*
+  - rename:
+      tag: rename_json_DeviceID_to_device_id
+      field: json.DeviceID
+      target_field: device.id
+      ignore_missing: true
+  - set:
+      tag: set_host_id_from_device_id
+      field: host.id
+      copy_from: device.id
+      ignore_empty_value: true
+  - rename:
+      tag: rename_json_DeviceRegistrationID_to_device_registration_id
+      field: json.DeviceRegistrationID
+      target_field: cloudflare_logpush.warp_toggle_changes.device.registration_id
+      ignore_missing: true
+  - rename:
+      tag: rename_json_Hostname_to_host_name
+      field: json.Hostname
+      target_field: host.name
+      ignore_missing: true
+  - rename:
+      tag: rename_json_SerialNumber_to_device_serial_number
+      field: json.SerialNumber
+      target_field: device.serial_number
+      ignore_missing: true
+
+  # cloudflare_logpush.warp_toggle_changes.toggled
+  - convert:
+      tag: convert_json_Toggled_to_boolean
+      field: json.Toggled
+      target_field: cloudflare_logpush.warp_toggle_changes.toggled
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_json_Toggled
+            field: json.Toggled
+            ignore_missing: true
+        - append:
+            tag: append_error_message_toggled
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # user.*
+  - rename:
+      tag: rename_json_UserEmail_to_user_email
+      field: json.UserEmail
+      target_field: user.email
+      ignore_missing: true
+
+  # related.*
+  - append:
+      tag: append_host_id_into_related_hosts
+      field: related.hosts
+      value: '{{{host.id}}}'
+      if: ctx.host?.id != null
+      allow_duplicates: false
+  - append:
+      tag: append_host_name_into_related_hosts
+      field: related.hosts
+      value: '{{{host.name}}}'
+      if: ctx.host?.name != null
+      allow_duplicates: false
+  - append:
+      tag: append_user_email_into_related_user
+      field: related.user
+      value: '{{{user.email}}}'
+      if: ctx.user?.email != null
+      allow_duplicates: false
+  - remove:
+      tag: remove_json_conf
+      field:
+        - json
+        - _conf
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || v == 'N/A' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      tag: append_preserve_original_event_tag
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      tag: append_pipeline_error_message
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event_tag_on_failure
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

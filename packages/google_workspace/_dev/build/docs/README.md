@@ -46,6 +46,7 @@ In order to ingest data from the Google Reports API you must:
   - OUs: Read
   - Users: Read
   - Chrome Management > Managed browsers: Read
+  - Chrome Management > Manage ChromeOS Devices: Read (only needed for the `chromeos_devices` data stream; *Managed browsers: Read* does not grant it)
   - View Reports
   - Alert Center: Full access
 
@@ -62,9 +63,21 @@ In order to ingest data from the Google Reports API you must:
 - [Set up access to the Admin SDK API](https://support.google.com/workspacemigrate/answer/9222865?hl=en) for the ServiceAccount.
 - [Enable Domain-Wide Delegation](https://developers.google.com/admin-sdk/reports/v1/guides/delegation) for your ServiceAccount.
 
-This integration will use the following *oauth2 scope*:
+The Reports API data streams use the following *oauth2 scope*:
 
 - `https://www.googleapis.com/auth/admin.reports.audit.readonly`
+
+The `users`, `group_inventory` and `chromeos_devices` data streams need different scopes. See the Google Workspace Users, Google Workspace Groups inventory and Google Workspace ChromeOS Devices sections.
+
+### Inventory data streams
+
+Most data streams of this integration contain audit **events** from the Reports API: _what happened_. Three data streams instead contain an **inventory** from the Admin SDK Directory API: _what exists_, collected again in full on every cycle, with `event.kind: asset`. All three are turned off by default.
+
+| Inventory data stream | Contains | Related audit data streams |
+|---|---|---|
+| `users` | One document per user account | `user_accounts`, `admin` |
+| `group_inventory` | One document per Google group | `groups`, `group_enterprise` |
+| `chromeos_devices` | One document per enrolled ChromeOS device | `chrome` |
 
 Once you have downloaded your service account credentials as a JSON file, you are ready to set up your integration.
 
@@ -91,6 +104,16 @@ Recommended Chunk Duration values:
 | Low (for example `rules`, `saml`, `access_transparency`) | `24h` |
 
 A chunk should be small enough to be fully collected between the interruptions you expect, and must not exceed `720h` (30 days). Once the data stream has caught up, the window end is limited by `now - Lag Time`, so Chunk Duration has no effect on steady-state collection. Leaving the setting empty, or setting it to `0`, disables chunking. Existing saved positions are reused unchanged when the setting is turned on or off.
+
+### Duplicate events and index rollover
+
+The `access_transparency`, `admin`, `chat`, `context_aware_access`, `device`, `drive`, `gcp`, `group_enterprise`, `groups`, `login`, `rules`, `saml`, `token` and `user_accounts` data streams set the document `_id` to a fingerprint of the event's `id` and `events` fields, so collecting the same event twice normally produces one document. The `alert` data stream does the same with a fingerprint of the alert's identifiers and timestamps. The other data streams let Elasticsearch generate the `_id`, so every re-collected event from them is stored again.
+
+The fingerprint prevents duplicates only within one backing index. A data stream checks for an existing `_id` only in its current write index, so if the data stream rolls over between the first and second collection of an event, the second copy is stored in the new backing index. Two documents with the same `_id` in different backing indices are the sign of this. The backing index rolls over by size or by age according to the data stream's lifecycle policy, and a large replay can trigger a size-based rollover by itself within hours.
+
+For example, with Chunk Duration unset and a saved position several weeks old, the next interval requests those weeks in one window. If the agent restarts partway through, the whole window is requested again, and any events that were already indexed before a rollover are indexed a second time. With Chunk Duration set to `1h`, the same saved position produces one hour of activity per interval, and a restart re-collects at most that hour, so at most one hour of events can be duplicated if a rollover happens in between.
+
+To limit duplicates, set Chunk Duration on busy data streams, and keep Initial Interval no longer than the history you need when a data stream starts with no saved position. If you do need a long initial history, set Chunk Duration as well so it is collected one chunk at a time.
 
 # Google Workspace Gmail Logs
 
@@ -259,11 +282,194 @@ Once Service Account credentials are downloaded as a JSON file, then the integra
 
 >  NOTE: The default value of the "Page Size" is set to 1000. This option is available under 'Alert' Advance options. Set the parameter "Page Size" according to the requirement. For Alert Data Stream, The default value of "Alert Center API Host" is `https://alertcenter.googleapis.com`. The Alert Center API Host will be used for collecting alert logs only.
 
-## Agentless Enabled Integration
+# Google Workspace ChromeOS Devices
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+The `chromeos_devices` data stream collects an **inventory** of the ChromeOS and ChromeOS Flex devices enrolled in your Google Workspace or Chrome Enterprise account, from the [Admin SDK Directory API](https://developers.google.com/workspace/admin/directory/reference/rest/v1/chromeosdevices/list). Each collection cycle produces one document per device, describing what exists: identity, status, organizational unit, assigned user, OS version and update state, boot mode, TPM, end of auto-updates, last known IP addresses and recent users. Documents have `event.kind: asset`.
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+This is different from the `chrome` data stream, which contains Chrome and ChromeOS activity **events** (what happened). Changes made to devices by administrators are in the `admin` data stream.
+
+The data stream is turned off by default.
+
+## Collection
+
+The Directory API has no filter for changed devices, so each cycle reads the whole device inventory again. The default interval is `24h`. Each request returns up to 100 devices (the **Page Size** setting, which Google allows up to 300).
+
+To collect only part of the inventory, set **Organizational Unit** under the data stream's advanced options. The data stream then collects the devices in that organizational unit and all its children. Use the full path, for example `/Sales` (the leading `/` is optional), or `id:` followed by the organizational unit ID.
+
+## Requirements
+
+The `chromeos_devices` data stream uses the same service account and `Delegated Account` as the Reports API data streams. It needs this extra scope and privilege:
+
+| OAuth scope to add | Privilege the delegated account needs |
+|---|---|
+| `https://www.googleapis.com/auth/admin.directory.device.chromeos.readonly` | Services → Chrome Management → Manage ChromeOS Devices → **Manage ChromeOS Devices (read only)**, on **all** organizational units, and Organizational Units → Read |
+
+*Chrome Management → Managed browsers: Read* is a different privilege for Chrome browsers. It does not give access to ChromeOS devices. Google has merged the former "Admin console privileges" and "Admin API privileges" into one **Admin privileges** section, so one grant covers both. See [Delegate admin roles in Chrome](https://support.google.com/chrome/a/answer/2984343).
+
+To add the scope to the service account's domain-wide delegation (a super administrator must do this):
+
+1. In the Admin console go to **Security → Access and data control → API controls → Manage Domain Wide Delegation**.
+2. Find the service account's client ID and click **Edit**. Do not use **Add new** for a client ID that is already listed, and do not delete and re-add it: deleting it stops every application that uses it straight away.
+3. Add the scope. **Keep** `https://www.googleapis.com/auth/admin.reports.audit.readonly` and any other scopes already listed.
+4. Click **Authorize**, then open **View details** and check that the scope is listed.
+
+Use the exact scope string in the table. Google does not accept a broader scope in place of the one the integration requests. Scope changes can take up to 24 hours to take effect. If your organization uses multi-party approval, another super administrator must approve the change first.
+
+> NOTE: If the scope is not delegated yet, Google issues no token and the `chromeos_devices` data stream collects nothing. The other data streams of the integration are not affected.
+
+Devices only appear after they are enrolled, and enrolment needs a ChromeOS Enterprise, Education or Kiosk & Signage upgrade for each device, including ChromeOS Flex devices. An account without enrolled devices collects no documents, and this is not an error.
+
+Hardware, network and recent-user information is only reported while the *User and device reporting* policies are on. They are on by default. See [View ChromeOS device details](https://support.google.com/chrome/a/answer/1698333).
+
+The data stream calls `https://admin.googleapis.com`. You can change this with the **Directory API Host** setting under the data stream's advanced options. If your network uses an egress allowlist, add `admin.googleapis.com`.
+
+## Notes on the data
+
+- Devices in every status are included, among them deprovisioned and disabled devices. `host.entity.attributes.managed` is set from `status`:
+
+  | `status` | `host.entity.attributes.managed` |
+  |---|---|
+  | `ACTIVE`, `DISABLED` | `true` |
+  | `DEPROVISIONED`, `INACTIVE`, `DELINQUENT`, `PRE_PROVISIONED` | `false` |
+  | `RETURN_REQUESTED`, `RETURN_ARRIVED`, `SHIPPED`, `UNKNOWN`, absent or any other value | not set |
+
+- ChromeOS devices have no hostname. `host.name` is the serial number, or else the device ID. The asset ID set by an administrator goes in `host.entity.display_name`.
+- The assigned user (`google_workspace.chromeos_devices.annotated_user`) is free text that administrators can edit. It is copied to `user.email`, `user.name` and `user.domain` only when it is an email address.
+- `host.ip` holds the devices' local IP addresses. The public (WAN) addresses are shared by many devices behind the same NAT, so they are only in `related.ip` and `google_workspace.chromeos_devices.last_known_network.wan_ip_address`.
+- Google returns some values in either camelCase or upper case, for example `chromeOs` or `CHROME_OS`. They are kept as received.
+- Telemetry reports, such as CPU, memory, disk volume and active time reports, are not indexed. They are only in `event.original` when **Preserve original event** is on.
+
+## Troubleshooting
+
+- **The data stream stops with `oauth2: cannot fetch token` and the input health is Degraded.** Google rejected the token request. The error usually contains `unauthorized_client`, `access_denied`, `invalid_grant`, `invalid_scope` or `admin_policy_enforced`. Check that the scope is delegated exactly as in the table above, and that enough time has passed for the change to take effect.
+- **An error document reports HTTP 403 `Not Authorized to access this resource/api`.** The delegated account lacks the *Manage ChromeOS Devices (read only)* privilege.
+- **Fewer devices than expected.** The delegated account's Chrome privilege is probably limited to some organizational units. Grant it on all organizational units. Also check the **Organizational Unit** setting.
+- **No devices at all.** The account has no enrolled ChromeOS devices, or no ChromeOS upgrades.
+
+# Google Workspace Users
+
+The `users` data stream collects an **inventory** of the user accounts in your Google Workspace tenant from the [Admin SDK Directory API](https://developers.google.com/workspace/admin/directory/reference/rest/v1/users/list). Each collection cycle produces one document per user, describing what exists: identity, 2-Step Verification, admin, suspension and archive state, organizational unit, manager and other directory attributes. Documents have `event.kind: asset`.
+
+This is different from the `user_accounts` data stream, which contains audit **events** about actions users took on their own accounts (what happened). Changes to users made by administrators are in the `admin` data stream.
+
+The data stream is turned off by default.
+
+## Collection
+
+The Directory API has no filter for changed users, so each cycle reads the whole directory again. The default interval is `24h`. A tenant of 50,000 users needs about 100 requests per cycle.
+
+Two optional settings add more information to each user document. Both are off by default:
+
+- **Collect group membership** adds the groups each user is a direct member of (`user.group.id`, `user.group.name` and `google_workspace.users.groups`). Membership inherited through nested groups is not included. It also links each user to the groups they own (`user.entity.relationships.owns.entity.id`) and manage (added to `user.entity.relationships.administers.entity.id`). These IDs are the `entity.id` of the group documents in the `group_inventory` data stream. The Entity Store graph draws `owns` links from Kibana 9.4 and `administers` links from Kibana 9.5.
+- **Collect admin roles and privileges** adds the admin roles assigned to each user (`user.roles`), their privileges (`user.entity.attributes.permissions`) and the scope each role applies to (`user.entity.relationships.administers.entity.id`): an organizational unit ID, or the customer ID for roles that apply to the whole account, such as super administrator. The full assignments are in `google_workspace.users.role_assignments`. Only roles assigned **directly** to the user are included. Roles a user gets through a group are not, because the Directory API only returns those for a single user at a time.
+
+`user.roles` always includes `super_admin` or `delegated_admin` when Google flags the user as one, even when the roles option is off.
+
+When an option is on and its requests succeed, every user document carries `google_workspace.users.groups` or `google_workspace.users.role_assignments`, as an empty list (`[]`) if the user has no direct membership or assignment. When the option is off, or its requests failed in that cycle, the field is left out of the document, and a failure also produces an error document. Elasticsearch does not index empty lists, so the difference is visible in the document source but cannot be used in a query.
+
+## Requirements
+
+The `users` data stream uses the same service account and `Delegated Account` as the Reports API data streams. It needs these extra scopes and privileges:
+
+| Setting | OAuth scope to add | Privilege the delegated account needs |
+|---|---|---|
+| Always | `https://www.googleapis.com/auth/admin.directory.user.readonly` | Users → Read and Organizational Units → Read, on **all** organizational units |
+| Collect group membership | `https://www.googleapis.com/auth/admin.directory.group.readonly` | Groups → Read. If you use a Groups Reader or Groups Editor role assignment instead, it must cover all groups. |
+| Collect admin roles and privileges | `https://www.googleapis.com/auth/admin.directory.rolemanagement.readonly` | The delegated account must be a **super administrator**. Google does not offer a privilege that grants read access to admin roles, so other accounts get HTTP 403 on these requests. |
+
+Google has merged the former "Admin console privileges" and "Admin API privileges" into one **Admin privileges** section, so one *Users → Read* privilege covers both. See [Administrator privilege definitions](https://support.google.com/a/answer/1219251).
+
+To add the scopes to the service account's domain-wide delegation (a super administrator must do this):
+
+1. In the Admin console go to **Security → Access and data control → API controls → Manage Domain Wide Delegation**.
+2. Find the service account's client ID and click **Edit**. Do not use **Add new** for a client ID that is already listed, and do not delete and re-add it: deleting it stops every application that uses it straight away.
+3. Add the scopes you need, separated by commas. **Keep** `https://www.googleapis.com/auth/admin.reports.audit.readonly` and any other scopes already listed.
+4. Click **Authorize**, then open **View details** and check that every scope is listed.
+
+Use the exact scope strings in the table. Google does not accept a broader scope in place of the one the integration requests. Scope changes can take up to 24 hours to take effect. If your organization uses multi-party approval, another super administrator must approve the change first.
+
+> NOTE: The integration requests all the scopes the data stream needs in one token request. If any of them is not delegated yet, Google issues no token and the **whole** `users` data stream stops, including the basic user inventory. Turn on an optional setting only after its scope is delegated and in effect. The other data streams of the integration are not affected.
+
+The data stream calls `https://admin.googleapis.com`. You can change this with the **Directory API Host** setting under the data stream's advanced options. If your network uses an egress allowlist, add `admin.googleapis.com`.
+
+## Notes on the data
+
+- `user.entity.lifecycle.last_activity` comes from the user's last sign-in time. Google says this value "might be inaccurate" when listing all users, so treat it as approximate. Users who have never signed in have no value. `google_workspace.users.agreed_to_terms: false` also shows that a user has never completed a first sign-in.
+- Deleted users are not included.
+
+## Troubleshooting
+
+- **The data stream stops with `oauth2: cannot fetch token` and the input health is Degraded.** Google rejected the token request. The error usually contains `unauthorized_client`, `access_denied`, `invalid_grant`, `invalid_scope` or `admin_policy_enforced`. Check that every scope for the settings you enabled is delegated exactly as in the table above, and that enough time has passed for the change to take effect.
+- **An error document reports HTTP 403 on a roles, role assignments, groups or members request.** The delegated account lacks the privilege for that option. Users are still collected, without that information. For the roles option, the delegated account must be a super administrator.
+- **Fewer users than expected.** The delegated account's role is probably limited to some organizational units. Grant Users → Read on all organizational units.
+
+# Google Workspace Groups inventory
+
+The `group_inventory` data stream collects an **inventory** of the Google groups in your Google Workspace account from the [Admin SDK Directory API](https://developers.google.com/workspace/admin/directory/reference/rest/v1/groups/list). Each collection cycle produces one document per group, describing what exists: the group's email, name, aliases and member count, its owners and managers, the groups nested in it, its external members and, optionally, its access settings and admin roles. Documents have `event.kind: asset`.
+
+This is different from the `groups` and `group_enterprise` data streams, which contain Groups audit **events** (what happened), such as a member being added or a setting being changed.
+
+The data stream is turned off by default.
+
+## Collection
+
+The Directory API has no filter for changed groups, so each cycle lists every group and reads every group's direct members again. The default interval is `24h`. A cycle needs one request per 200 groups, plus at least one request per group for its members (one per 200 members). The `users` data stream reads the same group members when its Collect group membership option is on, and both data streams share the Directory API quota of the delegated account with the Reports API data streams.
+
+Each group document contains:
+
+- `group.id` and `group.name`, and the group as an entity: `entity.id` (the group ID), `entity.name` (the group email), `entity.display_name` and `entity.sub_type: google_workspace_group`. ECS has no entity type for groups, so `entity.type` is not set. From Kibana 9.4 the Entity Store keeps each group as a generic entity.
+- The owners and managers (`google_workspace.group_inventory.owners` and `managers`, also in `related.user`), the groups that are direct members of this group (`member_groups`), the external members (`external_members`), whether the whole account is a member (`has_customer_member`) and member counts by type and role (`member_counts`).
+- The plain user members are **not** listed on group documents. They are on the user documents of the `users` data stream (`user.group.id`) when its Collect group membership option is on. `group.id` on a group document is the same value as `user.group.id` on a user document.
+
+Two optional settings add more information to each group document. Both are off by default:
+
+- **Collect group settings** adds the group's access settings from the [Groups Settings API](https://developers.google.com/workspace/admin/groups-settings/v1/reference/groups) under `google_workspace.group_inventory.settings`: who can join, post, view members, view and find the group, whether external members are allowed, moderation and others. It costs one more request per group, against the Groups Settings API quota of 100,000 requests a day per Google Cloud project. At the default `24h` interval that covers about 90,000 groups, and at `1h` about 4,000. When the quota is used up, settings are not requested again in that cycle, one error document is published and the remaining group documents carry `google_workspace.group_inventory.settings_error`. These are the values set on the group. Organization-wide Groups for Business sharing settings can restrict them further and are not included.
+- **Collect admin roles and privileges** adds the admin roles assigned directly to each group (`google_workspace.group_inventory.role_assignments`), their privileges (`entity.attributes.permissions`) and, for roles limited to an organizational unit, that unit's ID (`entity.relationships.administers.entity.id`). The members of such a group hold the role through the group.
+
+## Requirements
+
+The `group_inventory` data stream uses the same service account and `Delegated Account` as the Reports API data streams. It needs these extra scopes and privileges:
+
+| Setting | OAuth scope to add | Privilege the delegated account needs |
+|---|---|---|
+| Always | `https://www.googleapis.com/auth/admin.directory.group.readonly` | Groups → Read. If you use a Groups Reader or Groups Editor role assignment instead, it must cover all groups. |
+| Collect group settings | `https://www.googleapis.com/auth/apps.groups.settings` | The Groups privilege (for example the Groups Admin or Groups Editor role), or super administrator. In accounts with several domains, use a delegated account on the primary domain. |
+| Collect admin roles and privileges | `https://www.googleapis.com/auth/admin.directory.rolemanagement.readonly` | The delegated account must be a **super administrator**. |
+
+The first and last scopes are the same as for the `users` data stream, so they might already be delegated.
+
+> NOTE: Google offers no read-only scope for group settings. `https://www.googleapis.com/auth/apps.groups.settings` allows **changing** the settings of any group the delegated account can manage. The integration only reads settings. Keep the delegated account's privileges as low as the table allows.
+
+For Collect group settings, also enable the **Groups Settings API** in the service account's Google Cloud project, next to the Admin SDK API.
+
+Add the scopes to the service account's domain-wide delegation as described in the Google Workspace Users section: **Edit** the existing client ID, keep the scopes already listed and use the exact scope strings. Scope changes can take up to 24 hours to take effect.
+
+> NOTE: The integration requests all the scopes the data stream needs in one token request. If any of them is not delegated yet, Google issues no token and the **whole** `group_inventory` data stream stops, including the basic group inventory. Turn on an optional setting only after its scope is delegated and in effect. The other data streams of the integration, including `users`, are not affected.
+
+The data stream calls `https://admin.googleapis.com` and, for group settings, `https://www.googleapis.com`. You can change them with the **Directory API Host** and **Groups Settings API Host** settings under the data stream's advanced options.
+
+## Notes on the data
+
+- Only **direct** members are read. A user who is a member through a nested group is not counted in this group's `member_counts`. Find the groups that contain a group by searching for its ID in `google_workspace.group_inventory.member_groups.id`.
+- External members are found by email domain: a member is external when its email domain is not the domain of any group listed in the same cycle. A domain of your account that has no groups therefore looks external, and so do the other domains of your account when the **Domain** setting limits the listing to one domain.
+- Admin roles that apply to the whole account add their privileges to `entity.attributes.permissions` but no ID to `entity.relationships.administers.entity.id`, because the group listing does not return the customer ID.
+- Group owners in this data stream are the members with the Owner role. Administrators can manage every group without being listed as owners.
+- Deleted groups are not included.
+
+## Troubleshooting
+
+- **The data stream stops with `oauth2: cannot fetch token` and the input health is Degraded.** Google rejected the token request. Check that every scope for the settings you enabled is delegated exactly as in the table above, and that enough time has passed for the change to take effect.
+- **An error document reports an HTTP error on the groups request, no group documents are written and the input health is Degraded.** The group listing itself failed, so the cycle stopped. For HTTP 403, grant the delegated account Groups → Read with an assignment that has no condition. The next cycle starts again from the beginning.
+- **A group document has `google_workspace.group_inventory.members_error`.** Its members could not be read, usually because the group was deleted during the cycle (HTTP 404). The other groups are not affected.
+- **An error document reports HTTP 403 on a Groups Settings request, and group documents have `google_workspace.group_inventory.settings_error`.** Either the Groups Settings API is not enabled in the Google Cloud project, or the delegated account lacks the Groups privilege. Groups are still collected, without settings.
+- **An error document reports HTTP 403 on a roles or role assignments request.** The delegated account is not a super administrator. Groups are still collected, without admin roles.
+- **Fewer groups than expected.** The delegated account's Groups role assignment is probably limited by a condition, for example to security groups only. Use an assignment without a condition.
+
+## Elastic Managed enabled integration
+
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ## Logs
 
@@ -289,6 +495,22 @@ This is the `saml` dataset.
 {{event "saml"}}
 
 {{fields "saml"}}
+
+### Users
+
+This is the `users` dataset. It contains an inventory of user accounts, not events. See the Google Workspace Users section.
+
+{{event "users"}}
+
+{{fields "users"}}
+
+### Group Inventory
+
+This is the `group_inventory` dataset. It contains an inventory of Google groups, not events. See the Google Workspace Groups inventory section.
+
+{{event "group_inventory"}}
+
+{{fields "group_inventory"}}
 
 ### User Accounts
 
@@ -401,6 +623,14 @@ This is the `chrome` dataset.
 {{event "chrome"}}
 
 {{fields "chrome"}}
+
+### ChromeOS Devices
+
+This is the `chromeos_devices` dataset. It contains an inventory of ChromeOS devices, not events. See the Google Workspace ChromeOS Devices section.
+
+{{event "chromeos_devices"}}
+
+{{fields "chromeos_devices"}}
 
 ### Data Studio
 

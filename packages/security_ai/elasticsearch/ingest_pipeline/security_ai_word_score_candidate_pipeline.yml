@@ -1,0 +1,82 @@
+---
+description: Score one word-obfuscation candidate and keep detections at or above the threshold.
+processors:
+  - set:
+      tag: ml_prompt_detect_word_copy_features
+      description: Bridge foreach element into document so Painless can read it.
+      field: _ml_word_candidate_features
+      copy_from: "_ingest._value"
+
+  - script:
+      tag: ml_prompt_detect_word_nest_features
+      description: Lift the feature sub-map to ctx.f so inference resolves f.length, f.u0, etc.
+      lang: painless
+      source: |-
+        ctx.f = ctx._ml_word_candidate_features.f;
+
+  - inference:
+      tag: ml_prompt_detect_word_inference
+      field_map: {}
+      inference_config:
+        classification:
+          num_top_classes: 2
+      model_id: security_ai_word_obfuscation_classifier_0.1
+      target_field: ml_word_one_result
+
+  - script:
+      tag: ml_prompt_detect_word_append_score
+      description: >
+        If class "1" probability is at least params.threshold, append
+        {probability, string, type, src, start, end} to ml_word_scores. Both
+        classes are requested so a score below 0.5 is still visible. Negatives
+        are dropped so the promote script can write unconditionally. string,
+        type, src, start, and end are read back from _ml_word_candidate_features.
+      lang: painless
+      params:
+        threshold: 0.065
+      source: |-
+        def result = ctx.ml_word_one_result;
+        double probability = 0.0;
+        if (result.top_classes != null) {
+          for (def item : result.top_classes) {
+            if (item.class_name == "1") {
+              probability = (double) item.class_probability;
+            }
+          }
+        }
+        double threshold = params.threshold instanceof Number ? ((Number) params.threshold).doubleValue() : 0.065;
+        if (probability >= threshold) {
+          def candidate = ctx._ml_word_candidate_features;
+          def scored = new HashMap();
+          scored.probability = probability;
+          scored.string = (candidate != null && candidate.s instanceof String) ? candidate.s : null;
+          scored.type   = (candidate != null && candidate.t instanceof String) ? candidate.t : "word_obfuscation";
+          scored.src    = (candidate != null && candidate.src instanceof String) ? candidate.src : "input_messages";
+          if (candidate != null && candidate.start instanceof Number) {
+            scored.start = ((Number) candidate.start).intValue();
+          }
+          if (candidate != null && candidate.end instanceof Number) {
+            scored.end = ((Number) candidate.end).intValue();
+          }
+          if (ctx.ml_word_scores == null) { ctx.ml_word_scores = new ArrayList(); }
+          ctx.ml_word_scores.add(scored);
+        }
+        ctx.remove('f');
+        ctx.remove('_ml_word_candidate_features');
+        ctx.remove('ml_word_one_result');
+on_failure:
+  - remove:
+      field:
+        - _ml_word_candidate_features
+        - ml_word_one_result
+        - f
+      ignore_missing: true
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        {{{ _ingest.on_failure_message }}} [pipeline: {{{ _ingest.pipeline }}},
+        processor_type: {{{ _ingest.on_failure_processor_type }}},
+        processor_tag: {{{ _ingest.on_failure_processor_tag }}}]

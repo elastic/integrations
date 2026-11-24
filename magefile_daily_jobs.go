@@ -85,6 +85,7 @@ func ReportFailedTests(ctx context.Context, testResultsFolder string) error {
 		StackVersion:      stackVersion,
 		Subscription:      subscription,
 		BuildURL:          buildURL,
+		PackagesPath:      "packages",
 		MaxPreviousLinks:  defaultPreviousLinksNumber,
 		MaxTestsReported:  maxIssues,
 		DryRun:            dryRun,

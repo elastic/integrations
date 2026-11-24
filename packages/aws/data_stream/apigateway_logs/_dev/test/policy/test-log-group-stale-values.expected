@@ -1,0 +1,38 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: aws
+      name: test-log-group-stale-values-aws
+      streams:
+        - api_sleep: 200ms
+          data_stream:
+            dataset: aws.apigateway_logs
+          default_region: us-east-1
+          log_group_arn: arn:aws:logs:us-east-1:123456789012:log-group:/aws/apigateway/access-logs:*
+          publisher_pipeline.disable_host: true
+          role_arn: arn:aws:iam::123456789012:role/ElasticAgentlessReadOnly
+          scan_frequency: 1m
+          start_position: beginning
+          tags:
+            - forwarded
+            - aws-apigateway-logs
+          use_cloud_connectors: true
+      type: aws-cloudwatch
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-aws.apigateway_logs-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []

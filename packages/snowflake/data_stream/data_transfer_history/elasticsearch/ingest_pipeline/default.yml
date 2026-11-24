@@ -1,0 +1,279 @@
+---
+description: Parse Snowflake DATA_TRANSFER_HISTORY events.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.5.0'
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_json
+
+  - date:
+      field: json.START_TIME
+      target_field: '@timestamp'
+      tag: date_start_time
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSS Z
+        - yyyy-MM-dd HH:mm:ss.SSS XX
+        - ISO8601
+      if: ctx.json?.START_TIME != null
+      on_failure:
+        - remove:
+            field: json.START_TIME
+            tag: remove_unparsed_start_time
+        - append:
+            field: error.message
+            tag: append_date_start_time_failure
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.start
+      tag: set_event_start
+      copy_from: '@timestamp'
+      ignore_empty_value: true
+      if: ctx.json?.START_TIME != null
+  - date:
+      field: json.END_TIME
+      target_field: event.end
+      tag: date_end_time
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSS Z
+        - yyyy-MM-dd HH:mm:ss.SSS XX
+        - ISO8601
+      if: ctx.json?.END_TIME != null
+      on_failure:
+        - remove:
+            field: json.END_TIME
+            tag: remove_unparsed_end_time
+        - append:
+            field: error.message
+            tag: append_date_end_time_failure
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - script:
+      tag: script_compute_event_duration
+      lang: painless
+      description: Compute event.duration in nanoseconds as the difference between the window end and start timestamps.
+      if: ctx.event?.start instanceof String && ctx.event?.end instanceof String
+      source: |-
+        ZonedDateTime start = ZonedDateTime.parse(ctx.event.start);
+        ZonedDateTime end = ZonedDateTime.parse(ctx.event.end);
+        ctx.event.duration = ChronoUnit.NANOS.between(start, end);
+
+  # BYTES_TRANSFERRED is a REAL rendered as a numeric string ("104857600.0", "1.048576E8", "52428800").
+  - convert:
+      field: json.BYTES_TRANSFERRED
+      tag: convert_bytes_transferred_to_double
+      type: double
+      if: ctx.json?.BYTES_TRANSFERRED != null && ctx.json.BYTES_TRANSFERRED != ''
+      on_failure:
+        - remove:
+            field: json.BYTES_TRANSFERRED
+            tag: remove_unparsed_bytes_transferred
+        - append:
+            field: error.message
+            tag: append_convert_bytes_transferred_failure
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - script:
+      tag: script_set_network_bytes
+      lang: painless
+      description: Round the converted BYTES_TRANSFERRED value to a whole number of bytes and store it in network.bytes.
+      if: ctx.json?.BYTES_TRANSFERRED instanceof Double
+      source: |-
+        ctx.network = ctx.network ?: [:];
+        ctx.network.bytes = Math.round(ctx.json.BYTES_TRANSFERRED);
+
+  - set:
+      field: event.action
+      tag: set_event_action_from_transfer_type
+      copy_from: json.TRANSFER_TYPE
+      ignore_empty_value: true
+      if: ctx.json?.TRANSFER_TYPE instanceof String
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - rename:
+      field: json.TRANSFER_TYPE
+      target_field: snowflake.data_transfer_history.transfer_type
+      ignore_missing: true
+      tag: rename_transfer_type
+  - set:
+      field: cloud.origin.provider
+      tag: set_cloud_origin_provider
+      copy_from: json.SOURCE_CLOUD
+      ignore_empty_value: true
+      if: ctx.json?.SOURCE_CLOUD instanceof String
+  - set:
+      field: cloud.origin.region
+      tag: set_cloud_origin_region
+      copy_from: json.SOURCE_REGION
+      ignore_empty_value: true
+      if: ctx.json?.SOURCE_REGION instanceof String
+  - rename:
+      field: json.SOURCE_CLOUD
+      target_field: snowflake.data_transfer_history.source_cloud
+      ignore_missing: true
+      tag: rename_source_cloud
+  - rename:
+      field: json.SOURCE_REGION
+      target_field: snowflake.data_transfer_history.source_region
+      ignore_missing: true
+      tag: rename_source_region
+  - set:
+      field: cloud.target.provider
+      tag: set_cloud_target_provider
+      copy_from: json.TARGET_CLOUD
+      ignore_empty_value: true
+      if: ctx.json?.TARGET_CLOUD instanceof String
+  - set:
+      field: cloud.target.region
+      tag: set_cloud_target_region
+      copy_from: json.TARGET_REGION
+      ignore_empty_value: true
+      if: ctx.json?.TARGET_REGION instanceof String
+  - rename:
+      field: json.TARGET_CLOUD
+      target_field: snowflake.data_transfer_history.target_cloud
+      ignore_missing: true
+      tag: rename_target_cloud
+  - rename:
+      field: json.TARGET_REGION
+      target_field: snowflake.data_transfer_history.target_region
+      ignore_missing: true
+      tag: rename_target_region
+
+  # The view has no row id and overlapping polls re-deliver the same windows, so derive a stable _id from the window columns.
+  - fingerprint:
+      fields:
+        - event.start
+        - event.end
+        - snowflake.data_transfer_history.source_cloud
+        - snowflake.data_transfer_history.source_region
+        - snowflake.data_transfer_history.target_cloud
+        - snowflake.data_transfer_history.target_region
+        - snowflake.data_transfer_history.transfer_type
+      target_field: _id
+      ignore_missing: true
+      tag: fingerprint_id
+      if: ctx.event?.start != null && ctx.event?.end != null
+
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: network
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: info
+      allow_duplicates: false
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Snowflake
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Snowflake
+
+  - remove:
+      field:
+        - json
+      ignore_missing: true
+      tag: remove_temp_fields
+
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+
+  - append:
+      field: tags
+      tag: append_preserve_on_collector_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
+on_failure:
+  - append:
+      tag: append_error_message_d1950926
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      tag: append_tags_d762b9c5
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
