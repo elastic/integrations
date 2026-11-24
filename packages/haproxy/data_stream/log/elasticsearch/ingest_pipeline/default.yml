@@ -3,14 +3,22 @@ description: Pipeline for parsing HAProxy http, tcp and default logs. Requires t
   geoip plugin.
 processors:
   - set:
+      tag: set_ecs_version_e046c856
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_378ab4f7
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_bfc3c030
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   - grok:
+      tag: grok_event_original_4f354498
       field: event.original
       patterns:
       - '%{HAPROXY_DATE:haproxy.request_date} %{IPORHOST:haproxy.source} %{PROG:process.name}(?:\[%{POSINT:process.pid:long}\])?:
@@ -36,13 +44,16 @@ processors:
           %{HOSTNAME:tls.client.server_name}/%{DATA:tls.version_protocol}v%{NUMBER:tls.version}/%{NOTSPACE:tls.cipher}
       on_failure:
         - append:
+           tag: append_error_message_fceb83b0
            field: error.message
            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'    
   - set:
+      tag: set_event_timezone_9a2f619a
       field: event.timezone
       copy_from: _conf.tz_offset
       if: ctx._conf?.tz_offset != null && ctx._conf.tz_offset != 'local'
   - date:
+      tag: date_haproxy_request_date_c05e4e62
       if: ctx.event.timezone == null
       field: haproxy.request_date
       target_field: '@timestamp'
@@ -51,9 +62,11 @@ processors:
       - MMM dd HH:mm:ss
       on_failure:
       - append:
+          tag: append_error_message_9251536f
           field: error.message
           value: '{{ _ingest.on_failure_message }}'
   - date:
+      tag: date_haproxy_request_date_6c643baa
       if: ctx.event.timezone != null
       field: haproxy.request_date
       target_field: '@timestamp'
@@ -63,52 +76,64 @@ processors:
       timezone: '{{ event.timezone }}'
       on_failure:
       - append:
+          tag: append_error_message_a4f011e5
           field: error.message
           value: '{{ _ingest.on_failure_message }}'
   - grok:
+      tag: grok_haproxy_http_request_raw_request_line_8dfefd98
       field: haproxy.http.request.raw_request_line
       patterns:
         - '%{WORD:http.request.method}%{SPACE}%{URIPATHPARAM:url.original}%{SPACE}HTTP/%{NUMBER:http.version}'
       ignore_missing: true
       on_failure:
         - append:
+           tag: append_error_message_0c3ea4c3
            field: error.message
            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       if: 'ctx.haproxy?.http?.request?.raw_request_line != null && !ctx.haproxy?.http?.request?.raw_request_line.isEmpty() && ctx.haproxy?.http?.request?.raw_request_line != "<BADREQ>"'
   - uri_parts:
+      tag: uri_parts_url_original_90e6b943
       field: url.original
       ignore_failure: true
       if: ctx?.url?.original != null
   - lowercase:
+      tag: lowercase_tls_version_protocol_cbe3b97f
       field: tls.version_protocol
       ignore_missing: true
   - set:
+      tag: set_destination_domain_4ca66446
       field: destination.domain
       copy_from: tls.client.server_name
       ignore_empty_value: true
   - set:
+      tag: set_url_domain_c0edff27
       field: url.domain
       copy_from: tls.client.server_name
       ignore_empty_value: true
   - set:
+      tag: set_tls_resumed_db06dea1
       field: tls.resumed
       value: true
       if: ctx.temp?.ssl_fc_is_resumed == 1
   - convert:
+      tag: convert_source_address_d58e7ece
       field: source.address
       target_field: source.ip
       type: ip
       ignore_failure: true
   - convert:
+      tag: convert_destination_address_17662906
       field: destination.address
       target_field: destination.ip
       type: ip
       ignore_failure: true
   - geoip:
+      tag: geoip_source_ip_0e4dd01f
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_bbf7c58b
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -117,74 +142,91 @@ processors:
       - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_92567a1d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_8c81b073
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - split:
+      tag: split_haproxy_http_request_captured_headers_a67d86e8
       field: haproxy.http.request.captured_headers
       separator: \|
       ignore_failure: true
   - split:
+      tag: split_haproxy_http_response_captured_headers_96c7c0b2
       field: haproxy.http.response.captured_headers
       separator: \|
       ignore_failure: true
   - script:
+      tag: script_a48076eb
       lang: painless
       source: ctx.event.duration = Math.round(ctx.temp.duration * params.scale)
       params:
         scale: 1000000
       if: ctx.temp?.duration != null
   - convert:
+      tag: convert_haproxy_bytes_read_62d2083e
       field: haproxy.bytes_read
       target_field: http.response.bytes
       type: long
       if: ctx.containsKey('http')
   - append:
+      tag: append_related_ip_b1f8bcba
       field: related.ip
       value: "{{source.ip}}"
       if: "ctx?.source?.ip != null"
   - append:
+      tag: append_related_ip_2403f9dd
       field: related.ip
       value: "{{destination.ip}}"
       if: "ctx?.destination?.ip != null"
   - append:
+      tag: append_related_hosts_0699c257
       field: related.hosts
       value: "{{destination.domain}}"
       if: "ctx?.destination?.domain != null"
   - set:
+      tag: set_event_kind_e03e9e89
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_4909cdd1
       field: event.category
       value: web
       if: "ctx?.haproxy?.mode == 'HTTP' || ctx?.haproxy?.http != null"
   - append:
+      tag: append_event_category_0370bd93
       field: event.category
       value: network
       if: "ctx?.source.ip != null && ctx?.destination?.ip != null"
   - append:
+      tag: append_event_type_9cde52c9
       field: event.type
       value: connection
       if: "ctx?.source.ip != null && ctx?.destination?.ip != null"
   - set:
+      tag: set_event_outcome_e5a4e252
       field: event.outcome
       value: success
       if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code < 400"
   - set:
+      tag: set_event_outcome_72e87ecb
       field: event.outcome
       value: failure
       if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code >= 400"
   - remove:
+      tag: remove_temp_e4c87d18
       field: 
         - temp
         - _conf
         - haproxy.request_date
       ignore_missing: true
   - script:
+      tag: script_97939520
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -210,5 +252,14 @@ processors:
         handleMap(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_7df1a44a
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_66fd6b92
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
