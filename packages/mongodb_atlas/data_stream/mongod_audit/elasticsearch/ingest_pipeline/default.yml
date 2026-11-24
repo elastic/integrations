@@ -5,29 +5,42 @@ processors:
       if: ctx.message == "No data for given time period or host is unreachable"
       tag: drop_empty_events
   - set:
+      tag: set_ecs_version_f9e5da92
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_kind_1113018f
       field: event.kind
       value: event
   - set:
+      tag: set_event_module_f30ae003
       field: event.module
       value: mongodb_atlas
   - set:
+      tag: set_event_category_3d4dc05b
       field: event.category
       value: ["network", "authentication"]
   - set:
+      tag: set_event_type_e78c2e4e
       field: event.type
       value: ["access", "info"]
   - fail:
+      tag: fail_2d24afd3
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       message: error message set and no data to process.
   - rename:
+      tag: rename_message_33d046d6
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_bea7b9e8
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   - rename:
+      tag: rename_host_name_06c9cf5d
       field: host_name
       target_field: mongodb_atlas.mongod_audit.hostname
       ignore_missing: true
@@ -38,83 +51,103 @@ processors:
       allow_duplicate_keys: true
       on_failure:
         - append:
+            tag: append_error_message_e4448274
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_ts_date_9eac2249
       field: json.ts.$date
       target_field: '@timestamp'
       formats: [ISO8601]
       on_failure:
         - append:
+            tag: append_error_message_0e35a3fe
             field: error.message
             value: '{{ _ingest.on_failure_message }}'
   - append:
+      tag: append_related_ip_8f5662fc
       field: related.ip
       value: '{{{json.local.ip}}}'
       if: ctx.json?.local?.ip != null
       allow_duplicates: false
   - append:
+      tag: append_related_ip_0160fec7
       field: related.ip
       value: '{{{json.remote.ip}}}'
       if: ctx.json?.remote?.ip != null
       allow_duplicates: false
   - rename:
+      tag: rename_json_atype_2d30c3f3
       field: json.atype
       target_field: event.action
       ignore_missing: true
   - rename:
+      tag: rename_json_local_port_1b4637e2
       field: json.local.port
       target_field: mongodb_atlas.mongod_audit.local.port
       ignore_missing: true
   - rename:
+      tag: rename_json_local_ip_c96a4d52
       field: json.local.ip
       target_field: mongodb_atlas.mongod_audit.local.ip
       ignore_missing: true
   - rename:
+      tag: rename_json_local_isSystemUser_72d64c66
       field: json.local.isSystemUser
       target_field: mongodb_atlas.mongod_audit.local.is_system_user
       ignore_missing: true
   - rename:
+      tag: rename_json_local_unix_ec38e460
       field: json.local.unix
       target_field: mongodb_atlas.mongod_audit.local.unix
       ignore_missing: true
   - rename:
+      tag: rename_json_remote_port_2b86a440
       field: json.remote.port
       target_field: mongodb_atlas.mongod_audit.remote.port
       ignore_missing: true
   - rename:
+      tag: rename_json_remote_ip_b0eca9d9
       field: json.remote.ip
       target_field: mongodb_atlas.mongod_audit.remote.ip
       ignore_missing: true
   - rename:
+      tag: rename_json_remote_isSystemUser_2413b3a3
       field: json.remote.isSystemUser
       target_field: mongodb_atlas.mongod_audit.remote.is_system_user
       ignore_missing: true
   - rename:
+      tag: rename_json_remote_unix_ee123f69
       field: json.remote.unix
       target_field: mongodb_atlas.mongod_audit.remote.unix
       ignore_missing: true
   - rename:
+      tag: rename_json_param_88f9c5c9
       field: json.param
       target_field: mongodb_atlas.mongod_audit.param
       ignore_missing: true
   - rename:
+      tag: rename_json_users_ed279538
       field: json.users
       target_field: mongodb_atlas.mongod_audit.user.names
       ignore_missing: true
   - rename:
+      tag: rename_json_roles_7caaf2d3
       field: json.roles
       target_field: mongodb_atlas.mongod_audit.user.roles
       ignore_missing: true
   - rename:
+      tag: rename_json_uuid_binary_e83468db
       field: json.uuid.$binary
       target_field: mongodb_atlas.mongod_audit.uuid.binary
       ignore_missing: true
   - rename:
+      tag: rename_json_uuid_type_6534989d
       field: json.uuid.$type
       target_field: mongodb_atlas.mongod_audit.uuid.type
       ignore_missing: true
   - convert:
+      tag: convert_json_result_e7e75152
       field: json.result
       type: string
       ignore_missing: true
@@ -124,6 +157,7 @@ processors:
       tag: informative_error_code
       on_failure:
         - append:
+            tag: append_error_message_bb124dd2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       params:
@@ -140,6 +174,7 @@ processors:
             ctx.mongodb_atlas.mongod_audit.result = params.error_codes.getOrDefault(value, null);
           }
   - script:
+      tag: script_5533e8ca
       lang: painless
       source: |-
         boolean drop(Object o) {
@@ -157,25 +192,32 @@ processors:
         drop(ctx);
       description: Drops null and empty values recursively from the Elasticsearch document context.
   - remove:
+      tag: remove_event_original_ebee4827
       field:
         - event.original
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
   - remove:
+      tag: remove_json_3b016f80
       field:
         - json
       ignore_missing: true
       description: Removes temporary fields.
   - set:
+      tag: set_event_kind_c54f0e6e
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
 on_failure:
-  - append:
-      field: error.message
-      value: '{{{_ingest.on_failure_message}}}'
-  - append:
+  - set:
+      tag: set_event_kind_4992eced
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
-
+  - append:
+      tag: append_error_message_a489b9ba
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

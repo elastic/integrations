@@ -2,112 +2,141 @@
 description: Pipeline for processing MongoDB Atlas disk metrics.
 processors:
   - set:
+      tag: set_ecs_version_240aff83
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_kind_cd9d5bac
       field: event.kind
       value: metric
   - set:
+      tag: set_event_module_8840b804
       field: event.module
       value: mongodb_atlas
   - set:
+      tag: set_event_category_65363252
       field: event.category
       value: ["database"]
   - set:
+      tag: set_event_type_b44ea7ed
       field: event.type
       value: ["info"]
   - fail:
+      tag: fail_5587f994
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       message: error message set and no data to process.
   - rename:
+      tag: rename_groupId_b05ef3e3
       field: groupId
       target_field: group.id
       ignore_missing: true
   - rename:
+      tag: rename_processId_c5158edf
       field: processId
       target_field: mongodb_atlas.process_id
       ignore_missing: true
   - rename:
+      tag: rename_partitionName_cba89b90
       field: partitionName
       target_field: mongodb_atlas.partition_name
       ignore_missing: true
   - rename:
+      tag: rename_hostId_c30477e5
       field: hostId
       target_field: mongodb_atlas.host_id
       ignore_missing: true
   - rename:
+      tag: rename_response_MAX_DISK_PARTITION_IOPS_READ_8c2e5d8a
       field: response.MAX_DISK_PARTITION_IOPS_READ
       target_field: mongodb_atlas.disk.read.iops.max.throughput
       ignore_missing: true
   - rename:
+      tag: rename_response_DISK_PARTITION_IOPS_READ_aa10eb5d
       field: response.DISK_PARTITION_IOPS_READ
       target_field: mongodb_atlas.disk.read.iops.throughput
       ignore_missing: true
   - rename:
+      tag: rename_response_MAX_DISK_PARTITION_LATENCY_READ_55d5006c
       field: response.MAX_DISK_PARTITION_LATENCY_READ
       target_field: mongodb_atlas.disk.read.latency.max.ms
       ignore_missing: true
   - rename:
+      tag: rename_response_DISK_PARTITION_LATENCY_READ_9aee83fd
       field: response.DISK_PARTITION_LATENCY_READ
       target_field: mongodb_atlas.disk.read.latency.ms
       ignore_missing: true
   - rename:
+      tag: rename_response_MAX_DISK_PARTITION_IOPS_WRITE_9a8ceea5
       field: response.MAX_DISK_PARTITION_IOPS_WRITE
       target_field: mongodb_atlas.disk.write.iops.max.throughput
       ignore_missing: true
   - rename:
+      tag: rename_response_DISK_PARTITION_IOPS_WRITE_8a950be6
       field: response.DISK_PARTITION_IOPS_WRITE
       target_field: mongodb_atlas.disk.write.iops.throughput
       ignore_missing: true
   - rename:
+      tag: rename_response_MAX_DISK_PARTITION_LATENCY_WRITE_c913f6e2
       field: response.MAX_DISK_PARTITION_LATENCY_WRITE
       target_field: mongodb_atlas.disk.write.latency.max.ms
       ignore_missing: true
   - rename:
+      tag: rename_response_DISK_PARTITION_LATENCY_WRITE_4ea263a9
       field: response.DISK_PARTITION_LATENCY_WRITE
       target_field: mongodb_atlas.disk.write.latency.ms
       ignore_missing: true
   - rename:
+      tag: rename_response_DISK_PARTITION_SPACE_FREE_32d661b0
       field: response.DISK_PARTITION_SPACE_FREE
       target_field: mongodb_atlas.disk.space.free.bytes
       ignore_missing: true
   - rename:
+      tag: rename_response_MAX_DISK_PARTITION_SPACE_FREE_7aa3ae48
       field: response.MAX_DISK_PARTITION_SPACE_FREE
       target_field: mongodb_atlas.disk.space.free.max.bytes
       ignore_missing: true
   - rename:
+      tag: rename_response_MAX_DISK_PARTITION_SPACE_PERCENT_FREE_fa7423bc
       field: response.MAX_DISK_PARTITION_SPACE_PERCENT_FREE
       target_field: mongodb_atlas.disk.space.free.max.pct
       ignore_missing: true
   - rename:
+      tag: rename_response_DISK_PARTITION_SPACE_PERCENT_FREE_a9c9537a
       field: response.DISK_PARTITION_SPACE_PERCENT_FREE
       target_field: mongodb_atlas.disk.space.free.pct
       ignore_missing: true
   - rename:
+      tag: rename_response_DISK_PARTITION_SPACE_USED_d90c1e0e
       field: response.DISK_PARTITION_SPACE_USED
       target_field: mongodb_atlas.disk.space.used.bytes
       ignore_missing: true
   - rename:
+      tag: rename_response_MAX_DISK_PARTITION_SPACE_USED_2d981b2a
       field: response.MAX_DISK_PARTITION_SPACE_USED
       target_field: mongodb_atlas.disk.space.used.max.bytes
       ignore_missing: true
   - rename:
+      tag: rename_response_MAX_DISK_PARTITION_SPACE_PERCENT_USED_04560004
       field: response.MAX_DISK_PARTITION_SPACE_PERCENT_USED
       target_field: mongodb_atlas.disk.space.used.max.pct
       ignore_missing: true
   - rename:
+      tag: rename_response_DISK_PARTITION_SPACE_PERCENT_USED_b3dba756
       field: response.DISK_PARTITION_SPACE_PERCENT_USED
       target_field: mongodb_atlas.disk.space.used.pct
       ignore_missing: true
   - rename:
+      tag: rename_response_MAX_DISK_PARTITION_IOPS_TOTAL_f72d6b01
       field: response.MAX_DISK_PARTITION_IOPS_TOTAL
       target_field: mongodb_atlas.disk.total.iops.max.throughput
       ignore_missing: true
   - rename:
+      tag: rename_response_DISK_PARTITION_IOPS_TOTAL_04e51602
       field: response.DISK_PARTITION_IOPS_TOTAL
       target_field: mongodb_atlas.disk.total.iops.throughput
       ignore_missing: true
   - remove:
+      tag: remove_response_ea8c7d6c
       field:
         - response
         - start
@@ -115,6 +144,7 @@ processors:
         - end
       ignore_missing: true
   - script:
+      tag: script_f3ea0223
       description: "Drops null/empty values recursively."
       lang: painless
       source: |
@@ -132,14 +162,20 @@ processors:
         }
         drop(ctx);
   - set:
+      tag: set_event_kind_726ab6ac
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
 on_failure:
-  - append:
-      field: error.message
-      value: '{{{_ingest.on_failure_message}}}'
-  - append:
+  - set:
+      tag: set_event_kind_7749b719
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
+  - append:
+      tag: append_error_message_36af8bce
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
