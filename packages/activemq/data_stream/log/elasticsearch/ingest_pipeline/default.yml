@@ -2,21 +2,25 @@
 description: Pipeline for parsing ActiveMQ logs.
 processors:
   - set:
+      tag: set_event_ingested_105f2566
       field: event.ingested
       value: "{{{_ingest.timestamp}}}"
       ignore_empty_value: true
       ignore_failure: true
   - set:
+      tag: set_event_module_38a1afcb
       field: event.module
       value: activemq
       ignore_empty_value: true
       ignore_failure: true
   - set:
+      tag: set_event_original_aee0c247
       field: event.original
       value: "{{{message}}}"
       ignore_empty_value: true
       if: 'ctx.event?.original == null'
   - grok:
+      tag: grok_message_74450bad
       field: message
       pattern_definitions:
         GREEDYMULTILINE: "(.|\\n|\\t)*"
@@ -26,30 +30,36 @@ processors:
         - "%{TIMESTAMP_ISO8601:timestamp}%{SPACE}\\|%{SPACE}%{LOGLEVEL:log.level}%{SPACE}\\|%{SPACE}%{NOPIPEGREEDYDATA:message}%{SPACE}\\|%{SPACE}%{NOPIPEGREEDYDATA:activemq.log.caller}%{SPACE}\\|%{SPACE}%{THREAD_NAME:activemq.log.thread}%{SPACE}%{GREEDYMULTILINE:error.stack_trace}"
       ignore_missing: true
   - date:
+      tag: date_timestamp_1832ad80
       if: "ctx.event.timezone == null"
       field: timestamp
       target_field: "@timestamp"
       formats: ["yyyy-MM-dd HH:mm:ss,SSS"]
   - date:
+      tag: date_timestamp_bd68cc2a
       if: "ctx.event.timezone != null"
       field: timestamp
       target_field: "@timestamp"
       timezone: "{{{ event.timezone }}}"
       formats: ["yyyy-MM-dd HH:mm:ss,SSS"]
   - remove:
+      tag: remove_timestamp_d318de3f
       field:
         - timestamp
   - set:
+      tag: set_event_kind_007383ac
       field: event.kind
       value: event
       ignore_empty_value: true
       ignore_failure: true
   - set:
+      tag: set_ecs_version_4eebd276
       field: ecs.version
       value: 8.11.0
       ignore_empty_value: true
       ignore_failure: true
   - script:
+      tag: script_e548e6ab
       if: "ctx.log?.level != null"
       lang: painless
       source: >-
@@ -60,6 +70,7 @@ processors:
           ctx.event.type = ["info"];
         }
   - script:
+      tag: script_497834b4
       description: Drops null/empty values recursively
       lang: painless
       ignore_failure: true
@@ -79,6 +90,14 @@ processors:
         drop(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_f0cfc8e4
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_1cc34574
       field: error.message
-      value: "{{{ _ingest.on_failure_message }}}"
-
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

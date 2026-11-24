@@ -2,21 +2,25 @@
 description: Pipeline for parsing ActiveMQ audit logs.
 processors:
   - set:
+      tag: set_event_ingested_69e22958
       field: event.ingested
       value: "{{{_ingest.timestamp}}}"
       ignore_empty_value: true
       ignore_failure: true
   - set:
+      tag: set_event_module_b32f80e5
       field: event.module
       value: activemq
       ignore_empty_value: true
       ignore_failure: true
   - set:
+      tag: set_event_original_d2c7eb8c
       field: event.original
       value: "{{{message}}}"
       ignore_empty_value: true
       if: 'ctx.event?.original == null'
   - grok:
+      tag: grok_message_9559407b
       field: message
       pattern_definitions:
         NOPIPEGREEDYDATA: "(\\n|(?! \\|).)*"
@@ -25,16 +29,19 @@ processors:
         - "%{LOGLEVEL:log.level}%{SPACE}\\|%{SPACE}%{WORD:user.name}%{SPACE}%{NOPIPEGREEDYDATA:message}%{SPACE}\\|%{SPACE}%{THREAD_NAME:activemq.audit.thread}"
       ignore_missing: true
   - set:
+      tag: set_event_kind_1ad985c9
       field: event.kind
       value: event
       ignore_empty_value: true
       ignore_failure: true
   - set:
+      tag: set_ecs_version_3012c8ba
       field: ecs.version
       value: 8.11.0
       ignore_empty_value: true
       ignore_failure: true
   - script:
+      tag: script_326e456f
       if: "ctx.log?.level != null"
       lang: painless
       source: >-
@@ -45,6 +52,7 @@ processors:
           ctx.event.type = ["info"];
         }
   - script:
+      tag: script_771521a3
       description: Drops null/empty values recursively
       lang: painless
       ignore_failure: true
@@ -64,5 +72,14 @@ processors:
         drop(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_08aa6d48
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_f7cad2c4
       field: error.message
-      value: "{{{ _ingest.on_failure_message }}}"
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
