@@ -26,8 +26,8 @@ type CheckOptions struct {
 	BuildURL          string
 	CodeownersPath    string
 	// PackagesPath is the path to the folder with the packages, relative to the root of the repository.
-	// The owners of the packages are found using the name of the package in its manifest or the name
-	// of its folder. Defaults to "packages".
+	// The owners of the packages are found using the name of the package in its manifest.
+	// Defaults to "packages".
 	PackagesPath string
 
 	MaxPreviousLinks int

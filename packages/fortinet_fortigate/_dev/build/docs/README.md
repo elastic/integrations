@@ -75,11 +75,14 @@ You can configure FortiGate to send logs to the Elastic Agent using either the G
         set status enable
         set server "<elastic_agent_ip>"
         set port <port>  // Default syslog ports are 514 for UDP and TCP
-        // For TCP with reliable syslog mode, ensure framing is set to rfc6587
-        set mode reliable
-        set format rfc6587
+        set mode <udp|reliable>
+        set format <default|rfc5424>
     end
     ```
+
+    - `mode`: Use `udp` (the FortiGate default) with the integration's UDP input, or `reliable` with the TCP input. In `reliable` mode, FortiGate sends syslog over TCP using RFC 6587 octet-counting framing, which matches the TCP input's default `framing: rfc6587`. Every receiver between FortiGate and Elasticsearch must support this framing; see [Troubleshooting](#troubleshooting).
+    - `format`: Use `default` (key-value syslog) or `rfc5424` (key-value message with an RFC 5424 syslog header). The integration does not parse the `csv`, `cef`, or `json` formats.
+    - `port`: Must match the **Listen Port** configured in the integration.
 
 3.  Configure the appropriate log types and severity levels to be sent to the syslog server. For example:
 
@@ -187,7 +190,8 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
     *   Ensure there are no firewalls or network ACLs blocking the syslog port.
     *   Confirm that the listening port configured in the Elastic integration matches the destination port configured on the FortiGate device.
 -   **TCP framing issues**:
-    *   When using TCP input with reliable syslog mode, both the FortiGate configuration and the integration settings must have framing set to `rfc6587`. Mismatched framing settings will result in parsing errors or lost logs.
+    *   In `reliable` mode, FortiGate always sends syslog over TCP with RFC 6587 octet-counting framing (each message is prefixed with its length, with no newline between messages). Keep the TCP input's `framing` set to `rfc6587`; other framing values will result in parsing errors or lost logs.
+    *   Any receiver placed in front of Elasticsearch must also split messages using RFC 6587 octet counting. A receiver that splits the stream on newlines (for example, the Logstash `tcp` input with its default `line` codec) combines all messages from a connection into one very large message. Such messages are indexed unparsed with `event.kind: pipeline_error` and an `error.message` reporting either that the message exceeds 900000 characters or that a key appears more than once. In that setup, either send from FortiGate with `mode udp`, or receive the TCP stream with Elastic Agent using this integration's TCP input.
 
 ### Vendor Resources
 
@@ -197,7 +201,11 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 
 ## Performance and Scaling
 
-For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation. A common approach for large-scale syslog collection is to place a load balancer or a dedicated syslog collector like Logstash between the FortiGate devices and the Elastic Agents.
+For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
+
+Elastic Agent must receive syslog directly from the FortiGate devices. This integration's input settings, such as TCP framing, timezone, and network direction, are applied only by Elastic Agent, so placing Logstash in front of the Elastic Agents, or receiving FortiGate syslog with a Logstash input, is not covered by this integration. If you use FortiGate's `reliable` mode, keep the Elastic Agent TCP input's `framing` set to `rfc6587`.
+
+If you need Logstash for additional processing or routing, place it after the Elastic Agents: send data from the Elastic Agents to Logstash using the [`elastic_agent` input](https://www.elastic.co/docs/reference/logstash/plugins/plugins-inputs-elastic_agent), and run the integration's ingest pipeline with the [`elastic_integration` filter](https://www.elastic.co/docs/reference/logstash/plugins/plugins-filters-elastic_integration). For details, check [Using Logstash with Elastic integrations](https://www.elastic.co/docs/reference/logstash/using-logstash-with-elastic-integrations).
 
 ## Reference
 

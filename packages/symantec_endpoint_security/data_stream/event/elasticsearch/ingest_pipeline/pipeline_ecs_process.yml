@@ -1,0 +1,162 @@
+---
+description: Pipeline for mapping launched processes to the ECS process fields.
+processors:
+  # The object pipelines that run next test this flag to leave the fields
+  # set below alone. It is removed again in the default pipeline.
+  - set:
+      field: _tmp_launch
+      tag: set_tmp_launch_8f9bf7e4
+      value: '{{{ses.type_id}}}'
+  - script:
+      description: Set process name, executable, command line and arguments, and the parent equivalents, for process launch events.
+      tag: script_set_ecs_process_90f74d91
+      lang: painless
+      params:
+        windows_os_type_id: '100'
+        parent_source:
+          '8001': actor
+          '8027': parent
+      source: |-
+        // appendBSBytes appends n '\\' bytes to b and returns the resulting slice.
+        def appendBSBytes(StringBuilder b, int n) {
+          for (; n > 0; n--) {
+            b.append('\\');
+          }
+          return b;
+        }
+
+        // readNextArg splits command line string into next
+        // argument and command line remainder offset.
+        def readNextArg(String line, int offset) {
+          def b = new StringBuilder();
+          boolean inquote;
+          int nslash;
+          for (; offset < line.length(); offset++) {
+            def c = line.charAt(offset);
+            if (c == (char)' ' || c == (char)0x09) {
+              if (!inquote) {
+                return [
+                  "arg":  appendBSBytes(b, nslash).toString(),
+                  "offset": offset+1
+                ];
+              }
+            } else if (c == (char)'"') {
+              b = appendBSBytes(b, nslash/2);
+              if (nslash%2 == 0) {
+                // use "Prior to 2008" rule from
+                // http://daviddeley.com/autohotkey/parameters/parameters.htm
+                // section 5.2 to deal with double double quotes
+                if (inquote && offset+1 < line.length() && line.charAt(offset+1) == (char)'"') {
+                  b.append(c);
+                  offset++;
+                }
+                inquote = !inquote;
+              } else {
+                b.append(c);
+              }
+              nslash = 0;
+              continue;
+            } else if (c == (char)'\\') {
+              nslash++;
+              continue;
+            }
+            b = appendBSBytes(b, nslash);
+            nslash = 0;
+            b.append(c);
+          }
+          return [
+            "arg":  appendBSBytes(b, nslash).toString(),
+            "offset": line.length()
+          ];
+        }
+
+        // commandLineToArgv splits a command line into individual argument
+        // strings, following the Windows conventions documented
+        // at http://daviddeley.com/autohotkey/parameters/parameters.htm#WINARGV
+        // Original implementation found at: https://github.com/golang/go/commit/39c8d2b7faed06b0e91a1ad7906231f53aab45d1
+        def commandLineToArgv(String line) {
+          def args = new ArrayList();
+          for (int i = 0; i < line.length();) {
+            if (line.charAt(i) == (char)' ' || line.charAt(i) == (char)0x09) {
+              i++;
+              continue;
+            }
+            def next = readNextArg(line, i);
+            i = next.offset;
+            if (next.arg == '') {
+              // Empty strings are removed later, so they must not be counted.
+              continue;
+            }
+            args.add(next.arg);
+          }
+          return args;
+        }
+
+        // fill sets the ECS process fields in dst from the SES process
+        // object obj. Fields that are absent or empty in obj are left unset.
+        // The command line is split into arguments only if split is true.
+        void fill(Map dst, def obj, boolean split) {
+          if (obj == null) {
+            return;
+          }
+          def file = obj.file;
+          if (file != null) {
+            if (file.name != null && file.name != '') {
+              dst.name = file.name;
+            }
+            if (file.path != null && file.path != '') {
+              dst.executable = file.path;
+            }
+          }
+          def cmd = obj.cmd_line;
+          if (cmd != null && cmd != '') {
+            dst.command_line = cmd;
+            if (split) {
+              dst.args = commandLineToArgv(cmd.toString());
+              dst.args_count = dst.args.size();
+            }
+          }
+        }
+
+        // For a launch, the SES process object is the launched process. For
+        // type 8001 the launcher (the SES actor) is its parent; the SES parent
+        // object is optional and is the parent of the actor, so it is not used.
+        // For type 8027 the SES parent is the parent.
+        //
+        // The splitting follows the Windows rules, so it is done for Windows
+        // endpoints only.
+        def split = params.windows_os_type_id.equals(ctx.ses.device_os_type_id);
+        def process = new HashMap();
+        fill(process, ctx.ses.process, split);
+        def parent = new HashMap();
+        fill(parent, ctx.ses.get(params.parent_source.get(ctx.ses.type_id)), split);
+
+        if (!process.isEmpty()) {
+          if (ctx.process == null) {
+            ctx.process = new HashMap();
+          }
+          ctx.process.putAll(process);
+        }
+        if (!parent.isEmpty()) {
+          if (ctx.process == null) {
+            ctx.process = new HashMap();
+          }
+          if (ctx.process.parent == null) {
+            ctx.process.parent = new HashMap();
+          }
+          ctx.process.parent.putAll(parent);
+        }
+on_failure:
+  - append:
+      tag: append_error_message_6906b116
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
+      value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

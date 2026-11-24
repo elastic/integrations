@@ -1,0 +1,108 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+auth.oauth2:
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  token_url: {{token_url}}
+  endpoint_params:
+    audience:
+      - {{url}}
+resource.url: {{url}}/v1/organizations/{{organization_id}}/configuration-findings
+resource.headers:
+  Accept:
+    - application/json
+state:
+  batch_size: {{batch_size}}
+  organization_id: "{{organization_id}}"
+redact:
+  fields: ~
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
+program: |-
+  // The list operation returns an envelope { resourceFindings, pagination } with
+  // token pagination: per-page and page-token query parameters, the next token in
+  // pagination.nextPageToken, terminating when pagination.hasMoreData is false.
+  // Every interval is a full posture re-list of current PASS and FAIL findings.
+  // The page token lives in state for want_more only and is not persisted in
+  // cursor, so a later interval or a restart always starts from page 1.
+  state.?next_token.orValue("").as(token,
+    state.with(
+      request(
+        "GET",
+        state.url.trim_right("/") + "?" + {
+          "per-page": [string(int(state.batch_size))],
+          "status": ["ALL"],
+          ?"page-token": (token != "") ? optional.of([token]) : optional.none(),
+        }.format_query()
+      ).do_request().as(resp,
+        (resp.StatusCode == 200) ?
+          try(resp.Body.decode_json()).as(decoded,
+            (!is_error(decoded) && type(decoded) == type({})) ?
+              {
+                "tok": string(decoded.?pagination.nextPageToken[0].orValue("")),
+                "more": decoded.?pagination.hasMoreData.orValue(false),
+              }.as(page,
+                {
+                  "events": decoded.?resourceFindings.orValue([]).map(e, {
+                    "message": e.encode_json(),
+                    "organization": {"id": state.organization_id},
+                  }),
+                  "want_more": page.more && page.tok != "",
+                  "next_token": (page.more && page.tok != "") ? page.tok : "",
+                }
+              )
+            :
+              {
+                "events": {
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": resp.Status,
+                    "message": "GET " + state.url.trim_right("/") + ": response was not a JSON object",
+                  },
+                },
+                "want_more": false,
+                "next_token": "",
+              }
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": resp.Status,
+                "message": "GET " + state.url.trim_right("/") + ": " + ((size(resp.Body) != 0) ? string(resp.Body) : resp.Status),
+              },
+            },
+            "want_more": false,
+            "next_token": "",
+          }
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

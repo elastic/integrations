@@ -7,7 +7,7 @@ The following pipelines are available in this repository:
 - https://buildkite.com/elastic/integrations-serverless: pipeline in charge of testing all packages using an Elastic Serverless project. More info at [section](#serverless-pipeline).
 - https://buildkite.com/elastic/integrations-publish: pipeline to publish the new versions of packages. More info at [section](#publish-packages).
 - https://buildkite.com/elastic/integrations-schedule-daily: pipeline running on weekdays to test packages in different scenarios. More info at [section](#daily-job).
-- https://buildkite.com/elastic/integrations-schedule-weekly: pipeline running once per week to test packages in different scenarios. More info at [section](#weekly-job).
+- https://buildkite.com/elastic/integrations-schedule-weekly: pipeline to test packages in different scenarios on a weekly basis (currently disabled). More info at [section](#weekly-job).
 - https://buildkite.com/elastic/integrations-backport: pipeline to create backport branches. Triggered automatically by the dispatch pipeline when a new entry is merged into `.backports.yml`, or manually from the UI by members of the `ecosystem` team. More info at [section](#backport-branch-creation-pipelines).
 - https://buildkite.com/elastic/integrations-backport-dispatch: pipeline that triggers `integrations-backport` on merges to `main` where `.backports.yml` changed. More info at [section](#backport-branch-creation-pipelines).
 
@@ -67,10 +67,15 @@ More details about this CI pipeline:
 - Builds running in a Pull Request are canceled if a new commit is pushed to the PR branch.
 - Builds running from `main`, `backport-*`, or `feature/*` branches are finished even if new commits are merged.
 - As part of the Pull Requests, there are some benchmark files created and this data is pushed to the PR as a comment.
-- This CI pipeline tries to test the minimum packages possible::
+- No build is triggered automatically in a Pull Request if every file changed in it matches one of the path patterns defined in the `skip_ci_on_only_changed` setting of the `integrations` pipeline in [`.buildkite/pull-requests.json`](https://github.com/elastic/integrations/blob/main/.buildkite/pull-requests.json). These are paths that cannot affect this pipeline at all, such as `docs/`, `README.md`, `CONTRIBUTING.md`, `catalog-info.yaml`, `.github/workflows/`, or the pipeline definitions belonging to the other pipelines (`.buildkite/pipeline.publish.yml`, `.buildkite/pipeline.schedule-daily.yml`, etc.).
+- This CI pipeline tries to test the minimum packages possible:
     - In the Pull Request context, it is checked the files modified/added/deleted in the given PR:
         - Those packages with changes (`packages/*`) will be added to the list of packages to be tested.
-        - If files outside `packages` folder are updated (for example `go.mod` , `.buildkite/*`), all packages are going to be tested. There are some exceptions to this, for instance the `.github/CODEOWNERS` file or `.docs/` folder ([files excluded](https://github.com/elastic/integrations/blob/376fc891a1e6c662b4ef1897b118044faf51e7bf/.buildkite/scripts/common.sh#L695)).
+        - If files outside the `packages` folder are updated (for example `go.mod` or `.buildkite/*`), all packages are going to be tested, since those changes could affect any package. Paths that are known not to affect packages in general are exempt from this rule, so a build whose changes are all in those paths does not fall back to testing every package.
+        - The exempt paths are listed in [`.buildkite/scripts/non_package_patterns.txt`](https://github.com/elastic/integrations/blob/main/.buildkite/scripts/non_package_patterns.txt), one extended regular expression (ERE) per line. That file is read at build time and is the source of truth, so check it for the current list instead of relying on an enumeration here. Representative entries are documentation (`docs/`), repository and GitHub metadata (`README.md`, `CONTRIBUTING.md`, `catalog-info.yaml`, `.github/workflows/`, `.github/CODEOWNERS`), developer tooling (`dev/scripts/`, `cmd/backport/`), the CI scripts and pipeline definitions not used to test packages, and the per-package checker scripts under `.buildkite/scripts/packages/`.
+        - Being exempt only disables the test-everything fallback; it does not mean no package is tested. The per-package selection above still applies, and a package is also selected when its own checker script `.buildkite/scripts/packages/<package>.sh` changes. A Pull Request touching only that script therefore tests that one package and no other.
+        - That file also matches `packages/` itself, since changes there are handled by the per-package selection above and must not fall into this test-everything rule.
+        - This list is deliberately broader than the `skip_ci_on_only_changed` one above, and some of its entries must never be added there, as noted in `is_pr_affected()`: `.github/CODEOWNERS` has to trigger a build so the `mage check` step validates it against the packages (on Pull Requests targeting `backport-*` branches, a further `check-backport-owners` step runs as well), and `.buildkite/scripts/packages/<package>.sh` has to trigger a build so its package is tested. Other entries, such as the CI scripts under `.buildkite/scripts/` or the listed tooling under `dev/`, trigger a build to run their own unit test steps.
     - In branches context (`main`, `backport-*`, or `feature/*`):
         - The latest Buildkite build that finished successfully in that branch is retrieved, and all the file changes in the working copy between the changeset of that build and the merged commit are obtained.
         - Given all those changes, the packages selected to be tested follow the same rules as in the PR.
@@ -205,9 +210,9 @@ be used in each pipeline are detailed in the corresponding sections of each pipe
 - Available only to Elastic employees.
 - This pipeline is currently disabled.
 
-Every week it is configured to run a job that will be in charge of testing all packages with non-Wolfi Elastic Agent docker images: https://buildkite.com/elastic/integrations-schedule-weekly
+When enabled, this job runs on a weekly basis and is in charge of testing all packages with non-Wolfi Elastic Agent docker images: https://buildkite.com/elastic/integrations-schedule-weekly
 
-The schedule of this job can be checked [here](https://github.com/elastic/integrations/blob/2e72e8524728daca2d47c814d8042031b8f5804f/catalog-info.yaml#L145).
+The schedule of this job is defined in the `schedules` section of the `integrations-schedule-weekly` pipeline in [`catalog-info.yaml`](https://github.com/elastic/integrations/blob/main/catalog-info.yaml). While the pipeline is disabled, that section is kept commented out.
 
 The scenarios that are tested in this weekly job are:
 

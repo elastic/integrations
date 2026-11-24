@@ -1,0 +1,135 @@
+{
+    "attributes": {
+        "alert_suppression": {
+            "duration": {
+                "unit": "h",
+                "value": 1
+            },
+            "group_by": [
+                "user.email",
+                "Esql.time_bucket"
+            ],
+            "missing_fields_strategy": "suppress"
+        },
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects a ChatGPT Enterprise user downloading five or more distinct Google Drive files through the Drive connector within a one-hour window. Adversaries who abuse a linked Drive connector after session compromise often stage bulk file retrieval before sharing, forwarding, or other exfiltration.",
+        "false_positives": [
+            "Users exporting or reviewing many Drive files through ChatGPT during approved research, eDiscovery, or migration work."
+        ],
+        "from": "now-2h",
+        "interval": "15m",
+        "investigation_fields": {
+            "field_names": [
+                "user.email",
+                "Esql.time_bucket",
+                "Esql.download_count",
+                "Esql.download_url_values",
+                "Esql.timestamp_first_seen",
+                "Esql.timestamp_last_seen"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "OpenAI ChatGPT Enterprise Google Drive Download Burst",
+        "note": "## Triage and analysis\n\n### Investigating OpenAI ChatGPT Enterprise Google Drive Download Burst\n\nOne user retrieved five or more distinct Google Drive files through ChatGPT in an hour. That pattern can indicate bulk\ncollection via the Drive connector ahead of exfiltration.\n\nEscalate when downloads follow sensitive Drive searches, Gmail discovery or sends, or unusual authentication activity.\nClose as a false positive for approved bulk export or research projects.\n\n#### Possible investigation steps\n\n- Review `Esql.download_count`, `Esql.download_url_values`, and the time bucket on the alert.\n- Correlate with nearby Google Drive sensitive query bursts or Gmail connector activity from the same user.\n- Confirm whether Drive connector downloads are approved for that user and volume.\n- Check subsequent conversation shares or external forwarding of the retrieved content.\n\n### False positive analysis\n\n- Migration, eDiscovery, or research workflows may download many Drive files in a short window through an approved\n  connector.\n\n### Response and remediation\n\n- Revoke Drive connector access if unauthorized and inventory downloaded files for data exposure.\n- Hunt for follow-on shares, Gmail sends, or additional downloads from the same user in the surrounding window.\n",
+        "query": "from logs-openai_chatgpt_enterprise.app_log-*\n| where\n    data_stream.dataset == \"openai_chatgpt_enterprise.app_log\" and\n    openai_chatgpt_enterprise.app_log.app_name == \"Google Drive\" and\n    openai_chatgpt_enterprise.app_log.log_type == \"request\" and\n    openai_chatgpt_enterprise.app_log.input is not null and\n    user.email is not null\n| eval\n    Esql.download_raw_file = to_lower(field_extract(openai_chatgpt_enterprise.app_log.input, \"download_raw_file\")),\n    Esql.download_url = field_extract(openai_chatgpt_enterprise.app_log.input, \"url\"),\n    Esql.time_bucket = date_trunc(1 hour, @timestamp)\n| where Esql.download_raw_file == \"true\"\n| stats\n    Esql.download_count = count_distinct(Esql.download_url),\n    Esql.download_url_values = values(Esql.download_url),\n    Esql.timestamp_first_seen = min(@timestamp),\n    Esql.timestamp_last_seen = max(@timestamp)\n  by user.email, Esql.time_bucket\n| where Esql.download_count >= 5\n| keep\n    user.email,\n    Esql.time_bucket,\n    Esql.download_count,\n    Esql.download_url_values,\n    Esql.timestamp_first_seen,\n    Esql.timestamp_last_seen\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise",
+            "https://platform.openai.com/docs/compliance"
+        ],
+        "related_integrations": [
+            {
+                "package": "openai_chatgpt_enterprise",
+                "version": ">=0.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": false,
+                "name": "openai_chatgpt_enterprise.app_log.app_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "openai_chatgpt_enterprise.app_log.input",
+                "type": "flattened"
+            },
+            {
+                "ecs": false,
+                "name": "openai_chatgpt_enterprise.app_log.log_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.email",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "0930e461-a831-4510-a180-4f5e3861ed51",
+        "setup": "## Setup\n\nThis rule requires the OpenAI ChatGPT Enterprise integration to collect `app_log` events for Google Drive, including\nrequest logs with flattened `openai_chatgpt_enterprise.app_log.input` fields `download_raw_file` and `url`.\n\nhttps://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: GenAI",
+            "Platform: OpenAI",
+            "Data Source: OpenAI ChatGPT Enterprise",
+            "Service: OpenAI ChatGPT Enterprise",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Tactic: Exfiltration",
+            "Tactic: Collection",
+            "Mitre Atlas: AML.T0053",
+            "Mitre Atlas: AML.T0025"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0010",
+                    "name": "Exfiltration",
+                    "reference": "https://attack.mitre.org/tactics/TA0010/"
+                },
+                "technique": [
+                    {
+                        "id": "T1567",
+                        "name": "Exfiltration Over Web Service",
+                        "reference": "https://attack.mitre.org/techniques/T1567/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0009",
+                    "name": "Collection",
+                    "reference": "https://attack.mitre.org/tactics/TA0009/"
+                },
+                "technique": [
+                    {
+                        "id": "T1213",
+                        "name": "Data from Information Repositories",
+                        "reference": "https://attack.mitre.org/techniques/T1213/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "0930e461-a831-4510-a180-4f5e3861ed51_1",
+    "type": "security-rule"
+}
