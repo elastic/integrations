@@ -9,6 +9,8 @@ The EfficientIP integration for Elastic collects and parses logs from [Efficient
 
 This integration is tested with EfficientIP version 8.4.7e.
 
+This integration requires Kibana and Elastic Agent 9.3.0 or later.
+
 This integration requires an active Elastic Agent enrolled in a Fleet policy.
 
 ### How it works
@@ -54,10 +56,10 @@ Elastic Agent is required to stream data from the syslog receiver and ship the d
 Configure your EfficientIP appliance to forward events to the Elastic Agent host:
 
 1. Access the EfficientIP administration interface.
-2. Navigate to **System Settings** > **Logging** or **Event Forwarding**.
-3. Select **Syslog** as the destination type.
+2. Navigate to **Administration** > **Monitoring** > **Configuration**.
+3. Add a remote syslog target with protocol **UDP**.
 4. Enter the syslog receiver host IP address and the port configured in the integration (default is `9028`).
-5. Verify the connection and enable syslog forwarding.
+5. Enable forwarding of the DNS (`named`) and DHCP (`dhcpd`, `dhcpdv6`) logs and save.
 
 Refer to the EfficientIP documentation for your version for detailed configuration steps specific to your deployment.
 

@@ -10,6 +10,8 @@ The EfficientIP integration for Elastic collects and parses logs from [Efficient
 
 This integration is tested with EfficientIP version 8.4.7e.
 
+This integration requires Kibana and Elastic Agent 9.3.0 or later.
+
 This integration requires an active Elastic Agent enrolled in a Fleet policy.
 
 ### How it works
@@ -55,10 +57,10 @@ Elastic Agent is required to stream data from the syslog receiver and ship the d
 Configure your EfficientIP appliance to forward events to the Elastic Agent host:
 
 1. Access the EfficientIP administration interface.
-2. Navigate to **System Settings** > **Logging** or **Event Forwarding**.
-3. Select **Syslog** as the destination type.
+2. Navigate to **Administration** > **Monitoring** > **Configuration**.
+3. Add a remote syslog target with protocol **UDP**.
 4. Enter the syslog receiver host IP address and the port configured in the integration (default is `9028`).
-5. Verify the connection and enable syslog forwarding.
+5. Enable forwarding of the DNS (`named`) and DHCP (`dhcpd`, `dhcpdv6`) logs and save.
 
 Refer to the EfficientIP documentation for your version for detailed configuration steps specific to your deployment.
 
@@ -135,7 +137,7 @@ An example event for `log` looks as following:
         "version": "9.3.3"
     },
     "client": {
-        "ip": "10.1.0.42",
+        "ip": "198.51.100.42",
         "port": 56474
     },
     "data_stream": {
@@ -186,20 +188,20 @@ An example event for `log` looks as following:
         ]
     },
     "host": {
-        "name": "eip-dns-test01"
+        "name": "example-dns-01"
     },
     "input": {
         "type": "udp"
     },
     "log": {
         "source": {
-            "address": "172.19.0.3:49548"
+            "address": "192.0.2.250:49548"
         },
         "syslog": {
             "priority": 13
         }
     },
-    "message": "client 10.1.0.42#56474: query: euc-common.online.example.com IN A  (10.100.0.1)",
+    "message": "client 198.51.100.42#56474: query: euc-common.online.example.com IN A  (192.0.2.254)",
     "network": {
         "protocol": "dns"
     },
@@ -211,12 +213,12 @@ An example event for `log` looks as following:
             "euc-common.online.example.com"
         ],
         "ip": [
-            "10.100.0.1",
-            "10.1.0.42"
+            "192.0.2.254",
+            "198.51.100.42"
         ]
     },
     "server": {
-        "ip": "10.100.0.1"
+        "ip": "192.0.2.254"
     },
     "tags": [
         "forwarded",
