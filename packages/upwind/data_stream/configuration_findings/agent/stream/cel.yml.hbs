@@ -32,12 +32,15 @@ redact:
 max_executions: {{max_executions}}
 {{/if}}
 program: |-
-  // The list operation returns an envelope { resourceFindings, pagination } with
-  // token pagination: per-page and page-token query parameters, the next token in
-  // pagination.nextPageToken, terminating when pagination.hasMoreData is false.
-  // Every interval is a full posture re-list of current PASS and FAIL findings.
-  // The page token lives in state for want_more only and is not persisted in
-  // cursor, so a later interval or a restart always starts from page 1.
+  // Live responses are a JSON array. Another page is advertised by a Link
+  // header with rel="next" and a page-token query parameter. HTTP 206 Partial
+  // Content is a successful page that has a successor. The published schema
+  // also allows an envelope { resourceFindings, pagination }; that shape is
+  // still accepted. Page tokens can contain commas, so the Link header is
+  // parsed from the angle-bracket URL instead of being split on commas.
+  // Every interval is a full posture re-list of current PASS and FAIL
+  // findings. The page token lives in state for want_more only and is not
+  // persisted in cursor, so a later interval or a restart starts from page 1.
   state.?next_token.orValue("").as(token,
     state.with(
       request(
@@ -48,9 +51,54 @@ program: |-
           ?"page-token": (token != "") ? optional.of([token]) : optional.none(),
         }.format_query()
       ).do_request().as(resp,
-        (resp.StatusCode == 200) ?
+        (resp.StatusCode == 200 || resp.StatusCode == 206) ?
           try(resp.Body.decode_json()).as(decoded,
-            (!is_error(decoded) && type(decoded) == type({})) ?
+            (!is_error(decoded) && type(decoded) == type([])) ?
+              string(resp.Header[?"Link"].orValue([]).join(",")).as(link,
+                (
+                  link.contains("rel=\"next\"") ? link.index("rel=\"next\"")
+                  : (link.contains("rel=next") ? link.index("rel=next") : -1)
+                ).as(rel_at,
+                  (
+                    (rel_at >= 0 && link.substring(0, rel_at).contains("<")) ?
+                      link.substring(0, rel_at).last_index("<").as(open_at,
+                        link.substring(open_at + 1, size(link)).index(">").as(close_at,
+                          (close_at > 0) ?
+                            link.substring(open_at + 1, open_at + 1 + close_at).trim_space().as(next_url,
+                              (next_url != "") ?
+                                string(next_url.parse_url().RawQuery.parse_query()[?"page-token"][0].orValue(""))
+                              :
+                                ""
+                            )
+                          :
+                            ""
+                        )
+                      )
+                    :
+                      ""
+                  ).as(next_token,
+                    (next_token != "" && size(decoded) != 0) ?
+                      {
+                        "events": decoded.map(e, {
+                          "message": e.encode_json(),
+                          "organization": {"id": state.organization_id},
+                        }),
+                        "want_more": true,
+                        "next_token": next_token,
+                      }
+                    :
+                      {
+                        "events": decoded.map(e, {
+                          "message": e.encode_json(),
+                          "organization": {"id": state.organization_id},
+                        }),
+                        "want_more": false,
+                        "next_token": "",
+                      }
+                  )
+                )
+              )
+            : (!is_error(decoded) && type(decoded) == type({})) ?
               {
                 "tok": string(decoded.?pagination.nextPageToken[0].orValue("")),
                 "more": decoded.?pagination.hasMoreData.orValue(false),
@@ -70,7 +118,7 @@ program: |-
                   "error": {
                     "code": string(resp.StatusCode),
                     "id": resp.Status,
-                    "message": "GET " + state.url.trim_right("/") + ": response was not a JSON object",
+                    "message": "GET " + state.url.trim_right("/") + ": response was not a JSON array or findings object",
                   },
                 },
                 "want_more": false,

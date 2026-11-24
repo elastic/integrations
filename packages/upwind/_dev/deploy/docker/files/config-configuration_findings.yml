@@ -1,18 +1,20 @@
 # Upwind configuration-findings mock (full posture).
 #
-# The list operation returns an envelope { resourceFindings, pagination } with
-# token pagination: per-page and page-token query parameters, the next token in
-# pagination.nextPageToken, terminating when pagination.hasMoreData is false.
-# Every interval is a full re-list of current PASS and FAIL findings. There is
-# no time bookmark.
+# Live list responses are a JSON array. The next page is advertised in the
+# Link header with rel="next". The page token in this mock contains a comma,
+# which is what a real Upwind cursor looks like, so pagination must not split
+# the Link header on commas. Response headers cannot be templated, so the
+# first-page rule always advertises Link rel="next" and an empty page ends
+# the round. Every interval is a full re-list of current PASS and FAIL
+# findings. There is no time bookmark.
 #
 # Rules, first match wins:
 #   1. OAuth client-credentials token (audience is the API base URL).
-#   2. Page 2 (page-token=cf-page-2-token): first hit → one FAIL finding,
-#      later hits → empty terminal page.
-#   3. First page (status=ALL, no page-token): first hit → FAIL + PASS and a
-#      next-page token (round 1), second hit → one PASS finding (round 2 full
-#      re-list), later hits → empty steady state.
+#   2. Page 2 (page-token contains a comma): first hit → one FAIL finding,
+#      later hits → empty terminal page. Never a Link header.
+#   3. First page (status=ALL, no page-token): first hit → FAIL + PASS
+#      (round 1), second hit → one PASS finding (round 2 full re-list),
+#      later hits → empty steady state.
 rules:
   - path: /oauth/token
     methods: ['POST']
@@ -29,7 +31,7 @@ rules:
   - path: /v1/organizations/org-example-0001/configuration-findings
     methods: ['GET']
     query_params:
-      page-token: cf-page-2-token
+      page-token: "1000,cf-page-2-token"
     request_headers:
       Authorization:
         - Bearer test-token
@@ -42,8 +44,7 @@ rules:
             - application/json
         body: |
           {{ if eq .req_num 1 }}
-          {
-            "resourceFindings": [
+          [
               {
                 "id": "ucf-33333333333333cc",
                 "title": "CloudTrail is not enabled in all regions",
@@ -79,26 +80,9 @@ rules:
                   "risk_categories": ["LOGGING"]
                 }
               }
-            ],
-            "pagination": {
-              "hasMoreData": false,
-              "nextPageToken": [],
-              "offset": 2,
-              "size": 1,
-              "totalItems": 3
-            }
-          }
+          ]
           {{ else }}
-          {
-            "resourceFindings": [],
-            "pagination": {
-              "hasMoreData": false,
-              "nextPageToken": [],
-              "offset": 0,
-              "size": 0,
-              "totalItems": 0
-            }
-          }
+          []
           {{ end }}
   # First page of a full-posture sweep. status=ALL is required so both PASS
   # and FAIL findings are returned. Later hits model subsequent 24h runs.
@@ -116,10 +100,11 @@ rules:
         headers:
           Content-Type:
             - application/json
+          Link:
+            - '<http://upwind-configuration-findings-mock:8090/v1/organizations/org-example-0001/configuration-findings?status=ALL&per-page=2>; rel="first", <http://upwind-configuration-findings-mock:8090/v1/organizations/org-example-0001/configuration-findings?status=ALL&per-page=2&page-token=1000,cf-page-2-token>; rel="next"'
         body: |
           {{ if eq .req_num 1 }}
-          {
-            "resourceFindings": [
+          [
               {
                 "id": "ucf-11111111111111aa",
                 "title": "S3 bucket allows public read access",
@@ -190,18 +175,9 @@ rules:
                   "risk_categories": ["NETWORK"]
                 }
               }
-            ],
-            "pagination": {
-              "hasMoreData": true,
-              "nextPageToken": ["cf-page-2-token"],
-              "offset": 0,
-              "size": 2,
-              "totalItems": 3
-            }
-          }
+          ]
           {{ else if eq .req_num 2 }}
-          {
-            "resourceFindings": [
+          [
               {
                 "id": "ucf-44444444444444dd",
                 "title": "Root account has active access keys",
@@ -237,24 +213,7 @@ rules:
                   "risk_categories": ["IAM"]
                 }
               }
-            ],
-            "pagination": {
-              "hasMoreData": false,
-              "nextPageToken": [],
-              "offset": 0,
-              "size": 1,
-              "totalItems": 1
-            }
-          }
+          ]
           {{ else }}
-          {
-            "resourceFindings": [],
-            "pagination": {
-              "hasMoreData": false,
-              "nextPageToken": [],
-              "offset": 0,
-              "size": 0,
-              "totalItems": 0
-            }
-          }
+          []
           {{ end }}
