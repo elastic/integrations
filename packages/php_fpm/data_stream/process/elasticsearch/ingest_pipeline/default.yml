@@ -2,110 +2,137 @@
 description: Pipeline for parsing PHP-FPM Process metrics.
 processors:
   - set:
+      tag: set_ecs_version_0a9ba5b1
       field: ecs.version
       value: 8.11.0
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_type_56ed6ff0
       field: event.type
       value: ["info"]
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_kind_a59b2697
       field: event.kind
       value: event
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_category_6264a90e
       field: event.category
       value: ["web","configuration","process"]
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_module_89ffd49f
       field: event.module
       value: php_fpm
       ignore_failure: true
       ignore_empty_value: true
   - rename:
+      tag: rename_message_ecb04ff9
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_4c16b318
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   - json:
+      tag: json_event_original_415dac27
       field: event.original
       target_field: json
       ignore_failure: true
   - rename:
+      tag: rename_json_processes_state_179fd515
       field: json.processes.state
       target_field: php_fpm.process.state
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_processes_requests_054e768f
       field: json.processes.requests
       target_field: php_fpm.process.request.count
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_processes_request_duration_c5cbe1d7
       field: json.processes.request duration
       target_field: php_fpm.process.request.duration
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_processes_script_4b92b76f
       field: json.processes.script
       target_field: php_fpm.process.script
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_pool_f6ec4cd4
       field: json.pool
       target_field: php_fpm.process.pool.name
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_processes_last_request_cpu_1181df5d
       field: json.processes.last request cpu
       target_field: php_fpm.process.request.last.cpu.pct
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_processes_last_request_memory_d9e1206e
       field: json.processes.last request memory
       target_field: php_fpm.process.request.last.memory
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_processes_pid_416df41c
       field: json.processes.pid
       target_field: process.pid
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_processes_request_uri_4e8e1d2e
       field: json.processes.request uri
       target_field: url.original
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_processes_user_7e5eed3b
       field: json.processes.user
       target_field: user.name
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_processes_request_method_63559a90
       field: json.processes.request method
       target_field: http.request.method
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_processes_content_length_e5151336
       field: json.processes.content length
       target_field: http.request.body.bytes
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_processes_start_since_1d60eab2
       field: json.processes.start since
       target_field: php_fpm.process.start_since
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_processes_start_time_fed7dea8
       field: json.processes.start time
       target_field: php_fpm.process.start_time
       ignore_missing: true
       ignore_failure: true
   - script:
+      tag: script_8f9659c0
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -123,11 +150,21 @@ processors:
         }
         drop(ctx);
   - remove:
+      tag: remove_json_7af92d2a
       field:
         - json
       ignore_missing: true
       ignore_failure: true
 on_failure:
   - set:
+      tag: set_event_kind_bbc50103
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_380359b2
       field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
