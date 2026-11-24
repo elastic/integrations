@@ -2,32 +2,38 @@
 description: Pipeline for parsing Couchbase XDCR metrics.
 processors:
   - set:
+      tag: set_ecs_version_be8e78c5
       field: ecs.version
       value: 8.11.0
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_type_783ddc36
       field: event.type
       value: [info]
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_kind_8eeddbea
       field: event.kind
       value: metric
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_category_8246e843
       field: event.category
       value: [database]
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_module_60ea6da0
       field: event.module
       value: couchbase
       override: true
       ignore_failure: true
       ignore_empty_value: true
   - script:
+      tag: script_f4645e42
       lang: painless
       source: |-
         def getLastElement(def x) {
@@ -60,45 +66,54 @@ processors:
       ignore_failure: true        
       description: Convert array response to last value of an array.
   - rename:
+      tag: rename_backoff_b8ebe6a3
       field: backoff
       target_field: couchbase.xdcr.backoff
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_bytes_total_5072437c
       field: bytes_total
       target_field: couchbase.xdcr.bytes.total
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_count_fe159dc7
       field: count
       target_field: couchbase.xdcr.count
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_items_remaining_e9cd812f
       field: items_remaining
       target_field: couchbase.xdcr.items.remaining
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_items_sent_25c12ac2
       field: items_sent
       target_field: couchbase.xdcr.items.sent
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_oom_errors_f1d52ec3
       field: oom_errors
       target_field: couchbase.xdcr.errors.out_of_memory
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_producer_count_ed933b4e
       field: producer_count
       target_field: couchbase.xdcr.producer.count
       ignore_missing: true
       ignore_failure: true
   - remove:
+      tag: remove_http_13ac4ce0
       field: http
       ignore_failure: true
       ignore_missing: true
   - script:
+      tag: script_53d14c71
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -117,5 +132,14 @@ processors:
         drop(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_c8b74536
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_04e6b07d
       field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

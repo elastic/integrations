@@ -2,86 +2,103 @@
 description: Pipeline for parsing Couchbase Bucket metrics.
 processors:
   - set:
+      tag: set_ecs_version_d13f79e4
       field: ecs.version
       value: 8.11.0
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_type_c9515292
       field: event.type
       value: [info]
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_kind_2420214e
       field: event.kind
       value: metric
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_category_5311f1db
       field: event.category
       value: [database]
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_module_5d42a745
       field: event.module
       value: couchbase
       override: true
       ignore_failure: true
       ignore_empty_value: true
   - rename:
+      tag: rename_http_bucket_basicStats_dataUsed_d9b303fb
       field: http.bucket.basicStats.dataUsed
       target_field: couchbase.bucket.data.used.bytes
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_http_bucket_basicStats_diskFetches_6f4da014
       field: http.bucket.basicStats.diskFetches
       target_field: couchbase.bucket.disk.fetches
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_http_bucket_basicStats_diskUsed_46ad57c2
       field: http.bucket.basicStats.diskUsed
       target_field: couchbase.bucket.disk.used.bytes
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_http_bucket_basicStats_itemCount_6732ed61
       field: http.bucket.basicStats.itemCount
       target_field: couchbase.bucket.item.count
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_http_bucket_basicStats_memUsed_a7d5264e
       field: http.bucket.basicStats.memUsed
       target_field: couchbase.bucket.memory.used.bytes
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_http_bucket_name_d0968c8d
       field: http.bucket.name
       target_field: couchbase.bucket.name
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_http_bucket_basicStats_opsPerSec_e91d4266
       field: http.bucket.basicStats.opsPerSec
       target_field: couchbase.bucket.operations_per_sec
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_http_bucket_quota_ram_1618d50e
       field: http.bucket.quota.ram
       target_field: couchbase.bucket.ram.quota.bytes
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_http_bucket_basicStats_quotaPercentUsed_1a1a0be2
       field: http.bucket.basicStats.quotaPercentUsed
       target_field: couchbase.bucket.ram.quota.used.pct
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_http_bucket_bucketType_0b5c4908
       field: http.bucket.bucketType
       target_field: couchbase.bucket.type
       ignore_missing: true
       ignore_failure: true
   - remove:
+      tag: remove_http_ec4f4795
       field: http
       ignore_failure: true
       ignore_missing: true
   - script:
+      tag: script_19032ba4
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -100,5 +117,14 @@ processors:
         drop(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_8fa46555
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_9e25a9d8
       field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

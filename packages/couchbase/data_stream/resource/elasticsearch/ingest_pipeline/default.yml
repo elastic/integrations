@@ -2,97 +2,116 @@
 description: Pipeline for parsing  Couchbase Sync Gateway Resource Utilization metrics.
 processors:
   - set:
+      tag: set_ecs_version_48bf6f75
       field: ecs.version
       value: 8.11.0
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_type_0e2f23e2
       field: event.type
       value: [info]
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_kind_4aca8055
       field: event.kind
       value: metric
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_category_a935504a
       field: event.category
       value: [database]
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_module_d6dfff53
       field: event.module
       value: couchbase
       override: true
       ignore_failure: true
       ignore_empty_value: true
   - rename:
+      tag: rename_prometheus_labels_instance_45316401
       field: prometheus.labels.instance
       target_field: server.address
       ignore_missing: true
       ignore_failure: true
   - rename:    
+      tag: rename_prometheus_metrics_sgw_resource_utilization_process_cpu_percent_utilization_06ad58ee
       field: prometheus.metrics.sgw_resource_utilization_process_cpu_percent_utilization
       target_field: couchbase.resource.process.cpu.pct
       ignore_missing: true
       ignore_failure: true
   - rename: 
+      tag: rename_prometheus_metrics_sgw_resource_utilization_process_memory_resident_7f3cde59
       field: prometheus.metrics.sgw_resource_utilization_process_memory_resident
       target_field: couchbase.resource.process.memory.resident
       ignore_missing: true
       ignore_failure: true
   - rename:    
+      tag: rename_prometheus_metrics_sgw_resource_utilization_admin_net_bytes_recv_db21d1b9
       field: prometheus.metrics.sgw_resource_utilization_admin_net_bytes_recv
       target_field: couchbase.resource.admin_net.bytes.received
       ignore_missing: true
       ignore_failure: true
   - rename:    
+      tag: rename_prometheus_metrics_sgw_resource_utilization_admin_net_bytes_sent_12794375
       field: prometheus.metrics.sgw_resource_utilization_admin_net_bytes_sent
       target_field: couchbase.resource.admin_net.bytes.sent
       ignore_missing: true
       ignore_failure: true
   - rename:    
+      tag: rename_prometheus_metrics_sgw_resource_utilization_go_memstats_heapalloc_38d55bc7
       field: prometheus.metrics.sgw_resource_utilization_go_memstats_heapalloc
       target_field: couchbase.resource.go_memstats.heap.alloc
       ignore_missing: true
       ignore_failure: true
   - rename:    
+      tag: rename_prometheus_metrics_sgw_resource_utilization_go_memstats_heapinuse_c6143629
       field: prometheus.metrics.sgw_resource_utilization_go_memstats_heapinuse
       target_field: couchbase.resource.go_memstats.heap.in_use
       ignore_missing: true
       ignore_failure: true
   - rename:    
+      tag: rename_prometheus_metrics_sgw_resource_utilization_go_memstats_heapidle_b81ad222
       field: prometheus.metrics.sgw_resource_utilization_go_memstats_heapidle
       target_field: couchbase.resource.go_memstats.heap.idle
       ignore_missing: true
       ignore_failure: true
   - rename:    
+      tag: rename_prometheus_metrics_sgw_resource_utilization_go_memstats_heapreleased_8480b299
       field: prometheus.metrics.sgw_resource_utilization_go_memstats_heapreleased
       target_field: couchbase.resource.go_memstats.heap.released
       ignore_missing: true
       ignore_failure: true
   - rename:    
+      tag: rename_prometheus_metrics_sgw_resource_utilization_go_memstats_stackinuse_137d186e
       field: prometheus.metrics.sgw_resource_utilization_go_memstats_stackinuse
       target_field: couchbase.resource.go_memstats.stack.in_use
       ignore_missing: true
       ignore_failure: true
   - rename:    
+      tag: rename_prometheus_metrics_sgw_resource_utilization_error_count_2efa703b
       field: prometheus.metrics.sgw_resource_utilization_error_count
       target_field: couchbase.resource.error.count
       ignore_missing: true
       ignore_failure: true
   - rename:    
+      tag: rename_prometheus_metrics_sgw_resource_utilization_warn_count_4e029621
       field: prometheus.metrics.sgw_resource_utilization_warn_count
       target_field: couchbase.resource.warn.count
       ignore_missing: true
       ignore_failure: true
   - rename:    
+      tag: rename_prometheus_metrics_go_memstats_last_gc_time_seconds_5af519c6
       field: prometheus.metrics.go_memstats_last_gc_time_seconds
       target_field: couchbase.resource.last_gc
       ignore_missing: true
       ignore_failure: true
   - script:
+      tag: script_2d8bf459
       description: Add job to tag list.
       lang: painless
       ignore_failure: true
@@ -102,10 +121,12 @@ processors:
         }
         ctx.tags.add(ctx.prometheus.labels.job)
   - remove:
+      tag: remove_prometheus_93dd4904
       field: prometheus
       ignore_failure: true
       ignore_missing: true
   - script:
+      tag: script_bc9ed4a8
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -124,5 +145,14 @@ processors:
         drop(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_2e30691e
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_8a81e596
       field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

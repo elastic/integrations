@@ -2,87 +2,104 @@
 description: Pipeline for parsing Couchbase Sync Gateway Cache metrics.
 processors:
   - set:
+      tag: set_ecs_version_c483d9b8
       field: ecs.version
       value: 8.11.0
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_type_ffb6a16d
       field: event.type
       value: [info]
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_kind_bd9b3755
       field: event.kind
       value: metric
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_category_d9a468cc
       field: event.category
       value: [database]
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_module_758295ed
       field: event.module
       value: couchbase
       override: true
       ignore_failure: true
       ignore_empty_value: true
   - rename:
+      tag: rename_prometheus_labels_database_3e24cc89
       field: prometheus.labels.database
       target_field: couchbase.cache.database.name
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_labels_instance_9f75866c
       field: prometheus.labels.instance
       target_field: server.address
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_metrics_sgw_cache_chan_cache_active_revs_9d1a1f6a
       field: prometheus.metrics.sgw_cache_chan_cache_active_revs
       target_field: couchbase.cache.channel.revisions.active
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_metrics_sgw_cache_chan_cache_hits_01fbc4d4
       field: prometheus.metrics.sgw_cache_chan_cache_hits
       target_field: couchbase.cache.channel.hits
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_metrics_sgw_cache_chan_cache_max_entries_c317fa22
       field: prometheus.metrics.sgw_cache_chan_cache_max_entries
       target_field: couchbase.cache.channel.entries.max
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_metrics_sgw_cache_chan_cache_misses_9de70942
       field: prometheus.metrics.sgw_cache_chan_cache_misses
       target_field: couchbase.cache.channel.misses
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_metrics_sgw_cache_chan_cache_num_channels_8a90b92c
       field: prometheus.metrics.sgw_cache_chan_cache_num_channels
       target_field: couchbase.cache.channel.count
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_metrics_sgw_cache_chan_cache_removal_revs_8f1a6583
       field: prometheus.metrics.sgw_cache_chan_cache_removal_revs
       target_field: couchbase.cache.channel.revisions.removal
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_metrics_sgw_cache_chan_cache_tombstone_revs_66faacc2
       field: prometheus.metrics.sgw_cache_chan_cache_tombstone_revs
       target_field: couchbase.cache.channel.revisions.tombstone
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_metrics_sgw_cache_rev_cache_hits_d8bb76a8
       field: prometheus.metrics.sgw_cache_rev_cache_hits
       target_field: couchbase.cache.revision.hits
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_metrics_sgw_cache_rev_cache_misses_fddbb18f
       field: prometheus.metrics.sgw_cache_rev_cache_misses 
       target_field: couchbase.cache.revision.misses
       ignore_missing: true
       ignore_failure: true
   - script:
+      tag: script_c24f79fc
       description: Add job to tag list.
       lang: painless
       ignore_failure: true
@@ -92,10 +109,12 @@ processors:
         }
         ctx.tags.add(ctx.prometheus.labels.job)
   - remove:
+      tag: remove_prometheus_4a09482f
       field: prometheus
       ignore_failure: true
       ignore_missing: true
   - script:
+      tag: script_ca9586a2
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -114,5 +133,14 @@ processors:
         drop(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_162ec2a6
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_133b01d9
       field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

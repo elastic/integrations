@@ -2,112 +2,134 @@
 description: Pipeline for parsing Couchbase Sync Gateway Delta Sync, Import, Security and GSI views metrics.
 processors:
   - set:
+      tag: set_ecs_version_2d12afd0
       field: ecs.version
       value: 8.11.0
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_type_b5968147
       field: event.type
       value: [info]
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_kind_421f1e06
       field: event.kind
       value: metric
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_category_aa3c843c
       field: event.category
       value: [database]
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_module_5dfc4e30
       field: event.module
       value: couchbase
       override: true
       ignore_failure: true
       ignore_empty_value: true
   - rename:
+      tag: rename_prometheus_labels_database_c3429d89
       field: prometheus.labels.database
       target_field: couchbase.miscellaneous.database.name
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_labels_instance_d9a862de
       field: prometheus.labels.instance
       target_field: server.address
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_metrics_sgw_delta_sync_delta_cache_hit_f28c701d
       field: prometheus.metrics.sgw_delta_sync_delta_cache_hit
       target_field: couchbase.miscellaneous.delta_sync.cache.hits
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_metrics_sgw_delta_sync_deltas_sent_b0bcff3b
       field: prometheus.metrics.sgw_delta_sync_deltas_sent
       target_field: couchbase.miscellaneous.delta_sync.sent
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_metrics_sgw_delta_sync_deltas_requested_b9d57a1d
       field: prometheus.metrics.sgw_delta_sync_deltas_requested
       target_field: couchbase.miscellaneous.delta_sync.requested
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_metrics_sgw_delta_sync_delta_pull_replication_count_a03c9f48
       field: prometheus.metrics.sgw_delta_sync_delta_pull_replication_count
       target_field: couchbase.miscellaneous.delta_sync.pull.replications
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_metrics_sgw_delta_sync_delta_push_doc_count_706601dc
       field: prometheus.metrics.sgw_delta_sync_delta_push_doc_count
       target_field: couchbase.miscellaneous.delta_sync.push.documents
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_metrics_sgw_shared_bucket_import_import_count_19046f2d
       field: prometheus.metrics.sgw_shared_bucket_import_import_count
       target_field: couchbase.miscellaneous.shared_bucket.import.documents.count
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_metrics_sgw_shared_bucket_import_import_error_count_38de9bc3
       field: prometheus.metrics.sgw_shared_bucket_import_import_error_count
       target_field: couchbase.miscellaneous.shared_bucket.import.documents.errors.count
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_metrics_sgw_gsi_views_channels_count_d409d6ab
       field: prometheus.metrics.sgw_gsi_views_channels_count
       target_field: couchbase.miscellaneous.gsi_views.channels.count
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_metrics_sgw_gsi_views_access_count_bf01ca51
       field: prometheus.metrics.sgw_gsi_views_access_count
       target_field: couchbase.miscellaneous.gsi_views.access.count
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_metrics_sgw_gsi_views_allDocs_count_92ebd9c3
       field: prometheus.metrics.sgw_gsi_views_allDocs_count
       target_field: couchbase.miscellaneous.gsi_views.all_docs.count
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_metrics_sgw_gsi_views_roleAccess_count_3eb590d8
       field: prometheus.metrics.sgw_gsi_views_roleAccess_count
       target_field: couchbase.miscellaneous.gsi_views.role_access.count
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_metrics_sgw_security_num_docs_rejected_d64aab8f
       field: prometheus.metrics.sgw_security_num_docs_rejected
       target_field: couchbase.miscellaneous.security.documents.rejected.count
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_metrics_sgw_security_num_access_errors_9d40dacd
       field: prometheus.metrics.sgw_security_num_access_errors
       target_field: couchbase.miscellaneous.security.access.errors.count
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_metrics_sgw_security_auth_failed_count_22c2c2c2
       field: prometheus.metrics.sgw_security_auth_failed_count
       target_field: couchbase.miscellaneous.security.authentications.failed.count
       ignore_missing: true
       ignore_failure: true
   - script:
+      tag: script_bda4361c
       description: Add job to tag list.
       lang: painless
       ignore_failure: true
@@ -117,10 +139,12 @@ processors:
         }
         ctx.tags.add(ctx.prometheus.labels.job)
   - remove:
+      tag: remove_prometheus_dc48e98f
       field: prometheus
       ignore_failure: true
       ignore_missing: true
   - script:
+      tag: script_46f75f71
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -139,5 +163,14 @@ processors:
         drop(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_24def236
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_e0facb20
       field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
