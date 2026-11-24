@@ -2,107 +2,133 @@
 description: Pipeline for processing MySQL replica status metrics.
 processors:
   - set:
+      tag: set_ecs_version_c6be2f22
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_kind_97e66e92
       field: event.kind
       value: event
   - set:
+      tag: set_event_module_738bbd4c
       field: event.module
       value: mysql
   - set:
+      tag: set_event_category_1586554b
       field: event.category
       value: ["database"]
   - set:
+      tag: set_event_type_2eca3e43
       field: event.type
       value: ["info"]
   - set:
+      tag: set_user_name_77162fc3
       field: user.name
       value: '{{sql.metrics.string.source_user}}'
       ignore_empty_value: true
   - set:
+      tag: set_service_type_78b44c5c
       field: service.type
       value: "mysql"
   - set:
+      tag: set_sql_metrics_numeric_auto_position_9c73cea3
       if: ctx.sql?.metrics?.numeric?.auto_position == 1
       field: sql.metrics.numeric.auto_position
       value: true
       ignore_empty_value: true
   - set:
+      tag: set_sql_metrics_numeric_auto_position_ba0e4008
       if: ctx.sql?.metrics?.numeric?.auto_position == 0
       field: sql.metrics.numeric.auto_position
       value: false
       ignore_empty_value: true
   - set:
+      tag: set_sql_metrics_numeric_get_source_public_key_5ad09181
       if: ctx.sql?.metrics?.numeric?.get_source_public_key == 1
       field: sql.metrics.numeric.get_source_public_key
       value: true
       ignore_empty_value: true
   - set:
+      tag: set_sql_metrics_numeric_get_source_public_key_114ce7bb
       if: ctx.sql?.metrics?.numeric?.get_source_public_key == 0
       field: sql.metrics.numeric.get_source_public_key
       value: false
       ignore_empty_value: true
   - set:
+      tag: set_sql_metrics_string_source_ssl_verify_server_cert_668b3d9d
       if: ctx.sql?.metrics?.string?.source_ssl_verify_server_cert == 'Yes'
       field: sql.metrics.string.source_ssl_verify_server_cert
       value: true
       ignore_empty_value: true
   - set:
+      tag: set_sql_metrics_string_source_ssl_verify_server_cert_ede49940
       if: ctx.sql?.metrics?.string?.source_ssl_verify_server_cert == 'No'
       field: sql.metrics.string.source_ssl_verify_server_cert
       value: false
       ignore_empty_value: true
   - convert:
+      tag: convert_sql_metrics_numeric_source_port_096c8bb7
       field: sql.metrics.numeric.source_port
       target_field: source.port
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_edb166c7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+        tag: rename_sql_metrics_numeric_auto_position_d3b7a67d
         field: sql.metrics.numeric.auto_position
         target_field: mysql.replica_status.is_auto_position
         ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_network_namespace_af03654e
       field: sql.metrics.string.network_namespace
       target_field: network.name
       ignore_missing: true 
   - rename:
+      tag: rename_sql_metrics_string_channel_name_71a45027
       field: sql.metrics.string.channel_name
       target_field: mysql.replica_status.channel.name
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_numeric_connect_retry_d08e78fd
       field: sql.metrics.numeric.connect_retry
       target_field: mysql.replica_status.connection.retry.sec
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_numeric_skip_counter_5c1eae60
       field: sql.metrics.numeric.skip_counter
       target_field: mysql.replica_status.event_skip.count
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_executed_gtid_set_197c766c
       field: sql.metrics.string.executed_gtid_set
       target_field: mysql.replica_status.gtid.executed.set
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_retrieved_gtid_set_c71c2d21
       field: sql.metrics.string.retrieved_gtid_set
       target_field: mysql.replica_status.gtid.retrieved.set
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_replica_io_running_799504e1
       field: sql.metrics.string.replica_io_running
       target_field: mysql.replica_status.is_io_thread_running
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_replica_sql_running_d7448470
       field: sql.metrics.string.replica_sql_running
       target_field: mysql.replica_status.is_sql_thread_running
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_last_io_error_2887b6f8
       field: sql.metrics.string.last_io_error
       target_field: mysql.replica_status.last_error.io.message
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_numeric_last_io_errno_4a60f6db
       field: sql.metrics.numeric.last_io_errno
       target_field: mysql.replica_status.last_error.io.number
       ignore_missing: true
@@ -120,6 +146,7 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_f021ed6a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -136,217 +163,271 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_bdbf1bde
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_sql_metrics_string_last_error_3ba9104c
       field: sql.metrics.string.last_error
       target_field: mysql.replica_status.last_error.message
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_numeric_last_errno_0fa90b9c
       field: sql.metrics.numeric.last_errno
       target_field: mysql.replica_status.last_error.number
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_last_sql_error_2960a173
       field: sql.metrics.string.last_sql_error
       target_field: mysql.replica_status.last_error.sql.message
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_numeric_last_sql_errno_22046cce
       field: sql.metrics.numeric.last_sql_errno
       target_field: mysql.replica_status.last_error.sql.number
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_relay_log_file_d855486b
       field: sql.metrics.string.relay_log_file
       target_field: mysql.replica_status.relay.log_file
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_numeric_relay_log_pos_3324d171
       field: sql.metrics.numeric.relay_log_pos
       target_field: mysql.replica_status.relay.log_position
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_numeric_relay_log_space_14660575
       field: sql.metrics.numeric.relay_log_space
       target_field: mysql.replica_status.relay.log_space
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_replica_io_state_7515c413
       field: sql.metrics.string.replica_io_state
       target_field: mysql.replica_status.replica.io.state
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_replica_sql_running_state_2fa78a18
       field: sql.metrics.string.replica_sql_running_state
       target_field: mysql.replica_status.replica.sql.running_state
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_replicate_rewrite_db_541e4fc9
       field: sql.metrics.string.replicate_rewrite_db
       target_field: mysql.replica_status.replicate.rewrite_db
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_replicate_do_db_df2b0e57
       field: sql.metrics.string.replicate_do_db
       target_field: mysql.replica_status.replicate.do_db
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_replicate_do_table_b01a060f
       field: sql.metrics.string.replicate_do_table
       target_field: mysql.replica_status.replicate.do_table
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_replicate_ignore_db_274dc7fb
       field: sql.metrics.string.replicate_ignore_db
       target_field: mysql.replica_status.replicate.ignore.do_db
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_replicate_ignore_server_ids_39193dac
       field: sql.metrics.string.replicate_ignore_server_ids
       target_field: mysql.replica_status.replicate.ignore.server_id
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_replicate_ignore_table_892f7032
       field: sql.metrics.string.replicate_ignore_table
       target_field: mysql.replica_status.replicate.ignore.table
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_replicate_wild_ignore_table_d365c5e3
       field: sql.metrics.string.replicate_wild_ignore_table
       target_field: mysql.replica_status.replicate.ignore.wild_table
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_replicate_wild_do_table_7c1a54ce
       field: sql.metrics.string.replicate_wild_do_table
       target_field: mysql.replica_status.replicate.wild_do_table
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_numeric_seconds_behind_source_20f4574e
       field: sql.metrics.numeric.seconds_behind_source
       target_field: mysql.replica_status.seconds_behind_source
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_source_log_file_9faf5240
       field: sql.metrics.string.source_log_file
       target_field: mysql.replica_status.source.binary_log_file
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_source_bind_70a1c35e
       field: sql.metrics.string.source_bind
       target_field: mysql.replica_status.source.bind.interface.name
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_source_info_file_18f0c97e
       field: sql.metrics.string.source_info_file
       target_field: mysql.replica_status.source.file_info
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_source_host_8e1ab604
       field: sql.metrics.string.source_host
       target_field: mysql.replica_status.source.host.name
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_numeric_get_source_public_key_62dd0cee
       field: sql.metrics.numeric.get_source_public_key
       target_field: mysql.replica_status.source.is_get_public_key
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_relay_source_log_file_21b2d51d
       field: sql.metrics.string.relay_source_log_file
       target_field: mysql.replica_status.source.log_file.relay
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_numeric_exec_source_log_pos_8b73269e
       field: sql.metrics.numeric.exec_source_log_pos
       target_field: mysql.replica_status.source.log_position.exec
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_numeric_read_source_log_pos_217c3e4c
       field: sql.metrics.numeric.read_source_log_pos
       target_field: mysql.replica_status.source.log_position.read
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_source_public_key_path_ca478633
       field: sql.metrics.string.source_public_key_path
       target_field: mysql.replica_status.source.public_key_path
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_numeric_source_retry_count_8837cd52
       field: sql.metrics.numeric.source_retry_count
       target_field: mysql.replica_status.source.retry_count
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_numeric_source_server_id_e814cfc7
       field: sql.metrics.numeric.source_server_id
       target_field: mysql.replica_status.source.server.id
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_source_uuid_8727c575
       field: sql.metrics.string.source_uuid
       target_field: mysql.replica_status.source.server.uuid
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_source_ssl_allowed_e33962a8
       field: sql.metrics.string.source_ssl_allowed
       target_field: mysql.replica_status.source.ssl.allowed
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_source_ssl_verify_server_cert_4f78b298
       field: sql.metrics.string.source_ssl_verify_server_cert
       target_field: mysql.replica_status.source.ssl.is_verify_server_cert
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_source_ssl_ca_file_b264bee8
       field: sql.metrics.string.source_ssl_ca_file
       target_field: mysql.replica_status.source.ssl.ca_file
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_source_ssl_ca_path_a9201c23
       field: sql.metrics.string.source_ssl_ca_path
       target_field: mysql.replica_status.source.ssl.ca_path
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_source_ssl_cert_f25c5d04
       field: sql.metrics.string.source_ssl_cert
       target_field: mysql.replica_status.source.ssl.cert
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_source_ssl_cipher_1d1624e8
       field: sql.metrics.string.source_ssl_cipher
       target_field: mysql.replica_status.source.ssl.cipher
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_source_ssl_crl_3f81812f
       field: sql.metrics.string.source_ssl_crl
       target_field: mysql.replica_status.source.ssl.crl
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_source_ssl_crlpath_ea1180f0
       field: sql.metrics.string.source_ssl_crlpath
       target_field: mysql.replica_status.source.ssl.crl_path
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_source_ssl_key_522cab90
       field: sql.metrics.string.source_ssl_key
       target_field: mysql.replica_status.source.ssl.key
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_source_tls_version_e535b2db
       field: sql.metrics.string.source_tls_version
       target_field: mysql.replica_status.source.tls_version
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_numeric_sql_delay_1240cc59
       field: sql.metrics.numeric.sql_delay
       target_field: mysql.replica_status.thread.sql.delay.sec
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_until_condition_a3b588e8
       field: sql.metrics.string.until_condition
       target_field: mysql.replica_status.until.condition
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_numeric_sql_remaining_delay_7e3305d3
       field: sql.metrics.numeric.sql_remaining_delay
       target_field: mysql.replica_status.thread.sql.delay_remaining.sec
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_numeric_until_log_pos_088a2bd4
       field: sql.metrics.numeric.until_log_pos
       target_field: mysql.replica_status.until.log_position
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_until_log_file_895c9706
       field: sql.metrics.string.until_log_file
       target_field: mysql.replica_status.until.log_file
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_using_gtid_63f76b55
       field: sql.metrics.string.using_gtid
       target_field: mysql.replica_status.is_gtid_using
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_numeric_gtid_io_pos_24f540a4
       field: sql.metrics.numeric.gtid_io_pos
       target_field: mysql.replica_status.gtid_io_position
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_parallel_mode_bda64741
       field: sql.metrics.string.parallel_mode
       target_field: mysql.replica_status.parallel_mode
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_replicate_do_domain_ids_dd8ecb28
       field: sql.metrics.string.replicate_do_domain_ids
       target_field: mysql.replica_status.replicate_do_domain_ids
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_replicate_ignore_domain_ids_a0856247
       field: sql.metrics.string.replicate_ignore_domain_ids
       target_field: mysql.replica_status.replicate_ignore_domain_ids
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_numeric_slave_ddl_groups_874bedac
       field: sql.metrics.numeric.slave_ddl_groups
       target_field: mysql.replica_status.replica.ddl_groups
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_numeric_slave_non_transactional_groups_211c324e
       field: sql.metrics.numeric.slave_non_transactional_groups
       target_field: mysql.replica_status.replica.non_transactional_groups
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_numeric_slave_transactional_groups_f034f353
       field: sql.metrics.numeric.slave_transactional_groups
       target_field: mysql.replica_status.replica.transactional_groups
       ignore_missing: true
@@ -354,154 +435,191 @@ processors:
     # Processors for master fields which comes from MySQL "SHOW SLAVE STATUS;" command #
     ####################################################################################
   - set:
+      tag: set_user_name_0aaf688d
       field: user.name
       value: '{{sql.metrics.string.master_user}}'
       ignore_empty_value: true
   - set:
+      tag: set_sql_metrics_numeric_get_master_public_key_fca7d032
       if: ctx.sql?.metrics?.numeric?.get_master_public_key == 1
       field: sql.metrics.numeric.get_master_public_key
       value: true
       ignore_empty_value: true
   - set:
+      tag: set_sql_metrics_numeric_get_master_public_key_50bb26cb
       if: ctx.sql?.metrics?.numeric?.get_master_public_key == 0
       field: sql.metrics.numeric.get_master_public_key
       value: false
       ignore_empty_value: true
   - set:
+      tag: set_sql_metrics_string_master_ssl_verify_server_cert_1610883b
       if: ctx.sql?.metrics?.string?.master_ssl_verify_server_cert == 'Yes'
       field: sql.metrics.string.master_ssl_verify_server_cert
       value: true
       ignore_empty_value: true
   - set:
+      tag: set_sql_metrics_string_master_ssl_verify_server_cert_262517f4
       if: ctx.sql?.metrics?.string?.master_ssl_verify_server_cert == 'No'
       field: sql.metrics.string.master_ssl_verify_server_cert
       value: false
       ignore_empty_value: true
   - convert:
+      tag: convert_sql_metrics_numeric_master_port_04850dc7
       field: sql.metrics.numeric.master_port
       target_field: source.port
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b7c8e7c8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_sql_metrics_string_slave_io_running_714d358f
       field: sql.metrics.string.slave_io_running
       target_field: mysql.replica_status.is_io_thread_running
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_slave_sql_running_2aeced54
       field: sql.metrics.string.slave_sql_running
       target_field: mysql.replica_status.is_sql_thread_running
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_slave_io_state_16573fb7
       field: sql.metrics.string.slave_io_state
       target_field: mysql.replica_status.replica.io.state
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_slave_sql_running_state_6bb28258
       field: sql.metrics.string.slave_sql_running_state
       target_field: mysql.replica_status.replica.sql.running_state
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_numeric_seconds_behind_master_f392e942
       field: sql.metrics.numeric.seconds_behind_master
       target_field: mysql.replica_status.seconds_behind_source
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_master_log_file_55636c6a
       field: sql.metrics.string.master_log_file
       target_field: mysql.replica_status.source.binary_log_file
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_master_bind_e71253a1
       field: sql.metrics.string.master_bind
       target_field: mysql.replica_status.source.bind.interface.name
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_master_info_file_f40efb98
       field: sql.metrics.string.master_info_file
       target_field: mysql.replica_status.source.file_info
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_master_host_74797ac6
       field: sql.metrics.string.master_host
       target_field: mysql.replica_status.source.host.name
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_numeric_get_master_public_key_4afe9087
       field: sql.metrics.numeric.get_master_public_key
       target_field: mysql.replica_status.source.is_get_public_key
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_relay_master_log_file_21e56930
       field: sql.metrics.string.relay_master_log_file
       target_field: mysql.replica_status.source.log_file.relay
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_numeric_exec_master_log_pos_cbef385b
       field: sql.metrics.numeric.exec_master_log_pos
       target_field: mysql.replica_status.source.log_position.exec
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_numeric_read_master_log_pos_89969bdd
       field: sql.metrics.numeric.read_master_log_pos
       target_field: mysql.replica_status.source.log_position.read
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_master_public_key_path_58512126
       field: sql.metrics.string.master_public_key_path
       target_field: mysql.replica_status.source.public_key_path
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_numeric_master_retry_count_ca3dd22e
       field: sql.metrics.numeric.master_retry_count
       target_field: mysql.replica_status.source.retry_count
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_numeric_master_server_id_1e44448f
       field: sql.metrics.numeric.master_server_id
       target_field: mysql.replica_status.source.server.id
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_master_uuid_b01c60ff
       field: sql.metrics.string.master_uuid
       target_field: mysql.replica_status.source.server.uuid
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_master_ssl_allowed_c2636bbf
       field: sql.metrics.string.master_ssl_allowed
       target_field: mysql.replica_status.source.ssl.allowed
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_master_ssl_ca_file_0d0a499e
       field: sql.metrics.string.master_ssl_ca_file
       target_field: mysql.replica_status.source.ssl.ca_file
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_master_ssl_ca_path_eb2f60c2
       field: sql.metrics.string.master_ssl_ca_path
       target_field: mysql.replica_status.source.ssl.ca_path
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_master_ssl_cert_fa5d0c9e
       field: sql.metrics.string.master_ssl_cert
       target_field: mysql.replica_status.source.ssl.cert
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_master_ssl_cipher_8a3d4311
       field: sql.metrics.string.master_ssl_cipher
       target_field: mysql.replica_status.source.ssl.cipher
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_master_ssl_crl_e99a4786
       field: sql.metrics.string.master_ssl_crl
       target_field: mysql.replica_status.source.ssl.crl
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_master_ssl_crlpath_302fc2b6
       field: sql.metrics.string.master_ssl_crlpath
       target_field: mysql.replica_status.source.ssl.crl_path
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_master_ssl_key_35ee358f
       field: sql.metrics.string.master_ssl_key
       target_field: mysql.replica_status.source.ssl.key
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_master_tls_version_0e109dd4
       field: sql.metrics.string.master_tls_version
       target_field: mysql.replica_status.source.tls_version
       ignore_missing: true
   - rename:
+      tag: rename_sql_metrics_string_master_ssl_verify_server_cert_5679d807
       field: sql.metrics.string.master_ssl_verify_server_cert
       target_field: mysql.replica_status.source.ssl.is_verify_server_cert
       ignore_missing: true
       on_failure:
         - set:
+            tag: set_error_message_2352319f
             field: error.message
             value: "{{{_ingest.on_failure_message}}}"
   - remove:
+     tag: remove_sql_9e858a48
      field:
        - sql
   - script:
+      tag: script_91e2e2ee
       description: "Drops null/empty values recursively."
       lang: painless
       source: |
@@ -519,14 +637,20 @@ processors:
         }
         drop(ctx);
   - set:
+      tag: set_event_kind_ec40a6bb
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
 on_failure:
-  - append:
-      field: error.message
-      value: '{{{_ingest.on_failure_message}}}'
-  - append:
+  - set:
+      tag: set_event_kind_96865397
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
+  - append:
+      tag: append_error_message_e1c4d041
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
