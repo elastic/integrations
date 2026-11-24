@@ -2,24 +2,43 @@
 description: "Parses the file events"
 processors:
   - dissect:
+      tag: dissect_message_1bb8b8d6
       field: message
       pattern: "%{} 'Upload' for path '%{vsphere.log.file.path}' %{} '%{client.ip}' %{} '%{event.outcome}'"
       if: "ctx.message.contains('Upload') ?: false"
   - lowercase:
+      tag: lowercase_event_outcome_69d7a8d8
       field: event.outcome
       if: ctx.event?.outcome != null
   - append:
+      tag: append_event_category_93bcb067
       field: event.category
       value: file
   - append:
+      tag: append_event_type_1a8e157f
       field: event.type
       value: creation
   - set:
+      tag: set_source_ip_b217939c
       field: source.ip
       copy_from: client.ip
       if: ctx.client?.ip != null
   - append:
+      tag: append_related_ip_f909d94e
       field: related.ip
       value: "{{client.ip}}"
       allow_duplicates: false
       if: ctx.client?.ip != null
+on_failure:
+  - set:
+      tag: set_event_kind_513a08f7
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_a778cb86
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

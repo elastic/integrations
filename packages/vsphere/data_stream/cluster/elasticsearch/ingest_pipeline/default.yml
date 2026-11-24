@@ -2,9 +2,11 @@
 description: Pipeline for cluster
 processors:
 - set:
+    tag: set_ecs_version_0b1018eb
     field: ecs.version
     value: '8.11.0'
 - script: 
+    tag: script_fa9afa6a
     if: ctx.vsphere?.cluster?.triggered_alarms != null
     lang: painless
     source: >
@@ -21,14 +23,17 @@ processors:
         ctx.alerts = alerts;
         ctx.warnings = warnings;
 - rename:
+    tag: rename_alerts_e9c62856
     field: alerts
     target_field: vsphere.cluster.alert.names
     ignore_missing: true
 - rename:
+    tag: rename_warnings_72bd3471
     field: warnings
     target_field: vsphere.cluster.warning.names
     ignore_missing: true
 - script:
+    tag: script_9f1f33d6
     description: "Drops null/empty values recursively."
     lang: painless
     source: |
@@ -46,6 +51,15 @@ processors:
       }
       drop(ctx);
 on_failure:
-- set:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - set:
+      tag: set_event_kind_6a8f8f27
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_09b12aea
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

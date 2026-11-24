@@ -2,41 +2,49 @@
 description: "Parse login and logout events from VMware vSphere/vCenter"
 processors:
 - dissect:
+    tag: dissect_message_055b54b9
     field: message
     pattern: "%{} user %{user.name}@%{user.domain}"
     if: 'ctx.message?.contains(''Authenticated user'') ?: false'
     description: Authenticated user
 - dissect:
+    tag: dissect_message_65907989
     field: message
     pattern: "%{}User %{user.name}@%{client.ip} %{_tmp.event} as %{user_agent.original}"
     if: 'ctx?.message != null && (ctx.message?.contains(''logged in as'') && ctx.message?.contains(''User ''))'
     description: logged in as User
 - dissect:
+    tag: dissect_message_15e69d69
     field: message
     pattern: "%{} Shared secret from %{client.ip} %{_tmp.event} as %{user_agent.original}"
     if: 'ctx?.message != null && (ctx.message?.contains(''logged in as'') && ctx.message?.contains(''Shared secret''))'
     description: logged in as Shared Secret
 - dissect:
+    tag: dissect_message_dc2bb783
     field: message
     pattern: "%{} SSL thumbprint logged in as %{user_agent.original}"
     if: 'ctx?.message != null && (ctx.message?.contains(''logged in as'') && ctx.message?.contains(''SSL thumbprint''))'
     description: SSL thumbprint logged in
 - set:
+    tag: set_user_name_39538cec
     field: user.name
     value: "shared_secret_login"
     if: 'ctx?.message != null && (ctx.message?.contains(''logged in as'') && ctx.message?.contains(''Shared secret''))'
     description: "Set Shared secret as username"
 - set:
+    tag: set_user_name_ac124858
     field: user.name
     value: "ssl_thumbprint_login"
     if: 'ctx?.message != null && (ctx.message?.contains(''logged in as'') && ctx.message?.contains(''SSL thumbprint''))'
     description: "Set SSL thumbprint as username"
 - set:
+    tag: set_tmp_event_2620f04f
     field: _tmp.event
     value: "logged in"
     if: 'ctx?.message != null && (ctx.message?.contains(''logged in as'') && ctx.message?.contains(''Shared secret'') == false && ctx.message?.contains(''User '') == false)'
     description: "Set tmp_event for non-user/secret logins"
 - dissect:
+    tag: dissect_message_ca44b3f9
     field: message
     pattern: "%{}User %{user.name}@%{client.ip} %{_tmp.event} out (login time: %{event.start},
       number %{}: %{vsphere.log.api.invocations}, %{}: %{user_agent.original}"
@@ -44,52 +52,61 @@ processors:
     ignore_failure: true
     description: logged out version 1
 - dissect:
+    tag: dissect_message_7bec04dc
     field: message
     pattern: "%{}User {Name: %{user.name}, Domain: %{user.domain}} %{}"
     if: 'ctx.message?.contains(''logged out'') ?: false'
     ignore_failure: true
     description: logged out version 2
 - dissect:
+    tag: dissect_message_62e42374
     field: message
     pattern: "[%{}] [] [%{}] [%{event.outcome} login %{user.name} from %{client.ip} %{}"
     if: 'ctx.message?.contains(''Failed login'') ?: false'
     ignore_failure: true
     description: failed login
 - dissect:
+    tag: dissect_message_eb58aeec
     field: message
     pattern: 'Received %{_tmp.status} from %{client.ip} port %{client.port}:%{destination.port}:
       %{}'
     if: 'ctx.message?.startsWith(''Received'') ?: false'
     description: Received messages
 - dissect:
+    tag: dissect_message_1e1939fd
     field: message
     pattern: "%{_tmp.status} from %{client.ip} port %{client.port} %{}"
     if: 'ctx.message?.startsWith(''Disconnected'') ?: false'
     description: Disconnect messages
 - grok:
+    tag: grok_message_348999a3
     field: message
     patterns:
     - 'Connection %{DATA:_tmp.status} by %{IPORHOST:client.ip} port %{POSINT:client.port}( %{GREEDYDATA})?$'
     if: 'ctx.message?.startsWith(''Connection'') ?: false'
     description: Connection messages
 - dissect:
+    tag: dissect_message_4875e536
     field: message
     pattern: '%{} Logged in user: "%{user.domain}\%{user.name}"'
     if: 'ctx.message?.contains(''Logged in user:'') ?: false'
     ignore_failure: true
     description: 'Logged in user:'
 - dissect:
+    tag: dissect_message_523f6194
     field: message
     pattern: "%{} User {Name: %{user.name}, Domain: %{user.domain}} %{}"
     if: 'ctx?.message?.contains(''logged in successfully'') ?: false'
     ignore_failure: true
     description: logged in successfully
 - dissect:
+    tag: dissect_user_name_1e493ec0
     field: user.name
     pattern: "%{user.domain}\\%{user.name}"
     if: 'ctx.user?.name?.contains(''\\'') ?: false'
     description: "Split user and domain"
 - set:
+    tag: set_event_outcome_1eda18a1
     field: event.outcome
     value: success
     if: "ctx.event.outcome == null && (ctx.user?.name != null || ctx.user?.domain != null)"
@@ -97,72 +114,101 @@ processors:
     # does not always add `successfully logged in` and instead just mentions
     # user abc logged in
 - set:
+    tag: set_event_outcome_bd4d6a85
     field: event.outcome
     value: failure
     if: 'ctx.event?.outcome?.toLowerCase()?.startsWith(''f'') ?: false'
 - grok:
+    tag: grok_user_agent_original_06400360
     field: user_agent.original
     patterns:
     - "%{DATA:user_agent.original}(?:\\]|\\)+)"
     if: ctx.user_agent?.original != null && (ctx.user_agent.original.contains(')')
       || ctx.user_agent.original.contains(']'))
 - user_agent:
+    tag: user_agent_user_agent_original_eaec59d6
     field: user_agent.original
     if: ctx.user_agent?.original != null
 - set:
+    tag: set_event_end_59866aa4
     field: event.end
     value: "{{@timestamp}}"
     if: ctx.event?.start != null
 - date:
+    tag: date_event_start_0d485d2f
     field: event.start
     target_field: event.start
     if: ctx.event?.start != null
     formats:
     - EEEE, dd MMMM, yyyy hh:mm:ss a
 - script:
+    tag: script_7f8968cf
     source: |-
       ZonedDateTime start = ZonedDateTime.parse(ctx.event.start);
        ZonedDateTime end = ZonedDateTime.parse(ctx.event.end);
        ctx.event.duration= ChronoUnit.NANOS.between(start, end);
     if: ctx.event?.end != null && ctx.event?.start != null
 - set:
+    tag: set_event_action_525e2f06
     field: event.action
     value: login
     if: 'ctx.message?.toLowerCase().contains(''logged in'') ?: false'
 - set:
+    tag: set_event_action_04a440da
     field: event.action
     value: logout
     if: 'ctx.message?.toLowerCase().contains(''logged out'') ?: false'
 - append:
+    tag: append_event_type_87c398fb
     field: event.type
     value: info
 - append:
+    tag: append_event_category_37acf2c2
     field: event.category
     value: authentication
 - convert:
+    tag: convert_client_port_8e9457cc
     field: client.port
     type: long
     if: ctx.client?.port != null
 - convert:
+    tag: convert_destination_port_f8b794f5
     field: destination.port
     type: long
     if: ctx.destination?.port != null
 - gsub:
+    tag: gsub_vsphere_log_api_invocations_131419f8
     field: vsphere.log.api.invocations
     pattern: ",|\\."
     replacement: ""
     description: "The vsphere log contains either , or . as a thousand seperator. Thus 37,133 api invocations are 37133 for the long convert"
     if: ctx.vsphere?.log?.api?.invocations instanceof String && ctx.vsphere.log.api.invocations.contains(',')
 - convert:
+    tag: convert_vsphere_log_api_invocations_bf99d2e8
     field: vsphere.log.api.invocations
     type: long
     if: ctx.vsphere?.log?.api?.invocations != null
 - set:
+    tag: set_source_ip_bc8115fc
     field: source.ip
     copy_from: client.ip
     if: ctx.client?.ip != null
 - append:
+    tag: append_related_ip_4228bcf0
     field: related.ip
     value: "{{client.ip}}"
     allow_duplicates: false
     if: ctx.client?.ip != null
+on_failure:
+  - set:
+      tag: set_event_kind_12d45608
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_c62eba6e
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
