@@ -2,22 +2,27 @@
 description: "Pipeline for parsing Apache HTTP Server access logs. Requires the geoip and user_agent plugins."
 processors:
   - set:
+      tag: set_event_ingested_e077bd4b
       field: event.ingested
       value: '{{_ingest.timestamp}}'
   - set:
+      tag: set_ecs_version_f3cd430f
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_5f3cb146
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
   - remove:
+      tag: remove_message_fb77aa0a
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - grok:
+      tag: grok_event_original_65b5f967
       field: event.original
       patterns:
       - '(%{IPORHOST:destination.domain}:?%{POSINT:destination.port}? )?(%{IPORHOST:source.address}:?%{POSINT:source.port}? )%{DATA:apache.access.identity} %{DATA:user.name} \[%{HTTPDATE:apache.access.time}\] "(%{DATA:apache.access.tls_handshake.error})?((%{WORD:http.request.method}?) %{DATA:_tmp.url_orig}? HTTP/%{NUMBER:http.version})?(%{WORD:http.request.method}? ?%{DATA:apache.access.http.request_headers}?(-)? %{DATA:_tmp.url_orig} HTTP/%{NUMBER:http.version})?(-)?" %{NUMBER:http.response.status_code:long} (?:%{NUMBER:http.response.body.bytes:long}|-)( %{NUMBER:apache.access.response_time})?( "%{DATA:http.request.referrer}")?( "%{DATA:user_agent.original}")?( X-Forwarded-For="%{ADDRESS_LIST:apache.access.remote_addresses}")?'
@@ -30,10 +35,12 @@ processors:
       pattern_definitions:
         ADDRESS_LIST: (%{IP})("?,?\s*(%{IP}))*
   - split:
+      tag: split_apache_access_remote_addresses_92f5ce55
       field: apache.access.remote_addresses
       separator: '"?,\s*'
       ignore_missing: true
   - set:
+      tag: set_network_forwarded_ip_39e0de9b
       field: network.forwarded_ip
       value: "{{{apache.access.remote_addresses.0}}}"
       if: ctx.apache?.access?.remote_addresses != null && ctx.apache.access.remote_addresses.length > 0
@@ -77,63 +84,79 @@ processors:
           ctx.client.ip = null;
         }
   - append:
+      tag: append_apache_access_remote_addresses_fbe0c7a4
       field: apache.access.remote_addresses
       value: ["{{source.address}}"]
       if: ctx.source?.address != null
   - uri_parts:
+      tag: uri_parts_tmp_url_orig_a354f67e
       field: _tmp.url_orig
       ignore_failure: true
   - remove:
+      tag: remove_tmp_9eb39aa2
       field:
         - _tmp
       ignore_missing: true
   - set:
+      tag: set_url_domain_3cfaa443
       field: url.domain
       value: "{{destination.domain}}"
       if: ctx.url?.domain == null && ctx.destination?.domain != null
   - set:
+      tag: set_event_kind_6e1b67ec
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_371995c4
       field: event.category
       value: web
   - set:
+      tag: set_event_outcome_d7797406
       field: event.outcome
       value: success
       if: "ctx.http?.response?.status_code != null && ctx.http.response.status_code < 400"
   - set:
+      tag: set_event_outcome_a23b4616
       field: event.outcome
       value: failure
       if: "ctx.http?.response?.status_code != null && ctx.http.response.status_code > 399"
   - grok:
+      tag: grok_source_address_58d32db6
       field: source.address
       ignore_missing: true
       patterns:
       - ^(%{IP:source.ip}|%{HOSTNAME:source.domain})$
   - remove:
+      tag: remove_event_created_2e52b4d4
       field: event.created
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_timestamp_b95a4580
       field: '@timestamp'
       target_field: event.created
   - date:
+      tag: date_apache_access_time_3bbef562
       field: apache.access.time
       target_field: '@timestamp'
       formats:
       - dd/MMM/yyyy:H:m:s Z
       ignore_failure: true
   - remove:
+      tag: remove_apache_access_time_33558c69
       field: apache.access.time
       ignore_failure: true
   - user_agent:
+      tag: user_agent_user_agent_original_6dd8fecc
       field: user_agent.original
       ignore_failure: true
   - geoip:
+      tag: geoip_source_ip_b83d9260
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_93f72bcd
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -142,18 +165,22 @@ processors:
       - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_8fcc88ae
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_0730678b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - set:
+      tag: set_tls_cipher_fbc3419d
       field: tls.cipher
       value: '{{apache.access.ssl.cipher}}'
       if: ctx.apache?.access?.ssl?.cipher != null
   - script:
+      tag: script_a1691b24
       lang: painless
       if: ctx.apache?.access?.ssl?.protocol != null
       source: >-
@@ -168,53 +195,65 @@ processors:
         }
         ctx.tls.version_protocol = parts[0];
   - convert:
+      tag: convert_source_address_c0a1d491
       field: source.address
       type: ip
       ignore_missing: true
       on_failure:
           - set:
+              tag: set_tmp_host_4778ed70
               field: tmp_host
               copy_from: source.address
           - append:
+              tag: append_related_hosts_2555d9de
               field: related.hosts
               value: '{{{tmp_host}}}'
               allow_duplicates: false
               if: "ctx.tmp_host != null"
           - set:
+              tag: set_tmp_host_eb20a198
               field: tmp_host
               value: ""
               if: "ctx.tmp_host != null"
   - append:
+      tag: append_related_ip_b9eeed85
       field: related.ip
       value: '{{{source.address}}}'
       allow_duplicates: false
       if: "ctx.tmp_host == null"
   - convert:
+      tag: convert_destination_domain_1e63ccbe
       field: destination.domain
       type: ip
       ignore_missing: true
       on_failure:
         - set:
+            tag: set_tmp_host_0a34f02c
             field: tmp_host
             copy_from: destination.domain
         - append:
+            tag: append_related_hosts_9bdb8d00
             field: related.hosts
             value: '{{{tmp_host}}}'
             allow_duplicates: false
             if: "ctx.tmp_host != null"
         - set:
+            tag: set_tmp_host_217a2739
             field: tmp_host
             value: ""
             if: "ctx.tmp_host != null"
   - convert:
+      tag: convert_destination_port_821bb92c
       field: destination.port
       type: long
       if: "ctx.destination?.port != null"
   - convert:
+      tag: convert_source_port_38128387
       field: source.port
       type: long
       if: "ctx.source?.port != null"
   - append:
+      tag: append_related_ip_37c6b8e2
       field: related.ip
       value: '{{{destination.domain}}}'
       allow_duplicates: false
@@ -226,9 +265,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_39df38c6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
+      tag: script_f96ee05e
       lang: painless
       source: |-
         boolean drop(Object o) {
@@ -247,5 +288,14 @@ processors:
       description: Drops null and empty values recursively from the Elasticsearch document context.
 on_failure:
   - set:
+      tag: set_event_kind_ef5fece5
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_3ceb6f8e
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
