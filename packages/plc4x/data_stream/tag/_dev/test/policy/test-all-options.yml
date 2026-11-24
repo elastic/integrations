@@ -1,0 +1,20 @@
+vars:
+  hosts:
+    - modbus-tcp://plc-1.example.com:502
+    - modbus-tcp://plc-2.example.com:502
+  timeout: 30s
+  condition: ${host.name} == 'edge-1'
+data_stream:
+  vars:
+    period: 30s
+    plc_tags: |
+      - address: "holding-register:11:INT"
+        name: offset
+    tags:
+      - plc4x-tag
+      - plant-a
+    processors: |
+      - add_fields:
+          target: site
+          fields:
+            line: "2"

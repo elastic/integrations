@@ -1,0 +1,42 @@
+type: metrics
+title: PLC tag values
+streams:
+  - input: plc4x/metrics
+    title: PLC tag values
+    description: Read the values of PLC tags.
+    vars:
+      - name: period
+        type: text
+        title: Period
+        description: How often the tags are read.
+        multi: false
+        required: true
+        show_user: true
+        default: 10s
+      - name: plc_tags
+        type: yaml
+        title: PLC tags
+        description: >-
+          PLC tags to read. Each entry has an `address` in PLC4X Modbus syntax `<area>:<address>:<data type>`, for example `holding-register:1:REAL` or `input-register:5:UINT`, and an optional `name` that is added to the event. Addresses are 1-based. Coils and discrete inputs are not supported yet.
+        multi: false
+        required: true
+        show_user: true
+        default: |
+          - address: "holding-register:1:REAL"
+            name: temperature
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: false
+        show_user: false
+        default:
+          - plc4x-tag
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the events are shipped. See [Processors](https://www.elastic.co/docs/reference/fleet/agent-processors) for details.

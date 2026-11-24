@@ -1,0 +1,52 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: opcua
+      name: test-secured-opcua
+      streams:
+        - application_uri: urn:example:elastic-agent
+          client_certificate: /etc/elastic-agent/opcua/client.der
+          client_key: /etc/elastic-agent/opcua/client.key
+          condition: ${host.name} == 'edge-1'
+          data_stream:
+            dataset: opcua.node
+          hosts:
+            - opc.tcp://plc.example.com:4840
+          metricsets:
+            - node
+          nodes:
+            - id: ns=3;s=StepUp
+          password: ${SECRET_0}
+          period: 30s
+          processors:
+            - add_fields:
+                fields:
+                    line: "2"
+                target: site
+          security_mode: SignAndEncrypt
+          security_policy: Basic256Sha256
+          tags:
+            - opcua-node
+            - plant-a
+          timeout: 30s
+          username: elastic-reader
+      type: opcua/metrics
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - metrics-opcua.node-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

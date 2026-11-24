@@ -1,0 +1,42 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: opcua
+      name: test-default-opcua
+      streams:
+        - application_uri: urn:elastic:metricbeat:opcua
+          data_stream:
+            dataset: opcua.node
+          hosts:
+            - opc.tcp://plc.example.com:4840
+          metricsets:
+            - node
+          nodes:
+            - id: ns=3;s=StepUp
+              label: step
+            - id: ns=2;i=1001
+          period: 10s
+          security_mode: None
+          security_policy: None
+          tags:
+            - opcua-node
+          timeout: 10s
+      type: opcua/metrics
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - metrics-opcua.node-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []

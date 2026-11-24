@@ -1,0 +1,39 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: plc4x
+      name: test-default-plc4x
+      streams:
+        - data_stream:
+            dataset: plc4x.tag
+          hosts:
+            - modbus-tcp://plc.example.com:502?unit-identifier=1
+          metricsets:
+            - tag
+          period: 10s
+          plc_tags:
+            - address: holding-register:1:REAL
+              name: temperature
+            - address: input-register:5:UINT
+          tags:
+            - plc4x-tag
+          timeout: 10s
+      type: plc4x/metrics
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - metrics-plc4x.tag-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []

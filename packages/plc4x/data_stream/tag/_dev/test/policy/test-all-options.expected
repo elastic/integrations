@@ -1,0 +1,46 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: plc4x
+      name: test-all-options-plc4x
+      streams:
+        - condition: ${host.name} == 'edge-1'
+          data_stream:
+            dataset: plc4x.tag
+          hosts:
+            - modbus-tcp://plc-1.example.com:502
+            - modbus-tcp://plc-2.example.com:502
+          metricsets:
+            - tag
+          period: 30s
+          plc_tags:
+            - address: holding-register:11:INT
+              name: offset
+          processors:
+            - add_fields:
+                fields:
+                    line: "2"
+                target: site
+          tags:
+            - plc4x-tag
+            - plant-a
+          timeout: 30s
+      type: plc4x/metrics
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - metrics-plc4x.tag-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []

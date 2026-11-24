@@ -1,0 +1,127 @@
+format_version: "3.6.5"
+name: opcua
+title: OPC UA
+version: "0.1.0"
+description: Collect node values from OPC UA servers with Elastic Agent.
+type: integration
+categories:
+  - observability
+conditions:
+  kibana:
+    version: "^9.4.0"
+  elastic:
+    subscription: basic
+icons:
+  - src: /img/opcua-logo.svg
+    title: OPC UA logo
+    size: 64x64
+    type: image/svg+xml
+policy_templates:
+  - name: opcua
+    title: OPC UA node values
+    description: Read node values from OPC UA servers.
+    inputs:
+      - type: opcua/metrics
+        title: Collect OPC UA node values
+        description: Read the configured nodes from OPC UA servers.
+        vars:
+          - name: hosts
+            type: text
+            title: Endpoints
+            description: OPC UA endpoint URLs, for example `opc.tcp://plc.example.com:4840`. One session is opened per endpoint.
+            multi: true
+            required: true
+            show_user: true
+            default:
+              - opc.tcp://localhost:4840
+          - name: timeout
+            type: text
+            title: Timeout
+            description: Timeout for connecting and for each read request.
+            multi: false
+            required: false
+            show_user: false
+            default: 10s
+          - name: security_policy
+            type: select
+            title: Security policy
+            description: Security policy of the secure channel. Policies other than None need a client certificate and key.
+            multi: false
+            required: true
+            show_user: true
+            default: None
+            options:
+              - value: None
+                text: None
+              - value: Basic256Sha256
+                text: Basic256Sha256
+              - value: Aes128_Sha256_RsaOaep
+                text: Aes128_Sha256_RsaOaep
+              - value: Aes256_Sha256_RsaPss
+                text: Aes256_Sha256_RsaPss
+              - value: Basic256
+                text: Basic256 (deprecated)
+              - value: Basic128Rsa15
+                text: Basic128Rsa15 (deprecated)
+          - name: security_mode
+            type: select
+            title: Security mode
+            description: Message security mode. Must be None when the security policy is None, and Sign or SignAndEncrypt otherwise.
+            multi: false
+            required: true
+            show_user: true
+            default: None
+            options:
+              - value: None
+                text: None
+              - value: Sign
+                text: Sign
+              - value: SignAndEncrypt
+                text: SignAndEncrypt
+          - name: username
+            type: text
+            title: Username
+            description: User name for user name authentication. Anonymous authentication is used when it is empty.
+            multi: false
+            required: false
+            show_user: true
+          - name: password
+            type: password
+            title: Password
+            description: Password for user name authentication.
+            multi: false
+            required: false
+            show_user: true
+            secret: true
+          - name: client_certificate
+            type: text
+            title: Client certificate
+            description: Path to the PEM or DER encoded client certificate on the Elastic Agent host.
+            multi: false
+            required: false
+            show_user: false
+          - name: client_key
+            type: text
+            title: Client key
+            description: Path to the PEM or DER encoded private key of the client certificate on the Elastic Agent host.
+            multi: false
+            required: false
+            show_user: false
+          - name: application_uri
+            type: text
+            title: Application URI
+            description: Application URI of the client. It must match the URI in the client certificate.
+            multi: false
+            required: false
+            show_user: false
+            default: urn:elastic:metricbeat:opcua
+          - name: condition
+            type: text
+            title: Condition
+            description: Condition to filter when to collect this input. See [Dynamic Input Configuration](https://www.elastic.co/docs/reference/fleet/dynamic-input-configuration) for details.
+            multi: false
+            required: false
+            show_user: false
+owner:
+  github: elastic/obs-infraobs-integrations
+  type: elastic
