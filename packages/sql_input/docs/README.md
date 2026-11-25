@@ -33,7 +33,9 @@ The Oracle driver requires the 64-bit Oracle Instant Client on the host that run
 - Windows: `oci.dll`
 - macOS: `libclntsh.dylib`
 
-If the library can't be found, the input fails with an error such as `DPI-1047: Cannot locate a 64-bit Oracle Client library`. Make sure the library is available to the Elastic Agent service, for example through `ldconfig` or the `LD_LIBRARY_PATH` environment variable. When Elastic Agent runs in a container, the library must be available inside the container. For detailed steps, refer to [Oracle Instant Client](https://www.elastic.co/docs/reference/integrations/oracle#oracle-instant-client) in the Oracle integration documentation. Oracle Instant Client is third-party software that you install and license separately.
+If the library can't be found, the input fails with an error such as `DPI-1047: Cannot locate a 64-bit Oracle Client library`. Make sure the library is available to the Elastic Agent service, for example through `ldconfig` or the `LD_LIBRARY_PATH` environment variable. When Elastic Agent runs in a container, the library must be available inside the container.
+
+For installation steps, refer to [Oracle Instant Client](https://www.elastic.co/docs/reference/integrations/oracle#oracle-instant-client) in the Oracle integration documentation. Oracle Instant Client is third-party software that you install and license separately.
 :::
 
 Two types of host configurations are supported:
