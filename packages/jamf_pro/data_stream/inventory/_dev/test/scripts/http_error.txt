@@ -1,16 +1,5 @@
-# Test that collection resumes after the inventory request returns a non-200
-# response.
-#
-# The mock answers the first inventory request with a 401 and later requests
-# with a page of two computers. A 401 is used because the input retries 5xx
-# responses itself, so they only reach the program once retries run out. The non-200 branch returned a new object
-# rather than the state with an error added, so page_size, sections and the
-# other configuration values were lost. Every later evaluation then failed with
-# "no such key", and no inventory was collected until the agent restarted.
-#
-# This lives in a scripts test rather than a system test because the error
-# document carries event.kind pipeline_error, which the system test runner
-# treats as a failure.
+# The first request fails with a 401. Without the fix every later poll fails
+# with "no such key" and nothing is collected.
 
 [!external_stack] skip 'Skipping external stack test.'
 [!exec:jq] skip 'Skipping test requiring absent jq command'
@@ -21,9 +10,7 @@ docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} jamf-m
 add_package -profile ${CONFIG_PROFILES}/${PROFILE}
 add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
 
-# One error document for the 401 and the two computers from the next poll. The
-# confirm duration covers several polls: without the fix each poll adds another
-# error document and no computer is collected.
+# One error and two computers, steady over several polls.
 get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 3 -confirm 45s -timeout 5m ${DATA_STREAM_NAME}
 cp stdout got_docs.json
 
@@ -78,7 +65,7 @@ rules:
             - application/json
         body: |-
           {"access_token":"xxxx","expires_in":3600,"token_type":"Bearer"}
-  # Requests after the first page carry a filter. Nothing newer is available.
+  # Requests with a cursor: nothing newer.
   - path: /api/v1/computers-inventory
     methods: [GET]
     query_params:
@@ -90,9 +77,7 @@ rules:
             - application/json
         body: |-
           {"totalCount":0,"results":[]}
-  # The first request fails. Responses roll, so the second one returns the
-  # page. The program only makes an unfiltered request again if it has lost
-  # its cursor.
+  # First request fails, then the page is returned.
   - path: /api/v1/computers-inventory
     methods: [GET]
     responses:
