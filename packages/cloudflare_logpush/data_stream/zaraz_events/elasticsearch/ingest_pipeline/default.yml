@@ -195,9 +195,10 @@ processors:
       ignore_empty_value: true
 
   # cloudflare_logpush.zaraz_events.*
-  # Body and EventDetails are documented as objects without a fixed schema, so
-  # they are kept as flattened fields. A value that arrives as a JSON-encoded
-  # string is decoded first.
+  # Body, EventDetails and RequestHeaders are documented as objects without a
+  # fixed schema, so they are kept as flattened fields. A value that arrives as
+  # a JSON-encoded string is decoded first. A value that is not an object after
+  # decoding is not renamed, because a flattened field rejects scalar values.
   - json:
       tag: json_json_Body
       field: json.Body
@@ -212,6 +213,7 @@ processors:
       field: json.Body
       target_field: cloudflare_logpush.zaraz_events.body
       ignore_missing: true
+      if: ctx.json?.Body instanceof Map
   - json:
       tag: json_json_EventDetails
       field: json.EventDetails
@@ -226,6 +228,7 @@ processors:
       field: json.EventDetails
       target_field: cloudflare_logpush.zaraz_events.event_details
       ignore_missing: true
+      if: ctx.json?.EventDetails instanceof Map
   - json:
       tag: json_json_RequestHeaders
       field: json.RequestHeaders
@@ -251,40 +254,34 @@ processors:
             tag: append_error_message_script_lowercase_json_RequestHeaders_keys
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # http.*
+  - rename:
+      tag: rename_json_RequestHeaders_referer_to_http_request_referrer
+      field: json.RequestHeaders.referer
+      target_field: http.request.referrer
+      ignore_missing: true
+      if: ctx.json?.RequestHeaders instanceof Map
+
+  # user_agent.*
+  - rename:
+      tag: rename_json_RequestHeaders_user-agent_to_user_agent_original
+      field: json.RequestHeaders.user-agent
+      target_field: user_agent.original
+      ignore_missing: true
+      if: ctx.json?.RequestHeaders instanceof Map
+  - user_agent:
+      tag: user_agent_user_agent_original
+      field: user_agent.original
+      ignore_missing: true
+
+  # Remaining request headers, keyed by lowercased header name.
   - rename:
       tag: rename_json_RequestHeaders_to_cloudflare_logpush_zaraz_events_request_headers
       field: json.RequestHeaders
       target_field: cloudflare_logpush.zaraz_events.request.headers
       ignore_missing: true
       if: ctx.json?.RequestHeaders instanceof Map
-  - rename:
-      tag: rename_cloudflare_logpush_zaraz_events_request_headers_accept-language_to_accept_language
-      field: cloudflare_logpush.zaraz_events.request.headers.accept-language
-      target_field: cloudflare_logpush.zaraz_events.request.headers.accept_language
-      ignore_missing: true
-  - rename:
-      tag: rename_cloudflare_logpush_zaraz_events_request_headers_content-type_to_content_type
-      field: cloudflare_logpush.zaraz_events.request.headers.content-type
-      target_field: cloudflare_logpush.zaraz_events.request.headers.content_type
-      ignore_missing: true
-
-  # http.*
-  - rename:
-      tag: rename_cloudflare_logpush_zaraz_events_request_headers_referer_to_http_request_referrer
-      field: cloudflare_logpush.zaraz_events.request.headers.referer
-      target_field: http.request.referrer
-      ignore_missing: true
-
-  # user_agent.*
-  - rename:
-      tag: rename_cloudflare_logpush_zaraz_events_request_headers_user-agent_to_user_agent_original
-      field: cloudflare_logpush.zaraz_events.request.headers.user-agent
-      target_field: user_agent.original
-      ignore_missing: true
-  - user_agent:
-      tag: user_agent_user_agent_original
-      field: user_agent.original
-      ignore_missing: true
 
   # related.*
   - append:

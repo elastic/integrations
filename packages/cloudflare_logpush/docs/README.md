@@ -6153,8 +6153,8 @@ An example event for `zaraz_events` looks as following:
             "request": {
                 "headers": {
                     "accept": "*/*",
-                    "accept_language": "en-US,en;q=0.9",
-                    "content_type": "application/json"
+                    "accept-language": "en-US,en;q=0.9",
+                    "content-type": "application/json"
                 }
             }
         }
@@ -6261,9 +6261,7 @@ An example event for `zaraz_events` looks as following:
 | azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
 | cloudflare_logpush.zaraz_events.body | Zaraz incoming request body. | flattened |
 | cloudflare_logpush.zaraz_events.event_details | Zaraz log event details. | flattened |
-| cloudflare_logpush.zaraz_events.request.headers.accept | Value of the Accept request header. | keyword |
-| cloudflare_logpush.zaraz_events.request.headers.accept_language | Value of the Accept-Language request header. | keyword |
-| cloudflare_logpush.zaraz_events.request.headers.content_type | Value of the Content-Type request header. | keyword |
+| cloudflare_logpush.zaraz_events.request.headers | Zaraz incoming request headers, keyed by lowercased header name. The Referer and User-Agent headers are mapped to `http.request.referrer` and `user_agent.original`. | flattened |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
