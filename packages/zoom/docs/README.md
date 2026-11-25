@@ -9,10 +9,11 @@ This integration collects data using two complementary methods:
 - **Webhook**: a real-time HTTP listener that receives event notifications pushed by Zoom (meeting, webinar, recording, user, account, phone, team chat, and Zoom Room events).
 - **REST API**: a periodic poll of the Zoom REST API to collect the sign in / sign out **activity** report, the **operation** logs report, and the **meeting_activity** logs report for an account.
 
-## Elastic Managed Enabled Integration
+## Elastic Managed enabled integration
 
-Elastic Managed integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Elastic Managed integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
-Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it.
+
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ### Compatibility
 
@@ -259,6 +260,7 @@ An example event for `webhook` looks as following:
 | zoom.creation_type | Creation type | keyword |
 | zoom.master_account_id | Master Account related to a specific Sub Account | keyword |
 | zoom.meeting.duration | The duration of a meeting in minutes | long |
+| zoom.meeting.end_time | Date and time the meeting ended | date |
 | zoom.meeting.host_id | The UserID of the configured meeting host | keyword |
 | zoom.meeting.id | Unique ID of the related meeting | keyword |
 | zoom.meeting.issues | When a user reports an issue with the meeting, for example: "Unstable audio quality" | keyword |
@@ -373,6 +375,7 @@ An example event for `webhook` looks as following:
 | zoom.user.version | Version of the client used by the user | keyword |
 | zoom.webinar.agenda | The configured agenda of the webinar | keyword |
 | zoom.webinar.duration | Duration of the webinar in minutes | long |
+| zoom.webinar.end_time | The date and time when the webinar ended | date |
 | zoom.webinar.host_id | UserID for the configured host of the webinar | keyword |
 | zoom.webinar.id | Unique ID for the related webinar | keyword |
 | zoom.webinar.issues | Any reported issues about a webinar is reported in this field | keyword |

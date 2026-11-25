@@ -13,14 +13,16 @@ inputs:
                 state
               :
                 (
-                  state.?want_more.orValue(false) ?
+                  // A page token belongs to the filter it was issued under, so keep that filter
+                  // while a token is stored, including after an error or a restart.
+                  (state.?want_more.orValue(false) || state.?cursor.next_page.token.hasValue()) ?
                     state
                   :
                     state.with(
                       {
                         "cursor": state.?cursor.orValue({}).with(
                           {
-                            "list_updated_at_gte": state.?cursor.?last_update_at.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
+                            "list_updated_at_gte": state.?cursor.last_update_at.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
                           }
                         ),
                       }
@@ -49,13 +51,27 @@ inputs:
                           {
                             "cursor": {
                               ?"last_update_at": state.?cursor.?last_update_at,
+                              ?"seen": state.?cursor.seen,
                               ?"list_updated_at_gte": has_more_list ? optional.of(state.cursor.list_updated_at_gte) : optional.none(),
-                              "worklist": body,
+                              "worklist": body.with(
+                                {
+                                  // updatedAt__gte is inclusive, so the threat that set the cursor comes back every poll.
+                                  "data": body.?data.orValue(null).as(d, (type(d) == list) ? d : []).filter(t,
+                                    !(
+                                      t.?threatInfo.updatedAt.orValue("") == state.?cursor.last_update_at.orValue("") &&
+                                      has(t.id) && state.?cursor.seen.orValue([]).exists(s, s == t.id)
+                                    )
+                                  ),
+                                }
+                              ),
                               "next_page": {
                                 ?"token": has_more_list ? optional.of(body.pagination.nextCursor) : optional.none(),
                               },
                               "has_more_timeline": false,
                             },
+                            // A fetch that used a stored page token continues an interrupted poll. Mark it so that
+                            // a last page with nothing new still publishes the placeholder that stores the cursor.
+                            "want_more": state.?cursor.next_page.token.hasValue(),
                           }
                         )
                       )
@@ -80,71 +96,122 @@ inputs:
                 )
             ).as(state,
               state.with(
-                has(state.events) ? // Exit early due to GET failure.
+                // Exit early due to GET failure. Some versions of the input keep an empty events array
+                // from an evaluation that published nothing; that is not a failure.
+                (type(state.?events.orValue(null)) == map && has(state.events.error)) ?
                   state
                 : !has(state.?cursor.worklist) ?
                   state
                 : state.?cursor.worklist.data[0].hasValue() ?
                   state.cursor.worklist.data[0].as(threat,
-                    (state.enable_star_rule_enrichment && has(threat.id)) ?
-                      request(
-                        "GET",
-                        state.url.trim_right("/") + "/" + string(threat.id) + "/timeline?" + {
-                          "limit": [string(state.page_size)],
-                          "sortBy": ["createdAt"],
-                          "sortOrder": ["desc"],
-                          ?"cursor": state.?cursor.?next_chain.token.optMap(v, [v]),
-                        }.format_query()
-                      ).with(
-                        {
-                          "Header": {
-                            "Authorization": ["ApiToken " + state.api_token],
-                          },
-                        }
-                      ).do_request().as(resp, (resp.StatusCode == 200) ?
-                        resp.Body.decode_json().as(body,
-                          (body.?pagination.?nextCursor.orValue(null) != null).as(has_more_timeline,
-                            {
-                              "events": body.?data[0].hasValue() ?
-                                body.data.map(e,
-                                  {
-                                    "message": threat.with(
-                                      {
-                                        "timeline": e.with(
-                                          {
-                                            "threatId": e.?threatId.orValue(threat.id),
-                                          }
-                                        ),
-                                      }
-                                    ).encode_json(),
-                                  }
-                                )
-                              :
-                                [{"message": threat.encode_json()}],
-                              "cursor": has_more_timeline ?
-                                state.cursor.with(
-                                  {
-                                    "has_more_timeline": has_more_timeline,
-                                    "next_chain": {
-                                      ?"token": optional.of(body.pagination.nextCursor),
-                                    },
-                                  }
-                                )
-                              :
-                                state.cursor.with(
-                                  {
-                                    "has_more_timeline": has_more_timeline,
-                                    "worklist": {"data": tail(state.cursor.worklist.data)},
-                                    "next_chain": {},
-                                    ?"last_update_at": threat.?threatInfo.updatedAt.or(state.?cursor.?last_update_at),
-                                  }
-                                ),
-                              "want_more": has_more_timeline || size(state.cursor.worklist.data) > 1 ||
-                              state.?cursor.?next_page.token.orValue(null) != null,
-                            }
+                    // IDs of the threats sent at the cursor timestamp, including this one.
+                    threat.?threatInfo.updatedAt.optMap(u,
+                      (u == state.?cursor.last_update_at.orValue("") ? state.?cursor.seen.orValue([]) : []) +
+                      threat.?id.optMap(id, [id]).orValue([])
+                    ).as(seen,
+                      (state.enable_star_rule_enrichment && has(threat.id)) ?
+                        request(
+                          "GET",
+                          state.url.trim_right("/") + "/" + string(threat.id) + "/timeline?" + {
+                            "limit": [string(state.page_size)],
+                            "sortBy": ["createdAt"],
+                            "sortOrder": ["desc"],
+                            ?"cursor": state.?cursor.?next_chain.token.optMap(v, [v]),
+                          }.format_query()
+                        ).with(
+                          {
+                            "Header": {
+                              "Authorization": ["ApiToken " + state.api_token],
+                            },
+                          }
+                        ).do_request().as(resp, (resp.StatusCode == 200) ?
+                          resp.Body.decode_json().as(body,
+                            (body.?pagination.?nextCursor.orValue(null) != null).as(has_more_timeline,
+                              {
+                                "events": body.?data[0].hasValue() ?
+                                  body.data.map(e,
+                                    {
+                                      "message": threat.with(
+                                        {
+                                          "timeline": e.with(
+                                            {
+                                              "threatId": e.?threatId.orValue(threat.id),
+                                            }
+                                          ),
+                                        }
+                                      ).encode_json(),
+                                    }
+                                  )
+                                :
+                                  [{"message": threat.encode_json()}],
+                                "cursor": has_more_timeline ?
+                                  state.cursor.with(
+                                    {
+                                      "has_more_timeline": has_more_timeline,
+                                      "next_chain": {
+                                        ?"token": optional.of(body.pagination.nextCursor),
+                                      },
+                                    }
+                                  )
+                                :
+                                  state.cursor.with(
+                                    {
+                                      "has_more_timeline": has_more_timeline,
+                                      "worklist": {"data": tail(state.cursor.worklist.data)},
+                                      "next_chain": {},
+                                      ?"last_update_at": threat.?threatInfo.updatedAt.or(state.?cursor.last_update_at),
+                                      ?"seen": seen,
+                                    }
+                                  ),
+                                "want_more": has_more_timeline || size(state.cursor.worklist.data) > 1 ||
+                                state.?cursor.?next_page.token.orValue(null) != null,
+                              }
+                            )
                           )
+                        : (resp.StatusCode == 404) ?
+                          {
+                            "events": [{"message": threat.encode_json()}],
+                            "cursor": state.cursor.with(
+                              {
+                                "worklist": {"data": tail(state.cursor.worklist.data)},
+                                "next_chain": {},
+                                "has_more_timeline": false,
+                                ?"last_update_at": threat.?threatInfo.updatedAt.or(state.?cursor.last_update_at),
+                                ?"seen": seen,
+                              }
+                            ),
+                            "want_more": size(state.cursor.worklist.data) > 1 || state.?cursor.next_page.token.orValue(null) != null,
+                          }
+                        :
+                          {
+                            "events": [
+                              {
+                                "error": {
+                                  "code": string(resp.StatusCode),
+                                  "id": resp.Status,
+                                  "message": "GET " + state.url.trim_right("/") + "/" + string(threat.id) + "/timeline: " + (
+                                    (size(resp.Body) != 0) ?
+                                      string(resp.Body)
+                                    :
+                                      resp.Status + " (" + string(resp.StatusCode) + ")"
+                                  ),
+                                },
+                              },
+                              {"message": threat.encode_json()},
+                            ],
+                            "cursor": state.cursor.with(
+                              {
+                                "worklist": {"data": tail(state.cursor.worklist.data)},
+                                "next_chain": {},
+                                "has_more_timeline": false,
+                                ?"last_update_at": threat.?threatInfo.updatedAt.or(state.?cursor.last_update_at),
+                                ?"seen": seen,
+                              }
+                            ),
+                            "want_more": size(state.cursor.worklist.data) > 1 || state.?cursor.next_page.token.orValue(null) != null,
+                          }
                         )
-                      : (resp.StatusCode == 404) ?
+                      :
                         {
                           "events": [{"message": threat.encode_json()}],
                           "cursor": state.cursor.with(
@@ -152,57 +219,25 @@ inputs:
                               "worklist": {"data": tail(state.cursor.worklist.data)},
                               "next_chain": {},
                               "has_more_timeline": false,
-                              ?"last_update_at": threat.?threatInfo.updatedAt.or(state.?cursor.?last_update_at),
+                              ?"last_update_at": threat.?threatInfo.updatedAt.or(state.?cursor.last_update_at),
+                              ?"seen": seen,
                             }
                           ),
-                          "want_more": size(state.cursor.worklist.data) > 1 || state.?cursor.?next_page.token.orValue(null) != null,
+                          "want_more": size(state.cursor.worklist.data) > 1 || state.?cursor.next_page.token.orValue(null) != null,
                         }
-                      :
-                        {
-                          "events": [
-                            {
-                              "error": {
-                                "code": string(resp.StatusCode),
-                                "id": resp.Status,
-                                "message": "GET " + state.url.trim_right("/") + "/" + string(threat.id) + "/timeline: " + (
-                                  (size(resp.Body) != 0) ?
-                                    string(resp.Body)
-                                  :
-                                    resp.Status + " (" + string(resp.StatusCode) + ")"
-                                ),
-                              },
-                            },
-                          ],
-                          "cursor": state.cursor.with(
-                            {
-                              "worklist": {"data": tail(state.cursor.worklist.data)},
-                              "next_chain": {},
-                              "has_more_timeline": false,
-                              ?"last_update_at": threat.?threatInfo.updatedAt.or(state.?cursor.?last_update_at),
-                            }
-                          ),
-                          "want_more": size(state.cursor.worklist.data) > 1 || state.?cursor.?next_page.token.orValue(null) != null,
-                        }
-                      )
-                    :
-                      {
-                        "events": [{"message": threat.encode_json()}],
-                        "cursor": state.cursor.with(
-                          {
-                            "worklist": {"data": tail(state.cursor.worklist.data)},
-                            "next_chain": {},
-                            "has_more_timeline": false,
-                            ?"last_update_at": threat.?threatInfo.updatedAt.or(state.?cursor.?last_update_at),
-                          }
-                        ),
-                        "want_more": size(state.cursor.worklist.data) > 1 || state.?cursor.?next_page.token.orValue(null) != null,
-                      }
+                    )
                   )
                 :
                   (state.?cursor.?next_page.token.orValue(null) != null) ?
                     {
                       "events": [{"retry": true}],
                       "want_more": true,
+                    }
+                  : state.?want_more.orValue(false) ?
+                    {
+                      // The last page had nothing new; store the cursor without its pagination token.
+                      "events": [{"retry": true}],
+                      "want_more": false,
                     }
                   :
                     {

@@ -1,0 +1,88 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects ChatGPT Enterprise conversation messages whose text matches known credential patterns (cloud keys, GitHub tokens, private keys, Slack/SendGrid tokens, Stripe/OpenAI/Anthropic keys, Vault/Docker tokens, JWTs, or Azure storage keys). Secrets pasted into chats can be retained in compliance logs and model context.",
+        "false_positives": [
+            "Documentation samples and example keys can match token patterns. Confirm the value is live before rotating it.",
+            "Approved prompt-security or DLP validation tests may intentionally submit synthetic secrets."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.id",
+                "user.email",
+                "message",
+                "openai_chatgpt_enterprise.conversation_message.conversation.id",
+                "openai_chatgpt_enterprise.conversation_message.conversation.title"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "OpenAI ChatGPT Enterprise Conversation Message Containing Credentials",
+        "note": "## Triage and analysis\n\n### Investigating OpenAI ChatGPT Enterprise Conversation Message Containing Credentials\n\nA conversation message matched a known credential pattern. Secrets pasted into ChatGPT can be retained in compliance logs and model context, and may later appear in shares or exports.\n\nEscalate when the value appears live, when the conversation is shared externally, or when downloads follow the message. Close as a false positive for clearly synthetic or documentation examples.\n\n#### Possible investigation steps\n\n- Read `message` on the alert and decide whether the match is a live secret, an example key, or incidental text.\n- Identify the user and conversation (`openai_chatgpt_enterprise.conversation_message.conversation.id` / title).\n- Look for nearby conversation shares, file downloads, or Codex activity from the same user.\n- Check whether the conversation was shared outside the intended audience after the message time.\n\n### False positive analysis\n\n- Documentation samples and intentional prompt-security tests can match token patterns. Confirm the value is live before rotating it.\n\n### Response and remediation\n\n- If the credential is live, rotate or revoke it and remove residual copies from shared conversations where possible.\n- Review subsequent shares and downloads for the same conversation.\n- Limit access to alerts and compliance logs that retain message text.\n",
+        "query": "from logs-openai_chatgpt_enterprise.conversation_message-* metadata _id, _version, _index\n| eval Esql.message_text = coalesce(message, \"\")\n| where\n    data_stream.dataset == \"openai_chatgpt_enterprise.conversation_message\" and\n    Esql.message_text is not null and\n    Esql.message_text != \"\" and\n    not Esql.message_text like \"*AKIAIOSFODNN7EXAMPLE*\" and\n    not Esql.message_text like \"*ASIAIOSFODNN7EXAMPLE*\" and\n    not Esql.message_text like \"*ghp_example*\" and\n    not Esql.message_text like \"*sk-ant-api03-test*\" and\n    (\n        Esql.message_text rlike \"\"\".*(AKIA|ASIA)[A-Z0-9]{16}.*\"\"\" or\n        Esql.message_text rlike \"\"\".*gh[pousr]_[A-Za-z0-9]{36}.*\"\"\" or\n        Esql.message_text rlike \"\"\".*github_pat_[A-Za-z0-9_]+.*\"\"\" or\n        Esql.message_text rlike \"\"\".*-----BEGIN [A-Z ]*PRIVATE KEY-----.*\"\"\" or\n        Esql.message_text rlike \"\"\".*xox[baprs]-[0-9]+-[0-9]+-[A-Za-z0-9]+.*\"\"\" or\n        Esql.message_text rlike \"\"\".*sk_live_[A-Za-z0-9]+.*\"\"\" or\n        Esql.message_text rlike \"\"\".*AIza[-A-Za-z0-9_]+.*\"\"\" or\n        Esql.message_text rlike \"\"\".*npm_[A-Za-z0-9]{36}.*\"\"\" or\n        Esql.message_text rlike \"\"\".*sk-ant-[A-Za-z0-9-]+.*\"\"\" or\n        Esql.message_text rlike \"\"\".*sk-[A-Za-z0-9]{20,}.*\"\"\" or\n        Esql.message_text rlike \"\"\".*hvs[.][A-Za-z0-9]+.*\"\"\" or\n        Esql.message_text rlike \"\"\".*dckr_pat_[-A-Za-z0-9_]+.*\"\"\" or\n        Esql.message_text rlike \"\"\".*SG[.][-A-Za-z0-9_]+[.][-A-Za-z0-9_]+.*\"\"\" or\n        Esql.message_text rlike \"\"\".*(AccountKey=|SharedAccessKey=)[-A-Za-z0-9+/=]+.*\"\"\" or\n        Esql.message_text rlike \"\"\".*eyJ[-A-Za-z0-9_]+[.]eyJ[-A-Za-z0-9_]+[.][-A-Za-z0-9_]+.*\"\"\"\n    )\n| keep\n    _id, _version, _index, @timestamp, message, user.id, user.email,\n    openai_chatgpt_enterprise.conversation_message.conversation.id,\n    openai_chatgpt_enterprise.conversation_message.conversation.title,\n    openai_chatgpt_enterprise.conversation_message.message.author.type,\n    openai_chatgpt_enterprise.conversation_message.message.id,\n    data_stream.*\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise",
+            "https://platform.openai.com/docs/compliance"
+        ],
+        "related_integrations": [
+            {
+                "package": "openai_chatgpt_enterprise",
+                "version": ">=0.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "message",
+                "type": "match_only_text"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "231c2ade-69c8-4415-b710-0c56f5f07e95",
+        "setup": "## Setup\n\nThis rule requires the OpenAI ChatGPT Enterprise integration to collect compliance logs into Elasticsearch.\n\nhttps://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise\n",
+        "severity": "high",
+        "tags": [
+            "Domain: GenAI",
+            "Platform: OpenAI",
+            "Data Source: OpenAI ChatGPT Enterprise",
+            "Service: OpenAI ChatGPT Enterprise",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Tactic: Credential Access",
+            "Mitre Atlas: AML.T0055",
+            "Mitre Atlas: AML.T0057"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "231c2ade-69c8-4415-b710-0c56f5f07e95_1",
+    "type": "security-rule"
+}

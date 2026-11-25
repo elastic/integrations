@@ -42,7 +42,7 @@ For private cloud, or admin users, the cloud endpoint can be altered to match yo
 For step-by-step instructions on how to set up an integration, see the
 [Getting started](https://www.elastic.co/docs/solutions/observability/get-started/quickstart-monitor-hosts-with-elastic-agent) guide.
 
-If you run on Elastic Cloud (Hosted or Serverless), this integration is available [agentless](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) from cluster version 8.17 onward. When agentless deployment is available, you don't need to install an Elastic Agent to gather these metrics.
+If you run on Elastic Cloud (Hosted or Serverless), this integration is available as an [Elastic Managed integration](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations). When an Elastic Managed integration is available, you don't need to install an Elastic Agent to gather these metrics. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
 ## Data streams reference
 
@@ -51,6 +51,8 @@ If you run on Elastic Cloud (Hosted or Serverless), this integration is availabl
 The `metrics-ess_billing.billing` data stream collects billing data from the Elastic Cloud Billing API. Each event represents ECU consumption for a billing line item. Line items are grouped by instance—an instance may be an Elastic Cloud Hosted deployment, a Serverless project, a cloud connected service, or another organization-level service (for example, Synthetics monitors).
 
 Field names such as `ess.billing.deployment_id` and `ess.billing.deployment_name` are used for all instance types for backward compatibility. For Serverless projects, `ess.billing.deployment_type` reflects the project type (for example, `observability` or `security`). For Hosted deployments, it is `deployment`.
+
+For Hosted deployments, `ess.billing.deployment_id` contains the ID of the deployment's Elasticsearch resource, as returned by the billing API. This is not the deployment ID shown in the Elastic Cloud console. Use `ess.billing.deployment_name` to identify the deployment.
 
 An example event for `billing` looks as following:
 
@@ -156,7 +158,7 @@ An example event for `billing` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | ess.billing.cloud.machine.type | The machine type of the instance (e.g., n2.68x16x45). | keyword |
 | ess.billing.cloud.service.type | The service type of the serverless project. | keyword |
-| ess.billing.deployment_id | ID of the billed instance (Hosted deployment, Serverless project, or other Elastic Cloud service). | keyword |
+| ess.billing.deployment_id | ID of the billed instance (Hosted deployment, Serverless project, or other Elastic Cloud service). For Hosted deployments, this is the ID of the deployment's Elasticsearch resource, not the deployment ID shown in the Elastic Cloud console. | keyword |
 | ess.billing.deployment_name | Name of the billed instance. | keyword |
 | ess.billing.deployment_tags | Tags associated with the billed Hosted deployment (when available). | keyword |
 | ess.billing.deployment_type | Instance type—for Hosted deployments this is `deployment`; for Serverless projects this is the project type (for example, `elasticsearch`, `observability`, or `security`). | keyword |

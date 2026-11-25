@@ -640,6 +640,21 @@ processors:
       allow_duplicates: false
       if: ctx.ses?.device_uid != null
   - convert:
+      field: ses.device_vhost
+      tag: convert_device_vhost_to_string_345061a0
+      type: string
+      if: ctx.ses?.device_vhost != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_error_message_device_vhost_225ca85f
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            tag: remove_ses_device_vhost_c5963cd8
+            field: ses.device_vhost
+            ignore_missing: true
+  - convert:
       field: ses.device_vhost_id
       tag: convert_device_vhost_id_to_string_0a08982e
       type: string
@@ -1281,6 +1296,10 @@ processors:
       if: ctx.ses?.category_id != null && ctx.ses.category_id == '6'
       tag: pipeline_category_diagnostic_1daba6c6
       ignore_missing_pipeline: true
+  - remove:
+      field: _tmp_launch
+      tag: remove_tmp_launch_88ed1571
+      ignore_missing: true
 
   - script:
       description: Convert size array to longs

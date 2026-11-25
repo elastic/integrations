@@ -1,0 +1,132 @@
+title: "Threat Feed Phishing"
+type: logs
+ilm_policy: logs-ti_whoisfreaks.threat_feed_phishing-default_policy
+streams:
+  - input: cel
+    title: "Phishing Domain Feed"
+    description: |-
+      The Phishing Domain Feed delivers a daily CSV file of domains observed hosting credential theft pages or impersonating trusted brands. Each feed begins with verified phishing seed domains, from which the pipeline extracts shared attributes such as registrant email, phone, organization, NS, MX, and CNAME records. These pivots are then matched across the WhoisFreaks domain database to surface related domains, often before they are reported on public blocklists. Security teams load the feed into mail gateways and SIEMs to block or investigate domains built for credential theft
+    template_path: cel.yml.hbs
+    vars:
+      - name: url
+        type: text
+        title: "URL"
+        description: |-
+          URL of the WhoisFreaks phishing threat feed endpoint, without query
+          parameters. The input builds the query string itself (`date`, `limit`,
+          `offset`, and `apiKey`).
+        required: true
+        show_user: false
+        default: https://files.whoisfreaks.com/v3.4/stream/threat-feed/phishing
+      - name: status_url
+        type: text
+        title: "Status URL"
+        description: |-
+          The public WhoisFreaks database file status endpoint. On each poll the
+          integration reads `threat_feed.phishing.last_update` and
+          `threat_feed.phishing.available_from` from this endpoint and pages through
+          the feed only when its date is newer than the last date already
+          ingested, so re-polling never re-ingests the same file. This endpoint is
+          public and does not require the API key.
+        required: true
+        show_user: false
+        default: https://files.whoisfreaks.com/v3.4/status
+      - name: page_limit
+        type: integer
+        title: "Page Size"
+        description: |-
+          Number of records requested per page (the `limit` query parameter sent to the feed
+          endpoint). The feed is paged with a dynamic `offset` until a page comes
+          back short, so this only controls memory and request count per poll, not
+          how much data is ingested. Larger pages mean fewer requests but more
+          memory per request. 5000 is a safe default; lower it on small agents.
+          Must be greater than 0.
+        required: true
+        show_user: true
+        default: 5000
+      - name: file_date
+        type: text
+        title: "File Date (optional)"
+        description: |-
+          Optional file date to ingest once, format yyyy-MM-dd (e.g. 2026-08-10). Leave empty
+          (recommended) to always fetch the latest file reported by the status endpoint
+          (`last_update`). When set, the date is validated against the range the status
+          endpoint reports for this feed (`available_from` to `last_update`). A valid date is fetched once, after which polls go back to
+          the latest file. An invalid or out-of-range date is reported once as an error event,
+          with no stream request for it, and polls continue with the latest file.
+        required: false
+        show_user: true
+        default: ""
+      - name: interval
+        type: text
+        title: "Interval"
+        description: |-
+          How often the status endpoint is checked for a new daily file. When a
+          newer date is found the whole file is paged in one burst; otherwise the
+          poll only calls the public status endpoint and makes no feed request.
+          The 1h default picks up a new file within an hour of publication and
+          retries failed pages hourly. Supports seconds, minutes and hours.
+        required: true
+        show_user: true
+        default: 1h
+      - name: ioc_expiration_duration
+        type: text
+        title: IOC Expiration Duration
+        description: >-
+          Indicator is expired after this duration since its last seen timestamp. Supported units for this parameter are d/h/m. Example `10d`. Default value is `90d` i.e., 90 days.
+        multi: false
+        required: true
+        show_user: true
+        default: "90d"
+      - name: replace_previous_file
+        type: bool
+        title: Replace indicators from the previous file
+        description: >-
+          Each daily file is a full snapshot of the feed. When enabled (the default), an indicator stays active only until the next daily file is due (the file date plus 2 days), so indicators that are missing from the newest file are removed from the latest (active) indicator index automatically. Indicators repeated in the new file stay active. When disabled, indicators stay active until IOC Expiration Duration passes after their last seen time, even if a newer file no longer lists them.
+        multi: false
+        required: true
+        show_user: true
+        default: true
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Supported time units are ns, us, ms, s, m, h.
+        multi: false
+        required: true
+        show_user: false
+        default: 5m
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        multi: false
+        default: false
+        required: false
+        show_user: false
+        description: >-
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. Disabling the request tracer will delete any stored traces. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable) for details.
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags for the data stream.
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - whoisfreaks-threat-feed-phishing
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

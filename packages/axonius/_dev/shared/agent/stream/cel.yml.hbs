@@ -68,17 +68,27 @@ program: |
           {
             "events": (has(body.assets) && size(body.assets) > 0) ?
               body.assets.map(assets,
-                assets.?specific_data.orValue([]).map(d,
-                  {
-                    "message": {
-                      ?"internal_axon_id": assets.?internal_axon_id,
-                      ?"adapters": assets.?adapters,
-                      ?"adapter_list_length": assets.?adapter_list_length,
-                      ?"labels": assets.?labels,
-                      "asset_type": state.worklist.asset_type_list[0],
-                      "event": d,
-                    }.encode_json(),
-                  }
+                (
+                  (state.worklist.asset_type_list[0] == "users") ?
+                    assets.?specific_data.orValue([]).map(d, d.?data.mail.orValue(null)).filter(m,
+                      type(m) == string && m != ""
+                    ).map(m, m.to_lower())
+                  :
+                    []
+                ).as(mails,
+                  assets.?specific_data.orValue([]).map(d,
+                    {
+                      "message": {
+                        ?"internal_axon_id": assets.?internal_axon_id,
+                        ?"asset_mail": (size(mails) > 0) ? optional.of(mails.min()) : optional.none(),
+                        ?"adapters": assets.?adapters,
+                        ?"adapter_list_length": assets.?adapter_list_length,
+                        ?"labels": assets.?labels,
+                        "asset_type": state.worklist.asset_type_list[0],
+                        "event": d,
+                      }.encode_json(),
+                    }
+                  )
                 )
               ).flatten()
             :

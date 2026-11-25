@@ -1,0 +1,12 @@
+id	test	detail_regex	pkg_regex	family	owner	next_check
+ci-infra	any	gvm: error|command not found|exit status 127	.	CI infra, no tests ran	ecosystem (CI)	retry; usually not in the issue list
+otel-no-data	system	no data streams matching .* appeared within|test service .* unexpectedly exited	_otel$|^claude_	OTel input got no data (collector startup race?)	upstream (agent/otel)	job log: sender connection refused; compare with tracked otel startup issue
+policy-diff	policy	unexpected content in policy	.	Fleet compiles the policy differently	elastic/kibana (Fleet)	diff the want/got block in .fail
+fleet-breaking-ack	script	breaking changes|acknowledge_breaking_changes|could not upgrade package	.	Fleet refuses unacknowledged breaking upgrade	elastic/elastic-package	check script test name/version
+hitcount-multiple	system	observed hit count [0-9]+ did not match expected	.	more docs than expected (mock pagination / cursor / short interval)	package owners	hit progression; mock config in _dev/deploy
+mindoc	system	minDoc must be >= 0	.	ES search bug on logsdb	elasticsearch	elastic/elastic-package#3877
+undeclared-field	system	is undefined|not defined	.	stack emits fields the package doesn't declare	package owners	field name in .fail
+pipeline-diff	pipeline	Expected results are different	.	pipeline output changed (order-only => Painless Set)	package owners	JUnit diff: order-only vs value change
+docs-errors	system	errors found in documents	.	error fields in ingested docs (pipeline_error, mapping)	package owners	error.message in job log / stack dump
+no-hits	system	could not find the expected hits	.	less data than expected	?	hit progression vs last passing build
+agent-log-errors	system	errors found while examining elastic-agent	.	error lines in agent logs	package owners	job log lines before the FAIL block

@@ -12,6 +12,13 @@ processors:
       copy_from: cloud.account.id
       override: false
       ignore_empty_value: true
+  - set:
+      tag: set_cloud_instance_id_from_dimensions
+      description: Populate cloud.instance.id from the InstanceId dimension. Aggregate datapoints without InstanceId are left untouched. Useful for Firehose bound metrics.
+      field: cloud.instance.id
+      copy_from: aws.dimensions.InstanceId
+      override: false
+      ignore_empty_value: true
   - script:
       tag: script_682928e2
       lang: painless

@@ -1,0 +1,15 @@
+# Check which identity each transform asks Fleet to run with.
+#
+# The kibana_system role has no privileges on logs-tenable_sc_latest.*, so
+# the latest_asset transform must run with the installing user's
+# credentials. The latest_cdr_vulnerabilities transform writes to a
+# security_solution-* index that kibana_system can manage, so it must keep
+# running as kibana_system.
+#
+# This checks the package source rather than an installed transform. From
+# Kibana 9.5.6, Fleet ignores run_as_kibana_system for uploaded packages,
+# so a script test that installs the dev package cannot see the effect of
+# this setting (see upgrade_latest_asset_transform.txt).
+
+grep '^  run_as_kibana_system: false$' ${PACKAGE_ROOT}/elasticsearch/transform/latest_asset/transform.yml
+! grep 'run_as_kibana_system: false' ${PACKAGE_ROOT}/elasticsearch/transform/latest_cdr_vulnerabilities/transform.yml
