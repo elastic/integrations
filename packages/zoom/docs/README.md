@@ -260,6 +260,7 @@ An example event for `webhook` looks as following:
 | zoom.creation_type | Creation type | keyword |
 | zoom.master_account_id | Master Account related to a specific Sub Account | keyword |
 | zoom.meeting.duration | The duration of a meeting in minutes | long |
+| zoom.meeting.end_time | Date and time the meeting ended | date |
 | zoom.meeting.host_id | The UserID of the configured meeting host | keyword |
 | zoom.meeting.id | Unique ID of the related meeting | keyword |
 | zoom.meeting.issues | When a user reports an issue with the meeting, for example: "Unstable audio quality" | keyword |
@@ -374,6 +375,7 @@ An example event for `webhook` looks as following:
 | zoom.user.version | Version of the client used by the user | keyword |
 | zoom.webinar.agenda | The configured agenda of the webinar | keyword |
 | zoom.webinar.duration | Duration of the webinar in minutes | long |
+| zoom.webinar.end_time | The date and time when the webinar ended | date |
 | zoom.webinar.host_id | UserID for the configured host of the webinar | keyword |
 | zoom.webinar.id | Unique ID for the related webinar | keyword |
 | zoom.webinar.issues | Any reported issues about a webinar is reported in this field | keyword |

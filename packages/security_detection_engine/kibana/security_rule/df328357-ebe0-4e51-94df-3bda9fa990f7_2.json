@@ -1,0 +1,251 @@
+{
+    "attributes": {
+        "alert_suppression": {
+            "duration": {
+                "unit": "h",
+                "value": 24
+            },
+            "group_by": [
+                "azure.signinlogs.properties.user_id"
+            ],
+            "missing_fields_strategy": "suppress"
+        },
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a Microsoft Entra ID user whose recent fresh authentications are predominantly phishing-resistant (passkey/FIDO2 or Windows Hello for Business) but who then successfully completes a phishable method such as Authenticator push, OATH, SMS, or voice. Adversary-in-the-middle proxies force this downgrade by suppressing the passkey prompt so the victim falls back to a relayable method. Legitimate fallback produces the same pattern, so the alert requires corroboration.",
+        "false_positives": [
+            "A user who predominantly uses a passkey can legitimately fall back to a weaker method when their authenticator is unavailable (lost or forgotten security key, new or wiped device, biometric failure). Correlate the downgrade session's source IP, geo, ASN, user agent, device, and Conditional Access result with the user's norm, and confirm whether a help-desk or self-service recovery occurred. Only meaningful in environments with meaningful passkey adoption."
+        ],
+        "from": "now-5d",
+        "interval": "15m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Entra ID Potential Passkey Downgrade",
+        "note": "## Triage and analysis\n\n### Investigating Entra ID Potential Passkey Downgrade\n\nThis rule flags a user whose fresh authentications over the window are predominantly phishing-resistant (passkey/FIDO2 or Windows Hello for Business) but who then successfully completed authentication with a phishable method (Authenticator push, OATH, SMS, or voice) in the recent window. Each sign-in's `authentication_details` steps are paired with their `succeeded` flag, so only methods that actually succeeded are counted. The phishing-resistant ratio is computed over a baseline of sessions older than 24 hours (at least 3 resistant sessions required), so the recent downgrade cannot dilute it, and only over sessions with a successful fresh method (resistant plus phishable); sessions with only single sign-on token reuse (or whose establishing event is outside the window) are reported as unknown and excluded from the ratio rather than assumed to be passkey. Adversary-in-the-middle phishing can force this downgrade by suppressing the passkey prompt so the victim falls back to a relayable method the proxy can capture.\n\n### Possible investigation steps\n\n- Review the recent downgrade session(s) (`Esql.downgrade_sessions`, `Esql.downgrade_methods`, `Esql.downgrade_apps`, `Esql.downgrade_resources`): inspect `Esql.downgrade_user_agents` and `Esql.downgrade_device_os` for an unsupported/impossible browser-OS pairing, `Esql.downgrade_ips`/`Esql.downgrade_countries`/`Esql.downgrade_as_orgs` for hosting or VPS origins, and `Esql.downgrade_ca_status` for whether Conditional Access actually granted access.\n- Confirm the user is genuinely passkey-preferring (`Esql.baseline_resistant`, `Esql.baseline_phishable`, `Esql.resistant_ratio`) rather than one who routinely mixes methods, and review `Esql.unknown_sessions` (token reuse / unresolved origin) separately.\n- Correlate with recent authentication-method registration (a new passkey added nearby) and with device registration or PRT issuance for post-compromise persistence, and with subsequent `Previously satisfied` token reuse from a new ASN (stolen-session use).\n\n### False positive analysis\n\n- Legitimate fallback when a passkey authenticator is unavailable produces the same shape; validate device, network, and recovery workflow.\n- A durable shift away from passkey lowers the resistant ratio over the window and stops qualifying.\n\n### Response and remediation\n\n- If unauthorized, treat the account as potentially compromised: revoke sessions and refresh tokens, remove any attacker-registered authentication methods or devices (delete devices first to break device-bound PRT persistence), and reset credentials.\n- Enforce a phishing-resistant Conditional Access authentication strength so weaker methods cannot satisfy authentication.\n",
+        "query": "FROM logs-azure.signinlogs-*\n| WHERE azure.signinlogs.category == \"SignInLogs\"\n    AND azure.signinlogs.properties.session_id IS NOT NULL\n    AND azure.signinlogs.properties.authentication_details IS NOT NULL\n    AND azure.signinlogs.properties.user_id IS NOT NULL\n    AND azure.signinlogs.properties.user_principal_name IS NOT NULL\n    AND azure.signinlogs.properties.tenant_id IS NOT NULL\n\n// Pair each authentication method with its success flag from the flattened authentication_details\n| EVAL ad = TO_STRING(azure.signinlogs.properties.authentication_details)\n| GROK ad \"\"\"\"authentication_method\":%{DATA:method_raw},\"authentication_\"\"\"\n| GROK ad \"\"\"\"succeeded\":%{DATA:succeeded_raw}}\"\"\"\n| EVAL Esql.auth_methods = SPLIT(REPLACE(method_raw, \"\"\"[\\[\\]\"]\"\"\", \"\"), \",\"),\n       Esql.auth_method_succeeded = SPLIT(REPLACE(succeeded_raw, \"\"\"[\\[\\]\"]\"\"\", \"\"), \",\")\n| EVAL Esql.method_outcome_pairs = MV_CONCAT(MV_ZIP(Esql.auth_methods, Esql.auth_method_succeeded, \"~\"), \" || \")\n\n// Flag sessions where a phishing-resistant or a phishable method actually succeeded (passkey/WHfB vs push/OATH/SMS/voice)\n| EVAL Esql.resistant_method_success = CASE(\n      Esql.method_outcome_pairs LIKE \"*Passkey (synced)~true*\" OR Esql.method_outcome_pairs LIKE \"*Passkey (device-bound)~true*\"\n      OR Esql.method_outcome_pairs LIKE \"*FIDO2 security key~true*\" OR Esql.method_outcome_pairs LIKE \"*Windows Hello for Business~true*\", 1, 0),\n    Esql.phishable_method_success = CASE(\n      Esql.method_outcome_pairs LIKE \"*Mobile app notification~true*\" OR Esql.method_outcome_pairs LIKE \"*OATH verification code~true*\"\n      OR Esql.method_outcome_pairs LIKE \"*Text message~true*\" OR Esql.method_outcome_pairs LIKE \"*Voice call~true*\", 1, 0)\n\n// A downgrade event is a phishable method succeeding within the recent window\n| EVAL Esql.is_downgrade = Esql.phishable_method_success == 1 AND @timestamp >= NOW() - 24 hour\n\n// Aggregate session counts and downgrade-event context by tenant and user\n| STATS Esql.total_sessions = COUNT_DISTINCT(azure.signinlogs.properties.session_id),\n        Esql.resistant_sessions = COUNT_DISTINCT(CASE(Esql.resistant_method_success == 1, azure.signinlogs.properties.session_id, null)),\n        Esql.phishable_sessions = COUNT_DISTINCT(CASE(Esql.phishable_method_success == 1, azure.signinlogs.properties.session_id, null)),\n        Esql.baseline_resistant = COUNT_DISTINCT(CASE(Esql.resistant_method_success == 1 AND @timestamp < NOW() - 24 hour, azure.signinlogs.properties.session_id, null)),\n        Esql.baseline_phishable = COUNT_DISTINCT(CASE(Esql.phishable_method_success == 1 AND @timestamp < NOW() - 24 hour, azure.signinlogs.properties.session_id, null)),\n        Esql.downgrade_session_count = COUNT_DISTINCT(CASE(Esql.is_downgrade, azure.signinlogs.properties.session_id, null)),\n        Esql.last_seen = MAX(@timestamp),\n        Esql.downgrade_methods = VALUES(CASE(Esql.is_downgrade, Esql.method_outcome_pairs, null)),\n        Esql.downgrade_sessions = VALUES(CASE(Esql.is_downgrade, azure.signinlogs.properties.session_id, null)),\n        Esql.downgrade_ips = VALUES(CASE(Esql.is_downgrade, source.ip, null)),\n        Esql.downgrade_as_orgs = VALUES(CASE(Esql.is_downgrade, source.`as`.organization.name, null)),\n        Esql.downgrade_countries = VALUES(CASE(Esql.is_downgrade, source.geo.country_name, null)),\n        Esql.downgrade_user_agents = VALUES(CASE(Esql.is_downgrade, user_agent.original, null)),\n        Esql.downgrade_device_os = VALUES(CASE(Esql.is_downgrade, azure.signinlogs.properties.device_detail.operating_system, null)),\n        Esql.downgrade_apps = VALUES(CASE(Esql.is_downgrade, azure.signinlogs.properties.app_display_name, null)),\n        Esql.downgrade_resources = VALUES(CASE(Esql.is_downgrade, azure.signinlogs.properties.resource_display_name, null)),\n        Esql.downgrade_client_apps = VALUES(CASE(Esql.is_downgrade, azure.signinlogs.properties.client_app_used, null)),\n        Esql.downgrade_ca_status = VALUES(CASE(Esql.is_downgrade, azure.signinlogs.properties.conditional_access_status, null)),\n        Esql.downgrade_risk_states = VALUES(CASE(Esql.is_downgrade, azure.signinlogs.properties.risk_state, null)),\n        Esql.downgrade_correlation_ids = VALUES(CASE(Esql.is_downgrade, azure.signinlogs.properties.correlation_id, null)),\n        Esql.downgrade_outcomes = VALUES(CASE(Esql.is_downgrade, event.outcome, null))\n    BY azure.signinlogs.properties.tenant_id, azure.signinlogs.properties.user_principal_name, azure.signinlogs.properties.user_id\n\n// Require a minimum resistant baseline (sessions older than 24h) and at least one recent downgrade\n| WHERE Esql.baseline_resistant >= 3 AND Esql.downgrade_session_count >= 1\n\n// Phishing-resistant ratio over the baseline only, so the downgrade session should not dilute it (token-reuse / unresolved sessions excluded)\n| EVAL Esql.unknown_sessions = Esql.total_sessions - Esql.phishable_sessions - Esql.resistant_sessions,\n       Esql.fresh_auth_sessions = Esql.resistant_sessions + Esql.phishable_sessions,\n       Esql.resistant_ratio = Esql.baseline_resistant::double / (Esql.baseline_resistant + Esql.baseline_phishable)\n\n// Keep predominantly phishing-resistant users (>= 90%)\n| WHERE Esql.resistant_ratio >= 0.9\n| KEEP azure.*, Esql.*\n",
+        "references": [
+            "https://www.proofpoint.com/us/blog/threat-insight/dont-phish-let-me-down-fido-authentication-downgrade",
+            "https://pushsecurity.com/blog/mfa-downgrade-attacks",
+            "https://www.ioactive.com/authentication-downgrade-attacks-deep-dive-into-mfa-bypass/",
+            "https://www.elastic.co/security-labs/entra-id-oauth-phishing-detection"
+        ],
+        "related_integrations": [
+            {
+                "integration": "adlogs",
+                "package": "azure",
+                "version": ">=1.22.0"
+            },
+            {
+                "integration": "events",
+                "package": "azure",
+                "version": ">=1.22.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.app_display_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.authentication_details",
+                "type": "flattened"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.client_app_used",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.conditional_access_status",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.correlation_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.device_detail.operating_system",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.resource_display_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.risk_state",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.session_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.tenant_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.user_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.user_principal_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "method_raw",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "source.as.organization.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.geo.country_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": false,
+                "name": "succeeded_raw",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "df328357-ebe0-4e51-94df-3bda9fa990f7",
+        "setup": "#### Required Microsoft Entra ID Sign-In Logs\nThis rule requires the Azure integration with Microsoft Entra ID Sign-In logs enabled and collected via Azure Event Hub.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Identity",
+            "Platform: Entra ID",
+            "Platform: Azure",
+            "Data Source: Entra ID Sign-In Logs",
+            "Use Case: Identity and Access Audit",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Threat: AiTM Phishing",
+            "Rule Type: ES|QL",
+            "Resources: Investigation Guide",
+            "Profile: Beta",
+            "Tactic: Initial Access",
+            "Tactic: Lateral Movement"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1557",
+                        "name": "Adversary-in-the-Middle",
+                        "reference": "https://attack.mitre.org/techniques/T1557/"
+                    },
+                    {
+                        "id": "T1556",
+                        "name": "Modify Authentication Process",
+                        "reference": "https://attack.mitre.org/techniques/T1556/",
+                        "subtechnique": [
+                            {
+                                "id": "T1556.006",
+                                "name": "Multi-Factor Authentication",
+                                "reference": "https://attack.mitre.org/techniques/T1556/006/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/",
+                        "subtechnique": [
+                            {
+                                "id": "T1078.004",
+                                "name": "Cloud Accounts",
+                                "reference": "https://attack.mitre.org/techniques/T1078/004/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1550",
+                        "name": "Use Alternate Authentication Material",
+                        "reference": "https://attack.mitre.org/techniques/T1550/",
+                        "subtechnique": [
+                            {
+                                "id": "T1550.004",
+                                "name": "Web Session Cookie",
+                                "reference": "https://attack.mitre.org/techniques/T1550/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 2
+    },
+    "id": "df328357-ebe0-4e51-94df-3bda9fa990f7_2",
+    "type": "security-rule"
+}

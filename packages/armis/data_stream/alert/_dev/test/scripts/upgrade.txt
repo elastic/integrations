@@ -1,6 +1,8 @@
 # Install Armis 0.7.0, collect one alert, upgrade to the package under test,
 # then collect a second alert from the same mock. The second document shows
 # collection continues across the upgrade.
+# The phase-1 mock returns alert 71 only for the initial 24h query. Later polls
+# get no results, so a Fleet rollover during the upgrade cannot index 71 twice.
 
 [!external_stack] skip 'Skipping external stack test.'
 [!exec:jq] skip 'Skipping test requiring absent jq command'
@@ -79,6 +81,8 @@ rules:
           {"data":{"access_token":"token-a","expiration_utc":"2025-04-03T08:48:17.963452+00:00"},"success":true}
   - path: /api/v1/search/
     methods: ['GET']
+    query_params:
+      aql: '{aql:.*"86400 Seconds".*}'
     request_headers:
       Authorization:
         - "token-a"
@@ -89,6 +93,18 @@ rules:
             - 'application/json'
         body: |-
           {"data":{"count":1,"next":null,"prev":null,"results":[{"activityUUIDs":["ec44388f-9530-4ca3-9781-8029905776ef"],"affectedDevicesCount":1,"alertId":71,"classification":"Security - Other","description":"Policy violation.","deviceIds":[19],"severity":"Critical","status":"Unhandled","statusChangeTime":"2025-03-29T02:50:06.124100+00:00","time":"2025-03-29T02:50:06.124100+00:00","title":"Heavy Port Scan","type":"System Policy Violation"}]}}
+  - path: /api/v1/search/
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "token-a"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"data":{"count":0,"next":null,"prev":null,"results":[]},"success":true}
 -- armis-mock/config-phase2.yml --
 rules:
   - path: /api/v1/access_token/

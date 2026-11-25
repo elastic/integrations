@@ -170,6 +170,8 @@ processors:
   ## ECS @timestamp Mapping ##
   ############################
   # Set timezone based on config or locale. Defaults to UTC.
+  # A configured tz_offset (other than 'local') takes precedence over the
+  # event.timezone set by the agent's add_locale processor.
   - set:
       tag: set__temp__tz_452e10f1
       field: _temp_.tz
@@ -189,7 +191,6 @@ processors:
   - set:
       tag: set_event_timezone_7f7859a7
       field: event.timezone
-      override: false
       copy_from: _temp_.tz
   # Parse the timestamp from the event if available
   - date:

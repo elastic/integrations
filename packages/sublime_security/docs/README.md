@@ -1385,17 +1385,17 @@ An example event for `message_event` looks as following:
 {
     "@timestamp": "2023-05-04T01:06:50.738Z",
     "agent": {
-        "ephemeral_id": "2ebcdcee-21e4-4c4a-878d-0fbdb3f18f46",
-        "id": "8930423a-231a-4254-8d2c-7905f049d045",
-        "name": "elastic-agent-41694",
+        "ephemeral_id": "10dce2f7-384a-4cfb-8851-6957304d6cc0",
+        "id": "5e034f6d-5a96-4800-8d11-759be7c357b1",
+        "name": "elastic-agent-29608",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "aws": {
         "s3": {
             "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-sublime-message-bucket-24476",
-                "name": "elastic-package-sublime-message-bucket-24476"
+                "arn": "arn:aws:s3:::elastic-package-sublime-message-bucket-39881",
+                "name": "elastic-package-sublime-message-bucket-39881"
             },
             "object": {
                 "key": "test-message.log"
@@ -1407,14 +1407,14 @@ An example event for `message_event` looks as following:
     },
     "data_stream": {
         "dataset": "sublime_security.message_event",
-        "namespace": "39020",
+        "namespace": "12490",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8930423a-231a-4254-8d2c-7905f049d045",
+        "id": "5e034f6d-5a96-4800-8d11-759be7c357b1",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -1425,7 +1425,7 @@ An example event for `message_event` looks as following:
         ],
         "dataset": "sublime_security.message_event",
         "id": "089b2e97-2107-4d1e-83e1-1920314dbb80",
-        "ingested": "2025-10-24T12:34:48Z",
+        "ingested": "2026-10-26T10:15:38Z",
         "kind": "event",
         "original": "{\"created_at\":\"2023-05-04T01:06:50.73801Z\",\"data\":{\"flagged_rules\":[{\"id\":\"958ad820-767f-4c83-ac44-94032151574f\",\"name\":\"Test rule1\",\"severity\":\"high\",\"tags\":[\"Testing\"]},{\"id\":\"2483da42-6905-4eca-bc8e-a5475ab906a4\",\"name\":\"Test rule2\",\"severity\":\"high\",\"tags\":[\"Testing\"]},{\"id\":\"9f95f7bb-b1f1-465a-a7a4-23266792c000\",\"name\":\"Test rule3\",\"severity\":\"low\",\"tags\":[\"Testing\"]},{\"id\":\"862b4f5b-c0f7-4e36-89b2-3091f9ac492b\",\"name\":\"Test rule4\",\"severity\":\"medium\",\"tags\":[\"Testing\"]}],\"message\":{\"canonical_id\":\"8fdb3acd8441b18478b7e80927c732f44e9086dcf7cfa6c1186ed21637427ef8\",\"external_id\":\"187e44c2288f2e8d\",\"id\":\"089b2e97-2107-4d1e-83e1-1920314dbb80\",\"mailbox\":{\"external_id\":\"100712120249161713725\",\"id\":\"3142d2f8-ac0d-4e37-bb1f-d5e4ff5f7f96\"},\"message_source_id\":\"d76ce576-4687-4182-b8e3-a220d6878b21\"},\"triggered_actions\":[{\"id\":\"9f95f7bb-b1f1-465a-a7a4-23266792c000\",\"name\":\"test\",\"type\":\"alert\"},{\"id\":\"9f95f7bb-b1f1-465a-a7a4-23266792c001\",\"name\":\"test 1\",\"type\":\"rule\"}]},\"type\":\"message.flagged\"}",
         "type": [
@@ -1437,7 +1437,7 @@ An example event for `message_event` looks as following:
     },
     "log": {
         "file": {
-            "path": "https://elastic-package-sublime-message-bucket-24476.s3.us-east-1.amazonaws.com/test-message.log"
+            "path": "https://elastic-package-sublime-message-bucket-39881.s3.us-east-1.amazonaws.com/test-message.log"
         },
         "offset": 643
     },
