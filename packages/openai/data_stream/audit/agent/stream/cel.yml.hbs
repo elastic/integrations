@@ -36,7 +36,7 @@ program: |-
       "GET",
       state.url.trim_right("/") + "/v1/organization/audit_logs?" +
         "limit=" + string(state.batch_size) +
-        (has(state.next) && state.next != null && has(state.next.before_cursor) ? "&before=" + string(state.next.before_cursor) : "") +
+        (has(state.next) && state.next != null && has(state.next.after_cursor) ? "&after=" + string(state.next.after_cursor) : "") +
         "&effective_at%5Bgte%5D=" + string(int(state.start_time)) + "&effective_at%5Blte%5D=" + string(int(state.end_time))
     ).with({
       "Header": {
@@ -69,7 +69,7 @@ program: |-
           optional.none(),
         "want_more": body.?has_more.orValue(false),
         "next": {
-          ?"before_cursor": body.?has_more.orValue(false) ?
+          ?"after_cursor": body.?has_more.orValue(false) ?
             optional.of(body.last_id)
           :
             optional.none(),
