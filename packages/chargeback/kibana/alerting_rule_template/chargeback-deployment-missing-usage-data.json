@@ -12,10 +12,11 @@
         },
         "params": {
             "searchType": "esqlQuery",
+            "groupBy": "row",
             "timeWindowSize": 3,
             "timeWindowUnit": "d",
             "esqlQuery": {
-                "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE deployment_group IS NOT NULL AND deployment_group != \"\"\n| EVAL billing_deployment_id = deployment_id, bill_day = LEFT(composite_key, 10), ck = composite_key::keyword\n| DROP deployment_id, composite_key\n| LOOKUP JOIN chargeback_lookup.cluster_deployment_contribution ON ck == composite_key\n| WHERE deployment_id IS NULL\n| STATS day_vals = VALUES(bill_day), dep_names = VALUES(deployment_name) BY billing_deployment_id, deployment_group\n| EVAL earliest_day = MV_MIN(day_vals), dep_name = MV_MAX(dep_names)\n| EVAL result = CONCAT(\"Deployment `\", COALESCE(dep_name, billing_deployment_id, \"unknown\"), \"` (`\", COALESCE(billing_deployment_id, \"unknown\"), \"`) in deployment group `\", deployment_group, \"` did not have usage data since \", COALESCE(earliest_day, \"unknown\"), \".\")\n| SORT result ASC\n| KEEP result"
+                "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE deployment_group IS NOT NULL AND deployment_group != \"\"\n| EVAL billing_deployment_id = deployment_id, bill_dep_name = deployment_name, bill_dep_group = deployment_group, bill_day = LEFT(composite_key, 10), ck = composite_key::keyword\n| DROP deployment_id, deployment_name, deployment_group, composite_key\n| LOOKUP JOIN chargeback_lookup.cluster_deployment_contribution ON ck == composite_key\n| WHERE deployment_id IS NULL\n| STATS day_vals = VALUES(bill_day), dep_names = VALUES(bill_dep_name) BY billing_deployment_id, bill_dep_group\n| RENAME bill_dep_group AS deployment_group\n| EVAL earliest_day = MV_MIN(day_vals), dep_name = MV_MAX(dep_names)\n| EVAL result = CONCAT(\"Deployment `\", COALESCE(dep_name, billing_deployment_id, \"unknown\"), \"` (`\", COALESCE(billing_deployment_id, \"unknown\"), \"`) in deployment group `\", deployment_group, \"` did not have usage data since \", COALESCE(earliest_day, \"unknown\"), \".\")\n| SORT result ASC\n| KEEP result"
             },
             "size": 100,
             "threshold": [

@@ -2,14 +2,25 @@
 description: "Ingest pipeline for Chargeback self-collected index and tier usage data."
 processors:
   - drop:
-      if: "ctx.elasticsearch?.index?.name == null && ctx.doc_type != 'config_snapshot' && ctx.error?.message == null"
+      if: "ctx.elasticsearch?.index?.name == null && ctx.doc_type != 'config_snapshot' && ctx.doc_type != 'ai_model' && ctx.doc_type != 'synthetics_monitor' && ctx.error?.message == null"
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - set:
       field: event.ingested
       value: "{{{_ingest.timestamp}}}"
       tag: set_event_ingested
   - terminate:
       tag: data_collection_error
-      if: ctx.error?.message != null && ctx.elasticsearch?.index?.name == null && ctx.doc_type != 'config_snapshot'
+      if: ctx.error?.message != null && ctx.elasticsearch?.index?.name == null && ctx.doc_type != 'config_snapshot' && ctx.doc_type != 'ai_model' && ctx.doc_type != 'synthetics_monitor'
       description: Terminate early on collection error documents.
   - terminate:
       tag: config_snapshot_complete
@@ -58,20 +69,21 @@ processors:
         boolean isCbLookup = (
           name.startsWith('chargeback_lookup.') ||
           stripped.startsWith('chargeback_lookup.') ||
-          name == 'monitoring-indices' ||
-          stripped == 'monitoring-indices' ||
-          cbBase == 'monitoring-indices' ||
-          name == 'monitoring-indices-chargeback' ||
-          stripped == 'monitoring-indices-chargeback' ||
-          cbBase == 'monitoring-indices-chargeback' ||
+          name.startsWith('monitoring-indices') ||
+          stripped.startsWith('monitoring-indices') ||
+          (name.startsWith('serverless_') && cbBase.endsWith('_lookup')) ||
+          (stripped.startsWith('serverless_') && cbBase.endsWith('_lookup')) ||
           cbBase == 'billing_cluster_cost_lookup' ||
           cbBase == 'billing_realized_pool_lookup' ||
+          cbBase == 'billing_credits_lookup' ||
           cbBase == 'chargeback_conf_lookup' ||
           cbBase == 'cluster_capacity_utilization_lookup' ||
           cbBase == 'cluster_deployment_contribution_lookup' ||
           cbBase == 'cluster_tier_contribution_lookup' ||
           cbBase == 'cluster_datastream_contribution_lookup' ||
-          cbBase == 'cluster_tier_and_datastream_contribution_lookup'
+          cbBase == 'cluster_tier_and_datastream_contribution_lookup' ||
+          cbBase == 'cluster_ai_model_contribution_lookup' ||
+          cbBase == 'cluster_synthetics_monitor_contribution_lookup'
         );
         // Drop internal non-.ds system indices and explicit Chargeback indices (including partial/restored/shrunk copies) to avoid feedback
         if ((name.startsWith('.') && !name.startsWith('.ds-'))
@@ -84,7 +96,11 @@ processors:
             || name.contains('metrics-chargeback.')
             || stripped.contains('metrics-chargeback.')
             || name.contains('logs-chargeback.')
-            || stripped.contains('logs-chargeback.')) {
+            || stripped.contains('logs-chargeback.')
+            || name.contains('metrics-chargeback_serverless.')
+            || stripped.contains('metrics-chargeback_serverless.')
+            || name.contains('logs-chargeback_serverless.')
+            || stripped.contains('logs-chargeback_serverless.')) {
           ctx._drop_internal = true;
           return;
         }
@@ -155,7 +171,26 @@ processors:
   - drop:
       if: "ctx._drop_internal == true"
   - fingerprint:
+      if: "ctx.doc_type == 'ai_model' || ctx.doc_type == 'synthetics_monitor'"
       fields:
+        - conf_policy_id
+        - data_stream.namespace
+        - elasticsearch.cluster.name
+        - "@timestamp"
+        - period_obs_ts
+        - doc_type
+        - model_id
+        - task_type
+        - monitor_id
+        - monitor_type
+      target_field: _id
+      ignore_missing: true
+      tag: fingerprint_ai_or_synthetics_event
+  - fingerprint:
+      if: "ctx.doc_type != 'ai_model' && ctx.doc_type != 'synthetics_monitor'"
+      fields:
+        - conf_policy_id
+        - data_stream.namespace
         - elasticsearch.cluster.name
         - "@timestamp"
         - period_obs_ts

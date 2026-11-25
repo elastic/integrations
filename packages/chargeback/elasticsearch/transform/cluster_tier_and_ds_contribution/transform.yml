@@ -4,15 +4,18 @@ source:
     - metrics-chargeback.usage-*
     - monitoring-indices*
     - "*:monitoring-indices*"
-    - -monitoring-indices-chargeback
-    - "*:-monitoring-indices-chargeback"
+    - -monitoring-indices-chargeback*
+    - "*:-monitoring-indices-chargeback*"
     - -chargeback_lookup.*
     - "*:-chargeback_lookup.*"
   query:
     bool:
       must_not:
-        - term:
-            doc_type: config_snapshot
+        - terms:
+            doc_type:
+              - config_snapshot
+              - ai_model
+              - synthetics_monitor
         - term:
             cb_excluded_index: true
   runtime_mappings:
@@ -102,20 +105,21 @@ source:
             boolean isCbLookup = (
               name.startsWith('chargeback_lookup.') ||
               stripped.startsWith('chargeback_lookup.') ||
-              name == 'monitoring-indices' ||
-              stripped == 'monitoring-indices' ||
-              cbBase == 'monitoring-indices' ||
-              name == 'monitoring-indices-chargeback' ||
-              stripped == 'monitoring-indices-chargeback' ||
-              cbBase == 'monitoring-indices-chargeback' ||
+              name.startsWith('monitoring-indices') ||
+              stripped.startsWith('monitoring-indices') ||
+              (name.startsWith('serverless_') && cbBase.endsWith('_lookup')) ||
+              (stripped.startsWith('serverless_') && cbBase.endsWith('_lookup')) ||
               cbBase == 'billing_cluster_cost_lookup' ||
               cbBase == 'billing_realized_pool_lookup' ||
+              cbBase == 'billing_credits_lookup' ||
               cbBase == 'chargeback_conf_lookup' ||
               cbBase == 'cluster_capacity_utilization_lookup' ||
               cbBase == 'cluster_deployment_contribution_lookup' ||
               cbBase == 'cluster_tier_contribution_lookup' ||
               cbBase == 'cluster_datastream_contribution_lookup' ||
-              cbBase == 'cluster_tier_and_datastream_contribution_lookup'
+              cbBase == 'cluster_tier_and_datastream_contribution_lookup' ||
+              cbBase == 'cluster_ai_model_contribution_lookup' ||
+              cbBase == 'cluster_synthetics_monitor_contribution_lookup'
             );
             if ((name.startsWith('.') && !name.startsWith('.ds-'))
                 || (stripped.startsWith('.') && !stripped.startsWith('.ds-'))
@@ -127,7 +131,11 @@ source:
                 || name.contains('metrics-chargeback.')
                 || stripped.contains('metrics-chargeback.')
                 || name.contains('logs-chargeback.')
-                || stripped.contains('logs-chargeback.')) {
+                || stripped.contains('logs-chargeback.')
+                || name.contains('metrics-chargeback_serverless.')
+                || stripped.contains('metrics-chargeback_serverless.')
+                || name.contains('logs-chargeback_serverless.')
+                || stripped.contains('logs-chargeback_serverless.')) {
               emit(true);
               return;
             }
@@ -143,7 +151,7 @@ source:
               }
             } catch (Exception e) {}
           }
-          if (ds != '' && (ds.startsWith('.') || ds.startsWith('ilm-history') || ds.startsWith('metrics-chargeback.') || ds.startsWith('logs-chargeback.') || ds.startsWith('chargeback_lookup.'))) {
+          if (ds != '' && (ds.startsWith('.') || ds.startsWith('ilm-history') || ds.startsWith('metrics-chargeback.') || ds.startsWith('logs-chargeback.') || ds.startsWith('metrics-chargeback_serverless.') || ds.startsWith('logs-chargeback_serverless.') || ds.startsWith('chargeback_lookup.'))) {
             emit(true);
             return;
           }
@@ -316,12 +324,16 @@ dest:
   aliases:
     - alias: chargeback_lookup.cluster_tier_and_datastream_contribution
       move_on_creation: true
-  pipeline: logs-chargeback.lookup-0.6.0-usage
+  pipeline: 'logs-chargeback.lookup-{{ ingestPipelineName "usage" }}'
 frequency: 60m
 sync:
   time:
     field: cb_sync_ts
     delay: 60s
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 365d
 pivot:
   group_by:
     "@timestamp":
@@ -1330,4 +1342,4 @@ settings:
 _meta:
   managed: true
   run_as_kibana_system: false
-  fleet_transform_version: 0.6.0
+  fleet_transform_version: 0.7.0

@@ -1,5 +1,5 @@
 config_version: 2
-interval: "15m"
+interval: "{{#if interval}}{{interval}}{{else}}15m{{/if}}"
 {{#if enable_request_tracer}}
 resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
 resource.tracer.maxbackups: 5
@@ -27,6 +27,11 @@ state:
   conf_utilization_memory_weight: !!int {{utilization_memory_weight}}
   conf_utilization_storage_weight: !!int {{utilization_storage_weight}}
   conf_utilization_floor: !!str {{escape_string utilization_floor}}
+{{#if _meta.agent.version}}
+{{#semverSatisfies _meta.agent.version "<9.2.0"}}
+  unsupported_agent_version: !!str "{{_meta.agent.version}}"
+{{/semverSatisfies}}
+{{/if}}
 redact:
   fields:
     - api_key
@@ -37,6 +42,21 @@ redact:
     - proxy_url
 program: |-
   state.with(
+    (state.?unsupported_agent_version.orValue("") != "") ?
+    {
+      "events": [dyn({
+        "error": {
+          "code": "unsupported_agent_version",
+          "id": "agent_version_guard",
+          "message": "Unsupported Elastic Agent version " + string(state.unsupported_agent_version) + ": chargeback requires a Fleet-managed Elastic Agent >= 9.2.0",
+        },
+      })],
+      "cursor": state.?cursor.orValue({}),
+      "want_more": false,
+    }
+    :
+    state.api_key.trim_space().as(clean_api_key,
+    state.hub_es_api_key.trim_space().as(clean_hub_key,
     now.format(time_layout.DateOnly).as(today_utc,
     state.organization_id.trim_space().as(clean_org_id,
     state.cloud_api_base.trim_space().as(trimmed_cloud_base,
@@ -82,8 +102,8 @@ program: |-
         "conf_owner_id": clean_owner_id,
       })]
     : [])))).as(conf_evts,
-    (clean_org_id != "" && clean_cloud_base != "" && state.api_key != "" && !state.api_key.startsWith("$co.elastic.secret")).as(has_cloud,
-    (clean_hub_url != "" && state.hub_es_api_key != "" && !state.hub_es_api_key.startsWith("$co.elastic.secret")).as(has_hub,
+    (clean_org_id != "" && clean_cloud_base != "" && clean_api_key != "" && !clean_api_key.startsWith("$co.elastic.secret")).as(has_cloud,
+    (clean_hub_url != "" && clean_hub_key != "" && !clean_hub_key.startsWith("$co.elastic.secret")).as(has_hub,
     (
       !has(state.deployment_keys) || state.deployment_keys == null ? [] :
       string(dyn(state.deployment_keys)).split("\n").map(ln, ln.split("\r")).flatten().map(ln, ln.split(",")).flatten()
@@ -100,7 +120,7 @@ program: |-
           ).with(
             {
               "Header": {
-                "Authorization": ["ApiKey " + state.api_key],
+                "Authorization": ["ApiKey " + clean_api_key],
                 "Content-Type": ["application/json"],
               },
               "Body": { "size": 500, "from": dep_from }.encode_json(),
@@ -117,10 +137,10 @@ program: |-
             }
           : (dep_resp.StatusCode == 200) ?
             try(bytes(dep_resp.Body).decode_json(), "json_err").as(dep_body,
-              has(dep_body.json_err) ?
+              (type(dep_body) != map || has(dep_body.json_err)) ?
                 {
                   "ok": false,
-                  "err": dyn({ "error": { "code": "decode_error", "id": "deployments_search", "message": "POST " + dep_search_url + ": " + string(dep_body.json_err) } }),
+                  "err": dyn({ "error": { "code": "decode_error", "id": "deployments_search", "message": "POST " + dep_search_url + ": " + ((type(dep_body) == map && has(dep_body.json_err)) ? string(dep_body.json_err) : ("expected JSON object, got " + (dep_body == null ? "null" : (type(dep_body) == list ? "array" : (type(dep_body) == map ? "object" : "scalar"))))) } }),
                   "items": [],
                   "next_from": -1,
                 }
@@ -186,7 +206,7 @@ program: |-
           :
             (has_hub ?
               try(
-                get_request(clean_hub_url + "/").with({ "Header": { "Authorization": ["ApiKey " + state.hub_es_api_key] } }).do_request(),
+                get_request(clean_hub_url + "/").with({ "Header": { "Authorization": ["ApiKey " + clean_hub_key] } }).do_request(),
                 "req_err"
               ).as(hub_resp,
                 has(hub_resp.req_err) ?
@@ -197,10 +217,10 @@ program: |-
                   }
                 : (hub_resp.StatusCode == 200) ?
                   try(bytes(hub_resp.Body).decode_json(), "json_err").as(hub_info,
-                    has(hub_info.json_err) ?
+                    (type(hub_info) != map || has(hub_info.json_err)) ?
                       {
                         "ok": false,
-                        "err": dyn({ "error": { "code": "decode_error", "id": "hub_discovery", "message": "GET " + clean_hub_url + "/: " + string(hub_info.json_err) } }),
+                        "err": dyn({ "error": { "code": "decode_error", "id": "hub_discovery", "message": "GET " + clean_hub_url + "/: " + ((type(hub_info) == map && has(hub_info.json_err)) ? string(hub_info.json_err) : ("expected JSON object, got " + (hub_info == null ? "null" : (type(hub_info) == list ? "array" : (type(hub_info) == map ? "object" : "scalar"))))) } }),
                         "targets": cloud_targets,
                       }
                     :
@@ -238,7 +258,7 @@ program: |-
                       k.substring(size(string(t.name)) + 1, size(k))
                     )
                   ).filter(k, k != "").as(d_keys,
-                    (d_keys + ((bool(t.is_hub) && has_hub && !(state.hub_es_api_key in d_keys)) ? [state.hub_es_api_key] : [])).as(raw_keys,
+                    (d_keys + ((bool(t.is_hub) && has_hub && !(clean_hub_key in d_keys)) ? [clean_hub_key] : [])).as(raw_keys,
                     [0, 1, 2, 3, 4, 5, 6, 7].filter(i, i < size(raw_keys) && !([0, 1, 2, 3, 4, 5, 6, 7].exists(j, j < i && raw_keys[j] == raw_keys[i]))).map(i, raw_keys[i]).as(cand_keys,
                     (size(cand_keys) == 0) ?
                       {
@@ -303,14 +323,14 @@ program: |-
                             : (hr.StatusCode == 200) ?
                               now.format(time_layout.RFC3339).as(h_obs_ts,
                                 try(bytes(hr.Body).decode_json(), "json_err").as(hb,
-                                  has(hb.json_err) ?
+                                  (type(hb) != map || has(hb.json_err)) ?
                                     {
                                       "ok": false,
                                       "auth_err": false,
                                       "key_idx": -1,
                                       "obs_ts": "",
                                       "body": dyn({}),
-                                      "err": dyn({ "error": { "code": "decode_error", "id": tid, "message": "GET " + stats_url + ": " + string(hb.json_err) } }),
+                                      "err": dyn({ "error": { "code": "decode_error", "id": tid, "message": "GET " + stats_url + ": " + ((type(hb) == map && has(hb.json_err)) ? string(hb.json_err) : ("expected JSON object, got " + (hb == null ? "null" : (type(hb) == list ? "array" : (type(hb) == map ? "object" : "scalar"))))) } }),
                                     }
                                   : { "ok": true, "auth_err": false, "key_idx": int(att.i), "obs_ts": h_obs_ts, "body": hb, "err": dyn({}) }
                                 )
@@ -421,7 +441,7 @@ program: |-
           )
         )
       )
-    )))))))))))))))))))
+    )))))))))))))))))))))
   )
 {{#if tags.length}}
 tags:
@@ -438,11 +458,12 @@ processors:
 - copy_fields:
     when:
       and:
-        - equals:
-            doc_type: config_snapshot
         - not:
             has_fields:
               - conf_policy_id
+        - not:
+            has_fields:
+              - error.message
     fields:
       - from: "@metadata.input_id"
         to: "conf_policy_id"

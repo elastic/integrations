@@ -7,7 +7,7 @@ source:
     - metrics-ess_billing.billing-*
     - chargeback_conf_lookup*
     - -partial-*
-    - -metrics-ess_billing.billing-chargeback
+    - -metrics-ess_billing.billing-chargeback*
     - -chargeback_lookup.*
   query:
     bool:
@@ -75,7 +75,7 @@ dest:
   aliases:
     - alias: chargeback_lookup.chargeback_conf
       move_on_creation: true
-  pipeline: logs-chargeback.lookup-0.6.0-chargeback_conf
+  pipeline: 'logs-chargeback.lookup-{{ ingestPipelineName "chargeback_conf" }}'
 frequency: 5m
 sync:
   time:
@@ -135,7 +135,7 @@ pivot:
                   Map lc = ['prio': prio, 'ts': lSync];
                   for (String k : [
                     'conf_start_date', 'conf_end_date',
-                    'conf_chargeable_unit_rate', 'conf_chargeable_unit_rate_unit',
+                    'conf_chargeable_unit_rate', 'conf_chargeable_unit_rate_unit', 'conf_currency_symbol',
                     'conf_ecu_rate', 'conf_ecu_rate_unit',
                     'conf_onprem_chargeable_unit_rate',
                     'conf_indexing_weight', 'conf_query_weight', 'conf_storage_weight',
@@ -540,4 +540,4 @@ settings:
 _meta:
   managed: true
   run_as_kibana_system: false
-  fleet_transform_version: 0.6.0
+  fleet_transform_version: 0.7.0

@@ -173,12 +173,16 @@ source:
           }
 dest:
   index: cluster_capacity_utilization_lookup
-  pipeline: logs-chargeback.lookup-0.6.0-capacity_utilization
+  pipeline: 'logs-chargeback.lookup-{{ ingestPipelineName "capacity_utilization" }}'
 frequency: 60m
 sync:
   time:
     field: cb_sync_ts
     delay: 60s
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 365d
 pivot:
   group_by:
     "@timestamp":
@@ -510,4 +514,4 @@ settings:
 _meta:
   managed: true
   run_as_kibana_system: false
-  fleet_transform_version: 0.6.0
+  fleet_transform_version: 0.7.0

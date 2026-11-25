@@ -8,6 +8,11 @@ processors:
         try {
           if (ctx.by_sku instanceof Map) {
             double sumEcu = 0.0;
+            boolean anyDataTier = false;
+            double sumAi = 0.0;
+            double sumSyn = 0.0;
+            double sumSynPing = 0.0;
+            double sumSynExec = 0.0;
             Double maxHours = null;
             Long maxRam = null;
             boolean hasNativeSku = false;
@@ -54,11 +59,31 @@ processors:
                   if (Boolean.TRUE.equals(chosenSku.get('is_onprem'))) {
                     anyOnprem = true;
                   }
-                  if (chosenSku.data_tier_capacity_ecu instanceof Number) {
-                    double ecuVal = ((Number)chosenSku.data_tier_capacity_ecu).doubleValue();
-                    if (!Double.isNaN(ecuVal) && !Double.isInfinite(ecuVal)) {
-                      sumEcu += ecuVal;
+                  boolean hasDt = !chosenSku.containsKey('has_data_tier') || Boolean.TRUE.equals(chosenSku.get('has_data_tier'));
+                  if (hasDt) {
+                    anyDataTier = true;
+                    if (chosenSku.data_tier_capacity_ecu instanceof Number) {
+                      double ecuVal = ((Number)chosenSku.data_tier_capacity_ecu).doubleValue();
+                      if (!Double.isNaN(ecuVal) && !Double.isInfinite(ecuVal)) {
+                        sumEcu += ecuVal;
+                      }
                     }
+                  }
+                  if (chosenSku.ai_chargeable_units instanceof Number) {
+                    double aiVal = ((Number)chosenSku.ai_chargeable_units).doubleValue();
+                    if (!Double.isNaN(aiVal) && !Double.isInfinite(aiVal)) { sumAi += aiVal; }
+                  }
+                  if (chosenSku.synthetics_chargeable_units instanceof Number) {
+                    double synVal = ((Number)chosenSku.synthetics_chargeable_units).doubleValue();
+                    if (!Double.isNaN(synVal) && !Double.isInfinite(synVal)) { sumSyn += synVal; }
+                  }
+                  if (chosenSku.synthetics_pings_units instanceof Number) {
+                    double spVal = ((Number)chosenSku.synthetics_pings_units).doubleValue();
+                    if (!Double.isNaN(spVal) && !Double.isInfinite(spVal)) { sumSynPing += spVal; }
+                  }
+                  if (chosenSku.synthetics_executions_units instanceof Number) {
+                    double seVal = ((Number)chosenSku.synthetics_executions_units).doubleValue();
+                    if (!Double.isNaN(seVal) && !Double.isInfinite(seVal)) { sumSynExec += seVal; }
                   }
                   if (chosenSku.data_tier_capacity_hours instanceof Number) {
                     double h = ((Number)chosenSku.data_tier_capacity_hours).doubleValue();
@@ -129,7 +154,17 @@ processors:
             }
             String bestGroup = hasNativeSku ? nativeGroup : legacyGroup;
             String bestName = nativeName != '' ? nativeName : legacyName;
-            ctx.data_tier_capacity_ecu = sumEcu;
+            if (anyDataTier || (sumAi == 0.0 && sumSyn == 0.0)) {
+              ctx.data_tier_capacity_ecu = sumEcu;
+            }
+            if (sumAi > 0.0) {
+              ctx.ai_chargeable_units = sumAi;
+            }
+            if (sumSyn > 0.0) {
+              ctx.synthetics_chargeable_units = sumSyn;
+              ctx.synthetics_pings_units = sumSynPing;
+              ctx.synthetics_executions_units = sumSynExec;
+            }
             ctx.is_onprem = anyOnprem;
             if (maxHours != null) {
               ctx.data_tier_capacity_hours = maxHours.doubleValue();
@@ -138,9 +173,15 @@ processors:
               ctx.data_tier_ram_per_zone_mb = maxRam.longValue();
             }
             ctx.deployment_group = bestGroup != null ? bestGroup : '';
+            String fallbackName = ctx.deployment_id != null ? ctx.deployment_id.toString() : 'unknown';
+            if (fallbackName.startsWith('unassociated_')) {
+              fallbackName = 'Unassociated (' + fallbackName.substring('unassociated_'.length()) + ')';
+            } else if (fallbackName == 'unassociated') {
+              fallbackName = 'Unassociated';
+            }
             ctx.deployment_name = (bestName != null && bestName != '')
               ? bestName
-              : (ctx.deployment_id != null ? ctx.deployment_id.toString() : 'unknown');
+              : fallbackName;
           } else {
             Map chosen = ctx;
             if (ctx.native instanceof Map && ctx.native.doc_cnt instanceof Number && ((Number)ctx.native.doc_cnt).longValue() > 0L) {
@@ -179,7 +220,13 @@ processors:
               ctx.deployment_group = ctx.deployment_group.toString();
             }
             if (ctx.deployment_name == null || ctx.deployment_name.toString() == '') {
-              ctx.deployment_name = ctx.deployment_id != null ? ctx.deployment_id.toString() : 'unknown';
+              String fallbackName = ctx.deployment_id != null ? ctx.deployment_id.toString() : 'unknown';
+              if (fallbackName.startsWith('unassociated_')) {
+                fallbackName = 'Unassociated (' + fallbackName.substring('unassociated_'.length()) + ')';
+              } else if (fallbackName == 'unassociated') {
+                fallbackName = 'Unassociated';
+              }
+              ctx.deployment_name = fallbackName;
             } else {
               ctx.deployment_name = ctx.deployment_name.toString();
             }

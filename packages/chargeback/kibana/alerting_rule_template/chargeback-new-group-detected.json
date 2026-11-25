@@ -12,10 +12,11 @@
         },
         "params": {
             "searchType": "esqlQuery",
-            "timeWindowSize": 3,
+            "groupBy": "row",
+            "timeWindowSize": 365,
             "timeWindowUnit": "d",
             "esqlQuery": {
-                "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE deployment_group IS NOT NULL AND deployment_group != \"\"\n| STATS count = COUNT(*) BY deployment_group\n| SORT deployment_group\n| KEEP deployment_group"
+                "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE @timestamp IS NOT NULL\n| INLINE STATS org_earliest_ts = MIN(@timestamp), org_latest_ts = MAX(@timestamp)\n| WHERE deployment_group IS NOT NULL AND deployment_group != \"\"\n| STATS first_seen = MIN(@timestamp) BY deployment_group, org_earliest_ts, org_latest_ts\n| WHERE org_latest_ts > org_earliest_ts AND first_seen > org_earliest_ts AND first_seen >= org_latest_ts - 3 days\n| EVAL first_seen_day = LEFT(TO_STRING(first_seen), 10),\n       result = CONCAT(\"New chargeback group `\", deployment_group, \"` first observed on \", first_seen_day, \".\")\n| SORT deployment_group ASC\n| KEEP result, deployment_group, first_seen_day"
             },
             "size": 100,
             "threshold": [

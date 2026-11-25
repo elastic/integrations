@@ -3,7 +3,7 @@ source:
   index:
     - metrics-chargeback.billing-*
     - metrics-ess_billing.billing-*
-    - -metrics-ess_billing.billing-chargeback
+    - -metrics-ess_billing.billing-chargeback*
     - -chargeback_lookup.*
   query:
     bool:
@@ -69,9 +69,9 @@ source:
                 for (def tv : doc[tf]) {
                   if (tv != null) {
                     String s = tv.toString();
-                    if (s.startsWith('chargeback_group:')) {
-                      emit(s.substring('chargeback_group:'.length()));
-                      return;
+                    if (s.toLowerCase(Locale.ROOT).startsWith('chargeback_group:')) {
+                      String gv = s.substring('chargeback_group:'.length()).trim();
+                      if (gv != '') { emit(gv); return; }
                     }
                   }
                 }
@@ -85,33 +85,93 @@ source:
                 for (def tag : tags) {
                   if (tag != null) {
                     String s = tag.toString();
-                    if (s.startsWith('chargeback_group:')) {
-                      emit(s.substring('chargeback_group:'.length()));
-                      return;
+                    if (s.toLowerCase(Locale.ROOT).startsWith('chargeback_group:')) {
+                      String gv = s.substring('chargeback_group:'.length()).trim();
+                      if (gv != '') { emit(gv); return; }
                     }
                   }
                 }
               } else {
                 String s = tags.toString();
-                if (s.startsWith('chargeback_group:')) {
-                  emit(s.substring('chargeback_group:'.length()));
-                  return;
+                if (s.toLowerCase(Locale.ROOT).startsWith('chargeback_group:')) {
+                  String gv = s.substring('chargeback_group:'.length()).trim();
+                  if (gv != '') { emit(gv); return; }
                 }
               }
             }
           } catch (Exception e) {}
           emit('');
+    cb_deployment_id:
+      type: keyword
+      script:
+        source: |
+          for (String df : ['ess.billing.deployment_id', 'ess.billing.deployment_id.keyword']) {
+            try {
+              if (doc.containsKey(df) && !doc[df].empty) {
+                String dv = doc[df].value.toString().trim();
+                if (dv != '') { emit(dv); return; }
+              }
+            } catch (Exception e) {}
+          }
+          try {
+            if (params._source?.ess?.billing?.deployment_id != null && params._source.ess.billing.deployment_id.toString().trim() != '') {
+              emit(params._source.ess.billing.deployment_id.toString().trim());
+              return;
+            }
+          } catch (Exception e) {}
+          String dt = '';
+          for (String dtf : ['ess.billing.deployment_type', 'ess.billing.deployment_type.keyword']) {
+            try {
+              if (doc.containsKey(dtf) && !doc[dtf].empty && doc[dtf].value.toString().trim() != '') {
+                dt = doc[dtf].value.toString().trim().toLowerCase(Locale.ROOT);
+                break;
+              }
+            } catch (Exception e) {}
+          }
+          if (dt == '' && params._source?.ess?.billing?.deployment_type != null) {
+            dt = params._source.ess.billing.deployment_type.toString().trim().toLowerCase(Locale.ROOT);
+          }
+          if (dt == 'oblt') { dt = 'observability'; }
+          else if (dt == 'sec') { dt = 'security'; }
+          else if (dt == 'vector') { dt = 'vectordb'; }
+          else if (dt == 'es') { dt = 'elasticsearch'; }
+          else if (dt == 'enterprise_search') { dt = 'search'; }
+          if (dt == '' || dt == 'serverless') {
+            String sk = '';
+            for (String sf : ['ess.billing.sku', 'ess.billing.sku.keyword']) {
+              try {
+                if (doc.containsKey(sf) && !doc[sf].empty && doc[sf].value.toString().trim() != '') {
+                  sk = doc[sf].value.toString().trim().toLowerCase(Locale.ROOT);
+                  break;
+                }
+              } catch (Exception e) {}
+            }
+            if (sk == '' && params._source?.ess?.billing?.sku != null) {
+              sk = params._source.ess.billing.sku.toString().trim().toLowerCase(Locale.ROOT);
+            }
+            if (sk.startsWith('observability.') || sk.startsWith('oblt.') || sk.startsWith('serverless.observability.') || sk.startsWith('serverless.oblt.') || sk.contains('.observability.') || sk.contains('.oblt.') || sk.contains('synthetic')) { dt = 'observability'; }
+            else if (sk.startsWith('security.') || sk.startsWith('sec.') || sk.startsWith('serverless.security.') || sk.startsWith('serverless.sec.') || sk.contains('.security.') || sk.contains('.sec.')) { dt = 'security'; }
+            else if (sk.startsWith('vectordb.') || sk.startsWith('serverless.vectordb.') || sk.contains('.vectordb.')) { dt = 'vectordb'; }
+            else if (sk.startsWith('search.') || sk.startsWith('serverless.search.')) { dt = 'search'; }
+            else if (sk.startsWith('elasticsearch.') || sk.startsWith('es.') || sk.startsWith('serverless.elasticsearch.') || sk.startsWith('serverless.es.') || sk.contains('.elasticsearch.')) { dt = 'elasticsearch'; }
+            else { dt = 'serverless'; }
+          }
+          emit('unassociated_' + dt);
 dest:
   index: chargeback_lookup.dest_billing_cluster_cost-1
   aliases:
     - alias: chargeback_lookup.billing_cluster_cost
       move_on_creation: true
-  pipeline: logs-chargeback.lookup-0.6.0-billing
+  pipeline: 'logs-chargeback.lookup-{{ ingestPipelineName "billing" }}'
 frequency: 60m
 sync:
   time:
     field: cb_sync_ts
     delay: 60s
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 365d
 pivot:
   group_by:
     "@timestamp":
@@ -120,7 +180,7 @@ pivot:
         calendar_interval: 1d
     deployment_id:
       terms:
-        field: ess.billing.deployment_id
+        field: cb_deployment_id
     sku:
       terms:
         field: ess.billing.sku
@@ -293,6 +353,15 @@ pivot:
             }
           } catch (Exception e) {}
 
+          String bUnit = '';
+          try {
+            if (doc.containsKey('ess.billing.unit') && !doc['ess.billing.unit'].empty) {
+              bUnit = doc['ess.billing.unit'].value.toString();
+            } else if (params._source?.ess?.billing?.unit != null) {
+              bUnit = params._source.ess.billing.unit.toString();
+            }
+          } catch (Exception e) {}
+
           String dedupKey = orgId + '|' + depId + '|' + fromKey + '|' + toKey + '|' + sku + '|' + bType + '|' + bKind + (nodeStr != '' ? '|' + nodeStr : '');
 
           String cRegion = '';
@@ -314,6 +383,7 @@ pivot:
             'dep_type': depType,
             'b_type': bType,
             'b_kind': bKind,
+            'b_unit': bUnit,
             'c_region': cRegion
           ];
           Map ex = (Map)state.items.get(dedupKey);
@@ -362,6 +432,7 @@ pivot:
           String depType = '';
           String bType = '';
           String bKind = '';
+          String bUnit = '';
           String cRegion = '';
           for (def recObj : merged.values()) {
             Map rec = (Map)recObj;
@@ -380,6 +451,7 @@ pivot:
             if (rec.get('dep_type') != '' && (depType == '' || isNewer)) { depType = rec.get('dep_type').toString(); }
             if (rec.get('b_type') != '' && (bType == '' || isNewer)) { bType = rec.get('b_type').toString(); }
             if (rec.get('b_kind') != '' && (bKind == '' || isNewer)) { bKind = rec.get('b_kind').toString(); }
+            if (rec.get('b_unit') != '' && (bUnit == '' || isNewer)) { bUnit = rec.get('b_unit').toString(); }
             if (rec.get('c_region') != '' && (cRegion == '' || isNewer)) { cRegion = rec.get('c_region').toString(); }
           }
           return [
@@ -392,6 +464,7 @@ pivot:
             'deployment_type': depType,
             'billing_type': bType,
             'billing_kind': bKind,
+            'billing_unit': bUnit,
             'cloud_region': cRegion
           ];
     legacy:
@@ -562,6 +635,15 @@ pivot:
             }
           } catch (Exception e) {}
 
+          String bUnit = '';
+          try {
+            if (doc.containsKey('ess.billing.unit') && !doc['ess.billing.unit'].empty) {
+              bUnit = doc['ess.billing.unit'].value.toString();
+            } else if (params._source?.ess?.billing?.unit != null) {
+              bUnit = params._source.ess.billing.unit.toString();
+            }
+          } catch (Exception e) {}
+
           String dedupKey = orgId + '|' + depId + '|' + fromKey + '|' + toKey + '|' + sku + '|' + bType + '|' + bKind + (nodeStr != '' ? '|' + nodeStr : '');
 
           String cRegion = '';
@@ -583,6 +665,7 @@ pivot:
             'dep_type': depType,
             'b_type': bType,
             'b_kind': bKind,
+            'b_unit': bUnit,
             'c_region': cRegion
           ];
           Map ex = (Map)state.items.get(dedupKey);
@@ -631,6 +714,7 @@ pivot:
           String depType = '';
           String bType = '';
           String bKind = '';
+          String bUnit = '';
           String cRegion = '';
           for (def recObj : merged.values()) {
             Map rec = (Map)recObj;
@@ -649,6 +733,7 @@ pivot:
             if (rec.get('dep_type') != '' && (depType == '' || isNewer)) { depType = rec.get('dep_type').toString(); }
             if (rec.get('b_type') != '' && (bType == '' || isNewer)) { bType = rec.get('b_type').toString(); }
             if (rec.get('b_kind') != '' && (bKind == '' || isNewer)) { bKind = rec.get('b_kind').toString(); }
+            if (rec.get('b_unit') != '' && (bUnit == '' || isNewer)) { bUnit = rec.get('b_unit').toString(); }
             if (rec.get('c_region') != '' && (cRegion == '' || isNewer)) { cRegion = rec.get('c_region').toString(); }
           }
           return [
@@ -661,6 +746,7 @@ pivot:
             'deployment_type': depType,
             'billing_type': bType,
             'billing_kind': bKind,
+            'billing_unit': bUnit,
             'cloud_region': cRegion
           ];
 settings:
@@ -670,4 +756,4 @@ settings:
 _meta:
   managed: true
   run_as_kibana_system: false
-  fleet_transform_version: 0.6.0
+  fleet_transform_version: 0.7.0

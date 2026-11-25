@@ -1,0 +1,72 @@
+description: Aggregates daily Synthetics monitor check execution metrics per deployment, monitor, and synthetic type into a single daily lookup row.
+source:
+  index:
+    - metrics-chargeback.usage-*
+  query:
+    term:
+      doc_type: "synthetics_monitor"
+dest:
+  index: chargeback_lookup.dest_cluster_synthetics_monitor_contribution-1
+  aliases:
+    - alias: chargeback_lookup.cluster_synthetics_monitor_contribution
+      move_on_creation: true
+  pipeline: 'logs-chargeback.lookup-{{ ingestPipelineName "usage" }}'
+frequency: 60m
+sync:
+  time:
+    field: event.ingested
+    delay: 120s
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 365d
+pivot:
+  group_by:
+    "@timestamp":
+      date_histogram:
+        field: "@timestamp"
+        calendar_interval: 1d
+    cluster_name:
+      terms:
+        field: elasticsearch.cluster.name
+    monitor_id:
+      terms:
+        field: monitor_id
+    monitor_type:
+      terms:
+        field: monitor_type
+  aggregations:
+    check_count:
+      sum:
+        field: check_count
+    up_count:
+      sum:
+        field: up_count
+    down_count:
+      sum:
+        field: down_count
+    locations_count:
+      max:
+        field: locations_count
+    total_duration_ms:
+      sum:
+        field: total_duration_ms
+    max_avg_duration_ms:
+      max:
+        field: average_duration_ms
+    latest_meta:
+      top_metrics:
+        metrics:
+          - field: deployment_name
+          - field: deployment_group
+          - field: monitor_name
+          - field: monitor_namespace
+        sort:
+          event.ingested: desc
+settings:
+  deduce_mappings: false
+  unattended: true
+_meta:
+  managed: true
+  run_as_kibana_system: false
+  fleet_transform_version: 0.7.0

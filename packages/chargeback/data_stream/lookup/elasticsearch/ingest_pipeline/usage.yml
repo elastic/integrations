@@ -5,6 +5,47 @@ processors:
       ignore_failure: true
       lang: painless
       source: |
+        boolean isAuxWorkload = (ctx.model_id != null || ctx.monitor_id != null);
+        if (isAuxWorkload) {
+          if (ctx.latest_meta instanceof Map) {
+            Map lm = (Map)ctx.latest_meta;
+            Map tm = null;
+            if (lm.top instanceof List && ((List)lm.top).size() > 0) {
+              def topEntry = ((List)lm.top).get(0);
+              if (topEntry instanceof Map && topEntry.metrics instanceof Map) {
+                tm = (Map)topEntry.metrics;
+              } else if (topEntry instanceof Map) {
+                tm = (Map)topEntry;
+              }
+            } else {
+              tm = lm;
+            }
+            if (tm != null) {
+              for (String fk : ['deployment_name', 'deployment_group', 'monitor_name', 'monitor_namespace']) {
+                if (tm.get(fk) != null && tm.get(fk).toString() != '') {
+                  ctx[fk] = tm.get(fk).toString();
+                }
+              }
+            }
+          }
+          ctx.remove('latest_meta');
+          if (ctx.model_id != null) {
+            long inf = ctx.inference_count instanceof Number ? ((Number)ctx.inference_count).longValue() : 0L;
+            long totMs = ctx.total_inference_time_ms instanceof Number ? ((Number)ctx.total_inference_time_ms).longValue() : 0L;
+            double maxAvg = ctx.max_avg_ms instanceof Number ? ((Number)ctx.max_avg_ms).doubleValue() : 0.0;
+            ctx.average_inference_time_ms = inf > 0L ? ((double)totMs / (double)inf) : maxAvg;
+            ctx.remove('max_avg_ms');
+          }
+          if (ctx.monitor_id != null) {
+            long chk = ctx.check_count instanceof Number ? ((Number)ctx.check_count).longValue() : 0L;
+            double totDur = ctx.total_duration_ms instanceof Number ? ((Number)ctx.total_duration_ms).doubleValue() : 0.0;
+            double maxDur = ctx.max_avg_duration_ms instanceof Number ? ((Number)ctx.max_avg_duration_ms).doubleValue() : 0.0;
+            ctx.average_duration_ms = chk > 0L ? (totDur / (double)chk) : maxDur;
+            ctx.total_duration_ms = totDur;
+            ctx.remove('max_avg_duration_ms');
+          }
+          ctx.usage_source = 'native';
+        } else {
         String pfx = (ctx.tier != null && ctx.datastream != null)
           ? 'tier_and_datastream'
           : (ctx.tier != null ? 'tier' : (ctx.datastream != null ? 'datastream' : 'deployment'));
@@ -12,6 +53,12 @@ processors:
         try {
           if (ctx.rollup instanceof Map) {
             Map r = (Map)ctx.rollup;
+            if (r.get('deployment_name') != null && r.get('deployment_name').toString() != '') {
+              ctx.deployment_name = r.get('deployment_name').toString();
+            }
+            if (r.get('deployment_group') != null && r.get('deployment_group').toString() != '') {
+              ctx.deployment_group = r.get('deployment_group').toString();
+            }
             String[] metrics = new String[] { 'sum_indexing_time', 'sum_query_time', 'sum_store_size', 'sum_data_set_store_size' };
             if (ctx.tier != null && r.sel_by_tier instanceof Map) {
               String tKey = ctx.tier.toString();
@@ -129,6 +176,7 @@ processors:
         ctx.remove('native');
         ctx.remove('legacy');
         ctx.remove('coverage');
+        }
 
         if (ctx.cluster_name != null) {
           ctx.deployment_id = ctx.cluster_name;
@@ -164,15 +212,34 @@ processors:
         }
 
         // Parse Fleet data stream naming: <type>-<dataset>-<namespace>
-        // first segment -> ds_type; last segment -> ds_namespace; else other
+        // Handle .ds- backing indices, system/dot indices, and multi-hyphen namespaces cleanly.
         if (ctx.datastream != null && ctx.datastream.toString() != '') {
-          def parts = ctx.datastream.toString().splitOnToken('-');
-          if (parts.length >= 2) {
-            ctx.ds_type = parts[0];
-            ctx.ds_namespace = parts[parts.length - 1];
+          String rawDs = ctx.datastream.toString();
+          def dsPattern = /^(?:partial-)?(?:restored-)?(?:shrink-.{4}-)?(?:downsample-[^-]+-)?\.ds-(.+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d+)?$/;
+          def m = dsPattern.matcher(rawDs);
+          if (m.matches()) {
+            rawDs = m.group(1);
+            ctx.datastream = rawDs;
+          }
+          if (rawDs.startsWith('.') || rawDs == 'system') {
+            ctx.ds_type = 'system';
+            ctx.ds_namespace = 'system';
           } else {
-            ctx.ds_type = 'other';
-            ctx.ds_namespace = 'other';
+            def parts = rawDs.splitOnToken('-');
+            if (parts.length >= 3 && (parts[0] == 'logs' || parts[0] == 'metrics' || parts[0] == 'traces' || parts[0] == 'synthetics' || parts[0] == 'profiling')) {
+              ctx.ds_type = parts[0];
+              def nsParts = new ArrayList();
+              for (int i = 2; i < parts.length; i++) {
+                nsParts.add(parts[i]);
+              }
+              ctx.ds_namespace = String.join('-', nsParts);
+            } else if (parts.length >= 2) {
+              ctx.ds_type = parts[0];
+              ctx.ds_namespace = parts[parts.length - 1];
+            } else {
+              ctx.ds_type = 'other';
+              ctx.ds_namespace = 'other';
+            }
           }
         }
   - set:
