@@ -427,7 +427,15 @@ An example event for `cryptominer` looks as following:
 
 ### File Feed
 
-This is the `File Feed` dataset. It collects Google Threat Intelligence File Feed records from files on disk using the filestream input. The File Feed is distributed as bzip2-compressed NDJSON; decompress each package to NDJSON on disk before pointing the input at it.
+This is the `File Feed` dataset. It collects Google Threat Intelligence File Feed records from files on disk using the filestream input. The File Feed is distributed as bzip2-compressed NDJSON; decompress each package to NDJSON on disk before pointing the input at it. Each line is one File Feed object exactly as delivered by Google - a bare JSON object parsed into `gti.file_feed`, with no `{"data": {...}}` wrapper (unlike the threat-list files described above).
+
+A record is promoted to `threat.indicator.*` when any of the following is true:
+
+- its GTI verdict is in the **Indicator verdicts** list (default `VERDICT_MALICIOUS`), or
+- it is `VERDICT_SUSPICIOUS` and its threat score is greater than or equal to the **Minimum threat score for suspicious promotion** (default `70`), or
+- its `last_analysis_stats.malicious` count is greater than or equal to the **Minimum malicious detections** value (default `5`), regardless of verdict.
+
+By default, **Drop records below the indicator threshold** (`drop_below_threshold`) is enabled, so records that are not promoted are discarded and never stored. Disable it to retain every record under `gti.file_feed.*`. Only promoted records carry `threat.indicator.*` and feed the File IOC transform.
 
 #### Example
 
@@ -435,20 +443,39 @@ An example event for `file_feed` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-08-19T04:00:48.000Z",
+    "@timestamp": "2026-08-19T03:59:59.000Z",
+    "agent": {
+        "ephemeral_id": "a5465750-aae4-4b96-8bf4-503c0819ea57",
+        "id": "a3e83a1f-2319-4955-85c2-de7eaa01bca5",
+        "name": "elastic-agent-49076",
+        "type": "filebeat",
+        "version": "8.19.0"
+    },
+    "data_stream": {
+        "dataset": "ti_google_threat_intelligence.file_feed",
+        "namespace": "86603",
+        "type": "logs"
+    },
     "ecs": {
         "version": "8.17.0"
     },
+    "elastic_agent": {
+        "id": "a3e83a1f-2319-4955-85c2-de7eaa01bca5",
+        "snapshot": false,
+        "version": "8.19.0"
+    },
     "event": {
+        "agent_id_status": "verified",
         "category": [
             "threat",
             "file"
         ],
         "dataset": "ti_google_threat_intelligence.file_feed",
+        "ingested": "2026-11-25T06:00:38Z",
         "kind": "enrichment",
         "module": "ti_google_threat_intelligence",
-        "original": "{\"id\":\"ab22a3a934f243985207a5c8fefa8b027c05c35bf77ae1e58e8cf6fe8732653b\",\"type\":\"file\",\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/ab22a3a934f243985207a5c8fefa8b027c05c35bf77ae1e58e8cf6fe8732653b\"},\"attributes\":{\"first_submission_date\":1787111887,\"magic\":\"ASCII text, with no line terminators\",\"popular_threat_classification\":{\"popular_threat_name\":[{\"value\":\"gen2\",\"count\":2},{\"value\":\"cryxos\",\"count\":1},{\"value\":\"hnaa\",\"count\":1}],\"suggested_threat_label\":\"trojan.gen2/cryxos\",\"popular_threat_category\":[{\"value\":\"trojan\",\"count\":5},{\"value\":\"downloader\",\"count\":1}]},\"type_description\":\"JavaScript\",\"javascript_info\":{\"tags\":[\"eval\"]},\"last_submission_date\":1787111887,\"md5\":\"b82b004164c21ff5154e9520c5abf5d6\",\"type_tag\":\"javascript\",\"threat_severity\":{\"version\":5,\"threat_severity_level\":\"SEVERITY_MEDIUM\",\"threat_severity_data\":{\"popular_threat_category\":\"trojan\",\"num_gav_detections\":2},\"last_analysis_date\":\"1787112047\",\"level_description\":\"Severity MEDIUM because it was considered trojan.\"},\"type_tags\":[\"source\",\"javascript\",\"js\"],\"sha1\":\"c60fdab88218e598508aabd0a9c50ab5cb750e84\",\"tlsh\":\"T10DE0EB5518C1CCD0834AAAB97B24FA0560BE98333007E3B9730C32E92C33F540D20B8B\",\"names\":[],\"vhash\":\"7f8464aa5eb51fb13aa268bf214402af\",\"total_votes\":{\"harmless\":0,\"malicious\":0},\"filecondis\":{\"dhash\":\"ae00ad00aaaaaa22\",\"raw_md5\":\"52abec5c0bf2b102fa12318e5478f18b\"},\"reputation\":0,\"tags\":[\"javascript\"],\"exiftool\":{\"MIMEType\":\"text/plain\",\"FileType\":\"TXT\",\"WordCount\":\"4\",\"LineCount\":\"1\",\"MIMEEncoding\":\"us-ascii\",\"FileTypeExtension\":\"txt\",\"Newlines\":\"(none)\"},\"last_analysis_stats\":{\"malicious\":14,\"suspicious\":0,\"undetected\":47,\"harmless\":0,\"timeout\":0,\"confirmed-timeout\":0,\"failure\":1,\"type-unsupported\":14},\"ssdeep\":\"6:qdx6LbOB84CGsZvJl2KqFQokp/7Y9Ku5jlC7qOATwY:2x63R4k7V5p/8KMJC7kTwY\",\"available_tools\":[],\"sha256\":\"ab22a3a934f243985207a5c8fefa8b027c05c35bf77ae1e58e8cf6fe8732653b\",\"type_extension\":\"js\",\"unique_sources\":1,\"magika\":\"JAVASCRIPT\",\"last_analysis_results\":{\"Bkav\":{\"method\":\"blacklist\",\"engine_name\":\"Bkav\",\"engine_version\":\"8.2.40(8338)\",\"engine_update\":\"20260818\",\"category\":\"undetected\",\"result\":null},\"Lionic\":{\"method\":\"blacklist\",\"engine_name\":\"Lionic\",\"engine_version\":\"8.16\",\"engine_update\":\"20260818\",\"category\":\"undetected\",\"result\":null},\"MicroWorld-eScan\":{\"method\":\"blacklist\",\"engine_name\":\"MicroWorld-eScan\",\"engine_version\":\"14.0.409.0\",\"engine_update\":\"20260818\",\"category\":\"undetected\",\"result\":null}},\"times_submitted\":1,\"last_analysis_date\":1787111887,\"last_modification_date\":1787112048,\"trid\":[{\"file_type\":\"JavaScript source code (var. 1)\",\"probability\":100.0}],\"size\":297,\"downloadable\":true,\"gti_assessment\":{\"verdict\":{\"value\":\"VERDICT_MALICIOUS\"},\"threat_score\":{\"value\":30},\"severity\":{\"value\":\"SEVERITY_LOW\"},\"contributing_factors\":{\"normalised_categories\":[\"trojan\"],\"gti_confidence_score\":90,\"gavs_detections\":2},\"description\":\"This indicator is malicious (low severity). It was detected by Google's spam and threat filtering engines.\",\"gti_description_cards\":{\"BULK_SIGNALS\":[{\"influence\":\"medium\",\"title\":\"Multi-Engine AV Detections: 14\",\"sub_title\":\"\",\"related_links\":[],\"collection_type\":null}]}}},\"relationships\":{\"contacted_urls\":{\"data\":[],\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/ab22a3a934f243985207a5c8fefa8b027c05c35bf77ae1e58e8cf6fe8732653b/relationships/contacted_urls?limit=20\",\"related\":\"https://www.virustotal.com/api/v3/files/ab22a3a934f243985207a5c8fefa8b027c05c35bf77ae1e58e8cf6fe8732653b/contacted_urls\"}},\"associations\":{\"data\":[],\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/ab22a3a934f243985207a5c8fefa8b027c05c35bf77ae1e58e8cf6fe8732653b/relationships/associations?limit=20\",\"related\":\"https://www.virustotal.com/api/v3/files/ab22a3a934f243985207a5c8fefa8b027c05c35bf77ae1e58e8cf6fe8732653b/associations\"}},\"embedded_urls\":{\"data\":[],\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/ab22a3a934f243985207a5c8fefa8b027c05c35bf77ae1e58e8cf6fe8732653b/relationships/embedded_urls?limit=20\",\"related\":\"https://www.virustotal.com/api/v3/files/ab22a3a934f243985207a5c8fefa8b027c05c35bf77ae1e58e8cf6fe8732653b/embedded_urls\"}},\"embedded_domains\":{\"data\":[],\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/ab22a3a934f243985207a5c8fefa8b027c05c35bf77ae1e58e8cf6fe8732653b/relationships/embedded_domains?limit=20\",\"related\":\"https://www.virustotal.com/api/v3/files/ab22a3a934f243985207a5c8fefa8b027c05c35bf77ae1e58e8cf6fe8732653b/embedded_domains\"}},\"embedded_ips\":{\"data\":[],\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/ab22a3a934f243985207a5c8fefa8b027c05c35bf77ae1e58e8cf6fe8732653b/relationships/embedded_ips?limit=20\",\"related\":\"https://www.virustotal.com/api/v3/files/ab22a3a934f243985207a5c8fefa8b027c05c35bf77ae1e58e8cf6fe8732653b/embedded_ips\"}},\"contacted_ips\":{\"data\":[],\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/ab22a3a934f243985207a5c8fefa8b027c05c35bf77ae1e58e8cf6fe8732653b/relationships/contacted_ips?limit=20\",\"related\":\"https://www.virustotal.com/api/v3/files/ab22a3a934f243985207a5c8fefa8b027c05c35bf77ae1e58e8cf6fe8732653b/contacted_ips\"}},\"itw_urls\":{\"data\":[],\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/ab22a3a934f243985207a5c8fefa8b027c05c35bf77ae1e58e8cf6fe8732653b/relationships/itw_urls?limit=20\",\"related\":\"https://www.virustotal.com/api/v3/files/ab22a3a934f243985207a5c8fefa8b027c05c35bf77ae1e58e8cf6fe8732653b/itw_urls\"}},\"contacted_domains\":{\"data\":[],\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/ab22a3a934f243985207a5c8fefa8b027c05c35bf77ae1e58e8cf6fe8732653b/relationships/contacted_domains?limit=20\",\"related\":\"https://www.virustotal.com/api/v3/files/ab22a3a934f243985207a5c8fefa8b027c05c35bf77ae1e58e8cf6fe8732653b/contacted_domains\"}}},\"context_attributes\":{\"submitter\":{\"id\":\"fc9e8b82\",\"interface\":\"api\",\"city\":\"council bluffs\",\"region\":\"ia\",\"country\":\"US\"},\"download_url\":\"https://www.virustotal.com/api/v3/feeds/files/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA5/download\"}}",
-        "risk_score": 30,
+        "original": "{\"id\":\"466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc\",\"type\":\"file\",\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc\"},\"attributes\":{\"trid\":[{\"file_type\":\"Adobe Portable Document Format\",\"probability\":100.0}],\"creation_date\":1775210168,\"tlsh\":\"T19E549DB5BD52081DE64786FD653FB2CA07846129C39CB9B8A510B880583FA781EF51FF\",\"type_tags\":[\"document\",\"pdf\"],\"ssdeep\":\"3072:L6M1oA096wBAwaH6UkHi1QvYwADYoIGNWLJGld3ySqNPPLRzk4NClDX/My6:JuH8wBfaH6UkHiSYwczWLmqNPzbCTi\",\"type_extension\":\"pdf\",\"available_tools\":[\"sigcheck\"],\"sha256\":\"466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc\",\"total_votes\":{\"harmless\":0,\"malicious\":0},\"type_description\":\"PDF\",\"popular_threat_classification\":{\"popular_threat_name\":[{\"count\":1,\"value\":\"qrcode\"}],\"popular_threat_category\":[{\"count\":7,\"value\":\"phishing\"},{\"count\":5,\"value\":\"trojan\"}],\"suggested_threat_label\":\"phishing.qrcode\"},\"tags\":[\"pdf\"],\"last_analysis_stats\":{\"malicious\":11,\"suspicious\":0,\"undetected\":52,\"harmless\":0,\"timeout\":0,\"confirmed-timeout\":0,\"failure\":1,\"type-unsupported\":12},\"size\":286982,\"main_icon\":{\"raw_md5\":\"899ccaa963f6a4d55471c891598ae93a\",\"dhash\":\"0d4c232b55410517\"},\"meaningful_name\":\"Friday-April-2026 0256 AM Ion___fdp.pdf\",\"vhash\":\"9ad44949929ff778ce770afb03f643b9d\",\"downloadable\":true,\"first_submission_date\":1785676668,\"reputation\":0,\"last_analysis_results\":{\"Bkav\":{\"method\":\"blacklist\",\"engine_name\":\"Bkav\",\"engine_version\":\"8.2.40(8338)\",\"engine_update\":\"20260818\",\"category\":\"undetected\",\"result\":null},\"Lionic\":{\"method\":\"blacklist\",\"engine_name\":\"Lionic\",\"engine_version\":\"8.16\",\"engine_update\":\"20260818\",\"category\":\"undetected\",\"result\":null},\"MicroWorld-eScan\":{\"method\":\"blacklist\",\"engine_name\":\"MicroWorld-eScan\",\"engine_version\":\"14.0.409.0\",\"engine_update\":\"20260818\",\"category\":\"malicious\",\"result\":\"Trojan.GenericKD.81107671\"}},\"unique_sources\":1,\"filecondis\":{\"raw_md5\":\"c2326e8ab452f32f132b5e937279b790\",\"dhash\":\"00003d3c3c280000\"},\"times_submitted\":1,\"magic\":\"PDF document, version 1.4, 2 pages\",\"pdf_info\":{\"encrypted\":0,\"openaction\":0,\"header\":\"%PDF-1.4\",\"num_object_streams\":0,\"num_obj\":70,\"num_endstream\":29,\"flash\":0,\"embedded_file\":0,\"jbig2_compression\":0,\"num_endobj\":70,\"xfa\":0,\"javascript\":0,\"js\":0,\"startxref\":1,\"xref\":1,\"num_stream\":29,\"acroform\":0,\"num_launch_actions\":0,\"num_pages\":2,\"suspicious_colors\":0,\"trailer\":1,\"autoaction\":0},\"sha1\":\"2b6925e920c93241958085c30b6ec564b60fa7fc\",\"magika\":\"PDF\",\"type_tag\":\"pdf\",\"last_analysis_date\":1787111735,\"last_submission_date\":1785676668,\"md5\":\"3ef89ef41922fcbea756b7ba9c0deae0\",\"names\":[\"Friday-April-2026 0256 AM Ion___fdp.pdf\"],\"last_modification_date\":1787111999,\"threat_severity\":{\"version\":5,\"threat_severity_level\":\"SEVERITY_NONE\",\"threat_severity_data\":{\"num_av_detections\":1},\"last_analysis_date\":\"1785676690\",\"level_description\":\"Severity NONE because the file has no Google antivirus detections and no bad network activity\"},\"gti_assessment\":{\"contributing_factors\":{\"gti_confidence_score\":19},\"threat_score\":{\"value\":1},\"severity\":{\"value\":\"SEVERITY_NONE\"},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"},\"description\":\"This indicator did not match our detection criteria and there is currently no evidence of malicious activity.\",\"gti_description_cards\":{\"BULK_SIGNALS\":[{\"influence\":\"medium\",\"title\":\"Multi-Engine AV Detections: 11\",\"sub_title\":\"\",\"related_links\":[],\"collection_type\":null}]}},\"crowdsourced_ai_results\":[{\"verdict\":\"malicious\",\"source\":\"palm\",\"category\":\"code_insight\",\"analysis\":\"The analyzed document presents itself as an HR Benefits Overview targeting an employee at ION Group. While low-level technical analysis found no executable payloads or active streams, structural analysis revealed hidden text rendered in white font used to evade security scanners. This hidden text content is paired with generic corporate branding designed to prompt immediate user interaction.\\n\\nThe primary attack vector is a embedded QR code intended to bypass standard secure email gateways and push the target to an unmonitored mobile browser. The QR code resolves directly to the external URL https://circuitscale.surf/$jane.doe@example.com, which incorporates the recipient's email address as a parameter for a targeted credential harvesting campaign. Due to the presence of evasion techniques and a malicious quishing URL, the document is classified as malicious.\",\"id\":\"466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc-file-palm\"}]},\"relationships\":{\"contacted_domains\":{\"data\":[],\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/relationships/contacted_domains?limit=20\",\"related\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/contacted_domains\"}},\"itw_urls\":{\"data\":[],\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/relationships/itw_urls?limit=20\",\"related\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/itw_urls\"}},\"associations\":{\"data\":[],\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/relationships/associations?limit=20\",\"related\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/associations\"}},\"embedded_ips\":{\"data\":[],\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/relationships/embedded_ips?limit=20\",\"related\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/embedded_ips\"}},\"embedded_urls\":{\"data\":[{\"type\":\"url\",\"id\":\"7daf671f840dcecb20c37ecdd868eb517cf332fde60c6534cbc834224d8e15c6\",\"context_attributes\":{\"url\":\"https://circuitscale.surf/$jane.doe@example.com\"}}],\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/relationships/embedded_urls?limit=20\",\"related\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/embedded_urls\"}},\"contacted_ips\":{\"data\":[],\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/relationships/contacted_ips?limit=20\",\"related\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/contacted_ips\"}},\"contacted_urls\":{\"data\":[],\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/relationships/contacted_urls?limit=20\",\"related\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/contacted_urls\"}},\"embedded_domains\":{\"data\":[],\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/relationships/embedded_domains?limit=20\",\"related\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/embedded_domains\"}}},\"context_attributes\":{\"download_url\":\"https://www.virustotal.com/api/v3/feeds/files/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2/download\"}}",
+        "risk_score": 1,
         "type": [
             "indicator",
             "info"
@@ -457,122 +484,117 @@ An example event for `file_feed` looks as following:
     "gti": {
         "file_feed": {
             "attributes": {
+                "available_tools": [
+                    "sigcheck"
+                ],
+                "crowdsourced_ai_results": [
+                    {
+                        "analysis": "The analyzed document presents itself as an HR Benefits Overview targeting an employee at ION Group. While low-level technical analysis found no executable payloads or active streams, structural analysis revealed hidden text rendered in white font used to evade security scanners. This hidden text content is paired with generic corporate branding designed to prompt immediate user interaction.\n\nThe primary attack vector is a embedded QR code intended to bypass standard secure email gateways and push the target to an unmonitored mobile browser. The QR code resolves directly to the external URL https://circuitscale.surf/$jane.doe@example.com, which incorporates the recipient's email address as a parameter for a targeted credential harvesting campaign. Due to the presence of evasion techniques and a malicious quishing URL, the document is classified as malicious.",
+                        "category": "code_insight",
+                        "id": "466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc-file-palm",
+                        "source": "palm",
+                        "verdict": "malicious"
+                    }
+                ],
                 "downloadable": true,
-                "exiftool": {
-                    "file_type": "TXT",
-                    "file_type_extension": "txt",
-                    "line_count": "1",
-                    "mime_encoding": "us-ascii",
-                    "mime_type": "text/plain",
-                    "newlines": "(none)",
-                    "word_count": "4"
-                },
                 "filecondis": {
-                    "dhash": "ae00ad00aaaaaa22",
-                    "raw_md5": "52abec5c0bf2b102fa12318e5478f18b"
+                    "dhash": "00003d3c3c280000",
+                    "raw_md5": "c2326e8ab452f32f132b5e937279b790"
                 },
-                "first_submission_date": "2026-08-19T03:58:07.000Z",
+                "first_submission_date": "2026-08-02T13:17:48.000Z",
                 "gti_assessment": {
                     "contributing_factors": {
-                        "gavs_detections": 2,
-                        "gti_confidence_score": 90,
-                        "normalised_categories": [
-                            "trojan"
-                        ]
+                        "gti_confidence_score": 19
                     },
                     "gti_description_cards": {
                         "bulk_signals": [
                             {
                                 "influence": "medium",
-                                "title": "Multi-Engine AV Detections: 14"
+                                "title": "Multi-Engine AV Detections: 11"
                             }
                         ]
                     },
                     "severity": {
-                        "value": "SEVERITY_LOW"
+                        "value": "SEVERITY_NONE"
                     },
                     "verdict": {
-                        "value": "VERDICT_MALICIOUS"
+                        "value": "VERDICT_UNDETECTED"
                     }
                 },
-                "javascript_info": {
-                    "tags": [
-                        "eval"
-                    ]
-                },
-                "last_analysis_date": "2026-08-19T03:58:07.000Z",
-                "last_analysis_results": {
-                    "bkav": {
-                        "category": "undetected",
-                        "engine_name": "Bkav",
-                        "engine_update": "20260818",
-                        "engine_version": "8.2.40(8338)",
-                        "method": "blacklist"
-                    },
-                    "lionic": {
-                        "category": "undetected",
-                        "engine_name": "Lionic",
-                        "engine_update": "20260818",
-                        "engine_version": "8.16",
-                        "method": "blacklist"
-                    },
-                    "micro_world_e_scan": {
-                        "category": "undetected",
-                        "engine_name": "MicroWorld-eScan",
-                        "engine_update": "20260818",
-                        "engine_version": "14.0.409.0",
-                        "method": "blacklist"
-                    }
-                },
+                "last_analysis_date": "2026-08-19T03:55:35.000Z",
                 "last_analysis_stats": {
                     "confirmed_timeout": 0,
                     "failure": 1,
                     "harmless": 0,
                     "suspicious": 0,
                     "timeout": 0,
-                    "type_unsupported": 14,
-                    "undetected": 47
+                    "type_unsupported": 12,
+                    "undetected": 52
                 },
-                "last_modification_date": "2026-08-19T04:00:48.000Z",
-                "last_submission_date": "2026-08-19T03:58:07.000Z",
-                "magic": "ASCII text, with no line terminators",
-                "magika": "JAVASCRIPT",
+                "last_modification_date": "2026-08-19T03:59:59.000Z",
+                "last_submission_date": "2026-08-02T13:17:48.000Z",
+                "magic": "PDF document, version 1.4, 2 pages",
+                "magika": "PDF",
+                "main_icon": {
+                    "dhash": "0d4c232b55410517",
+                    "raw_md5": "899ccaa963f6a4d55471c891598ae93a"
+                },
+                "names": [
+                    "Friday-April-2026 0256 AM Ion___fdp.pdf"
+                ],
+                "pdf_info": {
+                    "acroform": 0,
+                    "autoaction": 0,
+                    "embedded_file": 0,
+                    "encrypted": 0,
+                    "flash": 0,
+                    "header": "%PDF-1.4",
+                    "javascript": 0,
+                    "jbig2_compression": 0,
+                    "js": 0,
+                    "num_endobj": 70,
+                    "num_endstream": 29,
+                    "num_launch_actions": 0,
+                    "num_obj": 70,
+                    "num_object_streams": 0,
+                    "num_pages": 2,
+                    "num_stream": 29,
+                    "openaction": 0,
+                    "startxref": 1,
+                    "suspicious_colors": 0,
+                    "trailer": 1,
+                    "xfa": 0,
+                    "xref": 1
+                },
                 "popular_threat_classification": {
                     "popular_threat_category": [
                         {
-                            "count": 5,
-                            "value": "trojan"
+                            "count": 7,
+                            "value": "phishing"
                         },
                         {
-                            "count": 1,
-                            "value": "downloader"
+                            "count": 5,
+                            "value": "trojan"
                         }
                     ],
                     "popular_threat_name": [
                         {
-                            "count": 2
-                        },
-                        {
-                            "count": 1
-                        },
-                        {
                             "count": 1
                         }
                     ],
-                    "suggested_threat_label": "trojan.gen2/cryxos"
+                    "suggested_threat_label": "phishing.qrcode"
                 },
                 "reputation": 0,
                 "tags": [
-                    "javascript"
+                    "pdf"
                 ],
                 "threat_severity": {
-                    "last_analysis_date": "2026-08-19T04:00:47.000Z",
-                    "level_description": "Severity MEDIUM because it was considered trojan.",
+                    "last_analysis_date": "2026-08-02T13:18:10.000Z",
+                    "level_description": "Severity NONE because the file has no Google antivirus detections and no bad network activity",
                     "threat_severity_data": {
-                        "num_gav_detections": 2,
-                        "popular_threat_category": "trojan"
+                        "num_av_detections": 1
                     },
-                    "threat_severity_level": "SEVERITY_MEDIUM",
+                    "threat_severity_level": "SEVERITY_NONE",
                     "version": 5
                 },
                 "total_votes": {
@@ -581,31 +603,47 @@ An example event for `file_feed` looks as following:
                 },
                 "trid": [
                     {
-                        "file_type": "JavaScript source code (var. 1)",
-                        "probability": 100.0
+                        "file_type": "Adobe Portable Document Format",
+                        "probability": 100
                     }
                 ],
-                "type_description": "JavaScript",
-                "type_tag": "javascript",
+                "type_description": "PDF",
+                "type_tag": "pdf",
                 "type_tags": [
-                    "source",
-                    "javascript",
-                    "js"
+                    "document",
+                    "pdf"
                 ],
                 "unique_sources": 1,
-                "vhash": "7f8464aa5eb51fb13aa268bf214402af"
+                "vhash": "9ad44949929ff778ce770afb03f643b9d"
             },
             "context_attributes": {
-                "download_url": "https://www.virustotal.com/api/v3/feeds/files/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA5/download",
-                "submitter": {
-                    "city": "council bluffs",
-                    "country": "US",
-                    "id": "fc9e8b82",
-                    "interface": "api",
-                    "region": "ia"
+                "download_url": "https://www.virustotal.com/api/v3/feeds/files/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2/download"
+            },
+            "relationships": {
+                "embedded_urls": {
+                    "data": [
+                        {
+                            "context_attributes": {
+                                "url": "https://circuitscale.surf/$jane.doe@example.com"
+                            },
+                            "id": "7daf671f840dcecb20c37ecdd868eb517cf332fde60c6534cbc834224d8e15c6",
+                            "type": "url"
+                        }
+                    ]
                 }
             }
         }
+    },
+    "input": {
+        "type": "filestream"
+    },
+    "log": {
+        "file": {
+            "device_id": "44",
+            "inode": "210",
+            "path": "/tmp/service_logs/test-file_feed.log"
+        },
+        "offset": 0
     },
     "observer": {
         "product": "Threat Intelligence",
@@ -613,53 +651,54 @@ An example event for `file_feed` looks as following:
     },
     "related": {
         "hash": [
-            "ae00ad00aaaaaa22",
-            "52abec5c0bf2b102fa12318e5478f18b",
-            "b82b004164c21ff5154e9520c5abf5d6",
-            "c60fdab88218e598508aabd0a9c50ab5cb750e84",
-            "ab22a3a934f243985207a5c8fefa8b027c05c35bf77ae1e58e8cf6fe8732653b",
-            "6:qdx6LbOB84CGsZvJl2KqFQokp/7Y9Ku5jlC7qOATwY:2x63R4k7V5p/8KMJC7kTwY",
-            "T10DE0EB5518C1CCD0834AAAB97B24FA0560BE98333007E3B9730C32E92C33F540D20B8B",
-            "7f8464aa5eb51fb13aa268bf214402af"
-        ],
-        "user": [
-            "fc9e8b82"
+            "00003d3c3c280000",
+            "c2326e8ab452f32f132b5e937279b790",
+            "0d4c232b55410517",
+            "899ccaa963f6a4d55471c891598ae93a",
+            "3ef89ef41922fcbea756b7ba9c0deae0",
+            "2b6925e920c93241958085c30b6ec564b60fa7fc",
+            "466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc",
+            "3072:L6M1oA096wBAwaH6UkHi1QvYwADYoIGNWLJGld3ySqNPPLRzk4NClDX/My6:JuH8wBfaH6UkHiSYwczWLmqNPzbCTi",
+            "T19E549DB5BD52081DE64786FD653FB2CA07846129C39CB9B8A510B880583FA781EF51FF",
+            "9ad44949929ff778ce770afb03f643b9d"
         ]
     },
     "tags": [
-        "preserve_original_event"
+        "preserve_original_event",
+        "forwarded",
+        "google_threat_intelligence-file_feed"
     ],
     "threat": {
         "feed": {
             "name": "GTI File Feed"
         },
         "indicator": {
-            "description": "This indicator is malicious (low severity). It was detected by Google's spam and threat filtering engines.",
+            "description": "This indicator did not match our detection criteria and there is currently no evidence of malicious activity.",
             "file": {
-                "extension": "js",
+                "created": "2026-04-03T09:56:08.000Z",
+                "extension": "pdf",
                 "hash": {
-                    "md5": "b82b004164c21ff5154e9520c5abf5d6",
-                    "sha1": "c60fdab88218e598508aabd0a9c50ab5cb750e84",
-                    "sha256": "ab22a3a934f243985207a5c8fefa8b027c05c35bf77ae1e58e8cf6fe8732653b",
-                    "ssdeep": "6:qdx6LbOB84CGsZvJl2KqFQokp/7Y9Ku5jlC7qOATwY:2x63R4k7V5p/8KMJC7kTwY",
-                    "tlsh": "T10DE0EB5518C1CCD0834AAAB97B24FA0560BE98333007E3B9730C32E92C33F540D20B8B"
+                    "md5": "3ef89ef41922fcbea756b7ba9c0deae0",
+                    "sha1": "2b6925e920c93241958085c30b6ec564b60fa7fc",
+                    "sha256": "466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc",
+                    "ssdeep": "3072:L6M1oA096wBAwaH6UkHi1QvYwADYoIGNWLJGld3ySqNPPLRzk4NClDX/My6:JuH8wBfaH6UkHiSYwczWLmqNPzbCTi",
+                    "tlsh": "T19E549DB5BD52081DE64786FD653FB2CA07846129C39CB9B8A510B880583FA781EF51FF"
                 },
-                "size": 297
+                "name": "Friday-April-2026 0256 AM Ion___fdp.pdf",
+                "size": 286982
             },
             "id": [
-                "ab22a3a934f243985207a5c8fefa8b027c05c35bf77ae1e58e8cf6fe8732653b"
+                "466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc"
             ],
-            "modified_at": "2026-08-19T04:00:48.000Z",
-            "reference": "https://www.virustotal.com/api/v3/files/ab22a3a934f243985207a5c8fefa8b027c05c35bf77ae1e58e8cf6fe8732653b",
-            "scanner_stats": 14,
+            "modified_at": "2026-08-19T03:59:59.000Z",
+            "reference": "https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc",
+            "scanner_stats": 11,
             "sightings": 1,
             "type": "file"
         },
         "software": {
             "name": [
-                "gen2",
-                "cryxos",
-                "hnaa"
+                "qrcode"
             ]
         }
     }
@@ -1446,14 +1485,8 @@ An example event for `file_feed` looks as following:
 | threat.indicator.file.elf.header.os_abi | Application Binary Interface (ABI) of the Linux OS. | keyword |
 | threat.indicator.file.elf.header.type | Header type of the ELF file. | keyword |
 | threat.indicator.file.elf.header.version | Version of the ELF header. | keyword |
-| threat.indicator.file.elf.sections.flags | ELF Section List flags. | keyword |
-| threat.indicator.file.elf.sections.name | ELF Section List name. | keyword |
-| threat.indicator.file.elf.sections.physical_offset | ELF Section List offset. | keyword |
-| threat.indicator.file.elf.sections.physical_size | ELF Section List physical size. | long |
-| threat.indicator.file.elf.sections.type | ELF Section List type. | keyword |
-| threat.indicator.file.elf.sections.virtual_address | ELF Section List virtual address. | long |
-| threat.indicator.file.elf.segments.sections | ELF object segment sections. | keyword |
-| threat.indicator.file.elf.segments.type | ELF object segment type. | keyword |
+| threat.indicator.file.elf.sections | An array containing an object for each section of the ELF file. The keys that should be present in these objects are defined by sub-fields underneath `elf.sections.\*`. | nested |
+| threat.indicator.file.elf.segments | An array containing an object for each segment of the ELF file. The keys that should be present in these objects are defined by sub-fields underneath `elf.segments.\*`. | nested |
 | threat.indicator.file.elf.shared_libraries | List of shared libraries used by this ELF object. | keyword |
 | threat.indicator.file.elf.telfhash | telfhash symbol hash for ELF file. | keyword |
 | threat.indicator.file.extension | File extension, excluding the leading dot. Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
@@ -1469,10 +1502,7 @@ An example event for `file_feed` looks as following:
 | threat.indicator.file.pe.imphash | A hash of the imports in a PE file. An imphash -- or import hash -- can be used to fingerprint binaries even after recompilation or other code-level transformations have occurred, which would change more traditional hash values. Learn more at https://www.fireeye.com/blog/threat-research/2014/01/tracking-malware-import-hashing.html. | keyword |
 | threat.indicator.file.pe.original_file_name | Internal name of the file, provided at compile-time. | keyword |
 | threat.indicator.file.pe.product | Internal product name of the file, provided at compile-time. | keyword |
-| threat.indicator.file.pe.sections.entropy | Shannon entropy calculation from the section. | long |
-| threat.indicator.file.pe.sections.name | PE Section List name. | keyword |
-| threat.indicator.file.pe.sections.physical_size | PE Section List physical size. | long |
-| threat.indicator.file.pe.sections.virtual_size | PE Section List virtual size. This is always the same as `physical_size`. | long |
+| threat.indicator.file.pe.sections | An array containing an object for each section of the PE file. The keys that should be present in these objects are defined by sub-fields underneath `pe.sections.\*`. | nested |
 | threat.indicator.file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.indicator.id | The ID of the indicator used by this threat to conduct behavior commonly modeled using MITRE ATT&CK®. This field can have multiple values to allow for the identification of the same indicator across systems that use different ID formats. While not required, a common approach is to use a STIX 2.x indicator ID. | keyword |

@@ -3,8 +3,13 @@
 #   - a kept VERDICT_UNDETECTED record retaining its raw gti.file_feed.* source fields
 #     (the conditional removal of threat.indicator-mapped duplicates), and
 #   - keep_engine_results=true and preserve_original_event behaviour.
-#   doc 1 VERDICT_MALICIOUS   -> indicator; last_analysis_results and event.original retained
+#   doc 1 VERDICT_MALICIOUS   -> PE indicator; last_analysis_results and event.original retained
 #   doc 2 VERDICT_UNDETECTED  -> kept non-indicator; raw gti.file_feed.* retained, threat.indicator absent
+#   doc 3 VERDICT_MALICIOUS   -> ELF indicator; exercises the elf_info header/sections/segments
+#                               projection into threat.indicator.file.elf.* (aligned arrays of
+#                               objects) and the crowdsourced_ids_results[].alert_context[]
+#                               IP/port/host enrichment into related.ip / related.hosts
+#   doc 4 VERDICT_UNDETECTED  -> kept non-indicator ELF; raw elf_info.* retained incl. abi_version
 fields:
   tags:
     - preserve_original_event

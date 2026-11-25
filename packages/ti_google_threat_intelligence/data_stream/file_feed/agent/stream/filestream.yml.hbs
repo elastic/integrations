@@ -1,6 +1,6 @@
 paths:
 {{#each paths as |path|}}
-  - {{path}}
+  - {{escape_string path}}
 {{/each}}
 prospector.scanner.exclude_files: ['\.gz$', '\.bz2$']
 tags:
@@ -8,7 +8,7 @@ tags:
   - preserve_original_event
 {{/if}}
 {{#each tags as |tag|}}
-  - {{tag}}
+  - {{escape_string tag}}
 {{/each}}
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
@@ -23,18 +23,18 @@ processors:
       indicator_min_malicious_detections: {{indicator_min_malicious_detections}}
       indicator_verdicts:
 {{#each indicator_verdicts as |verdict|}}
-        - {{verdict}}
+        - {{escape_string verdict}}
 {{/each}}
 {{#if type_tags_include}}
       type_tags_include:
 {{#each type_tags_include as |type_tag|}}
-        - {{type_tag}}
+        - {{escape_string type_tag}}
 {{/each}}
 {{/if}}
 {{#if tags_exclude}}
       tags_exclude:
 {{#each tags_exclude as |tag|}}
-        - {{tag}}
+        - {{escape_string tag}}
 {{/each}}
 {{/if}}
 {{#if processors}}

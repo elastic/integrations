@@ -920,8 +920,8 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gti.file_feed.attributes.elf_info.header.abi_version
-      tag: convert_attributes_elf_info_header_abi_version_to_long
-      type: long
+      tag: convert_attributes_elf_info_header_abi_version_to_string
+      type: string
       ignore_missing: true
       on_failure:
         - append:
@@ -999,145 +999,60 @@ processors:
       tag: set_threat_indicator_file_elf_header_type_from_file_feed_attributes_elf_info_header_type
       copy_from: gti.file_feed.attributes.elf_info.header.type
       ignore_empty_value: true
-  - foreach:
-      field: gti.file_feed.attributes.elf_info.section_list
-      tag: foreach_attributes_elf_info_section_list_flags
+  - script:
+      tag: build_threat_indicator_file_elf_sections
+      lang: painless
+      description: Build aligned ECS nested elf.sections objects, one object per ELF section, so leaf values stay aligned per section.
       if: ctx.gti?.file_feed?.attributes?.elf_info?.section_list instanceof List
-      processor:
-        append:
-          field: threat.indicator.file.elf.sections.flags
-          tag: append_attributes_elf_info_section_list_flags_into_threat_indicator_file_elf_sections_flags
-          value: '{{{_ingest._value.flags}}}'
-          allow_duplicates: false
-  - foreach:
-      field: gti.file_feed.attributes.elf_info.section_list
-      tag: foreach_attributes_elf_info_section_list_name
-      if: ctx.gti?.file_feed?.attributes?.elf_info?.section_list instanceof List
-      processor:
-        append:
-          field: threat.indicator.file.elf.sections.name
-          tag: append_attributes_elf_info_section_list_name_into_threat_indicator_file_elf_sections_name
-          value: '{{{_ingest._value.name}}}'
-          allow_duplicates: false
-  - foreach:
-      field: gti.file_feed.attributes.elf_info.section_list
-      tag: foreach_attributes_elf_info_section_list_physical_offset
-      if: ctx.gti?.file_feed?.attributes?.elf_info?.section_list instanceof List
-      processor:
-        convert:
-          field: _ingest._value.physical_offset
-          tag: convert_attributes_elf_info_section_list_physical_offset_to_long
-          type: long
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field:
-                  - _ingest._value.physical_offset
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: gti.file_feed.attributes.elf_info.section_list
-      tag: foreach_attributes_elf_info_section_list_physical_offset
-      if: ctx.gti?.file_feed?.attributes?.elf_info?.section_list instanceof List
-      processor:
-        append:
-          field: threat.indicator.file.elf.sections.physical_offset
-          tag: append_attributes_elf_info_section_list_physical_offset_into_threat_indicator_file_elf_sections_physical_offset
-          value: '{{{_ingest._value.physical_offset}}}'
-          allow_duplicates: false
-  - foreach:
-      field: gti.file_feed.attributes.elf_info.section_list
-      tag: foreach_attributes_elf_info_section_list_section_type
-      if: ctx.gti?.file_feed?.attributes?.elf_info?.section_list instanceof List
-      processor:
-        append:
-          field: threat.indicator.file.elf.sections.type
-          tag: append_attributes_elf_info_section_list_section_type_into_threat_indicator_file_elf_sections_type
-          value: '{{{_ingest._value.section_type}}}'
-          allow_duplicates: false
-  - foreach:
-      field: gti.file_feed.attributes.elf_info.section_list
-      tag: foreach_attributes_elf_info_section_list_size
-      if: ctx.gti?.file_feed?.attributes?.elf_info?.section_list instanceof List
-      processor:
-        convert:
-          field: _ingest._value.size
-          tag: convert_attributes_elf_info_section_list_size_to_long
-          type: long
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field:
-                  - _ingest._value.size
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: gti.file_feed.attributes.elf_info.section_list
-      tag: foreach_attributes_elf_info_section_list_size
-      if: ctx.gti?.file_feed?.attributes?.elf_info?.section_list instanceof List
-      processor:
-        append:
-          field: threat.indicator.file.elf.sections.physical_size
-          tag: append_attributes_elf_info_section_list_size_into_threat_indicator_file_elf_sections_physical_size
-          value: '{{{_ingest._value.size}}}'
-          allow_duplicates: false
-  - foreach:
-      field: gti.file_feed.attributes.elf_info.section_list
-      tag: foreach_attributes_elf_info_section_list_virtual_address
-      if: ctx.gti?.file_feed?.attributes?.elf_info?.section_list instanceof List
-      processor:
-        convert:
-          field: _ingest._value.virtual_address
-          tag: convert_attributes_elf_info_section_list_virtual_address_to_long
-          type: long
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field:
-                  - _ingest._value.virtual_address
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: gti.file_feed.attributes.elf_info.section_list
-      tag: foreach_attributes_elf_info_section_list_virtual_address
-      if: ctx.gti?.file_feed?.attributes?.elf_info?.section_list instanceof List
-      processor:
-        append:
-          field: threat.indicator.file.elf.sections.virtual_address
-          tag: append_attributes_elf_info_section_list_virtual_address_into_threat_indicator_file_elf_sections_virtual_address
-          value: '{{{_ingest._value.virtual_address}}}'
-          allow_duplicates: false
-  - foreach:
-      field: gti.file_feed.attributes.elf_info.segment_list
-      tag: foreach_attributes_elf_info_segment_list_resources
+      source: |-
+        def out = new ArrayList();
+        for (def s : ctx.gti.file_feed.attributes.elf_info.section_list) {
+          if (!(s instanceof Map)) { continue; }
+          def o = new HashMap();
+          if (s.flags != null) { o.flags = s.flags; }
+          if (s.name != null) { o.name = s.name; }
+          if (s.physical_offset != null) { o.physical_offset = String.valueOf(s.physical_offset); }
+          if (s.section_type != null) { o.type = s.section_type; }
+          if (s.size != null) {
+            try { o.physical_size = (long) Double.parseDouble(s.size.toString()); } catch (Exception e) {}
+          }
+          if (s.virtual_address != null) {
+            try { o.virtual_address = (long) Double.parseDouble(s.virtual_address.toString()); } catch (Exception e) {}
+          }
+          if (!o.isEmpty()) { out.add(o); }
+        }
+        if (!out.isEmpty()) {
+          if (ctx.threat == null) { ctx.threat = new HashMap(); }
+          if (ctx.threat.indicator == null) { ctx.threat.indicator = new HashMap(); }
+          if (ctx.threat.indicator.file == null) { ctx.threat.indicator.file = new HashMap(); }
+          if (ctx.threat.indicator.file.elf == null) { ctx.threat.indicator.file.elf = new HashMap(); }
+          ctx.threat.indicator.file.elf.sections = out;
+        }
+  - script:
+      tag: build_threat_indicator_file_elf_segments
+      lang: painless
+      description: Build aligned ECS nested elf.segments objects, one object per ELF segment.
       if: ctx.gti?.file_feed?.attributes?.elf_info?.segment_list instanceof List
-      processor:
-        foreach:
-          field: _ingest._value.resources
-          tag: foreach_attributes_elf_info_segment_list_resources
-          ignore_missing: true
-          processor:
-            append:
-              field: threat.indicator.file.elf.segments.sections
-              tag: append_attributes_elf_info_segment_list_resources_into_threat_indicator_file_elf_segments_sections
-              value: '{{{_ingest._value}}}'
-              allow_duplicates: false
-  - foreach:
-      field: gti.file_feed.attributes.elf_info.segment_list
-      tag: foreach_attributes_elf_info_segment_list_segment_type
-      if: ctx.gti?.file_feed?.attributes?.elf_info?.segment_list instanceof List
-      processor:
-        append:
-          field: threat.indicator.file.elf.segments.type
-          tag: append_attributes_elf_info_segment_list_segment_type_into_threat_indicator_file_elf_segments_type
-          value: '{{{_ingest._value.segment_type}}}'
-          allow_duplicates: false
+      source: |-
+        def out = new ArrayList();
+        for (def s : ctx.gti.file_feed.attributes.elf_info.segment_list) {
+          if (!(s instanceof Map)) { continue; }
+          def o = new HashMap();
+          if (s.segment_type != null) { o.type = s.segment_type; }
+          if (s.resources instanceof List) {
+            def secs = new ArrayList();
+            for (def r : s.resources) { if (r != null) { secs.add(String.valueOf(r)); } }
+            if (!secs.isEmpty()) { o.sections = secs; }
+          }
+          if (!o.isEmpty()) { out.add(o); }
+        }
+        if (!out.isEmpty()) {
+          if (ctx.threat == null) { ctx.threat = new HashMap(); }
+          if (ctx.threat.indicator == null) { ctx.threat.indicator = new HashMap(); }
+          if (ctx.threat.indicator.file == null) { ctx.threat.indicator.file = new HashMap(); }
+          if (ctx.threat.indicator.file.elf == null) { ctx.threat.indicator.file.elf = new HashMap(); }
+          ctx.threat.indicator.file.elf.segments = out;
+        }
   - foreach:
       field: gti.file_feed.attributes.elf_info.shared_libraries
       tag: foreach_attributes_elf_info_shared_libraries
@@ -2363,52 +2278,35 @@ processors:
       if: ctx.gti?.file_feed?.attributes?.pe_info?.rich_pe_header_hash != null
       value: '{{{gti.file_feed.attributes.pe_info.rich_pe_header_hash}}}'
       allow_duplicates: false
-  - foreach:
-      field: gti.file_feed.attributes.pe_info.sections
-      tag: foreach_attributes_pe_info_sections_chi2
+  - script:
+      tag: build_threat_indicator_file_pe_sections
+      lang: painless
+      description: Build aligned ECS nested pe.sections objects, one object per PE section, so leaf values stay aligned per section.
       if: ctx.gti?.file_feed?.attributes?.pe_info?.sections instanceof List
-      processor:
-        convert:
-          field: _ingest._value.chi2
-          tag: convert_attributes_pe_info_sections_chi2_to_double
-          type: double
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field:
-                  - _ingest._value.chi2
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: gti.file_feed.attributes.pe_info.sections
-      tag: foreach_attributes_pe_info_sections_entropy
-      if: ctx.gti?.file_feed?.attributes?.pe_info?.sections instanceof List
-      processor:
-        convert:
-          field: _ingest._value.entropy
-          tag: convert_attributes_pe_info_sections_entropy_to_double
-          type: double
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field:
-                  - _ingest._value.entropy
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: gti.file_feed.attributes.pe_info.sections
-      tag: foreach_attributes_pe_info_sections_entropy
-      if: ctx.gti?.file_feed?.attributes?.pe_info?.sections instanceof List
-      processor:
-        append:
-          field: threat.indicator.file.pe.sections.entropy
-          tag: append_attributes_pe_info_sections_entropy_into_threat_indicator_file_pe_sections_entropy
-          value: '{{{_ingest._value.entropy}}}'
-          allow_duplicates: false
+      source: |-
+        def out = new ArrayList();
+        for (def s : ctx.gti.file_feed.attributes.pe_info.sections) {
+          if (!(s instanceof Map)) { continue; }
+          def o = new HashMap();
+          if (s.name != null) { o.name = s.name; }
+          if (s.entropy != null) {
+            try { o.entropy = (long) Double.parseDouble(s.entropy.toString()); } catch (Exception e) {}
+          }
+          if (s.raw_size != null) {
+            try { o.physical_size = (long) Double.parseDouble(s.raw_size.toString()); } catch (Exception e) {}
+          }
+          if (s.virtual_size != null) {
+            try { o.virtual_size = (long) Double.parseDouble(s.virtual_size.toString()); } catch (Exception e) {}
+          }
+          if (!o.isEmpty()) { out.add(o); }
+        }
+        if (!out.isEmpty()) {
+          if (ctx.threat == null) { ctx.threat = new HashMap(); }
+          if (ctx.threat.indicator == null) { ctx.threat.indicator = new HashMap(); }
+          if (ctx.threat.indicator.file == null) { ctx.threat.indicator.file = new HashMap(); }
+          if (ctx.threat.indicator.file.pe == null) { ctx.threat.indicator.file.pe = new HashMap(); }
+          ctx.threat.indicator.file.pe.sections = out;
+        }
   - foreach:
       field: gti.file_feed.attributes.pe_info.sections
       tag: foreach_attributes_pe_info_sections_md5
@@ -2418,90 +2316,6 @@ processors:
           field: related.hash
           tag: append_attributes_pe_info_sections_md5_into_related_hash
           value: '{{{_ingest._value.md5}}}'
-          allow_duplicates: false
-  - foreach:
-      field: gti.file_feed.attributes.pe_info.sections
-      tag: foreach_attributes_pe_info_sections_name
-      if: ctx.gti?.file_feed?.attributes?.pe_info?.sections instanceof List
-      processor:
-        append:
-          field: threat.indicator.file.pe.sections.name
-          tag: append_attributes_pe_info_sections_name_into_threat_indicator_file_pe_sections_name
-          value: '{{{_ingest._value.name}}}'
-          allow_duplicates: false
-  - foreach:
-      field: gti.file_feed.attributes.pe_info.sections
-      tag: foreach_attributes_pe_info_sections_raw_size
-      if: ctx.gti?.file_feed?.attributes?.pe_info?.sections instanceof List
-      processor:
-        convert:
-          field: _ingest._value.raw_size
-          tag: convert_attributes_pe_info_sections_raw_size_to_long
-          type: long
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field:
-                  - _ingest._value.raw_size
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: gti.file_feed.attributes.pe_info.sections
-      tag: foreach_attributes_pe_info_sections_raw_size
-      if: ctx.gti?.file_feed?.attributes?.pe_info?.sections instanceof List
-      processor:
-        append:
-          field: threat.indicator.file.pe.sections.physical_size
-          tag: append_attributes_pe_info_sections_raw_size_into_threat_indicator_file_pe_sections_physical_size
-          value: '{{{_ingest._value.raw_size}}}'
-          allow_duplicates: false
-  - foreach:
-      field: gti.file_feed.attributes.pe_info.sections
-      tag: foreach_attributes_pe_info_sections_virtual_address
-      if: ctx.gti?.file_feed?.attributes?.pe_info?.sections instanceof List
-      processor:
-        convert:
-          field: _ingest._value.virtual_address
-          tag: convert_attributes_pe_info_sections_virtual_address_to_long
-          type: long
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field:
-                  - _ingest._value.virtual_address
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: gti.file_feed.attributes.pe_info.sections
-      tag: foreach_attributes_pe_info_sections_virtual_size
-      if: ctx.gti?.file_feed?.attributes?.pe_info?.sections instanceof List
-      processor:
-        convert:
-          field: _ingest._value.virtual_size
-          tag: convert_attributes_pe_info_sections_virtual_size_to_long
-          type: long
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field:
-                  - _ingest._value.virtual_size
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: gti.file_feed.attributes.pe_info.sections
-      tag: foreach_attributes_pe_info_sections_virtual_size
-      if: ctx.gti?.file_feed?.attributes?.pe_info?.sections instanceof List
-      processor:
-        append:
-          field: threat.indicator.file.pe.sections.virtual_size
-          tag: append_attributes_pe_info_sections_virtual_size_into_threat_indicator_file_pe_sections_virtual_size
-          value: '{{{_ingest._value.virtual_size}}}'
           allow_duplicates: false
   - date:
       field: gti.file_feed.attributes.pe_info.timestamp
@@ -2971,11 +2785,6 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      field: threat.indicator.sightings
-      tag: set_threat_indicator_sightings_from_file_feed_attributes_times_submitted
-      copy_from: gti.file_feed.attributes.times_submitted
-      ignore_empty_value: true
-  - set:
       field: threat.indicator.file.hash.tlsh
       tag: set_threat_indicator_file_hash_tlsh_from_file_feed_attributes_tlsh
       copy_from: gti.file_feed.attributes.tlsh
@@ -3234,10 +3043,6 @@ processors:
         - gti.file_feed.attributes.elf_info.shared_libraries
         - gti.file_feed.attributes.first_seen_itw_date
         - gti.file_feed.attributes.gti_assessment.description
-        - gti.file_feed.attributes.gti_assessment.threat_score.value
-        - gti.file_feed.attributes.last_analysis_stats.malicious
-        - gti.file_feed.attributes.md5
-        - gti.file_feed.attributes.meaningful_name
         - gti.file_feed.attributes.pe_info.imphash
         - gti.file_feed.attributes.sha1
         - gti.file_feed.attributes.sha256
@@ -3252,12 +3057,9 @@ processors:
         - gti.file_feed.attributes.size
         - gti.file_feed.attributes.ssdeep
         - gti.file_feed.attributes.telfhash
-        - gti.file_feed.attributes.times_submitted
         - gti.file_feed.attributes.tlsh
         - gti.file_feed.attributes.type_extension
-        - gti.file_feed.id
         - gti.file_feed.links.self
-        - gti.file_feed.type
       tag: remove_custom_duplicate_fields
       if: ctx._is_indicator == true
       ignore_missing: true
@@ -3298,25 +3100,6 @@ processors:
         - _should_drop
       tag: remove_gti_internal_fields
       ignore_missing: true
-  - script:
-      tag: coerce_pe_sections_numeric_arrays
-      lang: painless
-      if: ctx.threat?.indicator?.file?.pe?.sections instanceof Map
-      description: Coerce the stringified PE section numeric arrays to the ECS long type.
-      source: |-
-        def s = ctx.threat.indicator.file.pe.sections;
-        for (def key : ['entropy', 'physical_size', 'virtual_size']) {
-          if (s.get(key) instanceof List) {
-            def lst = s.get(key);
-            for (int i = 0; i < lst.size(); i++) {
-              def v = lst.get(i);
-              if (v != null) {
-                try { lst.set(i, (long) Double.parseDouble(v.toString())); }
-                catch (Exception e) {}
-              }
-            }
-          }
-        }
   - script:
       tag: snake_case_json_keys
       lang: painless

@@ -212,7 +212,15 @@ This is the `Cryptominer` dataset.
 
 ### File Feed
 
-This is the `File Feed` dataset. It collects Google Threat Intelligence File Feed records from files on disk using the filestream input. The File Feed is distributed as bzip2-compressed NDJSON; decompress each package to NDJSON on disk before pointing the input at it.
+This is the `File Feed` dataset. It collects Google Threat Intelligence File Feed records from files on disk using the filestream input. The File Feed is distributed as bzip2-compressed NDJSON; decompress each package to NDJSON on disk before pointing the input at it. Each line is one File Feed object exactly as delivered by Google - a bare JSON object parsed into `gti.file_feed`, with no `{"data": {...}}` wrapper (unlike the threat-list files described above).
+
+A record is promoted to `threat.indicator.*` when any of the following is true:
+
+- its GTI verdict is in the **Indicator verdicts** list (default `VERDICT_MALICIOUS`), or
+- it is `VERDICT_SUSPICIOUS` and its threat score is greater than or equal to the **Minimum threat score for suspicious promotion** (default `70`), or
+- its `last_analysis_stats.malicious` count is greater than or equal to the **Minimum malicious detections** value (default `5`), regardless of verdict.
+
+By default, **Drop records below the indicator threshold** (`drop_below_threshold`) is enabled, so records that are not promoted are discarded and never stored. Disable it to retain every record under `gti.file_feed.*`. Only promoted records carry `threat.indicator.*` and feed the File IOC transform.
 
 #### Example
 
