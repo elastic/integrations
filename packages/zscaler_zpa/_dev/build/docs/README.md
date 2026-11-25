@@ -155,6 +155,42 @@ Sample Response:
 
 **Note: Microsegmentation Flow logs are only produced when Zscaler Microsegmentation is provisioned for the tenant. This data stream is enabled by default, so upgrading adds a listener on port 9021.**
 
+### Private Service Edge Status Logs
+
+Default port: _9022_
+
+Vendor documentation: https://help.zscaler.com/zpa/understanding-private-service-edge-status-log-fields
+
+Zscaler Private Service Edge Status response format (v1):  
+```
+{"version":"v1","sourcetype":"zscaler_zpa.private_service_edge_status","LogTimestamp": %j{LogTimestamp:time},"Customer": %j{Customer},"SessionID": %j{SessionID},"SessionType": %j{SessionType},"SessionStatus": %j{SessionStatus},"Version": %j{Version},"PackageVersion": %j{PackageVersion},"Platform": %j{Platform},"ZEN": %j{ZEN},"ServiceEdge": %j{ServiceEdge},"ServiceEdgeGroup": %j{ServiceEdgeGroup},"PrivateIP": %j{PrivateIP},"PublicIP": %j{PublicIP},"Latitude": %f{Latitude},"Longitude": %f{Longitude},"CountryCode": %j{CountryCode},"TimestampAuthentication": %j{TimestampAuthentication:iso8601},"TimestampUnAuthentication": %j{TimestampUnAuthentication:iso8601},"CPUUtilization": %d{CPUUtilization},"MemUtilization": %d{MemUtilization},"InterfaceDefRoute": %j{InterfaceDefRoute},"DefRouteGW": %j{DefRouteGW},"PrimaryDNSResolver": %j{PrimaryDNSResolver},"HostUpTime": %j{HostUpTime},"ServiceEdgeStartTime": %j{ServiceEdgeStartTime},"NumOfInterfaces": %d{NumOfInterfaces},"BytesRxInterface": %d{BytesRxInterface},"PacketsRxInterface": %d{PacketsRxInterface},"ErrorsRxInterface": %d{ErrorsRxInterface},"DiscardsRxInterface": %d{DiscardsRxInterface},"BytesTxInterface": %d{BytesTxInterface},"PacketsTxInterface": %d{PacketsTxInterface},"ErrorsTxInterface": %d{ErrorsTxInterface},"DiscardsTxInterface": %d{DiscardsTxInterface},"TotalBytesRx": %d{TotalBytesRx},"TotalBytesTx": %d{TotalBytesTx},"MicroTenantID": %j{MicroTenantID}}\n
+```
+
+Sample Response: 
+```json
+{"version":"v1","sourcetype":"zscaler_zpa.private_service_edge_status","LogTimestamp": "Wed Dec  1 10:38:41 2021","Customer": "Example Corp","SessionID": "Xk3pQ9vLm2Rt7bNc4WzA","SessionType": "ZPN_TUNNEL_CONTROL","SessionStatus": "ZPN_STATUS_AUTHENTICATED","Version": "21.268.1-341-g71d6f30","PackageVersion": "","Platform": "el7","ZEN": "US-CA-1001","ServiceEdge": "Example PSE-1700000000001","ServiceEdgeGroup": "Example PSE Group","PrivateIP": "10.10.20.15","PublicIP": "198.51.100.40","Latitude": 0.000000,"Longitude": 0.000000,"CountryCode": "","TimestampAuthentication": "2021-12-01T10:34:42.067Z","TimestampUnAuthentication": "","CPUUtilization": 0,"MemUtilization": 3,"InterfaceDefRoute": "","DefRouteGW": "10.10.20.1","PrimaryDNSResolver": "10.10.0.2","HostUpTime": "1636416451","ServiceEdgeStartTime": "1638354879","NumOfInterfaces": 2,"BytesRxInterface": 15435341381,"PacketsRxInterface": 144152768,"ErrorsRxInterface": 0,"DiscardsRxInterface": 2058,"BytesTxInterface": 22304497040,"PacketsTxInterface": 149703945,"ErrorsTxInterface": 0,"DiscardsTxInterface": 0,"TotalBytesRx": 5257,"TotalBytesTx": 7543,"MicroTenantID": "216172782113784200"}
+```
+
+**Note: Private Service Edge Status logs are only produced for Private Service Edges deployed in your environment. This data stream is enabled by default, so upgrading adds a listener on port 9022.**
+
+### Private Cloud Controller Status Logs
+
+Default port: _9023_
+
+Vendor documentation: https://help.zscaler.com/zpa/understanding-private-cloud-controller-status-log-fields
+
+Zscaler Private Cloud Controller Status response format (v1):  
+```
+{"version":"v1","sourcetype":"zscaler_zpa.private_cloud_controller_status","LogTimestamp": %j{LogTimestamp:time},"Customer": %j{Customer},"SessionID": %j{SessionID},"SessionType": %j{SessionType},"SessionStatus": %j{SessionStatus},"Version": %j{Version},"PackageVersion": %j{PackageVersion},"Platform": %j{Platform},"ZEN": %j{ZEN},"PrivateCloudController": %j{SiteController},"PrivateCloudControllerGroup": %j{SiteControllerGroup},"PrivateIP": %j{PrivateIP},"PublicIP": %j{PublicIP},"Latitude": %f{Latitude},"Longitude": %f{Longitude},"CountryCode": %j{CountryCode},"TimestampAuthentication": %j{TimestampAuthentication:iso8601},"TimestampUnAuthentication": %j{TimestampUnAuthentication:iso8601},"CPUUtilization": %d{CPUUtilization},"MemUtilization": %d{MemUtilization},"InterfaceDefRoute": %j{InterfaceDefRoute},"DefRouteGW": %j{DefRouteGW},"PrimaryDNSResolver": %j{PrimaryDNSResolver},"HostUpTime": %j{HostUpTime},"PrivateCloudControllerStartTime": %j{SiteControllerStartTime},"NumOfInterfaces": %d{NumOfInterfaces},"BytesRxInterface": %d{BytesRxInterface},"PacketsRxInterface": %d{PacketsRxInterface},"ErrorsRxInterface": %d{ErrorsRxInterface},"DiscardsRxInterface": %d{DiscardsRxInterface},"BytesTxInterface": %d{BytesTxInterface},"PacketsTxInterface": %d{PacketsTxInterface},"ErrorsTxInterface": %d{ErrorsTxInterface},"DiscardsTxInterface": %d{DiscardsTxInterface},"TotalBytesRx": %d{TotalBytesRx},"TotalBytesTx": %d{TotalBytesTx},"MicroTenantID": %j{MicroTenantID}}\n
+```
+
+Sample Response: 
+```json
+{"version":"v1","sourcetype":"zscaler_zpa.private_cloud_controller_status","LogTimestamp": "Wed Aug 21 09:23:34 2024","Customer": "Example Corp","SessionID": "Qm8sTz2Lw5Yc1Hn6Ve0B","SessionType": "ZPN_TUNNEL_CONTROL","SessionStatus": "ZPN_STATUS_AUTHENTICATED","Version": "24.353.4-230-g1d191f1abe","PackageVersion": "","Platform": "el7","ZEN": "unset","PrivateCloudController": "Example PCC-1","PrivateCloudControllerGroup": "Example PCC Group","PrivateIP": "10.18.11.214","PublicIP": "10.18.11.214","Latitude": 12.971599,"Longitude": 77.594563,"CountryCode": "IN","TimestampAuthentication": "2024-08-21T09:23:34.903Z","TimestampUnAuthentication": "","CPUUtilization": 7,"MemUtilization": 4,"InterfaceDefRoute": "eth0","DefRouteGW": "10.18.0.1","PrimaryDNSResolver": "10.18.0.2","HostUpTime": "1718277251","PrivateCloudControllerStartTime": "1724232211","NumOfInterfaces": 5,"BytesRxInterface": 65413384825,"PacketsRxInterface": 654880671,"ErrorsRxInterface": 0,"DiscardsRxInterface": 0,"BytesTxInterface": 59824288939,"PacketsTxInterface": 652135932,"ErrorsTxInterface": 0,"DiscardsTxInterface": 0,"TotalBytesRx": 1835,"TotalBytesTx": 0,"MicroTenantID": "0"}
+```
+
+**Note: Private Cloud Controller Status logs are only produced when Private Cloud Controllers are deployed for ZPA Business Continuity. This data stream is enabled by default, so upgrading adds a listener on port 9023.**
+
 ## Fields and Sample Event
 
 ### App Connector Status Logs
@@ -198,3 +234,15 @@ Sample Response:
 {{fields "microsegmentation_flow"}}
 
 {{event "microsegmentation_flow"}}
+
+### Private Service Edge Status Logs
+
+{{fields "private_service_edge_status"}}
+
+{{event "private_service_edge_status"}}
+
+### Private Cloud Controller Status Logs
+
+{{fields "private_cloud_controller_status"}}
+
+{{event "private_cloud_controller_status"}}
