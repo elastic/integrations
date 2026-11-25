@@ -63,10 +63,7 @@ program: |-
           {
             "Header": {
               "X-API-Key": [state.api_key],
-              ?"X-Team-Id": (state.?team_id.orValue("") != "") ?
-                optional.of([state.team_id])
-              :
-                optional.none(),
+              ?"X-Team-Id": state.?team_id.optMap(id, [id]),
             },
           }
         ).do_request().as(response,
