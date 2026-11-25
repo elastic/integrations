@@ -7,7 +7,7 @@ dest:
   aliases:
     - alias: serverless_billing_realized_pool_lookup
       move_on_creation: true
-  pipeline: 'metrics-chargeback_serverless.billing-{{ ingestPipelineName "lookup_realized_pool" }}'
+  pipeline: 'logs-chargeback_serverless.lookup-{{ ingestPipelineName "lookup_realized_pool" }}'
 frequency: 5m
 sync:
   time:
@@ -53,11 +53,8 @@ pivot:
             field: total_ecu
     ai_ecu:
       filter:
-        terms:
-          cost_type:
-            - "ml-vcu"
-            - "inference"
-            - "agent-builder"
+        term:
+          allocation_driver: "ai"
       aggs:
         val:
           sum:
@@ -73,7 +70,9 @@ pivot:
     synthetics_pings_ecu:
       filter:
         wildcard:
-          sku: "*synthetic*ping*"
+          sku:
+            value: "*synthetic*ping*"
+            case_insensitive: true
       aggs:
         val:
           sum:
@@ -81,14 +80,14 @@ pivot:
     synthetics_executions_ecu:
       filter:
         bool:
-          should:
+          must:
+            - term:
+                allocation_driver: "synthetics"
+          must_not:
             - wildcard:
-                sku: "*synthetic*execution*"
-            - wildcard:
-                sku: "*synthetic*browser*"
-            - wildcard:
-                sku: "*synthetic*test*"
-          minimum_should_match: 1
+                sku:
+                  value: "*ping*"
+                  case_insensitive: true
       aggs:
         val:
           sum:
@@ -99,6 +98,9 @@ pivot:
     latest_currency:
       top_metrics:
         metrics:
+          - field: project_name
+          - field: project_type
+          - field: deployment_group
           - field: conf_chargeable_unit_rate
           - field: conf_chargeable_unit_rate_unit
           - field: conf_currency_symbol
@@ -110,4 +112,4 @@ settings:
 _meta:
   managed: true
   run_as_kibana_system: false
-  fleet_transform_version: 0.1.0
+  fleet_transform_version: 0.2.0

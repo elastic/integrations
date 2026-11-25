@@ -1,0 +1,42 @@
+---
+description: >-
+  Chargeback Serverless lookup pipeline dispatcher: routes transform destination
+  and simulation test events to the appropriate lookup pipeline.
+processors:
+  - pipeline:
+      name: '{{ IngestPipeline "lookup_billing" }}'
+      if: "ctx._cb_lookup_pipeline == 'lookup_billing'"
+      tag: dispatch_lookup_billing
+  - pipeline:
+      name: '{{ IngestPipeline "lookup_conf" }}'
+      if: "ctx._cb_lookup_pipeline == 'lookup_conf'"
+      tag: dispatch_lookup_conf
+  - pipeline:
+      name: '{{ IngestPipeline "lookup_credits" }}'
+      if: "ctx._cb_lookup_pipeline == 'lookup_credits'"
+      tag: dispatch_lookup_credits
+  - pipeline:
+      name: '{{ IngestPipeline "lookup_realized_pool" }}'
+      if: "ctx._cb_lookup_pipeline == 'lookup_realized_pool'"
+      tag: dispatch_lookup_realized_pool
+  - pipeline:
+      name: '{{ IngestPipeline "lookup_usage" }}'
+      if: "ctx._cb_lookup_pipeline == 'lookup_usage'"
+      tag: dispatch_lookup_usage
+  - remove:
+      field: _cb_lookup_pipeline
+      ignore_missing: true
+      tag: remove_dispatch_lookup_pipeline
+on_failure:
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: "pipeline_error"
+  - append:
+      tag: append_pipeline_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'

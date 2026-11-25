@@ -95,8 +95,8 @@ HEALTHY_UPDATED_AT="$(jq -nr '(now - 3600) | strftime("%Y-%m-%dT%H:%M:%SZ")')"
 STALE_DAY="$(jq -nr '(((now - 21600) / 86400 | floor) * 86400 - 4 * 86400) | strftime("%Y-%m-%dT00:00:00Z")')"
 STALE_UPDATED_AT="$(jq -nr '(now - 96 * 3600) | strftime("%Y-%m-%dT%H:%M:%SZ")')"
 
-BILL_PIPELINE="metrics-chargeback_serverless.billing-${CURRENT_VERSION}-lookup_billing"
-USAGE_PIPELINE="metrics-chargeback_serverless.usage-${CURRENT_VERSION}-lookup_usage"
+BILL_PIPELINE="logs-chargeback_serverless.lookup-${CURRENT_VERSION}-lookup_billing"
+USAGE_PIPELINE="logs-chargeback_serverless.lookup-${CURRENT_VERSION}-lookup_usage"
 
 jq -n \
   --arg ts "${BILL_DAY}" \
@@ -211,7 +211,8 @@ jq '{query: .attributes.params.esqlQuery.esql}' "${RULE_FILE}" | \
 
 jq '
   .columns as $cols |
-  [ .values[] | [ range(0; ($cols | length)) as $i | { ($cols[$i].name): .[$i] } ] | add ]
+  [ .values[] | [ range(0; ($cols | length)) as $i | { ($cols[$i].name): .[$i] } ] | add ] |
+  map(select(.project_id == null or .project_id == "" or .project_id == "proj-healthy" or .project_id == "proj-stale-unbilled" or .project_id == "proj-inactive"))
 ' raw_query_resp.json > alert_rows.json
 
 jq -n \

@@ -1,0 +1,31 @@
+{
+    "attributes": {
+        "name": "[Chargeback Serverless] New chargeback group detected",
+        "params": {
+            "esqlQuery": {
+                "esql": "FROM serverless_billing_cost_lookup\n| WHERE @timestamp IS NOT NULL\n| INLINE STATS org_earliest_ts = MIN(@timestamp), org_latest_ts = MAX(@timestamp)\n| WHERE deployment_group IS NOT NULL AND deployment_group != \"\"\n| STATS first_seen = MIN(@timestamp) BY deployment_group, org_earliest_ts, org_latest_ts\n| WHERE org_latest_ts > org_earliest_ts AND first_seen > org_earliest_ts AND first_seen >= org_latest_ts - 3 days\n| EVAL first_seen_day = LEFT(TO_STRING(first_seen), 10),\n       result = CONCAT(\"New chargeback group `\", deployment_group, \"` first observed on \", first_seen_day, \".\")\n| SORT deployment_group ASC\n| KEEP result, deployment_group, first_seen_day"
+            },
+            "excludeHitsFromPreviousRun": true,
+            "groupBy": "row",
+            "searchType": "esqlQuery",
+            "size": 100,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 365,
+            "timeWindowUnit": "d"
+        },
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "1h"
+        },
+        "tags": [
+            "Chargeback",
+            "Chargeback Serverless"
+        ]
+    },
+    "id": "chargeback_serverless-alert-new-group-detected",
+    "type": "alerting_rule_template"
+}

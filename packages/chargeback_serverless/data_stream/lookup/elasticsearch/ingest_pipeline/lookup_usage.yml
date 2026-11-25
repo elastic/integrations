@@ -7,6 +7,15 @@ processors:
       lang: painless
       tag: set_usage_lookup_keys
       source: |
+        if (ctx.rollup instanceof Map) {
+          def r = ctx.rollup;
+          for (String k : ['datastream_sum_indexing_time', 'datastream_sum_query_time', 'datastream_sum_data_set_store_size', 'deployment_sum_indexing_time', 'deployment_sum_query_time', 'deployment_sum_data_set_store_size', 'project_name', 'project_type', 'deployment_group', 'ds_type', 'ds_dataset', 'ds_namespace', 'conf_chargeable_unit_rate', 'conf_chargeable_unit_rate_unit', 'conf_currency_symbol']) {
+            if (r.containsKey(k) && r.get(k) != null) {
+              ctx[k] = r.get(k);
+            }
+          }
+          ctx.remove('rollup');
+        }
         if (ctx['@timestamp'] != null && ctx.project_id != null) {
           def ts = ctx['@timestamp'];
           def date = (ts instanceof Number)
@@ -111,6 +120,9 @@ processors:
           if (curr.project_type != null && curr.project_type.toString() != '') {
             ctx.project_type = curr.project_type.toString();
           }
+          if (curr.deployment_group != null && curr.deployment_group.toString() != '') {
+            ctx.deployment_group = curr.deployment_group.toString();
+          }
           if (curr.ds_type != null && curr.ds_type.toString() != '') {
             ctx.ds_type = curr.ds_type.toString();
           }
@@ -150,6 +162,28 @@ processors:
         }
         if (ctx.project_type == null || ctx.project_type == '') {
           ctx.project_type = 'elasticsearch';
+        } else {
+          String ptNorm = ctx.project_type.toString().trim().toLowerCase(Locale.ROOT);
+          if (ptNorm == 'oblt') { ptNorm = 'observability'; }
+          else if (ptNorm == 'sec') { ptNorm = 'security'; }
+          else if (ptNorm == 'vector') { ptNorm = 'vectordb'; }
+          else if (ptNorm == 'es') { ptNorm = 'elasticsearch'; }
+          else if (ptNorm == 'enterprise_search') { ptNorm = 'search'; }
+          ctx.project_type = ptNorm;
+        }
+        if (ctx.deployment_group == null) {
+          ctx.deployment_group = '';
+        }
+        if (ctx.total_duration_ms instanceof Map) {
+          def v = ctx.total_duration_ms.value;
+          ctx.total_duration_ms = v != null ? ((Number)v).doubleValue() : 0.0;
+        }
+        if (ctx.average_duration_ms instanceof Map) {
+          def v = ctx.average_duration_ms.value;
+          ctx.average_duration_ms = v != null ? ((Number)v).doubleValue() : 0.0;
+        }
+        if (ctx.check_count instanceof Number && ((Number)ctx.check_count).longValue() > 0L && ctx.total_duration_ms instanceof Number && ((Number)ctx.total_duration_ms).doubleValue() > 0.0) {
+          ctx.average_duration_ms = ((Number)ctx.total_duration_ms).doubleValue() / (double)((Number)ctx.check_count).longValue();
         }
         if (ctx.datastream != null && ctx.datastream != '') {
           def dsPattern = /^(?:partial-)?(?:restored-)?(?:shrink-.{4}-)?(?:downsample-[^-]+-)?\.ds-(.+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d+)?$/;
@@ -230,17 +264,20 @@ processors:
             ctx.conf_currency_symbol = buckets[0].key;
           } else {
             def keys = new ArrayList(ctx.conf_currency_symbol.keySet());
-            ctx.conf_currency_symbol = keys.size() > 0 ? keys[0] : '$';
+            ctx.conf_currency_symbol = keys.size() > 0 ? keys[0] : null;
           }
         }
         if (ctx.conf_chargeable_unit_rate == null) {
           ctx.conf_chargeable_unit_rate = 1.0;
         }
-        if (ctx.conf_chargeable_unit_rate_unit == null || ctx.conf_chargeable_unit_rate_unit == '') {
-          ctx.conf_chargeable_unit_rate_unit = 'USD';
-        }
-        if (ctx.conf_currency_symbol == null || ctx.conf_currency_symbol == '') {
-          ctx.conf_currency_symbol = '$';
+        String uTrim = ctx.conf_chargeable_unit_rate_unit != null ? ctx.conf_chargeable_unit_rate_unit.toString().trim() : '';
+        ctx.conf_chargeable_unit_rate_unit = uTrim != '' ? uTrim.toUpperCase(Locale.ROOT) : 'USD';
+        String sTrim = ctx.conf_currency_symbol != null ? ctx.conf_currency_symbol.toString().trim() : '';
+        if (sTrim == '') {
+          String uUp = ctx.conf_chargeable_unit_rate_unit.toString().toUpperCase(Locale.ROOT);
+          ctx.conf_currency_symbol = (uUp == 'EUR' ? '€' : (uUp == 'GBP' ? '£' : (uUp == 'ZAR' ? 'R' : '$')));
+        } else {
+          ctx.conf_currency_symbol = sTrim;
         }
         if (ctx.last_status instanceof Map) {
           if (ctx.last_status.last_status instanceof String) {
@@ -337,6 +374,16 @@ processors:
       field: event.ingested
       value: "{{{_ingest.timestamp}}}"
       tag: set_event_ingested
+  - pipeline:
+      description: '[Fleet] Pipeline for Chargeback Serverless lookup destination rows'
+      ignore_missing_pipeline: true
+      name: logs-chargeback_serverless.lookup@custom
+      tag: lookup_custom_pipeline
+  - pipeline:
+      description: '[Fleet] Pipeline for Chargeback Serverless usage lookup destination rows'
+      ignore_missing_pipeline: true
+      name: logs-chargeback_serverless.lookup-usage@custom
+      tag: lookup_usage_custom_pipeline
 on_failure:
   - set:
       tag: set_pipeline_error_to_event_kind

@@ -1,11 +1,32 @@
 ---
 description: "Ingest pipeline for Chargeback Serverless usage data stream."
 processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - set:
       field: event.ingested
       value: "{{{_ingest.timestamp}}}"
       if: ctx.event?.ingested == null
       tag: set_event_ingested
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.doc_type != 'config_snapshot'
+      description: Terminate early on collection error documents.
+  - set:
+      field: _poll_ts
+      copy_from: "@timestamp"
+      ignore_empty_value: true
+      if: "ctx.doc_type != 'config_snapshot' && ctx.error?.message == null"
+      tag: capture_poll_timestamp
   - date:
       field: period_start
       target_field: "@timestamp"
@@ -15,8 +36,28 @@ processors:
       if: ctx.period_start != null
       ignore_failure: true
       tag: restore_period_start_timestamp
+  - fingerprint:
+      if: "ctx.doc_type != 'config_snapshot' && ctx.error?.message == null"
+      fields:
+        - _poll_ts
+        - updated_at
+        - conf_policy_id
+        - data_stream.namespace
+        - "@timestamp"
+        - doc_type
+        - project_id
+        - datastream
+        - backing_index
+        - model_id
+        - task_type
+        - monitor_id
+        - monitor_type
+      target_field: _id
+      ignore_missing: true
+      tag: fingerprint_usage_event
   - remove:
       field:
+        - _poll_ts
         - period_start
         - _raw_inference_count
         - _raw_time_ms
@@ -33,6 +74,15 @@ processors:
         if (ctx.project_name == null || ctx.project_name == '') {
           ctx.project_name = ctx.project_id;
         }
+        if (ctx.project_type != null && ctx.project_type != '') {
+          String ptNorm = ctx.project_type.toString().trim().toLowerCase(Locale.ROOT);
+          if (ptNorm == 'oblt') { ptNorm = 'observability'; }
+          else if (ptNorm == 'sec') { ptNorm = 'security'; }
+          else if (ptNorm == 'vector') { ptNorm = 'vectordb'; }
+          else if (ptNorm == 'es') { ptNorm = 'elasticsearch'; }
+          else if (ptNorm == 'enterprise_search') { ptNorm = 'search'; }
+          ctx.project_type = ptNorm;
+        }
         if (ctx['@timestamp'] != null && ctx.project_id != null) {
           def ts = ctx['@timestamp'];
           def date = (ts instanceof Number)
@@ -44,6 +94,8 @@ processors:
           if (ctx.backing_index == null || ctx.backing_index == '') {
             ctx.backing_index = ctx.datastream;
           }
+          String rawDsStr = ctx.datastream.toString();
+          String rawBiStr = ctx.backing_index != null ? ctx.backing_index.toString() : '';
           def dsPattern = /^(?:partial-)?(?:restored-)?(?:shrink-.{4}-)?(?:downsample-[^-]+-)?\.ds-(.+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d+)?$/;
           def m = dsPattern.matcher(ctx.datastream);
           def isBackingIndex = m.matches();
@@ -52,7 +104,31 @@ processors:
           } else if (ctx.backing_index instanceof String && dsPattern.matcher(ctx.backing_index).matches()) {
             isBackingIndex = true;
           }
-          if (ctx.datastream.startsWith('.') || ctx.datastream == 'system' || (ctx.datastream.startsWith('serverless_') && (ctx.datastream.endsWith('_lookup') || ctx.datastream.contains('_lookup-')))) {
+          String strippedDsStr = ctx.datastream.toString();
+          for (int i = 0; i < 4; i++) {
+            String prev = strippedDsStr;
+            if (strippedDsStr.startsWith('partial-')) { strippedDsStr = strippedDsStr.substring(8); }
+            if (strippedDsStr.startsWith('restored-')) { strippedDsStr = strippedDsStr.substring(9); }
+            def sm = /^shrink-.{4}-(.*)$/.matcher(strippedDsStr);
+            if (sm.matches()) { strippedDsStr = sm.group(1); }
+            if (strippedDsStr.equals(prev)) { break; }
+          }
+          if (rawDsStr.contains('metrics-chargeback_serverless.') || rawDsStr.contains('logs-chargeback_serverless.')
+              || rawDsStr.contains('metrics-chargeback.') || rawDsStr.contains('logs-chargeback.')
+              || rawBiStr.contains('metrics-chargeback_serverless.') || rawBiStr.contains('logs-chargeback_serverless.')
+              || rawBiStr.contains('metrics-chargeback.') || rawBiStr.contains('logs-chargeback.')
+              || strippedDsStr.contains('metrics-chargeback_serverless.') || strippedDsStr.contains('logs-chargeback_serverless.')
+              || strippedDsStr.contains('metrics-chargeback.') || strippedDsStr.contains('logs-chargeback.')
+              || strippedDsStr.startsWith('chargeback_lookup.') || rawBiStr.startsWith('chargeback_lookup.')
+              || (strippedDsStr.startsWith('serverless_') && (strippedDsStr.endsWith('_lookup') || strippedDsStr.contains('_lookup-')))
+              || (rawBiStr.startsWith('serverless_') && (rawBiStr.endsWith('_lookup') || rawBiStr.contains('_lookup-')))
+              || strippedDsStr.startsWith('monitoring-indices') || rawBiStr.startsWith('monitoring-indices')
+              || rawDsStr.startsWith('.ds-ilm-history') || rawBiStr.startsWith('.ds-ilm-history')
+              || strippedDsStr.startsWith('ilm-history') || rawBiStr.startsWith('ilm-history')) {
+            ctx._drop_internal = true;
+            return;
+          }
+          if (ctx.datastream.startsWith('.') || ctx.datastream == 'system') {
             ctx.datastream = 'system';
             ctx.ds_type = 'system';
             ctx.ds_namespace = 'system';
@@ -82,6 +158,9 @@ processors:
             }
           }
         }
+  - drop:
+      if: "ctx._drop_internal == true"
+      tag: drop_internal_chargeback_streams
 on_failure:
   - set:
       tag: set_pipeline_error_to_event_kind

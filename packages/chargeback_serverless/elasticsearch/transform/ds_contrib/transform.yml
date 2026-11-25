@@ -1,20 +1,252 @@
-description: Aggregates daily indexing time, query time, and dataset storage size per Serverless project and data stream into a single daily figure.
+description: Aggregates daily indexing time, query time, and dataset storage size per Serverless project and data stream across native Chargeback Serverless and legacy monitoring-indices sources without double-counting.
 source:
   index:
     - metrics-chargeback_serverless.usage-*
+    - monitoring-indices*
+    - "*:monitoring-indices*"
+    - -monitoring-indices-chargeback*
+    - "*:-monitoring-indices-chargeback*"
+    - -serverless_*_lookup*
+    - "*:-serverless_*_lookup*"
   query:
-    term:
-      doc_type: "datastream"
+    bool:
+      must_not:
+        - terms:
+            doc_type:
+              - config_snapshot
+              - ai_model
+              - project_status
+              - synthetics_monitor
+        - term:
+            cb_excluded_index: true
+  runtime_mappings:
+    cb_sync_ts:
+      type: date
+      script:
+        source: |
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              emit(doc['event.ingested'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+              emit(doc['event.created'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            for (String k : ['ingested', 'created']) {
+              def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get(k) : null;
+              if (rawVal == null && params._source != null) {
+                rawVal = params._source.get('event.' + k);
+              }
+              if (rawVal != null) {
+                if (rawVal instanceof Number) {
+                  emit(((Number)rawVal).longValue());
+                  return;
+                }
+                String s = rawVal.toString().trim();
+                if (s != '') {
+                  try {
+                    emit(ZonedDateTime.parse(s).toInstant().toEpochMilli());
+                    return;
+                  } catch (Exception e) {}
+                }
+              }
+            }
+          } catch (Exception e) {}
+          if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+            emit(doc['@timestamp'].value.toInstant().toEpochMilli());
+          }
+    cb_project_id:
+      type: keyword
+      script:
+        source: |
+          for (String f : ['project_id', 'cloud.project.id', 'cloud.project.id.keyword', 'ess.billing.deployment_id', 'ess.billing.deployment_id.keyword', 'elasticsearch.cluster.name.keyword', 'elasticsearch.cluster.name']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                String v = doc[f].value.toString().trim();
+                if (v != '') { emit(v); return; }
+              }
+            } catch (Exception e) {}
+          }
+          try {
+            if (params._source?.project_id != null && params._source.project_id.toString().trim() != '') {
+              emit(params._source.project_id.toString().trim());
+              return;
+            }
+            if (params._source?.cloud?.project?.id != null && params._source.cloud.project.id.toString().trim() != '') {
+              emit(params._source.cloud.project.id.toString().trim());
+              return;
+            }
+            if (params._source?.ess?.billing?.deployment_id != null && params._source.ess.billing.deployment_id.toString().trim() != '') {
+              emit(params._source.ess.billing.deployment_id.toString().trim());
+              return;
+            }
+            if (params._source?.elasticsearch?.cluster?.name != null && params._source.elasticsearch.cluster.name.toString().trim() != '') {
+              emit(params._source.elasticsearch.cluster.name.toString().trim());
+              return;
+            }
+          } catch (Exception e) {}
+    cb_datastream:
+      type: keyword
+      script:
+        source: |
+          try {
+            if (doc.containsKey('datastream') && !doc['datastream'].empty) {
+              String v = doc['datastream'].value.toString().trim();
+              if (v != '') { emit(v); return; }
+            }
+          } catch (Exception e) {}
+          try {
+            if (params._source?.datastream != null && params._source.datastream.toString().trim() != '') {
+              emit(params._source.datastream.toString().trim());
+              return;
+            }
+          } catch (Exception e) {}
+          String name = '';
+          for (String f : ['elasticsearch.index.name.keyword', 'elasticsearch.index.name']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                name = doc[f].value.toString().trim();
+                if (name != '') { break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (name == '' && params._source?.elasticsearch?.index?.name != null) {
+            name = params._source.elasticsearch.index.name.toString().trim();
+          }
+          if (name != '') {
+            String stripped = name;
+            for (int i = 0; i < 4; i++) {
+              String prev = stripped;
+              if (stripped.startsWith('partial-')) { stripped = stripped.substring(8); }
+              if (stripped.startsWith('restored-')) { stripped = stripped.substring(9); }
+              def sm = /^shrink-.{4}-(.*)$/.matcher(stripped);
+              if (sm.matches()) { stripped = sm.group(1); }
+              if (stripped.equals(prev)) { break; }
+            }
+            if (stripped.startsWith('.ds-')) {
+              def dm = /^\.ds-([^:\s]+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d{6,})?$/.matcher(stripped);
+              if (dm.matches() && !dm.group(1).startsWith('.')) {
+                emit(dm.group(1));
+                return;
+              }
+            } else {
+              def rm = /^([^:\s]+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?(?:-\d{6,})?|-\d{6,})$/.matcher(stripped);
+              if (rm.matches() && !rm.group(1).startsWith('.')) {
+                emit(rm.group(1));
+                return;
+              }
+            }
+            emit((name.startsWith('.') || stripped.startsWith('.')) ? 'system' : stripped);
+            return;
+          }
+          for (String f : ['elasticsearch.index.datastream.keyword', 'elasticsearch.index.datastream']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                String ds = doc[f].value.toString().trim();
+                if (ds != '' && ds != 'unknown') { emit(ds); return; }
+              }
+            } catch (Exception e) {}
+          }
+          emit('unknown');
+    cb_excluded_index:
+      type: boolean
+      script:
+        source: |
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty
+                && doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage') {
+              for (String f : ['datastream.keyword', 'datastream', 'backing_index.keyword', 'backing_index']) {
+                String v = '';
+                if (doc.containsKey(f) && !doc[f].empty) { v = doc[f].value.toString().trim(); }
+                if (v != '' && (v.contains('metrics-chargeback_serverless.') || v.contains('logs-chargeback_serverless.')
+                    || v.contains('metrics-chargeback.') || v.contains('logs-chargeback.')
+                    || (v.startsWith('serverless_') && (v.endsWith('_lookup') || v.contains('_lookup-')))
+                    || v.startsWith('chargeback_lookup.') || v.startsWith('monitoring-indices')
+                    || v.startsWith('.ds-ilm-history') || v.startsWith('ilm-history'))) {
+                  emit(true);
+                  return;
+                }
+              }
+              for (String sf : ['datastream', 'backing_index']) {
+                if (params._source != null && params._source.get(sf) != null) {
+                  String v = params._source.get(sf).toString().trim();
+                  if (v.contains('metrics-chargeback_serverless.') || v.contains('logs-chargeback_serverless.')
+                      || v.contains('metrics-chargeback.') || v.contains('logs-chargeback.')
+                      || (v.startsWith('serverless_') && (v.endsWith('_lookup') || v.contains('_lookup-')))
+                      || v.startsWith('chargeback_lookup.') || v.startsWith('monitoring-indices')
+                      || v.startsWith('.ds-ilm-history') || v.startsWith('ilm-history')) {
+                    emit(true);
+                    return;
+                  }
+                }
+              }
+              emit(false);
+              return;
+            }
+          } catch (Exception e) {}
+          String name = '';
+          for (String f : ['elasticsearch.index.name.keyword', 'elasticsearch.index.name']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                name = doc[f].value.toString().trim();
+                if (name != '') { break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (name == '' && params._source?.elasticsearch?.index?.name != null) {
+            name = params._source.elasticsearch.index.name.toString().trim();
+          }
+          if (name != '') {
+            String stripped = name;
+            for (int i = 0; i < 4; i++) {
+              String prev = stripped;
+              if (stripped.startsWith('partial-')) { stripped = stripped.substring(8); }
+              if (stripped.startsWith('restored-')) { stripped = stripped.substring(9); }
+              def sm = /^shrink-.{4}-(.*)$/.matcher(stripped);
+              if (sm.matches()) { stripped = sm.group(1); }
+              if (stripped.equals(prev)) { break; }
+            }
+            if ((name.startsWith('.') && !name.startsWith('.ds-'))
+                || (stripped.startsWith('.') && !stripped.startsWith('.ds-'))
+                || name.startsWith('.ds-.')
+                || stripped.startsWith('.ds-.')
+                || name.startsWith('.ds-ilm-history')
+                || stripped.startsWith('.ds-ilm-history')
+                || (name.startsWith('serverless_') && (name.endsWith('_lookup') || name.contains('_lookup-')))
+                || (stripped.startsWith('serverless_') && (stripped.endsWith('_lookup') || stripped.contains('_lookup-')))
+                || name.startsWith('monitoring-indices')
+                || stripped.startsWith('monitoring-indices')
+                || name.contains('metrics-chargeback_serverless.')
+                || stripped.contains('metrics-chargeback_serverless.')
+                || name.contains('logs-chargeback_serverless.')
+                || stripped.contains('logs-chargeback_serverless.')
+                || name.contains('metrics-chargeback.')
+                || stripped.contains('metrics-chargeback.')
+                || name.contains('logs-chargeback.')
+                || stripped.contains('logs-chargeback.')
+                || name.startsWith('chargeback_lookup.')
+                || stripped.startsWith('chargeback_lookup.')
+                || stripped.startsWith('ilm-history')) {
+              emit(true);
+              return;
+            }
+          }
+          emit(false);
 dest:
   index: serverless_datastream_contribution_lookup-1
   aliases:
     - alias: serverless_datastream_contribution_lookup
       move_on_creation: true
-  pipeline: 'metrics-chargeback_serverless.usage-{{ ingestPipelineName "lookup_usage" }}'
+  pipeline: 'logs-chargeback_serverless.lookup-{{ ingestPipelineName "lookup_usage" }}'
 frequency: 5m
 sync:
   time:
-    field: event.ingested
+    field: cb_sync_ts
     delay: 120s
 retention_policy:
   time:
@@ -28,37 +260,318 @@ pivot:
         calendar_interval: 1d
     project_id:
       terms:
-        field: project_id
+        field: cb_project_id
     datastream:
       terms:
-        field: datastream
+        field: cb_datastream
   aggregations:
-    datastream_sum_indexing_time:
-      max:
-        field: datastream_sum_indexing_time
-    datastream_sum_query_time:
-      max:
-        field: datastream_sum_query_time
-    datastream_sum_data_set_store_size:
-      max:
-        field: datastream_sum_data_set_store_size
-    latest_currency:
-      top_metrics:
-        metrics:
-          - field: project_name
-          - field: project_type
-          - field: ds_type
-          - field: ds_dataset
-          - field: ds_namespace
-          - field: conf_chargeable_unit_rate
-          - field: conf_chargeable_unit_rate_unit
-          - field: conf_currency_symbol
-        sort:
-          event.ingested: desc
+    # Prefer native chargeback_serverless.usage metrics over legacy monitoring-indices*
+    # when both exist for the same (day, project_id, datastream) bucket.
+    rollup:
+      scripted_metric:
+        init_script: |
+          state.nat_cnt = 0L;
+          state.nat_idx = 0L;
+          state.nat_qry = 0L;
+          state.nat_sto = 0L;
+          state.nat_ts = -1L;
+          state.nat_meta = [:];
+          state.leg_units = new HashMap();
+          state.leg_all_slots = new HashSet();
+        map_script: |
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
+            }
+          } catch (Exception e) {}
+
+          if (isNat) {
+            state.nat_cnt = ((Number)state.nat_cnt).longValue() + 1L;
+            long idxV = 0L;
+            long qryV = 0L;
+            long stoV = 0L;
+            try {
+              if (doc.containsKey('datastream_sum_indexing_time') && !doc['datastream_sum_indexing_time'].empty) {
+                idxV = ((Number)doc['datastream_sum_indexing_time'].value).longValue();
+              } else if (params._source?.datastream_sum_indexing_time instanceof Number) {
+                idxV = ((Number)params._source.datastream_sum_indexing_time).longValue();
+              }
+            } catch (Exception e) {}
+            try {
+              if (doc.containsKey('datastream_sum_query_time') && !doc['datastream_sum_query_time'].empty) {
+                qryV = ((Number)doc['datastream_sum_query_time'].value).longValue();
+              } else if (params._source?.datastream_sum_query_time instanceof Number) {
+                qryV = ((Number)params._source.datastream_sum_query_time).longValue();
+              }
+            } catch (Exception e) {}
+            try {
+              if (doc.containsKey('datastream_sum_data_set_store_size') && !doc['datastream_sum_data_set_store_size'].empty) {
+                stoV = ((Number)doc['datastream_sum_data_set_store_size'].value).longValue();
+              } else if (params._source?.datastream_sum_data_set_store_size instanceof Number) {
+                stoV = ((Number)params._source.datastream_sum_data_set_store_size).longValue();
+              }
+            } catch (Exception e) {}
+            if (idxV > ((Number)state.nat_idx).longValue()) { state.nat_idx = idxV; }
+            if (qryV > ((Number)state.nat_qry).longValue()) { state.nat_qry = qryV; }
+            if (stoV > ((Number)state.nat_sto).longValue()) { state.nat_sto = stoV; }
+
+            long syncTs = 0L;
+            try {
+              if (doc.containsKey('cb_sync_ts') && !doc['cb_sync_ts'].empty) {
+                syncTs = doc['cb_sync_ts'].value.toInstant().toEpochMilli();
+              }
+            } catch (Exception e) {}
+            if (syncTs >= ((Number)state.nat_ts).longValue()) {
+              state.nat_ts = syncTs;
+              for (String mf : ['project_name', 'project_type', 'deployment_group', 'ds_type', 'ds_dataset', 'ds_namespace', 'conf_chargeable_unit_rate_unit', 'conf_currency_symbol']) {
+                try {
+                  if (doc.containsKey(mf) && !doc[mf].empty) {
+                    state.nat_meta.put(mf, doc[mf].value.toString());
+                  } else if (params._source != null && params._source.get(mf) != null) {
+                    state.nat_meta.put(mf, params._source.get(mf).toString());
+                  }
+                } catch (Exception e) {}
+              }
+              try {
+                if (doc.containsKey('conf_chargeable_unit_rate') && !doc['conf_chargeable_unit_rate'].empty) {
+                  state.nat_meta.put('conf_chargeable_unit_rate', ((Number)doc['conf_chargeable_unit_rate'].value).doubleValue());
+                } else if (params._source?.conf_chargeable_unit_rate instanceof Number) {
+                  state.nat_meta.put('conf_chargeable_unit_rate', ((Number)params._source.conf_chargeable_unit_rate).doubleValue());
+                }
+              } catch (Exception e) {}
+            }
+            return;
+          }
+
+          // Legacy monitoring-indices* document
+          String idxName = '_default_';
+          for (String nf : ['elasticsearch.index.name.keyword', 'elasticsearch.index.name']) {
+            try {
+              if (doc.containsKey(nf) && !doc[nf].empty) {
+                idxName = doc[nf].value.toString();
+                if (idxName != '') { break; }
+              }
+            } catch (Exception e) {}
+          }
+          if ((idxName == '' || idxName == '_default_') && params._source?.elasticsearch?.index?.name != null) {
+            idxName = params._source.elasticsearch.index.name.toString();
+          }
+
+          long idxMs = 0L;
+          long qryMs = 0L;
+          boolean hasIdxDelta = false;
+          boolean hasQryDelta = false;
+          long idxCum = -1L;
+          long qryCum = -1L;
+          long stoB = 0L;
+          long slot = 0L;
+          try {
+            if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+              slot = doc['@timestamp'].value.toInstant().toEpochMilli() / 600000L;
+            }
+          } catch (Exception e) {}
+          state.leg_all_slots.add(slot);
+          try {
+            if (doc.containsKey('elasticsearch.index.total.indexing.index_time_in_millis_delta') && !doc['elasticsearch.index.total.indexing.index_time_in_millis_delta'].empty) {
+              idxMs = ((Number)doc['elasticsearch.index.total.indexing.index_time_in_millis_delta'].value).longValue();
+              hasIdxDelta = true;
+            } else if (params._source?.elasticsearch?.index?.total?.indexing?.index_time_in_millis_delta instanceof Number) {
+              idxMs = ((Number)params._source.elasticsearch.index.total.indexing.index_time_in_millis_delta).longValue();
+              hasIdxDelta = true;
+            } else if (doc.containsKey('elasticsearch.index.total.indexing.index_time_in_millis') && !doc['elasticsearch.index.total.indexing.index_time_in_millis'].empty) {
+              idxCum = ((Number)doc['elasticsearch.index.total.indexing.index_time_in_millis'].value).longValue();
+            } else if (params._source?.elasticsearch?.index?.total?.indexing?.index_time_in_millis instanceof Number) {
+              idxCum = ((Number)params._source.elasticsearch.index.total.indexing.index_time_in_millis).longValue();
+            }
+          } catch (Exception e) {}
+          try {
+            if (doc.containsKey('elasticsearch.index.total.search.query_time_in_millis_delta') && !doc['elasticsearch.index.total.search.query_time_in_millis_delta'].empty) {
+              qryMs = ((Number)doc['elasticsearch.index.total.search.query_time_in_millis_delta'].value).longValue();
+              hasQryDelta = true;
+            } else if (params._source?.elasticsearch?.index?.total?.search?.query_time_in_millis_delta instanceof Number) {
+              qryMs = ((Number)params._source.elasticsearch.index.total.search.query_time_in_millis_delta).longValue();
+              hasQryDelta = true;
+            } else if (doc.containsKey('elasticsearch.index.total.search.query_time_in_millis') && !doc['elasticsearch.index.total.search.query_time_in_millis'].empty) {
+              qryCum = ((Number)doc['elasticsearch.index.total.search.query_time_in_millis'].value).longValue();
+            } else if (params._source?.elasticsearch?.index?.total?.search?.query_time_in_millis instanceof Number) {
+              qryCum = ((Number)params._source.elasticsearch.index.total.search.query_time_in_millis).longValue();
+            }
+          } catch (Exception e) {}
+          try {
+            if (doc.containsKey('elasticsearch.index.primaries.store.total_data_set_size_in_bytes') && !doc['elasticsearch.index.primaries.store.total_data_set_size_in_bytes'].empty) {
+              stoB = ((Number)doc['elasticsearch.index.primaries.store.total_data_set_size_in_bytes'].value).longValue();
+            } else if (params._source?.elasticsearch?.index?.primaries?.store?.total_data_set_size_in_bytes instanceof Number) {
+              stoB = ((Number)params._source.elasticsearch.index.primaries.store.total_data_set_size_in_bytes).longValue();
+            } else if (doc.containsKey('elasticsearch.index.total.store.size_in_bytes') && !doc['elasticsearch.index.total.store.size_in_bytes'].empty) {
+              stoB = ((Number)doc['elasticsearch.index.total.store.size_in_bytes'].value).longValue();
+            } else if (params._source?.elasticsearch?.index?.total?.store?.size_in_bytes instanceof Number) {
+              stoB = ((Number)params._source.elasticsearch.index.total.store.size_in_bytes).longValue();
+            }
+          } catch (Exception e) {}
+          if (idxMs < 0L) { idxMs = 0L; }
+          if (qryMs < 0L) { qryMs = 0L; }
+          if (stoB < 0L) { stoB = 0L; }
+
+          Map u = (Map)state.leg_units.get(idxName);
+          if (u == null) {
+            u = [
+              'idx_d': 0L, 'qry_d': 0L, 'has_idx_d': false, 'has_qry_d': false,
+              'idx_min': -1L, 'idx_max': -1L, 'qry_min': -1L, 'qry_max': -1L,
+              'slots': new HashMap()
+            ];
+            state.leg_units.put(idxName, u);
+          }
+          if (hasIdxDelta) {
+            u.put('idx_d', ((Number)u.get('idx_d')).longValue() + idxMs);
+            u.put('has_idx_d', true);
+          } else if (idxCum >= 0L) {
+            long imn = ((Number)u.get('idx_min')).longValue();
+            long imx = ((Number)u.get('idx_max')).longValue();
+            if (imn < 0L || idxCum < imn) { u.put('idx_min', idxCum); }
+            if (idxCum > imx) { u.put('idx_max', idxCum); }
+          }
+          if (hasQryDelta) {
+            u.put('qry_d', ((Number)u.get('qry_d')).longValue() + qryMs);
+            u.put('has_qry_d', true);
+          } else if (qryCum >= 0L) {
+            long qmn = ((Number)u.get('qry_min')).longValue();
+            long qmx = ((Number)u.get('qry_max')).longValue();
+            if (qmn < 0L || qryCum < qmn) { u.put('qry_min', qryCum); }
+            if (qryCum > qmx) { u.put('qry_max', qryCum); }
+          }
+          Map slotMap = (Map)u.get('slots');
+          Long prevSlotSto = (Long)slotMap.get(slot);
+          if (prevSlotSto == null || stoB > prevSlotSto.longValue()) {
+            slotMap.put(slot, stoB);
+          }
+        combine_script: "return state;"
+        reduce_script: |
+          long natCnt = 0L;
+          long natIdx = 0L;
+          long natQry = 0L;
+          long natSto = 0L;
+          long bestNatTs = -1L;
+          Map natMeta = [:];
+          Map legMerged = new HashMap();
+          Set allLegSlots = new HashSet();
+          for (def st : states) {
+            if (st == null) { continue; }
+            long sc = st.nat_cnt instanceof Number ? ((Number)st.nat_cnt).longValue() : 0L;
+            if (sc > 0L) {
+              natCnt += sc;
+              long si = ((Number)st.nat_idx).longValue();
+              long sq = ((Number)st.nat_qry).longValue();
+              long ss = ((Number)st.nat_sto).longValue();
+              if (si > natIdx) { natIdx = si; }
+              if (sq > natQry) { natQry = sq; }
+              if (ss > natSto) { natSto = ss; }
+              long sTs = ((Number)st.nat_ts).longValue();
+              if (sTs >= bestNatTs && st.nat_meta instanceof Map) {
+                bestNatTs = sTs;
+                natMeta = new HashMap((Map)st.nat_meta);
+              }
+            }
+            if (st.leg_all_slots instanceof Collection) {
+              for (def sl : (Collection)st.leg_all_slots) {
+                if (sl != null) { allLegSlots.add(sl); }
+              }
+            }
+            if (st.leg_units instanceof Map) {
+              for (def e : ((Map)st.leg_units).entrySet()) {
+                String k = e.getKey().toString();
+                Map sv = (Map)e.getValue();
+                Map dv = (Map)legMerged.get(k);
+                if (dv == null) {
+                  Map copySlots = new HashMap();
+                  if (sv.get('slots') instanceof Map) {
+                    for (def se : ((Map)sv.get('slots')).entrySet()) {
+                      copySlots.put(se.getKey(), ((Number)se.getValue()).longValue());
+                    }
+                  }
+                  legMerged.put(k, [
+                    'idx_d': ((Number)sv.get('idx_d')).longValue(),
+                    'qry_d': ((Number)sv.get('qry_d')).longValue(),
+                    'has_idx_d': Boolean.TRUE.equals(sv.get('has_idx_d')),
+                    'has_qry_d': Boolean.TRUE.equals(sv.get('has_qry_d')),
+                    'idx_min': ((Number)sv.get('idx_min')).longValue(),
+                    'idx_max': ((Number)sv.get('idx_max')).longValue(),
+                    'qry_min': ((Number)sv.get('qry_min')).longValue(),
+                    'qry_max': ((Number)sv.get('qry_max')).longValue(),
+                    'slots': copySlots
+                  ]);
+                } else {
+                  dv.put('idx_d', ((Number)dv.get('idx_d')).longValue() + ((Number)sv.get('idx_d')).longValue());
+                  dv.put('qry_d', ((Number)dv.get('qry_d')).longValue() + ((Number)sv.get('qry_d')).longValue());
+                  if (Boolean.TRUE.equals(sv.get('has_idx_d'))) { dv.put('has_idx_d', true); }
+                  if (Boolean.TRUE.equals(sv.get('has_qry_d'))) { dv.put('has_qry_d', true); }
+                  long sImn = ((Number)sv.get('idx_min')).longValue();
+                  long sImx = ((Number)sv.get('idx_max')).longValue();
+                  if (sImn >= 0L && (((Number)dv.get('idx_min')).longValue() < 0L || sImn < ((Number)dv.get('idx_min')).longValue())) { dv.put('idx_min', sImn); }
+                  if (sImx > ((Number)dv.get('idx_max')).longValue()) { dv.put('idx_max', sImx); }
+                  long sQmn = ((Number)sv.get('qry_min')).longValue();
+                  long sQmx = ((Number)sv.get('qry_max')).longValue();
+                  if (sQmn >= 0L && (((Number)dv.get('qry_min')).longValue() < 0L || sQmn < ((Number)dv.get('qry_min')).longValue())) { dv.put('qry_min', sQmn); }
+                  if (sQmx > ((Number)dv.get('qry_max')).longValue()) { dv.put('qry_max', sQmx); }
+                  if (sv.get('slots') instanceof Map) {
+                    Map dstSlots = (Map)dv.get('slots');
+                    for (def se : ((Map)sv.get('slots')).entrySet()) {
+                      long svSto = ((Number)se.getValue()).longValue();
+                      Long dvSto = (Long)dstSlots.get(se.getKey());
+                      if (dvSto == null || svSto > dvSto.longValue()) {
+                        dstSlots.put(se.getKey(), svSto);
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          if (natCnt > 0L) {
+            Map out = new HashMap(natMeta);
+            out.put('datastream_sum_indexing_time', natIdx);
+            out.put('datastream_sum_query_time', natQry);
+            out.put('datastream_sum_data_set_store_size', natSto);
+            return out;
+          }
+          long legIdx = 0L;
+          long legQry = 0L;
+          long legStoSlotSum = 0L;
+          for (def uObj : legMerged.values()) {
+            Map u = (Map)uObj;
+            if (Boolean.TRUE.equals(u.get('has_idx_d'))) {
+              legIdx += ((Number)u.get('idx_d')).longValue();
+            } else {
+              long imn = ((Number)u.get('idx_min')).longValue();
+              long imx = ((Number)u.get('idx_max')).longValue();
+              if (imn >= 0L && imx > imn) { legIdx += (imx - imn); }
+            }
+            if (Boolean.TRUE.equals(u.get('has_qry_d'))) {
+              legQry += ((Number)u.get('qry_d')).longValue();
+            } else {
+              long qmn = ((Number)u.get('qry_min')).longValue();
+              long qmx = ((Number)u.get('qry_max')).longValue();
+              if (qmn >= 0L && qmx > qmn) { legQry += (qmx - qmn); }
+            }
+            if (u.get('slots') instanceof Map) {
+              for (def stoV : ((Map)u.get('slots')).values()) {
+                legStoSlotSum += ((Number)stoV).longValue();
+              }
+            }
+          }
+          long slotDenom = allLegSlots.size() > 1 ? (long)allLegSlots.size() : 1L;
+          long legSto = Math.round((double)legStoSlotSum / (double)slotDenom);
+          return [
+            'datastream_sum_indexing_time': legIdx,
+            'datastream_sum_query_time': legQry,
+            'datastream_sum_data_set_store_size': legSto
+          ];
 settings:
   deduce_mappings: false
   unattended: true
 _meta:
   managed: true
   run_as_kibana_system: false
-  fleet_transform_version: 0.1.0
+  fleet_transform_version: 0.2.0

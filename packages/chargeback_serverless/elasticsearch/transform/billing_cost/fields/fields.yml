@@ -12,7 +12,10 @@
   description: Serverless project name.
 - name: project_type
   type: keyword
-  description: Serverless project type (elasticsearch, observability, security).
+  description: Serverless project type (elasticsearch, observability, security, vectordb, search).
+- name: deployment_group
+  type: keyword
+  description: Chargeback group extracted from chargeback_group:* project or deployment tags.
 - name: sku
   type: keyword
   description: Elastic Cloud billing SKU.
@@ -21,10 +24,10 @@
   description: High-level cost category (data_tier, platform, transfer, snapshot, support, other).
 - name: cost_type
   type: keyword
-  description: Specific cost component (ingest-vcu, search-vcu, retained, ml-vcu, inference, etc.).
+  description: Specific cost component (ingest-vcu, search-vcu, retained, ml-vcu, inference, and so on).
 - name: allocation_driver
   type: keyword
-  description: Workload allocation driver (indexing, query, storage, none).
+  description: Workload allocation driver (indexing, query, storage, ai, synthetics, none).
 - name: is_allocatable
   type: boolean
   description: True if charge is allocatable to project data streams.
@@ -42,10 +45,79 @@
   description: Configured currency conversion multiplier.
 - name: conf_chargeable_unit_rate_unit
   type: keyword
-  description: Configured currency unit label (e.g. USD, EUR, ZAR).
+  description: Configured currency unit label (for example, USD, EUR, ZAR).
 - name: conf_currency_symbol
   type: keyword
-  description: Configured currency display symbol (e.g. $, €, R, £).
+  description: Configured currency display symbol (for example, $, €, R, £).
 - name: event.ingested
   type: date
   description: Timestamp when this lookup document was written to Elasticsearch.
+- name: event.dataset
+  type: keyword
+  description: Dataset identifier for ESS Billing dashboard compatibility.
+- name: data_stream.type
+  type: keyword
+  description: Data stream type for ESS Billing dashboard compatibility.
+- name: data_stream.dataset
+  type: keyword
+  description: Data stream dataset for ESS Billing dashboard compatibility.
+- name: data_stream.namespace
+  type: keyword
+  description: Data stream namespace for ESS Billing dashboard compatibility.
+- name: cloud.account.id
+  type: keyword
+  description: Elastic Cloud organization account ID.
+- name: cloud.instance.id
+  type: keyword
+  description: Serverless project or deployment identifier.
+- name: cloud.instance.name
+  type: keyword
+  description: Serverless project or deployment display name.
+- name: cloud.provider
+  type: keyword
+  description: Cloud provider identifier for ESS Billing dashboard compatibility.
+- name: cloud.region
+  type: keyword
+  description: Cloud region identifier for ESS Billing dashboard compatibility.
+- name: cloud.geo.name
+  type: keyword
+  description: Cloud region geo label for Map visualization (ESS Billing compatibility).
+- name: cloud.geo.location
+  type: geo_point
+  description: Cloud region coordinates for Map visualization (ESS Billing compatibility).
+- name: ess.billing.cloud.service.type
+  type: keyword
+  description: Cloud service type extracted from SKU (ESS Billing compatibility).
+- name: ess.billing.organization_id
+  type: keyword
+  description: Elastic Cloud organization ID for ESS Billing dashboard compatibility.
+- name: ess.billing.deployment_id
+  type: keyword
+  description: Project or deployment ID for ESS Billing dashboard compatibility.
+- name: ess.billing.deployment_name
+  type: keyword
+  description: Project or deployment display name for ESS Billing dashboard compatibility.
+- name: ess.billing.deployment_type
+  type: keyword
+  description: Project or deployment type for ESS Billing dashboard compatibility.
+- name: ess.billing.sku
+  type: keyword
+  description: Elastic Cloud billing SKU for ESS Billing dashboard compatibility.
+- name: ess.billing.total_ecu
+  type: double
+  description: Total ECU for ESS Billing dashboard compatibility.
+- name: ess.billing.quantity.value
+  type: double
+  description: Raw billing quantity value for ESS Billing dashboard compatibility.
+- name: ess.billing.type
+  type: keyword
+  description: Billing line item type for ESS Billing dashboard compatibility.
+- name: ess.billing.kind
+  type: keyword
+  description: Billing line item kind for ESS Billing dashboard compatibility.
+- name: ess.billing.unit
+  type: keyword
+  description: Unit of the resource being billed (for example, hour, GB) for ESS Billing dashboard compatibility.
+- name: billing_unit
+  type: keyword
+  description: Unit of the resource being billed passed through from billing records.

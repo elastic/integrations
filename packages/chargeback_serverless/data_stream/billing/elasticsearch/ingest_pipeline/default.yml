@@ -3,11 +3,69 @@ description: >-
   Chargeback Serverless: build composite_key, classify Serverless SKUs, and set
   allocation_driver (indexing | query | storage | ai | synthetics | none) for showback.
 processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - set:
       field: event.ingested
       value: "{{{_ingest.timestamp}}}"
       if: ctx.event?.ingested == null
       tag: set_event_ingested
+  - terminate:
+      tag: config_snapshot_complete
+      if: "ctx.doc_type == 'config_snapshot'"
+      description: Configuration snapshot events are complete after stamping event.ingested.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.doc_type != 'config_snapshot' && ctx.doc_type != 'credit_line_item'
+      description: Terminate early on collection error documents.
+  - date:
+      field: _credit_poll_ts
+      target_field: "@timestamp"
+      formats:
+        - ISO8601
+      if: "ctx.doc_type == 'credit_line_item' && ctx._credit_poll_ts != null"
+      ignore_failure: true
+      tag: set_credit_poll_timestamp
+  - remove:
+      field: _credit_poll_ts
+      ignore_missing: true
+      tag: remove_credit_poll_ts
+  - set:
+      field: cloud.account.id
+      copy_from: ess.billing.organization_id
+      ignore_empty_value: true
+      if: "ctx.doc_type == 'credit_line_item'"
+      tag: set_credit_cloud_account_id
+  - fingerprint:
+      if: "ctx.doc_type == 'credit_line_item'"
+      fields:
+        - conf_policy_id
+        - data_stream.namespace
+        - "@timestamp"
+        - credit_line_id
+        - ess.billing.organization_id
+        - ess.billing.start
+        - ess.billing.end
+        - ess.billing.type
+        - ess.billing.ecu_quantity
+        - ess.billing.ecu_balance
+        - ess.billing.active
+      target_field: _id
+      ignore_missing: true
+      tag: fingerprint_credit_line_item
+  - terminate:
+      tag: credit_line_item_complete
+      if: "ctx.doc_type == 'credit_line_item'"
+      description: Credit commitment events retain snapshot @timestamp and ESS credit fields; deduplication occurs in the billing_credits transform.
   - date:
       field: period_start
       target_field: "@timestamp"
@@ -21,17 +79,163 @@ processors:
       field: period_start
       ignore_missing: true
       tag: remove_period_start
+  - fingerprint:
+      if: "(ctx.doc_type == 'billing_line_item' || (ctx.doc_type == null && ctx.sku != null)) && ctx.error?.message == null"
+      fields:
+        - conf_policy_id
+        - data_stream.namespace
+        - project_id
+        - "@timestamp"
+        - sku
+        - total_ecu
+        - quantity_value
+        - project_name
+        - deployment_tags
+        - billing_unit
+        - billing_type
+        - billing_kind
+      target_field: _id
+      ignore_missing: true
+      tag: fingerprint_billing_line_item
+  - set:
+      field: cloud.account.id
+      copy_from: ess.billing.organization_id
+      ignore_empty_value: true
+      if: "ctx.error?.message == null"
+      tag: set_billing_cloud_account_id
+  - set:
+      field: ess.billing.unit
+      copy_from: billing_unit
+      ignore_empty_value: true
+      if: "ctx.error?.message == null"
+      tag: set_ess_billing_unit
+  - set:
+      field: ess.billing.type
+      copy_from: billing_type
+      ignore_empty_value: true
+      if: "ctx.error?.message == null && ctx.doc_type != 'credit_line_item'"
+      tag: set_ess_billing_type
+  - set:
+      field: ess.billing.kind
+      copy_from: billing_kind
+      ignore_empty_value: true
+      if: "ctx.error?.message == null && ctx.doc_type != 'credit_line_item'"
+      tag: set_ess_billing_kind
+  - script:
+      lang: painless
+      if: "ctx.error?.message == null && ctx.doc_type != 'config_snapshot' && ctx.doc_type != 'credit_line_item' && (ctx.doc_type == 'billing_line_item' || ctx.sku != null)"
+      ignore_failure: true
+      tag: normalize_ess_billing_type_and_kind
+      source: |
+        if (ctx.project_type != null && ctx.project_type != '') {
+          String ptNorm = ctx.project_type.toString().trim().toLowerCase(Locale.ROOT);
+          if (ptNorm == 'oblt') { ptNorm = 'observability'; }
+          else if (ptNorm == 'sec') { ptNorm = 'security'; }
+          else if (ptNorm == 'vector') { ptNorm = 'vectordb'; }
+          else if (ptNorm == 'es') { ptNorm = 'elasticsearch'; }
+          else if (ptNorm == 'enterprise_search') { ptNorm = 'search'; }
+          ctx.project_type = ptNorm;
+        }
+        if (ctx.ess == null) { ctx.ess = [:]; }
+        if (ctx.ess.billing == null) { ctx.ess.billing = [:]; }
+        String s = ctx.sku != null ? ctx.sku.toString() : '';
+        String sLower = s.toLowerCase(Locale.ROOT);
+        String pType = ctx.project_type != null ? ctx.project_type.toString() : '';
+        if (ctx.ess.billing.kind == null || ctx.ess.billing.kind == '') {
+          if (sLower.contains('.es.') || sLower.contains('.es-') || sLower.startsWith('elasticsearch.') || sLower.startsWith('serverless.elasticsearch.') || sLower.startsWith('es.')) {
+            ctx.ess.billing.kind = 'elasticsearch';
+          } else if (sLower.startsWith('observability.') || sLower.startsWith('serverless.observability.') || sLower.contains('.observability.') || sLower.startsWith('oblt.')) {
+            ctx.ess.billing.kind = 'observability';
+          } else if (sLower.startsWith('security.') || sLower.startsWith('serverless.security.') || sLower.contains('.security.') || sLower.startsWith('sec.')) {
+            ctx.ess.billing.kind = 'security';
+          } else if (sLower.startsWith('vectordb.') || sLower.startsWith('serverless.vectordb.') || sLower.contains('.vectordb.')) {
+            ctx.ess.billing.kind = 'vectordb';
+          } else if (sLower.startsWith('search.') || sLower.startsWith('serverless.search.')) {
+            ctx.ess.billing.kind = 'search';
+          } else if (sLower == 'none' && pType != '') {
+            ctx.ess.billing.kind = pType;
+          }
+        }
+        String tLower = ctx.ess.billing.type != null ? ctx.ess.billing.type.toString().toLowerCase(Locale.ROOT) : '';
+        if (tLower == '' || tLower == 'vcu' || tLower == 'search ai lake' || tLower == 'synthetics' || tLower == 'data transfer') {
+          if (sLower.contains('data-out') || sLower.contains('data-transfer-out') || sLower.contains('egress')) {
+            ctx.ess.billing.type = 'data_out';
+          } else if (sLower.contains('data-in') || sLower.contains('data-transfer-in') || sLower.contains('ingress')) {
+            ctx.ess.billing.type = 'data_in';
+          } else if (sLower.contains('snapshot') || sLower.contains('retained') || sLower.contains('storage')) {
+            ctx.ess.billing.type = 'storage';
+          } else if (sLower.contains('support')) {
+            ctx.ess.billing.type = 'support';
+          } else if (sLower.contains('vcu') || sLower.contains('complete')) {
+            ctx.ess.billing.type = 'capacity';
+          } else if ((sLower.contains('_ingest') || sLower.contains('.ingest') || sLower.contains('-ingest')) && !sLower.contains('vcu')) {
+            ctx.ess.billing.type = 'ingest';
+          } else {
+            ctx.ess.billing.type = 'usage';
+          }
+        }
+  - grok:
+      field: sku
+      patterns:
+        - "^[^.]+\\..+?_(?<cloud.region>(?:aws|gcp|azure)-[a-z0-9-]+|(?:us|eu|ap|sa|ca|me|af)-[a-z]+-\\d+)$"
+      if: "(ctx.cloud?.region == null || ctx.cloud?.region == '') && ctx.sku != null && ctx.error?.message == null"
+      ignore_failure: true
+      tag: grok_billing_cloud_region
   - script:
       lang: painless
       tag: set_composite_key
       source: |
+        if (ctx.project_type != null && ctx.project_type != '') {
+          String ptNorm = ctx.project_type.toString().trim().toLowerCase(Locale.ROOT);
+          if (ptNorm == 'oblt') { ptNorm = 'observability'; }
+          else if (ptNorm == 'sec') { ptNorm = 'security'; }
+          else if (ptNorm == 'vector') { ptNorm = 'vectordb'; }
+          else if (ptNorm == 'es') { ptNorm = 'elasticsearch'; }
+          else if (ptNorm == 'enterprise_search') { ptNorm = 'search'; }
+          ctx.project_type = ptNorm;
+        }
         if (ctx.project_id == null || ctx.project_id == '') {
           if (ctx.error == null) {
-            ctx.project_id = 'unassociated_' + (ctx.project_type != null && ctx.project_type != '' ? ctx.project_type : 'serverless');
+            String uType = ctx.project_type != null ? ctx.project_type.toString() : '';
+            if (uType == '' || uType == 'serverless') {
+              String skU = ctx.sku != null ? ctx.sku.toString().trim().toLowerCase(Locale.ROOT) : '';
+              if (skU.startsWith('observability.') || skU.startsWith('oblt.') || skU.startsWith('serverless.observability.') || skU.startsWith('serverless.oblt.') || skU.contains('.observability.') || skU.contains('.oblt.') || skU.contains('synthetic')) { uType = 'observability'; }
+              else if (skU.startsWith('security.') || skU.startsWith('sec.') || skU.startsWith('serverless.security.') || skU.startsWith('serverless.sec.') || skU.contains('.security.') || skU.contains('.sec.')) { uType = 'security'; }
+              else if (skU.startsWith('vectordb.') || skU.startsWith('serverless.vectordb.') || skU.contains('.vectordb.')) { uType = 'vectordb'; }
+              else if (skU.startsWith('search.') || skU.startsWith('serverless.search.')) { uType = 'search'; }
+              else if (skU.startsWith('elasticsearch.') || skU.startsWith('es.') || skU.startsWith('serverless.elasticsearch.') || skU.startsWith('serverless.es.') || skU.contains('.elasticsearch.')) { uType = 'elasticsearch'; }
+              else { uType = 'serverless'; }
+            }
+            ctx.project_id = 'unassociated_' + uType;
           }
         }
         if (ctx.project_name == null || ctx.project_name == '') {
           ctx.project_name = ctx.project_id;
+        }
+        if (ctx.deployment_group == null || ctx.deployment_group == '') {
+          List tagLists = new ArrayList();
+          if (ctx.deployment_tags instanceof List) { tagLists.add(ctx.deployment_tags); }
+          if (ctx.ess?.billing?.deployment_tags instanceof List) { tagLists.add(ctx.ess.billing.deployment_tags); }
+          if (ctx.tags instanceof List) { tagLists.add(ctx.tags); }
+          if (ctx.metadata?.tags instanceof List) { tagLists.add(ctx.metadata.tags); }
+          for (def tl : tagLists) {
+            if (ctx.deployment_group != null && ctx.deployment_group != '') { break; }
+            for (def t : (List)tl) {
+              String ts = '';
+              if (t instanceof Map && t.key != null && t.value != null) {
+                ts = t.key.toString() + ':' + t.value.toString();
+              } else if (t != null) {
+                ts = t.toString();
+              }
+              if (ts.toLowerCase().startsWith('chargeback_group:')) {
+                String gv = ts.substring('chargeback_group:'.length()).trim();
+                if (gv != '') {
+                  ctx.deployment_group = gv;
+                  break;
+                }
+              }
+            }
+          }
         }
         if (ctx.total_ecu instanceof Number) {
           ctx.total_chargeable_units = ((Number)ctx.total_ecu).doubleValue();
@@ -67,8 +271,8 @@ processors:
         ingest GB), query (search VCU), storage (retained), ai (inference / ML VCU /
         Agent Builder), synthetics (synthetic pings & executions), none (unallocated).
       source: |
-        def sku = ctx.sku;
-        if (sku == null || sku == '' || sku == 'none') {
+        String sku = ctx.sku != null ? ctx.sku.toString().toLowerCase(Locale.ROOT) : '';
+        if (sku == '' || sku == 'none') {
           ctx.cost_type = 'other';
           ctx.cost_category = 'other';
           ctx.is_allocatable = false;
@@ -116,7 +320,7 @@ processors:
         }
 
         // ML / AI VCU (any project type, current or future)
-        if (sku.contains('-ml-vcu_') || sku.contains('ml-vcu') || sku.contains('-ml-vcu') || sku.contains('ml.ecu') || sku.contains('ml_ecu') || sku.contains('ml.vcu') || sku.contains('ml_inference') || sku.contains('.eis.') || sku.endsWith('.eis')) {
+        if (sku.contains('-ml-vcu_') || sku.contains('ml-vcu') || sku.contains('-ml-vcu') || sku.contains('ml.ecu') || sku.contains('ml_ecu') || sku.contains('ml.vcu') || sku.contains('ml_inference') || sku.contains('.eis')) {
           ctx.cost_type = 'ml-vcu';
           ctx.cost_category = 'platform';
           ctx.is_allocatable = true;
@@ -134,8 +338,9 @@ processors:
         }
 
         // Solution-specific ingest/data tier (Observability, Security, Search, etc.)
-        if (sku.contains('ingest') || sku.contains('logs') || sku.contains('metrics')
-            || sku.contains('traces') || sku.contains('apm') || sku.contains('siem')) {
+        if ((sku.contains('serverless') || (!sku.contains('.es.') && !sku.contains('.apm.') && !sku.contains('.kibana.') && !sku.contains('.integrations_server.') && !sku.contains('.integrationsserver.') && !sku.contains('.enterprise_search.') && !sku.contains('.enterprisesearch.')))
+            && (sku.contains('ingest') || sku.contains('logs') || sku.contains('metrics')
+                || sku.contains('traces') || sku.contains('apm') || sku.contains('siem'))) {
           ctx.cost_type = 'ingest';
           ctx.cost_category = 'data_tier';
           ctx.is_allocatable = true;
@@ -185,6 +390,21 @@ processors:
           ctx.cost_category = 'platform';
           ctx.is_allocatable = false;
           ctx.allocation_driver = 'none';
+          return;
+        }
+
+        // Solution-prefix data_tier catch-all for Serverless SKUs
+        if (sku.startsWith('observability.') || sku.contains('.observability.')
+            || sku.startsWith('oblt.') || sku.contains('.oblt.')
+            || sku.startsWith('security.') || sku.contains('.security.')
+            || sku.startsWith('sec.') || sku.contains('.sec.')
+            || sku.startsWith('vectordb.') || sku.contains('.vectordb.')
+            || sku.startsWith('serverless.search.') || sku.startsWith('search.')
+            || sku.startsWith('serverless.elasticsearch.') || sku.startsWith('elasticsearch.')) {
+          ctx.cost_type = ctx.cost_type != null ? ctx.cost_type : 'serverless_data_tier';
+          ctx.cost_category = 'data_tier';
+          ctx.is_allocatable = true;
+          ctx.allocation_driver = sku.contains('query') ? 'query' : 'indexing';
           return;
         }
 

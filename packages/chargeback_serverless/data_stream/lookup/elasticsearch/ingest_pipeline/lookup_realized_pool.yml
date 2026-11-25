@@ -118,6 +118,15 @@ processors:
           if (curr.top instanceof List && curr.top.size() > 0 && curr.top[0] instanceof Map && curr.top[0].metrics instanceof Map) {
             curr = curr.top[0].metrics;
           }
+          if (curr.project_name != null && curr.project_name.toString() != '') {
+            ctx.project_name = curr.project_name.toString();
+          }
+          if (curr.project_type != null && curr.project_type.toString() != '') {
+            ctx.project_type = curr.project_type.toString();
+          }
+          if (curr.deployment_group != null && curr.deployment_group.toString() != '') {
+            ctx.deployment_group = curr.deployment_group.toString();
+          }
           if (curr.conf_chargeable_unit_rate instanceof Number) {
             ctx.conf_chargeable_unit_rate = ((Number)curr.conf_chargeable_unit_rate).doubleValue();
           } else if (curr.conf_chargeable_unit_rate != null && curr.conf_chargeable_unit_rate.toString() != '') {
@@ -130,6 +139,15 @@ processors:
             ctx.conf_currency_symbol = curr.conf_currency_symbol.toString();
           }
           ctx.remove('latest_currency');
+        }
+        if (ctx.project_name == null || ctx.project_name == '') {
+          ctx.project_name = ctx.project_id;
+        }
+        if (ctx.project_type == null || ctx.project_type == '') {
+          ctx.project_type = 'elasticsearch';
+        }
+        if (ctx.deployment_group == null) {
+          ctx.deployment_group = '';
         }
         if (ctx.conf_chargeable_unit_rate_unit instanceof Map) {
           def buckets = ctx.conf_chargeable_unit_rate_unit.buckets;
@@ -156,16 +174,29 @@ processors:
         if (ctx.conf_chargeable_unit_rate == null) {
           ctx.conf_chargeable_unit_rate = 1.0;
         }
-        if (ctx.conf_chargeable_unit_rate_unit == null || ctx.conf_chargeable_unit_rate_unit == '') {
-          ctx.conf_chargeable_unit_rate_unit = 'USD';
-        }
-        if (ctx.conf_currency_symbol == null || ctx.conf_currency_symbol == '') {
-          ctx.conf_currency_symbol = '$';
+        String uTrim = ctx.conf_chargeable_unit_rate_unit != null ? ctx.conf_chargeable_unit_rate_unit.toString().trim() : '';
+        ctx.conf_chargeable_unit_rate_unit = uTrim != '' ? uTrim.toUpperCase(Locale.ROOT) : 'USD';
+        String sTrim = ctx.conf_currency_symbol != null ? ctx.conf_currency_symbol.toString().trim() : '';
+        if (sTrim == '') {
+          String uUp = ctx.conf_chargeable_unit_rate_unit.toString().toUpperCase(Locale.ROOT);
+          ctx.conf_currency_symbol = (uUp == 'EUR' ? '€' : (uUp == 'GBP' ? '£' : (uUp == 'ZAR' ? 'R' : '$')));
+        } else {
+          ctx.conf_currency_symbol = sTrim;
         }
   - set:
       field: event.ingested
       value: "{{{_ingest.timestamp}}}"
       tag: set_event_ingested
+  - pipeline:
+      description: '[Fleet] Pipeline for Chargeback Serverless lookup destination rows'
+      ignore_missing_pipeline: true
+      name: logs-chargeback_serverless.lookup@custom
+      tag: lookup_custom_pipeline
+  - pipeline:
+      description: '[Fleet] Pipeline for Chargeback Serverless realized_pool lookup destination rows'
+      ignore_missing_pipeline: true
+      name: logs-chargeback_serverless.lookup-realized_pool@custom
+      tag: lookup_realized_pool_custom_pipeline
 on_failure:
   - set:
       tag: set_pipeline_error_to_event_kind

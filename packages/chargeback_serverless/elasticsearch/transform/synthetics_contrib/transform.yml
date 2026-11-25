@@ -10,7 +10,7 @@ dest:
   aliases:
     - alias: serverless_synthetics_monitor_contribution_lookup
       move_on_creation: true
-  pipeline: 'metrics-chargeback_serverless.usage-{{ ingestPipelineName "lookup_usage" }}'
+  pipeline: 'logs-chargeback_serverless.lookup-{{ ingestPipelineName "lookup_usage" }}'
 frequency: 5m
 sync:
   time:
@@ -51,11 +51,15 @@ pivot:
     average_duration_ms:
       max:
         field: average_duration_ms
+    total_duration_ms:
+      max:
+        field: total_duration_ms
     latest_currency:
       top_metrics:
         metrics:
           - field: project_name
           - field: project_type
+          - field: deployment_group
           - field: monitor_name
           - field: monitor_namespace
           - field: conf_chargeable_unit_rate
@@ -69,4 +73,4 @@ settings:
 _meta:
   managed: true
   run_as_kibana_system: false
-  fleet_transform_version: 0.1.0
+  fleet_transform_version: 0.2.0
