@@ -218,7 +218,7 @@
                                                 }
                                             ],
                                             "query": {
-                                                "esql": "SET unmapped_fields = \"NULLIFY\";\nFROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.condition_ready IS NOT NULL\n  AND k8s.node.name IS NOT NULL\n  AND k8s.node.name != \"\"\n| STATS ready = LAST(k8s.node.condition_ready, @timestamp),\n    last_seen = MAX(@timestamp)\n  BY k8s.node.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) <= 5\n| STATS count = COUNT(*), ready = MAX(ready)\n| EVAL ready = CASE(\n    count > 1, \"N/A\",\n    ready == 1, \"Ready\",\n    \"Not Ready\"\n  )\n| KEEP ready"
+                                                "esql": "SET unmapped_fields = \"NULLIFY\";\nFROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.condition_ready IS NOT NULL\n  AND k8s.node.name IS NOT NULL\n  AND k8s.node.name != \"\"\n| STATS ready = LAST(k8s.node.condition_ready, @timestamp),\n    last_seen = MAX(@timestamp)\n  BY k8s.node.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) <= 5\n| STATS count = COUNT(*), ready = MAX(ready)\n| WHERE count > 0\n| EVAL ready = CASE(\n    count > 1, \"N/A\",\n    ready == 1, \"Ready\",\n    \"Not Ready\"\n  )\n| KEEP ready"
                                             },
                                             "timeField": "@timestamp",
                                             "index": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed"
@@ -229,7 +229,7 @@
                             "filters": [],
                             "internalReferences": [],
                             "query": {
-                                "esql": "SET unmapped_fields = \"NULLIFY\";\nFROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.condition_ready IS NOT NULL\n  AND k8s.node.name IS NOT NULL\n  AND k8s.node.name != \"\"\n| STATS ready = LAST(k8s.node.condition_ready, @timestamp),\n    last_seen = MAX(@timestamp)\n  BY k8s.node.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) <= 5\n| STATS count = COUNT(*), ready = MAX(ready)\n| EVAL ready = CASE(\n    count > 1, \"N/A\",\n    ready == 1, \"Ready\",\n    \"Not Ready\"\n  )\n| KEEP ready"
+                                "esql": "SET unmapped_fields = \"NULLIFY\";\nFROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.condition_ready IS NOT NULL\n  AND k8s.node.name IS NOT NULL\n  AND k8s.node.name != \"\"\n| STATS ready = LAST(k8s.node.condition_ready, @timestamp),\n    last_seen = MAX(@timestamp)\n  BY k8s.node.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) <= 5\n| STATS count = COUNT(*), ready = MAX(ready)\n| WHERE count > 0\n| EVAL ready = CASE(\n    count > 1, \"N/A\",\n    ready == 1, \"Ready\",\n    \"Not Ready\"\n  )\n| KEEP ready"
                             },
                             "visualization": {
                                 "colorMode": "none",
