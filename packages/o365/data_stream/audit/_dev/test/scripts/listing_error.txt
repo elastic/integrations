@@ -1,17 +1,5 @@
-# Test that a listing request the API rejects is reported once and skipped.
-#
-# The mock answers every content listing request with a 400, as the API does
-# for a time range it will not serve. (The input retries 5xx responses itself.) The listing error
-# branch said it would "skip this link and continue", but it returned its error
-# as a single object, as the content fetch error branch did before it was
-# changed to a list. The runtime discards the cursor returned with a single
-# object, so the link stayed at the head of the queue, and since the branch
-# sets want_more, the same listing was requested again on every evaluation, up
-# to max_executions times per interval.
-#
-# This lives in a scripts test rather than a system test because the error
-# document carries event.kind pipeline_error, which the system test runner
-# treats as a failure.
+# Every listing request is rejected. Without the fix the same listing is
+# requested again until max_executions.
 
 [!external_stack] skip 'Skipping external stack test.'
 [!exec:jq] skip 'Skipping test requiring absent jq command'
@@ -22,16 +10,13 @@ docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} o365-m
 add_package -profile ${CONFIG_PROFILES}/${PROFILE}
 add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
 
-# One error document for the rejected listing. Without the fix the listing is
-# requested again within the same interval until max_executions, so the count
-# climbs past 1.
+# One error, steady.
 get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 30s -timeout 5m ${DATA_STREAM_NAME}
 cp stdout got_docs.json
 
 exec jq -r '[.hits.hits[]._source.error.message // empty] | flatten | .[]' got_docs.json
 stdout 'activity/feed/subscriptions/content'
 
-# Exactly one error document, not one per evaluation.
 exec jq '[.hits.hits[]._source | select(.error.message != null)] | length' got_docs.json
 stdout '^1$'
 
@@ -51,11 +36,9 @@ data_stream:
     client_secret: test-cel-client-secret
     azure_tenant_id: test-cel-tenant-id
     content_types: "Audit.Exchange"
-    # One poll only, so that a second poll's listing does not add an error
-    # document for a reason unrelated to the behaviour under test.
+    # One poll only.
     interval: 10m
-    # Bound a regression: without the fix the rejected listing is requested
-    # again within the same interval until this limit.
+    # Bounds a regression.
     max_executions: 20
     initial_interval: 1h
     enable_request_tracer: false
