@@ -2429,6 +2429,19 @@ processors:
       if: ctx.gti?.file_feed?.attributes?.sha256 != null
       value: '{{{gti.file_feed.attributes.sha256}}}'
       allow_duplicates: false
+  # GTI file objects are keyed by their SHA-256, surfaced as the record id. Some feed records omit
+  # attributes.sha256 while still being promoted to an indicator; without a SHA-256 they cannot join
+  # the file_ioc transform (unique key) or the packaged File IOC detection rule (match field). Fall
+  # back to the record id when it is a valid 64-character hex SHA-256.
+  - grok:
+      field: gti.file_feed.id
+      tag: set_threat_indicator_file_hash_sha256_from_file_feed_id
+      if: ctx.threat?.indicator?.file?.hash?.sha256 == null && ctx.gti?.file_feed?.id != null
+      pattern_definitions:
+        GTI_FILE_SHA256: '[0-9a-f]{64}'
+      patterns:
+        - '^%{GTI_FILE_SHA256:threat.indicator.file.hash.sha256}$'
+      ignore_failure: true
   - convert:
       field: gti.file_feed.attributes.sigma_analysis_stats.critical
       tag: convert_attributes_sigma_analysis_stats_critical_to_long

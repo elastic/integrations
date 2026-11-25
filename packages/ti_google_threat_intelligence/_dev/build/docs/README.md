@@ -136,7 +136,7 @@ For example:
 
 A **retention policy** is used to remove data older than the default retention period. For more details, refer to the [Retention Policy Documentation](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-transform-put-transform#operation-transform-put-transform-body-application-json-retention_policy).
 
-In this integration, all data streams have a **retention period of 30 days**.
+In this integration, the transform destination indices have a **retention period of 30 days**. This does not apply to the File Feed source data stream (`logs-ti_google_threat_intelligence.file_feed-*`), which is kept for about **7 days** - see the [File Feed](#file-feed) section for how to extend it.
 
 ### Customizing Detection Rules
 
@@ -221,6 +221,8 @@ A record is promoted to `threat.indicator.*` when any of the following is true:
 - its `last_analysis_stats.malicious` count is greater than or equal to the **Minimum malicious detections** value (default `5`), regardless of verdict.
 
 By default, **Drop records below the indicator threshold** (`drop_below_threshold`) is enabled, so records that are not promoted are discarded and never stored. Disable it to retain every record under `gti.file_feed.*`. Only promoted records carry `threat.indicator.*` and feed the File IOC transform.
+
+File Feed source data is short-lived regardless of this setting: the packaged ILM policy `logs-ti_google_threat_intelligence.file_feed-default_policy` rolls over daily and deletes after about **7 days** on stateful deployments, and `lifecycle.yml` sets `data_retention: 7d` on Serverless. Disabling the drop therefore keeps non-indicator records for roughly a week, not indefinitely. To build a longer local reputation/hunting corpus, extend retention on both mechanisms: edit or replace the `logs-ti_google_threat_intelligence.file_feed-default_policy` ILM policy on stateful deployments, and use `PUT _data_stream/logs-ti_google_threat_intelligence.file_feed-<namespace>/_lifecycle` on Serverless.
 
 #### Example
 

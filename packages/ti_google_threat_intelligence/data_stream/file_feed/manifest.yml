@@ -41,7 +41,7 @@ streams:
         default:
           - VERDICT_MALICIOUS
         description: >-
-          GTI assessment verdicts (`gti_assessment.verdict.value`) that promote a record to `threat.indicator.*` (`event.type: indicator`). Default `VERDICT_MALICIOUS` only, which keeps false-positive alert rates near zero. `VERDICT_SUSPICIOUS` files are additionally promoted on their own whenever their `gti_assessment.threat_score.value` meets the Minimum threat score below, independently of this list; add `VERDICT_SUSPICIOUS` here to promote every suspicious file regardless of threat score. `VERDICT_UNDETECTED`, `VERDICT_BENIGN`, and `VERDICT_KNOWN_GOOD` are never promoted by verdict.
+          GTI assessment verdicts (`gti_assessment.verdict.value`) that promote a record to `threat.indicator.*` (`event.type: indicator`). Default `VERDICT_MALICIOUS` only, which keeps false-positive alert rates near zero. `VERDICT_SUSPICIOUS` files are additionally promoted on their own whenever their `gti_assessment.threat_score.value` meets the Minimum threat score below, independently of this list; add `VERDICT_SUSPICIOUS` here to promote every suspicious file regardless of threat score. `VERDICT_UNDETECTED`, `VERDICT_BENIGN`, and `VERDICT_KNOWN_GOOD` are not promoted by the default list, but they are promoted whenever added here (the gating matches any verdict present in this list). Adding one of them sends clean files into the shared File IOC detection index, so include them only if you intend that.
       - name: indicator_min_threat_score
         type: integer
         title: Minimum threat score for suspicious promotion
@@ -68,7 +68,7 @@ streams:
         show_user: true
         default: true
         description: >-
-          Drop benign/undetected records that are not promoted to `threat.indicator.*`, keeping only actionable indicators. Disable to retain the full local reputation corpus under `gti.file_feed.*` (air-gapped / hunting deployments).
+          Drop benign/undetected records that are not promoted to `threat.indicator.*`, keeping only actionable indicators. Disable to also store non-indicator records under `gti.file_feed.*` (air-gapped / hunting deployments). Note: File Feed source data is kept for about 7 days by the packaged ILM policy (`logs-ti_google_threat_intelligence.file_feed-default_policy`, stateful) and by `lifecycle.yml` (`data_retention: 7d`, Serverless); extend those policies for longer local retention.
       - name: keep_engine_results
         type: bool
         title: Keep per-engine analysis results
