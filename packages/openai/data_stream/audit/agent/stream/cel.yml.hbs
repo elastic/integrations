@@ -26,8 +26,7 @@ program: |-
     state.?want_more.orValue(false) ?
       state
     :
-      // A new window. Drop the page cursor and newest timestamp of the
-      // previous window, which are left in state if its paging ended early.
+      // New window: drop paging state left by an interrupted window.
       state.drop(["next", "newest_timestamp"]).with({
         "start_time": state.?cursor.last_timestamp.orValue(int(now - duration(state.initial_interval))),
         "end_time": int(now),
@@ -57,10 +56,7 @@ program: |-
           :
             []
         ),
-        // Records are returned newest first, so last_timestamp only moves
-        // after the last page of the window. Until then the newest timestamp
-        // is kept in state, and a window that is interrupted by an error or
-        // a restart is read again from the start.
+        // Records come newest first: move the cursor only after the last page.
         "cursor": {
           ?"last_timestamp": (body.?has_more.orValue(false) || size(seen) == 0) ?
             state.?cursor.last_timestamp
