@@ -74,6 +74,14 @@ Enable the category `Logs related to ApiManagement Gateway` to stream the logs t
    └──────────────────┘      └──────────────┘     └─────────────────┘
 ```
 
+#### Generative AI fields
+
+`gen_ai.provider.name` is `azure.ai.inference`. `event.action` keeps the Foundry operation name, such as `ChatCompletions_Create` or `getChatCompletions`. `gen_ai.operation.name` is the OpenTelemetry value for that operation, such as `chat`.
+
+Prompt text, response text, token counts, and tool calls are taken from API Management Gateway logs. RequestResponse logs provide the deployment name and the model name. These logs do not include a caller principal, so `user.name` is not set.
+
+When a response contains several tool calls, `gen_ai.tool.name`, `gen_ai.tool.type`, and `gen_ai.tool.call.id` are arrays in the order the model generated them. That pairing exists only in `_source`. Keyword aggregations sort and deduplicate the values. `MV_COUNT(gen_ai.tool.call.id)` counts the calls. Metric documents copy the model and the bucket token totals only.
+
 ### Metrics
 
 The metrics data stream collects the cognitive service metrics that is specific to the Microsoft Foundry service.
@@ -182,7 +190,8 @@ An example event for `logs` looks as following:
     },
     "event": {
         "duration": 176000000,
-        "outcome": "success"
+        "outcome": "success",
+        "action": "ChatCompletions_Create"
     },
     "http": {
         "request": {
@@ -222,6 +231,58 @@ An example event for `logs` looks as following:
         "path": "/deployments/gpt-chat-pilot/chat/completions",
         "query": "api-version=2024-02-15-preview",
         "scheme": "https"
+    },
+    "ecs": {
+        "version": "9.5.0"
+    },
+    "gen_ai": {
+        "input": {
+            "messages": [
+                {
+                    "parts": [
+                        {
+                            "content": "Suggest me a book to read this week?",
+                            "type": "text"
+                        }
+                    ],
+                    "role": "user"
+                }
+            ]
+        },
+        "operation": {
+            "name": "chat"
+        },
+        "output": {
+            "messages": [
+                {
+                    "finish_reason": "stop",
+                    "parts": [
+                        {
+                            "content": "Of course! Here are a few varied suggestions, depending on what you’re in the mood for:\n\n**1. Fiction:**  \n*“The Night Circus”* by Erin Morgenstern – A magical, imaginative, and beautifully written novel with a captivating atmosphere.\n\n**2. Mystery/Thriller:**  \n*“The Thursday Murder Club”* by Richard Osman – A witty and clever mystery set in a quiet English retirement village.\n\n**3. Non-Fiction:**  \n*“Atomic Habits”* by James Clear – A practical and engaging guide to building better habits and making positive changes.\n\n**4. Science Fiction:**  \n*“Project Hail Mary”* by Andy Weir – Fast-paced, humorous, and inventive, from the author of *The Martian*.\n\nIf you tell me a bit about your interests, I can make a more personalized recommendation!",
+                            "type": "text"
+                        }
+                    ],
+                    "role": "assistant"
+                }
+            ]
+        },
+        "provider": {
+            "name": "azure.ai.inference"
+        },
+        "request": {
+            "model": "gpt-chat-pilot"
+        },
+        "response": {
+            "finish_reasons": [
+                "stop"
+            ],
+            "id": "chatcmpl-9gRL14hGa8nQstOJKvLjh7EyulsnT",
+            "model": "gpt-35-turbo"
+        },
+        "usage": {
+            "input_tokens": 16,
+            "output_tokens": 176
+        }
     }
 }
 ```
@@ -251,9 +312,22 @@ For more details on ECS fields, check the [ECS Field Reference](https://www.elas
 | azure.ai_foundry.properties.backend_id | Backend id. | keyword |
 | azure.ai_foundry.properties.backend_method | The backend request method. | keyword |
 | azure.ai_foundry.properties.backend_protocol | The backend protocol. | keyword |
+| azure.ai_foundry.properties.backend_request_body.encoding_format | Embedding encoding format sent by the client. | keyword |
+| azure.ai_foundry.properties.backend_request_body.frequency_penalty | Frequency penalty sent by the client. | double |
+| azure.ai_foundry.properties.backend_request_body.max_completion_tokens | Maximum number of completion tokens the client requested. | long |
+| azure.ai_foundry.properties.backend_request_body.max_tokens | Maximum number of tokens the client requested. | long |
 | azure.ai_foundry.properties.backend_request_body.messages.content | The prompt input. | keyword |
 | azure.ai_foundry.properties.backend_request_body.messages.role | The API access role. | keyword |
+| azure.ai_foundry.properties.backend_request_body.messages.tool_call_id | Identifier of the tool call this message answers. | keyword |
 | azure.ai_foundry.properties.backend_request_body.model | The model name. | keyword |
+| azure.ai_foundry.properties.backend_request_body.n | Number of choices the client requested. | long |
+| azure.ai_foundry.properties.backend_request_body.presence_penalty | Presence penalty sent by the client. | double |
+| azure.ai_foundry.properties.backend_request_body.response_format | Response format requested by the client. | flattened |
+| azure.ai_foundry.properties.backend_request_body.seed | Seed sent by the client. | long |
+| azure.ai_foundry.properties.backend_request_body.stop | Stop sequences sent by the client. | keyword |
+| azure.ai_foundry.properties.backend_request_body.temperature | Sampling temperature sent by the client. | double |
+| azure.ai_foundry.properties.backend_request_body.tools | Tool definitions sent by the client. | flattened |
+| azure.ai_foundry.properties.backend_request_body.top_p | Nucleus sampling value sent by the client. | double |
 | azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.custom_blocklists.filtered | Request filtered by custom blocklist. | boolean |
 | azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.custom_blocklists.id | The custom blocklist id. | keyword |
 | azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.hate.filtered | True if the content filtered based on severity level. | boolean |
@@ -283,6 +357,7 @@ For more details on ECS fields, check the [ECS Field Reference](https://www.elas
 | azure.ai_foundry.properties.backend_response_body.choices.logprobs | An object containing information about the probability distribution over possible responses. | flattened |
 | azure.ai_foundry.properties.backend_response_body.choices.message.content | The response text content. | keyword |
 | azure.ai_foundry.properties.backend_response_body.choices.message.role | The API access role. | keyword |
+| azure.ai_foundry.properties.backend_response_body.choices.message.tool_calls | Tool calls generated by the model. | flattened |
 | azure.ai_foundry.properties.backend_response_body.content_filtered_categories.category_name | The categories (self-harm, hate, sexual, violence). | keyword |
 | azure.ai_foundry.properties.backend_response_body.content_filtered_categories.severity | The severity levels (safe, low, medium, and high). | keyword |
 | azure.ai_foundry.properties.backend_response_body.created | The timestamp when the request was created. | long |
@@ -324,8 +399,10 @@ For more details on ECS fields, check the [ECS Field Reference](https://www.elas
 | azure.ai_foundry.properties.backend_response_body.prompt_filter_results.content_filter_results.violence.severity | The severity levels (safe, low, medium, and high) for violence category. | keyword |
 | azure.ai_foundry.properties.backend_response_body.prompt_filter_results.prompt_index | Index of the prompt used to generate response. | long |
 | azure.ai_foundry.properties.backend_response_body.system_fingerprint | The fingerprint is generated by Azure API Management and is used to track the performance and usage of the backend service. | keyword |
+| azure.ai_foundry.properties.backend_response_body.usage.completion_tokens_details.reasoning_tokens | Number of reasoning tokens. Included in output_tokens. | long |
 | azure.ai_foundry.properties.backend_response_body.usage.input_tokens | the total input tokens. | long |
 | azure.ai_foundry.properties.backend_response_body.usage.output_tokens | The total output tokens. | long |
+| azure.ai_foundry.properties.backend_response_body.usage.prompt_tokens_details.cached_tokens | Number of prompt tokens served from cache. Included in input_tokens. | long |
 | azure.ai_foundry.properties.backend_response_body.usage.total_tokens | The sum of input and output tokens. | long |
 | azure.ai_foundry.properties.backend_response_code | The backend HTTP response code. | long |
 | azure.ai_foundry.properties.backend_time | The backend response time. | long |
@@ -360,6 +437,32 @@ For more details on ECS fields, check the [ECS Field Reference](https://www.elas
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| gen_ai.input.messages | The chat history provided to the model as an input. | flattened |
+| gen_ai.operation.name | The name of the operation being performed. | keyword |
+| gen_ai.output.messages | Messages returned by the model where each message represents a specific model response (choice, candidate). | flattened |
+| gen_ai.output.type | Represents the content type requested by the client. | keyword |
+| gen_ai.provider.name | The Generative AI provider as identified by the client or server instrumentation. | constant_keyword |
+| gen_ai.request.choice.count | The target number of candidate completions to return. | long |
+| gen_ai.request.encoding_formats | Encodings requested for the response. Defined locally as keyword because ECS types it as nested without properties (elastic/ecs#2560). | keyword |
+| gen_ai.request.frequency_penalty | The frequency penalty setting for the GenAI request. | double |
+| gen_ai.request.max_tokens | The maximum number of tokens the model generates for a request. | long |
+| gen_ai.request.model | The name of the GenAI model a request is being made to. | keyword |
+| gen_ai.request.presence_penalty | The presence penalty setting for the GenAI request. | double |
+| gen_ai.request.seed | Requests with same seed value more likely to return same result. | long |
+| gen_ai.request.stop_sequences | List of sequences that the model will use to stop generating further tokens. Defined locally as keyword because ECS types it as nested without properties (elastic/ecs#2560). | keyword |
+| gen_ai.request.temperature | The temperature setting for the GenAI request. | double |
+| gen_ai.request.top_p | The top_p sampling setting for the GenAI request. | double |
+| gen_ai.response.finish_reasons | Array of reasons the model stopped generating tokens, corresponding to each generation received. Defined locally as keyword because ECS types it as nested without properties (elastic/ecs#2560). | keyword |
+| gen_ai.response.id | The unique identifier for the completion. | keyword |
+| gen_ai.response.model | The name of the model that generated the response. | keyword |
+| gen_ai.tool.call.id | The tool call identifier. | keyword |
+| gen_ai.tool.definitions | The list of source system tool definitions available to the GenAI agent or model. | flattened |
+| gen_ai.tool.name | Name of the tool utilized by the agent. | keyword |
+| gen_ai.tool.type | Type of the tool utilized by the agent | keyword |
+| gen_ai.usage.input_tokens | The number of tokens used in the GenAI input (prompt). | long |
+| gen_ai.usage.output_tokens | The number of tokens used in the GenAI response (completion). | long |
 
 
 ### Metrics reference
@@ -383,7 +486,7 @@ An example event for `metrics` looks as following:
     },
     "@timestamp": "2025-06-16T09:59:00.000Z",
     "ecs": {
-        "version": "8.17.0"
+        "version": "9.5.0"
     },
     "service": {
         "type": "azure"
@@ -457,6 +560,18 @@ An example event for `metrics` looks as following:
             "model_deployment_name": "Meta-Llama-3.1-405B-Instruct",
             "region": "eastus2"
         }
+    },
+    "gen_ai": {
+        "provider": {
+            "name": "azure.ai.inference"
+        },
+        "request": {
+            "model": "Meta-Llama-3.1-405B-Instruct"
+        },
+        "usage": {
+            "input_tokens": 47,
+            "output_tokens": 31
+        }
     }
 }
 ```
@@ -498,6 +613,11 @@ For more details on ECS fields, check the [ECS Field Reference](https://www.elas
 | dataset.name | Dataset name. | constant_keyword |  |  |
 | dataset.namespace | Dataset namespace. | constant_keyword |  |  |
 | dataset.type | Dataset type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| gen_ai.provider.name | The Generative AI provider as identified by the client or server instrumentation. | constant_keyword |  |  |
+| gen_ai.request.model | The name of the GenAI model a request is being made to. | keyword |  |  |
+| gen_ai.usage.input_tokens | The number of tokens used in the GenAI input (prompt). | long |  | gauge |
+| gen_ai.usage.output_tokens | The number of tokens used in the GenAI response (completion). | long |  | gauge |
 
 
 ## Alerting Rule Template

@@ -37,6 +37,54 @@ processors:
         ctx.azure.ai_foundry.provisioned_utilization.avg = ctx.azure.ai_foundry.provisioned_utilization.avg
                 / params.param_percent;
       ignore_failure: true
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.5.0'
+  - set:
+      tag: set_gen_ai_provider_name
+      field: gen_ai.provider.name
+      value: azure.ai.inference
+  - set:
+      tag: set_gen_ai_request_model_from_model_name
+      field: gen_ai.request.model
+      copy_from: azure.dimensions.model_name
+      ignore_empty_value: true
+      if: ctx.azure?.dimensions?.model_name != null
+  - set:
+      tag: set_gen_ai_request_model_from_deployment
+      field: gen_ai.request.model
+      copy_from: azure.dimensions.model_deployment_name
+      ignore_empty_value: true
+      if: ctx.gen_ai?.request?.model == null && ctx.azure?.dimensions?.model_deployment_name != null
+  - convert:
+      tag: convert_gen_ai_usage_input_tokens
+      field: azure.ai_foundry.input_tokens.total
+      target_field: gen_ai.usage.input_tokens
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_azure_ai_foundry_input_tokens_total_on_convert_failure
+            field: azure.ai_foundry.input_tokens.total
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_gen_ai_usage_output_tokens
+      field: azure.ai_foundry.output_tokens.total
+      target_field: gen_ai.usage.output_tokens
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_azure_ai_foundry_output_tokens_total_on_convert_failure
+            field: azure.ai_foundry.output_tokens.total
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 on_failure:
   - set:
       field: error.message
