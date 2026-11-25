@@ -1,7 +1,7 @@
 {
   "attributes": {
     "name": "[GCP Cloud SQL SQL Server OTel] Buffer cache hit ratio 99% rolling 30 days",
-    "description": "Tracks buffer pool efficiency on each Cloud SQL for SQL Server instance. Each 5-minute slice is good when the average of the SQL Server-only gauge cloudsql.googleapis.com/database/sqlserver/memory/buffer_cache_hit_ratio is at or above 95. The metric is a percentage from 0 to 100, not a 0-1 fraction. The objective is that 99% of slices are good over a rolling 30-day window. A falling hit ratio means more page reads go to disk, so I/O rises and queries slow down. Common causes are an undersized tier (memory), a working set that has outgrown the buffer pool, or large scans from missing indexes. Caveats: SQL Server counts pages brought in by read-ahead as cache hits, so the ratio often stays high even under real memory pressure. Treat a breach as a strong signal, but treat a healthy SLO as weak evidence; check page life expectancy and memory grants pending as well. Scan-heavy or analytics workloads can legitimately run lower, so treat 95 as a starting point to tune. The filter requires the hit-ratio field to be present, so the SLO only creates instances for SQL Server databases and never for other Cloud SQL engines in the same data stream. It has no data while the instance is stopped or down and does not measure availability; instance-down alerts cover that. Cloud Monitoring data reaches Elasticsearch 3-5 minutes late, so set the SLO sync delay to at least 5m when you create it.",
+    "description": "Tracks buffer pool efficiency on each Cloud SQL for SQL Server instance. Each 5-minute slice is good when the average of the SQL Server-only gauge cloudsql.googleapis.com/database/sqlserver/memory/buffer_cache_hit_ratio is at or above 95. The metric is a percentage from 0 to 100, not a 0-1 fraction. The objective is that 99% of slices are good over a rolling 30-day window. A falling hit ratio means more page reads go to disk, so I/O rises and queries slow down. Common causes are an undersized tier (memory), a working set that has outgrown the buffer pool, or large scans from missing indexes. Caveats: SQL Server counts pages brought in by read-ahead as cache hits, so the ratio often stays high even under real memory pressure. Treat a breach as a strong signal, but treat a healthy SLO as weak evidence; check page life expectancy and memory grants pending as well. Scan-heavy or analytics workloads can legitimately run lower, so treat 95 as a starting point to tune. The filter requires the hit-ratio field to be present, so the SLO only creates instances for SQL Server databases and never for other Cloud SQL engines in the same data stream. It has no data while the instance is stopped or down and does not measure availability; instance-down alerts cover that.",
     "indicator": {
       "type": "sli.metric.timeslice",
       "params": {
@@ -43,6 +43,9 @@
       "resource.attributes.region",
       "resource.attributes.database_id"
     ],
+    "settings": {
+      "syncDelay": "5m"
+    },
     "artifacts": {
       "dashboards": [
         {"id": "gcp_cloudsql_sqlserver_otel-46d11bef-3642-4b3f-b979-d748c687acd6"},
