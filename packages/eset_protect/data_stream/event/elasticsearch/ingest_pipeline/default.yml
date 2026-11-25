@@ -519,15 +519,31 @@ processors:
       tag: set_file_hash_sha1_from_eset_protect_event_hash_3cf5d687
       copy_from: eset_protect.event.hash
       ignore_empty_value: true
-      if: ctx.eset_protect?.event?.type == 'BlockedFiles_Event' || 'file'.equalsIgnoreCase(ctx.json?.object_type)
+      if: (ctx.eset_protect?.event?.type == 'BlockedFiles_Event' || 'file'.equalsIgnoreCase(ctx.json?.object_type)) && ctx.eset_protect?.event?.hash != null && ctx.eset_protect.event.hash.length() == 40
   - lowercase:
       field: file.hash.sha1
       tag: lowercase_file_hash_sha1_60cf757f
       ignore_missing: true
   - set:
+      field: file.hash.sha256
+      tag: set_file_hash_sha256_from_eset_protect_event_hash_7a1d2e94
+      copy_from: eset_protect.event.hash
+      ignore_empty_value: true
+      if: (ctx.eset_protect?.event?.type == 'BlockedFiles_Event' || 'file'.equalsIgnoreCase(ctx.json?.object_type)) && ctx.eset_protect?.event?.hash != null && ctx.eset_protect.event.hash.length() == 64
+  - lowercase:
+      field: file.hash.sha256
+      tag: lowercase_file_hash_sha256_9c3f6b21
+      ignore_missing: true
+  - set:
       field: threat.indicator.file.hash.sha1
       tag: set_threat_indicator_file_hash_sha1_1bee1243
       copy_from: file.hash.sha1
+      ignore_empty_value: true
+      if: ctx.eset_protect?.event?.type == 'BlockedFiles_Event' || 'file'.equalsIgnoreCase(ctx.json?.object_type)
+  - set:
+      field: threat.indicator.file.hash.sha256
+      tag: set_threat_indicator_file_hash_sha256_5e8a4f02
+      copy_from: file.hash.sha256
       ignore_empty_value: true
       if: ctx.eset_protect?.event?.type == 'BlockedFiles_Event' || 'file'.equalsIgnoreCase(ctx.json?.object_type)
   - append:

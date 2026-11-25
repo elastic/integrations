@@ -1,0 +1,204 @@
+---
+description: Pipeline for processing GitHub organization team events (generic entity, ECS v9.5.0).
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.5.0'
+
+  # CEL-only: remove Agentless metadata fields that collide with ECS
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+
+  # CEL-only: stop processing error-placeholder documents from the collector
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: Error message set and no data to process.
+
+  # JSE00001: rename message → event.original
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: >-
+        Renames the original `message` field to `event.original` to store a copy of the original
+        message. The `event.original` field is not touched if the document already has one; it may
+        happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+
+  - json:
+      field: event.original
+      tag: parse_json
+      target_field: json
+
+  # Generic entity snapshot. No user.* fields, so these documents do not create user entities.
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: asset
+  - append:
+      field: event.category
+      tag: append_event_category_iam
+      value: iam
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type
+      value:
+        - group
+        - info
+      allow_duplicates: false
+
+  - set:
+      field: entity.id
+      tag: set_entity_id
+      copy_from: json.id
+      ignore_empty_value: true
+  - set:
+      field: entity.name
+      tag: set_entity_name
+      copy_from: json.name
+      ignore_empty_value: true
+  - set:
+      field: entity.sub_type
+      tag: set_entity_sub_type
+      value: GitHub Team
+  - set:
+      field: entity.source
+      tag: set_entity_source
+      value: github
+  - set:
+      field: entity.reference
+      tag: set_entity_reference
+      copy_from: json.url
+      ignore_empty_value: true
+      if: ctx.json?.url != null && ctx.json.url != ''
+  - set:
+      field: entity.last_seen_timestamp
+      tag: set_entity_last_seen_timestamp
+      copy_from: '@timestamp'
+      ignore_empty_value: true
+
+  - rename:
+      field: json.id
+      tag: rename_id
+      target_field: github.teams.id
+      ignore_missing: true
+  - rename:
+      field: json.databaseId
+      tag: rename_database_id
+      target_field: github.teams.database_id
+      ignore_missing: true
+  - rename:
+      field: json.name
+      tag: rename_name
+      target_field: github.teams.name
+      ignore_missing: true
+  - rename:
+      field: json.slug
+      tag: rename_slug
+      target_field: github.teams.slug
+      ignore_missing: true
+  - rename:
+      field: json.combinedSlug
+      tag: rename_combined_slug
+      target_field: github.teams.combined_slug
+      ignore_missing: true
+  - rename:
+      field: json.privacy
+      tag: rename_privacy
+      target_field: github.teams.privacy
+      ignore_missing: true
+  - rename:
+      field: json.description
+      tag: rename_description
+      target_field: github.teams.description
+      if: ctx.json?.description != null && ctx.json.description != ''
+      ignore_missing: true
+  - rename:
+      field: json.parentTeam.id
+      tag: rename_parent_team_id
+      target_field: github.teams.parent_team_id
+      if: ctx.json?.parentTeam?.id != null && ctx.json.parentTeam.id != ''
+      ignore_missing: true
+  - rename:
+      field: json.parentTeam.slug
+      tag: rename_parent_team_slug
+      target_field: github.teams.parent_team_slug
+      if: ctx.json?.parentTeam?.slug != null && ctx.json.parentTeam.slug != ''
+      ignore_missing: true
+  - date:
+      field: json.createdAt
+      tag: date_created_at
+      target_field: github.teams.created_at
+      formats:
+        - ISO8601
+        - strict_date_optional_time
+      if: ctx.json?.createdAt != null
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor {{{_ingest.on_failure_processor_type}}} with tag
+              {{{_ingest.on_failure_processor_tag}}} failed with message:
+              {{{_ingest.on_failure_message}}}
+  - date:
+      field: json.updatedAt
+      tag: date_updated_at
+      target_field: github.teams.updated_at
+      formats:
+        - ISO8601
+        - strict_date_optional_time
+      if: ctx.json?.updatedAt != null
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor {{{_ingest.on_failure_processor_type}}} with tag
+              {{{_ingest.on_failure_processor_tag}}} failed with message:
+              {{{_ingest.on_failure_message}}}
+
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

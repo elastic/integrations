@@ -1,0 +1,92 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: aws
+      name: test-identity-federation-aws
+      streams:
+        - data_stream:
+            dataset: aws.kafka_metrics
+          default_region: us-east-1
+          include_linked_accounts: true
+          metrics:
+            - name:
+                - ActiveControllerCount
+                - BytesInPerSec
+                - BytesOutPerSec
+                - ClientConnectionCount
+                - ConnectionCount
+                - EstimatedMaxTimeLag
+                - FetchMessageConversionsPerSec
+                - GlobalPartitionCount
+                - GlobalTopicCount
+                - LeaderCount
+                - MessagesInPerSec
+                - NetworkRxDropped
+                - NetworkRxErrors
+                - NetworkRxPackets
+                - NetworkTxDropped
+                - NetworkTxErrors
+                - NetworkTxPackets
+                - MaxOffsetLag
+                - ProduceMessageConversionsPerSec
+                - SumOffsetLag
+              namespace: AWS/Kafka
+              resource_type: kafka
+              statistic:
+                - Sum
+            - name:
+                - BurstBalance
+                - CPUCreditBalance
+                - CpuIdle
+                - CpuIoWait
+                - CpuSystem
+                - CpuUser
+                - KafkaAppLogsDiskUsed
+                - KafkaDataLogsDiskUsed
+                - LeaderCount
+                - MemoryBuffered
+                - MemoryCached
+                - MemoryFree
+                - HeapMemoryAfterGC
+                - MemoryUsed
+                - OfflinePartitionsCount
+                - PartitionCount
+                - ProduceTotalTimeMsMean
+                - RequestBytesMean
+                - RequestTime
+                - RootDiskUsed
+                - SwapFree
+                - SwapUsed
+                - TrafficShaping
+                - UnderMinIsrPartitionCount
+                - UnderReplicatedPartitions
+                - ZooKeeperRequestLatencyMsMean
+              namespace: AWS/Kafka
+              resource_type: kafka
+              statistic:
+                - Average
+          metricsets:
+            - cloudwatch
+          period: 1m
+          role_arn: arn:aws:iam::123456789012:role/ElasticAgentlessReadOnly
+          tags_filter: null
+          use_cloud_connectors: true
+      type: aws/metrics
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - metrics-aws.kafka_metrics-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []

@@ -4,7 +4,7 @@
 
 [Flashpoint](https://flashpoint.io/) is a comprehensive threat intelligence platform that delivers actionable insights from dark web, deep web, and technical sources. It combines human-curated intelligence with automated collection to help organizations identify emerging threats, monitor adversary activity, and assess cyber risk with enriched context.
 
-The Flashpoint integration for Elastic collects alerts, indicators and vulnerabilities from the **Flashpoint Ignite API** and visualizes them in Kibana.
+The Flashpoint integration for Elastic collects alerts, indicators, vulnerabilities, compromised credential sightings and breaches from the **Flashpoint Ignite API** and visualizes them in Kibana.
 
 ### Compatibility
 
@@ -21,12 +21,16 @@ This integration collects log messages of the following type:
 - `Alert`: Collects `alert` logs from the Flashpoint Ignite API (endpoint: `/alert-management/v1/notifications`),
 - `Indicator`: Collects `indicator` logs from the Flashpoint Ignite API (endpoint: `/technical-intelligence/v2/indicators`),
 - `Vulnerabilities`: Collects `vulnerability` logs from the Flashpoint Ignite API (endpoint: `/vulnerability-intelligence/v1/vulnerabilities`),
+- `Sighting`: Collects Compromised Credentials Monitoring - Enterprise (CCM-E) credential sighting logs from the Flashpoint Ignite API (endpoint: `/sources/v1/noncommunities/search`),
+- `Breach`: Collects Compromised Credentials Monitoring - Enterprise (CCM-E) breach metadata logs from the Flashpoint Ignite API (endpoint: `/sources/v1/noncommunities/search`),
 
 **Note**: This integration uses Elastic transforms to deduplicate **incident** data and maintain the latest view of each incident for analysis and reporting.
 
+**Note**: The `Sighting` and `Breach` data streams are disabled by default and require a Flashpoint Compromised Credentials Monitoring - Enterprise (CCM-E) entitlement on the API token. Enable them explicitly when adding the integration.
+
 ### Supported use cases
 
-Integrating Flashpoint with Elastic SIEM provides centralized visibility into threat intelligence **Alerts**, **Indicators**, and **Vulnerabilities**, enabling efficient monitoring, investigation, and risk assessment within Kibana dashboards.
+Integrating Flashpoint with Elastic SIEM provides centralized visibility into threat intelligence **Alerts**, **Indicators**, **Vulnerabilities**, **Credential Sightings**, and **Breaches**, enabling efficient monitoring, investigation, and risk assessment within Kibana dashboards.
 
 For **Alerts**, the dashboard presents key metrics such as `Total Alerts` and `Alert Trends Over Time`, helping analysts quickly detect activity spikes and monitor evolving threat patterns.
 
@@ -34,7 +38,11 @@ For **Indicators**, the dashboard highlights `Total Indicators` and `Indicators 
 
 For **Vulnerabilities**, the dashboard presents `Total Vulnerabilities` and key breakdowns by `Severity` and `Status`, helping security teams assess exposure levels and prioritize remediation efforts.
 
-Interactive filtering controls allow analysts to drill down across alerts, indicators, and vulnerabilities, supporting streamlined investigation and prioritization workflows within a unified threat intelligence view.
+For **Credential Sightings**, the dashboard presents `Total Sightings`, `Exposed Users`, `Fresh Credentials`, and `Top Breaches`, helping teams spot newly leaked credentials and trace them back to their source breaches.
+
+For **Breaches**, the dashboard presents `Total Breaches`, `New Records`, and `Largest Breaches`, helping teams gauge breach volume and identify the domains most affected.
+
+Interactive filtering controls allow analysts to drill down across alerts, indicators, vulnerabilities, credential sightings, and breaches, supporting streamlined investigation and prioritization workflows within a unified threat intelligence view.
 
 ## What do I need to use this integration?
 
@@ -56,13 +64,13 @@ To collect data through the Flashpoint Ignite API, you need to provide an **API 
 
 ## How do I deploy this integration?
 
-This integration supports both Elastic Agentless-based and Agent-based installations.
+This integration supports both Elastic Managed and Agent-based installations.
 
-### Agentless-based installation
+### Elastic Managed enabled integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it.
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ### Agent-based installation
 
@@ -142,6 +150,28 @@ For more information on architectures that can be used for scaling this integrat
 {{event "vulnerability"}}
 
 
+#### Sighting
+
+{{fields "sighting"}}
+
+### Example event
+
+#### Sighting
+
+{{event "sighting"}}
+
+
+#### Breach
+
+{{fields "breach"}}
+
+### Example event
+
+#### Breach
+
+{{event "breach"}}
+
+
 ### Inputs used
 
 These input is used in the integration:
@@ -155,3 +185,5 @@ This integration dataset uses the following API:
 * List Alerts (endpoint: `/alert-management/v1/notifications`)|
 * List Indicators (endpoint: `/technical-intelligence/v2/indicators`)
 * List Vulberabilities (endpoint: `/vulnerability-intelligence/v1/vulnerabilities`)
+* Search Compromised Credential Sightings (endpoint: `/sources/v1/noncommunities/search`)
+* Search Compromised Credential Breaches (endpoint: `/sources/v1/noncommunities/search`)

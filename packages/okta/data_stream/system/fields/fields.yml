@@ -211,6 +211,14 @@
       type: keyword
     - name: debug_data.grant_type
       type: keyword
+    - name: debug_data.privilege_granted
+      type: keyword
+      description: |
+        The administrator roles granted, for privilege grant events.
+    - name: debug_data.privilege_revoked
+      type: keyword
+      description: |
+        The administrator roles revoked, for privilege revoke events.
     - name: debug_data.request_id
       type: keyword
       description: |
@@ -270,6 +278,8 @@
     - name: debug_data.logOnlySecurityData
       type: keyword
     - name: debug_data.logOnlySecurityData.behaviors
+      type: keyword
+    - name: debug_data.logOnlySecurityData.behaviors.New_ASN
       type: keyword
     - name: debug_data.logOnlySecurityData.behaviors.New_City
       type: keyword
@@ -388,6 +398,26 @@
       type: boolean
       description: |
         Whether it is a proxy or not.
+    - name: risk
+      type: group
+      fields:
+        - name: level
+          type: keyword
+          description: |
+            The risk level Okta assigned to the request.
+    - name: tls_fingerprint
+      type: group
+      fields:
+        - name: ja4
+          type: keyword
+          description: |
+            The JA4 fingerprint of the client's TLS connection.
+    - name: user_behaviors.*
+      type: object
+      object_type: keyword
+      object_type_mapping_type: "*"
+      description: |
+        The result of each behavior detection rule Okta evaluated for the request (POSITIVE, NEGATIVE, UNKNOWN or BAD_REQUEST), keyed by the rule name with spaces, dashes and dots replaced by underscores, for example `user_behaviors.New_Device`.
 - name: okta.request
   type: group
   fields:

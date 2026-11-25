@@ -10,16 +10,40 @@ inputs:
           data_stream:
             dataset: sentinel_one.unified_alert
           interval: 1m
+          processors:
+            - drop_event:
+                when:
+                    equals:
+                        message: empty
           program: |-
             (
               state.?want_more.orValue(false) ?
                 state
               :
-                state.with({
-                  "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).as(t, int(t)*1000 + t.getMilliseconds())),
-                  "end_time": now.as(t, int(t)*1000 + t.getMilliseconds()),
-                })
-            ).as(state, state.with(
+                // Alerts can become searchable some time after their detectedAt or updatedAt,
+                // so each window ends a delay before the time it is queried.
+                now.as(t, int(t)*1000 + t.getMilliseconds()).as(queried_at, state.with({
+                  // Start at the end of the previous window, or earlier if part of it was less
+                  // than the delay old when queried. Cursors from versions without the delay
+                  // have no queried_at, because their windows ended when they were queried.
+                  "start_time": state.?cursor.last_timestamp.optMap(t, int(t)).optMap(last,
+                    min(
+                      int(state.?cursor.queried_at.orValue(last)) - duration(state.delay).getMilliseconds(),
+                      last
+                    )
+                  ).orValue(queried_at - duration(state.delay).getMilliseconds() - duration(state.initial_interval).getMilliseconds()),
+                  "end_time": queried_at - duration(state.delay).getMilliseconds(),
+                  "queried_at": queried_at,
+                }))
+            ).as(state, state.start_time >= state.end_time ?
+              // The window is empty if the clock has gone back, or on a first poll with no
+              // initial interval. Keep the cursor, or start it at the end of the window.
+              state.with({
+                "events": [{"message": "empty"}],
+                "want_more": false,
+                "cursor": state.?cursor.orValue({"last_timestamp": state.end_time, "queried_at": state.queried_at}),
+              })
+            : state.with(
               post_request(
                 state.url.trim_right("/") + "/web/api/v2.1/unifiedalerts/graphql",
                 "application/json",
@@ -32,7 +56,7 @@ inputs:
                       "fieldId": state.collect_alert_updation ? "updatedAt" : "detectedAt",
                       "dateTimeRange": {
                         "start": state.start_time,
-                        "startInclusive": false,
+                        "startInclusive": true,
                         "end": state.end_time
                       }
                     }],
@@ -70,12 +94,10 @@ inputs:
                     :
                       !state.collect_alert_updation
                   ),
-                  "cursor": {
-                    ?"last_timestamp": body.?data.alerts.pageInfo.hasNextPage.orValue(false) || !state.collect_alert_updation ?
-                      state.?cursor.last_timestamp
-                    :
-                      optional.of(state.end_time)
-                  }
+                  "cursor": body.?data.alerts.pageInfo.hasNextPage.orValue(false) || !state.collect_alert_updation ?
+                    state.?cursor.orValue({})
+                  :
+                    {"last_timestamp": state.end_time, "queried_at": state.queried_at},
                 })
               :
                 {
@@ -112,6 +134,7 @@ inputs:
             api_token: ${SECRET_0}
             batch_size: 1000
             collect_alert_updation: false
+            delay: 5m
             initial_interval: 24h
             query: |
                 query GetAllUnifiedAlerts(

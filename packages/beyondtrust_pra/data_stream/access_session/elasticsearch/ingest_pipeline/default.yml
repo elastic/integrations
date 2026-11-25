@@ -128,6 +128,7 @@ processors:
       tag: grok_destination_private_ip_dab30381
       patterns:
         - ^%{IP:json.destination.private_ip}:%{POSINT:json.destination.private_port}$
+        - ^\[%{IPV6:json.destination.private_ip}\]:%{POSINT:json.destination.private_port}$
       ignore_failure: true
   - convert:
       field: json.destination.private_ip
@@ -135,7 +136,7 @@ processors:
       target_field: beyondtrust_pra.access_session.destination.private_ip
       type: ip
       ignore_missing: true
-      if: ctx.json?.destination?.private_ip != ''
+      if: ctx.json?.destination?.private_ip != '' && ctx.json?.destination?.private_ip != 'Unknown'
       on_failure:
         - append:
             tag: append_error_message_95f2cce3
@@ -167,6 +168,7 @@ processors:
       tag: grok_destination_public_ip_999eb23f
       patterns:
         - ^%{IP:json.destination.public_ip}:%{POSINT:json.destination.public_port}$
+        - ^\[%{IPV6:json.destination.public_ip}\]:%{POSINT:json.destination.public_port}$
       ignore_failure: true
   - convert:
       field: json.destination.public_ip
@@ -174,7 +176,7 @@ processors:
       target_field: beyondtrust_pra.access_session.destination.public_ip
       type: ip
       ignore_missing: true
-      if: ctx.json?.destination?.public_ip != ''
+      if: ctx.json?.destination?.public_ip != '' && ctx.json?.destination?.public_ip != 'Unknown'
       on_failure:
         - append:
             tag: append_error_message_6b261a7f
@@ -483,6 +485,7 @@ processors:
       target_field: beyondtrust_pra.access_session.filesize
       type: long
       ignore_missing: true
+      if: ctx.json?.filesize != ''
       on_failure:
         - append:
             tag: append_error_message_41a41c21
@@ -493,6 +496,16 @@ processors:
       tag: set_file_size_from_access_session_filesize_80502cfd
       copy_from: beyondtrust_pra.access_session.filesize
       ignore_empty_value: true
+  - script:
+      tag: script_remove_empty_files_file_filesize_5b2e9c71
+      lang: painless
+      if: ctx.json?.files?.file instanceof List
+      source: |
+        for (def f : ctx.json.files.file) {
+          if (f instanceof Map && f.filesize == '') {
+            f.remove('filesize');
+          }
+        }
   - foreach:
       field: json.files.file
       if: ctx.json?.files?.file instanceof List
@@ -577,6 +590,7 @@ processors:
       tag: grok_performed_by_private_ip_8d8982de
       patterns:
         - ^%{IP:json.performed_by.private_ip}:%{POSINT:json.performed_by.private_port}$
+        - ^\[%{IPV6:json.performed_by.private_ip}\]:%{POSINT:json.performed_by.private_port}$
       ignore_failure: true
   - convert:
       field: json.performed_by.private_ip
@@ -584,7 +598,7 @@ processors:
       target_field: beyondtrust_pra.access_session.performed_by.private_ip
       type: ip
       ignore_missing: true
-      if: ctx.json?.performed_by?.private_ip != ''
+      if: ctx.json?.performed_by?.private_ip != '' && ctx.json?.performed_by?.private_ip != 'Unknown'
       on_failure:
         - append:
             tag: append_error_message_249704ff
@@ -616,6 +630,7 @@ processors:
       tag: grok_performed_by_public_ip_0a253aae
       patterns:
         - ^%{IP:json.performed_by.public_ip}:%{POSINT:json.performed_by.public_port}$
+        - ^\[%{IPV6:json.performed_by.public_ip}\]:%{POSINT:json.performed_by.public_port}$
       ignore_failure: true
   - convert:
       field: json.performed_by.public_ip
@@ -623,7 +638,7 @@ processors:
       target_field: beyondtrust_pra.access_session.performed_by.public_ip
       type: ip
       ignore_missing: true
-      if: ctx.json?.performed_by?.public_ip != ''
+      if: ctx.json?.performed_by?.public_ip != '' && ctx.json?.performed_by?.public_ip != 'Unknown'
       on_failure:
         - append:
             tag: append_error_message_004d21cf

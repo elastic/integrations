@@ -1,0 +1,48 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: cel
+      name: test-oauth-okta-jwk-json-cel
+      streams:
+        - auth.oauth2.client.id: client-id
+          auth.oauth2.okta.jwk_json: ${SECRET_0}
+          auth.oauth2.provider: okta
+          auth.oauth2.scopes:
+            - okta.logs.read
+          auth.oauth2.token_url: https://example.okta.com/oauth2/v1/token
+          data_stream:
+            dataset: cel.cel
+          interval: 1m
+          program: 'get("https://example.com/").Body.as(body, {"events": [{"message": "x"}]})'
+          publisher_pipeline.disable_host: true
+          redact.delete: false
+          regexp: null
+          resource.headers: null
+          resource.tracer:
+            enabled: false
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
+          resource.url: https://server.example.com:8089/api
+          tags:
+            - forwarded
+          xsd: null
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-*-*
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

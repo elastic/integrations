@@ -11,8 +11,9 @@ These are the possible response codes from the server.
 | 401                	| Unauthorized           	| Returned when basic auth, secret header, or HMAC validation fails. 	|
 | 405                	| Method Not Allowed     	| Returned if methods other than POST are used.                      	|
 | 406                	| Not Acceptable         	| Returned if the POST request does not contain a body.              	|
-| 415                	| Unsupported Media Type 	| Returned if the Content-Type is not application/json.              	|
+| 415                	| Unsupported Media Type 	| Returned if the Content-Type does not match the configured value (default `application/json`). |
 | 500                	| Internal Server Error  	| Returned if an I/O error occurs reading the request.               	|
 
+The **Content Type** setting controls this validation. Leave the default (`application/json`) to require JSON request bodies, set a different value when the source uses another Content-Type, or clear the field (leave it empty) to disable Content-Type validation.
 
 Custom ingest pipelines may be added by adding the name to the pipeline configuration option, creating custom ingest pipelines can be done either through the API or the [Ingest Node Pipeline UI](/app/management/ingest/ingest_pipelines/).

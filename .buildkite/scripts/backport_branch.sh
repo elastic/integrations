@@ -167,6 +167,21 @@ updateBackportBranchContents() {
     echo "Preserving from backport branch (pipeline.serverless.yml): ${serverless_k8s_version_line}, ${serverless_kind_version_line}"
   fi
 
+  # Preserve ELASTIC_PACKAGE_KIBANA_SKIP_UPLOAD_PACKAGE_VALIDATION when the base
+  # commit of the backport branch defines it. elastic-package >= v0.127.0 always
+  # enables Kibana's skipUploadPackageValidation flag for the affected Kibana
+  # versions, so main no longer sets this variable (elastic-package#3995).
+  # Backport branches build elastic-package from their own go.mod, and on branches
+  # pinned to an older version the env var is still the only way to enable that
+  # flag — so keep it instead of dropping it with the copy from main.
+  local kibana_skip_validation_line=""
+  if [ -f "${pipeline_yml}" ]; then
+    kibana_skip_validation_line=$(grep -E '^\s*ELASTIC_PACKAGE_KIBANA_SKIP_UPLOAD_PACKAGE_VALIDATION:' "${pipeline_yml}" || true)
+    if [ -n "${kibana_skip_validation_line}" ]; then
+      echo "Preserving from backport branch (pipeline.yml): ${kibana_skip_validation_line}"
+    fi
+  fi
+
   echo "--- Copying $BUILDKITE_FOLDER_PATH from $SOURCE_BRANCH..."
   git rm -r --cached "${BUILDKITE_FOLDER_PATH}" 2>/dev/null || true
   git checkout $SOURCE_BRANCH -- $BUILDKITE_FOLDER_PATH
@@ -187,6 +202,10 @@ updateBackportBranchContents() {
   if [ -n "${serverless_kind_version_line}" ]; then
     echo "--- Restoring KIND_VERSION in ${pipeline_serverless_yml}..."
     sed -i "s|^\s*KIND_VERSION:.*|${serverless_kind_version_line}|" "${pipeline_serverless_yml}"
+  fi
+  if [ -n "${kibana_skip_validation_line}" ]; then
+    echo "--- Restoring ELASTIC_PACKAGE_KIBANA_SKIP_UPLOAD_PACKAGE_VALIDATION in ${pipeline_yml}..."
+    restore_pipeline_env_line "${pipeline_yml}" "${kibana_skip_validation_line}"
   fi
 
   git add $BUILDKITE_FOLDER_PATH

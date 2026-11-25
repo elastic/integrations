@@ -54,6 +54,11 @@ processors:
                 - set(attributes["user_agent.version"], cache["user_agent.version"]) where cache["user_agent.version"] != nil
                 - set(attributes["user_agent.os.name"], cache["os.name"]) where cache["os.name"] != nil
                 - set(attributes["user_agent.os.version"], cache["os.version"]) where cache["os.version"] != nil
+                - merge_maps(cache, ExtractPatterns(body, "\\srt=\"(?P<request_time>[^\"]*)\" uct=\"(?:[^\"]*[,:] )?(?P<upstream_connect_time>[^\", :]+)[ :]*\" uht=\"(?:[^\"]*[,:] )?(?P<upstream_header_time>[^\", :]+)[ :]*\" urt=\"(?:[^\"]*[,:] )?(?P<upstream_response_time>[^\", :]+)[ :]*\"$"), "upsert")
+                - set(attributes["http.server.request.duration"], Double(cache["request_time"])) where cache["request_time"] != nil
+                - set(attributes["nginx.upstream.response.duration"], Double(cache["upstream_response_time"])) where cache["upstream_response_time"] != nil and cache["upstream_response_time"] != "-"
+                - set(attributes["nginx.upstream.connect.duration"], Double(cache["upstream_connect_time"])) where cache["upstream_connect_time"] != nil and cache["upstream_connect_time"] != "-"
+                - set(attributes["nginx.upstream.header.duration"], Double(cache["upstream_header_time"])) where cache["upstream_header_time"] != nil and cache["upstream_header_time"] != "-"
     transform/componentid-2:
         log_statements:
             - context: log

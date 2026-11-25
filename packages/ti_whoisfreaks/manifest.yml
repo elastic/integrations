@@ -1,0 +1,96 @@
+format_version: "3.4.2"
+name: ti_whoisfreaks
+title: "WhoisFreaks"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: "Collects newly registered gTLD and ccTLD domains (with and without WHOIS records) as enrichment data, plus WhoisFreaks malware, spam, and phishing domain threat indicators, via the WhoisFreaks stream APIs."
+type: integration
+categories:
+  - security
+  - threat_intel
+conditions:
+  kibana:
+    version: "^9.4.0"
+  elastic:
+    subscription: "basic"
+    capabilities:
+      - security
+screenshots:
+  - src: /img/whoisfreaks-overview.png
+    title: "[Logs WhoisFreaks] Overview dashboard"
+    size: 1920x1440
+    type: image/png
+  - src: /img/whoisfreaks-threat-feeds.png
+    title: "[Logs WhoisFreaks] Threat Feeds dashboard"
+    size: 1920x1480
+    type: image/png
+icons:
+  - src: /img/whoisfreaks.svg
+    title: WhoisFreaks logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: ti_whoisfreaks
+    title: WhoisFreaks
+    description: Collect domain enrichment data and threat intelligence indicators from WhoisFreaks via the CEL input.
+    data_streams:
+      - nrd_with_whois
+      - nrd_without_whois
+      - threat_feed_spam
+      - threat_feed_malware
+      - threat_feed_phishing
+    inputs:
+      - type: cel
+        title: Collect WhoisFreaks data via API
+        description: Collect domain enrichment data and threat intelligence indicators from the WhoisFreaks stream APIs.
+        vars:
+          - name: api_key
+            type: password
+            secret: true
+            title: "API Key"
+            description: |-
+              Your WhoisFreaks API Key, from the WhoisFreaks billing dashboard. It is
+              sent as the `apiKey` query parameter on each stream request.
+            multi: false
+            required: true
+            show_user: true
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+            multi: false
+            required: false
+            show_user: false
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities:
+              #  - |
+              #    -----BEGIN CERTIFICATE-----
+              #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+              #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+              #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+              #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+              #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+              #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+              #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+              #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+              #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+              #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+              #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+              #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+              #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+              #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+              #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+              #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+              #    sxSmbIUfc2SGJGCJD4I=
+              #    -----END CERTIFICATE-----
+owner:
+  github: elastic/security-service-integrations
+  type: partner

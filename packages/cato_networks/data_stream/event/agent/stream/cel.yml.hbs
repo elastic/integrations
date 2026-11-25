@@ -28,11 +28,16 @@ state:
   {{!--
     max_page_limit: 3000 — Cato EventsFeed API returns at most 3000 records per call.
     want_more is true when a full page is returned, indicating more data may be available.
+    With filters, Cato scans the event queue until it finds matches or hits a search limit, so a
+    page can be short while more events are pending. A short page still ends the cycle. For
+    unfiltered requests Cato documents an empty marker when there are no new events (API
+    changelog, 2025-04-27). For filtered requests it documents only that the marker is where the
+    scan stopped, not how to tell that from the end of the queue, so the marker is not relied on.
   --}}
   max_page_limit: 3000
   query: >-
-    query EventsFeed($accountIDs: [ID!] $marker: String) {
-      eventsFeed(accountIDs: $accountIDs marker: $marker) {
+    query EventsFeed($accountIDs: [ID!] $marker: String $filters: [EventFeedFieldFilterInput!]) {
+      eventsFeed(accountIDs: $accountIDs marker: $marker filters: $filters) {
         fetchedCount
         marker
         accounts {
@@ -43,6 +48,9 @@ state:
         }
       }
     }
+{{#if filters}}
+state.filters: {{filters}}
+{{/if}}
 redact:
   fields:
     - api_key
@@ -62,6 +70,21 @@ program: |
           "variables": {
             "accountIDs": state.account_ids,
             ?"marker": state.?cursor.marker,
+            // filters is a list, or a single mapping that is wrapped into a list. Fleet parses the
+            // YAML, so unquoted numbers and booleans in values are converted to the strings that
+            // the API expects. The variable has no default, so state.filters is absent unless it is
+            // set. A null, for example a value that only contains comments, sends no filters.
+            ?"filters": (state.?filters.orValue(null) == null) ?
+              optional.none()
+            :
+              optional.of(
+                ((type(state.filters) == list) ? state.filters : [state.filters]).map(f,
+                  f.?values.hasValue() ?
+                    f.with({"values": ((type(f.values) == list) ? f.values : [f.values]).map(v, string(v))})
+                  :
+                    f
+                )
+              ),
           },
         }.encode_json(),
       }

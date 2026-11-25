@@ -1,12 +1,13 @@
 ---
 description: Pipeline for processing parent object.
 processors:
+  # For process launches the parent command line is set by pipeline_ecs_process.
   - append:
       field: process.parent.command_line
       tag: append_process_parent_command_line_from_parent_cmd_line_db9530fb
       value: '{{{ses.parent.cmd_line}}}'
       allow_duplicates: false
-      if: ctx.ses?.parent?.cmd_line != null
+      if: ctx.ses?.parent?.cmd_line != null && ctx._tmp_launch == null
   - date:
       field: ses.parent.file.accessed
       tag: date_parent_file_accessed_0e1517fc
@@ -931,6 +932,7 @@ processors:
       tag: set_process_parent_pid_from_parent_pid_9e60e244
       copy_from: ses.parent.pid
       ignore_empty_value: true
+      if: ctx._tmp_launch != '8001'
   - convert:
       field: ses.parent.session.auth_protocol_id
       tag: convert_parent_session_auth_protocol_id_to_string_8ffdb8b2
@@ -1154,7 +1156,7 @@ processors:
       tag: append_process_parent_start_from_parent_start_time_fb5b967a
       value: '{{{ses.parent.start_time}}}'
       allow_duplicates: false
-      if: ctx.ses?.parent?.start_time != null
+      if: ctx.ses?.parent?.start_time != null && ctx._tmp_launch != '8001'
   - convert:
       field: ses.parent.tid
       tag: convert_parent_tid_to_long_3018d452
@@ -1175,7 +1177,7 @@ processors:
       tag: append_process_parent_thread_id_from_parent_tid_01c04969
       value: '{{{ses.parent.tid}}}'
       allow_duplicates: false
-      if: ctx.ses?.parent?.tid != null
+      if: ctx.ses?.parent?.tid != null && ctx._tmp_launch != '8001'
   - foreach:
       field: process.parent.thread.id
       if: ctx.process?.parent?.thread?.id instanceof List
@@ -1200,7 +1202,7 @@ processors:
       tag: append_process_parent_entity_id_from_parent_uid_aeee0f78
       value: '{{{ses.parent.uid}}}'
       allow_duplicates: false
-      if: ctx.ses?.parent?.uid != null
+      if: ctx.ses?.parent?.uid != null && ctx._tmp_launch != '8001'
   - convert:
       field: ses.parent.user.account_disabled
       tag: convert_parent_user_account_disabled_to_boolean_71b706f5
@@ -1236,7 +1238,7 @@ processors:
       tag: append_process_parent_user_name_from_parent_user_name_b9010913
       value: '{{{ses.parent.user.name}}}'
       allow_duplicates: false
-      if: ctx.ses?.parent?.user?.name != null
+      if: ctx.ses?.parent?.user?.name != null && ctx._tmp_launch != '8001'
   - convert:
       field: ses.parent.user.password_expires
       tag: convert_parent_user_password_expires_to_boolean_43467277
@@ -1257,7 +1259,7 @@ processors:
       tag: append_process_parent_user_id_from_parent_user_uid_de7c7d0d
       value: '{{{ses.parent.user.uid}}}'
       allow_duplicates: false
-      if: ctx.ses?.parent?.user?.uid != null
+      if: ctx.ses?.parent?.user?.uid != null && ctx._tmp_launch != '8001'
   - append:
       field: related.hash
       tag: append_related_hash_from_parent_file_md5_b4ef54d9
@@ -1353,7 +1355,10 @@ processors:
         - ses.parent.user.uid
       tag: remove_custom_duplicate_fields_3d709a8e
       ignore_missing: true
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      # For an 8001 launch these values were not copied to ECS: the SES parent
+      # is the parent of the actor, which is not the parent of the launched
+      # process.
+      if: ctx._tmp_launch != '8001' && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
 on_failure:
   - append:
       tag: append_error_message_6906b116
