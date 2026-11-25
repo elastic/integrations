@@ -1,6 +1,18 @@
 vars:
   hosts:
     - "oracle://sys:Oradoc_db1@{{Hostname}}:{{Port}}/ORCLCDB.localdomain?sysdba=1"
+# Guard against a run that ingests only the metricbeat failed-fetch error
+# event. Stacks >= 8.15 surface that as a HEALTHY->DEGRADED agent log line
+# and fail the test, but the default PR CI stack (8.13.0) does not, so
+# without this assertion an error-only run passes silently. elastic-package
+# keeps collecting until the field shows up in any ingested document.
+assert:
+  fields_present:
+    # V$SYSMETRIC GROUP_ID = 2 is the long-duration group, sampled every
+    # 60s, so it can legitimately be empty for up to a minute after the
+    # database opens. Session Count is always >= 1 once it is populated,
+    # since the collecting connection is itself a session.
+    - oracle.sysmetric.session_count
 agent:
   runtime: docker
   provisioning_script:

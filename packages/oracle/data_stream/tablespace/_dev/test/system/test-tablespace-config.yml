@@ -1,6 +1,17 @@
 vars:
   hosts:
     - "oracle://sys:Oradoc_db1@{{Hostname}}:{{Port}}/ORCLCDB.localdomain?sysdba=1"
+# Guard against a run that ingests only the metricbeat failed-fetch error
+# event. Stacks >= 8.15 surface that as a HEALTHY->DEGRADED agent log line
+# and fail the test, but the default PR CI stack (8.13.0) does not, so
+# without this assertion an error-only run passes silently. elastic-package
+# keeps collecting until the field shows up in any ingested document.
+assert:
+  fields_present:
+    # tablespace_name comes from the first, unconditional query. Do not use
+    # oracle.tablespace.extended_space.*: it is gated behind the
+    # enable_extended_space_metrics variable, not on the database being up.
+    - oracle.tablespace.name
 agent:
   runtime: docker
   provisioning_script:
