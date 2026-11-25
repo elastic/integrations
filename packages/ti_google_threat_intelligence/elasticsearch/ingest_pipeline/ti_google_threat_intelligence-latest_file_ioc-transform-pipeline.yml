@@ -1,6 +1,97 @@
 ---
 description: Pipeline for processing File IOC events from Google Threat Intelligence Threat Feed events.
 processors:
+  # --- File Feed normalization (filestream source, stores reports under gti.file_feed) ---
+  # Other feeds store their report under gti.<feed> and are renamed to gti.threat.indicator below.
+  # File Feed is shaped differently, so normalize it before the rename:
+  #  1. Flatten the gti_assessment verdict/severity/threat_score objects to their `.value` scalars so
+  #     they match the keyword/long types the destination maps for gti.threat.indicator.attributes.*
+  #     (renaming the objects as-is would cause an object-vs-keyword conflict and reject the document).
+  #  2. Drop the unbounded/flattened report subtrees (per-engine results, exiftool, sandbox verdicts,
+  #     language-specific analysis) and the relationship graph-navigation subtree so they do not expand
+  #     the shared destination's dynamic mapping toward the 3000-field limit and stall updates for every
+  #     other feed. The relationships data stays on the raw file_feed source docs; the latest-IOC
+  #     enrichment index only needs the indicator fields the detection rules match on.
+  - set:
+      field: gti.file_feed.attributes.gti_assessment.verdict
+      tag: flatten_file_feed_gti_assessment_verdict
+      copy_from: gti.file_feed.attributes.gti_assessment.verdict.value
+      ignore_empty_value: true
+      if: ctx.gti?.file_feed?.attributes?.gti_assessment?.verdict instanceof Map
+  - set:
+      field: gti.file_feed.attributes.gti_assessment.severity
+      tag: flatten_file_feed_gti_assessment_severity
+      copy_from: gti.file_feed.attributes.gti_assessment.severity.value
+      ignore_empty_value: true
+      if: ctx.gti?.file_feed?.attributes?.gti_assessment?.severity instanceof Map
+  - set:
+      field: gti.file_feed.attributes.gti_assessment.threat_score
+      tag: flatten_file_feed_gti_assessment_threat_score
+      copy_from: gti.file_feed.attributes.gti_assessment.threat_score.value
+      ignore_empty_value: true
+      if: ctx.gti?.file_feed?.attributes?.gti_assessment?.threat_score instanceof Map
+  - remove:
+      field:
+        # File-report attributes that are not part of the shared gti.threat.indicator schema the
+        # other source feeds contribute. The full report stays on the raw file_feed source docs;
+        # the shared latest-IOC enrichment index keeps only the common indicator fields (hashes,
+        # gti_assessment, last_analysis_stats, names, size, context_attributes.threat_list_id, ...).
+        - gti.file_feed.attributes.androguard
+        - gti.file_feed.attributes.authentihash
+        - gti.file_feed.attributes.available_tools
+        - gti.file_feed.attributes.bundle_info
+        - gti.file_feed.attributes.contenthash
+        - gti.file_feed.attributes.crowdsourced_ai_results
+        - gti.file_feed.attributes.crowdsourced_ids_results
+        - gti.file_feed.attributes.crowdsourced_ids_stats
+        - gti.file_feed.attributes.crowdsourced_yara_results
+        - gti.file_feed.attributes.detectiteasy
+        - gti.file_feed.attributes.dot_net_assembly
+        - gti.file_feed.attributes.dot_net_guids
+        - gti.file_feed.attributes.downloadable
+        - gti.file_feed.attributes.exiftool
+        - gti.file_feed.attributes.filecondis
+        - gti.file_feed.attributes.gti_assessment.contributing_factors.associated_malware_configuration
+        - gti.file_feed.attributes.gti_assessment.contributing_factors.gavs_detections
+        - gti.file_feed.attributes.gti_assessment.contributing_factors.malicious_sandbox_verdict
+        - gti.file_feed.attributes.gti_assessment.contributing_factors.matched_malicious_yara
+        - gti.file_feed.attributes.gti_assessment.contributing_factors.normalised_categories
+        - gti.file_feed.attributes.gti_assessment.gti_description_cards
+        - gti.file_feed.attributes.html_info
+        - gti.file_feed.attributes.javascript_info
+        - gti.file_feed.attributes.last_analysis_results
+        - gti.file_feed.attributes.magic
+        - gti.file_feed.attributes.magika
+        - gti.file_feed.attributes.main_icon
+        - gti.file_feed.attributes.malware_config
+        - gti.file_feed.attributes.packers
+        - gti.file_feed.attributes.pdf_info
+        - gti.file_feed.attributes.pe_info
+        - gti.file_feed.attributes.picklescan
+        - gti.file_feed.attributes.popular_threat_classification
+        - gti.file_feed.attributes.reputation
+        - gti.file_feed.attributes.sandbox_verdicts
+        - gti.file_feed.attributes.sigma_analysis_results
+        - gti.file_feed.attributes.sigma_analysis_stats
+        - gti.file_feed.attributes.sigma_analysis_summary
+        - gti.file_feed.attributes.signature_info
+        - gti.file_feed.attributes.threat_severity
+        - gti.file_feed.attributes.total_votes
+        - gti.file_feed.attributes.trid
+        - gti.file_feed.attributes.type_description
+        - gti.file_feed.attributes.type_tag
+        - gti.file_feed.attributes.unique_sources
+        - gti.file_feed.attributes.vba_info
+        - gti.file_feed.context_attributes.download_url
+        - gti.file_feed.context_attributes.submitter
+        - gti.file_feed.relationships
+      tag: remove_file_feed_unbounded_report_objects
+      ignore_missing: true
+  - rename:
+      field: gti.file_feed
+      tag: rename_gti_file_feed
+      target_field: gti.threat.indicator
+      ignore_missing: true
   - rename:
       field: gti.cryptominer
       tag: rename_gti_cryptominer_6bf86828

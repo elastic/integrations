@@ -1,0 +1,54 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: ti_google_threat_intelligence
+      name: test-processors-ti_google_threat_intelligence
+      streams:
+        - data_stream:
+            dataset: ti_google_threat_intelligence.file_feed
+          paths:
+            - /tmp/file_feed/*.ndjson
+          processors:
+            - add_fields:
+                fields:
+                    drop_below_threshold: true
+                    indicator_min_malicious_detections: 5
+                    indicator_min_threat_score: 70
+                    indicator_verdicts:
+                        - VERDICT_MALICIOUS
+                    keep_engine_results: false
+                    tags_exclude:
+                        - nsrl
+                    type_tags_include:
+                        - peexe
+                target: _conf
+            - add_fields:
+                fields:
+                    policy_test: true
+                target: event
+          prospector.scanner.exclude_files:
+            - \.gz$
+            - \.bz2$
+          publisher_pipeline.disable_host: true
+          tags:
+            - forwarded
+            - google_threat_intelligence-file_feed
+      type: filestream
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-ti_google_threat_intelligence.file_feed-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []

@@ -1,5 +1,6 @@
 title: File Feed Events
 type: logs
+ilm_policy: logs-ti_google_threat_intelligence.file_feed-default_policy
 streams:
   - input: filestream
     enabled: false
@@ -52,13 +53,13 @@ streams:
           A `VERDICT_SUSPICIOUS` record is promoted to `threat.indicator.*` whenever `gti_assessment.threat_score.value` is greater than or equal to this value, independently of the Indicator verdicts list. (If `VERDICT_SUSPICIOUS` is also added to Indicator verdicts, suspicious records are promoted regardless of threat score.)
       - name: indicator_min_malicious_detections
         type: integer
-        title: Minimum malicious detections (fallback)
+        title: Minimum malicious detections
         multi: false
         required: true
         show_user: true
         default: 5
         description: >-
-          Fallback promotion when the verdict is absent or undetected: promote to `threat.indicator.*` if `last_analysis_stats.malicious` is greater than or equal to this value.
+          Promote a record to `threat.indicator.*` whenever `last_analysis_stats.malicious` is greater than or equal to this value, regardless of its GTI verdict (including `VERDICT_BENIGN` and `VERDICT_KNOWN_GOOD`). This is evaluated as an independent OR condition alongside the Indicator verdicts and Minimum threat score promotion paths.
       - name: drop_below_threshold
         type: bool
         title: Drop records below the indicator threshold

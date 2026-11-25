@@ -757,7 +757,7 @@ An example event for `file_feed` looks as following:
 | gti.file_feed.attributes.crowdsourced_ai_results.verdict | The verdict of the AI analysis result. | keyword |
 | gti.file_feed.attributes.crowdsourced_ids_results.alert_context.dest_ip | The dest ip of the IDS alert context. | ip |
 | gti.file_feed.attributes.crowdsourced_ids_results.alert_context.dest_port | The dest port of the IDS alert context. | long |
-| gti.file_feed.attributes.crowdsourced_ids_results.alert_context.hostname | The host in the IDS alert context. Route IP-shaped values to related.ip and hostnames to related.hosts. | keyword |
+| gti.file_feed.attributes.crowdsourced_ids_results.alert_context.hostname | The hostname in the IDS alert context. | keyword |
 | gti.file_feed.attributes.crowdsourced_ids_results.alert_context.ja3 | The ja3 of the IDS alert context. | keyword |
 | gti.file_feed.attributes.crowdsourced_ids_results.alert_context.ja3s | The ja3s of the IDS alert context. | keyword |
 | gti.file_feed.attributes.crowdsourced_ids_results.alert_context.src_ip | The src ip of the IDS alert context. | ip |
@@ -1199,7 +1199,7 @@ An example event for `file_feed` looks as following:
 | gti.file_feed.attributes.pe_info.resource_types | An object containing the resource types of the PE header. | flattened |
 | gti.file_feed.attributes.pe_info.rich_pe_header_hash | The Rich PE header hash of the PE header. | keyword |
 | gti.file_feed.attributes.pe_info.sections.chi2 | The chi2 of the PE section. | double |
-| gti.file_feed.attributes.pe_info.sections.entropy | The entropy of the PE section. | long |
+| gti.file_feed.attributes.pe_info.sections.entropy | The entropy of the PE section. | double |
 | gti.file_feed.attributes.pe_info.sections.flags | The flags of the PE section. | keyword |
 | gti.file_feed.attributes.pe_info.sections.md5 | The MD5 hash of the PE section. | keyword |
 | gti.file_feed.attributes.pe_info.sections.name | The name of the PE section. | keyword |
@@ -1261,7 +1261,7 @@ An example event for `file_feed` looks as following:
 | gti.file_feed.attributes.signature_info.format | The Format of the code signature. | keyword |
 | gti.file_feed.attributes.signature_info.hash_choices | The Hash choices of the code signature. | keyword |
 | gti.file_feed.attributes.signature_info.identifier | The code-signing identifier of the file. | keyword |
-| gti.file_feed.attributes.signature_info.info_plist | The Info.plist content. Note: source key contains a dot; map to a single field 'info_plist' so it is not split into an Info object with a plist child. | keyword |
+| gti.file_feed.attributes.signature_info.info_plist | The Info.plist content from the file's code signature. | keyword |
 | gti.file_feed.attributes.signature_info.internal_name | The internal name of the code signature. | keyword |
 | gti.file_feed.attributes.signature_info.original_name | The original name of the code signature. | keyword |
 | gti.file_feed.attributes.signature_info.pkcs7.opusinfo.more_info | The moreInfo of the opusinfo. | keyword |
@@ -1304,7 +1304,7 @@ An example event for `file_feed` looks as following:
 | gti.file_feed.attributes.threat_severity.threat_severity_data.popular_threat_category | The popular threat category of the threat severity data. | keyword |
 | gti.file_feed.attributes.threat_severity.threat_severity_level | The threat severity level of the threat severity assessment. | keyword |
 | gti.file_feed.attributes.threat_severity.version | The version of the threat severity assessment. | long |
-| gti.file_feed.attributes.threat_verdict | The threat verdict assigned by Google Threat Intelligence (VERDICT_UNKNOWN, VERDICT_UNDETECTED, VERDICT_SUSPICIOUS, VERDICT_MALICIOUS). Documented attribute; not observed in the feed sample. | keyword |
+| gti.file_feed.attributes.threat_verdict | The threat verdict assigned by Google Threat Intelligence (for example VERDICT_UNDETECTED, VERDICT_SUSPICIOUS, or VERDICT_MALICIOUS). | keyword |
 | gti.file_feed.attributes.times_submitted | The number of times the file has been submitted for analysis. | long |
 | gti.file_feed.attributes.tlsh | The file's TLSH fuzzy hash. | keyword |
 | gti.file_feed.attributes.total_votes.harmless | The number of community votes classifying the file as harmless. | long |
@@ -1326,7 +1326,7 @@ An example event for `file_feed` looks as following:
 | gti.file_feed.context_attributes.submitter.interface | The interface of the submitter. | keyword |
 | gti.file_feed.context_attributes.submitter.region | The region of the submitter. | keyword |
 | gti.file_feed.id | The unique identifier of the file (its SHA-256 hash). | keyword |
-| gti.file_feed.links.self | A link to the file. Set threat.indicator.reference to the GUI URL https://www.virustotal.com/gui/file/\<sha256\> (built from the id), not the raw API URL, which needs an API key to open. | keyword |
+| gti.file_feed.links.self | The API URL of the file object. | keyword |
 | gti.file_feed.relationships.analyses.data.id | Analyses for the file. | keyword |
 | gti.file_feed.relationships.analyses.data.type | The object type returned by the 'analyses' relationship. | keyword |
 | gti.file_feed.relationships.associations.data.id | The id of the data. | keyword |
@@ -1415,7 +1415,15 @@ An example event for `file_feed` looks as following:
 | gti.file_feed.relationships.votes.data.id | Votes for the file. | keyword |
 | gti.file_feed.relationships.votes.data.type | The object type returned by the 'votes' relationship. | keyword |
 | gti.file_feed.type | The type of the indicator object (for example, file). | keyword |
-| input.type | Type of Filebeat input. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or in the latest destination index. | constant_keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only). | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only). | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only). | keyword |
 | log.offset | Log offset. | long |
 | observer.product | The product name of the observer. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |

@@ -119,19 +119,20 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  # related.hosts + related.ip from the IDS results. crowdsourced_ids_results is an ARRAY of rule
-  # hits, and each hit's alert_context is itself an ARRAY of context objects (hostname/src_ip/
-  # dest_ip/url). A mustache/dotted path cannot walk a list-of-lists, so collect in painless.
+  # related.hosts from the IDS results. crowdsourced_ids_results is an ARRAY of rule hits, and each
+  # hit's alert_context is itself an ARRAY of context objects (hostname/src_ip/dest_ip/url). A
+  # mustache/dotted path cannot walk a list-of-lists, so collect hostnames in painless. The src/dest
+  # IPs are populated into related.ip by the validated foreach+convert blocks below (unvalidated raw
+  # values must never be written to the `ip`-typed related.ip, or one bad value rejects the document).
   - script:
       tag: enrich_related_from_crowdsourced_ids_results
       lang: painless
       if: ctx.gti?.file_feed?.attributes?.crowdsourced_ids_results instanceof List
       description: >-
-        Collect alert_context hostnames into related.hosts and src/dest IPs into related.ip from the
-        nested crowdsourced_ids_results[].alert_context[] arrays (deduplicated).
+        Collect alert_context hostnames into related.hosts from the nested
+        crowdsourced_ids_results[].alert_context[] arrays (deduplicated).
       source: |-
         def hosts = new ArrayList();
-        def ips = new ArrayList();
         for (def hit : ctx.gti.file_feed.attributes.crowdsourced_ids_results) {
           if (!(hit instanceof Map)) { continue; }
           def acs = hit.get('alert_context');
@@ -140,21 +141,12 @@ processors:
             if (!(ac instanceof Map)) { continue; }
             def h = ac.get('hostname');
             if (h != null && !hosts.contains(h)) { hosts.add(h); }
-            def dip = ac.get('dest_ip');
-            if (dip != null && !ips.contains(dip)) { ips.add(dip); }
-            def sip = ac.get('src_ip');
-            if (sip != null && !ips.contains(sip)) { ips.add(sip); }
           }
         }
         if (!hosts.isEmpty()) {
           if (!(ctx.related instanceof Map)) { ctx.related = new HashMap(); }
           if (!(ctx.related.hosts instanceof List)) { ctx.related.hosts = new ArrayList(); }
           for (def h : hosts) { if (!ctx.related.hosts.contains(h)) { ctx.related.hosts.add(h); } }
-        }
-        if (!ips.isEmpty()) {
-          if (!(ctx.related instanceof Map)) { ctx.related = new HashMap(); }
-          if (!(ctx.related.ip instanceof List)) { ctx.related.ip = new ArrayList(); }
-          for (def ip : ips) { if (!ctx.related.ip.contains(ip)) { ctx.related.ip.add(ip); } }
         }
   # Fingerprint uses the raw id BEFORE the generated duplicate-removal strips gti.file_feed.id.
   - fingerprint:
@@ -3188,7 +3180,7 @@ processors:
             - _ingest._value.size
             - _ingest._value.virtual_address
           tag: remove_custom_duplicate_fields_from_attributes_elf_info_section_list
-          if: ctx._is_indicator == true && (ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields'))
+          if: ctx._is_indicator == true
           ignore_missing: true
   - foreach:
       field: gti.file_feed.attributes.elf_info.segment_list
@@ -3200,7 +3192,7 @@ processors:
             - _ingest._value.resources
             - _ingest._value.segment_type
           tag: remove_custom_duplicate_fields_from_attributes_elf_info_segment_list
-          if: ctx._is_indicator == true && (ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields'))
+          if: ctx._is_indicator == true
           ignore_missing: true
   - foreach:
       field: gti.file_feed.attributes.pe_info.sections
@@ -3214,7 +3206,7 @@ processors:
             - _ingest._value.raw_size
             - _ingest._value.virtual_size
           tag: remove_custom_duplicate_fields_from_attributes_pe_info_sections
-          if: ctx._is_indicator == true && (ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields'))
+          if: ctx._is_indicator == true
           ignore_missing: true
   - foreach:
       field: gti.file_feed.attributes.popular_threat_classification.popular_threat_name
@@ -3225,7 +3217,7 @@ processors:
           field:
             - _ingest._value.value
           tag: remove_custom_duplicate_fields_from_attributes_popular_threat_classification_popular_threat_name
-          if: ctx._is_indicator == true && (ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields'))
+          if: ctx._is_indicator == true
           ignore_missing: true
   - remove:
       field:
@@ -3267,7 +3259,7 @@ processors:
         - gti.file_feed.links.self
         - gti.file_feed.type
       tag: remove_custom_duplicate_fields
-      if: ctx._is_indicator == true && (ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields'))
+      if: ctx._is_indicator == true
       ignore_missing: true
   - append:
       field: event.category
@@ -3299,11 +3291,6 @@ processors:
       tag: remove_last_analysis_results_unless_kept
       ignore_missing: true
       if: ctx._conf == null || ctx._conf.keep_engine_results != true
-  - remove:
-      field: event.original
-      tag: remove_event_original_unless_preserved
-      ignore_missing: true
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
   - remove:
       field:
         - _conf
@@ -3433,3 +3420,13 @@ on_failure:
       tag: append_tags
       value: preserve_original_event
       allow_duplicates: false
+  # Strip the internal gating fields on the failure path too. The normal cleanup processor is
+  # skipped when a processor fails early (e.g. a malformed JSON line), so without this the beat-
+  # injected _conf (and any _is_indicator/_should_drop) would leak onto the indexed error document.
+  - remove:
+      field:
+        - _conf
+        - _is_indicator
+        - _should_drop
+      tag: remove_gti_internal_fields_on_failure
+      ignore_missing: true
