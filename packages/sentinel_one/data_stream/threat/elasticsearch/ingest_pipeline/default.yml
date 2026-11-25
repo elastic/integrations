@@ -1252,6 +1252,18 @@ processors:
             tag: append_error_message_4164cf51
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_json_threatInfo_updatedAt_to_sentinel_one_threat_updated_at_c8e41b2a
+      field: json.threatInfo.updatedAt
+      if: ctx.json?.threatInfo?.updatedAt != null
+      target_field: sentinel_one.threat.updated_at
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            tag: append_error_message_updated_at_3f9a7c16
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       tag: rename_json_threatInfo_detectionEngines_to_sentinel_one_threat_detection_engines_0327c07d
       field: json.threatInfo.detectionEngines

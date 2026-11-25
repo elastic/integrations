@@ -178,6 +178,8 @@ This is the `group` dataset.
 
 This is the `threat` dataset.
 
+`sentinel_one.threat.updated_at` maps SentinelOne `threatInfo.updatedAt`. `@timestamp` continues to be set from that value for threat documents. Use `sentinel_one.threat.created_at` and `sentinel_one.threat.updated_at` to compare when a threat was created versus last updated.
+
 {{event "threat"}}
 
 {{fields "threat"}}

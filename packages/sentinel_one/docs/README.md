@@ -1397,6 +1397,8 @@ An example event for `group` looks as following:
 
 This is the `threat` dataset.
 
+`sentinel_one.threat.updated_at` maps SentinelOne `threatInfo.updatedAt`. `@timestamp` continues to be set from that value for threat documents. Use `sentinel_one.threat.created_at` and `sentinel_one.threat.updated_at` to compare when a threat was created versus last updated.
+
 An example event for `threat` looks as following:
 
 ```json
@@ -1678,6 +1680,7 @@ An example event for `threat` looks as following:
                 "primary_description": "STAR rule matched",
                 "updated_at": "2022-04-06T08:54:17.194Z"
             },
+            "updated_at": "2022-04-06T08:54:17.194Z",
             "whitening_option": [
                 "hash"
             ]
@@ -1861,6 +1864,7 @@ An example event for `threat` looks as following:
 | sentinel_one.threat.timeline.site.id | Related site (if applicable). | keyword |
 | sentinel_one.threat.timeline.updated_at | Activity last updated time (UTC). | date |
 | sentinel_one.threat.timeline.user.id | The user who invoked the activity (if applicable). | keyword |
+| sentinel_one.threat.updated_at | Timestamp of last update in the Management Console. | date |
 | sentinel_one.threat.whitening_option | Whitening options. | keyword |
 | sentinel_one.threat_classification.name |  | keyword |
 | sentinel_one.threat_classification.source |  | keyword |
