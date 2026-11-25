@@ -1,0 +1,352 @@
+---
+description: >-
+  Chargeback Serverless: set composite_key and extract ds_type and ds_namespace
+  for usage lookup indices.
+processors:
+  - script:
+      lang: painless
+      tag: set_usage_lookup_keys
+      source: |
+        if (ctx['@timestamp'] != null && ctx.project_id != null) {
+          def ts = ctx['@timestamp'];
+          def date = (ts instanceof Number)
+            ? Instant.ofEpochMilli(((Number) ts).longValue()).atZone(ZoneOffset.UTC).toLocalDate().toString()
+            : ZonedDateTime.parse(ts.toString()).toLocalDate().toString();
+          ctx.composite_key = date + '_' + ctx.project_id;
+          if (ctx.datastream != null) {
+            ctx.composite_datastream_key = ctx.composite_key + '_' + ctx.datastream;
+          }
+        }
+        if (ctx.ds_type instanceof Map) {
+          def buckets = ctx.ds_type.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.ds_type = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.ds_type.keySet());
+            ctx.ds_type = keys.size() > 0 ? keys[0] : null;
+          }
+        }
+        if (ctx.ds_dataset instanceof Map) {
+          def buckets = ctx.ds_dataset.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.ds_dataset = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.ds_dataset.keySet());
+            ctx.ds_dataset = keys.size() > 0 ? keys[0] : null;
+          }
+        }
+        if (ctx.ds_namespace instanceof Map) {
+          def buckets = ctx.ds_namespace.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.ds_namespace = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.ds_namespace.keySet());
+            ctx.ds_namespace = keys.size() > 0 ? keys[0] : null;
+          }
+        }
+        if (ctx.monitor_name instanceof Map) {
+          def buckets = ctx.monitor_name.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.monitor_name = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.monitor_name.keySet());
+            ctx.monitor_name = keys.size() > 0 ? keys[0] : ctx.monitor_id;
+          }
+        }
+        if (ctx.monitor_namespace instanceof Map) {
+          def buckets = ctx.monitor_namespace.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.monitor_namespace = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.monitor_namespace.keySet());
+            ctx.monitor_namespace = keys.size() > 0 ? keys[0] : 'default';
+          }
+        }
+        if (ctx.project_name instanceof Map) {
+          def picked = null;
+          def buckets = ctx.project_name.buckets;
+          if (buckets instanceof List && buckets.size() > 0) {
+            for (def b : buckets) {
+              if (b.key != null && b.key != '' && b.key != ctx.project_id) {
+                picked = b.key;
+                break;
+              }
+            }
+            if (picked == null && buckets[0].key != null) {
+              picked = buckets[0].key;
+            }
+          } else {
+            for (def k : ctx.project_name.keySet()) {
+              if (k != null && k != '' && k != ctx.project_id) {
+                picked = k;
+                break;
+              }
+            }
+            if (picked == null) {
+              def keys = new ArrayList(ctx.project_name.keySet());
+              if (keys.size() > 0) {
+                picked = keys[0];
+              }
+            }
+          }
+          ctx.project_name = picked != null ? picked : ctx.project_id;
+        }
+        if (ctx.project_type instanceof Map) {
+          def buckets = ctx.project_type.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.project_type = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.project_type.keySet());
+            ctx.project_type = keys.size() > 0 ? keys[0] : 'elasticsearch';
+          }
+        }
+        if (ctx.latest_currency instanceof Map) {
+          def curr = ctx.latest_currency;
+          if (curr.top instanceof List && curr.top.size() > 0 && curr.top[0] instanceof Map && curr.top[0].metrics instanceof Map) {
+            curr = curr.top[0].metrics;
+          }
+          if (curr.project_name != null && curr.project_name.toString() != '') {
+            ctx.project_name = curr.project_name.toString();
+          }
+          if (curr.project_type != null && curr.project_type.toString() != '') {
+            ctx.project_type = curr.project_type.toString();
+          }
+          if (curr.ds_type != null && curr.ds_type.toString() != '') {
+            ctx.ds_type = curr.ds_type.toString();
+          }
+          if (curr.ds_dataset != null && curr.ds_dataset.toString() != '') {
+            ctx.ds_dataset = curr.ds_dataset.toString();
+          }
+          if (curr.ds_namespace != null && curr.ds_namespace.toString() != '') {
+            ctx.ds_namespace = curr.ds_namespace.toString();
+          }
+          if (curr.optimized_for != null && curr.optimized_for.toString() != '') {
+            ctx.optimized_for = curr.optimized_for.toString();
+          }
+          if (curr.es_url != null) {
+            ctx.es_url = curr.es_url.toString();
+          }
+          if (curr.monitor_name != null && curr.monitor_name.toString() != '') {
+            ctx.monitor_name = curr.monitor_name.toString();
+          }
+          if (curr.monitor_namespace != null && curr.monitor_namespace.toString() != '') {
+            ctx.monitor_namespace = curr.monitor_namespace.toString();
+          }
+          if (curr.conf_chargeable_unit_rate instanceof Number) {
+            ctx.conf_chargeable_unit_rate = ((Number)curr.conf_chargeable_unit_rate).doubleValue();
+          } else if (curr.conf_chargeable_unit_rate != null && curr.conf_chargeable_unit_rate.toString() != '') {
+            ctx.conf_chargeable_unit_rate = Double.parseDouble(curr.conf_chargeable_unit_rate.toString());
+          }
+          if (curr.conf_chargeable_unit_rate_unit != null) {
+            ctx.conf_chargeable_unit_rate_unit = curr.conf_chargeable_unit_rate_unit.toString();
+          }
+          if (curr.conf_currency_symbol != null) {
+            ctx.conf_currency_symbol = curr.conf_currency_symbol.toString();
+          }
+          ctx.remove('latest_currency');
+        }
+        if (ctx.project_name == null || ctx.project_name == '') {
+          ctx.project_name = ctx.project_id;
+        }
+        if (ctx.project_type == null || ctx.project_type == '') {
+          ctx.project_type = 'elasticsearch';
+        }
+        if (ctx.datastream != null && ctx.datastream != '') {
+          def dsPattern = /^(?:partial-)?(?:restored-)?(?:shrink-.{4}-)?(?:downsample-[^-]+-)?\.ds-(.+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d+)?$/;
+          def m = dsPattern.matcher(ctx.datastream);
+          def isBackingIndex = m.matches();
+          if (isBackingIndex) {
+            ctx.datastream = m.group(1);
+          } else if (ctx.backing_index instanceof String && dsPattern.matcher(ctx.backing_index).matches()) {
+            isBackingIndex = true;
+          }
+          if (ctx.datastream.startsWith('.') || ctx.datastream == 'system' || (ctx.datastream.startsWith('serverless_') && (ctx.datastream.endsWith('_lookup') || ctx.datastream.contains('_lookup-')))) {
+            ctx.datastream = 'system';
+            ctx.ds_type = 'system';
+            ctx.ds_namespace = 'system';
+            ctx.ds_dataset = 'system';
+          } else {
+            def hasExplicitIndex = (ctx.ds_type == 'index' && !isBackingIndex);
+            def hasExplicitStreamType = (ctx.ds_type == 'logs' || ctx.ds_type == 'metrics' || ctx.ds_type == 'traces' || ctx.ds_type == 'synthetics' || ctx.ds_type == 'profiling');
+            def parts = ctx.datastream.splitOnToken('-');
+            def isCanonicalStream = !hasExplicitIndex && parts.length >= 3 && (
+              ((parts[0] == 'logs' || parts[0] == 'metrics' || parts[0] == 'traces') && parts[1].contains('.')) ||
+              parts[0] == 'synthetics' ||
+              parts[0] == 'profiling' ||
+              ctx.datastream.startsWith('logs-generic-') ||
+              ctx.datastream.startsWith('metrics-generic-') ||
+              ctx.datastream.startsWith('traces-apm-')
+            );
+            if (hasExplicitIndex) {
+              if (ctx.ds_dataset == null || ctx.ds_dataset == '') {
+                ctx.ds_dataset = ctx.datastream;
+              }
+              if (ctx.ds_namespace == null || ctx.ds_namespace == '') {
+                ctx.ds_namespace = 'default';
+              }
+            } else if (ctx.ds_type == null || ctx.ds_type == '' || ctx.ds_dataset == null || ctx.ds_dataset == '' || ctx.ds_namespace == null || ctx.ds_namespace == '' || (ctx.ds_type == 'index' && isBackingIndex)) {
+              if ((isBackingIndex || hasExplicitStreamType || isCanonicalStream) && (parts[0] == 'logs' || parts[0] == 'metrics' || parts[0] == 'traces' || parts[0] == 'synthetics' || parts[0] == 'profiling') && parts.length >= 3) {
+                ctx.ds_type = parts[0];
+                if (isBackingIndex || ctx.ds_dataset == null || ctx.ds_dataset == '') {
+                  ctx.ds_dataset = parts[1];
+                }
+                if (isBackingIndex || ctx.ds_namespace == null || ctx.ds_namespace == '') {
+                  def nsParts = new ArrayList();
+                  for (int i = 2; i < parts.length; i++) {
+                    nsParts.add(parts[i]);
+                  }
+                  ctx.ds_namespace = String.join('-', nsParts);
+                }
+              } else if (hasExplicitStreamType) {
+                if (ctx.ds_dataset == null || ctx.ds_dataset == '') {
+                  ctx.ds_dataset = ctx.datastream;
+                }
+                if (ctx.ds_namespace == null || ctx.ds_namespace == '') {
+                  ctx.ds_namespace = 'default';
+                }
+              } else {
+                ctx.ds_type = 'index';
+                ctx.ds_dataset = ctx.datastream;
+                ctx.ds_namespace = 'default';
+              }
+            }
+          }
+          if (ctx.composite_key != null) {
+            ctx.composite_datastream_key = ctx.composite_key + '_' + ctx.datastream;
+          }
+        }
+        if (ctx.conf_chargeable_unit_rate_unit instanceof Map) {
+          def buckets = ctx.conf_chargeable_unit_rate_unit.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.conf_chargeable_unit_rate_unit = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.conf_chargeable_unit_rate_unit.keySet());
+            ctx.conf_chargeable_unit_rate_unit = keys.size() > 0 ? keys[0] : 'USD';
+          }
+        }
+        if (ctx.conf_currency_symbol instanceof Map) {
+          def buckets = ctx.conf_currency_symbol.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.conf_currency_symbol = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.conf_currency_symbol.keySet());
+            ctx.conf_currency_symbol = keys.size() > 0 ? keys[0] : '$';
+          }
+        }
+        if (ctx.conf_chargeable_unit_rate == null) {
+          ctx.conf_chargeable_unit_rate = 1.0;
+        }
+        if (ctx.conf_chargeable_unit_rate_unit == null || ctx.conf_chargeable_unit_rate_unit == '') {
+          ctx.conf_chargeable_unit_rate_unit = 'USD';
+        }
+        if (ctx.conf_currency_symbol == null || ctx.conf_currency_symbol == '') {
+          ctx.conf_currency_symbol = '$';
+        }
+        if (ctx.last_status instanceof Map) {
+          if (ctx.last_status.last_status instanceof String) {
+            ctx.last_status = ctx.last_status.last_status;
+          } else if (ctx.last_status.top instanceof List && ctx.last_status.top.size() > 0 && ctx.last_status.top[0] instanceof Map && ctx.last_status.top[0].metrics instanceof Map && ctx.last_status.top[0].metrics.last_status != null) {
+            ctx.last_status = ctx.last_status.top[0].metrics.last_status;
+          } else {
+            def vals = new ArrayList();
+            def buckets = ctx.last_status.buckets;
+            if (buckets instanceof List && buckets.size() > 0) {
+              for (def b : buckets) {
+                if (b.key != null) vals.add(b.key);
+              }
+            } else {
+              vals.addAll(ctx.last_status.keySet());
+            }
+            ctx.last_status = vals.size() > 0 ? vals[0] : 'ok';
+          }
+        }
+        if (ctx.api_key_type instanceof Map) {
+          if (ctx.api_key_type.api_key_type instanceof String) {
+            ctx.api_key_type = ctx.api_key_type.api_key_type;
+          } else if (ctx.api_key_type.top instanceof List && ctx.api_key_type.top.size() > 0 && ctx.api_key_type.top[0] instanceof Map && ctx.api_key_type.top[0].metrics instanceof Map && ctx.api_key_type.top[0].metrics.api_key_type != null) {
+            ctx.api_key_type = ctx.api_key_type.top[0].metrics.api_key_type;
+          } else {
+            def vals = new ArrayList();
+            def buckets = ctx.api_key_type.buckets;
+            if (buckets instanceof List && buckets.size() > 0) {
+              for (def b : buckets) {
+                if (b.key != null) vals.add(b.key);
+              }
+            } else {
+              vals.addAll(ctx.api_key_type.keySet());
+            }
+            ctx.api_key_type = vals.size() > 0 ? vals[0] : 'missing_key';
+          }
+        }
+        if (ctx.synthetics_status instanceof Map) {
+          if (ctx.synthetics_status.synthetics_status instanceof String) {
+            ctx.synthetics_status = ctx.synthetics_status.synthetics_status;
+          } else if (ctx.synthetics_status.top instanceof List && ctx.synthetics_status.top.size() > 0 && ctx.synthetics_status.top[0] instanceof Map && ctx.synthetics_status.top[0].metrics instanceof Map && ctx.synthetics_status.top[0].metrics.synthetics_status != null) {
+            ctx.synthetics_status = ctx.synthetics_status.top[0].metrics.synthetics_status;
+          } else {
+            def vals = new ArrayList();
+            def buckets = ctx.synthetics_status.buckets;
+            if (buckets instanceof List && buckets.size() > 0) {
+              for (def b : buckets) {
+                if (b.key != null) vals.add(b.key);
+              }
+            } else {
+              vals.addAll(ctx.synthetics_status.keySet());
+            }
+            ctx.synthetics_status = vals.size() > 0 ? vals[0] : 'ok';
+          }
+        }
+        if (ctx.optimized_for instanceof Map) {
+          def buckets = ctx.optimized_for.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.optimized_for = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.optimized_for.keySet());
+            ctx.optimized_for = keys.size() > 0 ? keys[0] : 'general_purpose';
+          }
+        }
+        if (ctx.es_url instanceof Map) {
+          def buckets = ctx.es_url.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.es_url = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.es_url.keySet());
+            ctx.es_url = keys.size() > 0 ? keys[0] : '';
+          }
+        }
+        if (ctx.updated_at instanceof Number) {
+          ctx.updated_at = Instant.ofEpochMilli(((Number)ctx.updated_at).longValue()).toString();
+        }
+        ctx.remove('by_backing_index');
+        if (ctx.datastream_sum_indexing_time instanceof Map) {
+          ctx.datastream_sum_indexing_time = ctx.datastream_sum_indexing_time.value != null ? Math.round(((Number)ctx.datastream_sum_indexing_time.value).doubleValue()) : 0L;
+        } else if (ctx.datastream_sum_indexing_time instanceof Number) {
+          ctx.datastream_sum_indexing_time = Math.round(((Number)ctx.datastream_sum_indexing_time).doubleValue());
+        }
+        if (ctx.datastream_sum_query_time instanceof Map) {
+          ctx.datastream_sum_query_time = ctx.datastream_sum_query_time.value != null ? Math.round(((Number)ctx.datastream_sum_query_time.value).doubleValue()) : 0L;
+        } else if (ctx.datastream_sum_query_time instanceof Number) {
+          ctx.datastream_sum_query_time = Math.round(((Number)ctx.datastream_sum_query_time).doubleValue());
+        }
+        if (ctx.datastream_sum_data_set_store_size instanceof Map) {
+          ctx.datastream_sum_data_set_store_size = ctx.datastream_sum_data_set_store_size.value != null ? Math.round(((Number)ctx.datastream_sum_data_set_store_size.value).doubleValue()) : 0L;
+        } else if (ctx.datastream_sum_data_set_store_size instanceof Number) {
+          ctx.datastream_sum_data_set_store_size = Math.round(((Number)ctx.datastream_sum_data_set_store_size).doubleValue());
+        }
+  - set:
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+      tag: set_event_ingested
+on_failure:
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: "pipeline_error"
+  - append:
+      tag: append_pipeline_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
