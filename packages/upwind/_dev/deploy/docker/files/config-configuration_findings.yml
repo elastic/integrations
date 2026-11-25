@@ -1,20 +1,26 @@
 # Upwind configuration-findings mock (full posture).
 #
-# Live list responses are a JSON array. The next page is advertised in the
-# Link header with rel="next". The page token in this mock contains a comma,
-# which is what a real Upwind cursor looks like, so pagination must not split
-# the Link header on commas. Response headers cannot be templated, so the
-# first-page rule always advertises Link rel="next" and an empty page ends
-# the round. Every interval is a full re-list of current PASS and FAIL
-# findings. There is no time bookmark.
+# org-example-0001 returns the live shape: a JSON array. The first page is
+# HTTP 206 and advertises the next page in the Link header. The page token
+# contains a comma, so pagination must not split the Link header on commas.
+# Response headers cannot be templated, so that rule always advertises Link
+# rel="next" and an empty page ends the round.
+# org-example-0002 returns the documented envelope
+# { resourceFindings, pagination }. The next page comes from
+# pagination.nextPageToken and the sweep ends when hasMoreData is false.
+# Every interval is a full re-list. There is no time bookmark.
 #
 # Rules, first match wins:
 #   1. OAuth client-credentials token (audience is the API base URL).
-#   2. Page 2 (page-token contains a comma): first hit → one FAIL finding,
-#      later hits → empty terminal page. Never a Link header.
-#   3. First page (status=ALL, no page-token): first hit → FAIL + PASS
-#      (round 1), second hit → one PASS finding (round 2 full re-list),
+#   2. org-example-0001 page 2 (page-token contains a comma): first hit →
+#      one FAIL finding, later hits → empty terminal page.
+#   3. org-example-0001 first page (status=ALL, no page-token): first hit →
+#      FAIL + PASS (round 1), second hit → one PASS finding (round 2),
 #      later hits → empty steady state.
+#   4. org-example-0002 page 2 (page-token=cf-env-page-2): one finding,
+#      hasMoreData false. Later hits are an empty terminal envelope.
+#   5. org-example-0002 first page: two findings and a next token on the
+#      first hit, then an empty terminal envelope.
 rules:
   - path: /oauth/token
     methods: ['POST']
@@ -96,7 +102,7 @@ rules:
       Accept:
         - application/json
     responses:
-      - status_code: 200
+      - status_code: 206
         headers:
           Content-Type:
             - application/json
@@ -216,4 +222,190 @@ rules:
           ]
           {{ else }}
           []
+          {{ end }}
+  # Documented envelope. A different organization keeps these rules from
+  # matching the array scenario above. The page-token rule is first because
+  # the collector also sends status=ALL on later pages.
+  - path: /v1/organizations/org-example-0002/configuration-findings
+    methods: ['GET']
+    query_params:
+      page-token: cf-env-page-2
+    request_headers:
+      Authorization:
+        - Bearer test-token
+      Accept:
+        - application/json
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          {{ if eq .req_num 1 }}
+          {
+            "resourceFindings": [
+              {
+                "id": "ucf-env-33333333333333cc",
+                "title": "CloudTrail is not enabled in all regions",
+                "description": "Multi-region CloudTrail logging is disabled for this account.",
+                "status": "FAIL",
+                "severity": "HIGH",
+                "first_seen_time": "2026-02-01T08:00:00Z",
+                "last_seen_time": "2026-03-20T07:00:00Z",
+                "last_sync_time": "2026-03-20T07:05:00Z",
+                "check": {
+                  "id": "check-cloudtrail-all-regions",
+                  "title": "CloudTrail should be enabled in all regions",
+                  "description": "Detects accounts without a multi-region trail.",
+                  "remediation": "Create a multi-region CloudTrail trail with log file validation enabled."
+                },
+                "framework": {
+                  "id": "cis-aws-v1",
+                  "title": "CIS AWS Foundations",
+                  "version": "1.5.0",
+                  "status": "ENABLED",
+                  "cloud_provider": "AWS"
+                },
+                "resource": {
+                  "id": "arn:aws:iam::111111111111:root",
+                  "arn": "arn:aws:iam::111111111111:root",
+                  "name": "production",
+                  "type": "AwsAccount",
+                  "cloud_provider": "AWS",
+                  "cloud_account_id": "111111111111",
+                  "cloud_account_name": "production",
+                  "region": "us-east-1",
+                  "upwind_asset_id": "asset-account-001",
+                  "risk_categories": ["LOGGING"]
+                }
+              }
+            ],
+            "pagination": {
+              "hasMoreData": false,
+              "nextPageToken": [],
+              "offset": 2,
+              "size": 1,
+              "totalItems": 3
+            }
+          }
+          {{ else }}
+          {
+            "resourceFindings": [],
+            "pagination": {
+              "hasMoreData": false,
+              "nextPageToken": [],
+              "offset": 0,
+              "size": 0,
+              "totalItems": 0
+            }
+          }
+          {{ end }}
+  - path: /v1/organizations/org-example-0002/configuration-findings
+    methods: ['GET']
+    query_params:
+      status: ALL
+    request_headers:
+      Authorization:
+        - Bearer test-token
+      Accept:
+        - application/json
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          {{ if eq .req_num 1 }}
+          {
+            "resourceFindings": [
+              {
+                "id": "ucf-env-11111111111111aa",
+                "title": "S3 bucket allows public read access",
+                "description": "The S3 bucket policy grants public read access to objects.",
+                "status": "FAIL",
+                "severity": "HIGH",
+                "first_seen_time": "2026-01-15T12:00:00Z",
+                "last_seen_time": "2026-03-20T06:00:00Z",
+                "last_sync_time": "2026-03-20T06:05:00Z",
+                "check": {
+                  "id": "check-s3-public-read",
+                  "title": "S3 bucket should not allow public read access",
+                  "description": "Detects bucket policies or ACLs that expose objects publicly.",
+                  "remediation": "Remove public principals from the bucket policy and enable Block Public Access."
+                },
+                "framework": {
+                  "id": "cis-aws-v1",
+                  "title": "CIS AWS Foundations",
+                  "version": "1.5.0",
+                  "status": "ENABLED",
+                  "cloud_provider": "AWS"
+                },
+                "resource": {
+                  "id": "arn:aws:s3:::example-logs-bucket",
+                  "arn": "arn:aws:s3:::example-logs-bucket",
+                  "name": "example-logs-bucket",
+                  "type": "AwsS3Bucket",
+                  "cloud_provider": "AWS",
+                  "cloud_account_id": "111111111111",
+                  "cloud_account_name": "production",
+                  "region": "us-east-1",
+                  "upwind_asset_id": "asset-s3-001",
+                  "risk_categories": ["DATA_EXPOSURE"]
+                }
+              },
+              {
+                "id": "ucf-env-22222222222222bb",
+                "title": "Security group allows unrestricted SSH access",
+                "description": "The security group allows inbound SSH from 0.0.0.0/0.",
+                "status": "PASS",
+                "severity": "MEDIUM",
+                "first_seen_time": "2026-02-10T09:30:00Z",
+                "last_seen_time": "2026-03-20T06:30:00Z",
+                "last_sync_time": "2026-03-20T06:35:00Z",
+                "check": {
+                  "id": "check-sg-open-ssh",
+                  "title": "Security groups should not allow unrestricted SSH",
+                  "description": "Detects security groups exposing SSH to the internet.",
+                  "remediation": "Restrict inbound SSH to known administrative CIDR ranges."
+                },
+                "framework": {
+                  "id": "cis-aws-v1",
+                  "title": "CIS AWS Foundations",
+                  "version": "1.5.0",
+                  "status": "ENABLED",
+                  "cloud_provider": "AWS"
+                },
+                "resource": {
+                  "id": "sg-00000000000000001",
+                  "arn": "arn:aws:ec2:us-east-1:111111111111:security-group/sg-00000000000000001",
+                  "name": "app-servers",
+                  "type": "AwsEc2SecurityGroup",
+                  "cloud_provider": "AWS",
+                  "cloud_account_id": "111111111111",
+                  "cloud_account_name": "production",
+                  "region": "us-east-1",
+                  "upwind_asset_id": "asset-sg-001",
+                  "risk_categories": ["NETWORK"]
+                }
+              }
+            ],
+            "pagination": {
+              "hasMoreData": true,
+              "nextPageToken": ["cf-env-page-2"],
+              "offset": 0,
+              "size": 2,
+              "totalItems": 3
+            }
+          }
+          {{ else }}
+          {
+            "resourceFindings": [],
+            "pagination": {
+              "hasMoreData": false,
+              "nextPageToken": [],
+              "offset": 0,
+              "size": 0,
+              "totalItems": 0
+            }
+          }
           {{ end }}
