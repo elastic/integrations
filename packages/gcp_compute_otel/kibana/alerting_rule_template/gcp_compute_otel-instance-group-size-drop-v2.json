@@ -1,0 +1,76 @@
+{
+  "id": "gcp_compute_otel-instance-group-size-drop-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Compute OTel] Managed instance group size drop",
+        "description": "Alerts when a managed instance group loses at least half of its instances (and at least 2) within 30 minutes, comparing the current size with the maximum size in the window. Returns one row per affected instance group.",
+        "tags": [
+          "observability",
+          "gcp",
+          "gcp_compute",
+          "compute_engine"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "30m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.compute.otel-*\n// Managed instance groups only (resource-level dimensions; no attributes.* labels on this metric)\n| WHERE resource.attributes.gcp.resource_type == \"instance_group\"\n// instance_group/size is a GAUGE: number of VMs currently in the group.\n// OTel TSDS can split one entity's history into several series (_metric_names_hash is a dimension).\n// Collapse to one row per minute first, then take the latest value with LAST(x, minute).\n| STATS size = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance_group/size`))\n  BY minute = TBUCKET(1 minute), resource.attributes.project_id, resource.attributes.location, resource.attributes.instance_group_name\n// Peak size in the window vs the most recent size (latest minute by timestamp, not the max of each series' last value)\n| STATS\n    max_size = MAX(size),\n    current_size = LAST(size, minute) WHERE size IS NOT NULL\n  BY resource.attributes.project_id, resource.attributes.location, resource.attributes.instance_group_name",
+        "breach": {
+          "segment": "WHERE max_size > 0 AND current_size IS NOT NULL\n| EVAL instances_lost = max_size - current_size\n| EVAL drop_pct = ROUND(instances_lost * 100.0 / max_size, 1)\n// Breach: lost >= 50% of peak size AND >= 2 instances in the window.\n// Exclude groups that scale aggressively by design, for example:\n// | WHERE NOT resource.attributes.instance_group_name LIKE \"gke-*-batch-*\"\n| WHERE drop_pct >= 50 AND instances_lost >= 2\n| KEEP resource.attributes.project_id, resource.attributes.location, resource.attributes.instance_group_name, max_size, current_size, instances_lost, drop_pct\n| SORT drop_pct DESC\n| LIMIT 50"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.project_id",
+          "resource.attributes.location",
+          "resource.attributes.instance_group_name"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_compute_otel-instance-group-size-drop-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Managed instance group size drop\n\nThis managed instance group (MIG) shrank by at least half (and by at least 2 VMs) within 30 minutes. Possible causes include mass instance failures, Spot preemptions, an aggressive autoscaler scale-in, a manual resize, or a failing instance template that prevents recreation.\n\n### Triage\n1. Check the MIG's recent operations and autoscaler decisions in the Google Cloud console or Cloud Audit Logs. A planned scale-in from low load is expected; unexplained drops are not.\n2. Check for clustered interruptions (preemptions) in the group's zone.\n3. Check whether the group is trying to recreate instances and failing (quota, stockout, template or startup-script errors).\n4. Check the health of the service the group backs: did the remaining instances absorb the load?\n\n### Remediation\nFix the underlying failure (quota, template, zone capacity), raise the autoscaler minimum, or spread the group across zones with a regional MIG.\n\n### Tuning\nChange `drop_pct >= 50` and `instances_lost >= 2`, or exclude groups that are expected to scale to near zero (for example batch node pools). A group that is deleted stops reporting and does not trigger this rule. GCP Cloud Monitoring metrics typically arrive several minutes late, so the most recent minutes of the lookback window may be empty; the window is sized to tolerate this."
+          }
+        },
+        {
+          "id": "gcp_compute_otel-instance-group-size-drop-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_compute_otel-00311620-fcdf-435c-945b-3d912867b913"
+          }
+        },
+        {
+          "id": "gcp_compute_otel-instance-group-size-drop-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_compute_otel-62a27720-651a-4446-a1ba-0512a69a6ced"
+          }
+        }
+      ]
+    }
+  }
+}

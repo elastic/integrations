@@ -592,7 +592,7 @@ An example event for `event` looks as following:
 | eset_protect.event.group_description | Description of the static group. | keyword |
 | eset_protect.event.group_name | The full path to the static group of the computer generating the event. If the path is longer than 255 characters, group_name only contains the static group name. | keyword |
 | eset_protect.event.handled | Indicates whether or not the detection was handled. | keyword |
-| eset_protect.event.hash | SHA1 hash associated with the event. | keyword |
+| eset_protect.event.hash | SHA1 or SHA256 hash associated with the event. | keyword |
 | eset_protect.event.hostname | Hostname of the computer generating the event. | keyword |
 | eset_protect.event.inbound | Whether or not the connection was inbound. | boolean |
 | eset_protect.event.ipv4 | IPv4 address of the computer generating the event. | ip |

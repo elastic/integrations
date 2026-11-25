@@ -83,8 +83,8 @@ Use the values collected in [From Upwind](#from-upwind).
 - 403 Forbidden: The API credential does not have read access to that finding type. Update the credential roles in Settings → Credentials.
 - 429 Rate limit exceeded: Upwind returned HTTP 429. Increase the polling interval for the affected data stream.
 - No threat detections: Confirm detections exist in the lookback window (Initial interval). The list is filtered by last seen time.
-- No vulnerability findings: The vulnerability list has no documented time filter and returns pages until the Link header has no rel="next". Confirm the credential can read vulnerabilities and that findings exist in the organization.
-- No configuration findings: Confirm the credential can read configuration findings and that posture checks exist in the organization. Each run lists all current PASS and FAIL findings.
+- No vulnerability findings: Each page is a JSON array and can be HTTP 200 or HTTP 206. Pages continue while the Link header advertises a next page. Confirm the credential can read vulnerabilities and that findings exist in the organization.
+- No configuration findings: Each page is a JSON array paged by the Link header. An envelope with resourceFindings and pagination is also accepted. Pages can be HTTP 200 or HTTP 206. Confirm the credential can read configuration findings and that posture checks exist in the organization. Each run lists all current PASS and FAIL findings.
 
 ## Performance and scaling
 
