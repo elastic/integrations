@@ -1,0 +1,45 @@
+description: Emit daily ESS Billing-compatible metrics from onprem_billing_config (mERU as total_ecu). No enrich policies required.
+source:
+  index: onprem_billing_config
+  query:
+    term:
+      config_type: deployment
+  runtime_mappings:
+    "@timestamp":
+      type: date
+      script:
+        source: "emit(System.currentTimeMillis());"
+dest:
+  index: metrics-ess_billing.billing-onprem
+  pipeline: metrics-ess_billing.billing-0.3.5-billing
+frequency: 60m
+sync:
+  time:
+    field: "@timestamp"
+    delay: 1h
+pivot:
+  group_by:
+    deployment_id:
+      terms:
+        field: deployment_id
+    deployment_name:
+      terms:
+        field: deployment_name
+    deployment_tags:
+      terms:
+        field: deployment_tags
+    "@timestamp":
+      date_histogram:
+        field: "@timestamp"
+        calendar_interval: 1d
+  aggregations:
+    daily_meru:
+      max:
+        field: daily_meru
+settings:
+  deduce_mappings: false
+  unattended: true
+_meta:
+  managed: true
+  run_as_kibana_system: false
+  fleet_transform_version: 0.3.5
