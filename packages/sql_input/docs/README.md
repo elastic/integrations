@@ -27,7 +27,7 @@ Here is an example of the supported configuration:
 #### Oracle 
 
 :::{important}
-The Oracle driver requires the 64-bit Oracle Instant Client on the host that runs Elastic Agent. The client provides the Oracle native library that the driver loads at runtime:
+The Oracle driver requires the 64-bit Oracle Instant Client on the host that runs Elastic Agent, unless the libraries are already installed on that host. The client provides the Oracle native library that the driver loads at runtime:
 
 - Linux: `libclntsh.so`
 - Windows: `oci.dll`
