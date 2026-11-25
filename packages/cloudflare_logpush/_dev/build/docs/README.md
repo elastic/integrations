@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, Audit Logs v2, CASB, Device Posture, DEX Application Tests, DEX Device State Events, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, SSH Logs, WARP Config Changes, WARP Toggle Changes, Zero Trust Network Session, and Workers Trace Events logs.
+The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, Audit Logs v2, CASB, Device Posture, DEX Application Tests, DEX Device State Events, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, SSH Logs, WARP Config Changes, WARP Toggle Changes, WebSocket Analytics, Zero Trust Network Session, and Workers Trace Events logs.
 
 Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
 
@@ -66,13 +66,14 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 - `page_shield_events`: Page Shield events reporting changes to scripts and connections observed on protected zones. See [Page Shield Events schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/page_shield_events/).
 - `sinkhole_http`: HTTP traffic captured by Cloudflare sinkholes. See [Sinkhole HTTP logs schema](https://developers.cloudflare.com/logs/reference/log-fields/account/sinkhole_http_logs/).
 - `spectrum_event`: Cloudflare Spectrum events for TCP/UDP applications proxied through Cloudflare. See [Spectrum Events schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/spectrum_events/).
+- `websocket_analytics`: WebSocket connections proxied by the Cloudflare edge, including the bytes exchanged with the client and the origin, the connection duration, and why and where the connection closed. Available to Enterprise customers as both an account-scoped and a zone-scoped dataset. See [WebSocket Analytics schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/zone/websocket_analytics/).
 - `workers_trace`: Cloudflare Workers Trace Events with execution logs and exceptions for Workers scripts. See [Workers Trace Events schema](https://developers.cloudflare.com/logs/reference/log-fields/account/workers_trace_events/).
 
 ### Supported use cases
 
 Integrating Cloudflare Logpush with Elastic provides centralized visibility across Cloudflare's edge, Zero Trust, and network-layer products. Common use cases include:
 
-- Investigating traffic, WAF, and DDoS-mitigation events from the Cloudflare edge (`http_request`, `firewall_event`, `network_analytics`).
+- Investigating traffic, WAF, and DDoS-mitigation events from the Cloudflare edge (`http_request`, `firewall_event`, `network_analytics`, `websocket_analytics`).
 - Monitoring Zero Trust user activity, policy decisions, and device posture (`gateway_http`, `gateway_dns`, `gateway_network`, `access_request`, `device_posture`, `network_session`, `ssh_logs`, `warp_config_changes`, `warp_toggle_changes`).
 - Monitoring Cloudflare DEX digital experience, synthetic test results, and device health (`dex_application_tests`, `dex_device_state_events`).
 - Detecting data exfiltration and SaaS misconfigurations (`dlp_forensic_copies`, `casb`, `email_security_alerts`).
@@ -95,6 +96,7 @@ Creating and managing Logpush jobs requires an API token or user role with the `
 
 - **Zone-scoped datasets** (for example, `http_requests`, `firewall_events`, `dns_logs`, `spectrum_events`, `nel_reports`, `page_shield_events`) require a **zone-scoped token**.
 - **Account-scoped datasets** (for example, `audit_logs`, `audit_logs_v2`, `access_requests`, `casb_findings`, `device_posture_results`, `dlp_forensic_copies`, `email_security_alerts`, `gateway_*`, `dns_firewall_logs`, `magic_ids_detections`, `network_analytics_logs`, `sinkhole_http_logs`, `ssh_logs`, `workers_trace_events`, `zero_trust_network_sessions`) require an **account-scoped token**.
+- `websocket_analytics` is available at both scopes. Use a zone-scoped job and token to collect one zone's WebSocket connections, or an account-scoped job and token to collect them for the whole account.
 - Zero Trust datasets (Access, Gateway, DEX) additionally require `Zero Trust: PII Read`.
 
 **Destination-specific credentials**
@@ -151,6 +153,7 @@ Configure one of the following delivery pipelines before enabling the integratio
   | SSH Logs                   | ssh_logs                |
   | WARP Config Changes        | warp_config_changes     |
   | WARP Toggle Changes        | warp_toggle_changes     |
+  | WebSocket Analytics        | websocket_analytics     |
   | Workers Trace Events       | workers_trace           |
 
 **Note:** Upgrading the integration does not change a Bucket Prefix that is already saved in a policy. Before version 2.3.0, the default prefix of the Audit Logs data stream was `audit_logs`, which also matches `audit_logs_v2/` objects. If your existing policy uses `audit_logs` and you enable Audit Logs v2 on the same bucket, set the **[S3] Bucket Prefix** of the Audit Logs data stream to `audit_logs/` first, so that Audit Logs v2 objects are not collected twice.
@@ -555,6 +558,16 @@ This is the `warp_toggle_changes` dataset.
 {{event "warp_toggle_changes"}}
 
 {{fields "warp_toggle_changes"}}
+
+#### websocket_analytics
+
+This is the `websocket_analytics` dataset.
+
+##### Example
+
+{{event "websocket_analytics"}}
+
+{{fields "websocket_analytics"}}
 
 #### workers_trace
 

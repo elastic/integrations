@@ -1,0 +1,41 @@
+- name: cloudflare_logpush.websocket_analytics
+  type: group
+  fields:
+    - name: colo
+      type: group
+      fields:
+        - name: code
+          type: keyword
+          description: IATA airport code of the data center that handled the connection.
+    - name: connection
+      type: group
+      fields:
+        - name: close
+          type: group
+          fields:
+            - name: reason
+              type: keyword
+              description: The edge proxy classification for why the WebSocket connection ended. `none` means the proxy observed no classified error or timeout. Possible values are `none`, `unspecifiedError`, `timedOut`, `peerReset`, `upstreamReset`, `protocolViolation` and `peerNoError`.
+            - name: source
+              type: keyword
+              description: The side where the edge proxy observed the connection close. This field does not necessarily identify which side initiated the close. `both` means the proxy observed closure in both directions and does not identify which direction closed first. Possible values are `upstream`, `downstream`, `me` and `both`. Unrecognized classifications can appear as raw internal values.
+        - name: id
+          type: keyword
+          description: Unique identifier of the WebSocket connection, hex-encoded.
+        - name: transport_close_code
+          type: long
+          description: A reportable transport-level close code observed. For Transport Layer Security (TLS) connections, the low byte contains the TLS alert description. A TLS `close_notify` alert is not reported. A value of 0 means no reportable code was observed or the connection used plain TCP. The most significant bit indicates the source (0 is proxy-initiated, 1 is peer-initiated).
+    - name: origin
+      type: group
+      fields:
+        - name: bytes_received
+          type: long
+          unit: byte
+          description: Number of bytes received from the origin.
+        - name: bytes_sent
+          type: long
+          unit: byte
+          description: Number of bytes sent to the origin.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.
