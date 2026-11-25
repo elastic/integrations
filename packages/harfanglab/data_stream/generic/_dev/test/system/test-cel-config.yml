@@ -1,0 +1,13 @@
+service: harfanglab-api
+input: cel
+policy_template: harfanglab
+data_stream:
+  vars:
+    url: http://{{Hostname}}:{{Port}}
+    api_token: test-token
+    # Long enough that the mock API is polled once for the duration of the test: the
+    # stream http-server rotates through its responses, so a second poll would replay
+    # the same events and break the hit_count assertion.
+    interval: 10m
+assert:
+  hit_count: 2

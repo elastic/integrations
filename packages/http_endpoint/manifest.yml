@@ -3,7 +3,7 @@ name: http_endpoint
 title: Custom HTTP Endpoint Logs
 description: Collect JSON data from listening HTTP port with Elastic Agent.
 type: input
-version: "2.5.0"
+version: "2.5.1"
 conditions:
   kibana:
     version: "^8.15.0 || ^9.0.0"
@@ -156,9 +156,14 @@ policy_templates:
       - name: content_type
         type: text
         title: Content Type
-        description: By default the input expects the incoming POST to include a Content-Type of application/json to try to enforce the incoming data to be valid JSON. In certain scenarios when the source of the request is not able to do that, it can be overwritten with another value or set to null.
+        description: >-
+          Expected Content-Type of incoming requests. Defaults to application/json to
+          enforce that the incoming body is valid JSON. Set to another value when the
+          source sends a different Content-Type, or clear the field (leave it empty)
+          to disable Content-Type validation.
         required: false
         show_user: false
+        default: application/json
       - name: response_code
         type: text
         title: Response Code

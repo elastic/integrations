@@ -119,8 +119,8 @@ processors:
       tag: date_json_tgt_file_creationTime_ea2c3c15
       target_field: sentinel_one_cloud_funnel.event.tgt.file.creation_time
       formats:
-        - ISO8601
         - epoch_millis
+        - ISO8601
       if: ctx.json?.tgt?.file?.creationTime != null && ctx.json.tgt.file.creationTime != ''
       on_failure:
         - append:
@@ -195,8 +195,8 @@ processors:
       tag: date_json_tgt_file_modificationTime_35bc68bc
       target_field: sentinel_one_cloud_funnel.event.tgt.file.modification_time
       formats:
-        - ISO8601
         - epoch_millis
+        - ISO8601
       if: ctx.json?.tgt?.file?.modificationTime != null && ctx.json.tgt.file.modificationTime != ''
       on_failure:
         - append:
@@ -269,23 +269,6 @@ processors:
       tag: set_file_size_53ce742a
       field: file.size
       copy_from: sentinel_one_cloud_funnel.event.tgt.file.size
-      ignore_empty_value: true
-  - convert:
-      field: json.src.process.tid
-      tag: convert_json_src_process_tid_b4ad4615
-      target_field: sentinel_one_cloud_funnel.event.src.process.tid
-      type: long
-      ignore_missing: true
-      if: ctx.json?.src?.process?.tid != ''
-      on_failure:
-        - append:
-            tag: append_error_message_114b3353
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      tag: set_process_thread_id_95a0158f
-      field: process.thread.id
-      copy_from: sentinel_one_cloud_funnel.event.src.process.tid
       ignore_empty_value: true
   - rename:
       tag: rename_json_tgt_file_oldMd5_to_sentinel_one_cloud_funnel_event_tgt_file_old_md5_790f5fe0
