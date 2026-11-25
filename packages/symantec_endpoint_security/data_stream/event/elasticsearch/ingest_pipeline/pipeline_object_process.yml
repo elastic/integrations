@@ -1,12 +1,13 @@
 ---
 description: Pipeline for processing process object.
 processors:
+  # For process launches the command line is set by pipeline_ecs_process.
   - append:
       field: process.command_line
       tag: append_process_command_line_from_process_cmd_line_fe2aa2a8
       value: '{{{ses.process.cmd_line}}}'
       allow_duplicates: false
-      if: ctx.ses?.process?.cmd_line != null
+      if: ctx.ses?.process?.cmd_line != null && ctx._tmp_launch == null
   - date:
       field: ses.process.file.accessed
       tag: date_process_file_accessed_dcb97f13

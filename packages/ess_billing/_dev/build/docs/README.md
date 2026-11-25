@@ -52,6 +52,8 @@ The `metrics-ess_billing.billing` data stream collects billing data from the Ela
 
 Field names such as `ess.billing.deployment_id` and `ess.billing.deployment_name` are used for all instance types for backward compatibility. For Serverless projects, `ess.billing.deployment_type` reflects the project type (for example, `observability` or `security`). For Hosted deployments, it is `deployment`.
 
+For Hosted deployments, `ess.billing.deployment_id` contains the ID of the deployment's Elasticsearch resource, as returned by the billing API. This is not the deployment ID shown in the Elastic Cloud console. Use `ess.billing.deployment_name` to identify the deployment.
+
 {{event "billing"}}
 
 {{fields "billing"}}

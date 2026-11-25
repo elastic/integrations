@@ -14,6 +14,36 @@ For more information, refer to [Elastic Managed integrations](https://www.elasti
 
 The Okta System Log records system events related to your organization in order to provide an audit trail that can be used to understand platform activity and to diagnose problems. This module is implemented using the httpjson input and is configured to paginate through the logs while honoring any rate-limiting headers sent by Okta.
 
+#### User fields
+
+The System Log identifies the actor of each event by its Okta id, login and display name. These values are mapped to the ECS user fields as follows:
+
+- `user.id`: the Okta user id (for example `00u1abvz4pYqdM8ms4x6`) of the actor. It is set only when `okta.actor.type` is `User`, and it holds the same value as `user.id` in the [Okta Entity Analytics](https://www.elastic.co/docs/reference/integrations/entityanalytics_okta) integration.
+- `user.name`, `source.user.name`, `client.user.name`: the actor's login (`okta.actor.alternate_id`).
+- `user.email`, `source.user.email`, `client.user.email`: a copy of the actor's login when the login contains `@`. The System Log does not include the user's primary email, so this value is the login and can differ from the primary email (`profile.email`) that Okta Entity Analytics stores in `user.email`.
+- `user.target.id`: the Okta user id of the first target of type `User`.
+- `client.user.id`, `source.user.id`: the actor's Okta id for every actor type, including apps and system principals.
+
+#### Debug data
+
+The System Log's `debugContext.debugData` object holds extra details, and its keys depend on the event type. Okta states that these keys and values can change between releases and are not a stable data contract, so the integration does not define every key. The **Remove flattened debug data** advanced setting selects how the object is stored:
+
+- Off (the default): the whole object is stored in `okta.debug_context.debug_data.flattened` as a [`flattened`](https://www.elastic.co/docs/reference/elasticsearch/mapping-reference/flattened) field. KQL can search its keys, for example `okta.debug_context.debug_data.flattened.authMethodFirstType`, but ES|QL can only read them with the `FIELD_EXTRACT` function, which was added as a technical preview in 9.5.
+- On: each key is stored as its own `keyword` field under `okta.debug_context.debug_data`, for example `okta.debug_context.debug_data.authMethodFirstType`. Keys that Okta adds later are mapped automatically. These fields can be used in ES|QL, KQL, aggregations and detection rules like any other field. Key names keep Okta's spelling, except that spaces and dashes become underscores, so `New Geo-Location` becomes `New_Geo_Location`, and the keys in the following section are stored only under their fixed snake case names (for example `requestId` is stored as `request_id`).
+
+In both modes, the following keys are extracted to fields with fixed names (in the default mode they also stay in the flattened field under their original names): `device_fingerprint`, `dt_hash`, `request_id`, `request_uri`, `threat_suspected`, `url`, `client_secret`, `requested_scopes`, `granted_scopes`, `grant_type`, `privilege_granted`, `privilege_revoked` and `factor`, plus `risk_level`, `risk_reasons` and `risk_behaviors`, which are derived from the risk and behavior details. All are under `okta.debug_context.debug_data`.
+
+All debug data values are stored as `keyword`. Convert them in ES|QL where another type is needed, for example:
+
+```esql
+FROM logs-okta.system-*
+| WHERE okta.debug_context.debug_data.logOnlySecurityData.behaviors.New_Device == "POSITIVE"
+| EVAL first_verified = TO_DATETIME(okta.debug_context.debug_data.authMethodFirstVerificationTime)
+| KEEP @timestamp, user.name, okta.debug_context.debug_data.authMethodFirstType, first_verified
+```
+
+Changing the setting only affects events ingested after the change. Before turning it on, update any searches, dashboards or detection rules that use `okta.debug_context.debug_data.flattened.*` to use the fixed fields in the preceding section or the individual key fields, since new events will no longer have the flattened field. Events ingested before the change keep the flattened field. ES|QL can read those with `FIELD_EXTRACT` from 9.5, or with `JSON_EXTRACT(_source, ...)`, which was added as a technical preview in 9.4.
+
 ## Types Of Authentication
 ### API Key
 In this type of authentication, we only require an API Key for authenticating the client and polling for Okta System Logs.

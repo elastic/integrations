@@ -1,0 +1,15 @@
+deployer: docker
+service: api-mock
+input: cel
+data_stream:
+  vars:
+    api_key: unit-test-key
+    ip: 192.0.2.10
+    url: "http://{{{Hostname}}}:{{{Port}}}/v1/asset/ip/report/query?tenant=a%20b&tenant=second&empty=&ip=old&ip=stale#ignored"
+    interval: 10s
+    tags:
+      - synthetic
+assert:
+  fields_present:
+    - threat.indicator.ip
+wait_for_data_timeout: 90s

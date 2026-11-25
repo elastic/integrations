@@ -1,0 +1,40 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: aws
+      name: test-log-group-name-prefix-aws
+      streams:
+        - api_sleep: 200ms
+          data_stream:
+            dataset: aws.emr_logs
+          default_region: us-east-1
+          include_linked_accounts_for_prefix_mode: true
+          log_group_name_prefix: /aws/emr
+          publisher_pipeline.disable_host: true
+          region_name: us-east-1
+          role_arn: arn:aws:iam::123456789012:role/ElasticAgentlessReadOnly
+          scan_frequency: 1m
+          start_position: beginning
+          tags:
+            - forwarded
+            - aws-emr-logs
+          use_cloud_connectors: true
+      type: aws-cloudwatch
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-*-*
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []

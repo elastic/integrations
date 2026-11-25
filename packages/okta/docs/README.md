@@ -14,6 +14,36 @@ For more information, refer to [Elastic Managed integrations](https://www.elasti
 
 The Okta System Log records system events related to your organization in order to provide an audit trail that can be used to understand platform activity and to diagnose problems. This module is implemented using the httpjson input and is configured to paginate through the logs while honoring any rate-limiting headers sent by Okta.
 
+#### User fields
+
+The System Log identifies the actor of each event by its Okta id, login and display name. These values are mapped to the ECS user fields as follows:
+
+- `user.id`: the Okta user id (for example `00u1abvz4pYqdM8ms4x6`) of the actor. It is set only when `okta.actor.type` is `User`, and it holds the same value as `user.id` in the [Okta Entity Analytics](https://www.elastic.co/docs/reference/integrations/entityanalytics_okta) integration.
+- `user.name`, `source.user.name`, `client.user.name`: the actor's login (`okta.actor.alternate_id`).
+- `user.email`, `source.user.email`, `client.user.email`: a copy of the actor's login when the login contains `@`. The System Log does not include the user's primary email, so this value is the login and can differ from the primary email (`profile.email`) that Okta Entity Analytics stores in `user.email`.
+- `user.target.id`: the Okta user id of the first target of type `User`.
+- `client.user.id`, `source.user.id`: the actor's Okta id for every actor type, including apps and system principals.
+
+#### Debug data
+
+The System Log's `debugContext.debugData` object holds extra details, and its keys depend on the event type. Okta states that these keys and values can change between releases and are not a stable data contract, so the integration does not define every key. The **Remove flattened debug data** advanced setting selects how the object is stored:
+
+- Off (the default): the whole object is stored in `okta.debug_context.debug_data.flattened` as a [`flattened`](https://www.elastic.co/docs/reference/elasticsearch/mapping-reference/flattened) field. KQL can search its keys, for example `okta.debug_context.debug_data.flattened.authMethodFirstType`, but ES|QL can only read them with the `FIELD_EXTRACT` function, which was added as a technical preview in 9.5.
+- On: each key is stored as its own `keyword` field under `okta.debug_context.debug_data`, for example `okta.debug_context.debug_data.authMethodFirstType`. Keys that Okta adds later are mapped automatically. These fields can be used in ES|QL, KQL, aggregations and detection rules like any other field. Key names keep Okta's spelling, except that spaces and dashes become underscores, so `New Geo-Location` becomes `New_Geo_Location`, and the keys in the following section are stored only under their fixed snake case names (for example `requestId` is stored as `request_id`).
+
+In both modes, the following keys are extracted to fields with fixed names (in the default mode they also stay in the flattened field under their original names): `device_fingerprint`, `dt_hash`, `request_id`, `request_uri`, `threat_suspected`, `url`, `client_secret`, `requested_scopes`, `granted_scopes`, `grant_type`, `privilege_granted`, `privilege_revoked` and `factor`, plus `risk_level`, `risk_reasons` and `risk_behaviors`, which are derived from the risk and behavior details. All are under `okta.debug_context.debug_data`.
+
+All debug data values are stored as `keyword`. Convert them in ES|QL where another type is needed, for example:
+
+```esql
+FROM logs-okta.system-*
+| WHERE okta.debug_context.debug_data.logOnlySecurityData.behaviors.New_Device == "POSITIVE"
+| EVAL first_verified = TO_DATETIME(okta.debug_context.debug_data.authMethodFirstVerificationTime)
+| KEEP @timestamp, user.name, okta.debug_context.debug_data.authMethodFirstType, first_verified
+```
+
+Changing the setting only affects events ingested after the change. Before turning it on, update any searches, dashboards or detection rules that use `okta.debug_context.debug_data.flattened.*` to use the fixed fields in the preceding section or the individual key fields, since new events will no longer have the flattened field. Events ingested before the change keep the flattened field. ES|QL can read those with `FIELD_EXTRACT` from 9.5, or with `JSON_EXTRACT(_source, ...)`, which was added as a technical preview in 9.4.
+
 ## Types Of Authentication
 ### API Key
 In this type of authentication, we only require an API Key for authenticating the client and polling for Okta System Logs.
@@ -59,11 +89,11 @@ An example event for `system` looks as following:
 {
     "@timestamp": "2020-02-14T20:18:57.718Z",
     "agent": {
-        "ephemeral_id": "40bd1d11-37ac-4006-99ce-92ac21f7ffa1",
-        "id": "7dc9c937-a616-4c11-9dd0-4aa93489a9ee",
-        "name": "elastic-agent-26045",
+        "ephemeral_id": "d2a146ea-3da4-49f6-80fb-2fa4ec95f871",
+        "id": "2e4a79a0-a9a0-44a2-a024-93b1fda5b178",
+        "name": "elastic-agent-27875",
         "type": "filebeat",
-        "version": "8.19.4"
+        "version": "8.19.23"
     },
     "client": {
         "geo": {
@@ -85,16 +115,16 @@ An example event for `system` looks as following:
     },
     "data_stream": {
         "dataset": "okta.system",
-        "namespace": "80451",
+        "namespace": "26083",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7dc9c937-a616-4c11-9dd0-4aa93489a9ee",
+        "id": "2e4a79a0-a9a0-44a2-a024-93b1fda5b178",
         "snapshot": false,
-        "version": "8.19.4"
+        "version": "8.19.23"
     },
     "event": {
         "action": "user.session.start",
@@ -103,10 +133,10 @@ An example event for `system` looks as following:
             "session",
             "authentication"
         ],
-        "created": "2025-12-05T10:50:48.615Z",
+        "created": "2026-11-09T10:21:13.689Z",
         "dataset": "okta.system",
         "id": "3aeede38-4f67-11ea-abd3-1f5d113f2546",
-        "ingested": "2025-12-05T10:50:49Z",
+        "ingested": "2026-11-09T10:21:14Z",
         "kind": "event",
         "original": "{\"actor\":{\"alternateId\":\"xxxxxx@elastic.co\",\"detailEntry\":null,\"displayName\":\"xxxxxx\",\"id\":\"00u1abvz4pYqdM8ms4x6\",\"type\":\"User\"},\"authenticationContext\":{\"authenticationProvider\":null,\"authenticationStep\":0,\"credentialProvider\":null,\"credentialType\":null,\"externalSessionId\":\"102bZDNFfWaQSyEZQuDgWt-uQ\",\"interface\":null,\"issuer\":null},\"client\":{\"device\":\"Computer\",\"geographicalContext\":{\"city\":\"Dublin\",\"country\":\"United States\",\"geolocation\":{\"lat\":37.7201,\"lon\":-121.919},\"postalCode\":\"94568\",\"state\":\"California\"},\"id\":null,\"ipAddress\":\"108.255.197.247\",\"userAgent\":{\"browser\":\"FIREFOX\",\"os\":\"Mac OS X\",\"rawUserAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:72.0) Gecko/20100101 Firefox/72.0\"},\"zone\":\"null\"},\"debugContext\":{\"debugData\":{\"deviceFingerprint\":\"541daf91d15bef64a7e08c946fd9a9d0\",\"requestId\":\"XkcAsWb8WjwDP76xh@1v8wAABp0\",\"requestUri\":\"/api/v1/authn\",\"threatSuspected\":\"false\",\"url\":\"/api/v1/authn?\"}},\"displayMessage\":\"User login to Okta\",\"eventType\":\"user.session.start\",\"legacyEventType\":\"core.user_auth.login_success\",\"outcome\":{\"reason\":null,\"result\":\"SUCCESS\"},\"published\":\"2020-02-14T20:18:57.718Z\",\"request\":{\"ipChain\":[{\"geographicalContext\":{\"city\":\"Dublin\",\"country\":\"United States\",\"geolocation\":{\"lat\":37.7201,\"lon\":-121.919},\"postalCode\":\"94568\",\"state\":\"California\"},\"ip\":\"108.255.197.247\",\"source\":null,\"version\":\"V4\"}]},\"securityContext\":{\"asNumber\":null,\"asOrg\":null,\"domain\":null,\"isProxy\":null,\"isp\":null},\"severity\":\"INFO\",\"target\":null,\"transaction\":{\"detail\":{},\"id\":\"XkcAsWb8WjwDP76xh@1v8wAABp0\",\"type\":\"WEB\"},\"uuid\":\"3aeede38-4f67-11ea-abd3-1f5d113f2546\",\"version\":\"0\"}",
         "outcome": "success",
@@ -193,7 +223,8 @@ An example event for `system` looks as following:
         ],
         "user": [
             "xxxxxx",
-            "xxxxxx@elastic.co"
+            "xxxxxx@elastic.co",
+            "00u1abvz4pYqdM8ms4x6"
         ]
     },
     "source": {
@@ -217,6 +248,7 @@ An example event for `system` looks as following:
     "user": {
         "email": "xxxxxx@elastic.co",
         "full_name": "xxxxxx",
+        "id": "00u1abvz4pYqdM8ms4x6",
         "name": "xxxxxx@elastic.co"
     },
     "user_agent": {
@@ -294,6 +326,7 @@ An example event for `system` looks as following:
 | okta.debug_context.debug_data.granted_scopes |  | keyword |
 | okta.debug_context.debug_data.logOnlySecurityData |  | keyword |
 | okta.debug_context.debug_data.logOnlySecurityData.behaviors |  | keyword |
+| okta.debug_context.debug_data.logOnlySecurityData.behaviors.New_ASN |  | keyword |
 | okta.debug_context.debug_data.logOnlySecurityData.behaviors.New_City |  | keyword |
 | okta.debug_context.debug_data.logOnlySecurityData.behaviors.New_Country |  | keyword |
 | okta.debug_context.debug_data.logOnlySecurityData.behaviors.New_Device |  | keyword |
@@ -309,6 +342,8 @@ An example event for `system` looks as following:
 | okta.debug_context.debug_data.originalPrincipal.displayName |  | keyword |
 | okta.debug_context.debug_data.originalPrincipal.id |  | keyword |
 | okta.debug_context.debug_data.originalPrincipal.type |  | keyword |
+| okta.debug_context.debug_data.privilege_granted | The administrator roles granted, for privilege grant events. | keyword |
+| okta.debug_context.debug_data.privilege_revoked | The administrator roles revoked, for privilege revoke events. | keyword |
 | okta.debug_context.debug_data.promptingPolicyTypes |  | keyword |
 | okta.debug_context.debug_data.request_id | The identifier of the request. | keyword |
 | okta.debug_context.debug_data.request_uri | The request URI. | keyword |
@@ -344,6 +379,9 @@ An example event for `system` looks as following:
 | okta.security_context.domain | The domain name. | keyword |
 | okta.security_context.is_proxy | Whether it is a proxy or not. | boolean |
 | okta.security_context.isp | The Internet Service Provider. | keyword |
+| okta.security_context.risk.level | The risk level Okta assigned to the request. | keyword |
+| okta.security_context.tls_fingerprint.ja4 | The JA4 fingerprint of the client's TLS connection. | keyword |
+| okta.security_context.user_behaviors.\* | The result of each behavior detection rule Okta evaluated for the request (POSITIVE, NEGATIVE, UNKNOWN or BAD_REQUEST), keyed by the rule name with spaces, dashes and dots replaced by underscores, for example `user_behaviors.New_Device`. | object |
 | okta.severity | The severity of the LogEvent. Must be one of DEBUG, INFO, WARN, or ERROR. | keyword |
 | okta.target.alternate_id | The alternate ID of the target. | keyword |
 | okta.target.changeDetails.from.\* |  | object |
@@ -358,3 +396,4 @@ An example event for `system` looks as following:
 | okta.transaction.type | The type of transaction. Must be one of "WEB", "JOB". | keyword |
 | okta.uuid | The unique identifier of the Okta LogEvent. | keyword |
 | okta.version | The version of the LogEvent. | keyword |
+

@@ -1,0 +1,193 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when a GitHub user pushes to or clones a private repository from an autonomous system (ASN) not previously seen for that user in the last 7 days. The source IP is resolved to its ASN at query time, so address churn inside the same ISP or cloud provider does not produce new alerts. Adversaries may access private repositories from unfamiliar ASNs to exfiltrate sensitive code or data, potentially indicating a compromise or unauthorized access.",
+        "false_positives": [
+            "Developers travelling or switching between home, mobile and corporate networks will appear from a new ASN the first time each is used. CI runners and cloud build services appear once per cloud provider ASN; add exceptions for known automation identities if the volume is high."
+        ],
+        "from": "now-10085m",
+        "interval": "5m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "GitHub Activity on a Private Repository from an Unusual ASN",
+        "query": "FROM logs-github.audit-*\n| WHERE event.dataset == \"github.audit\" AND event.action IN (\"git.push\", \"git.clone\")\n  AND github.repository_public == false\n  AND user.name IS NOT NULL AND github.actor_ip IS NOT NULL\n| IP_LOCATION asn = github.actor_ip WITH { \"database_file\": \"GeoLite2-ASN.mmdb\", \"properties\": [\"asn\", \"organization_name\"] }\n| IP_LOCATION geo = github.actor_ip WITH { \"properties\": [\"country_iso_code\"] }\n| WHERE asn.asn IS NOT NULL\n| STATS Esql.event_count = COUNT(*),\n        Esql.first_seen = MIN(@timestamp),\n        Esql.last_seen = MAX(@timestamp),\n        Esql.ip_count = COUNT_DISTINCT(github.actor_ip),\n        Esql.ip_values = VALUES(github.actor_ip),\n        Esql.repo_values = VALUES(github.repo),\n        Esql.event_action_values = VALUES(event.action),\n        Esql.country_values = VALUES(geo.country_iso_code),\n        Esql.user_agent_values = VALUES(github.user_agent)\n  BY user.name, asn.asn, asn.organization_name\n// The 7-day history is the rule look-back (from = now-10085m). A user/ASN pair is new when its first\n// event falls inside the current interval; the 10m bound allows for the 5m interval plus scheduling drift.\n| WHERE DATE_DIFF(\"minute\", Esql.first_seen, NOW()) <= 10\n| EVAL Esql.source_as_number = asn.asn, Esql.source_as_organization_name = asn.organization_name\n| KEEP user.name, Esql.*\n",
+        "references": [
+            "https://www.wiz.io/blog/shai-hulud-2-0-ongoing-supply-chain-attack",
+            "https://trigger.dev/blog/shai-hulud-postmortem",
+            "https://posthog.com/blog/nov-24-shai-hulud-attack-post-mortem"
+        ],
+        "related_integrations": [
+            {
+                "package": "github",
+                "version": ">=3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "asn.asn",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "asn.organization_name",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "geo.country_iso_code",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "github.actor_ip",
+                "type": "ip"
+            },
+            {
+                "ecs": false,
+                "name": "github.repo",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.repository_public",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "github.user_agent",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "daf2e0e0-0bab-4672-bfa1-62db0ee5ec22",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Use Case: Threat Detection",
+            "Tactic: Impact",
+            "Tactic: Initial Access",
+            "Tactic: Persistence",
+            "Data Source: Github",
+            "Data Source: GitHub Audit Logs",
+            "Resources: Investigation Guide",
+            "Noise: High",
+            "Performance: Fast",
+            "Profile: Aggressive",
+            "Threat: Supply Chain",
+            "Rule Type: ES|QL",
+            "Platform: GitHub",
+            "Domain: SaaS",
+            "Tactic: Collection",
+            "Tactic: Execution"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                }
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/",
+                        "subtechnique": [
+                            {
+                                "id": "T1078.004",
+                                "name": "Cloud Accounts",
+                                "reference": "https://attack.mitre.org/techniques/T1078/004/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1195",
+                        "name": "Supply Chain Compromise",
+                        "reference": "https://attack.mitre.org/techniques/T1195/",
+                        "subtechnique": [
+                            {
+                                "id": "T1195.002",
+                                "name": "Compromise Software Supply Chain",
+                                "reference": "https://attack.mitre.org/techniques/T1195/002/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0009",
+                    "name": "Collection",
+                    "reference": "https://attack.mitre.org/tactics/TA0009/"
+                },
+                "technique": [
+                    {
+                        "id": "T1213",
+                        "name": "Data from Information Repositories",
+                        "reference": "https://attack.mitre.org/techniques/T1213/",
+                        "subtechnique": [
+                            {
+                                "id": "T1213.003",
+                                "name": "Code Repositories",
+                                "reference": "https://attack.mitre.org/techniques/T1213/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 105
+    },
+    "id": "daf2e0e0-0bab-4672-bfa1-62db0ee5ec22_105",
+    "type": "security-rule"
+}

@@ -1,0 +1,78 @@
+{
+  "id": "gcp_compute_otel-disk-severely-degraded-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Compute OTel] Disk performance severely degraded",
+        "description": "Alerts when GCE reports a disk's performance status as Severely Degraded for every sample in a 20-minute window. The routine Degraded status is intentionally ignored. Returns one row per affected disk.",
+        "tags": [
+          "observability",
+          "gcp",
+          "gcp_compute",
+          "compute_engine"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "20m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.compute.otel-*\n// Compute Engine VM instances only.\n// performance_status is one-hot: each disk emits Healthy, Degraded and Severely Degraded series every interval,\n// with value 1 on the active status and 0 on the others. Only the value matters, not document counts.\n// \"Degraded\" is routine GCE maintenance and is deliberately not alerted on.\n| WHERE resource.attributes.gcp.resource_type == \"gce_instance\"\n    AND attributes.performance_status == \"Severely Degraded\"\n| STATS\n    min_active = MIN(MIN_OVER_TIME(`compute.googleapis.com/instance/disk/performance_status`)),\n    samples = SUM(COUNT_OVER_TIME(`compute.googleapis.com/instance/disk/performance_status`))\n  BY resource.attributes.project_id, resource.attributes.zone, resource.attributes.instance_id, attributes.device_name, attributes.storage_type",
+        "breach": {
+          "segment": "// Breach: Severely Degraded on EVERY sample in the window (persistent), with enough samples to be meaningful.\n// Use MAX instead of MIN for a faster but noisier trigger on any sample.\nWHERE min_active >= 1 AND samples >= 3\n| KEEP resource.attributes.project_id, resource.attributes.zone, resource.attributes.instance_id, attributes.device_name, attributes.storage_type, samples\n| SORT resource.attributes.zone ASC, resource.attributes.instance_id ASC\n| LIMIT 100"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.project_id",
+          "resource.attributes.zone",
+          "resource.attributes.instance_id",
+          "attributes.device_name",
+          "attributes.storage_type"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_compute_otel-disk-severely-degraded-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Disk performance severely degraded\n\nCompute Engine has reported this disk as **Severely Degraded** for the whole lookback window. Unlike the routine `Degraded` status (background maintenance, usually not noticeable), a persistent Severely Degraded status indicates an infrastructure problem with the underlying storage that affects I/O performance.\n\n### Triage\n1. Check disk I/O latency and queue depth for the device. Expect elevated latency without a corresponding increase in IOPS.\n2. Check whether other disks in the same zone are affected. A zone-wide pattern points to a GCE storage incident; see the Google Cloud status dashboard.\n3. Identify the VM via `instance_id`; `instance_name` is not a dimension of this metric.\n\n### Remediation\nIf the status persists, open a Google Cloud support case referencing the disk. For critical workloads, fail over to a replica, or snapshot the disk and restore it to a new disk.\n\n### Tuning\nThe window is 20 minutes and requires at least 3 samples, all Severely Degraded. Shorten the window or switch `MIN` to `MAX` for faster detection. GCP Cloud Monitoring metrics typically arrive several minutes late, so the most recent minutes of the lookback window may be empty; the window is sized to tolerate this."
+          }
+        },
+        {
+          "id": "gcp_compute_otel-disk-severely-degraded-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_compute_otel-00311620-fcdf-435c-945b-3d912867b913"
+          }
+        },
+        {
+          "id": "gcp_compute_otel-disk-severely-degraded-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_compute_otel-62a27720-651a-4446-a1ba-0512a69a6ced"
+          }
+        }
+      ]
+    }
+  }
+}
