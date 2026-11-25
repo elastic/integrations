@@ -36,9 +36,9 @@ Alert rule templates require Elastic Stack version 9.6.0 or later.
 
 | Name | Description |
 |---|---|
-| \[GCP BigQuery OTel\] Batch job backlog not draining | Alerts when non-interactive BigQuery jobs (batch-priority queries and load, copy, or extract jobs) are pending in at least 90 one-minute samples and at least 95% of the reported minutes in the last 2 hours. Warning-level. One alert per project, location, and job type. |
+| \[GCP BigQuery OTel\] Batch job backlog not draining | Alerts when non-interactive BigQuery jobs (batch-priority queries and load, copy, or extract jobs) are pending in at least 90 one-minute samples and at least 95% of the published minutes in the last 2 hours, and are still pending in the last 20 minutes. Warning-level. One alert per project, location, and job type. |
 | \[GCP BigQuery OTel\] Query bytes billed spike | Alerts when a project's query bytes billed in the last full hour are at least 3 times the larger of its hourly average over the previous 24 hours and its bytes billed around the same time yesterday, and at least 1 TiB. One alert per project. |
-| \[GCP BigQuery OTel\] Interactive queries queueing | Alerts when interactive-priority query jobs are pending (queued) in at least 10 one-minute samples in the last 30 minutes for a project and location. Batch-priority queueing is excluded; see the batch backlog rule. One alert per project and location. |
+| \[GCP BigQuery OTel\] Interactive queries queueing | Alerts when interactive-priority query jobs are pending (queued) in at least 10 one-minute samples in the last 30 minutes for a project and location. Batch-priority queueing is covered by the batch job backlog rule. One alert per project and location. |
 | \[GCP BigQuery OTel\] Reservation slot saturation | Alerts when a BigQuery reservation's reserved slot usage is at or above 95% of its autoscale maximum (slots/max_assigned) for at least 15 one-minute samples in the last 30 minutes. One alert per reservation and location. On-demand projects report no reservation capacity and never match. |
 
 </details>
