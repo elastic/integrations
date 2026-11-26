@@ -22,6 +22,11 @@
             "statusChangeThreshold": 4
         },
         "artifacts": {
+            "dashboards": [
+                {
+                    "id": "aws_elb_metrics_otel-5a9019c8-e8b0-489c-a6b7-35a976e4cd07"
+                }
+            ],
             "investigation_guide": {
                 "blob": "## High Target Response Time (Tail)\n\nPeak `TargetResponseTime` (`Maximum` stat) captures the worst single observation in the window — a proxy for p95/p99 tail latency since percentile statistics are not collected by this source.\n\n### Triage Steps\n1. Identify the affected load balancer, target group, and region.\n2. Look for outlier requests: slow queries, cold starts, GC pauses, or timeout retries.\n3. Compare with the average response time alert — a high tail with normal average suggests a few bad requests; both elevated suggests systemic slowness.\n4. Check target health and whether remaining healthy targets are overloaded.\n\n### Tuning\n- Adjust the `max_response_time > 5.0` threshold (seconds) to approximate your p99 SLO.\n- Pair with the average response time alert for typical vs tail latency visibility."
             }

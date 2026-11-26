@@ -22,6 +22,11 @@
       "statusChangeThreshold": 4
     },
     "artifacts": {
+      "dashboards": [
+        {
+          "id": "aws_ecs_otel-332f5603-a7b0-449b-b873-7381587d6773"
+        }
+      ],
       "investigation_guide": {
         "blob": "## Memory Utilization High\n\n`MemoryUtilization` is the percentage of the task's reserved memory in use. Approaching 100% triggers OOM kills — a hard failure mode prioritized above CPU saturation.\n\n### Triage Steps\n1. Check whether `RunningTaskCount < DesiredTaskCount` — OOM kills cause task churn.\n2. Review container memory limits in the task definition vs actual workload.\n3. Inspect application logs for memory leaks or unusually large heap usage.\n4. Compare with `MemoryUtilized` / `MemoryReserved` from Container Insights for absolute MB context.\n5. Check recent deployments or traffic spikes that increased memory footprint.\n\n### Customisation\n- Default threshold is 90% of reserved memory — tune per service (default task sizes vary widely).\n- Duplicate this rule with `stat == \"Maximum\"` for spike-oriented OOM proximity detection."
       }
