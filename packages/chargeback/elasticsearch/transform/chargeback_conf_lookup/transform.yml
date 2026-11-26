@@ -138,9 +138,12 @@ source:
       type: date
       script:
         source: |
-          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'chargeback_lookup.dest_chargeback_conf_init-1') {
-            emit(1262304000000L);
-            return;
+          if (doc.containsKey('_index') && !doc['_index'].empty) {
+            String cbIdx = doc['_index'].value.toString();
+            if (cbIdx == 'chargeback_lookup.dest_chargeback_conf_init-1' || cbIdx == 'chargeback_lookup.dest_chargeback_conf-1' || cbIdx == 'chargeback_conf_lookup') {
+              emit(1262304000000L);
+              return;
+            }
           }
           try {
             if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
@@ -307,9 +310,22 @@ pivot:
                       : (joinKey == 'chargeback_config' ? 'config_' : (joinKey + '_'))) + Long.toString(startMs) + '_' + Long.toString(endMs);
                   }
                 }
-                long lSync = (doc.containsKey('cb_sync_ts') && !doc['cb_sync_ts'].empty)
-                  ? doc['cb_sync_ts'].value.toInstant().toEpochMilli()
-                  : 0L;
+                long lSync = 0L;
+                try {
+                  if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+                    lSync = doc['event.ingested'].value.toInstant().toEpochMilli();
+                  } else if (params._source?.event instanceof Map && params._source.event.ingested != null) {
+                    def re = params._source.event.ingested;
+                    if (re instanceof Number) { lSync = ((Number)re).longValue(); }
+                    else { lSync = ZonedDateTime.parse(re.toString().trim()).toInstant().toEpochMilli(); }
+                  } else if (params._source.get('event.ingested') != null) {
+                    def re = params._source.get('event.ingested');
+                    if (re instanceof Number) { lSync = ((Number)re).longValue(); }
+                    else { lSync = ZonedDateTime.parse(re.toString().trim()).toInstant().toEpochMilli(); }
+                  } else if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+                    lSync = doc['@timestamp'].value.toInstant().toEpochMilli();
+                  }
+                } catch (Exception e) {}
                 int prio = isDestV1 ? 4 : (joinKey == 'chargeback_config_onprem' ? 3 : (resolvedId == 'config' ? 2 : 1));
                 boolean take = (state.legacyConf == null);
                 if (!take) {
@@ -748,5 +764,6 @@ settings:
   unattended: true
 _meta:
   managed: true
+  order: 0
   run_as_kibana_system: false
   fleet_transform_version: 0.7.0

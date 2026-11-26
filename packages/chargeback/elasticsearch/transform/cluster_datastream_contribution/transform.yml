@@ -6,7 +6,9 @@ source:
     - "*:monitoring-indices*"
     - -monitoring-indices-chargeback*
     - "*:-monitoring-indices-chargeback*"
-    - -chargeback_lookup.*
+    - chargeback_lookup.dest_cluster_datastream_contribution-1*
+    - -partial-*
+    - -chargeback_lookup.dest_cluster_datastream_contribution-2*
     - "*:-chargeback_lookup.*"
   query:
     bool:
@@ -23,6 +25,21 @@ source:
       type: keyword
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'chargeback_lookup.dest_cluster_datastream_contribution-1') {
+            for (String cf : ['cluster_name', 'cluster_name.keyword', 'deployment_id', 'deployment_id.keyword']) {
+              try {
+                if (doc.containsKey(cf) && !doc[cf].empty) {
+                  String cv = doc[cf].value.toString().trim();
+                  if (cv != '') { emit(cv); return; }
+                }
+              } catch (Exception e) {}
+            }
+            try {
+              def sc = params._source?.cluster_name != null ? params._source.cluster_name : params._source?.deployment_id;
+              if (sc != null && sc.toString().trim() != '') { emit(sc.toString().trim()); return; }
+            } catch (Exception e) {}
+            return;
+          }
           String kw = 'elasticsearch.cluster.name.keyword';
           if (doc.containsKey(kw) && !doc[kw].empty) {
             emit(doc[kw].value.toString());
@@ -160,6 +177,10 @@ source:
       type: date
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'chargeback_lookup.dest_cluster_datastream_contribution-1') {
+            emit(1262304000000L);
+            return;
+          }
           try {
             if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
               emit(doc['event.ingested'].value.toInstant().toEpochMilli());
@@ -253,6 +274,24 @@ source:
       type: keyword
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'chargeback_lookup.dest_cluster_datastream_contribution-1') {
+            for (String dsf : ['datastream', 'datastream.keyword']) {
+              try {
+                if (doc.containsKey(dsf) && !doc[dsf].empty) {
+                  String dv = doc[dsf].value.toString().trim();
+                  if (dv != '') { emit(dv); return; }
+                }
+              } catch (Exception e) {}
+            }
+            try {
+              if (params._source?.datastream != null && params._source.datastream.toString().trim() != '') {
+                emit(params._source.datastream.toString().trim());
+                return;
+              }
+            } catch (Exception e) {}
+            emit('unknown');
+            return;
+          }
           String name = '';
           String kw = 'elasticsearch.index.name.keyword';
           if (doc.containsKey(kw) && !doc[kw].empty) {
@@ -358,6 +397,8 @@ pivot:
           state.dep_group = '';
           state.dep_group_ts = -1L;
           state.dep_group_ing = -1L;
+          state.v1_doc = null;
+          state.v1_ts = -1L;
         map_script: |
           if (!doc.containsKey('@timestamp') || doc['@timestamp'].empty) { return; }
           long ts = doc['@timestamp'].value.toInstant().toEpochMilli();
@@ -365,8 +406,71 @@ pivot:
           try {
             if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
               ingTs = doc['event.ingested'].value.toInstant().toEpochMilli();
+            } else if (params._source?.event?.ingested != null) {
+              ingTs = ZonedDateTime.parse(params._source.event.ingested.toString().trim()).toInstant().toEpochMilli();
             }
           } catch (Exception e) {}
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'chargeback_lookup.dest_cluster_datastream_contribution-1') {
+            Map v1 = new HashMap();
+            String vSrc = 'legacy';
+            try {
+              for (String uf : ['usage_source', 'usage_source.keyword']) {
+                if (doc.containsKey(uf) && !doc[uf].empty) { vSrc = doc[uf].value.toString(); break; }
+              }
+              if (vSrc == 'legacy' && params._source?.usage_source != null) { vSrc = params._source.usage_source.toString(); }
+            } catch (Exception e) {}
+            v1.put('usage_source', vSrc);
+            for (String sf : ['sum_indexing_time', 'sum_query_time', 'sum_store_size', 'sum_data_set_store_size']) {
+              String fk = 'datastream_' + sf;
+              long mv = 0L;
+              try {
+                if (doc.containsKey(fk) && !doc[fk].empty) { mv = ((Number)doc[fk].value).longValue(); }
+                else if (params._source?.get(fk) instanceof Number) { mv = ((Number)params._source.get(fk)).longValue(); }
+              } catch (Exception e) {}
+              v1.put('selected_' + sf, mv);
+            }
+            for (String sf : ['sum_indexing_time', 'sum_query_time', 'sum_store_size', 'sum_data_set_store_size']) {
+              for (String spfx : ['native_', 'legacy_']) {
+                String fk = spfx + sf;
+                long mv = 0L;
+                try {
+                  if (doc.containsKey(fk) && !doc[fk].empty) { mv = ((Number)doc[fk].value).longValue(); }
+                  else if (params._source?.get(fk) instanceof Number) { mv = ((Number)params._source.get(fk)).longValue(); }
+                } catch (Exception e) {}
+                v1[fk] = mv;
+              }
+            }
+            for (String bf : ['has_native_usage', 'has_legacy_usage']) {
+              boolean bv = false;
+              try {
+                if (doc.containsKey(bf) && !doc[bf].empty) { bv = Boolean.TRUE.equals(doc[bf].value); }
+                else if (params._source?.get(bf) != null) { bv = Boolean.TRUE.equals(params._source.get(bf)) || params._source.get(bf).toString().equalsIgnoreCase('true'); }
+              } catch (Exception e) {}
+              v1[bf] = bv;
+            }
+            String vDn = '';
+            try {
+              for (String dnf : ['deployment_name', 'deployment_name.keyword']) {
+                if (doc.containsKey(dnf) && !doc[dnf].empty) { vDn = doc[dnf].value.toString(); if (vDn != '') { break; } }
+              }
+              if (vDn == '' && params._source?.deployment_name != null) { vDn = params._source.deployment_name.toString(); }
+            } catch (Exception e) {}
+            if (vDn != '') { v1.put('deployment_name', vDn); }
+            try {
+              if (params._source != null && params._source.containsKey('deployment_group') && params._source.get('deployment_group') != null) {
+                v1.put('deployment_group', params._source.get('deployment_group').toString());
+              } else {
+                for (String dgf : ['deployment_group', 'deployment_group.keyword']) {
+                  if (doc.containsKey(dgf) && !doc[dgf].empty) { v1.put('deployment_group', doc[dgf].value.toString()); break; }
+                }
+              }
+            } catch (Exception e) {}
+            if (state.v1_doc == null || ingTs >= state.v1_ts) {
+              state.v1_doc = v1;
+              state.v1_ts = ingTs;
+            }
+            return;
+          }
           String dn = '';
           for (String dnf : ['deployment_name.keyword', 'deployment_name']) {
             try {
@@ -779,7 +883,16 @@ pivot:
           String bestDepGroup = '';
           long bestGroupTs = -1L;
           long bestGroupIng = -1L;
+          Map mergedV1 = null;
+          long bestV1Ts = -1L;
           for (def st : states) {
+            if (st != null && st.v1_doc instanceof Map) {
+              long svTs = st.v1_ts instanceof Number ? ((Number)st.v1_ts).longValue() : -1L;
+              if (mergedV1 == null || svTs >= bestV1Ts) {
+                mergedV1 = new HashMap((Map)st.v1_doc);
+                bestV1Ts = svTs;
+              }
+            }
             if (st == null) { continue; }
             long stNameTs = (st.dep_name_ts instanceof Number) ? ((Number)st.dep_name_ts).longValue() : -1L;
             long stNameIng = (st.dep_name_ing instanceof Number) ? ((Number)st.dep_name_ing).longValue() : -1L;
@@ -956,6 +1069,10 @@ pivot:
                 }
               }
             }
+          }
+
+          if (natCnt == 0L && legCnt == 0L && mergedV1 != null) {
+            return mergedV1;
           }
 
           boolean hasDsUnit = false;
@@ -1407,5 +1524,6 @@ settings:
   unattended: true
 _meta:
   managed: true
+  order: 5
   run_as_kibana_system: false
   fleet_transform_version: 0.7.0

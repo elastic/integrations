@@ -3,26 +3,43 @@ source:
   index:
     - metrics-chargeback.billing-*
     - metrics-ess_billing.billing-*
+    - chargeback_lookup.dest_billing_cluster_cost-1*
     - -metrics-ess_billing.billing-chargeback*
-    - -chargeback_lookup.*
+    - -partial-*
+    - -chargeback_lookup.dest_billing_cluster_cost-2*
   query:
     bool:
-      filter:
-        - exists:
-            field: ess.billing.sku
-        - range:
-            ess.billing.total_ecu:
-              gte: 0
-      must_not:
-        - terms:
-            doc_type:
-              - config_snapshot
-              - credit_line_item
+      should:
+        - bool:
+            filter:
+              - exists:
+                  field: ess.billing.sku
+              - range:
+                  ess.billing.total_ecu:
+                    gte: 0
+            must_not:
+              - terms:
+                  doc_type:
+                    - config_snapshot
+                    - credit_line_item
+              - term:
+                  _index: chargeback_lookup.dest_billing_cluster_cost-1
+        - bool:
+            filter:
+              - term:
+                  _index: chargeback_lookup.dest_billing_cluster_cost-1
+              - exists:
+                  field: sku
+      minimum_should_match: 1
   runtime_mappings:
     cb_sync_ts:
       type: date
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'chargeback_lookup.dest_billing_cluster_cost-1') {
+            emit(1262304000000L);
+            return;
+          }
           try {
             if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
               emit(doc['event.ingested'].value.toInstant().toEpochMilli());
@@ -63,6 +80,24 @@ source:
       type: keyword
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'chargeback_lookup.dest_billing_cluster_cost-1') {
+            for (String dgf : ['deployment_group', 'deployment_group.keyword']) {
+              try {
+                if (doc.containsKey(dgf) && !doc[dgf].empty) {
+                  emit(doc[dgf].value.toString().trim());
+                  return;
+                }
+              } catch (Exception e) {}
+            }
+            try {
+              if (params._source?.deployment_group != null) {
+                emit(params._source.deployment_group.toString().trim());
+                return;
+              }
+            } catch (Exception e) {}
+            emit('');
+            return;
+          }
           for (String tf : ['ess.billing.deployment_tags', 'ess.billing.deployment_tags.keyword']) {
             try {
               if (doc.containsKey(tf) && !doc[tf].empty) {
@@ -105,6 +140,24 @@ source:
       type: keyword
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'chargeback_lookup.dest_billing_cluster_cost-1') {
+            for (String df : ['deployment_id', 'deployment_id.keyword', 'ess.billing.deployment_id', 'ess.billing.deployment_id.keyword']) {
+              try {
+                if (doc.containsKey(df) && !doc[df].empty) {
+                  String dv = doc[df].value.toString().trim();
+                  if (dv != '') { emit(dv); return; }
+                }
+              } catch (Exception e) {}
+            }
+            try {
+              if (params._source?.deployment_id != null && params._source.deployment_id.toString().trim() != '') {
+                emit(params._source.deployment_id.toString().trim());
+                return;
+              }
+            } catch (Exception e) {}
+            emit('unassociated_serverless');
+            return;
+          }
           for (String df : ['ess.billing.deployment_id', 'ess.billing.deployment_id.keyword']) {
             try {
               if (doc.containsKey(df) && !doc[df].empty) {
@@ -157,6 +210,39 @@ source:
             else { dt = 'serverless'; }
           }
           emit('unassociated_' + dt);
+    cb_sku:
+      type: keyword
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'chargeback_lookup.dest_billing_cluster_cost-1') {
+            for (String sf : ['sku', 'sku.keyword', 'ess.billing.sku', 'ess.billing.sku.keyword']) {
+              try {
+                if (doc.containsKey(sf) && !doc[sf].empty) {
+                  String sv = doc[sf].value.toString().trim();
+                  if (sv != '') { emit(sv); return; }
+                }
+              } catch (Exception e) {}
+            }
+            try {
+              if (params._source?.sku != null && params._source.sku.toString().trim() != '') {
+                emit(params._source.sku.toString().trim());
+                return;
+              }
+            } catch (Exception e) {}
+          }
+          for (String sf : ['ess.billing.sku', 'ess.billing.sku.keyword']) {
+            try {
+              if (doc.containsKey(sf) && !doc[sf].empty) {
+                String sv = doc[sf].value.toString().trim();
+                if (sv != '') { emit(sv); return; }
+              }
+            } catch (Exception e) {}
+          }
+          try {
+            if (params._source?.ess?.billing?.sku != null && params._source.ess.billing.sku.toString().trim() != '') {
+              emit(params._source.ess.billing.sku.toString().trim());
+            }
+          } catch (Exception e) {}
 dest:
   index: chargeback_lookup.dest_billing_cluster_cost-2
   aliases:
@@ -183,12 +269,15 @@ pivot:
         field: cb_deployment_id
     sku:
       terms:
-        field: ess.billing.sku
+        field: cb_sku
   aggregations:
     native:
       scripted_metric:
         init_script: "state.items = new HashMap(); state.min_bucket_ing = 0L; state.grp_min_ing = new HashMap(); state.grp_min_gfs = new HashMap();"
         map_script: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'chargeback_lookup.dest_billing_cluster_cost-1') {
+            return;
+          }
           boolean isNat = false;
           try {
             if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
@@ -564,10 +653,175 @@ pivot:
             'billing_unit': bUnit,
             'cloud_region': cRegion
           ];
+    carryover_v1:
+      scripted_metric:
+        init_script: "state.best = null; state.best_ts = -1L; state.best_meta = -1; state.best_ecu = -1.0;"
+        map_script: |
+          if (!doc.containsKey('_index') || doc['_index'].empty || doc['_index'].value.toString() != 'chargeback_lookup.dest_billing_cluster_cost-1') {
+            return;
+          }
+          long ingTs = 0L;
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              ingTs = doc['event.ingested'].value.toInstant().toEpochMilli();
+            } else if (params._source?.event?.ingested != null) {
+              ingTs = ZonedDateTime.parse(params._source.event.ingested.toString().trim()).toInstant().toEpochMilli();
+            }
+          } catch (Exception e) {}
+          double ecu = 0.0;
+          try {
+            if (doc.containsKey('total_chargeable_units') && !doc['total_chargeable_units'].empty) {
+              ecu = ((Number)doc['total_chargeable_units'].value).doubleValue();
+            } else if (params._source?.total_chargeable_units instanceof Number) {
+              ecu = ((Number)params._source.total_chargeable_units).doubleValue();
+            } else if (doc.containsKey('ess.billing.total_ecu') && !doc['ess.billing.total_ecu'].empty) {
+              ecu = ((Number)doc['ess.billing.total_ecu'].value).doubleValue();
+            } else if (params._source?.ess?.billing?.total_ecu instanceof Number) {
+              ecu = ((Number)params._source.ess.billing.total_ecu).doubleValue();
+            }
+          } catch (Exception e) {}
+          double qty = 0.0;
+          try {
+            if (doc.containsKey('ess.billing.quantity.value') && !doc['ess.billing.quantity.value'].empty) {
+              qty = ((Number)doc['ess.billing.quantity.value'].value).doubleValue();
+            } else if (params._source?.ess?.billing?.quantity?.value instanceof Number) {
+              qty = ((Number)params._source.ess.billing.quantity.value).doubleValue();
+            }
+          } catch (Exception e) {}
+          String depGroup = '';
+          try {
+            if (doc.containsKey('deployment_group') && !doc['deployment_group'].empty) {
+              depGroup = doc['deployment_group'].value.toString();
+            }
+          } catch (Exception e) {}
+          String depName = '';
+          try {
+            for (String dnf : ['deployment_name', 'deployment_name.keyword', 'ess.billing.deployment_name', 'ess.billing.deployment_name.keyword']) {
+              if (doc.containsKey(dnf) && !doc[dnf].empty) { depName = doc[dnf].value.toString(); if (depName != '') { break; } }
+            }
+            if (depName == '' && params._source?.deployment_name != null) { depName = params._source.deployment_name.toString(); }
+            if (depName == '' && params._source?.ess?.billing?.deployment_name != null) { depName = params._source.ess.billing.deployment_name.toString(); }
+          } catch (Exception e) {}
+          String orgId = '';
+          try {
+            for (String of : ['ess.billing.organization_id', 'ess.billing.organization_id.keyword', 'cloud.account.id', 'cloud.account.id.keyword']) {
+              if (doc.containsKey(of) && !doc[of].empty) { orgId = doc[of].value.toString(); if (orgId != '') { break; } }
+            }
+            if (orgId == '' && params._source?.ess?.billing?.organization_id != null) { orgId = params._source.ess.billing.organization_id.toString(); }
+          } catch (Exception e) {}
+          String depType = '';
+          try {
+            if (doc.containsKey('ess.billing.deployment_type') && !doc['ess.billing.deployment_type'].empty) {
+              depType = doc['ess.billing.deployment_type'].value.toString();
+            } else if (params._source?.ess?.billing?.deployment_type != null) {
+              depType = params._source.ess.billing.deployment_type.toString();
+            }
+          } catch (Exception e) {}
+          String bType = '';
+          try {
+            if (doc.containsKey('ess.billing.type') && !doc['ess.billing.type'].empty) {
+              bType = doc['ess.billing.type'].value.toString();
+            } else if (params._source?.ess?.billing?.type != null) {
+              bType = params._source.ess.billing.type.toString();
+            }
+          } catch (Exception e) {}
+          String bKind = '';
+          try {
+            if (doc.containsKey('ess.billing.kind') && !doc['ess.billing.kind'].empty) {
+              bKind = doc['ess.billing.kind'].value.toString();
+            } else if (params._source?.ess?.billing?.kind != null) {
+              bKind = params._source.ess.billing.kind.toString();
+            }
+          } catch (Exception e) {}
+          String bUnit = '';
+          try {
+            if (doc.containsKey('ess.billing.unit') && !doc['ess.billing.unit'].empty) {
+              bUnit = doc['ess.billing.unit'].value.toString();
+            } else if (params._source?.ess?.billing?.unit != null) {
+              bUnit = params._source.ess.billing.unit.toString();
+            }
+          } catch (Exception e) {}
+          String cRegion = '';
+          try {
+            if (doc.containsKey('cloud.region') && !doc['cloud.region'].empty) {
+              cRegion = doc['cloud.region'].value.toString();
+            } else if (params._source?.cloud?.region != null) {
+              cRegion = params._source.cloud.region.toString();
+            }
+          } catch (Exception e) {}
+          boolean isOnprem = false;
+          try {
+            if (doc.containsKey('is_onprem') && !doc['is_onprem'].empty) {
+              isOnprem = Boolean.TRUE.equals(doc['is_onprem'].value);
+            } else if (params._source?.is_onprem != null) {
+              isOnprem = Boolean.TRUE.equals(params._source.is_onprem) || params._source.is_onprem.toString().equalsIgnoreCase('true');
+            }
+          } catch (Exception e) {}
+          long docGfsMs = 0L;
+          try {
+            if (doc.containsKey('group_first_seen') && !doc['group_first_seen'].empty) {
+              docGfsMs = doc['group_first_seen'].value.toInstant().toEpochMilli();
+            } else if (params._source?.get('group_first_seen') != null) {
+              def rgfs = params._source.get('group_first_seen');
+              if (rgfs instanceof Number) { docGfsMs = ((Number)rgfs).longValue(); }
+              else { String gstr = rgfs.toString().trim(); if (gstr != '') { docGfsMs = ZonedDateTime.parse(gstr).toInstant().toEpochMilli(); } }
+            }
+          } catch (Exception e) {}
+          int metaScore = (depGroup != '' ? 2 : 0) + (depName != '' ? 1 : 0);
+          if (state.best == null || ingTs > state.best_ts || (ingTs == state.best_ts && (metaScore > state.best_meta || (metaScore == state.best_meta && ecu >= state.best_ecu)))) {
+            state.best_ts = ingTs;
+            state.best_meta = metaScore;
+            state.best_ecu = ecu;
+            state.best = [
+              'ing_ts': ingTs,
+              'meta': metaScore,
+              'doc_cnt': 1L,
+              'total_chargeable_units': ecu,
+              'quantity_value': qty,
+              'deployment_group': depGroup,
+              'group_first_seen': docGfsMs > 0L ? docGfsMs : null,
+              'deployment_name': depName,
+              'organization_id': orgId,
+              'deployment_type': depType,
+              'billing_type': bType,
+              'billing_kind': bKind,
+              'billing_unit': bUnit,
+              'cloud_region': cRegion,
+              'is_onprem': isOnprem
+            ];
+          }
+        combine_script: "return state.best;"
+        reduce_script: |
+          Map win = null;
+          long winTs = -1L;
+          int winMeta = -1;
+          double winEcu = -1.0;
+          for (def stObj : states) {
+            if (!(stObj instanceof Map)) { continue; }
+            Map st = (Map)stObj;
+            long stTs = st.ing_ts instanceof Number ? ((Number)st.ing_ts).longValue() : 0L;
+            int stMeta = st.meta instanceof Number ? ((Number)st.meta).intValue() : 0;
+            double stEcu = st.total_chargeable_units instanceof Number ? ((Number)st.total_chargeable_units).doubleValue() : 0.0;
+            if (win == null || stTs > winTs || (stTs == winTs && (stMeta > winMeta || (stMeta == winMeta && stEcu >= winEcu)))) {
+              win = new HashMap(st);
+              winTs = stTs;
+              winMeta = stMeta;
+              winEcu = stEcu;
+            }
+          }
+          if (win == null) {
+            return ['doc_cnt': 0L];
+          }
+          win.remove('ing_ts');
+          win.remove('meta');
+          return win;
     legacy:
       scripted_metric:
         init_script: "state.items = new HashMap(); state.min_bucket_ing = 0L; state.grp_min_ing = new HashMap(); state.grp_min_gfs = new HashMap();"
         map_script: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'chargeback_lookup.dest_billing_cluster_cost-1') {
+            return;
+          }
           boolean isNat = false;
           try {
             if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
@@ -949,5 +1203,6 @@ settings:
   unattended: true
 _meta:
   managed: true
+  order: 2
   run_as_kibana_system: false
   fleet_transform_version: 0.7.0

@@ -3,293 +3,304 @@ source:
   index:
     - metrics-chargeback.billing-*
     - metrics-ess_billing.billing-*
+    - chargeback_lookup.dest_billing_realized_pool-1*
     - -metrics-ess_billing.billing-chargeback*
-    - -chargeback_lookup.*
+    - -partial-*
+    - -chargeback_lookup.dest_billing_realized_pool-2*
   query:
     bool:
-      must:
-        - range:
-            ess.billing.total_ecu:
-              gte: 0
-      must_not:
-        - terms:
-            doc_type:
-              - config_snapshot
-              - credit_line_item
       should:
-        - term:
-            ess.billing.sku: onprem_node
         - bool:
             must:
-              - term:
-                  ess.billing.type: capacity
-              - term:
-                  ess.billing.kind: elasticsearch
-              - bool:
-                  should:
-                    - wildcard:
-                        ess.billing.sku:
-                          value: "*.es.datahot.*"
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: "*.es.datawarm.*"
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: "*.es.datacold.*"
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: "*.es.datafrozen.*"
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: "*.es.datacontent.*"
-                          case_insensitive: true
-                  minimum_should_match: 1
-        # Serverless projects (elasticsearch, observability, security, vectordb) bill VCU,
-        # solution ingest, and retained storage rather than ECH *.es.data*.* node SKUs.
-        # Non-allocatable platform/support/transfer/snapshot SKUs (ML VCU, Synthetics,
-        # inference, support, egress, snapshots) are explicitly excluded.
-        - bool:
-            must:
-              - terms:
-                  ess.billing.deployment_type:
-                    - elasticsearch
-                    - observability
-                    - security
-                    - vectordb
-                    - search
-                    - serverless
-                    - oblt
-                    - sec
-                    - es
-                    - vector
-                    - enterprise_search
-              - bool:
-                  should:
-                    - wildcard:
-                        ess.billing.sku:
-                          value: "*search-vcu*"
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: "*ingest-vcu*"
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: "*retained*"
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: "*retention*"
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: "observability.*"
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: "*.observability.*"
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: "oblt.*"
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: "*.oblt.*"
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: "security.*"
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: "*.security.*"
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: "sec.*"
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: "*.sec.*"
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: "vectordb.*"
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: "*.vectordb.*"
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: "serverless.search.*"
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: "search.*"
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: "serverless.elasticsearch.*"
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: "elasticsearch.*"
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: "*.elasticsearch.*"
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: "*ingest.ecu*"
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: "*ingest_ecu*"
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: "*ingest.vcu*"
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: "*search.ecu*"
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: "*search_ecu*"
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: "*search.vcu*"
-                          case_insensitive: true
-                  minimum_should_match: 1
+              - range:
+                  ess.billing.total_ecu:
+                    gte: 0
             must_not:
-              - wildcard:
-                  ess.billing.sku:
-                    value: "*ml-vcu*"
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: "*synthetic*"
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: "*inference*"
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: "*llm*"
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: "*agent-builder*"
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: "*.eis*"
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: "*support*"
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: "*data-transfer*"
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: "*data-out*"
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: "*data-in*"
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: "*egress*"
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: "*ingress*"
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: "*snapshot*"
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: "*workflow*"
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: "*cross-project*"
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: "*cps*"
-                    case_insensitive: true
-        # Also include AI/ML and Synthetics SKUs so AI & Synthetics dashboards can join
-        # daily per-deployment AI and Synthetics SKU pools without affecting data-tier totals.
-        - bool:
+              - terms:
+                  doc_type:
+                    - config_snapshot
+                    - credit_line_item
+              - term:
+                  _index: chargeback_lookup.dest_billing_realized_pool-1
             should:
-              - wildcard:
-                  ess.billing.sku:
-                    value: "*.es.ml.*"
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: "*ml-vcu*"
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: "*ml.ecu*"
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: "*ml_ecu*"
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: "*ml.vcu*"
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: "*ml_inference*"
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: "*inference*"
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: "*llm*"
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: "*agent-builder*"
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: "*.eis*"
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: "*synthetic*"
-                    case_insensitive: true
+              - term:
+                  ess.billing.sku: onprem_node
+              - bool:
+                  must:
+                    - term:
+                        ess.billing.type: capacity
+                    - term:
+                        ess.billing.kind: elasticsearch
+                    - bool:
+                        should:
+                          - wildcard:
+                              ess.billing.sku:
+                                value: '*.es.datahot.*'
+                                case_insensitive: true
+                          - wildcard:
+                              ess.billing.sku:
+                                value: '*.es.datawarm.*'
+                                case_insensitive: true
+                          - wildcard:
+                              ess.billing.sku:
+                                value: '*.es.datacold.*'
+                                case_insensitive: true
+                          - wildcard:
+                              ess.billing.sku:
+                                value: '*.es.datafrozen.*'
+                                case_insensitive: true
+                          - wildcard:
+                              ess.billing.sku:
+                                value: '*.es.datacontent.*'
+                                case_insensitive: true
+                        minimum_should_match: 1
+              - bool:
+                  must:
+                    - terms:
+                        ess.billing.deployment_type:
+                          - elasticsearch
+                          - observability
+                          - security
+                          - vectordb
+                          - search
+                          - serverless
+                          - oblt
+                          - sec
+                          - es
+                          - vector
+                          - enterprise_search
+                    - bool:
+                        should:
+                          - wildcard:
+                              ess.billing.sku:
+                                value: '*search-vcu*'
+                                case_insensitive: true
+                          - wildcard:
+                              ess.billing.sku:
+                                value: '*ingest-vcu*'
+                                case_insensitive: true
+                          - wildcard:
+                              ess.billing.sku:
+                                value: '*retained*'
+                                case_insensitive: true
+                          - wildcard:
+                              ess.billing.sku:
+                                value: '*retention*'
+                                case_insensitive: true
+                          - wildcard:
+                              ess.billing.sku:
+                                value: observability.*
+                                case_insensitive: true
+                          - wildcard:
+                              ess.billing.sku:
+                                value: '*.observability.*'
+                                case_insensitive: true
+                          - wildcard:
+                              ess.billing.sku:
+                                value: oblt.*
+                                case_insensitive: true
+                          - wildcard:
+                              ess.billing.sku:
+                                value: '*.oblt.*'
+                                case_insensitive: true
+                          - wildcard:
+                              ess.billing.sku:
+                                value: security.*
+                                case_insensitive: true
+                          - wildcard:
+                              ess.billing.sku:
+                                value: '*.security.*'
+                                case_insensitive: true
+                          - wildcard:
+                              ess.billing.sku:
+                                value: sec.*
+                                case_insensitive: true
+                          - wildcard:
+                              ess.billing.sku:
+                                value: '*.sec.*'
+                                case_insensitive: true
+                          - wildcard:
+                              ess.billing.sku:
+                                value: vectordb.*
+                                case_insensitive: true
+                          - wildcard:
+                              ess.billing.sku:
+                                value: '*.vectordb.*'
+                                case_insensitive: true
+                          - wildcard:
+                              ess.billing.sku:
+                                value: serverless.search.*
+                                case_insensitive: true
+                          - wildcard:
+                              ess.billing.sku:
+                                value: search.*
+                                case_insensitive: true
+                          - wildcard:
+                              ess.billing.sku:
+                                value: serverless.elasticsearch.*
+                                case_insensitive: true
+                          - wildcard:
+                              ess.billing.sku:
+                                value: elasticsearch.*
+                                case_insensitive: true
+                          - wildcard:
+                              ess.billing.sku:
+                                value: '*.elasticsearch.*'
+                                case_insensitive: true
+                          - wildcard:
+                              ess.billing.sku:
+                                value: '*ingest.ecu*'
+                                case_insensitive: true
+                          - wildcard:
+                              ess.billing.sku:
+                                value: '*ingest_ecu*'
+                                case_insensitive: true
+                          - wildcard:
+                              ess.billing.sku:
+                                value: '*ingest.vcu*'
+                                case_insensitive: true
+                          - wildcard:
+                              ess.billing.sku:
+                                value: '*search.ecu*'
+                                case_insensitive: true
+                          - wildcard:
+                              ess.billing.sku:
+                                value: '*search_ecu*'
+                                case_insensitive: true
+                          - wildcard:
+                              ess.billing.sku:
+                                value: '*search.vcu*'
+                                case_insensitive: true
+                        minimum_should_match: 1
+                  must_not:
+                    - wildcard:
+                        ess.billing.sku:
+                          value: '*ml-vcu*'
+                          case_insensitive: true
+                    - wildcard:
+                        ess.billing.sku:
+                          value: '*synthetic*'
+                          case_insensitive: true
+                    - wildcard:
+                        ess.billing.sku:
+                          value: '*inference*'
+                          case_insensitive: true
+                    - wildcard:
+                        ess.billing.sku:
+                          value: '*llm*'
+                          case_insensitive: true
+                    - wildcard:
+                        ess.billing.sku:
+                          value: '*agent-builder*'
+                          case_insensitive: true
+                    - wildcard:
+                        ess.billing.sku:
+                          value: '*.eis*'
+                          case_insensitive: true
+                    - wildcard:
+                        ess.billing.sku:
+                          value: '*support*'
+                          case_insensitive: true
+                    - wildcard:
+                        ess.billing.sku:
+                          value: '*data-transfer*'
+                          case_insensitive: true
+                    - wildcard:
+                        ess.billing.sku:
+                          value: '*data-out*'
+                          case_insensitive: true
+                    - wildcard:
+                        ess.billing.sku:
+                          value: '*data-in*'
+                          case_insensitive: true
+                    - wildcard:
+                        ess.billing.sku:
+                          value: '*egress*'
+                          case_insensitive: true
+                    - wildcard:
+                        ess.billing.sku:
+                          value: '*ingress*'
+                          case_insensitive: true
+                    - wildcard:
+                        ess.billing.sku:
+                          value: '*snapshot*'
+                          case_insensitive: true
+                    - wildcard:
+                        ess.billing.sku:
+                          value: '*workflow*'
+                          case_insensitive: true
+                    - wildcard:
+                        ess.billing.sku:
+                          value: '*cross-project*'
+                          case_insensitive: true
+                    - wildcard:
+                        ess.billing.sku:
+                          value: '*cps*'
+                          case_insensitive: true
+              - bool:
+                  should:
+                    - wildcard:
+                        ess.billing.sku:
+                          value: '*.es.ml.*'
+                          case_insensitive: true
+                    - wildcard:
+                        ess.billing.sku:
+                          value: '*ml-vcu*'
+                          case_insensitive: true
+                    - wildcard:
+                        ess.billing.sku:
+                          value: '*ml.ecu*'
+                          case_insensitive: true
+                    - wildcard:
+                        ess.billing.sku:
+                          value: '*ml_ecu*'
+                          case_insensitive: true
+                    - wildcard:
+                        ess.billing.sku:
+                          value: '*ml.vcu*'
+                          case_insensitive: true
+                    - wildcard:
+                        ess.billing.sku:
+                          value: '*ml_inference*'
+                          case_insensitive: true
+                    - wildcard:
+                        ess.billing.sku:
+                          value: '*inference*'
+                          case_insensitive: true
+                    - wildcard:
+                        ess.billing.sku:
+                          value: '*llm*'
+                          case_insensitive: true
+                    - wildcard:
+                        ess.billing.sku:
+                          value: '*agent-builder*'
+                          case_insensitive: true
+                    - wildcard:
+                        ess.billing.sku:
+                          value: '*.eis*'
+                          case_insensitive: true
+                    - wildcard:
+                        ess.billing.sku:
+                          value: '*synthetic*'
+                          case_insensitive: true
+                  minimum_should_match: 1
             minimum_should_match: 1
+        - bool:
+            filter:
+              - term:
+                  _index: chargeback_lookup.dest_billing_realized_pool-1
+              - exists:
+                  field: deployment_id
       minimum_should_match: 1
   runtime_mappings:
     cb_sync_ts:
       type: date
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'chargeback_lookup.dest_billing_realized_pool-1') {
+            emit(1262304000000L);
+            return;
+          }
           try {
             if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
               emit(doc['event.ingested'].value.toInstant().toEpochMilli());
@@ -330,6 +341,24 @@ source:
       type: keyword
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'chargeback_lookup.dest_billing_realized_pool-1') {
+            for (String dgf : ['deployment_group', 'deployment_group.keyword']) {
+              try {
+                if (doc.containsKey(dgf) && !doc[dgf].empty) {
+                  emit(doc[dgf].value.toString().trim());
+                  return;
+                }
+              } catch (Exception e) {}
+            }
+            try {
+              if (params._source?.deployment_group != null) {
+                emit(params._source.deployment_group.toString().trim());
+                return;
+              }
+            } catch (Exception e) {}
+            emit('');
+            return;
+          }
           for (String tf : ['ess.billing.deployment_tags', 'ess.billing.deployment_tags.keyword']) {
             try {
               if (doc.containsKey(tf) && !doc[tf].empty) {
@@ -372,6 +401,24 @@ source:
       type: keyword
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'chargeback_lookup.dest_billing_realized_pool-1') {
+            for (String df : ['deployment_id', 'deployment_id.keyword']) {
+              try {
+                if (doc.containsKey(df) && !doc[df].empty) {
+                  String dv = doc[df].value.toString().trim();
+                  if (dv != '') { emit(dv); return; }
+                }
+              } catch (Exception e) {}
+            }
+            try {
+              if (params._source?.deployment_id != null && params._source.deployment_id.toString().trim() != '') {
+                emit(params._source.deployment_id.toString().trim());
+                return;
+              }
+            } catch (Exception e) {}
+            emit('unassociated_serverless');
+            return;
+          }
           for (String df : ['ess.billing.deployment_id', 'ess.billing.deployment_id.keyword']) {
             try {
               if (doc.containsKey(df) && !doc[df].empty) {
@@ -458,6 +505,9 @@ pivot:
           scripted_metric:
             init_script: "state.items = new HashMap();"
             map_script: |
+              if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'chargeback_lookup.dest_billing_realized_pool-1') {
+                return;
+              }
               boolean isNat = false;
               try {
                 if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
@@ -764,6 +814,9 @@ pivot:
           scripted_metric:
             init_script: "state.items = new HashMap();"
             map_script: |
+              if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'chargeback_lookup.dest_billing_realized_pool-1') {
+                return;
+              }
               boolean isNat = false;
               try {
                 if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
@@ -1066,10 +1119,151 @@ pivot:
               if (hasQty) { res.put('data_tier_capacity_hours', maxQty); }
               if (hasRam) { res.put('data_tier_ram_per_zone_mb', maxRam); }
               return res;
+    carryover_v1:
+      scripted_metric:
+        init_script: "state.best = null; state.best_ts = -1L; state.best_ecu = -1.0;"
+        map_script: |
+          if (!doc.containsKey('_index') || doc['_index'].empty || doc['_index'].value.toString() != 'chargeback_lookup.dest_billing_realized_pool-1') {
+            return;
+          }
+          long ingTs = 0L;
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              ingTs = doc['event.ingested'].value.toInstant().toEpochMilli();
+            } else if (params._source?.event?.ingested != null) {
+              ingTs = ZonedDateTime.parse(params._source.event.ingested.toString().trim()).toInstant().toEpochMilli();
+            }
+          } catch (Exception e) {}
+          double dtEcu = 0.0;
+          try {
+            if (doc.containsKey('data_tier_capacity_ecu') && !doc['data_tier_capacity_ecu'].empty) {
+              dtEcu = ((Number)doc['data_tier_capacity_ecu'].value).doubleValue();
+            } else if (params._source?.data_tier_capacity_ecu instanceof Number) {
+              dtEcu = ((Number)params._source.data_tier_capacity_ecu).doubleValue();
+            } else if (doc.containsKey('total_chargeable_units') && !doc['total_chargeable_units'].empty) {
+              dtEcu = ((Number)doc['total_chargeable_units'].value).doubleValue();
+            } else if (params._source?.total_chargeable_units instanceof Number) {
+              dtEcu = ((Number)params._source.total_chargeable_units).doubleValue();
+            }
+          } catch (Exception e) {}
+          boolean hasHrs = false;
+          double hrs = 0.0;
+          try {
+            if (doc.containsKey('data_tier_capacity_hours') && !doc['data_tier_capacity_hours'].empty) {
+              hrs = ((Number)doc['data_tier_capacity_hours'].value).doubleValue();
+              hasHrs = true;
+            } else if (params._source?.data_tier_capacity_hours instanceof Number) {
+              hrs = ((Number)params._source.data_tier_capacity_hours).doubleValue();
+              hasHrs = true;
+            }
+          } catch (Exception e) {}
+          boolean hasRam = false;
+          long ram = 0L;
+          try {
+            if (doc.containsKey('data_tier_ram_per_zone_mb') && !doc['data_tier_ram_per_zone_mb'].empty) {
+              ram = ((Number)doc['data_tier_ram_per_zone_mb'].value).longValue();
+              hasRam = true;
+            } else if (params._source?.data_tier_ram_per_zone_mb instanceof Number) {
+              ram = ((Number)params._source.data_tier_ram_per_zone_mb).longValue();
+              hasRam = true;
+            }
+          } catch (Exception e) {}
+          double aiEcu = 0.0;
+          try {
+            if (doc.containsKey('ai_chargeable_units') && !doc['ai_chargeable_units'].empty) {
+              aiEcu = ((Number)doc['ai_chargeable_units'].value).doubleValue();
+            } else if (params._source?.ai_chargeable_units instanceof Number) {
+              aiEcu = ((Number)params._source.ai_chargeable_units).doubleValue();
+            }
+          } catch (Exception e) {}
+          double synEcu = 0.0;
+          double synPing = 0.0;
+          double synExec = 0.0;
+          try {
+            if (doc.containsKey('synthetics_chargeable_units') && !doc['synthetics_chargeable_units'].empty) {
+              synEcu = ((Number)doc['synthetics_chargeable_units'].value).doubleValue();
+            } else if (params._source?.synthetics_chargeable_units instanceof Number) {
+              synEcu = ((Number)params._source.synthetics_chargeable_units).doubleValue();
+            }
+            if (doc.containsKey('synthetics_pings_units') && !doc['synthetics_pings_units'].empty) {
+              synPing = ((Number)doc['synthetics_pings_units'].value).doubleValue();
+            } else if (params._source?.synthetics_pings_units instanceof Number) {
+              synPing = ((Number)params._source.synthetics_pings_units).doubleValue();
+            }
+            if (doc.containsKey('synthetics_executions_units') && !doc['synthetics_executions_units'].empty) {
+              synExec = ((Number)doc['synthetics_executions_units'].value).doubleValue();
+            } else if (params._source?.synthetics_executions_units instanceof Number) {
+              synExec = ((Number)params._source.synthetics_executions_units).doubleValue();
+            }
+          } catch (Exception e) {}
+          String depGroup = '';
+          try {
+            if (doc.containsKey('deployment_group') && !doc['deployment_group'].empty) {
+              depGroup = doc['deployment_group'].value.toString();
+            }
+          } catch (Exception e) {}
+          String depName = '';
+          try {
+            for (String dnf : ['deployment_name', 'deployment_name.keyword']) {
+              if (doc.containsKey(dnf) && !doc[dnf].empty) { depName = doc[dnf].value.toString(); if (depName != '') { break; } }
+            }
+            if (depName == '' && params._source?.deployment_name != null) { depName = params._source.deployment_name.toString(); }
+          } catch (Exception e) {}
+          boolean isOnprem = false;
+          try {
+            if (doc.containsKey('is_onprem') && !doc['is_onprem'].empty) {
+              isOnprem = Boolean.TRUE.equals(doc['is_onprem'].value);
+            } else if (params._source?.is_onprem != null) {
+              isOnprem = Boolean.TRUE.equals(params._source.is_onprem) || params._source.is_onprem.toString().equalsIgnoreCase('true');
+            }
+          } catch (Exception e) {}
+          if (state.best == null || ingTs > state.best_ts || (ingTs == state.best_ts && dtEcu >= state.best_ecu)) {
+            state.best_ts = ingTs;
+            state.best_ecu = dtEcu;
+            Map rec = [
+              'ing_ts': ingTs,
+              'doc_cnt': 1L,
+              'data_tier_capacity_ecu': dtEcu,
+              'deployment_group': depGroup,
+              'deployment_name': depName,
+              'is_onprem': isOnprem
+            ];
+            if (hasHrs) { rec.put('data_tier_capacity_hours', hrs); }
+            if (hasRam) { rec.put('data_tier_ram_per_zone_mb', ram); }
+            if (aiEcu > 0.0) { rec.put('ai_chargeable_units', aiEcu); }
+            if (synEcu > 0.0) {
+              rec.put('synthetics_chargeable_units', synEcu);
+              rec.put('synthetics_pings_units', synPing);
+              rec.put('synthetics_executions_units', synExec);
+            }
+            state.best = rec;
+          }
+        combine_script: "return state.best;"
+        reduce_script: |
+          Map win = null;
+          long winTs = -1L;
+          double winEcu = -1.0;
+          for (def stObj : states) {
+            if (!(stObj instanceof Map)) { continue; }
+            Map st = (Map)stObj;
+            long stTs = st.ing_ts instanceof Number ? ((Number)st.ing_ts).longValue() : 0L;
+            double stEcu = st.data_tier_capacity_ecu instanceof Number ? ((Number)st.data_tier_capacity_ecu).doubleValue() : 0.0;
+            if (win == null || stTs > winTs || (stTs == winTs && stEcu >= winEcu)) {
+              win = new HashMap(st);
+              winTs = stTs;
+              winEcu = stEcu;
+            }
+          }
+          if (win == null) {
+            return ['doc_cnt': 0L];
+          }
+          win.remove('ing_ts');
+          return win;
 settings:
   deduce_mappings: false
   unattended: true
 _meta:
   managed: true
+  order: 3
   run_as_kibana_system: false
   fleet_transform_version: 0.7.0
