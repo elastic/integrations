@@ -70,6 +70,7 @@ processors:
             }
           }
           Map bestNat = null;
+          String bestNatKey = '';
           if (ctx.nat_snapshots instanceof Map && !((Map)ctx.nat_snapshots).isEmpty()) {
             for (def keyObj : ((Map)ctx.nat_snapshots).keySet()) {
               String recKey = keyObj.toString();
@@ -103,13 +104,17 @@ processors:
               ];
               if (bestNat == null) {
                 bestNat = cand;
+                bestNatKey = recKey;
               } else {
                 long cTs = ((Number)cand.get('ing_ts')).longValue();
                 long bTs = ((Number)bestNat.get('ing_ts')).longValue();
                 int cMeta = (cand.get('deployment_group') != '' ? 2 : 0) + (cand.get('project_name') != '' ? 1 : 0);
                 int bMeta = (bestNat.get('deployment_group') != '' ? 2 : 0) + (bestNat.get('project_name') != '' ? 1 : 0);
-                if (cTs > bTs || (cTs == bTs && (cMeta > bMeta || (cMeta == bMeta && ((Number)cand.get('total_ecu')).doubleValue() >= ((Number)bestNat.get('total_ecu')).doubleValue())))) {
+                double cEcu = ((Number)cand.get('total_ecu')).doubleValue();
+                double bEcu = ((Number)bestNat.get('total_ecu')).doubleValue();
+                if (cTs > bTs || (cTs == bTs && (cMeta > bMeta || (cMeta == bMeta && (cEcu > bEcu || (cEcu == bEcu && recKey.compareTo(bestNatKey) > 0)))))) {
                   bestNat = cand;
+                  bestNatKey = recKey;
                 }
               }
             }
@@ -136,6 +141,7 @@ processors:
             for (def ivObj : ((Map)ctx.leg_intervals).values()) {
               if (!(ivObj instanceof Map) || !(((Map)ivObj).get('snaps') instanceof Map)) { continue; }
               Map bestRec = null;
+              String bestRecKey = '';
               for (def keyObj : ((Map)((Map)ivObj).get('snaps')).keySet()) {
                 String recKey = keyObj.toString();
                 List parts = new ArrayList();
@@ -168,13 +174,17 @@ processors:
                 ];
                 if (bestRec == null) {
                   bestRec = cand;
+                  bestRecKey = recKey;
                 } else {
                   long cTs = ((Number)cand.get('ing_ts')).longValue();
                   long bTs = ((Number)bestRec.get('ing_ts')).longValue();
                   int cMeta = (cand.get('deployment_group') != '' ? 2 : 0) + (cand.get('project_name') != '' ? 1 : 0);
                   int bMeta = (bestRec.get('deployment_group') != '' ? 2 : 0) + (bestRec.get('project_name') != '' ? 1 : 0);
-                  if (cTs > bTs || (cTs == bTs && (cMeta > bMeta || (cMeta == bMeta && ((Number)cand.get('total_ecu')).doubleValue() >= ((Number)bestRec.get('total_ecu')).doubleValue())))) {
+                  double cEcu = ((Number)cand.get('total_ecu')).doubleValue();
+                  double bEcu = ((Number)bestRec.get('total_ecu')).doubleValue();
+                  if (cTs > bTs || (cTs == bTs && (cMeta > bMeta || (cMeta == bMeta && (cEcu > bEcu || (cEcu == bEcu && recKey.compareTo(bestRecKey) > 0)))))) {
                     bestRec = cand;
+                    bestRecKey = recKey;
                   }
                 }
               }

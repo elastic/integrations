@@ -7,46 +7,210 @@ processors:
       lang: painless
       tag: set_usage_lookup_keys
       source: |
+        String sep = Character.toString((char)31);
+        if (ctx.proj_meta instanceof Map) {
+          Map pm = (Map)ctx.proj_meta;
+          List bestProjParts = null;
+          long bestProjRank = -1L;
+          String bestProjKey = '';
+          if (pm.get('buckets') instanceof List) {
+            for (def bObj : (List)pm.get('buckets')) {
+              if (!(bObj instanceof Map)) { continue; }
+              Map bm = (Map)bObj;
+              if (bm.get('key') == null) { continue; }
+              String recKey = bm.get('key').toString();
+              List parts = new ArrayList();
+              int pStart = 0;
+              while (true) {
+                int pIdx = recKey.indexOf(sep, pStart);
+                if (pIdx < 0) { parts.add(recKey.substring(pStart)); break; }
+                parts.add(recKey.substring(pStart, pIdx));
+                pStart = pIdx + 1;
+              }
+              if (parts.size() < 7) { continue; }
+              long rnk = 0L;
+              try { rnk = Long.parseLong(parts.get(0).toString()); } catch (Exception e) {}
+              if (bm.get('max_rank') instanceof Map && ((Map)bm.get('max_rank')).get('value') instanceof Number) {
+                rnk = Math.round(((Number)((Map)bm.get('max_rank')).get('value')).doubleValue());
+              }
+              if (bestProjParts == null || rnk > bestProjRank || (rnk == bestProjRank && recKey.compareTo(bestProjKey) > 0)) {
+                bestProjRank = rnk;
+                bestProjKey = recKey;
+                bestProjParts = parts;
+              }
+            }
+          } else {
+            for (def entryObj : pm.entrySet()) {
+              Map.Entry e = (Map.Entry)entryObj;
+              String recKey = e.getKey().toString();
+              List parts = new ArrayList();
+              int pStart = 0;
+              while (true) {
+                int pIdx = recKey.indexOf(sep, pStart);
+                if (pIdx < 0) { parts.add(recKey.substring(pStart)); break; }
+                parts.add(recKey.substring(pStart, pIdx));
+                pStart = pIdx + 1;
+              }
+              if (parts.size() < 7) { continue; }
+              long rnk = 0L;
+              try { rnk = Long.parseLong(parts.get(0).toString()); } catch (Exception ex) {}
+              if (e.getValue() instanceof Map && ((Map)e.getValue()).get('max_rank') instanceof Number) {
+                rnk = Math.round(((Number)((Map)e.getValue()).get('max_rank')).doubleValue());
+              }
+              if (bestProjParts == null || rnk > bestProjRank || (rnk == bestProjRank && recKey.compareTo(bestProjKey) > 0)) {
+                bestProjRank = rnk;
+                bestProjKey = recKey;
+                bestProjParts = parts;
+              }
+            }
+          }
+          if (bestProjParts != null) {
+            String pName = bestProjParts.get(1).toString();
+            String pType = bestProjParts.get(2).toString();
+            String pGrp = bestProjParts.get(3).toString();
+            String pRate = bestProjParts.get(4).toString();
+            String pUnit = bestProjParts.get(5).toString();
+            String pSym = bestProjParts.get(6).toString();
+            if (pName != '' && pName != 'null') { ctx.project_name = pName; }
+            if (pType != '' && pType != 'null') { ctx.project_type = pType; }
+            ctx.deployment_group = (pGrp == 'null') ? '' : pGrp;
+            try {
+              double cr = Double.parseDouble(pRate);
+              if (cr >= 0.0) { ctx.conf_chargeable_unit_rate = cr; }
+            } catch (Exception e) {}
+            if (pUnit != '' && pUnit != 'null') { ctx.conf_chargeable_unit_rate_unit = pUnit; }
+            if (pSym != '' && pSym != 'null') { ctx.conf_currency_symbol = pSym; }
+          }
+          ctx.remove('proj_meta');
+        }
         if (ctx.rollup instanceof Map) {
           Map r = (Map)ctx.rollup;
           if (r.nat instanceof Map || r.leg instanceof Map) {
             boolean isProjLevel = !ctx.containsKey('datastream');
             Map natMap = (r.nat instanceof Map) ? (Map)r.nat : null;
+            Map legMap = (r.leg instanceof Map) ? (Map)r.leg : null;
             long natCnt = (natMap != null && natMap.get('cnt') instanceof Number)
               ? Math.round(((Number)natMap.get('cnt')).doubleValue())
               : 0L;
-            if (natCnt > 0L) {
-              if (natMap.get('by_ds') instanceof Map) {
-                long sumIdx = 0L;
-                long sumQry = 0L;
-                long sumSto = 0L;
-                for (def dsObj : ((Map)natMap.get('by_ds')).values()) {
-                  if (!(dsObj instanceof Map)) { continue; }
-                  Map dm = (Map)dsObj;
+            if (isProjLevel && ((natMap != null && natMap.get('by_ds') instanceof Map) || (legMap != null && legMap.get('by_ds') instanceof Map))) {
+              long sumIdx = 0L;
+              long sumQry = 0L;
+              long sumSto = 0L;
+              Set selectedNatDs = new HashSet();
+              if (natMap != null && natMap.get('by_ds') instanceof Map) {
+                for (def entryObj : ((Map)natMap.get('by_ds')).entrySet()) {
+                  Map.Entry entry = (Map.Entry)entryObj;
+                  if (!(entry.getValue() instanceof Map)) { continue; }
+                  Map dm = (Map)entry.getValue();
+                  long dsCnt = (dm.get('cnt') instanceof Number) ? Math.round(((Number)dm.get('cnt')).doubleValue()) : 1L;
+                  if (dsCnt <= 0L) { continue; }
+                  selectedNatDs.add(entry.getKey().toString());
                   if (dm.get('idx') instanceof Number) { sumIdx += Math.round(((Number)dm.get('idx')).doubleValue()); }
                   if (dm.get('qry') instanceof Number) { sumQry += Math.round(((Number)dm.get('qry')).doubleValue()); }
                   if (dm.get('sto') instanceof Number) { sumSto += Math.round(((Number)dm.get('sto')).doubleValue()); }
                 }
-                ctx.deployment_sum_indexing_time = sumIdx;
-                ctx.deployment_sum_query_time = sumQry;
-                ctx.deployment_sum_data_set_store_size = sumSto;
-              } else {
-                long dsIdx = (natMap.get('idx') instanceof Number) ? Math.round(((Number)natMap.get('idx')).doubleValue()) : 0L;
-                long dsQry = (natMap.get('qry') instanceof Number) ? Math.round(((Number)natMap.get('qry')).doubleValue()) : 0L;
-                long dsSto = (natMap.get('sto') instanceof Number) ? Math.round(((Number)natMap.get('sto')).doubleValue()) : 0L;
-                if (isProjLevel) {
-                  ctx.deployment_sum_indexing_time = dsIdx;
-                  ctx.deployment_sum_query_time = dsQry;
-                  ctx.deployment_sum_data_set_store_size = dsSto;
-                } else {
-                  ctx.datastream_sum_indexing_time = dsIdx;
-                  ctx.datastream_sum_query_time = dsQry;
-                  ctx.datastream_sum_data_set_store_size = dsSto;
+              }
+              if (legMap != null && legMap.get('by_ds') instanceof Map) {
+                for (def entryObj : ((Map)legMap.get('by_ds')).entrySet()) {
+                  Map.Entry entry = (Map.Entry)entryObj;
+                  if (selectedNatDs.contains(entry.getKey().toString())) { continue; }
+                  if (!(entry.getValue() instanceof Map)) { continue; }
+                  Map dl = (Map)entry.getValue();
+                  long legIdx = 0L;
+                  long legQry = 0L;
+                  double legStoSlotSum = 0.0;
+                  long allSlots = (dl.get('all_slots') instanceof Number) ? Math.round(((Number)dl.get('all_slots')).doubleValue()) : 0L;
+                  if (dl.get('by_idx') instanceof Map) {
+                    for (def uObj : ((Map)dl.get('by_idx')).values()) {
+                      if (!(uObj instanceof Map)) { continue; }
+                      Map u = (Map)uObj;
+                      long idxDCnt = (u.get('idx_d_cnt') instanceof Number) ? Math.round(((Number)u.get('idx_d_cnt')).doubleValue()) : 0L;
+                      if (idxDCnt > 0L && u.get('idx_d') instanceof Number) {
+                        legIdx += Math.round(((Number)u.get('idx_d')).doubleValue());
+                      } else if (u.get('idx_min') instanceof Number && u.get('idx_max') instanceof Number) {
+                        long imn = Math.round(((Number)u.get('idx_min')).doubleValue());
+                        long imx = Math.round(((Number)u.get('idx_max')).doubleValue());
+                        if (imn >= 0L && imx > imn) { legIdx += (imx - imn); }
+                      }
+                      long qryDCnt = (u.get('qry_d_cnt') instanceof Number) ? Math.round(((Number)u.get('qry_d_cnt')).doubleValue()) : 0L;
+                      if (qryDCnt > 0L && u.get('qry_d') instanceof Number) {
+                        legQry += Math.round(((Number)u.get('qry_d')).doubleValue());
+                      } else if (u.get('qry_min') instanceof Number && u.get('qry_max') instanceof Number) {
+                        long qmn = Math.round(((Number)u.get('qry_min')).doubleValue());
+                        long qmx = Math.round(((Number)u.get('qry_max')).doubleValue());
+                        if (qmn >= 0L && qmx > qmn) { legQry += (qmx - qmn); }
+                      }
+                      if (u.get('sto_avg') instanceof Number) {
+                        double avgSto = ((Number)u.get('sto_avg')).doubleValue();
+                        double uSlots = (u.get('slots') instanceof Number) ? ((Number)u.get('slots')).doubleValue() : 1.0;
+                        if (uSlots < 1.0) { uSlots = 1.0; }
+                        legStoSlotSum += avgSto * uSlots;
+                      }
+                    }
+                  }
+                  long slotDenom = allSlots > 1L ? allSlots : 1L;
+                  long legSto = Math.round(legStoSlotSum / (double)slotDenom);
+                  sumIdx += legIdx;
+                  sumQry += legQry;
+                  sumSto += legSto;
                 }
               }
-              if (natMap.get('meta') instanceof Map) {
-                String sep = Character.toString((char)31);
+              ctx.deployment_sum_indexing_time = sumIdx;
+              ctx.deployment_sum_query_time = sumQry;
+              ctx.deployment_sum_data_set_store_size = sumSto;
+              if (natCnt > 0L && natMap.get('meta') instanceof Map) {
                 long bestSyncTs = -1L;
+                String bestKey = '';
+                List bestParts = null;
+                for (def keyObj : ((Map)natMap.get('meta')).keySet()) {
+                  String recKey = keyObj.toString();
+                  List parts = new ArrayList();
+                  int pStart = 0;
+                  while (true) {
+                    int pIdx = recKey.indexOf(sep, pStart);
+                    if (pIdx < 0) { parts.add(recKey.substring(pStart)); break; }
+                    parts.add(recKey.substring(pStart, pIdx));
+                    pStart = pIdx + 1;
+                  }
+                  if (parts.size() < 10) { continue; }
+                  long sTs = 0L;
+                  try { sTs = Long.parseLong(parts.get(0).toString()); } catch (Exception e) {}
+                  if (bestParts == null || sTs > bestSyncTs || (sTs == bestSyncTs && recKey.compareTo(bestKey) > 0)) {
+                    bestSyncTs = sTs;
+                    bestKey = recKey;
+                    bestParts = parts;
+                  }
+                }
+                if (bestParts != null) {
+                  if (bestParts.get(1).toString() != '') { ctx.project_name = bestParts.get(1).toString(); }
+                  if (bestParts.get(2).toString() != '') { ctx.project_type = bestParts.get(2).toString(); }
+                  ctx.deployment_group = bestParts.get(3).toString();
+                  try {
+                    double cr = Double.parseDouble(bestParts.get(7).toString());
+                    if (cr >= 0.0) { ctx.conf_chargeable_unit_rate = cr; }
+                  } catch (Exception e) {}
+                  if (bestParts.get(8).toString() != '') { ctx.conf_chargeable_unit_rate_unit = bestParts.get(8).toString(); }
+                  if (bestParts.get(9).toString() != '') { ctx.conf_currency_symbol = bestParts.get(9).toString(); }
+                }
+              }
+            } else if (natCnt > 0L) {
+              long dsIdx = (natMap.get('idx') instanceof Number) ? Math.round(((Number)natMap.get('idx')).doubleValue()) : 0L;
+              long dsQry = (natMap.get('qry') instanceof Number) ? Math.round(((Number)natMap.get('qry')).doubleValue()) : 0L;
+              long dsSto = (natMap.get('sto') instanceof Number) ? Math.round(((Number)natMap.get('sto')).doubleValue()) : 0L;
+              if (isProjLevel) {
+                ctx.deployment_sum_indexing_time = dsIdx;
+                ctx.deployment_sum_query_time = dsQry;
+                ctx.deployment_sum_data_set_store_size = dsSto;
+              } else {
+                ctx.datastream_sum_indexing_time = dsIdx;
+                ctx.datastream_sum_query_time = dsQry;
+                ctx.datastream_sum_data_set_store_size = dsSto;
+                ctx.has_native_usage = true;
+              }
+              long bestSyncTs = -1L;
+              String bestKey = '';
+              List bestParts = null;
+              if (natMap.get('meta') instanceof Map) {
                 for (def keyObj : ((Map)natMap.get('meta')).keySet()) {
                   String recKey = keyObj.toString();
                   List parts = new ArrayList();
@@ -63,25 +227,33 @@ processors:
                   if (parts.size() < 10) { continue; }
                   long sTs = 0L;
                   try { sTs = Long.parseLong(parts.get(0).toString()); } catch (Exception e) {}
-                  if (sTs >= bestSyncTs) {
+                  if (bestParts == null || sTs > bestSyncTs || (sTs == bestSyncTs && recKey.compareTo(bestKey) > 0)) {
                     bestSyncTs = sTs;
-                    if (parts.get(1).toString() != '') { ctx.project_name = parts.get(1).toString(); }
-                    if (parts.get(2).toString() != '') { ctx.project_type = parts.get(2).toString(); }
-                    if (parts.get(3).toString() != '') { ctx.deployment_group = parts.get(3).toString(); }
-                    if (parts.get(4).toString() != '') { ctx.ds_type = parts.get(4).toString(); }
-                    if (parts.get(5).toString() != '') { ctx.ds_dataset = parts.get(5).toString(); }
-                    if (parts.get(6).toString() != '') { ctx.ds_namespace = parts.get(6).toString(); }
-                    try {
-                      double cr = Double.parseDouble(parts.get(7).toString());
-                      if (cr >= 0.0) { ctx.conf_chargeable_unit_rate = cr; }
-                    } catch (Exception e) {}
-                    if (parts.get(8).toString() != '') { ctx.conf_chargeable_unit_rate_unit = parts.get(8).toString(); }
-                    if (parts.get(9).toString() != '') { ctx.conf_currency_symbol = parts.get(9).toString(); }
+                    bestKey = recKey;
+                    bestParts = parts;
+                  }
+                }
+                if (bestParts != null) {
+                  if (bestParts.get(1).toString() != '') { ctx.project_name = bestParts.get(1).toString(); }
+                  if (bestParts.get(2).toString() != '') { ctx.project_type = bestParts.get(2).toString(); }
+                  ctx.deployment_group = bestParts.get(3).toString();
+                  if (!isProjLevel) {
+                    if (bestParts.get(4).toString() != '') { ctx.ds_type = bestParts.get(4).toString(); }
+                    if (bestParts.get(5).toString() != '') { ctx.ds_dataset = bestParts.get(5).toString(); }
+                    if (bestParts.get(6).toString() != '') { ctx.ds_namespace = bestParts.get(6).toString(); }
+                  }
+                  try {
+                    double cr = Double.parseDouble(bestParts.get(7).toString());
+                    if (cr >= 0.0) { ctx.conf_chargeable_unit_rate = cr; }
+                  } catch (Exception e) {}
+                  if (bestParts.get(8).toString() != '') { ctx.conf_chargeable_unit_rate_unit = bestParts.get(8).toString(); }
+                  if (bestParts.get(9).toString() != '') { ctx.conf_currency_symbol = bestParts.get(9).toString(); }
+                  if (!isProjLevel && bestSyncTs > 0L) {
+                    ctx.source_sync_ts = Instant.ofEpochMilli(bestSyncTs).toString();
                   }
                 }
               }
-            } else if (r.leg instanceof Map) {
-              Map legMap = (Map)r.leg;
+            } else if (legMap != null) {
               long legIdx = 0L;
               long legQry = 0L;
               double legStoSlotSum = 0.0;
@@ -126,6 +298,7 @@ processors:
                 ctx.datastream_sum_indexing_time = legIdx;
                 ctx.datastream_sum_query_time = legQry;
                 ctx.datastream_sum_data_set_store_size = legSto;
+                ctx.has_native_usage = false;
               }
             }
           } else {
@@ -235,53 +408,55 @@ processors:
           if (curr.top instanceof List && curr.top.size() > 0 && curr.top[0] instanceof Map && curr.top[0].metrics instanceof Map) {
             curr = curr.top[0].metrics;
           }
-          if (curr.project_name != null && curr.project_name.toString() != '') {
+          if (curr.project_name != null && curr.project_name.toString() != '' && curr.project_name.toString() != 'null') {
             ctx.project_name = curr.project_name.toString();
           }
-          if (curr.project_type != null && curr.project_type.toString() != '') {
+          if (curr.project_type != null && curr.project_type.toString() != '' && curr.project_type.toString() != 'null') {
             ctx.project_type = curr.project_type.toString();
           }
-          if (curr.deployment_group != null && curr.deployment_group.toString() != '') {
-            ctx.deployment_group = curr.deployment_group.toString();
+          if (curr.containsKey('deployment_group')) {
+            ctx.deployment_group = (curr.deployment_group != null && curr.deployment_group.toString() != 'null')
+              ? curr.deployment_group.toString()
+              : '';
           }
-          if (curr.ds_type != null && curr.ds_type.toString() != '') {
+          if (curr.ds_type != null && curr.ds_type.toString() != '' && curr.ds_type.toString() != 'null') {
             ctx.ds_type = curr.ds_type.toString();
           }
-          if (curr.ds_dataset != null && curr.ds_dataset.toString() != '') {
+          if (curr.ds_dataset != null && curr.ds_dataset.toString() != '' && curr.ds_dataset.toString() != 'null') {
             ctx.ds_dataset = curr.ds_dataset.toString();
           }
-          if (curr.ds_namespace != null && curr.ds_namespace.toString() != '') {
+          if (curr.ds_namespace != null && curr.ds_namespace.toString() != '' && curr.ds_namespace.toString() != 'null') {
             ctx.ds_namespace = curr.ds_namespace.toString();
           }
-          if (curr.optimized_for != null && curr.optimized_for.toString() != '') {
+          if (curr.optimized_for != null && curr.optimized_for.toString() != '' && curr.optimized_for.toString() != 'null') {
             ctx.optimized_for = curr.optimized_for.toString();
           }
           if (curr.es_url != null) {
-            ctx.es_url = curr.es_url.toString();
+            ctx.es_url = (curr.es_url.toString() == 'null') ? '' : curr.es_url.toString();
           }
-          if (curr.monitor_name != null && curr.monitor_name.toString() != '') {
+          if (curr.monitor_name != null && curr.monitor_name.toString() != '' && curr.monitor_name.toString() != 'null') {
             ctx.monitor_name = curr.monitor_name.toString();
           }
-          if (curr.monitor_namespace != null && curr.monitor_namespace.toString() != '') {
+          if (curr.monitor_namespace != null && curr.monitor_namespace.toString() != '' && curr.monitor_namespace.toString() != 'null') {
             ctx.monitor_namespace = curr.monitor_namespace.toString();
           }
           if (curr.conf_chargeable_unit_rate instanceof Number) {
             ctx.conf_chargeable_unit_rate = ((Number)curr.conf_chargeable_unit_rate).doubleValue();
-          } else if (curr.conf_chargeable_unit_rate != null && curr.conf_chargeable_unit_rate.toString() != '') {
+          } else if (curr.conf_chargeable_unit_rate != null && curr.conf_chargeable_unit_rate.toString() != '' && curr.conf_chargeable_unit_rate.toString() != 'null') {
             ctx.conf_chargeable_unit_rate = Double.parseDouble(curr.conf_chargeable_unit_rate.toString());
           }
-          if (curr.conf_chargeable_unit_rate_unit != null) {
+          if (curr.conf_chargeable_unit_rate_unit != null && curr.conf_chargeable_unit_rate_unit.toString() != 'null') {
             ctx.conf_chargeable_unit_rate_unit = curr.conf_chargeable_unit_rate_unit.toString();
           }
-          if (curr.conf_currency_symbol != null) {
+          if (curr.conf_currency_symbol != null && curr.conf_currency_symbol.toString() != 'null') {
             ctx.conf_currency_symbol = curr.conf_currency_symbol.toString();
           }
           ctx.remove('latest_currency');
         }
-        if (ctx.project_name == null || ctx.project_name == '') {
+        if (ctx.project_name == null || ctx.project_name == '' || ctx.project_name == 'null') {
           ctx.project_name = ctx.project_id;
         }
-        if (ctx.project_type == null || ctx.project_type == '') {
+        if (ctx.project_type == null || ctx.project_type == '' || ctx.project_type == 'null') {
           ctx.project_type = 'elasticsearch';
         } else {
           String ptNorm = ctx.project_type.toString().trim().toLowerCase(Locale.ROOT);
@@ -292,7 +467,7 @@ processors:
           else if (ptNorm == 'enterprise_search') { ptNorm = 'search'; }
           ctx.project_type = ptNorm;
         }
-        if (ctx.deployment_group == null) {
+        if (ctx.deployment_group == null || ctx.deployment_group == 'null') {
           ctx.deployment_group = '';
         }
         if (ctx.total_duration_ms instanceof Map) {
@@ -391,9 +566,9 @@ processors:
         if (ctx.conf_chargeable_unit_rate == null) {
           ctx.conf_chargeable_unit_rate = 1.0;
         }
-        String uTrim = ctx.conf_chargeable_unit_rate_unit != null ? ctx.conf_chargeable_unit_rate_unit.toString().trim() : '';
+        String uTrim = (ctx.conf_chargeable_unit_rate_unit != null && ctx.conf_chargeable_unit_rate_unit.toString() != 'null') ? ctx.conf_chargeable_unit_rate_unit.toString().trim() : '';
         ctx.conf_chargeable_unit_rate_unit = uTrim != '' ? uTrim.toUpperCase(Locale.ROOT) : 'USD';
-        String sTrim = ctx.conf_currency_symbol != null ? ctx.conf_currency_symbol.toString().trim() : '';
+        String sTrim = (ctx.conf_currency_symbol != null && ctx.conf_currency_symbol.toString() != 'null') ? ctx.conf_currency_symbol.toString().trim() : '';
         if (sTrim == '') {
           String uUp = ctx.conf_chargeable_unit_rate_unit.toString().toUpperCase(Locale.ROOT);
           ctx.conf_currency_symbol = (uUp == 'EUR' ? '€' : (uUp == 'GBP' ? '£' : (uUp == 'ZAR' ? 'R' : '$')));
@@ -418,6 +593,7 @@ processors:
             ctx.last_status = vals.size() > 0 ? vals[0] : 'ok';
           }
         }
+        if (ctx.last_status == 'null') { ctx.last_status = 'ok'; }
         if (ctx.api_key_type instanceof Map) {
           if (ctx.api_key_type.api_key_type instanceof String) {
             ctx.api_key_type = ctx.api_key_type.api_key_type;
@@ -436,6 +612,7 @@ processors:
             ctx.api_key_type = vals.size() > 0 ? vals[0] : 'missing_key';
           }
         }
+        if (ctx.api_key_type == 'null') { ctx.api_key_type = 'missing_key'; }
         if (ctx.synthetics_status instanceof Map) {
           if (ctx.synthetics_status.synthetics_status instanceof String) {
             ctx.synthetics_status = ctx.synthetics_status.synthetics_status;
@@ -454,6 +631,7 @@ processors:
             ctx.synthetics_status = vals.size() > 0 ? vals[0] : 'ok';
           }
         }
+        if (ctx.synthetics_status == 'null') { ctx.synthetics_status = 'ok'; }
         if (ctx.optimized_for instanceof Map) {
           def buckets = ctx.optimized_for.buckets;
           if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
@@ -463,6 +641,7 @@ processors:
             ctx.optimized_for = keys.size() > 0 ? keys[0] : 'general_purpose';
           }
         }
+        if (ctx.optimized_for == 'null') { ctx.optimized_for = 'general_purpose'; }
         if (ctx.es_url instanceof Map) {
           def buckets = ctx.es_url.buckets;
           if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
@@ -472,6 +651,7 @@ processors:
             ctx.es_url = keys.size() > 0 ? keys[0] : '';
           }
         }
+        if (ctx.es_url == 'null') { ctx.es_url = ''; }
         if (ctx.updated_at instanceof Number) {
           ctx.updated_at = Instant.ofEpochMilli(((Number)ctx.updated_at).longValue()).toString();
         }
@@ -490,6 +670,27 @@ processors:
           ctx.datastream_sum_data_set_store_size = ctx.datastream_sum_data_set_store_size.value != null ? Math.round(((Number)ctx.datastream_sum_data_set_store_size.value).doubleValue()) : 0L;
         } else if (ctx.datastream_sum_data_set_store_size instanceof Number) {
           ctx.datastream_sum_data_set_store_size = Math.round(((Number)ctx.datastream_sum_data_set_store_size).doubleValue());
+        }
+        if (ctx.containsKey('deployment_sum_indexing_time')) {
+          if (ctx.deployment_sum_indexing_time instanceof Map) {
+            ctx.deployment_sum_indexing_time = ctx.deployment_sum_indexing_time.value != null ? Math.round(((Number)ctx.deployment_sum_indexing_time.value).doubleValue()) : 0L;
+          } else if (ctx.deployment_sum_indexing_time instanceof Number) {
+            ctx.deployment_sum_indexing_time = Math.round(((Number)ctx.deployment_sum_indexing_time).doubleValue());
+          }
+        }
+        if (ctx.containsKey('deployment_sum_query_time')) {
+          if (ctx.deployment_sum_query_time instanceof Map) {
+            ctx.deployment_sum_query_time = ctx.deployment_sum_query_time.value != null ? Math.round(((Number)ctx.deployment_sum_query_time.value).doubleValue()) : 0L;
+          } else if (ctx.deployment_sum_query_time instanceof Number) {
+            ctx.deployment_sum_query_time = Math.round(((Number)ctx.deployment_sum_query_time).doubleValue());
+          }
+        }
+        if (ctx.containsKey('deployment_sum_data_set_store_size')) {
+          if (ctx.deployment_sum_data_set_store_size instanceof Map) {
+            ctx.deployment_sum_data_set_store_size = ctx.deployment_sum_data_set_store_size.value != null ? Math.round(((Number)ctx.deployment_sum_data_set_store_size.value).doubleValue()) : 0L;
+          } else if (ctx.deployment_sum_data_set_store_size instanceof Number) {
+            ctx.deployment_sum_data_set_store_size = Math.round(((Number)ctx.deployment_sum_data_set_store_size).doubleValue());
+          }
         }
   - set:
       field: event.ingested

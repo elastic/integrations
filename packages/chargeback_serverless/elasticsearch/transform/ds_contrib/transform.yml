@@ -124,6 +124,8 @@ source:
               String prev = stripped;
               if (stripped.startsWith('partial-')) { stripped = stripped.substring(8); }
               if (stripped.startsWith('restored-')) { stripped = stripped.substring(9); }
+              def dsm = /^downsample-[^-]+-(.*)$/.matcher(stripped);
+              if (dsm.matches()) { stripped = dsm.group(1); }
               def sm = /^shrink-.{4}-(.*)$/.matcher(stripped);
               if (sm.matches()) { stripped = sm.group(1); }
               if (stripped.equals(prev)) { break; }
@@ -702,3 +704,4 @@ _meta:
   managed: true
   run_as_kibana_system: false
   fleet_transform_version: 0.2.0
+  order: 3

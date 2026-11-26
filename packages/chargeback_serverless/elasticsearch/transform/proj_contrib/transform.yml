@@ -1,547 +1,118 @@
-description: Aggregates daily total indexing time, query time, and dataset storage size per Serverless project across native Chargeback Serverless and legacy monitoring-indices sources without double-counting.
+description: Aggregates daily total indexing time, query time, and dataset storage size per Serverless project from selected data stream contribution rows so project denominators match stream numerators exactly.
 source:
   index:
-    - metrics-chargeback_serverless.usage-*
-    - monitoring-indices*
-    - "*:monitoring-indices*"
-    - -monitoring-indices-chargeback*
-    - "*:-monitoring-indices-chargeback*"
-    - -serverless_*_lookup*
-    - "*:-serverless_*_lookup*"
-  query:
-    bool:
-      must_not:
-        - terms:
-            doc_type:
-              - config_snapshot
-              - ai_model
-              - project_status
-              - synthetics_monitor
-        - term:
-            cb_excluded_index: true
+    - serverless_datastream_contribution_lookup-2
   runtime_mappings:
-    cb_sync_ts:
-      type: date
+    cb_proj_meta_rank:
+      type: long
       script:
         source: |
+          boolean isNat = false;
           try {
-            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
-              emit(doc['event.ingested'].value.toInstant().toEpochMilli());
-              return;
+            if (doc.containsKey('has_native_usage') && !doc['has_native_usage'].empty) {
+              isNat = doc['has_native_usage'].value == true;
+            } else if (params._source?.has_native_usage instanceof Boolean) {
+              isNat = ((Boolean)params._source.has_native_usage).booleanValue();
             }
           } catch (Exception e) {}
-          try {
-            if (doc.containsKey('event.created') && !doc['event.created'].empty) {
-              emit(doc['event.created'].value.toInstant().toEpochMilli());
-              return;
-            }
-          } catch (Exception e) {}
-          try {
-            for (String k : ['ingested', 'created']) {
-              def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get(k) : null;
-              if (rawVal == null && params._source != null) {
-                rawVal = params._source.get('event.' + k);
+          long tsMs = 0L;
+          for (String tf : ['source_sync_ts', 'event.ingested', '@timestamp']) {
+            try {
+              if (doc.containsKey(tf) && !doc[tf].empty) {
+                tsMs = doc[tf].value.toInstant().toEpochMilli();
+                if (tsMs > 0L) { break; }
               }
-              if (rawVal != null) {
-                if (rawVal instanceof Number) {
-                  emit(((Number)rawVal).longValue());
-                  return;
-                }
-                String s = rawVal.toString().trim();
-                if (s != '') {
-                  try {
-                    emit(ZonedDateTime.parse(s).toInstant().toEpochMilli());
-                    return;
-                  } catch (Exception e) {}
-                }
-              }
-            }
-          } catch (Exception e) {}
-          if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
-            emit(doc['@timestamp'].value.toInstant().toEpochMilli());
+            } catch (Exception e) {}
           }
-    cb_project_id:
+          if (tsMs <= 0L) {
+            try {
+              def sTs = params._source?.source_sync_ts;
+              if (sTs == null && params._source?.event instanceof Map) { sTs = ((Map)params._source.event).get('ingested'); }
+              if (sTs == null) { sTs = params._source != null ? params._source.get('@timestamp') : null; }
+              if (sTs instanceof Number) { tsMs = ((Number)sTs).longValue(); }
+              else if (sTs != null && sTs.toString().trim() != '') {
+                tsMs = ZonedDateTime.parse(sTs.toString().trim()).toInstant().toEpochMilli();
+              }
+            } catch (Exception e) {}
+          }
+          if (tsMs < 0L) { tsMs = 0L; }
+          emit((isNat ? 10000000000000L : 0L) + tsMs);
+    cb_proj_meta_rec:
       type: keyword
       script:
         source: |
-          for (String f : ['project_id', 'cloud.project.id', 'cloud.project.id.keyword', 'ess.billing.deployment_id', 'ess.billing.deployment_id.keyword', 'elasticsearch.cluster.name.keyword', 'elasticsearch.cluster.name']) {
+          String sep = Character.toString((char)31);
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('has_native_usage') && !doc['has_native_usage'].empty) {
+              isNat = doc['has_native_usage'].value == true;
+            } else if (params._source?.has_native_usage instanceof Boolean) {
+              isNat = ((Boolean)params._source.has_native_usage).booleanValue();
+            }
+          } catch (Exception e) {}
+          long tsMs = 0L;
+          for (String tf : ['source_sync_ts', 'event.ingested', '@timestamp']) {
             try {
-              if (doc.containsKey(f) && !doc[f].empty) {
-                String v = doc[f].value.toString().trim();
-                if (v != '') { emit(v); return; }
+              if (doc.containsKey(tf) && !doc[tf].empty) {
+                tsMs = doc[tf].value.toInstant().toEpochMilli();
+                if (tsMs > 0L) { break; }
               }
             } catch (Exception e) {}
           }
-          try {
-            if (params._source?.project_id != null && params._source.project_id.toString().trim() != '') {
-              emit(params._source.project_id.toString().trim());
-              return;
-            }
-            if (params._source?.cloud?.project?.id != null && params._source.cloud.project.id.toString().trim() != '') {
-              emit(params._source.cloud.project.id.toString().trim());
-              return;
-            }
-            if (params._source?.ess?.billing?.deployment_id != null && params._source.ess.billing.deployment_id.toString().trim() != '') {
-              emit(params._source.ess.billing.deployment_id.toString().trim());
-              return;
-            }
-            if (params._source?.elasticsearch?.cluster?.name != null && params._source.elasticsearch.cluster.name.toString().trim() != '') {
-              emit(params._source.elasticsearch.cluster.name.toString().trim());
-              return;
-            }
-          } catch (Exception e) {}
-    cb_datastream:
-      type: keyword
-      script:
-        source: |
-          try {
-            if (doc.containsKey('datastream') && !doc['datastream'].empty) {
-              String v = doc['datastream'].value.toString().trim();
-              if (v != '') { emit(v); return; }
-            }
-          } catch (Exception e) {}
-          try {
-            if (params._source?.datastream != null && params._source.datastream.toString().trim() != '') {
-              emit(params._source.datastream.toString().trim());
-              return;
-            }
-          } catch (Exception e) {}
-          emit('unknown');
-    cb_excluded_index:
-      type: boolean
-      script:
-        source: |
-          try {
-            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty
-                && doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage') {
-              for (String f : ['datastream.keyword', 'datastream', 'backing_index.keyword', 'backing_index']) {
-                String v = '';
-                if (doc.containsKey(f) && !doc[f].empty) { v = doc[f].value.toString().trim(); }
-                if (v != '' && (v.contains('metrics-chargeback_serverless.') || v.contains('logs-chargeback_serverless.')
-                    || v.contains('metrics-chargeback.') || v.contains('logs-chargeback.')
-                    || (v.startsWith('serverless_') && (v.endsWith('_lookup') || v.contains('_lookup-')))
-                    || v.startsWith('chargeback_lookup.') || v.startsWith('monitoring-indices')
-                    || v.startsWith('.ds-ilm-history') || v.startsWith('ilm-history'))) {
-                  emit(true);
-                  return;
-                }
-              }
-              for (String sf : ['datastream', 'backing_index']) {
-                if (params._source != null && params._source.get(sf) != null) {
-                  String v = params._source.get(sf).toString().trim();
-                  if (v.contains('metrics-chargeback_serverless.') || v.contains('logs-chargeback_serverless.')
-                      || v.contains('metrics-chargeback.') || v.contains('logs-chargeback.')
-                      || (v.startsWith('serverless_') && (v.endsWith('_lookup') || v.contains('_lookup-')))
-                      || v.startsWith('chargeback_lookup.') || v.startsWith('monitoring-indices')
-                      || v.startsWith('.ds-ilm-history') || v.startsWith('ilm-history')) {
-                    emit(true);
-                    return;
-                  }
-                }
-              }
-              emit(false);
-              return;
-            }
-          } catch (Exception e) {}
-          String name = '';
-          for (String f : ['elasticsearch.index.name.keyword', 'elasticsearch.index.name']) {
+          if (tsMs <= 0L) {
             try {
-              if (doc.containsKey(f) && !doc[f].empty) {
-                name = doc[f].value.toString().trim();
-                if (name != '') { break; }
+              def sTs = params._source?.source_sync_ts;
+              if (sTs == null && params._source?.event instanceof Map) { sTs = ((Map)params._source.event).get('ingested'); }
+              if (sTs == null) { sTs = params._source != null ? params._source.get('@timestamp') : null; }
+              if (sTs instanceof Number) { tsMs = ((Number)sTs).longValue(); }
+              else if (sTs != null && sTs.toString().trim() != '') {
+                tsMs = ZonedDateTime.parse(sTs.toString().trim()).toInstant().toEpochMilli();
               }
             } catch (Exception e) {}
           }
-          if (name == '' && params._source?.elasticsearch?.index?.name != null) {
-            name = params._source.elasticsearch.index.name.toString().trim();
+          if (tsMs < 0L) { tsMs = 0L; }
+          long rankVal = (isNat ? 10000000000000L : 0L) + tsMs;
+          String pName = '';
+          String pType = '';
+          String dGrp = '';
+          String cRate = '-1';
+          String cUnit = '';
+          String cSym = '';
+          for (String f : ['project_name', 'project_name.keyword']) {
+            try { if (doc.containsKey(f) && !doc[f].empty) { pName = doc[f].value.toString().trim(); if (pName != '') break; } } catch (Exception e) {}
           }
-          if (name != '') {
-            String stripped = name;
-            for (int i = 0; i < 4; i++) {
-              String prev = stripped;
-              if (stripped.startsWith('partial-')) { stripped = stripped.substring(8); }
-              if (stripped.startsWith('restored-')) { stripped = stripped.substring(9); }
-              def sm = /^shrink-.{4}-(.*)$/.matcher(stripped);
-              if (sm.matches()) { stripped = sm.group(1); }
-              if (stripped.equals(prev)) { break; }
-            }
-            if ((name.startsWith('.') && !name.startsWith('.ds-'))
-                || (stripped.startsWith('.') && !stripped.startsWith('.ds-'))
-                || name.startsWith('.ds-.')
-                || stripped.startsWith('.ds-.')
-                || name.startsWith('.ds-ilm-history')
-                || stripped.startsWith('.ds-ilm-history')
-                || (name.startsWith('serverless_') && (name.endsWith('_lookup') || name.contains('_lookup-')))
-                || (stripped.startsWith('serverless_') && (stripped.endsWith('_lookup') || stripped.contains('_lookup-')))
-                || name.startsWith('monitoring-indices')
-                || stripped.startsWith('monitoring-indices')
-                || name.contains('metrics-chargeback_serverless.')
-                || stripped.contains('metrics-chargeback_serverless.')
-                || name.contains('logs-chargeback_serverless.')
-                || stripped.contains('logs-chargeback_serverless.')
-                || name.contains('metrics-chargeback.')
-                || stripped.contains('metrics-chargeback.')
-                || name.contains('logs-chargeback.')
-                || stripped.contains('logs-chargeback.')
-                || name.startsWith('chargeback_lookup.')
-                || stripped.startsWith('chargeback_lookup.')
-                || stripped.startsWith('ilm-history')) {
-              emit(true);
-              return;
-            }
+          if (pName == '' && params._source?.project_name != null) { pName = params._source.project_name.toString().trim(); }
+          for (String f : ['project_type', 'project_type.keyword']) {
+            try { if (doc.containsKey(f) && !doc[f].empty) { pType = doc[f].value.toString().trim(); if (pType != '') break; } } catch (Exception e) {}
           }
-          emit(false);
-    cb_sync_ms:
-      type: long
-      script:
-        source: |
-          long syncMs = 0L;
-          try {
-            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
-              syncMs = doc['event.ingested'].value.toInstant().toEpochMilli();
-            } else if (doc.containsKey('event.created') && !doc['event.created'].empty) {
-              syncMs = doc['event.created'].value.toInstant().toEpochMilli();
-            } else {
-              for (String k : ['ingested', 'created']) {
-                def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get(k) : null;
-                if (rawVal == null && params._source != null) { rawVal = params._source.get('event.' + k); }
-                if (rawVal != null) {
-                  if (rawVal instanceof Number) { syncMs = ((Number)rawVal).longValue(); break; }
-                  String s = rawVal.toString().trim();
-                  if (s != '') {
-                    try { syncMs = ZonedDateTime.parse(s).toInstant().toEpochMilli(); break; } catch (Exception e) {}
-                  }
-                }
-              }
-            }
-          } catch (Exception e) {}
-          if (syncMs == 0L) {
-            try {
-              if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
-                syncMs = doc['@timestamp'].value.toInstant().toEpochMilli();
-              } else if (params._source?.get('@timestamp') != null) {
-                syncMs = ZonedDateTime.parse(params._source.get('@timestamp').toString().trim()).toInstant().toEpochMilli();
-              }
-            } catch (Exception e) {}
+          if (pType == '' && params._source?.project_type != null) { pType = params._source.project_type.toString().trim(); }
+          for (String f : ['deployment_group', 'deployment_group.keyword']) {
+            try { if (doc.containsKey(f) && !doc[f].empty) { dGrp = doc[f].value.toString().trim(); if (dGrp != '') break; } } catch (Exception e) {}
           }
-          emit(syncMs);
-    cb_is_native_usage:
-      type: boolean
-      script:
-        source: |
-          boolean isNat = false;
-          try {
-            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
-              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
-            } else if (params._source?.data_stream?.dataset != null) {
-              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
-            }
-          } catch (Exception e) {}
-          emit(isNat);
-    cb_nat_idx_time:
-      type: long
-      script:
-        source: |
-          boolean isNat = false;
-          try {
-            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
-              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
-            } else if (params._source?.data_stream?.dataset != null) {
-              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
-            }
-          } catch (Exception e) {}
-          if (!isNat) { return; }
-          long v = 0L;
-          try {
-            if (doc.containsKey('datastream_sum_indexing_time') && !doc['datastream_sum_indexing_time'].empty) {
-              v = ((Number)doc['datastream_sum_indexing_time'].value).longValue();
-            } else if (params._source?.datastream_sum_indexing_time instanceof Number) {
-              v = ((Number)params._source.datastream_sum_indexing_time).longValue();
-            }
-          } catch (Exception e) {}
-          emit(v);
-    cb_nat_qry_time:
-      type: long
-      script:
-        source: |
-          boolean isNat = false;
-          try {
-            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
-              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
-            } else if (params._source?.data_stream?.dataset != null) {
-              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
-            }
-          } catch (Exception e) {}
-          if (!isNat) { return; }
-          long v = 0L;
-          try {
-            if (doc.containsKey('datastream_sum_query_time') && !doc['datastream_sum_query_time'].empty) {
-              v = ((Number)doc['datastream_sum_query_time'].value).longValue();
-            } else if (params._source?.datastream_sum_query_time instanceof Number) {
-              v = ((Number)params._source.datastream_sum_query_time).longValue();
-            }
-          } catch (Exception e) {}
-          emit(v);
-    cb_nat_sto_size:
-      type: long
-      script:
-        source: |
-          boolean isNat = false;
-          try {
-            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
-              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
-            } else if (params._source?.data_stream?.dataset != null) {
-              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
-            }
-          } catch (Exception e) {}
-          if (!isNat) { return; }
-          long v = 0L;
-          try {
-            if (doc.containsKey('datastream_sum_data_set_store_size') && !doc['datastream_sum_data_set_store_size'].empty) {
-              v = ((Number)doc['datastream_sum_data_set_store_size'].value).longValue();
-            } else if (params._source?.datastream_sum_data_set_store_size instanceof Number) {
-              v = ((Number)params._source.datastream_sum_data_set_store_size).longValue();
-            }
-          } catch (Exception e) {}
-          emit(v);
-    cb_nat_meta_rec:
-      type: keyword
-      script:
-        source: |
-          boolean isNat = false;
-          try {
-            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
-              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
-            } else if (params._source?.data_stream?.dataset != null) {
-              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
-            }
-          } catch (Exception e) {}
-          if (!isNat) { return; }
-          long syncMs = 0L;
-          try {
-            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
-              syncMs = doc['event.ingested'].value.toInstant().toEpochMilli();
-            } else if (doc.containsKey('event.created') && !doc['event.created'].empty) {
-              syncMs = doc['event.created'].value.toInstant().toEpochMilli();
-            } else {
-              for (String k : ['ingested', 'created']) {
-                def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get(k) : null;
-                if (rawVal == null && params._source != null) { rawVal = params._source.get('event.' + k); }
-                if (rawVal != null) {
-                  if (rawVal instanceof Number) { syncMs = ((Number)rawVal).longValue(); break; }
-                  String s = rawVal.toString().trim();
-                  if (s != '') {
-                    try { syncMs = ZonedDateTime.parse(s).toInstant().toEpochMilli(); break; } catch (Exception e) {}
-                  }
-                }
-              }
-            }
-          } catch (Exception e) {}
-          if (syncMs == 0L) {
-            try {
-              if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
-                syncMs = doc['@timestamp'].value.toInstant().toEpochMilli();
-              } else if (params._source?.get('@timestamp') != null) {
-                syncMs = ZonedDateTime.parse(params._source.get('@timestamp').toString().trim()).toInstant().toEpochMilli();
-              }
-            } catch (Exception e) {}
-          }
-          Map m = [:];
-          for (String mf : ['project_name', 'project_type', 'deployment_group', 'conf_chargeable_unit_rate_unit', 'conf_currency_symbol']) {
-            try {
-              if (doc.containsKey(mf) && !doc[mf].empty) {
-                m[mf] = doc[mf].value.toString();
-              } else if (params._source != null && params._source.get(mf) != null) {
-                m[mf] = params._source.get(mf).toString();
-              }
-            } catch (Exception e) {}
-          }
-          double cRate = -1.0;
+          if (dGrp == '' && params._source?.deployment_group != null) { dGrp = params._source.deployment_group.toString().trim(); }
           try {
             if (doc.containsKey('conf_chargeable_unit_rate') && !doc['conf_chargeable_unit_rate'].empty) {
-              cRate = ((Number)doc['conf_chargeable_unit_rate'].value).doubleValue();
+              double r = ((Number)doc['conf_chargeable_unit_rate'].value).doubleValue();
+              if (r >= 0.0) { cRate = String.valueOf(r); }
             } else if (params._source?.conf_chargeable_unit_rate instanceof Number) {
-              cRate = ((Number)params._source.conf_chargeable_unit_rate).doubleValue();
+              double r = ((Number)params._source.conf_chargeable_unit_rate).doubleValue();
+              if (r >= 0.0) { cRate = String.valueOf(r); }
             }
           } catch (Exception e) {}
-          String sep = Character.toString((char)31);
-          String pName = m.containsKey('project_name') ? m.get('project_name').toString().replace(sep, '') : '';
-          String pType = m.containsKey('project_type') ? m.get('project_type').toString().replace(sep, '') : '';
-          String depGrp = m.containsKey('deployment_group') ? m.get('deployment_group').toString().replace(sep, '') : '';
-          String dsType = m.containsKey('ds_type') ? m.get('ds_type').toString().replace(sep, '') : '';
-          String dsDataset = m.containsKey('ds_dataset') ? m.get('ds_dataset').toString().replace(sep, '') : '';
-          String dsNamespace = m.containsKey('ds_namespace') ? m.get('ds_namespace').toString().replace(sep, '') : '';
-          String cUnit = m.containsKey('conf_chargeable_unit_rate_unit') ? m.get('conf_chargeable_unit_rate_unit').toString().replace(sep, '') : '';
-          String cSym = m.containsKey('conf_currency_symbol') ? m.get('conf_currency_symbol').toString().replace(sep, '') : '';
-          emit(
-            Long.toString(syncMs) + sep + pName + sep + pType + sep + depGrp + sep
-            + dsType + sep + dsDataset + sep + dsNamespace + sep
-            + Double.toString(cRate) + sep + cUnit + sep + cSym
-          );
-    cb_leg_index_name:
-      type: keyword
-      script:
-        source: |
-          boolean isNat = false;
-          try {
-            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
-              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
-            } else if (params._source?.data_stream?.dataset != null) {
-              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
-            }
-          } catch (Exception e) {}
-          if (isNat) { return; }
-          String idxName = '_default_';
-          for (String nf : ['elasticsearch.index.name.keyword', 'elasticsearch.index.name']) {
-            try {
-              if (doc.containsKey(nf) && !doc[nf].empty) {
-                idxName = doc[nf].value.toString();
-                if (idxName != '') { break; }
-              }
-            } catch (Exception e) {}
+          for (String f : ['conf_chargeable_unit_rate_unit', 'conf_chargeable_unit_rate_unit.keyword']) {
+            try { if (doc.containsKey(f) && !doc[f].empty) { cUnit = doc[f].value.toString().trim(); if (cUnit != '') break; } } catch (Exception e) {}
           }
-          if ((idxName == '' || idxName == '_default_') && params._source?.elasticsearch?.index?.name != null) {
-            idxName = params._source.elasticsearch.index.name.toString();
+          if (cUnit == '' && params._source?.conf_chargeable_unit_rate_unit != null) { cUnit = params._source.conf_chargeable_unit_rate_unit.toString().trim(); }
+          for (String f : ['conf_currency_symbol', 'conf_currency_symbol.keyword']) {
+            try { if (doc.containsKey(f) && !doc[f].empty) { cSym = doc[f].value.toString().trim(); if (cSym != '') break; } } catch (Exception e) {}
           }
-          emit(idxName == '' ? '_default_' : idxName);
-    cb_leg_slot:
-      type: long
-      script:
-        source: |
-          boolean isNat = false;
-          try {
-            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
-              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
-            } else if (params._source?.data_stream?.dataset != null) {
-              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
-            }
-          } catch (Exception e) {}
-          if (isNat) { return; }
-          long slot = 0L;
-          try {
-            if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
-              slot = doc['@timestamp'].value.toInstant().toEpochMilli() / 600000L;
-            }
-          } catch (Exception e) {}
-          emit(slot);
-    cb_leg_idx_delta:
-      type: long
-      script:
-        source: |
-          boolean isNat = false;
-          try {
-            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
-              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
-            } else if (params._source?.data_stream?.dataset != null) {
-              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
-            }
-          } catch (Exception e) {}
-          if (isNat) { return; }
-          try {
-            if (doc.containsKey('elasticsearch.index.total.indexing.index_time_in_millis_delta') && !doc['elasticsearch.index.total.indexing.index_time_in_millis_delta'].empty) {
-              long v = ((Number)doc['elasticsearch.index.total.indexing.index_time_in_millis_delta'].value).longValue();
-              emit(v < 0L ? 0L : v);
-            } else if (params._source?.elasticsearch?.index?.total?.indexing?.index_time_in_millis_delta instanceof Number) {
-              long v = ((Number)params._source.elasticsearch.index.total.indexing.index_time_in_millis_delta).longValue();
-              emit(v < 0L ? 0L : v);
-            }
-          } catch (Exception e) {}
-    cb_leg_idx_cum:
-      type: long
-      script:
-        source: |
-          boolean isNat = false;
-          try {
-            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
-              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
-            } else if (params._source?.data_stream?.dataset != null) {
-              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
-            }
-          } catch (Exception e) {}
-          if (isNat) { return; }
-          try {
-            if (doc.containsKey('elasticsearch.index.total.indexing.index_time_in_millis_delta') && !doc['elasticsearch.index.total.indexing.index_time_in_millis_delta'].empty) { return; }
-            if (params._source?.elasticsearch?.index?.total?.indexing?.index_time_in_millis_delta instanceof Number) { return; }
-            if (doc.containsKey('elasticsearch.index.total.indexing.index_time_in_millis') && !doc['elasticsearch.index.total.indexing.index_time_in_millis'].empty) {
-              long v = ((Number)doc['elasticsearch.index.total.indexing.index_time_in_millis'].value).longValue();
-              if (v >= 0L) { emit(v); }
-            } else if (params._source?.elasticsearch?.index?.total?.indexing?.index_time_in_millis instanceof Number) {
-              long v = ((Number)params._source.elasticsearch.index.total.indexing.index_time_in_millis).longValue();
-              if (v >= 0L) { emit(v); }
-            }
-          } catch (Exception e) {}
-    cb_leg_qry_delta:
-      type: long
-      script:
-        source: |
-          boolean isNat = false;
-          try {
-            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
-              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
-            } else if (params._source?.data_stream?.dataset != null) {
-              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
-            }
-          } catch (Exception e) {}
-          if (isNat) { return; }
-          try {
-            if (doc.containsKey('elasticsearch.index.total.search.query_time_in_millis_delta') && !doc['elasticsearch.index.total.search.query_time_in_millis_delta'].empty) {
-              long v = ((Number)doc['elasticsearch.index.total.search.query_time_in_millis_delta'].value).longValue();
-              emit(v < 0L ? 0L : v);
-            } else if (params._source?.elasticsearch?.index?.total?.search?.query_time_in_millis_delta instanceof Number) {
-              long v = ((Number)params._source.elasticsearch.index.total.search.query_time_in_millis_delta).longValue();
-              emit(v < 0L ? 0L : v);
-            }
-          } catch (Exception e) {}
-    cb_leg_qry_cum:
-      type: long
-      script:
-        source: |
-          boolean isNat = false;
-          try {
-            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
-              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
-            } else if (params._source?.data_stream?.dataset != null) {
-              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
-            }
-          } catch (Exception e) {}
-          if (isNat) { return; }
-          try {
-            if (doc.containsKey('elasticsearch.index.total.search.query_time_in_millis_delta') && !doc['elasticsearch.index.total.search.query_time_in_millis_delta'].empty) { return; }
-            if (params._source?.elasticsearch?.index?.total?.search?.query_time_in_millis_delta instanceof Number) { return; }
-            if (doc.containsKey('elasticsearch.index.total.search.query_time_in_millis') && !doc['elasticsearch.index.total.search.query_time_in_millis'].empty) {
-              long v = ((Number)doc['elasticsearch.index.total.search.query_time_in_millis'].value).longValue();
-              if (v >= 0L) { emit(v); }
-            } else if (params._source?.elasticsearch?.index?.total?.search?.query_time_in_millis instanceof Number) {
-              long v = ((Number)params._source.elasticsearch.index.total.search.query_time_in_millis).longValue();
-              if (v >= 0L) { emit(v); }
-            }
-          } catch (Exception e) {}
-    cb_leg_sto_bytes:
-      type: long
-      script:
-        source: |
-          boolean isNat = false;
-          try {
-            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
-              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
-            } else if (params._source?.data_stream?.dataset != null) {
-              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
-            }
-          } catch (Exception e) {}
-          if (isNat) { return; }
-          long stoB = 0L;
-          try {
-            if (doc.containsKey('elasticsearch.index.primaries.store.total_data_set_size_in_bytes') && !doc['elasticsearch.index.primaries.store.total_data_set_size_in_bytes'].empty) {
-              stoB = ((Number)doc['elasticsearch.index.primaries.store.total_data_set_size_in_bytes'].value).longValue();
-            } else if (params._source?.elasticsearch?.index?.primaries?.store?.total_data_set_size_in_bytes instanceof Number) {
-              stoB = ((Number)params._source.elasticsearch.index.primaries.store.total_data_set_size_in_bytes).longValue();
-            } else if (doc.containsKey('elasticsearch.index.total.store.size_in_bytes') && !doc['elasticsearch.index.total.store.size_in_bytes'].empty) {
-              stoB = ((Number)doc['elasticsearch.index.total.store.size_in_bytes'].value).longValue();
-            } else if (params._source?.elasticsearch?.index?.total?.store?.size_in_bytes instanceof Number) {
-              stoB = ((Number)params._source.elasticsearch.index.total.store.size_in_bytes).longValue();
-            }
-          } catch (Exception e) {}
-          emit(stoB < 0L ? 0L : stoB);
+          if (cSym == '' && params._source?.conf_currency_symbol != null) { cSym = params._source.conf_currency_symbol.toString().trim(); }
+          pName = pName.replace(sep, ' ');
+          pType = pType.replace(sep, ' ');
+          dGrp = dGrp.replace(sep, ' ');
+          cUnit = cUnit.replace(sep, ' ');
+          cSym = cSym.replace(sep, ' ');
+          emit(String.valueOf(rankVal) + sep + pName + sep + pType + sep + dGrp + sep + cRate + sep + cUnit + sep + cSym);
 dest:
   index: serverless_project_contribution_lookup-2
   aliases:
@@ -551,7 +122,7 @@ dest:
 frequency: 5m
 sync:
   time:
-    field: cb_sync_ts
+    field: event.ingested
     delay: 120s
 retention_policy:
   time:
@@ -565,96 +136,34 @@ pivot:
         calendar_interval: 1d
     project_id:
       terms:
-        field: cb_project_id
+        field: project_id
   aggregations:
-    # Prefer native chargeback_serverless.usage metrics over legacy monitoring-indices*
-    # for the same (day, project_id) bucket using Serverless-supported aggregations.
-    rollup:
-      filter:
-        match_all: {}
+    deployment_sum_indexing_time:
+      sum:
+        field: datastream_sum_indexing_time
+    deployment_sum_query_time:
+      sum:
+        field: datastream_sum_query_time
+    deployment_sum_data_set_store_size:
+      sum:
+        field: datastream_sum_data_set_store_size
+    proj_meta:
+      terms:
+        field: cb_proj_meta_rec
+        size: 50
+        order:
+          - max_rank: desc
+          - _key: desc
       aggs:
-        nat:
-          filter:
-            term:
-              cb_is_native_usage: true
-          aggs:
-            cnt:
-              value_count:
-                field: cb_sync_ms
-            by_ds:
-              terms:
-                field: cb_datastream
-                size: 1000
-              aggs:
-                idx:
-                  max:
-                    field: cb_nat_idx_time
-                qry:
-                  max:
-                    field: cb_nat_qry_time
-                sto:
-                  max:
-                    field: cb_nat_sto_size
-            meta:
-              terms:
-                field: cb_nat_meta_rec
-                size: 5
-                order:
-                  sync_ms: desc
-              aggs:
-                sync_ms:
-                  max:
-                    field: cb_sync_ms
-        leg:
-          filter:
-            term:
-              cb_is_native_usage: false
-          aggs:
-            all_slots:
-              cardinality:
-                field: cb_leg_slot
-                precision_threshold: 1000
-            by_idx:
-              terms:
-                field: cb_leg_index_name
-                size: 1000
-              aggs:
-                idx_d:
-                  sum:
-                    field: cb_leg_idx_delta
-                idx_d_cnt:
-                  value_count:
-                    field: cb_leg_idx_delta
-                idx_min:
-                  min:
-                    field: cb_leg_idx_cum
-                idx_max:
-                  max:
-                    field: cb_leg_idx_cum
-                qry_d:
-                  sum:
-                    field: cb_leg_qry_delta
-                qry_d_cnt:
-                  value_count:
-                    field: cb_leg_qry_delta
-                qry_min:
-                  min:
-                    field: cb_leg_qry_cum
-                qry_max:
-                  max:
-                    field: cb_leg_qry_cum
-                sto_avg:
-                  avg:
-                    field: cb_leg_sto_bytes
-                slots:
-                  cardinality:
-                    field: cb_leg_slot
-                    precision_threshold: 1000
+        max_rank:
+          max:
+            field: cb_proj_meta_rank
 settings:
   deduce_mappings: false
   unattended: true
-  max_page_search_size: 100
+  max_page_search_size: 500
 _meta:
   managed: true
   run_as_kibana_system: false
   fleet_transform_version: 0.2.0
+  order: 8
