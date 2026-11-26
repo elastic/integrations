@@ -38,12 +38,19 @@ get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 5 -confirm 5s -timeout 5m 
 
 # Each destination got its documents (docs already indexed, these return immediately).
 get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 0 -timeout 30s logs-microsoft_intune.audit-*
+# Routed events have the tag of their data stream. The pipeline tests check
+# that it replaces microsoft_intune-events; it is not checked here because the
+# wildcard also matches documents left in other namespaces by earlier runs.
+stdout '"microsoft_intune-audit"'
 get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 0 -timeout 30s logs-microsoft_intune.managed_device-*
+stdout '"microsoft_intune-managed_device"'
 get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 0 -timeout 30s ${EVENTS_DS}
 
-# The unrouted event keeps the event.dataset set by the agent and its category.
+# The unrouted event keeps the event.dataset set by the agent, its category
+# and the microsoft_intune-events tag.
 stdout '"event":\s*\{[^}]*"dataset":\s*"microsoft_intune\.events"'
 stdout '"category":\s*"OperationalLogs"'
+stdout '"microsoft_intune-events"'
 
 # Clean up.
 remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${EVENTS_DS}

@@ -89,13 +89,17 @@ Version 0.4.0 replaces the two Event Hub inputs (one for `audit` and one for `ma
 
 To upgrade an integration policy:
 
-1. In Kibana, go to **Management** > **Integrations** > **Installed integrations** > **Microsoft Intune** > **Integration policies**.
+1. In Kibana, go to **Management** → **Integrations** → **Installed integrations** → **Microsoft Intune** → **Integration policies**.
 2. Select **Upgrade** for the policy.
-3. Enter the **Azure Event Hub**, **Consumer Group**, **Connection String**, **Storage Account** and **Storage Account Key** again, and any advanced Event Hub settings you had changed.
+3. Enter the **Azure Event Hub**, **Consumer Group**, **Connection String**, **Storage Account** and **Storage Account Key** again, and any advanced Event Hub settings you had changed. **Consumer Group** resets to `$Default`, so enter your own consumer group again if you used one.
 4. Under **Collect Microsoft Intune logs via Azure Event Hub**, reapply any options you had changed on the old inputs, such as **Preserve original event**, **Tags** or **Processors**.
 5. Select **Upgrade integration**.
 
-The default checkpoint container name (`azure-eventhub-input-<eventhub>`) has not changed. If you set a custom **Storage Account Container** on one of the old inputs, set the same value on the new input so that the agent continues from the existing checkpoints instead of reading the Event Hub again from the start.
+The default checkpoint container name (`azure-eventhub-input-<eventhub>`) has not changed. If you set a custom **Storage Account Container** on one of the old inputs, set the same value on the new input. With the same consumer group and container, the agent continues from the existing checkpoints instead of reading the Event Hub again from the start.
+
+If the old Audit and Managed Device inputs read from different Event Hubs, the upgraded policy reads only the Event Hub you enter, and the log category sent to the other Event Hub is no longer collected. To keep collecting it, either change the Intune diagnostic settings so that both log categories go to the same Event Hub, or add a second Microsoft Intune integration policy for the second Event Hub. Events are routed by log category, so both policies deliver events to the correct data streams.
+
+Version 0.4.0 also removes the **Preserve duplicate custom fields** setting. Vendor fields that are copied to ECS fields, such as `microsoft_intune.audit.identity` (copied to `user.email`), are now always removed from the event. Update saved searches, visualizations and rules that use these vendor fields to use the ECS fields instead.
 
 ### Validation
 

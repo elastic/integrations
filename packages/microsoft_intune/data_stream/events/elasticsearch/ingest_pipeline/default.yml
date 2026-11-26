@@ -29,6 +29,23 @@ processors:
       tag: set_event_dataset_managed_device_e68343d7
       value: microsoft_intune.managed_device
       if: ctx._tmp?.json?.category == 'Devices'
+  - script:
+      tag: script_replace_events_tag_with_routed_dataset_tag_5b1c7e2a
+      lang: painless
+      description: >-
+        Replaces the default microsoft_intune-events tag with the tag of the data stream that the
+        event is routed to, so routed events have the same tags as in the per-data-stream inputs
+        of earlier versions. Custom tags are kept.
+      if: ctx.tags instanceof List && ctx.tags.contains('microsoft_intune-events')
+      params:
+        microsoft_intune.audit: microsoft_intune-audit
+        microsoft_intune.managed_device: microsoft_intune-managed_device
+      source: |-
+        def tag = params[ctx.event?.dataset];
+        if (tag == null) {
+          return;
+        }
+        ctx.tags.set(ctx.tags.indexOf('microsoft_intune-events'), tag);
   - set:
       field: microsoft_intune.events.category
       tag: set_microsoft_intune_events_category_615f4cf5
