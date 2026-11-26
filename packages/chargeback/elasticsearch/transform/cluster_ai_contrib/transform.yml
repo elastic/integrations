@@ -1,4 +1,4 @@
-description: Aggregates daily AI/ML trained model and Inference API endpoint metrics per deployment and model into a single daily lookup row, deduplicating overlapping multi-policy collections.
+description: Aggregates daily AI/ML trained model and Inference API endpoint metrics per deployment and model into a single daily lookup row, deduplicating overlapping multi-policy collections while merging non-overlapping collector intervals.
 source:
   index:
     - metrics-chargeback.usage-*
@@ -185,34 +185,72 @@ pivot:
             }
           } catch (Exception e) {}
 
-          long rem = ts % 86400000L;
-          if (rem < 0L) { rem += 86400000L; }
-          int b = (int)(rem / 600000L);
-          if (b < 0) { b = 0; }
-          if (b > 143) { b = 143; }
-          int w = b >> 6;
-          long bit = 1L << (b & 63);
+          long rem = ((ts % 86400000L) + 86400000L) % 86400000L;
+          long dayStartMs = ts - rem;
+          long dayEndMs = dayStartMs + 86400000L;
+          long intStartMs = -1L;
+          long intEndMs = -1L;
+          try {
+            if (doc.containsKey('interval_start') && !doc['interval_start'].empty) {
+              intStartMs = doc['interval_start'].value.toInstant().toEpochMilli();
+            } else if (params._source?.get('interval_start') != null) {
+              def rs = params._source.get('interval_start');
+              if (rs instanceof Number) { intStartMs = ((Number)rs).longValue(); }
+              else { intStartMs = ZonedDateTime.parse(rs.toString().trim()).toInstant().toEpochMilli(); }
+            }
+          } catch (Exception e) {}
+          try {
+            if (doc.containsKey('interval_end') && !doc['interval_end'].empty) {
+              intEndMs = doc['interval_end'].value.toInstant().toEpochMilli();
+            } else if (params._source?.get('interval_end') != null) {
+              def re = params._source.get('interval_end');
+              if (re instanceof Number) { intEndMs = ((Number)re).longValue(); }
+              else { intEndMs = ZonedDateTime.parse(re.toString().trim()).toInstant().toEpochMilli(); }
+            }
+          } catch (Exception e) {}
+
+          int sMin = 0;
+          int eMin = 0;
+          if (intStartMs >= 0L && intEndMs > intStartMs) {
+            long cStart = intStartMs < dayStartMs ? dayStartMs : (intStartMs > dayEndMs ? dayEndMs : intStartMs);
+            long cEnd = intEndMs > dayEndMs ? dayEndMs : (intEndMs < dayStartMs ? dayStartMs : intEndMs);
+            if (cEnd > cStart) {
+              sMin = (int)((cStart - dayStartMs) / 60000L);
+              if (sMin < 0) { sMin = 0; }
+              if (sMin > 1439) { sMin = 1439; }
+              eMin = (int)((cEnd - dayStartMs + 59999L) / 60000L);
+              if (eMin <= sMin) { eMin = sMin + 1; }
+              if (eMin > 1440) { eMin = 1440; }
+            }
+          }
+          if (eMin <= sMin) {
+            int hour = (int)(rem / 3600000L);
+            if (hour < 0) { hour = 0; }
+            if (hour > 23) { hour = 23; }
+            sMin = hour * 60;
+            eMin = sMin + 60;
+          }
 
           Map em = (Map)state.emitters.get(emKey);
           if (em == null) {
             em = new HashMap();
-            em.put('w0', w == 0 ? bit : 0L);
-            em.put('w1', w == 1 ? bit : 0L);
-            em.put('w2', w == 2 ? bit : 0L);
-            em.put('doc_cnt', 1L);
-            em.put('inf', infCnt);
-            em.put('ms', totMs);
-            em.put('max_avg', avgMs);
+            em.put('doc_cnt', 0L);
+            em.put('max_avg', 0.0);
+            em.put('ivs', new ArrayList());
             state.emitters.put(emKey, em);
-          } else {
-            String wk = 'w' + Integer.toString(w);
-            em.put(wk, ((Number)em.get(wk)).longValue() | bit);
-            em.put('doc_cnt', ((Number)em.get('doc_cnt')).longValue() + 1L);
-            em.put('inf', ((Number)em.get('inf')).longValue() + infCnt);
-            em.put('ms', ((Number)em.get('ms')).longValue() + totMs);
-            if (avgMs > ((Number)em.get('max_avg')).doubleValue()) {
-              em.put('max_avg', avgMs);
-            }
+          }
+          em.put('doc_cnt', ((Number)em.get('doc_cnt')).longValue() + 1L);
+          if (avgMs > ((Number)em.get('max_avg')).doubleValue()) {
+            em.put('max_avg', avgMs);
+          }
+          if (infCnt > 0L || totMs > 0L) {
+            Map rec = new HashMap();
+            rec.put('s', sMin);
+            rec.put('e', eMin);
+            rec.put('inf', infCnt);
+            rec.put('ms', totMs);
+            rec.put('avg', avgMs);
+            ((List)em.get('ivs')).add(rec);
           }
         combine_script: "return state;"
         reduce_script: |
@@ -252,60 +290,169 @@ pivot:
               Map dst = (Map)mergedEmitters.get(ek);
               if (dst == null) {
                 dst = new HashMap();
-                dst.put('w0', ((Number)src.get('w0')).longValue());
-                dst.put('w1', ((Number)src.get('w1')).longValue());
-                dst.put('w2', ((Number)src.get('w2')).longValue());
-                dst.put('doc_cnt', ((Number)src.get('doc_cnt')).longValue());
-                dst.put('inf', ((Number)src.get('inf')).longValue());
-                dst.put('ms', ((Number)src.get('ms')).longValue());
-                dst.put('max_avg', ((Number)src.get('max_avg')).doubleValue());
+                dst.put('doc_cnt', 0L);
+                dst.put('max_avg', 0.0);
+                dst.put('ivs_map', new HashMap());
+                List wMask = new ArrayList();
+                for (int wi = 0; wi < 23; wi++) { wMask.add(0L); }
+                dst.put('wmask', wMask);
+                dst.put('max_end', -1);
+                dst.put('inf_sum', 0L);
                 mergedEmitters.put(ek, dst);
-              } else {
-                dst.put('w0', ((Number)dst.get('w0')).longValue() | ((Number)src.get('w0')).longValue());
-                dst.put('w1', ((Number)dst.get('w1')).longValue() | ((Number)src.get('w1')).longValue());
-                dst.put('w2', ((Number)dst.get('w2')).longValue() | ((Number)src.get('w2')).longValue());
-                dst.put('doc_cnt', ((Number)dst.get('doc_cnt')).longValue() + ((Number)src.get('doc_cnt')).longValue());
-                dst.put('inf', ((Number)dst.get('inf')).longValue() + ((Number)src.get('inf')).longValue());
-                dst.put('ms', ((Number)dst.get('ms')).longValue() + ((Number)src.get('ms')).longValue());
-                if (((Number)src.get('max_avg')).doubleValue() > ((Number)dst.get('max_avg')).doubleValue()) {
-                  dst.put('max_avg', ((Number)src.get('max_avg')).doubleValue());
+              }
+              dst.put('doc_cnt', ((Number)dst.get('doc_cnt')).longValue() + ((Number)src.get('doc_cnt')).longValue());
+              double srcAvg = ((Number)src.get('max_avg')).doubleValue();
+              if (srcAvg > ((Number)dst.get('max_avg')).doubleValue()) {
+                dst.put('max_avg', srcAvg);
+              }
+              if (src.get('ivs') instanceof List) {
+                Map ivsMap = (Map)dst.get('ivs_map');
+                List wMask = (List)dst.get('wmask');
+                for (def rObj : (List)src.get('ivs')) {
+                  if (!(rObj instanceof Map)) { continue; }
+                  Map rec = (Map)rObj;
+                  int sMin = ((Number)rec.get('s')).intValue();
+                  int eMin = ((Number)rec.get('e')).intValue();
+                  long inf = ((Number)rec.get('inf')).longValue();
+                  long ms = ((Number)rec.get('ms')).longValue();
+                  double avg = ((Number)rec.get('avg')).doubleValue();
+                  String ivk = Integer.toString(sMin) + ':' + Integer.toString(eMin);
+                  Map iv = (Map)ivsMap.get(ivk);
+                  if (iv == null) {
+                    iv = new HashMap();
+                    iv.put('s', sMin);
+                    iv.put('e', eMin);
+                    iv.put('inf', inf);
+                    iv.put('ms', ms);
+                    iv.put('avg', avg);
+                    ivsMap.put(ivk, iv);
+                  } else {
+                    iv.put('inf', ((Number)iv.get('inf')).longValue() + inf);
+                    iv.put('ms', ((Number)iv.get('ms')).longValue() + ms);
+                    if (avg > ((Number)iv.get('avg')).doubleValue()) {
+                      iv.put('avg', avg);
+                    }
+                  }
+                  dst.put('inf_sum', ((Number)dst.get('inf_sum')).longValue() + inf);
+                  if (eMin > ((Number)dst.get('max_end')).intValue()) {
+                    dst.put('max_end', eMin);
+                  }
+                  for (int m = sMin; m < eMin; m++) {
+                    int wi = m >> 6;
+                    long bit = 1L << (m & 63);
+                    wMask.set(wi, ((Number)wMask.get(wi)).longValue() | bit);
+                  }
                 }
               }
             }
           }
-          String bestKey = null;
-          Map bestEm = null;
-          long bestNonZero = -1L;
-          int bestSlots = -1;
-          long bestDocs = -1L;
+
+          List ranked = new ArrayList();
           for (def ee : mergedEmitters.entrySet()) {
             String ek = ee.getKey().toString();
             Map em = (Map)ee.getValue();
-            long emInf = ((Number)em.get('inf')).longValue();
-            long nz = emInf > 0L ? 1L : 0L;
-            int slots = Long.bitCount(((Number)em.get('w0')).longValue())
-              + Long.bitCount(((Number)em.get('w1')).longValue())
-              + Long.bitCount(((Number)em.get('w2')).longValue());
-            long docs = ((Number)em.get('doc_cnt')).longValue();
-            if (bestEm == null
-                || nz > bestNonZero
-                || (nz == bestNonZero && (slots > bestSlots
-                || (slots == bestSlots && (docs > bestDocs
-                || (docs == bestDocs && ek.compareTo(bestKey) < 0)))))) {
-              bestKey = ek;
-              bestEm = em;
-              bestNonZero = nz;
-              bestSlots = slots;
-              bestDocs = docs;
+            int covMins = 0;
+            for (def wv : (List)em.get('wmask')) {
+              covMins += Long.bitCount(((Number)wv).longValue());
+            }
+            em.put('key', ek);
+            em.put('nz', ((Number)em.get('inf_sum')).longValue() > 0L ? 1L : 0L);
+            em.put('cov_mins', covMins);
+            ranked.add(em);
+          }
+
+          List ordered = new ArrayList();
+          while (ranked.size() > 0) {
+            int bi = 0;
+            Map bEm = (Map)ranked.get(0);
+            for (int i = 1; i < ranked.size(); i++) {
+              Map cEm = (Map)ranked.get(i);
+              long cNz = ((Number)cEm.get('nz')).longValue();
+              long bNz = ((Number)bEm.get('nz')).longValue();
+              int cCov = ((Number)cEm.get('cov_mins')).intValue();
+              int bCov = ((Number)bEm.get('cov_mins')).intValue();
+              int cEnd = ((Number)cEm.get('max_end')).intValue();
+              int bEnd = ((Number)bEm.get('max_end')).intValue();
+              long cDocs = ((Number)cEm.get('doc_cnt')).longValue();
+              long bDocs = ((Number)bEm.get('doc_cnt')).longValue();
+              String cKey = cEm.get('key').toString();
+              String bKey = bEm.get('key').toString();
+              if (cNz > bNz
+                  || (cNz == bNz && (cCov > bCov
+                  || (cCov == bCov && (cEnd > bEnd
+                  || (cEnd == bEnd && (cDocs > bDocs
+                  || (cDocs == bDocs && cKey.compareTo(bKey) < 0)))))))) {
+                bi = i;
+                bEm = cEm;
+              }
+            }
+            ordered.add(ranked.remove(bi));
+          }
+
+          List globalCov = new ArrayList();
+          for (int wi = 0; wi < 23; wi++) { globalCov.add(0L); }
+          long mergedInf = 0L;
+          long mergedMs = 0L;
+          double mergedMaxAvg = 0.0;
+
+          for (def emObj : ordered) {
+            Map em = (Map)emObj;
+            List emIvs = new ArrayList(((Map)em.get('ivs_map')).values());
+            while (emIvs.size() > 0) {
+              int ii = 0;
+              Map bIv = (Map)emIvs.get(0);
+              for (int j = 1; j < emIvs.size(); j++) {
+                Map cIv = (Map)emIvs.get(j);
+                int cS = ((Number)cIv.get('s')).intValue();
+                int bS = ((Number)bIv.get('s')).intValue();
+                int cE = ((Number)cIv.get('e')).intValue();
+                int bE = ((Number)bIv.get('e')).intValue();
+                if (cS < bS || (cS == bS && cE > bE)) {
+                  ii = j;
+                  bIv = cIv;
+                }
+              }
+              emIvs.remove(ii);
+              int sMin = ((Number)bIv.get('s')).intValue();
+              int eMin = ((Number)bIv.get('e')).intValue();
+              int totalMins = eMin - sMin;
+              if (totalMins <= 0) { continue; }
+              int uncovMins = 0;
+              for (int m = sMin; m < eMin; m++) {
+                int wi = m >> 6;
+                long bit = 1L << (m & 63);
+                long word = ((Number)globalCov.get(wi)).longValue();
+                if ((word & bit) == 0L) {
+                  uncovMins++;
+                  globalCov.set(wi, word | bit);
+                }
+              }
+              if (uncovMins <= 0) { continue; }
+              long ivInf = ((Number)bIv.get('inf')).longValue();
+              long ivMs = ((Number)bIv.get('ms')).longValue();
+              double ivAvg = ((Number)bIv.get('avg')).doubleValue();
+              if (uncovMins == totalMins) {
+                mergedInf += ivInf;
+                mergedMs += ivMs;
+              } else {
+                double frac = (double)uncovMins / (double)totalMins;
+                mergedInf += Math.round((double)ivInf * frac);
+                mergedMs += Math.round((double)ivMs * frac);
+              }
+              if (ivAvg > mergedMaxAvg) {
+                mergedMaxAvg = ivAvg;
+              }
             }
           }
-          long bestInf = bestEm != null ? ((Number)bestEm.get('inf')).longValue() : 0L;
-          long bestMs = bestEm != null ? ((Number)bestEm.get('ms')).longValue() : 0L;
-          double bestMaxAvg = bestEm != null ? ((Number)bestEm.get('max_avg')).doubleValue() : 0.0;
+
+          if (mergedInf == 0L && mergedMs == 0L && ordered.size() > 0) {
+            mergedMaxAvg = ((Number)((Map)ordered.get(0)).get('max_avg')).doubleValue();
+          }
+
           Map res = new HashMap();
-          res.put('inference_count', bestInf);
-          res.put('total_inference_time_ms', bestMs);
-          res.put('max_avg_ms', bestMaxAvg);
+          res.put('inference_count', mergedInf);
+          res.put('total_inference_time_ms', mergedMs);
+          res.put('max_avg_ms', mergedMaxAvg);
           if (depName != '') {
             res.put('deployment_name', depName);
           }

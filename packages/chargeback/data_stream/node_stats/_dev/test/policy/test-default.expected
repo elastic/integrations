@@ -86,8 +86,9 @@ inputs:
                 [dyn({
                   "doc_type": "config_snapshot",
                   "conf_sync_enabled": false,
+                  "conf_schema_version": 2,
                   "conf_owner_id": clean_owner_id,
-                }.with(state.?cursor.conf_sig.orValue("").startsWith("v2|") ? { "conf_schema_version": 2 } : { "conf_schema_version": 1 }))]
+                })]
               : [])))).as(conf_evts,
               (clean_org_id != "" && clean_cloud_base != "" && clean_api_key != "" && !clean_api_key.startsWith("$co.elastic.secret")).as(has_cloud,
               (clean_hub_url != "" && clean_hub_key != "" && !clean_hub_key.startsWith("$co.elastic.secret")).as(has_hub,

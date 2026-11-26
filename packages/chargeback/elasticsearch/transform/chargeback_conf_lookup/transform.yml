@@ -7,6 +7,7 @@ source:
     - metrics-ess_billing.billing-*
     - chargeback_conf_lookup*
     - chargeback_lookup.dest_chargeback_conf-1*
+    - chargeback_lookup.dest_chargeback_conf_init-1*
     - -partial-*
     - -metrics-ess_billing.billing-chargeback*
     - -chargeback_lookup.dest_chargeback_conf-2*
@@ -23,6 +24,12 @@ source:
                     - chargeback_lookup.dest_chargeback_conf-1
               - exists:
                   field: conf_start_date
+        - bool:
+            must:
+              - term:
+                  _index: chargeback_lookup.dest_chargeback_conf_init-1
+              - exists:
+                  field: config_join_key
       minimum_should_match: 1
   runtime_mappings:
     cb_conf_bucket_key:
@@ -30,6 +37,16 @@ source:
       script:
         source: |
           String idx = (doc.containsKey('_index') && !doc['_index'].empty) ? doc['_index'].value.toString() : '';
+          if (idx == 'chargeback_lookup.dest_chargeback_conf_init-1') {
+            if (doc.containsKey('config_join_key') && !doc['config_join_key'].empty) {
+              String ik = doc['config_join_key'].value.toString().trim();
+              if (ik != '') { emit(ik); }
+            } else if (params._source?.get('config_join_key') != null) {
+              String ik = params._source.get('config_join_key').toString().trim();
+              if (ik != '') { emit(ik); }
+            }
+            return;
+          }
           if (idx == 'chargeback_lookup.dest_chargeback_conf-1' || idx == 'chargeback_conf_lookup') {
             String rowId = '';
             try {
@@ -121,6 +138,10 @@ source:
       type: date
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'chargeback_lookup.dest_chargeback_conf_init-1') {
+            emit(1262304000000L);
+            return;
+          }
           try {
             if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
               emit(doc['event.ingested'].value.toInstant().toEpochMilli());
@@ -193,6 +214,12 @@ pivot:
                         - chargeback_lookup.dest_chargeback_conf-1
                   - exists:
                       field: conf_start_date
+            - bool:
+                must:
+                  - term:
+                      _index: chargeback_lookup.dest_chargeback_conf_init-1
+                  - exists:
+                      field: config_join_key
           minimum_should_match: 1
       aggs:
         latest:
@@ -201,8 +228,7 @@ pivot:
               state.owners = [:];
               state.emitters = [:];
               state.legacyConf = null;
-              state.maxEnabledSnapTs = -1L;
-              state.hasV2Snap = false;
+              state.destInitialized = false;
             map_script: |
               if (params._source == null) {
                 return;
@@ -210,6 +236,10 @@ pivot:
               String srcIdx = (doc.containsKey('_index') && !doc['_index'].empty)
                 ? doc['_index'].value.toString()
                 : '';
+              if (srcIdx == 'chargeback_lookup.dest_chargeback_conf_init-1') {
+                state.destInitialized = true;
+                return;
+              }
               if (srcIdx == 'chargeback_conf_lookup' || srcIdx == 'chargeback_lookup.dest_chargeback_conf-1') {
                 boolean isDestV1 = (srcIdx == 'chargeback_lookup.dest_chargeback_conf-1');
                 String rowId = '';
@@ -335,21 +365,7 @@ pivot:
               }
               def rawSync = params._source.get('conf_sync_enabled');
               boolean syncEnabled = (rawSync == null) || rawSync.toString().equalsIgnoreCase('true');
-              int schemaVer = 1;
-              try {
-                if (doc.containsKey('conf_schema_version') && !doc['conf_schema_version'].empty) {
-                  schemaVer = ((Number)doc['conf_schema_version'].value).intValue();
-                } else if (params._source.get('conf_schema_version') instanceof Number) {
-                  schemaVer = ((Number)params._source.get('conf_schema_version')).intValue();
-                }
-              } catch (Exception e) {}
-              if (schemaVer >= 2) {
-                state.hasV2Snap = true;
-              }
-              long effSnapTs = syncTs > 0L ? syncTs : ts;
-              if (syncEnabled && effSnapTs > state.maxEnabledSnapTs) {
-                state.maxEnabledSnapTs = effSnapTs;
-              }
+              // Destination initialization is tracked independently via chargeback_lookup.dest_chargeback_conf_init-1.
 
               String ns = (params._source.data_stream instanceof Map && params._source.data_stream.namespace != null)
                 ? params._source.data_stream.namespace.toString().trim()
@@ -470,17 +486,10 @@ pivot:
               Map mergedOwners = [:];
               Map mergedEmitters = [:];
               Map mergedLegacy = null;
-              long maxEnabledSnapTs = -1L;
-              boolean hasV2Snap = false;
+              boolean destInitialized = false;
               for (def s : states) {
-                if (s instanceof Map) {
-                  if (Boolean.TRUE.equals(s.hasV2Snap)) {
-                    hasV2Snap = true;
-                  }
-                  if (s.maxEnabledSnapTs instanceof Number) {
-                    long mTs = ((Number)s.maxEnabledSnapTs).longValue();
-                    if (mTs > maxEnabledSnapTs) { maxEnabledSnapTs = mTs; }
-                  }
+                if (s instanceof Map && Boolean.TRUE.equals(s.destInitialized)) {
+                  destInitialized = true;
                 }
                 if (s instanceof Map && s.legacyConf instanceof Map) {
                   Map slc = (Map)s.legacyConf;
@@ -561,7 +570,7 @@ pivot:
               }
 
               if (mergedOwners.isEmpty()) {
-                if (mergedLegacy != null) {
+                if (mergedLegacy != null && !destInitialized) {
                   return [
                     'has_snapshots': true,
                     'policy_sync_enabled': true,
@@ -716,7 +725,7 @@ pivot:
                 }
               }
 
-              if (!ownerConflict && !policySyncEnabled && mergedLegacy != null && !hasV2Snap) {
+              if (!ownerConflict && !policySyncEnabled && mergedLegacy != null && !destInitialized) {
                 return [
                   'has_snapshots': true,
                   'policy_sync_enabled': true,

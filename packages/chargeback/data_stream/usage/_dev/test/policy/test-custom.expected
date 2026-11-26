@@ -76,8 +76,9 @@ inputs:
             [dyn({
             "doc_type": "config_snapshot",
             "conf_sync_enabled": false,
+            "conf_schema_version": 2,
             "conf_owner_id": clean_owner_id,
-            }.with(state.?cursor.conf_sig.orValue("").startsWith("v2|") ? { "conf_schema_version": 2 } : { "conf_schema_version": 1 }))]
+            })]
             : []))).as(conf_evts,
             state.poll_interval.trim_space().as(raw_poll_iv,
             try(int(duration(raw_poll_iv != "" ? raw_poll_iv : "10m").getSeconds()), "iv_err").as(parsed_iv_sec,
@@ -1239,6 +1240,9 @@ inputs:
             ).as(node_deltas,
             node_deltas.filter(nd, nd.prev_t < today_start_sec && nd.d_inf > 0).as(split_nds,
             node_deltas.filter(nd, nd.prev_t >= today_start_sec).as(cur_nds,
+            (size(split_nds) > 0 ? max(today_start_sec - 86400, -split_nds.map(nd, -int(nd.prev_t)).max()) : today_start_sec).as(prev_int_start_sec,
+            ((size(split_nds) > 0 ? [today_start_sec] : []) + cur_nds.filter(nd, int(nd.prev_t) < now_sec).map(nd, int(nd.prev_t))).as(cur_starts,
+            (size(cur_starts) > 0 ? max(today_start_sec, -cur_starts.map(v, -v).max()) : now_sec).as(cur_int_start_sec,
             split_nds.map(nd,
             (double(today_start_sec - nd.prev_t) / double(now_sec - nd.prev_t)).as(pr,
             {
@@ -1266,6 +1270,8 @@ inputs:
             "inference_count": prev_inf_sum,
             "average_inference_time_ms": (prev_inf_sum > 0 ? (double(prev_ms_sum) / double(prev_inf_sum)) : 0.0),
             "total_inference_time_ms": prev_ms_sum,
+            "interval_start": timestamp(prev_int_start_sec).format(time_layout.RFC3339),
+            "interval_end": today_start.format(time_layout.RFC3339),
             })] : []) + [dyn({
             "period_start": now_ts,
             "period_obs_ts": obs_ts,
@@ -1277,9 +1283,12 @@ inputs:
             "inference_count": cur_inf_sum,
             "average_inference_time_ms": (cur_inf_sum > 0 ? (double(cur_ms_sum) / double(cur_inf_sum)) : 0.0),
             "total_inference_time_ms": cur_ms_sum,
-            })],
+            }.with(cur_int_start_sec < now_sec ? {
+            "interval_start": timestamp(cur_int_start_sec).format(time_layout.RFC3339),
+            "interval_end": timestamp(now_sec).format(time_layout.RFC3339),
+            } : {}))],
             }
-            )))))))))))
+            ))))))))))))))
             ).as(ml_items,
             ml_items.map(x, x.evts).flatten().as(ml_evts,
             ml_items.map(x, x.bases).flatten().as(ml_bases,
@@ -1423,6 +1432,8 @@ inputs:
             "locations_count": size(loc_names) > 0 ? size(loc_names) : ((has(b.locations) && has(b.locations.value) && b.locations.value != null) ? int(b.locations.value) : 1),
             "average_duration_ms": avg_dur_ms,
             "total_duration_ms": double(chk_cnt) * avg_dur_ms,
+            "interval_start": sw.from,
+            "interval_end": sw.to,
             })
             )))
             )
