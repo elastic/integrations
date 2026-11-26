@@ -478,6 +478,9 @@ processors:
           def v = ctx.average_duration_ms.value;
           ctx.average_duration_ms = v != null ? ((Number)v).doubleValue() : 0.0;
         }
+        if (ctx.containsKey('check_count') && (ctx.total_duration_ms == null || (ctx.total_duration_ms instanceof Number && ((Number)ctx.total_duration_ms).doubleValue() == 0.0)) && ctx.check_count instanceof Number && ((Number)ctx.check_count).longValue() > 0L && ctx.average_duration_ms instanceof Number && ((Number)ctx.average_duration_ms).doubleValue() > 0.0) {
+          ctx.total_duration_ms = ((Number)ctx.check_count).doubleValue() * ((Number)ctx.average_duration_ms).doubleValue();
+        }
         if (ctx.check_count instanceof Number && ((Number)ctx.check_count).longValue() > 0L && ctx.total_duration_ms instanceof Number && ((Number)ctx.total_duration_ms).doubleValue() > 0.0) {
           ctx.average_duration_ms = ((Number)ctx.total_duration_ms).doubleValue() / (double)((Number)ctx.check_count).longValue();
         }

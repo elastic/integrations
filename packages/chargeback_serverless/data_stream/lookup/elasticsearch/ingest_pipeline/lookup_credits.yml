@@ -59,8 +59,24 @@ processors:
             long maxNatIngTs = -1L;
             String latestNatOwner = '';
             if (ctx.nat_credits instanceof Map) {
-              for (def keyObj : ((Map)ctx.nat_credits).keySet()) {
-                String recKey = keyObj.toString();
+              Map nm = (Map)ctx.nat_credits;
+              List natEntries = new ArrayList();
+              if (nm.get('buckets') instanceof List) {
+                for (def bObj : (List)nm.get('buckets')) {
+                  if (bObj instanceof Map && ((Map)bObj).get('key') != null) {
+                    natEntries.add([((Map)bObj).get('key').toString(), bObj]);
+                  }
+                }
+              } else {
+                for (def eObj : nm.entrySet()) {
+                  Map.Entry e = (Map.Entry)eObj;
+                  natEntries.add([e.getKey().toString(), e.getValue()]);
+                }
+              }
+              for (def pairObj : natEntries) {
+                List pair = (List)pairObj;
+                String recKey = pair.get(0).toString();
+                def valObj = pair.get(1);
                 List parts = new ArrayList();
                 int pStart = 0;
                 while (true) {
@@ -80,7 +96,16 @@ processors:
                 boolean cAct = parts.get(4).toString() == '1';
                 String owner = parts.get(5).toString();
                 String lineId = parts.size() > 6 ? parts.get(6).toString() : '';
-                natDocs.add([ts, ingTs, cQty, cBal, cAct, owner, lineId]);
+                long cnt = 1L;
+                if (valObj instanceof Map) {
+                  def dc = ((Map)valObj).get('doc_cnt');
+                  if (dc instanceof Number) {
+                    long rCnt = Math.round(((Number)dc).doubleValue()); cnt = rCnt > 1L ? rCnt : 1L;
+                  } else if (dc instanceof Map && ((Map)dc).get('value') instanceof Number) {
+                    long rCnt = Math.round(((Number)((Map)dc).get('value')).doubleValue()); cnt = rCnt > 1L ? rCnt : 1L;
+                  }
+                }
+                natDocs.add([ts, ingTs, cQty, cBal, cAct, owner, lineId, cnt]);
                 if (ts > maxNatTs || (ts == maxNatTs && (ingTs > maxNatIngTs || (ingTs == maxNatIngTs && owner.compareTo(latestNatOwner) > 0)))) {
                   maxNatTs = ts;
                   maxNatIngTs = ingTs;
@@ -88,7 +113,19 @@ processors:
                 }
               }
             }
+            long maxNatPollIngTs = -1L;
+            for (def ndObj : natDocs) {
+              List nd = (List)ndObj;
+              long nTs = ((Number)nd.get(0)).longValue();
+              long nIngTs = ((Number)nd.get(1)).longValue();
+              String nOwner = nd.get(5).toString();
+              String nLineId = nd.get(6).toString().trim();
+              if (nLineId == '' && nOwner.equals(latestNatOwner) && (maxNatTs - nTs) <= 100L && nIngTs > maxNatPollIngTs) {
+                maxNatPollIngTs = nIngTs;
+              }
+            }
             Map latestNatItems = new LinkedHashMap();
+            List unkeyedNatItems = new ArrayList();
             for (def ndObj : natDocs) {
               List nd = (List)ndObj;
               long nTs = ((Number)nd.get(0)).longValue();
@@ -99,16 +136,23 @@ processors:
               double nBal = ((Number)nd.get(3)).doubleValue();
               boolean nAct = Boolean.TRUE.equals(nd.get(4));
               String nLineId = nd.get(6).toString().trim();
-              String dedupKey = nLineId != '' ? ('id:' + nLineId) : ('raw:' + Long.toString(nTs) + '|' + Double.toString(nQty) + '|' + Double.toString(nBal) + '|' + Boolean.toString(nAct));
-              List prev = (List)latestNatItems.get(dedupKey);
-              if (prev == null || nIngTs >= ((Number)prev.get(0)).longValue()) {
-                latestNatItems.put(dedupKey, [nIngTs, nQty, nBal, nAct]);
+              long nCnt = ((Number)nd.get(7)).longValue();
+              if (nLineId != '') {
+                String dedupKey = 'id:' + nLineId;
+                List prev = (List)latestNatItems.get(dedupKey);
+                if (prev == null || nIngTs >= ((Number)prev.get(0)).longValue()) {
+                  latestNatItems.put(dedupKey, [nIngTs, nQty, nBal, nAct]);
+                }
+              } else if ((maxNatPollIngTs - nIngTs) <= 2000L) {
+                unkeyedNatItems.add([nIngTs, nQty * (double)nCnt, nBal * (double)nCnt, nAct]);
               }
             }
-            boolean hasNat = !latestNatItems.isEmpty();
+            boolean hasNat = !latestNatItems.isEmpty() || !unkeyedNatItems.isEmpty();
             if (hasNat) {
               int natActCount = 0; double natActQty = 0.0; double natActBal = 0.0; double natAllQty = 0.0; double natAllBal = 0.0;
-              for (def niObj : latestNatItems.values()) {
+              List allNat = new ArrayList(latestNatItems.values());
+              allNat.addAll(unkeyedNatItems);
+              for (def niObj : allNat) {
                 List ni = (List)niObj;
                 double nQty = ((Number)ni.get(1)).doubleValue();
                 double nBal = ((Number)ni.get(2)).doubleValue();
@@ -125,8 +169,24 @@ processors:
               long maxLegTs = -1L;
               long maxLegIngTs = -1L;
               String latestLegOwner = '';
-              for (def keyObj : ((Map)ctx.leg_credits).keySet()) {
-                String recKey = keyObj.toString();
+              Map lm = (Map)ctx.leg_credits;
+              List legEntries = new ArrayList();
+              if (lm.get('buckets') instanceof List) {
+                for (def bObj : (List)lm.get('buckets')) {
+                  if (bObj instanceof Map && ((Map)bObj).get('key') != null) {
+                    legEntries.add([((Map)bObj).get('key').toString(), bObj]);
+                  }
+                }
+              } else {
+                for (def eObj : lm.entrySet()) {
+                  Map.Entry e = (Map.Entry)eObj;
+                  legEntries.add([e.getKey().toString(), e.getValue()]);
+                }
+              }
+              for (def pairObj : legEntries) {
+                List pair = (List)pairObj;
+                String recKey = pair.get(0).toString();
+                def valObj = pair.get(1);
                 List parts = new ArrayList();
                 int pStart = 0;
                 while (true) {
@@ -145,14 +205,36 @@ processors:
                 double cBal = Double.parseDouble(parts.get(3).toString());
                 boolean cAct = parts.get(4).toString() == '1';
                 String owner = parts.get(5).toString();
-                legDocs.add([ts, ingTs, cQty, cBal, cAct, owner]);
+                String lineId = parts.size() > 6 ? parts.get(6).toString() : '';
+                long cnt = 1L;
+                if (valObj instanceof Map) {
+                  def dc = ((Map)valObj).get('doc_cnt');
+                  if (dc instanceof Number) {
+                    long rCnt = Math.round(((Number)dc).doubleValue()); cnt = rCnt > 1L ? rCnt : 1L;
+                  } else if (dc instanceof Map && ((Map)dc).get('value') instanceof Number) {
+                    long rCnt = Math.round(((Number)((Map)dc).get('value')).doubleValue()); cnt = rCnt > 1L ? rCnt : 1L;
+                  }
+                }
+                legDocs.add([ts, ingTs, cQty, cBal, cAct, owner, lineId, cnt]);
                 if (ts > maxLegTs || (ts == maxLegTs && (ingTs > maxLegIngTs || (ingTs == maxLegIngTs && owner.compareTo(latestLegOwner) > 0)))) {
                   maxLegTs = ts;
                   maxLegIngTs = ingTs;
                   latestLegOwner = owner;
                 }
               }
-              Map latestLegItems = new LinkedHashMap();
+              long maxLegPollIngTs = -1L;
+              for (def ldObj : legDocs) {
+                List ld = (List)ldObj;
+                long lTs = ((Number)ld.get(0)).longValue();
+                long lIngTs = ((Number)ld.get(1)).longValue();
+                String lOwner = ld.get(5).toString();
+                String lLineId = ld.get(6).toString().trim();
+                if (lLineId == '' && lOwner.equals(latestLegOwner) && (maxLegTs - lTs) <= 5000L && lIngTs > maxLegPollIngTs) {
+                  maxLegPollIngTs = lIngTs;
+                }
+              }
+              Map latestLegKeyed = new LinkedHashMap();
+              List unkeyedLegItems = new ArrayList();
               for (def ldObj : legDocs) {
                 List ld = (List)ldObj;
                 long lTs = ((Number)ld.get(0)).longValue();
@@ -162,15 +244,23 @@ processors:
                 double lQty = ((Number)ld.get(2)).doubleValue();
                 double lBal = ((Number)ld.get(3)).doubleValue();
                 boolean lAct = Boolean.TRUE.equals(ld.get(4));
-                String legDedupKey = 'raw:' + Long.toString(lTs) + '|' + Double.toString(lQty) + '|' + Double.toString(lBal) + '|' + Boolean.toString(lAct);
-                List prevLeg = (List)latestLegItems.get(legDedupKey);
-                if (prevLeg == null || lIngTs >= ((Number)prevLeg.get(0)).longValue()) {
-                  latestLegItems.put(legDedupKey, [lIngTs, lQty, lBal, lAct]);
+                String lLineId = ld.get(6).toString().trim();
+                long lCnt = ((Number)ld.get(7)).longValue();
+                if (lLineId != '') {
+                  String legDedupKey = 'id:' + lLineId;
+                  List prevLeg = (List)latestLegKeyed.get(legDedupKey);
+                  if (prevLeg == null || lIngTs >= ((Number)prevLeg.get(0)).longValue()) {
+                    latestLegKeyed.put(legDedupKey, [lIngTs, lQty, lBal, lAct]);
+                  }
+                } else if ((maxLegPollIngTs - lIngTs) <= 2000L) {
+                  unkeyedLegItems.add([lIngTs, lQty * (double)lCnt, lBal * (double)lCnt, lAct]);
                 }
               }
-              if (!latestLegItems.isEmpty()) {
+              List allLeg = new ArrayList(latestLegKeyed.values());
+              allLeg.addAll(unkeyedLegItems);
+              if (!allLeg.isEmpty()) {
                 int legActCount = 0; double legActQty = 0.0; double legActBal = 0.0; double legAllQty = 0.0; double legAllBal = 0.0;
-                for (def liObj : latestLegItems.values()) {
+                for (def liObj : allLeg) {
                   List li = (List)liObj;
                   double lQty = ((Number)li.get(1)).doubleValue();
                   double lBal = ((Number)li.get(2)).doubleValue();

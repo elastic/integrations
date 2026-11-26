@@ -56,8 +56,26 @@ stdout '^true$'
 exec jq -r 'map(.idx_group) | index("serverless_billing_credits_lookup") != null' health_rows.json
 stdout '^false$'
 
+exec jq -r 'map(.idx_group) | index("serverless_ai_model_contribution_lookup") != null' health_rows.json
+stdout '^false$'
+
+exec jq -r 'map(.idx_group) | index("serverless_synthetics_monitor_contribution_lookup") != null' health_rows.json
+stdout '^false$'
+
+exec jq -r '([.[] | .idx_group] | length) == ([.[] | .idx_group] | unique | length)' health_rows.json
+stdout '^true$'
+
 exec jq -r 'map(.idx_group) | index("serverless_billing_credits_lookup") != null' health_rows_active_credits.json
 stdout '^true$'
+
+exec jq -r 'map(.idx_group) | index("serverless_ai_model_contribution_lookup") != null' health_rows_active_credits.json
+stdout '^true$'
+
+exec jq -r 'map(.idx_group) | index("serverless_synthetics_monitor_contribution_lookup") != null' health_rows_active_credits.json
+stdout '^true$'
+
+exec jq -r '.docs[0].doc._source | "\(.ess.billing.ecu_quantity)|\(.ess.billing.ecu_balance)|\(.ess.billing.active)"' e2e_credits_leg_out.json
+stdout '^10000(\.0)?\|6400(\.0)?\|true$'
 
 exec jq -r '.docs[0].doc._source | "\(.ds_type)|\(.ds_dataset)|\(.ds_namespace)"' lookup_usage_sim.json
 stdout '^index\|logs-nginx\.access-prod-eu-west\|default$'
@@ -134,9 +152,9 @@ es_curl() {
 
 cleanup() {
   curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" \
-    -X DELETE "${ES_HOST}/_data_stream/metrics-chargeback_serverless.billing-e2e-health?ignore_unavailable=true" >/dev/null 2>&1 || true
+    -X DELETE "${ES_HOST}/_data_stream/metrics-chargeback_serverless.billing-e2e-health,metrics-chargeback_serverless.usage-e2e-health?ignore_unavailable=true" >/dev/null 2>&1 || true
   curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" \
-    -X DELETE "${ES_HOST}/cb-e2e-src-conf,cb-e2e-src-credits,cb-e2e-src-bill,cb-e2e-src-ds,cb-e2e-src-overlap,cb-e2e-ds-stage1?ignore_unavailable=true" >/dev/null 2>&1 || true
+    -X DELETE "${ES_HOST}/cb-e2e-src-conf,cb-e2e-src-credits,cb-e2e-src-credits-leg,cb-e2e-src-bill,cb-e2e-src-ds,cb-e2e-src-overlap,cb-e2e-ds-stage1?ignore_unavailable=true" >/dev/null 2>&1 || true
   curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" \
     -X POST "${ES_HOST}/serverless_billing_cost_lookup-2,serverless_project_status_lookup-2,serverless_project_contribution_lookup-2/_delete_by_query?refresh=true" \
     -H 'Content-Type: application/json' \
@@ -145,6 +163,10 @@ cleanup() {
     -X POST "${ES_HOST}/serverless_billing_credits_lookup-1/_delete_by_query?refresh=true" \
     -H 'Content-Type: application/json' \
     -d '{"query":{"term":{"ess.billing.organization_id":"org-health-test"}}}' >/dev/null 2>&1 || true
+  curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" \
+    -X POST "${ES_HOST}/serverless_ai_model_contribution_lookup-2,serverless_synthetics_monitor_contribution_lookup-2/_delete_by_query?refresh=true" \
+    -H 'Content-Type: application/json' \
+    -d '{"query":{"term":{"project_id":"proj-health-workload"}}}' >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
 
@@ -417,11 +439,23 @@ jq '
   map(select(.deployment_group == "backfill-grp" or .deployment_group == "replayed-new-grp"))
 ' raw_newgrp_resp.json > new_group_rows.json
 
-# Retained stale credit row with no active/unprocessed credit source must NOT alert
+# Retained stale optional rows (credits, ai_contrib, synthetics_contrib) with no matching active/unprocessed source must NOT alert
 es_curl -X POST "${ES_HOST}/serverless_billing_credits_lookup-1/_doc?pipeline=_none&refresh=true" -H 'Content-Type: application/json' -d '{
   "@timestamp": "'"${STALE_DAY}"'",
   "event": {"ingested": "'"${STALE_UPDATED_AT}"'"},
   "ess": {"billing": {"organization_id": "org-health-test", "active": true}}
+}' >/dev/null
+es_curl -X POST "${ES_HOST}/serverless_ai_model_contribution_lookup-2/_doc?pipeline=_none&refresh=true" -H 'Content-Type: application/json' -d '{
+  "@timestamp": "'"${STALE_DAY}"'",
+  "event": {"ingested": "'"${STALE_UPDATED_AT}"'"},
+  "project_id": "proj-health-workload",
+  "model_id": "m-old"
+}' >/dev/null
+es_curl -X POST "${ES_HOST}/serverless_synthetics_monitor_contribution_lookup-2/_doc?pipeline=_none&refresh=true" -H 'Content-Type: application/json' -d '{
+  "@timestamp": "'"${STALE_DAY}"'",
+  "event": {"ingested": "'"${STALE_UPDATED_AT}"'"},
+  "project_id": "proj-health-workload",
+  "monitor_id": "mon-old"
 }' >/dev/null
 
 # Missing-tolerant transform-health query (must succeed and report missing core lookups)
@@ -433,12 +467,24 @@ jq '
   [ .values[] | [ range(0; ($cols | length)) as $i | { ($cols[$i].name): .[$i] } ] | add ]
 ' raw_health_resp.json > health_rows.json
 
-# Once an active native credit_line_item source arrives while credits lookup remains stale, alert MUST fire
+# Once active source events arrive while credits, ai_contrib, and synthetics_contrib remain stale, alerts MUST fire
 es_curl -X POST "${ES_HOST}/metrics-chargeback_serverless.billing-e2e-health/_doc?op_type=create&refresh=true" -H 'Content-Type: application/json' -d '{
   "@timestamp": "'"${HEALTHY_UPDATED_AT}"'",
   "event": {"ingested": "'"${HEALTHY_UPDATED_AT}"'"},
   "doc_type": "credit_line_item",
   "ess": {"billing": {"organization_id": "org-health-test"}}
+}' >/dev/null
+es_curl -X POST "${ES_HOST}/metrics-chargeback_serverless.usage-e2e-health/_doc?op_type=create&refresh=true" -H 'Content-Type: application/json' -d '{
+  "@timestamp": "'"${HEALTHY_UPDATED_AT}"'",
+  "event": {"ingested": "'"${HEALTHY_UPDATED_AT}"'"},
+  "doc_type": "ai_model",
+  "project_id": "proj-health-workload"
+}' >/dev/null
+es_curl -X POST "${ES_HOST}/metrics-chargeback_serverless.usage-e2e-health/_doc?op_type=create&refresh=true" -H 'Content-Type: application/json' -d '{
+  "@timestamp": "'"${HEALTHY_UPDATED_AT}"'",
+  "event": {"ingested": "'"${HEALTHY_UPDATED_AT}"'"},
+  "doc_type": "synthetics_monitor",
+  "project_id": "proj-health-workload"
 }' >/dev/null
 jq '{query: .attributes.params.esqlQuery.esql, filter: {range: {"@timestamp": {gte: "now-35d"}}}}' "${HEALTH_RULE}" | \
   es_curl -X POST "${ES_HOST}/_query?format=json" -H 'Content-Type: application/json' -d @- > raw_health_active_resp.json
@@ -447,7 +493,7 @@ jq '
   [ .values[] | [ range(0; ($cols | length)) as $i | { ($cols[$i].name): .[$i] } ] | add ]
 ' raw_health_active_resp.json > health_rows_active_credits.json
 curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" \
-  -X DELETE "${ES_HOST}/_data_stream/metrics-chargeback_serverless.billing-e2e-health?ignore_unavailable=true" >/dev/null 2>&1 || true
+  -X DELETE "${ES_HOST}/_data_stream/metrics-chargeback_serverless.billing-e2e-health,metrics-chargeback_serverless.usage-e2e-health?ignore_unavailable=true" >/dev/null 2>&1 || true
 
 jq -n \
   --arg ts "${BILL_DAY}" \
@@ -549,7 +595,7 @@ run_preview_and_sim() {
     es_curl -X POST "${ES_HOST}/_ingest/pipeline/${PIPE_ID}/_simulate" -H 'Content-Type: application/json' -d @- > "${OUT_FILE}"
 }
 
-curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" -X DELETE "${ES_HOST}/cb-e2e-src-conf,cb-e2e-src-credits,cb-e2e-src-bill,cb-e2e-src-ds,cb-e2e-src-overlap,cb-e2e-ds-stage1?ignore_unavailable=true" >/dev/null 2>&1 || true
+curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" -X DELETE "${ES_HOST}/cb-e2e-src-conf,cb-e2e-src-credits,cb-e2e-src-credits-leg,cb-e2e-src-bill,cb-e2e-src-ds,cb-e2e-src-overlap,cb-e2e-ds-stage1?ignore_unavailable=true" >/dev/null 2>&1 || true
 
 # 1. chargeback_conf e2e (explicit owner wins over newer implicit owner, disabled old snapshot ignored)
 es_curl -X PUT "${ES_HOST}/cb-e2e-src-conf" -H 'Content-Type: application/json' -d '{
@@ -610,6 +656,41 @@ es_curl -X POST "${ES_HOST}/cb-e2e-src-credits/_bulk?refresh=true" -H 'Content-T
 {"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'","dataset":"ess_billing.credits"},"data_stream":{"dataset":"ess_billing.credits","namespace":"default"},"agent":{"id":"ag-leg"},"ess":{"billing":{"organization_id":"org-e2e","start":"2026-01-01T00:00:00Z","end":"2026-12-31T23:59:59Z","type":"prepaid","active":true,"ecu_quantity":60000,"ecu_balance":999999.0}}}
 ' >/dev/null
 run_preview_and_sim "billing_credits" "cb-e2e-src-credits" "${CRED_PIPELINE}" "e2e_credits_out.json"
+
+# 2b. billing_credits e2e (two identical legacy commitment lines in the same bucket MUST sum to 10000/6400)
+es_curl -X PUT "${ES_HOST}/cb-e2e-src-credits-leg" -H 'Content-Type: application/json' -d '{
+  "mappings": {
+    "properties": {
+      "@timestamp": {"type": "date"},
+      "event": {"properties": {"ingested": {"type": "date"}, "dataset": {"type": "keyword"}}},
+      "data_stream": {"properties": {"dataset": {"type": "keyword"}, "namespace": {"type": "keyword"}}},
+      "agent": {"properties": {"id": {"type": "keyword"}}},
+      "doc_type": {"type": "keyword"},
+      "ess": {"properties": {"billing": {"properties": {
+        "organization_id": {"type": "keyword"},
+        "start": {"type": "date"},
+        "end": {"type": "date"},
+        "type": {"type": "keyword"},
+        "active": {"type": "boolean"},
+        "ecu_quantity": {"type": "double"},
+        "ecu_balance": {"type": "double"}
+      }}}}
+    }
+  }
+}' >/dev/null
+OLDER_CRED_TS="$(jq -nr '(((now - 21600) / 86400 | floor) * 86400 - 86400) | strftime("%Y-%m-%dT01:00:00Z")')"
+LATEST_CRED_TS="$(jq -nr '(((now - 21600) / 86400 | floor) * 86400 - 86400) | strftime("%Y-%m-%dT02:00:00Z")')"
+es_curl -X POST "${ES_HOST}/cb-e2e-src-credits-leg/_bulk?refresh=true" -H 'Content-Type: application/x-ndjson' -d '
+{"index":{}}
+{"@timestamp":"'"${OLDER_CRED_TS}"'","event":{"ingested":"'"${OLDER_CRED_TS}"'","dataset":"ess_billing.credits"},"data_stream":{"dataset":"ess_billing.credits","namespace":"default"},"agent":{"id":"ag-leg"},"ess":{"billing":{"organization_id":"org-e2e-leg","start":"2026-01-01T00:00:00Z","end":"2026-12-31T23:59:59Z","type":"prepaid","active":true,"ecu_quantity":5000,"ecu_balance":4000.0}}}
+{"index":{}}
+{"@timestamp":"'"${OLDER_CRED_TS}"'","event":{"ingested":"'"${OLDER_CRED_TS}"'","dataset":"ess_billing.credits"},"data_stream":{"dataset":"ess_billing.credits","namespace":"default"},"agent":{"id":"ag-leg"},"ess":{"billing":{"organization_id":"org-e2e-leg","start":"2026-01-01T00:00:00Z","end":"2026-12-31T23:59:59Z","type":"prepaid","active":true,"ecu_quantity":5000,"ecu_balance":4000.0}}}
+{"index":{}}
+{"@timestamp":"'"${LATEST_CRED_TS}"'","event":{"ingested":"'"${LATEST_CRED_TS}"'","dataset":"ess_billing.credits"},"data_stream":{"dataset":"ess_billing.credits","namespace":"default"},"agent":{"id":"ag-leg"},"ess":{"billing":{"organization_id":"org-e2e-leg","start":"2026-01-01T00:00:00Z","end":"2026-12-31T23:59:59Z","type":"prepaid","active":true,"ecu_quantity":5000,"ecu_balance":3200.0}}}
+{"index":{}}
+{"@timestamp":"'"${LATEST_CRED_TS}"'","event":{"ingested":"'"${LATEST_CRED_TS}"'","dataset":"ess_billing.credits"},"data_stream":{"dataset":"ess_billing.credits","namespace":"default"},"agent":{"id":"ag-leg"},"ess":{"billing":{"organization_id":"org-e2e-leg","start":"2026-01-01T00:00:00Z","end":"2026-12-31T23:59:59Z","type":"prepaid","active":true,"ecu_quantity":5000,"ecu_balance":3200.0}}}
+' >/dev/null
+run_preview_and_sim "billing_credits" "cb-e2e-src-credits-leg" "${CRED_PIPELINE}" "e2e_credits_leg_out.json"
 
 # 3. billing_cost e2e (native overrides legacy + preserves group_first_seen_at & group_initial_backfill)
 es_curl -X PUT "${ES_HOST}/cb-e2e-src-bill" -H 'Content-Type: application/json' -d '{

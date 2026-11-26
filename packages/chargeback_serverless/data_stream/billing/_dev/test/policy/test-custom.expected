@@ -216,14 +216,15 @@ inputs:
             ).parse_time(time_layout.DateOnly),
             timestamp("2023-01-01T00:00:00Z")
             ).as(initial_from,
-            max(
+            (!is_continuation && state.?cursor.last_to.hasValue() && !state.?cursor.backfill_complete.hasValue()).as(is_v1_cursor,
+            (is_v1_cursor ? initial_from : max(
             state.?cursor.last_to.optMap(ts, (type(ts) == string) ? timestamp(ts) : ts).orValue(
             initial_from
             ).format(
             time_layout.DateOnly
             ).parse_time(time_layout.DateOnly),
             timestamp("2023-01-01T00:00:00Z")
-            ).as(high_water,
+            )).as(high_water,
             (now - duration("2h")).format(
             time_layout.DateOnly
             ).parse_time(time_layout.DateOnly).as(latest_ready_to,
@@ -233,10 +234,10 @@ inputs:
             latest_ready_to - duration("168h")
             ).as(replay_start,
             replay_start.format(time_layout.RFC3339).as(replay_start_str,
-            state.?cursor.replay_completed_to.orValue("").as(replay_completed_to,
-            state.?cursor.replay_target_to.orValue("").as(replay_target_to,
+            (is_v1_cursor ? "" : state.?cursor.replay_completed_to.orValue("")).as(replay_completed_to,
+            (is_v1_cursor ? "" : state.?cursor.replay_target_to.orValue("")).as(replay_target_to,
             now.format("2006-01-02T15:04:05.000Z").as(now_obs_ts,
-            (state.?cursor.backfill_complete.orValue(false) || high_water >= latest_ready_to).as(was_backfill_complete,
+            state.?cursor.backfill_complete.orValue(false).as(was_backfill_complete,
             state.?cursor.known_groups.orValue([]).as(prev_known_groups,
             state.?cursor.recent_day_keys.orValue([]).filter(pk,
             has(pk.day) && pk.day != null && string(pk.day) >= replay_start_str
@@ -1034,6 +1035,7 @@ inputs:
             )
             )
             )))))))))))))))))))))))))
+            )
           publisher_pipeline.disable_host: true
           redact:
             fields:

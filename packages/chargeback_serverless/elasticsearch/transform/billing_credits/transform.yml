@@ -194,9 +194,26 @@ source:
               dsNs = params._source.data_stream.namespace.toString();
             }
           } catch (Exception e) {}
+          String lineId = '';
+          for (String lf : ['credit_line_id', 'credit_line_id.keyword', 'ess.billing.id', 'ess.billing.id.keyword', 'event.id']) {
+            try {
+              if (doc.containsKey(lf) && !doc[lf].empty) {
+                lineId = doc[lf].value.toString().trim();
+                if (lineId != '') { break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (lineId == '' && params._source != null) {
+            if (params._source.get('credit_line_id') != null) { lineId = params._source.get('credit_line_id').toString().trim(); }
+            else if (params._source.get('ess') instanceof Map && ((Map)params._source.get('ess')).get('billing') instanceof Map && ((Map)((Map)params._source.get('ess')).get('billing')).get('id') != null) {
+              lineId = ((Map)((Map)params._source.get('ess')).get('billing')).get('id').toString().trim();
+            } else if (params._source.get('event') instanceof Map && ((Map)params._source.get('event')).get('id') != null) {
+              lineId = ((Map)params._source.get('event')).get('id').toString().trim();
+            }
+          }
           String sep = Character.toString((char)31);
           String pollOwner = (agentId + '|' + dsNs + '|').replace(sep, '');
-          emit(Long.toString(ts) + sep + Long.toString(ingTs) + sep + Double.toString(qty) + sep + Double.toString(bal) + sep + (act ? '1' : '0') + sep + pollOwner);
+          emit(Long.toString(ts) + sep + Long.toString(ingTs) + sep + Double.toString(qty) + sep + Double.toString(bal) + sep + (act ? '1' : '0') + sep + pollOwner + sep + lineId.replace(sep, ''));
 dest:
   index: serverless_billing_credits_lookup-1
   aliases:
@@ -247,6 +264,9 @@ pivot:
         max_ts:
           max:
             field: cb_credit_ts
+        doc_cnt:
+          value_count:
+            field: cb_credit_ts
     leg_credits:
       terms:
         field: cb_leg_credit_rec
@@ -256,6 +276,9 @@ pivot:
       aggs:
         max_ts:
           max:
+            field: cb_credit_ts
+        doc_cnt:
+          value_count:
             field: cb_credit_ts
 settings:
   deduce_mappings: false
