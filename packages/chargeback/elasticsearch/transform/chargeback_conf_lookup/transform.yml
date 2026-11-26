@@ -31,24 +31,89 @@ source:
         source: |
           String idx = (doc.containsKey('_index') && !doc['_index'].empty) ? doc['_index'].value.toString() : '';
           if (idx == 'chargeback_lookup.dest_chargeback_conf-1' || idx == 'chargeback_conf_lookup') {
-            String docId = (doc.containsKey('_id') && !doc['_id'].empty) ? doc['_id'].value.toString() : '';
-            if (docId == 'config') {
+            String rowId = '';
+            try {
+              if (doc.containsKey('conf_row_id') && !doc['conf_row_id'].empty) {
+                rowId = doc['conf_row_id'].value.toString().trim();
+              } else if (params._source?.get('conf_row_id') != null) {
+                rowId = params._source.get('conf_row_id').toString().trim();
+              }
+            } catch (Exception e) {}
+            if (rowId == 'config') {
               emit('chargeback_config');
               if (idx == 'chargeback_conf_lookup') {
                 emit('chargeback_config_onprem');
               }
               return;
             }
-            if (docId == 'config_onprem') {
+            if (rowId == 'config_onprem') {
               if (idx == 'chargeback_lookup.dest_chargeback_conf-1') {
                 emit('chargeback_config_onprem');
               }
               return;
             }
-            if (docId != '') {
-              emit('manual:' + docId);
+            if (rowId != '') {
+              emit('manual:' + rowId);
               return;
             }
+            String joinKey = 'chargeback_config';
+            try {
+              if (doc.containsKey('config_join_key') && !doc['config_join_key'].empty) {
+                String jk = doc['config_join_key'].value.toString().trim();
+                if (jk != '') { joinKey = jk; }
+              } else if (params._source?.get('config_join_key') != null) {
+                String jk = params._source.get('config_join_key').toString().trim();
+                if (jk != '') { joinKey = jk; }
+              }
+            } catch (Exception e) {}
+            long startMs = 1262304000000L;
+            try {
+              if (doc.containsKey('conf_start_date') && !doc['conf_start_date'].empty) {
+                startMs = doc['conf_start_date'].value.toInstant().toEpochMilli();
+              } else if (params._source?.get('conf_start_date') != null) {
+                def rs = params._source.get('conf_start_date');
+                if (rs instanceof Number) { startMs = ((Number)rs).longValue(); }
+                else {
+                  String ss = rs.toString().trim();
+                  if (ss != '') {
+                    try { startMs = Long.parseLong(ss); }
+                    catch (Exception pe) { startMs = ZonedDateTime.parse(ss.contains('T') ? ss : (ss + 'T00:00:00Z')).toInstant().toEpochMilli(); }
+                  }
+                }
+              }
+            } catch (Exception e) {}
+            long endMs = 2430518399999L;
+            try {
+              if (doc.containsKey('conf_end_date') && !doc['conf_end_date'].empty) {
+                endMs = doc['conf_end_date'].value.toInstant().toEpochMilli();
+              } else if (params._source?.get('conf_end_date') != null) {
+                def re = params._source.get('conf_end_date');
+                if (re instanceof Number) { endMs = ((Number)re).longValue(); }
+                else {
+                  String es = re.toString().trim();
+                  if (es != '') {
+                    try { endMs = Long.parseLong(es); }
+                    catch (Exception pe) { endMs = ZonedDateTime.parse(es.contains('T') ? es : (es + 'T23:59:59.999Z')).toInstant().toEpochMilli(); }
+                  }
+                }
+              }
+            } catch (Exception e) {}
+            if (endMs == 2430518399999L && (joinKey == 'chargeback_config' || joinKey == 'chargeback_config_onprem')) {
+              if (joinKey == 'chargeback_config') {
+                emit('chargeback_config');
+                if (idx == 'chargeback_conf_lookup') {
+                  emit('chargeback_config_onprem');
+                }
+              } else if (idx == 'chargeback_lookup.dest_chargeback_conf-1') {
+                emit('chargeback_config_onprem');
+              }
+              return;
+            }
+            String synId = (joinKey == 'chargeback_config_onprem'
+              ? 'config_onprem_'
+              : (joinKey == 'chargeback_config' ? 'config_' : (joinKey + '_'))) + Long.toString(startMs) + '_' + Long.toString(endMs);
+            emit('manual:' + synId);
+            return;
           }
           emit('chargeback_config');
           emit('chargeback_config_onprem');
@@ -136,6 +201,8 @@ pivot:
               state.owners = [:];
               state.emitters = [:];
               state.legacyConf = null;
+              state.maxEnabledSnapTs = -1L;
+              state.hasV2Snap = false;
             map_script: |
               if (params._source == null) {
                 return;
@@ -145,14 +212,75 @@ pivot:
                 : '';
               if (srcIdx == 'chargeback_conf_lookup' || srcIdx == 'chargeback_lookup.dest_chargeback_conf-1') {
                 boolean isDestV1 = (srcIdx == 'chargeback_lookup.dest_chargeback_conf-1');
-                String docId = (doc.containsKey('_id') && !doc['_id'].empty) ? doc['_id'].value.toString() : '';
-                if (!isDestV1 && docId == 'config_onprem') {
+                String rowId = '';
+                try {
+                  if (doc.containsKey('conf_row_id') && !doc['conf_row_id'].empty) {
+                    rowId = doc['conf_row_id'].value.toString().trim();
+                  } else if (params._source.get('conf_row_id') != null) {
+                    rowId = params._source.get('conf_row_id').toString().trim();
+                  }
+                } catch (Exception e) {}
+                String joinKey = 'chargeback_config';
+                try {
+                  if (doc.containsKey('config_join_key') && !doc['config_join_key'].empty) {
+                    String jk = doc['config_join_key'].value.toString().trim();
+                    if (jk != '') { joinKey = jk; }
+                  } else if (params._source.get('config_join_key') != null) {
+                    String jk = params._source.get('config_join_key').toString().trim();
+                    if (jk != '') { joinKey = jk; }
+                  }
+                } catch (Exception e) {}
+                if (!isDestV1 && (rowId == 'config_onprem' || joinKey == 'chargeback_config_onprem')) {
                   return;
+                }
+                long startMs = 1262304000000L;
+                try {
+                  if (doc.containsKey('conf_start_date') && !doc['conf_start_date'].empty) {
+                    startMs = doc['conf_start_date'].value.toInstant().toEpochMilli();
+                  } else if (params._source.get('conf_start_date') != null) {
+                    def rs = params._source.get('conf_start_date');
+                    if (rs instanceof Number) { startMs = ((Number)rs).longValue(); }
+                    else {
+                      String ss = rs.toString().trim();
+                      if (ss != '') {
+                        try { startMs = Long.parseLong(ss); }
+                        catch (Exception pe) { startMs = ZonedDateTime.parse(ss.contains('T') ? ss : (ss + 'T00:00:00Z')).toInstant().toEpochMilli(); }
+                      }
+                    }
+                  }
+                } catch (Exception e) {}
+                long endMs = 2430518399999L;
+                try {
+                  if (doc.containsKey('conf_end_date') && !doc['conf_end_date'].empty) {
+                    endMs = doc['conf_end_date'].value.toInstant().toEpochMilli();
+                  } else if (params._source.get('conf_end_date') != null) {
+                    def re = params._source.get('conf_end_date');
+                    if (re instanceof Number) { endMs = ((Number)re).longValue(); }
+                    else {
+                      String es = re.toString().trim();
+                      if (es != '') {
+                        try { endMs = Long.parseLong(es); }
+                        catch (Exception pe) { endMs = ZonedDateTime.parse(es.contains('T') ? es : (es + 'T23:59:59.999Z')).toInstant().toEpochMilli(); }
+                      }
+                    }
+                  }
+                } catch (Exception e) {}
+                String resolvedId = rowId;
+                if (resolvedId == '') {
+                  if (endMs == 2430518399999L && joinKey == 'chargeback_config') {
+                    resolvedId = 'config';
+                  } else if (endMs == 2430518399999L && joinKey == 'chargeback_config_onprem') {
+                    resolvedId = 'config_onprem';
+                  } else {
+                    resolvedId = (joinKey == 'chargeback_config_onprem'
+                      ? 'config_onprem_'
+                      : (joinKey == 'chargeback_config' ? 'config_' : (joinKey + '_'))) + Long.toString(startMs) + '_' + Long.toString(endMs);
+                  }
                 }
                 long lSync = (doc.containsKey('cb_sync_ts') && !doc['cb_sync_ts'].empty)
                   ? doc['cb_sync_ts'].value.toInstant().toEpochMilli()
                   : 0L;
-                int prio = isDestV1 ? 3 : ((docId == 'config') ? 2 : 1);
+                int prio = isDestV1 ? 4 : (joinKey == 'chargeback_config_onprem' ? 3 : (resolvedId == 'config' ? 2 : 1));
                 boolean take = (state.legacyConf == null);
                 if (!take) {
                   int curPrio = state.legacyConf.prio instanceof Number ? ((Number)state.legacyConf.prio).intValue() : 0;
@@ -163,10 +291,11 @@ pivot:
                 }
                 if (take) {
                   Map lc = ['prio': prio, 'ts': lSync, 'from_dest_v1': isDestV1];
-                  if (docId != '' && docId != 'config' && docId != 'config_onprem') {
-                    lc['manual_id'] = docId;
+                  if (resolvedId != '' && resolvedId != 'config' && resolvedId != 'config_onprem') {
+                    lc['manual_id'] = resolvedId;
                   }
                   for (String k : [
+                    'conf_row_id',
                     'config_join_key',
                     'conf_start_date', 'conf_end_date',
                     'conf_chargeable_unit_rate', 'conf_chargeable_unit_rate_unit', 'conf_currency_symbol',
@@ -206,6 +335,21 @@ pivot:
               }
               def rawSync = params._source.get('conf_sync_enabled');
               boolean syncEnabled = (rawSync == null) || rawSync.toString().equalsIgnoreCase('true');
+              int schemaVer = 1;
+              try {
+                if (doc.containsKey('conf_schema_version') && !doc['conf_schema_version'].empty) {
+                  schemaVer = ((Number)doc['conf_schema_version'].value).intValue();
+                } else if (params._source.get('conf_schema_version') instanceof Number) {
+                  schemaVer = ((Number)params._source.get('conf_schema_version')).intValue();
+                }
+              } catch (Exception e) {}
+              if (schemaVer >= 2) {
+                state.hasV2Snap = true;
+              }
+              long effSnapTs = syncTs > 0L ? syncTs : ts;
+              if (syncEnabled && effSnapTs > state.maxEnabledSnapTs) {
+                state.maxEnabledSnapTs = effSnapTs;
+              }
 
               String ns = (params._source.data_stream instanceof Map && params._source.data_stream.namespace != null)
                 ? params._source.data_stream.namespace.toString().trim()
@@ -326,7 +470,18 @@ pivot:
               Map mergedOwners = [:];
               Map mergedEmitters = [:];
               Map mergedLegacy = null;
+              long maxEnabledSnapTs = -1L;
+              boolean hasV2Snap = false;
               for (def s : states) {
+                if (s instanceof Map) {
+                  if (Boolean.TRUE.equals(s.hasV2Snap)) {
+                    hasV2Snap = true;
+                  }
+                  if (s.maxEnabledSnapTs instanceof Number) {
+                    long mTs = ((Number)s.maxEnabledSnapTs).longValue();
+                    if (mTs > maxEnabledSnapTs) { maxEnabledSnapTs = mTs; }
+                  }
+                }
                 if (s instanceof Map && s.legacyConf instanceof Map) {
                   Map slc = (Map)s.legacyConf;
                   if (mergedLegacy == null) {
@@ -562,14 +717,17 @@ pivot:
               }
 
               if (!ownerConflict && !policySyncEnabled && mergedLegacy != null) {
-                return [
-                  'has_snapshots': true,
-                  'policy_sync_enabled': true,
-                  'owner_conflict': false,
-                  'from_legacy_conf': true,
-                  'legacy_conf': mergedLegacy,
-                  'streams': [:]
-                ];
+                long legTs = mergedLegacy.get('ts') instanceof Number ? ((Number)mergedLegacy.get('ts')).longValue() : 0L;
+                if (!hasV2Snap && (maxEnabledSnapTs < 0L || legTs >= maxEnabledSnapTs)) {
+                  return [
+                    'has_snapshots': true,
+                    'policy_sync_enabled': true,
+                    'owner_conflict': false,
+                    'from_legacy_conf': true,
+                    'legacy_conf': mergedLegacy,
+                    'streams': [:]
+                  ];
+                }
               }
 
               return [

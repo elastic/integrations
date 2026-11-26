@@ -76,6 +76,7 @@ inputs:
                 [dyn({
                   "doc_type": "config_snapshot",
                   "conf_sync_enabled": true,
+                  "conf_schema_version": 2,
                   "conf_owner_id": clean_owner_id,
                   "conf_utilization_memory_weight": int(state.conf_utilization_memory_weight),
                   "conf_utilization_storage_weight": int(state.conf_utilization_storage_weight),
@@ -86,7 +87,7 @@ inputs:
                   "doc_type": "config_snapshot",
                   "conf_sync_enabled": false,
                   "conf_owner_id": clean_owner_id,
-                })]
+                }.with(state.?cursor.conf_sig.orValue("") != "" ? { "conf_schema_version": 2 } : {}))]
               : [])))).as(conf_evts,
               (clean_org_id != "" && clean_cloud_base != "" && clean_api_key != "" && !clean_api_key.startsWith("$co.elastic.secret")).as(has_cloud,
               (clean_hub_url != "" && clean_hub_key != "" && !clean_hub_key.startsWith("$co.elastic.secret")).as(has_hub,

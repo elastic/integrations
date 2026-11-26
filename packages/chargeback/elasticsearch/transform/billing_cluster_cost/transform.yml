@@ -373,8 +373,25 @@ pivot:
             }
           } catch (Exception e) {}
 
+          long docGfsMs = 0L;
+          try {
+            if (doc.containsKey('group_first_seen') && !doc['group_first_seen'].empty) {
+              docGfsMs = doc['group_first_seen'].value.toInstant().toEpochMilli();
+            } else if (params._source?.get('group_first_seen') != null) {
+              def rgfs = params._source.get('group_first_seen');
+              if (rgfs instanceof Number) { docGfsMs = ((Number)rgfs).longValue(); }
+              else {
+                String gstr = rgfs.toString().trim();
+                if (gstr != '') { docGfsMs = ZonedDateTime.parse(gstr).toInstant().toEpochMilli(); }
+              }
+            }
+          } catch (Exception e) {}
+
           Map rec = [
             'ing_ts': ingTs,
+            'gfs': docGfsMs,
+            'min_any_ing': ingTs,
+            'min_grp_ing': ingTs,
             'ecu': ecu,
             'qty': qty,
             'dep_group': depGroup,
@@ -393,8 +410,25 @@ pivot:
             long exTs = ((Number)ex.get('ing_ts')).longValue();
             int newMeta = (depGroup != '' ? 2 : 0) + (depName != '' ? 1 : 0);
             int oldMeta = (ex.get('dep_group') != '' ? 2 : 0) + (ex.get('dep_name') != '' ? 1 : 0);
-            if (ingTs > exTs || (ingTs == exTs && (newMeta > oldMeta || (newMeta == oldMeta && ecu >= ((Number)ex.get('ecu')).doubleValue())))) {
-              state.items.put(dedupKey, rec);
+            long rMinAny = ((Number)rec.get('min_any_ing')).longValue();
+            long eMinAny = ((Number)ex.get('min_any_ing')).longValue();
+            long mergedMinAny = (rMinAny > 0L && (eMinAny <= 0L || rMinAny < eMinAny)) ? rMinAny : eMinAny;
+            boolean recWins = (ingTs > exTs || (ingTs == exTs && (newMeta > oldMeta || (newMeta == oldMeta && ecu >= ((Number)ex.get('ecu')).doubleValue()))));
+            Map win = recWins ? rec : ex;
+            Map lose = recWins ? ex : rec;
+            win.put('min_any_ing', mergedMinAny);
+            String wGrp = win.get('dep_group') != null ? win.get('dep_group').toString() : '';
+            String lGrp = lose.get('dep_group') != null ? lose.get('dep_group').toString() : '';
+            if (wGrp != '' && wGrp.equals(lGrp)) {
+              long wMinG = ((Number)win.get('min_grp_ing')).longValue();
+              long lMinG = ((Number)lose.get('min_grp_ing')).longValue();
+              if (lMinG > 0L && (wMinG <= 0L || lMinG < wMinG)) { win.put('min_grp_ing', lMinG); }
+              long wGfs = ((Number)win.get('gfs')).longValue();
+              long lGfs = ((Number)lose.get('gfs')).longValue();
+              if (lGfs > 0L && (wGfs <= 0L || lGfs < wGfs)) { win.put('gfs', lGfs); }
+            }
+            if (recWins) {
+              state.items.put(dedupKey, win);
             }
           }
         combine_script: "return state;"
@@ -413,8 +447,25 @@ pivot:
                 long exTs = ((Number)ex.get('ing_ts')).longValue();
                 int newMeta = (rec.get('dep_group') != '' ? 2 : 0) + (rec.get('dep_name') != '' ? 1 : 0);
                 int oldMeta = (ex.get('dep_group') != '' ? 2 : 0) + (ex.get('dep_name') != '' ? 1 : 0);
-                if (ingTs > exTs || (ingTs == exTs && (newMeta > oldMeta || (newMeta == oldMeta && ((Number)rec.get('ecu')).doubleValue() >= ((Number)ex.get('ecu')).doubleValue())))) {
-                  merged.put(k, rec);
+                long rMinAny = rec.get('min_any_ing') instanceof Number ? ((Number)rec.get('min_any_ing')).longValue() : ((Number)rec.get('ing_ts')).longValue();
+                long eMinAny = ex.get('min_any_ing') instanceof Number ? ((Number)ex.get('min_any_ing')).longValue() : ((Number)ex.get('ing_ts')).longValue();
+                long mergedMinAny = (rMinAny > 0L && (eMinAny <= 0L || rMinAny < eMinAny)) ? rMinAny : eMinAny;
+                boolean recWins = (ingTs > exTs || (ingTs == exTs && (newMeta > oldMeta || (newMeta == oldMeta && ((Number)rec.get('ecu')).doubleValue() >= ((Number)ex.get('ecu')).doubleValue()))));
+                Map win = recWins ? rec : ex;
+                Map lose = recWins ? ex : rec;
+                win.put('min_any_ing', mergedMinAny);
+                String wGrp = win.get('dep_group') != null ? win.get('dep_group').toString() : '';
+                String lGrp = lose.get('dep_group') != null ? lose.get('dep_group').toString() : '';
+                if (wGrp != '' && wGrp.equals(lGrp)) {
+                  long wMinG = win.get('min_grp_ing') instanceof Number ? ((Number)win.get('min_grp_ing')).longValue() : ((Number)win.get('ing_ts')).longValue();
+                  long lMinG = lose.get('min_grp_ing') instanceof Number ? ((Number)lose.get('min_grp_ing')).longValue() : ((Number)lose.get('ing_ts')).longValue();
+                  if (lMinG > 0L && (wMinG <= 0L || lMinG < wMinG)) { win.put('min_grp_ing', lMinG); }
+                  long wGfs = win.get('gfs') instanceof Number ? ((Number)win.get('gfs')).longValue() : 0L;
+                  long lGfs = lose.get('gfs') instanceof Number ? ((Number)lose.get('gfs')).longValue() : 0L;
+                  if (lGfs > 0L && (wGfs <= 0L || lGfs < wGfs)) { win.put('gfs', lGfs); }
+                }
+                if (recWins) {
+                  merged.put(k, win);
                 }
               }
             }
@@ -454,11 +505,32 @@ pivot:
             if (rec.get('b_unit') != '' && (bUnit == '' || isNewer)) { bUnit = rec.get('b_unit').toString(); }
             if (rec.get('c_region') != '' && (cRegion == '' || isNewer)) { cRegion = rec.get('c_region').toString(); }
           }
+          long resolvedGfs = 0L;
+          if (depGroup != '') {
+            long bestExplicitGfs = 0L;
+            long bestReplayIng = 0L;
+            for (def recObj : merged.values()) {
+              Map rec = (Map)recObj;
+              String rg = rec.get('dep_group') != null ? rec.get('dep_group').toString() : '';
+              if (!depGroup.equals(rg)) { continue; }
+              long eg = rec.get('gfs') instanceof Number ? ((Number)rec.get('gfs')).longValue() : 0L;
+              if (eg > 0L && (bestExplicitGfs <= 0L || eg < bestExplicitGfs)) {
+                bestExplicitGfs = eg;
+              }
+              long rAny = rec.get('min_any_ing') instanceof Number ? ((Number)rec.get('min_any_ing')).longValue() : 0L;
+              long rGrp = rec.get('min_grp_ing') instanceof Number ? ((Number)rec.get('min_grp_ing')).longValue() : 0L;
+              if (rAny > 0L && rGrp > rAny && (bestReplayIng <= 0L || rGrp < bestReplayIng)) {
+                bestReplayIng = rGrp;
+              }
+            }
+            resolvedGfs = bestExplicitGfs > 0L ? bestExplicitGfs : bestReplayIng;
+          }
           return [
             'doc_cnt': (long)merged.size(),
             'total_chargeable_units': sumEcu,
             'quantity_value': sumQty,
             'deployment_group': depGroup,
+            'group_first_seen': resolvedGfs > 0L ? resolvedGfs : null,
             'deployment_name': depName,
             'organization_id': orgId,
             'deployment_type': depType,
@@ -655,8 +727,25 @@ pivot:
             }
           } catch (Exception e) {}
 
+          long docGfsMs = 0L;
+          try {
+            if (doc.containsKey('group_first_seen') && !doc['group_first_seen'].empty) {
+              docGfsMs = doc['group_first_seen'].value.toInstant().toEpochMilli();
+            } else if (params._source?.get('group_first_seen') != null) {
+              def rgfs = params._source.get('group_first_seen');
+              if (rgfs instanceof Number) { docGfsMs = ((Number)rgfs).longValue(); }
+              else {
+                String gstr = rgfs.toString().trim();
+                if (gstr != '') { docGfsMs = ZonedDateTime.parse(gstr).toInstant().toEpochMilli(); }
+              }
+            }
+          } catch (Exception e) {}
+
           Map rec = [
             'ing_ts': ingTs,
+            'gfs': docGfsMs,
+            'min_any_ing': ingTs,
+            'min_grp_ing': ingTs,
             'ecu': ecu,
             'qty': qty,
             'dep_group': depGroup,
@@ -675,8 +764,25 @@ pivot:
             long exTs = ((Number)ex.get('ing_ts')).longValue();
             int newMeta = (depGroup != '' ? 2 : 0) + (depName != '' ? 1 : 0);
             int oldMeta = (ex.get('dep_group') != '' ? 2 : 0) + (ex.get('dep_name') != '' ? 1 : 0);
-            if (ingTs > exTs || (ingTs == exTs && (newMeta > oldMeta || (newMeta == oldMeta && ecu >= ((Number)ex.get('ecu')).doubleValue())))) {
-              state.items.put(dedupKey, rec);
+            long rMinAny = ((Number)rec.get('min_any_ing')).longValue();
+            long eMinAny = ((Number)ex.get('min_any_ing')).longValue();
+            long mergedMinAny = (rMinAny > 0L && (eMinAny <= 0L || rMinAny < eMinAny)) ? rMinAny : eMinAny;
+            boolean recWins = (ingTs > exTs || (ingTs == exTs && (newMeta > oldMeta || (newMeta == oldMeta && ecu >= ((Number)ex.get('ecu')).doubleValue()))));
+            Map win = recWins ? rec : ex;
+            Map lose = recWins ? ex : rec;
+            win.put('min_any_ing', mergedMinAny);
+            String wGrp = win.get('dep_group') != null ? win.get('dep_group').toString() : '';
+            String lGrp = lose.get('dep_group') != null ? lose.get('dep_group').toString() : '';
+            if (wGrp != '' && wGrp.equals(lGrp)) {
+              long wMinG = ((Number)win.get('min_grp_ing')).longValue();
+              long lMinG = ((Number)lose.get('min_grp_ing')).longValue();
+              if (lMinG > 0L && (wMinG <= 0L || lMinG < wMinG)) { win.put('min_grp_ing', lMinG); }
+              long wGfs = ((Number)win.get('gfs')).longValue();
+              long lGfs = ((Number)lose.get('gfs')).longValue();
+              if (lGfs > 0L && (wGfs <= 0L || lGfs < wGfs)) { win.put('gfs', lGfs); }
+            }
+            if (recWins) {
+              state.items.put(dedupKey, win);
             }
           }
         combine_script: "return state;"
@@ -695,8 +801,25 @@ pivot:
                 long exTs = ((Number)ex.get('ing_ts')).longValue();
                 int newMeta = (rec.get('dep_group') != '' ? 2 : 0) + (rec.get('dep_name') != '' ? 1 : 0);
                 int oldMeta = (ex.get('dep_group') != '' ? 2 : 0) + (ex.get('dep_name') != '' ? 1 : 0);
-                if (ingTs > exTs || (ingTs == exTs && (newMeta > oldMeta || (newMeta == oldMeta && ((Number)rec.get('ecu')).doubleValue() >= ((Number)ex.get('ecu')).doubleValue())))) {
-                  merged.put(k, rec);
+                long rMinAny = rec.get('min_any_ing') instanceof Number ? ((Number)rec.get('min_any_ing')).longValue() : ((Number)rec.get('ing_ts')).longValue();
+                long eMinAny = ex.get('min_any_ing') instanceof Number ? ((Number)ex.get('min_any_ing')).longValue() : ((Number)ex.get('ing_ts')).longValue();
+                long mergedMinAny = (rMinAny > 0L && (eMinAny <= 0L || rMinAny < eMinAny)) ? rMinAny : eMinAny;
+                boolean recWins = (ingTs > exTs || (ingTs == exTs && (newMeta > oldMeta || (newMeta == oldMeta && ((Number)rec.get('ecu')).doubleValue() >= ((Number)ex.get('ecu')).doubleValue()))));
+                Map win = recWins ? rec : ex;
+                Map lose = recWins ? ex : rec;
+                win.put('min_any_ing', mergedMinAny);
+                String wGrp = win.get('dep_group') != null ? win.get('dep_group').toString() : '';
+                String lGrp = lose.get('dep_group') != null ? lose.get('dep_group').toString() : '';
+                if (wGrp != '' && wGrp.equals(lGrp)) {
+                  long wMinG = win.get('min_grp_ing') instanceof Number ? ((Number)win.get('min_grp_ing')).longValue() : ((Number)win.get('ing_ts')).longValue();
+                  long lMinG = lose.get('min_grp_ing') instanceof Number ? ((Number)lose.get('min_grp_ing')).longValue() : ((Number)lose.get('ing_ts')).longValue();
+                  if (lMinG > 0L && (wMinG <= 0L || lMinG < wMinG)) { win.put('min_grp_ing', lMinG); }
+                  long wGfs = win.get('gfs') instanceof Number ? ((Number)win.get('gfs')).longValue() : 0L;
+                  long lGfs = lose.get('gfs') instanceof Number ? ((Number)lose.get('gfs')).longValue() : 0L;
+                  if (lGfs > 0L && (wGfs <= 0L || lGfs < wGfs)) { win.put('gfs', lGfs); }
+                }
+                if (recWins) {
+                  merged.put(k, win);
                 }
               }
             }
@@ -736,11 +859,32 @@ pivot:
             if (rec.get('b_unit') != '' && (bUnit == '' || isNewer)) { bUnit = rec.get('b_unit').toString(); }
             if (rec.get('c_region') != '' && (cRegion == '' || isNewer)) { cRegion = rec.get('c_region').toString(); }
           }
+          long resolvedGfs = 0L;
+          if (depGroup != '') {
+            long bestExplicitGfs = 0L;
+            long bestReplayIng = 0L;
+            for (def recObj : merged.values()) {
+              Map rec = (Map)recObj;
+              String rg = rec.get('dep_group') != null ? rec.get('dep_group').toString() : '';
+              if (!depGroup.equals(rg)) { continue; }
+              long eg = rec.get('gfs') instanceof Number ? ((Number)rec.get('gfs')).longValue() : 0L;
+              if (eg > 0L && (bestExplicitGfs <= 0L || eg < bestExplicitGfs)) {
+                bestExplicitGfs = eg;
+              }
+              long rAny = rec.get('min_any_ing') instanceof Number ? ((Number)rec.get('min_any_ing')).longValue() : 0L;
+              long rGrp = rec.get('min_grp_ing') instanceof Number ? ((Number)rec.get('min_grp_ing')).longValue() : 0L;
+              if (rAny > 0L && rGrp > rAny && (bestReplayIng <= 0L || rGrp < bestReplayIng)) {
+                bestReplayIng = rGrp;
+              }
+            }
+            resolvedGfs = bestExplicitGfs > 0L ? bestExplicitGfs : bestReplayIng;
+          }
           return [
             'doc_cnt': (long)merged.size(),
             'total_chargeable_units': sumEcu,
             'quantity_value': sumQty,
             'deployment_group': depGroup,
+            'group_first_seen': resolvedGfs > 0L ? resolvedGfs : null,
             'deployment_name': depName,
             'organization_id': orgId,
             'deployment_type': depType,

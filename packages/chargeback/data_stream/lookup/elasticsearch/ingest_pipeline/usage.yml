@@ -7,6 +7,33 @@ processors:
       source: |
         boolean isAuxWorkload = (ctx.model_id != null || ctx.monitor_id != null);
         if (isAuxWorkload) {
+          if (ctx.aux_rollup instanceof Map) {
+            Map ar = (Map)ctx.aux_rollup;
+            for (String nf : [
+              'inference_count', 'total_inference_time_ms', 'max_avg_ms',
+              'check_count', 'up_count', 'down_count',
+              'distinct_locations_count', 'max_locations_count',
+              'total_duration_ms', 'max_avg_duration_ms'
+            ]) {
+              if (ar.get(nf) != null) {
+                ctx[nf] = ar.get(nf);
+              }
+            }
+            for (String sf : ['deployment_name', 'monitor_name', 'monitor_namespace']) {
+              if (ar.get(sf) != null && ar.get(sf).toString() != '') {
+                ctx[sf] = ar.get(sf).toString();
+              }
+            }
+            if (ar.containsKey('deployment_group')) {
+              def adg = ar.get('deployment_group');
+              if (adg != null && adg.toString() != '') {
+                ctx.deployment_group = adg.toString();
+              } else {
+                ctx.remove('deployment_group');
+              }
+            }
+            ctx.remove('aux_rollup');
+          }
           if (ctx.latest_meta instanceof Map) {
             Map lm = (Map)ctx.latest_meta;
             Map tm = null;

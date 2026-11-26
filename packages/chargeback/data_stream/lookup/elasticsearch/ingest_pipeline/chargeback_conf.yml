@@ -21,6 +21,13 @@ processors:
             if (sTrim == '') { ctx.remove('conf_currency_symbol'); }
             else { ctx.conf_currency_symbol = sTrim; }
           }
+          if (ctx.conf_row_id != null) {
+            String rTrim = ctx.conf_row_id.toString().trim();
+            if (rTrim == '') { ctx.remove('conf_row_id'); }
+            else { ctx.conf_row_id = rTrim; }
+          } else if (ctx._id != null && ctx._id.toString().trim() != '') {
+            ctx.conf_row_id = ctx._id.toString().trim();
+          }
           return;
         }
         ctx._from_transform = true;
@@ -171,7 +178,8 @@ processors:
           String lUnit = (rawLUnit != null && rawLUnit.toString().trim() != '') ? rawLUnit.toString().trim().toUpperCase(Locale.ROOT) : 'EUR';
           def rawLSym = lc.get('conf_currency_symbol');
           String lSym = (rawLSym != null && rawLSym.toString().trim() != '') ? rawLSym.toString().trim() : (lUnit == 'USD' ? '$' : (lUnit == 'GBP' ? '£' : (lUnit == 'ZAR' ? 'R' : '€')));
-          ctx.conf_chargeable_unit_rate = (!fromDestV1 && manualId == '' && isLegacyOnpremKey) ? lOnpremRate : lRate;
+          boolean srcWasOnprem = 'chargeback_config_onprem'.equals(lc.get('config_join_key'));
+          ctx.conf_chargeable_unit_rate = (!fromDestV1 && manualId == '' && isLegacyOnpremKey && !srcWasOnprem) ? lOnpremRate : lRate;
           ctx.conf_chargeable_unit_rate_unit = lUnit;
           ctx.conf_currency_symbol = lSym;
           ctx.conf_indexing_weight = lIdxW;
@@ -355,6 +363,12 @@ processors:
       if: "ctx._from_transform == true && ctx._manual_doc_id == null && ctx.config_join_key == 'chargeback_config_onprem'"
       override: true
       tag: set_onprem_config_document_id
+  - set:
+      field: conf_row_id
+      value: "{{{_id}}}"
+      if: "ctx._from_transform == true && ctx._id != null"
+      override: true
+      tag: set_conf_row_id
   - remove:
       field:
         - _from_transform

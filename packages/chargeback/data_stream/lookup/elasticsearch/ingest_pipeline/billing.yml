@@ -15,7 +15,7 @@ processors:
             chosen = ctx.legacy;
           }
           if (chosen != ctx) {
-            for (String k : ['total_chargeable_units', 'quantity_value', 'deployment_group', 'deployment_name', 'organization_id', 'deployment_type', 'billing_type', 'billing_kind', 'billing_unit', 'cloud_region', 'is_onprem']) {
+            for (String k : ['total_chargeable_units', 'quantity_value', 'deployment_group', 'group_first_seen', 'deployment_name', 'organization_id', 'deployment_type', 'billing_type', 'billing_kind', 'billing_unit', 'cloud_region', 'is_onprem']) {
               if (chosen.containsKey(k)) {
                 ctx[k] = chosen[k];
               } else if (k == 'deployment_group') {
@@ -52,6 +52,34 @@ processors:
           ctx.deployment_group = '';
         } else {
           ctx.deployment_group = ctx.deployment_group.toString();
+        }
+        if (ctx.deployment_group == '') {
+          ctx.remove('group_first_seen');
+        } else if (ctx.group_first_seen != null) {
+          if (ctx.group_first_seen instanceof Number) {
+            long gMs = ((Number)ctx.group_first_seen).longValue();
+            if (gMs > 0L) {
+              ctx.group_first_seen = Instant.ofEpochMilli(gMs).toString();
+            } else {
+              ctx.remove('group_first_seen');
+            }
+          } else {
+            String gs = ctx.group_first_seen.toString().trim();
+            if (gs == '') {
+              ctx.remove('group_first_seen');
+            } else {
+              ctx.group_first_seen = gs;
+            }
+          }
+        }
+        if (ctx.deployment_group != '' && ctx.group_first_seen == null && ctx['@timestamp'] != null) {
+          def rawGts = ctx['@timestamp'];
+          if (rawGts instanceof Number) {
+            ctx.group_first_seen = Instant.ofEpochMilli(((Number)rawGts).longValue()).toString();
+          } else {
+            String gts = rawGts.toString().trim();
+            if (gts != '') { ctx.group_first_seen = gts; }
+          }
         }
         if (ctx.deployment_name == null || ctx.deployment_name.toString() == '') {
           if (ctx.deployment_id != null && ctx.deployment_id.toString().startsWith('unassociated_')) {

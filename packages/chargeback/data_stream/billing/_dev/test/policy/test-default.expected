@@ -102,6 +102,7 @@ inputs:
             [dyn({
             "doc_type": "config_snapshot",
             "conf_sync_enabled": true,
+            "conf_schema_version": 2,
             "conf_owner_id": clean_owner_id,
             "conf_chargeable_unit_rate": double(clean_rate),
             "conf_onprem_chargeable_unit_rate": clean_onprem_rate != "" ? double(clean_onprem_rate) : (double(clean_rate) / 1000.0),
@@ -114,7 +115,7 @@ inputs:
             "doc_type": "config_snapshot",
             "conf_sync_enabled": false,
             "conf_owner_id": clean_owner_id,
-            })]
+            }.with(state.?cursor.conf_sig.orValue("") != "" ? { "conf_schema_version": 2 } : {}))]
             : []))))).as(conf_evts,
             (clean_org_id == "" || clean_api_key == "" || clean_api_key.startsWith("$co.elastic.secret")) ?
             {
@@ -249,6 +250,17 @@ inputs:
             state.?cursor.recent_day_keys.orValue([]).filter(pk,
             has(pk.day) && pk.day != null && string(pk.day) >= replay_start_str
             ).as(pruned_recent_keys,
+            (state.?cursor.group_first_seen.orValue(dyn({})).as(rg, type(rg) == map ? rg : dyn({}))).as(raw_gfs,
+            bool(state.?cursor.group_obs_seeded.orValue(false)).as(prev_gfs_seeded,
+            pruned_recent_keys.map(pk,
+            (has(pk.deployment_tags) && pk.deployment_tags != null && type(pk.deployment_tags) == list) ?
+            (pk.deployment_tags.map(tg, string(tg).to_lower().startsWith("chargeback_group:") ? string(tg).substring(17, size(string(tg))).trim_space() : "").filter(g, g != "")).as(gs, size(gs) > 0 ? gs[0] : "")
+            : ""
+            ).filter(g, g != "" && !(g in raw_gfs)).as(pk_seed_groups,
+            (size(pk_seed_groups) > 0 ?
+            zip(pk_seed_groups, pk_seed_groups.map(g, initial_from.format(time_layout.RFC3339)))
+            : dyn({})).as(pk_seed_map,
+            raw_gfs.with(pk_seed_map).as(seeded_gfs,
             ((is_continuation && state.?next_from.orValue("") != "") ?
             max(
             timestamp(state.next_from).format(time_layout.DateOnly).parse_time(time_layout.DateOnly),
@@ -284,6 +296,8 @@ inputs:
             "replay_completed_to": replay_completed_to,
             "next_from": state.?cursor.next_from.orValue(req.from.format(time_layout.RFC3339)),
             "recent_day_keys": pruned_recent_keys,
+            "group_first_seen": seeded_gfs,
+            "group_obs_seeded": prev_gfs_seeded,
             "conf_sig": conf_sig,
             "last_credit_day": cred_res.credit_day,
             },
@@ -604,6 +618,8 @@ inputs:
             "replay_completed_to": replay_completed_to,
             "next_from": req.from.format(time_layout.RFC3339),
             "recent_day_keys": pruned_recent_keys,
+            "group_first_seen": seeded_gfs,
+            "group_obs_seeded": prev_gfs_seeded,
             "conf_sig": conf_sig,
             "last_credit_day": cred_res.credit_day,
             },
@@ -622,6 +638,8 @@ inputs:
             "replay_completed_to": replay_completed_to,
             "next_from": req.from.format(time_layout.RFC3339),
             "recent_day_keys": pruned_recent_keys,
+            "group_first_seen": seeded_gfs,
+            "group_obs_seeded": prev_gfs_seeded,
             "conf_sig": conf_sig,
             "last_credit_day": cred_res.credit_day,
             "disc_dep_from": dep_page.next_from,
@@ -661,6 +679,8 @@ inputs:
             "replay_completed_to": replay_completed_to,
             "next_from": req.from.format(time_layout.RFC3339),
             "recent_day_keys": pruned_recent_keys,
+            "group_first_seen": seeded_gfs,
+            "group_obs_seeded": prev_gfs_seeded,
             "conf_sig": conf_sig,
             "last_credit_day": cred_res.credit_day,
             },
@@ -679,6 +699,8 @@ inputs:
             "replay_completed_to": replay_completed_to,
             "next_from": req.from.format(time_layout.RFC3339),
             "recent_day_keys": pruned_recent_keys,
+            "group_first_seen": seeded_gfs,
+            "group_obs_seeded": prev_gfs_seeded,
             "conf_sig": conf_sig,
             "last_credit_day": cred_res.credit_day,
             },
@@ -716,6 +738,8 @@ inputs:
             "replay_completed_to": replay_completed_to,
             "next_from": req.from.format(time_layout.RFC3339),
             "recent_day_keys": pruned_recent_keys,
+            "group_first_seen": seeded_gfs,
+            "group_obs_seeded": prev_gfs_seeded,
             "conf_sig": conf_sig,
             "last_credit_day": cred_res.credit_day,
             },
@@ -873,6 +897,8 @@ inputs:
             "replay_completed_to": replay_completed_to,
             "next_from": req.from.format(time_layout.RFC3339),
             "recent_day_keys": pruned_recent_keys,
+            "group_first_seen": seeded_gfs,
+            "group_obs_seeded": prev_gfs_seeded,
             "conf_sig": conf_sig,
             "last_credit_day": cred_res.credit_day,
             },
@@ -1032,9 +1058,33 @@ inputs:
             })
             )
             ).as(day_evts,
-            (meta_evts + disc_errs + day_evts).as(final_evts,
             (dep_failed || es_failed || obs_failed || sec_failed || vdb_failed).as(disc_had_err,
             (req.to + duration("26h") <= now).as(has_more_days,
+            ((!prev_gfs_seeded) ?
+            ((high_water >= latest_ready_to) ? initial_from.format(time_layout.RFC3339) : req.from.format(time_layout.RFC3339))
+            : now.format(time_layout.RFC3339)
+            ).as(new_gfs_ts,
+            (
+            day_evts.map(e,
+            (has(e.ess) && e.ess != null && has(e.ess.billing) && e.ess.billing != null && has(e.ess.billing.deployment_tags) && e.ess.billing.deployment_tags != null && type(e.ess.billing.deployment_tags) == list) ?
+            (e.ess.billing.deployment_tags.map(tg, string(tg).to_lower().startsWith("chargeback_group:") ? string(tg).substring(17, size(string(tg))).trim_space() : "").filter(g, g != "")).as(gs, size(gs) > 0 ? gs[0] : "")
+            : ""
+            ) +
+            ech_deps.map(d, (has(d.tags) && d.tags != null && type(d.tags) == list) ? (d.tags.map(tg, string(tg).to_lower().startsWith("chargeback_group:") ? string(tg).substring(17, size(string(tg))).trim_space() : "").filter(g, g != "")).as(gs, size(gs) > 0 ? gs[0] : "") : "") +
+            sls_projs.map(p, (has(p.tags) && p.tags != null && type(p.tags) == list) ? (p.tags.map(tg, string(tg).to_lower().startsWith("chargeback_group:") ? string(tg).substring(17, size(string(tg))).trim_space() : "").filter(g, g != "")).as(gs, size(gs) > 0 ? gs[0] : "") : "")
+            ).filter(g, g != "" && !(g in seeded_gfs)).as(new_obs_groups,
+            (seeded_gfs.with(
+            size(new_obs_groups) > 0 ? zip(new_obs_groups, new_obs_groups.map(g, new_gfs_ts)) : dyn({})
+            )).as(merged_gfs,
+            day_evts.map(e,
+            ((has(e.ess) && e.ess != null && has(e.ess.billing) && e.ess.billing != null && has(e.ess.billing.deployment_tags) && e.ess.billing.deployment_tags != null && type(e.ess.billing.deployment_tags) == list) ?
+            (e.ess.billing.deployment_tags.map(tg, string(tg).to_lower().startsWith("chargeback_group:") ? string(tg).substring(17, size(string(tg))).trim_space() : "").filter(g, g != "")).as(gs, size(gs) > 0 ? gs[0] : "")
+            : "").as(eg,
+            (eg != "" && (eg in merged_gfs)) ? dyn(e.with({ "group_first_seen": string(merged_gfs[eg]) })) : e
+            )
+            ).as(stamped_day_evts,
+            (meta_evts + disc_errs + stamped_day_evts).as(final_evts,
+            (prev_gfs_seeded || ((high_water >= latest_ready_to || !has_more_days) && !disc_had_err)).as(next_gfs_seeded,
             (
             pruned_recent_keys.filter(pk, string(pk.day) != req.from.format(time_layout.RFC3339)) +
             ((req.from >= replay_start) ?
@@ -1063,6 +1113,8 @@ inputs:
             "replay_completed_to": (high_water >= latest_ready_to && !has_more_days) ? latest_ready_to_str : replay_completed_to,
             "next_from": has_more_days ? req.to.format(time_layout.RFC3339) : replay_start_str,
             "recent_day_keys": updated_recent_keys,
+            "group_first_seen": merged_gfs,
+            "group_obs_seeded": next_gfs_seeded,
             "conf_sig": conf_sig,
             "last_credit_day": cred_res.credit_day,
             "disc_dep_from": -1,
@@ -1079,6 +1131,8 @@ inputs:
             "replay_completed_to": (high_water >= latest_ready_to && !has_more_days) ? latest_ready_to_str : replay_completed_to,
             "next_from": has_more_days ? req.to.format(time_layout.RFC3339) : replay_start_str,
             "recent_day_keys": updated_recent_keys,
+            "group_first_seen": merged_gfs,
+            "group_obs_seeded": next_gfs_seeded,
             "conf_sig": conf_sig,
             "last_credit_day": cred_res.credit_day,
             },
@@ -1086,9 +1140,7 @@ inputs:
             "want_more": has_more_days,
             }
             )
-            )
-            )
-            )
+            ))))))))))
             )
             )
             )
@@ -1111,6 +1163,8 @@ inputs:
             "replay_completed_to": replay_completed_to,
             "next_from": req.from.format(time_layout.RFC3339),
             "recent_day_keys": pruned_recent_keys,
+            "group_first_seen": seeded_gfs,
+            "group_obs_seeded": prev_gfs_seeded,
             "conf_sig": conf_sig,
             "last_credit_day": cred_res.credit_day,
             },
@@ -1127,7 +1181,7 @@ inputs:
             )
             )))))))))
             ))))))
-            )))))))))))))))
+            ))))))))))))))))))))
             )
           publisher_pipeline.disable_host: true
           redact:

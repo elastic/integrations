@@ -81,6 +81,7 @@ program: |-
   [dyn({
   "doc_type": "config_snapshot",
   "conf_sync_enabled": true,
+  "conf_schema_version": 2,
   "conf_owner_id": clean_owner_id,
   "conf_indexing_weight": int(state.conf_indexing_weight),
   "conf_query_weight": int(state.conf_query_weight),
@@ -91,7 +92,7 @@ program: |-
   "doc_type": "config_snapshot",
   "conf_sync_enabled": false,
   "conf_owner_id": clean_owner_id,
-  })]
+  }.with(state.?cursor.conf_sig.orValue("") != "" ? { "conf_schema_version": 2 } : {}))]
   : []))).as(conf_evts,
   state.poll_interval.trim_space().as(raw_poll_iv,
   try(int(duration(raw_poll_iv != "" ? raw_poll_iv : "10m").getSeconds()), "iv_err").as(parsed_iv_sec,
