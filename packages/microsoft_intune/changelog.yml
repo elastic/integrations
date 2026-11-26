@@ -2,33 +2,22 @@
 - version: "0.4.0"
   changes:
     - description: >-
-        The separate Audit and Managed Device Event Hub inputs are replaced by one input that reads
-        the Event Hub once and routes events to the audit and managed_device data streams by log
-        category. The Event Hub settings move from the inputs to the integration settings, so
-        existing integration policies cannot be upgraded automatically and keep running the previous
-        version until you edit them. To upgrade a policy, enter the Azure Event Hub, Consumer Group,
-        Connection String, Storage Account and Storage Account Key again, and reapply any optional
-        settings you changed, such as Preserve original event. Consumer Group resets to $Default, so
-        enter your own consumer group again if you used one. If you set a custom Storage Account
-        Container, use the same value. With the same consumer group and container, the agent
-        continues from its existing checkpoints. Otherwise it reads the Event Hub again from the
-        start and can index duplicate events. Custom Tags must also be entered again, and they now
-        apply to all log categories. If the Audit and Managed Device inputs read from different
-        Event Hubs, send both log categories to one Event Hub, or add a second Microsoft Intune
-        integration policy for the second Event Hub.
+        The Audit and Managed Device Event Hub inputs are replaced by one input that routes events
+        to the audit and managed_device data streams by log category. The Event Hub settings move to
+        the integration settings, so existing policies keep running the previous version until you
+        edit them. To upgrade a policy, enter the Event Hub settings, the Consumer Group (it resets
+        to $Default), your optional settings and custom Tags again. Keep the same Consumer Group and
+        Storage Account Container to continue from the existing checkpoints and avoid duplicate
+        events. If the two inputs read from different Event Hubs, send both log categories to one
+        Event Hub or add a second policy. The Preserve duplicate custom fields setting is also
+        removed: vendor fields that are copied to ECS fields are always removed, so use the ECS
+        fields instead.
       type: breaking-change
       link: https://github.com/elastic/integrations/pull/22747
     - description: >-
-        The Preserve duplicate custom fields setting is removed. Vendor fields that are copied to
-        ECS fields, such as microsoft_intune.audit.identity and
-        microsoft_intune.managed_device.properties.device_name, are now always removed from the
-        event. Use the ECS fields instead.
-      type: breaking-change
-      link: https://github.com/elastic/integrations/pull/22747
-    - description: >-
-        Parse the compliance fields of device compliance records (DeviceComplianceOrg log
-        category) in the managed_device data stream, such as compliance state, owner type and
-        device health threat level.
+        Parse the compliance fields of device compliance records (DeviceComplianceOrg log category)
+        in the managed_device data stream, such as compliance state, owner type and device health
+        threat level.
       type: enhancement
       link: https://github.com/elastic/integrations/pull/22747
     - description: >-
