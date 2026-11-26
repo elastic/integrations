@@ -1,0 +1,362 @@
+{
+    "expected": [
+        {
+            "cloud": {
+                "provider": "gcp",
+                "service": {
+                    "name": "vertex-ai"
+                }
+            },
+            "ecs": {
+                "version": "9.5.0"
+            },
+            "event": {
+                "action": "GenerateContent",
+                "kind": "event",
+                "type": [
+                    "info"
+                ]
+            },
+            "gcp": {
+                "vertexai": {
+                    "prompt_response_logs": {
+                        "api_method": "GenerateContent",
+                        "full_request": {
+                            "contents": [
+                                {
+                                    "parts": [
+                                        {
+                                            "text": "Hello world!"
+                                        }
+                                    ],
+                                    "role": "user"
+                                }
+                            ],
+                            "generation_config": {
+                                "max_output_tokens": 8192,
+                                "temperature": 0
+                            },
+                            "model": "projects/elastic-sa/locations/us-central1/publishers/google/models/gemini-2.5-pro"
+                        },
+                        "full_response": {
+                            "candidates": [
+                                {
+                                    "content": {
+                                        "parts": [
+                                            {
+                                                "text": "Hello there!"
+                                            }
+                                        ],
+                                        "role": "model"
+                                    },
+                                    "finish_reason": "STOP"
+                                }
+                            ],
+                            "model_version": "gemini-2.5-pro",
+                            "response_id": "y0S_aMGPArCYqsMPntGNyA4",
+                            "usage_metadata": {
+                                "candidates_token_count": 29,
+                                "prompt_token_count": 3,
+                                "thoughts_token_count": 901,
+                                "total_token_count": 933
+                            }
+                        },
+                        "model": "publishers/google/models/gemini-2.5-pro",
+                        "model_version": "default"
+                    }
+                }
+            },
+            "gen_ai": {
+                "input": {
+                    "messages": [
+                        {
+                            "parts": [
+                                {
+                                    "content": "Hello world!",
+                                    "type": "text"
+                                }
+                            ],
+                            "role": "user"
+                        }
+                    ]
+                },
+                "operation": {
+                    "name": "generate_content"
+                },
+                "output": {
+                    "messages": [
+                        {
+                            "finish_reason": "stop",
+                            "parts": [
+                                {
+                                    "content": "Hello there!",
+                                    "type": "text"
+                                }
+                            ],
+                            "role": "assistant"
+                        }
+                    ]
+                },
+                "provider": {
+                    "name": "gcp.vertex_ai"
+                },
+                "request": {
+                    "max_tokens": 8192,
+                    "model": "publishers/google/models/gemini-2.5-pro",
+                    "temperature": 0.0
+                },
+                "response": {
+                    "finish_reasons": [
+                        "STOP"
+                    ],
+                    "id": "y0S_aMGPArCYqsMPntGNyA4",
+                    "model": "gemini-2.5-pro"
+                },
+                "usage": {
+                    "input_tokens": 3,
+                    "output_tokens": 930
+                }
+            },
+            "service": {
+                "name": "vertex-ai",
+                "type": "ai-platform"
+            }
+        },
+        {
+            "cloud": {
+                "provider": "gcp",
+                "service": {
+                    "name": "vertex-ai"
+                }
+            },
+            "ecs": {
+                "version": "9.5.0"
+            },
+            "event": {
+                "action": "StreamGenerateContent",
+                "kind": "event",
+                "type": [
+                    "info"
+                ]
+            },
+            "gcp": {
+                "vertexai": {
+                    "prompt_response_logs": {
+                        "api_method": "StreamGenerateContent",
+                        "full_request": {
+                            "contents": [
+                                {
+                                    "parts": [
+                                        {
+                                            "text": "Weather in Paris?"
+                                        }
+                                    ],
+                                    "role": "user"
+                                },
+                                {
+                                    "parts": [
+                                        {
+                                            "function_response": {
+                                                "name": "get_weather",
+                                                "response": {
+                                                    "temp": "18C"
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "role": "user"
+                                }
+                            ],
+                            "generation_config": {
+                                "candidate_count": 1,
+                                "response_mime_type": "text/plain",
+                                "seed": 7,
+                                "stop_sequences": [
+                                    "END"
+                                ],
+                                "temperature": 0.2,
+                                "top_k": 20,
+                                "top_p": 0.9
+                            },
+                            "system_instruction": {
+                                "parts": [
+                                    {
+                                        "text": "You are a weather assistant."
+                                    }
+                                ]
+                            },
+                            "tools": [
+                                {
+                                    "function_declarations": [
+                                        {
+                                            "description": "Get the weather",
+                                            "name": "get_weather",
+                                            "parameters": {
+                                                "properties": {
+                                                    "city": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        "full_response": {
+                            "candidates": [
+                                {
+                                    "content": {
+                                        "parts": [
+                                            {
+                                                "text": "Look up Paris.",
+                                                "thought": true
+                                            },
+                                            {
+                                                "function_call": {
+                                                    "args": {
+                                                        "city": "Paris"
+                                                    },
+                                                    "id": "call_1",
+                                                    "name": "get_weather"
+                                                }
+                                            }
+                                        ],
+                                        "role": "model"
+                                    },
+                                    "finish_reason": "STOP"
+                                }
+                            ],
+                            "model_version": "gemini-2.0-flash",
+                            "response_id": "resp-weather-1",
+                            "usage_metadata": {
+                                "candidates_token_count": 8,
+                                "prompt_token_count": 12
+                            }
+                        },
+                        "model": "publishers/google/models/gemini-2.0-flash"
+                    }
+                }
+            },
+            "gen_ai": {
+                "input": {
+                    "messages": [
+                        {
+                            "parts": [
+                                {
+                                    "content": "Weather in Paris?",
+                                    "type": "text"
+                                }
+                            ],
+                            "role": "user"
+                        },
+                        {
+                            "parts": [
+                                {
+                                    "name": "get_weather",
+                                    "response": {
+                                        "temp": "18C"
+                                    },
+                                    "type": "tool_call_response"
+                                }
+                            ],
+                            "role": "tool"
+                        }
+                    ]
+                },
+                "operation": {
+                    "name": "generate_content"
+                },
+                "output": {
+                    "messages": [
+                        {
+                            "finish_reason": "stop",
+                            "parts": [
+                                {
+                                    "content": "Look up Paris.",
+                                    "type": "reasoning"
+                                },
+                                {
+                                    "arguments": {
+                                        "city": "Paris"
+                                    },
+                                    "id": "call_1",
+                                    "name": "get_weather",
+                                    "type": "tool_call"
+                                }
+                            ],
+                            "role": "assistant"
+                        }
+                    ],
+                    "type": "text"
+                },
+                "provider": {
+                    "name": "gcp.vertex_ai"
+                },
+                "request": {
+                    "choice": {
+                        "count": 1
+                    },
+                    "model": "publishers/google/models/gemini-2.0-flash",
+                    "seed": 7,
+                    "stop_sequences": [
+                        "END"
+                    ],
+                    "temperature": 0.2,
+                    "top_k": 20,
+                    "top_p": 0.9
+                },
+                "response": {
+                    "finish_reasons": [
+                        "STOP"
+                    ],
+                    "id": "resp-weather-1",
+                    "model": "gemini-2.0-flash"
+                },
+                "system_instructions": [
+                    {
+                        "content": "You are a weather assistant.",
+                        "type": "text"
+                    }
+                ],
+                "tool": {
+                    "call": {
+                        "id": [
+                            "call_1"
+                        ]
+                    },
+                    "definitions": [
+                        {
+                            "description": "Get the weather",
+                            "name": "get_weather",
+                            "parameters": {
+                                "properties": {
+                                    "city": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            },
+                            "type": "function"
+                        }
+                    ],
+                    "name": [
+                        "get_weather"
+                    ],
+                    "type": [
+                        "function"
+                    ]
+                },
+                "usage": {
+                    "input_tokens": 12,
+                    "output_tokens": 8
+                }
+            },
+            "service": {
+                "name": "vertex-ai",
+                "type": "ai-platform"
+            }
+        }
+    ]
+}

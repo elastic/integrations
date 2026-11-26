@@ -148,6 +148,14 @@ Before configuring this integration, you must export Vertex AI logs to a BigQuer
 
 Refer to [Google Cloud Platform troubleshooting](https://www.elastic.co/guide/en/integrations/current/gcp.html#_troubleshooting) for more information about troubleshooting.
 
+## Generative AI fields
+
+`gen_ai.provider.name` is `gcp.vertex_ai`. `event.action` keeps the Vertex method, such as `GenerateContent` or the full audit method name. `gen_ai.operation.name` is `generate_content` for `GenerateContent`, `StreamGenerateContent`, and `BidiGenerateContent`. `CountTokens` and admin audit methods leave the operation unset.
+
+Prompt response logs supply the model, token totals, system instruction, and the message contents. Output tokens include `thoughts_token_count`. A part with `thought: true` is stored as a reasoning part. Metric documents copy the publisher model and the token count for that row's `input` or `output` type. These logs do not include a caller principal, so `user.name` is not set.
+
+When a response contains several function calls, `gen_ai.tool.name`, `gen_ai.tool.type`, and `gen_ai.tool.call.id` are arrays in the order the model generated them. That pairing exists only in `_source`. `MV_COUNT(gen_ai.tool.call.id)` counts the calls.
+
 ## Metrics reference
 
 An example event for `metrics` looks as following:
@@ -170,7 +178,7 @@ An example event for `metrics` looks as following:
     },
     "@timestamp": "2024-11-07T05:50:40.000Z",
     "ecs": {
-        "version": "8.0.0"
+        "version": "9.5.0"
     },
     "gcp": {
         "vertexai": {
@@ -222,6 +230,20 @@ An example event for `metrics` looks as following:
         "ingested": "2024-11-07T05:57:17Z",
         "module": "gcp",
         "dataset": "gcp_vertexai.metrics"
+    },
+    "gen_ai": {
+        "provider": {
+            "name": "gcp.vertex_ai"
+        },
+        "request": {
+            "model": "gemini-1.5-flash-002"
+        },
+        "token": {
+            "type": "input"
+        },
+        "usage": {
+            "input_tokens": 13
+        }
     }
 }
 ```
@@ -238,6 +260,7 @@ Check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | gcp.labels.metrics.deployed_model_id | The ID of the DeployedModel which serves the prediction request. | keyword |  |  |
 | gcp.labels.metrics.error_category | Response error category of the request (user/system/capacity). | keyword |  |  |
 | gcp.labels.metrics.input_token_size | The bucketized size of number of tokens in the prediction request. | keyword |  |  |
@@ -272,6 +295,11 @@ Check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-
 | gcp.vertexai.publisher.online_serving.model_invocation_count | Number of model invocations (prediction requests). | long |  | gauge |
 | gcp.vertexai.publisher.online_serving.model_invocation_latencies | Model invocation latencies (prediction latencies). | histogram |  |  |
 | gcp.vertexai.publisher.online_serving.token_count | Accumulated input/output token count. | long |  | gauge |
+| gen_ai.provider.name | The Generative AI provider as identified by the client or server instrumentation. | constant_keyword |  |  |
+| gen_ai.request.model | The name of the GenAI model a request is being made to. | keyword |  |  |
+| gen_ai.token.type | The type of token being counted. | keyword |  |  |
+| gen_ai.usage.input_tokens | The number of tokens used in the GenAI input (prompt). | long |  | gauge |
+| gen_ai.usage.output_tokens | The number of tokens used in the GenAI response (completion). | long |  | gauge |
 
 
 
@@ -290,7 +318,7 @@ An example event for `auditlogs` looks as following:
         "provider": "gcp"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.5.0"
     },
     "event": {
         "action": "google.cloud.aiplatform.internal.PredictionService.CountTokens",
@@ -344,6 +372,14 @@ An example event for `auditlogs` looks as following:
             "version": "10.15.7"
         },
         "version": "135.0.0.0"
+    },
+    "gen_ai": {
+        "provider": {
+            "name": "gcp.vertex_ai"
+        },
+        "request": {
+            "model": "projects/elastic-abs/locations/us-central1/publishers/google/models/gemini-2.0-flash-exp"
+        }
     }
 }
 ```
@@ -360,6 +396,8 @@ Check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | gcp.vertexai.audit.authentication_info.authority_selector | The authority selector specified by the requestor, if any. It is not guaranteed  that the principal was allowed to use this authority. | keyword |
 | gcp.vertexai.audit.authentication_info.principal_email | The email address of the authenticated user making the request. | keyword |
 | gcp.vertexai.audit.authentication_info.principal_subject | String representation of identity of requesting party. Populated for both first and third party identities. Only present for APIs that support third-party identities. | keyword |
@@ -394,6 +432,9 @@ Check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-
 | gcp.vertexai.audit.status.details | A list of messages that carry the error details. | flattened |
 | gcp.vertexai.audit.status.message | A developer-facing error message, which should be in English. Any user-facing  error message should be localized and sent in the google.rpc.Status.details  field, or localized by the client. | keyword |
 | gcp.vertexai.audit.type | Type of the logs. | keyword |
+| gen_ai.operation.name | The name of the operation being performed. | keyword |
+| gen_ai.provider.name | The Generative AI provider as identified by the client or server instrumentation. | constant_keyword |
+| gen_ai.request.model | The name of the GenAI model a request is being made to. | keyword |
 
 
 ### Prompt Response Logs 
@@ -425,7 +466,7 @@ An example event for `prompt_response` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.17.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
         "id": "34197d89-3b28-4bcf-9fe9-19336bab3a33",
@@ -534,6 +575,57 @@ An example event for `prompt_response` looks as following:
             "type": "linux",
             "version": "20230201"
         }
+    },
+    "gen_ai": {
+        "input": {
+            "messages": [
+                {
+                    "parts": [
+                        {
+                            "content": "Hello world!",
+                            "type": "text"
+                        }
+                    ],
+                    "role": "user"
+                }
+            ]
+        },
+        "operation": {
+            "name": "generate_content"
+        },
+        "output": {
+            "messages": [
+                {
+                    "finish_reason": "stop",
+                    "parts": [
+                        {
+                            "content": "Hello there! The classic programmer's greeting.\n\nIt's a good sign that everything is working. How can I help you today?",
+                            "type": "text"
+                        }
+                    ],
+                    "role": "assistant"
+                }
+            ]
+        },
+        "provider": {
+            "name": "gcp.vertex_ai"
+        },
+        "request": {
+            "max_tokens": 8192,
+            "model": "publishers/google/models/gemini-2.5-pro",
+            "temperature": 0.0
+        },
+        "response": {
+            "finish_reasons": [
+                "STOP"
+            ],
+            "id": "y0S_aMGPArCYqsMPntGNyA4",
+            "model": "gemini-2.5-pro"
+        },
+        "usage": {
+            "input_tokens": 3,
+            "output_tokens": 930
+        }
     }
 }
 ```
@@ -550,20 +642,34 @@ Check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | gcp.vertexai.prompt_response_logs.api_method | The API method called (e.g., generateContent, predict). | keyword |
 | gcp.vertexai.prompt_response_logs.deployed_model_id | The ID of the deployed model that processed the request. | keyword |
 | gcp.vertexai.prompt_response_logs.endpoint | The Vertex AI API endpoint URL used for the request. | keyword |
+| gcp.vertexai.prompt_response_logs.full_request.contents.parts.function_call | Function call sent back to the model in the request history. | flattened |
+| gcp.vertexai.prompt_response_logs.full_request.contents.parts.function_response | Function result sent back to the model. | flattened |
 | gcp.vertexai.prompt_response_logs.full_request.contents.parts.text | Text content of the prompt or message. | text |
+| gcp.vertexai.prompt_response_logs.full_request.contents.parts.thought | True when this part is a thinking summary rather than user text. | boolean |
 | gcp.vertexai.prompt_response_logs.full_request.contents.role | Role of the content sender (e.g., user, model, assistant). | keyword |
 | gcp.vertexai.prompt_response_logs.full_request.endpoint | The Vertex AI API endpoint URL used for the request. | keyword |
+| gcp.vertexai.prompt_response_logs.full_request.generation_config.candidate_count | Number of response candidates the client requested. | long |
 | gcp.vertexai.prompt_response_logs.full_request.generation_config.max_output_tokens | Maximum number of output tokens to generate. | long |
+| gcp.vertexai.prompt_response_logs.full_request.generation_config.response_mime_type | MIME type requested for the model response. | keyword |
+| gcp.vertexai.prompt_response_logs.full_request.generation_config.seed | Seed sent by the client. | long |
+| gcp.vertexai.prompt_response_logs.full_request.generation_config.stop_sequences | Stop sequences sent by the client. | keyword |
 | gcp.vertexai.prompt_response_logs.full_request.generation_config.temperature | Temperature setting for response randomness (0.0 to 1.0). | float |
+| gcp.vertexai.prompt_response_logs.full_request.generation_config.top_k | Top-k sampling value sent by the client. | long |
+| gcp.vertexai.prompt_response_logs.full_request.generation_config.top_p | Nucleus sampling value sent by the client. | float |
 | gcp.vertexai.prompt_response_logs.full_request.model | Full model path including project, location, and model name. | keyword |
 | gcp.vertexai.prompt_response_logs.full_request.safety_settings.category | Safety category (e.g., HARM_CATEGORY_DANGEROUS_CONTENT). | keyword |
 | gcp.vertexai.prompt_response_logs.full_request.safety_settings.threshold | Safety threshold level (e.g., BLOCK_ONLY_HIGH). | keyword |
 | gcp.vertexai.prompt_response_logs.full_request.system_instruction.parts.text | Text content of the system instruction. | text |
+| gcp.vertexai.prompt_response_logs.full_request.tools | Tool declarations sent by the client. | flattened |
 | gcp.vertexai.prompt_response_logs.full_response.candidates.avg_logprobs | Average log probabilities for the candidate. | float |
+| gcp.vertexai.prompt_response_logs.full_response.candidates.content.parts.function_call | Function call generated by the model. | flattened |
 | gcp.vertexai.prompt_response_logs.full_response.candidates.content.parts.text | Text content of the response. | text |
+| gcp.vertexai.prompt_response_logs.full_response.candidates.content.parts.thought | True when this part is model reasoning rather than the answer. | boolean |
 | gcp.vertexai.prompt_response_logs.full_response.candidates.content.role | Role of the response sender (e.g., model). | keyword |
 | gcp.vertexai.prompt_response_logs.full_response.candidates.finish_reason | Reason why the generation finished (e.g., STOP). | keyword |
 | gcp.vertexai.prompt_response_logs.full_response.candidates.safety_ratings.category | Safety category (e.g., HARM_CATEGORY_HATE_SPEECH). | keyword |
@@ -592,4 +698,27 @@ Check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-
 | gcp.vertexai.prompt_response_logs.request_id | Unique identifier for the AI request. | keyword |
 | gcp.vertexai.prompt_response_logs.request_payload | Array of request payload strings containing user prompts and inputs. | text |
 | gcp.vertexai.prompt_response_logs.response_payload | Array of response payload strings containing AI model outputs. | text |
+| gen_ai.input.messages | The chat history provided to the model as an input. | flattened |
+| gen_ai.operation.name | The name of the operation being performed. | keyword |
+| gen_ai.output.messages | Messages returned by the model where each message represents a specific model response (choice, candidate). | flattened |
+| gen_ai.output.type | Represents the content type requested by the client. | keyword |
+| gen_ai.provider.name | The Generative AI provider as identified by the client or server instrumentation. | constant_keyword |
+| gen_ai.request.choice.count | The target number of candidate completions to return. | long |
+| gen_ai.request.max_tokens | The maximum number of tokens the model generates for a request. | long |
+| gen_ai.request.model | The name of the GenAI model a request is being made to. | keyword |
+| gen_ai.request.seed | Requests with same seed value more likely to return same result. | long |
+| gen_ai.request.stop_sequences | List of sequences that the model will use to stop generating further tokens. Defined locally as keyword because ECS types it as nested without properties (elastic/ecs#2560). | keyword |
+| gen_ai.request.temperature | The temperature setting for the GenAI request. | double |
+| gen_ai.request.top_k | The top_k sampling setting for the GenAI request. | double |
+| gen_ai.request.top_p | The top_p sampling setting for the GenAI request. | double |
+| gen_ai.response.finish_reasons | Array of reasons the model stopped generating tokens, corresponding to each generation received. Defined locally as keyword because ECS types it as nested without properties (elastic/ecs#2560). | keyword |
+| gen_ai.response.id | The unique identifier for the completion. | keyword |
+| gen_ai.response.model | The name of the model that generated the response. | keyword |
+| gen_ai.system_instructions | The system message or instructions provided to the GenAI model separately from the chat history. | flattened |
+| gen_ai.tool.call.id | The tool call identifier. | keyword |
+| gen_ai.tool.definitions | The list of source system tool definitions available to the GenAI agent or model. | flattened |
+| gen_ai.tool.name | Name of the tool utilized by the agent. | keyword |
+| gen_ai.tool.type | Type of the tool utilized by the agent | keyword |
+| gen_ai.usage.input_tokens | The number of tokens used in the GenAI input (prompt). | long |
+| gen_ai.usage.output_tokens | The number of tokens used in the GenAI response (completion). | long |
 

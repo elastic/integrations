@@ -69,6 +69,60 @@ processors:
       field:
         - gcp.metrics
       ignore_missing: true
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.5.0'
+  - set:
+      tag: set_gen_ai_provider_name
+      field: gen_ai.provider.name
+      value: gcp.vertex_ai
+  - set:
+      tag: set_gen_ai_request_model
+      field: gen_ai.request.model
+      copy_from: gcp.labels.resource.model_user_id
+      ignore_empty_value: true
+      if: ctx.gcp?.labels?.resource?.model_user_id != null
+  - set:
+      tag: set_gen_ai_token_type_input
+      field: gen_ai.token.type
+      value: input
+      if: ctx.gcp?.vertexai?.publisher?.online_serving?.token_count != null && ctx.gcp?.labels?.metrics?.type instanceof String && ctx.gcp.labels.metrics.type.toLowerCase() == 'input'
+  - set:
+      tag: set_gen_ai_token_type_output
+      field: gen_ai.token.type
+      value: output
+      if: ctx.gcp?.vertexai?.publisher?.online_serving?.token_count != null && ctx.gcp?.labels?.metrics?.type instanceof String && ctx.gcp.labels.metrics.type.toLowerCase() == 'output'
+  - convert:
+      tag: convert_gen_ai_usage_input_tokens
+      field: gcp.vertexai.publisher.online_serving.token_count
+      target_field: gen_ai.usage.input_tokens
+      type: long
+      ignore_missing: true
+      if: ctx.gen_ai?.token?.type == 'input'
+      on_failure:
+        - remove:
+            tag: remove_token_count_on_input_convert_failure
+            field: gcp.vertexai.publisher.online_serving.token_count
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_gen_ai_usage_output_tokens
+      field: gcp.vertexai.publisher.online_serving.token_count
+      target_field: gen_ai.usage.output_tokens
+      type: long
+      ignore_missing: true
+      if: ctx.gen_ai?.token?.type == 'output'
+      on_failure:
+        - remove:
+            tag: remove_token_count_on_output_convert_failure
+            field: gcp.vertexai.publisher.online_serving.token_count
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 on_failure:
   - set:
       field: event.kind

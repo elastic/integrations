@@ -9,7 +9,7 @@ processors:
       ignore_missing: true
   - set:
       field: ecs.version
-      value: '8.17.0'
+      value: '9.5.0'
   - set:
       field: event.kind
       value: event
@@ -72,7 +72,9 @@ processors:
             ctx.gcp.vertexai.prompt_response_logs.full_response = keysToSnakeCase(ctx.gcp.vertexai.prompt_response_logs.full_response);
         }
 
-
+  - pipeline:
+      name: '{{ IngestPipeline "genai" }}'
+      tag: pipeline_genai
   # Remove null and empty values recursively
   - script:
       lang: painless

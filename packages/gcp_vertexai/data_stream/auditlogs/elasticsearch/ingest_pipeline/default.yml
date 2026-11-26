@@ -4,7 +4,7 @@ description: Pipeline for Google Cloud Vertex AI Audit logs
 processors:
   - set:
       field: ecs.version
-      value: '8.11.0'
+      value: '9.5.0'
   - set:
       field: event.kind
       value: event
@@ -331,6 +331,9 @@ processors:
           target_field: _ingest._value.permission_type
       if: ctx?.gcp?.vertexai?.audit?.authorization_info != null && ctx?.gcp?.vertexai?.audit?.authorization_info instanceof List
 
+  - pipeline:
+      name: '{{ IngestPipeline "genai" }}'
+      tag: pipeline_genai
   # Remove null and empty values recursively
   - script:
       lang: painless

@@ -148,6 +148,14 @@ Before configuring this integration, you must export Vertex AI logs to a BigQuer
 
 Refer to [Google Cloud Platform troubleshooting](https://www.elastic.co/guide/en/integrations/current/gcp.html#_troubleshooting) for more information about troubleshooting.
 
+## Generative AI fields
+
+`gen_ai.provider.name` is `gcp.vertex_ai`. `event.action` keeps the Vertex method, such as `GenerateContent` or the full audit method name. `gen_ai.operation.name` is `generate_content` for `GenerateContent`, `StreamGenerateContent`, and `BidiGenerateContent`. `CountTokens` and admin audit methods leave the operation unset.
+
+Prompt response logs supply the model, token totals, system instruction, and the message contents. Output tokens include `thoughts_token_count`. A part with `thought: true` is stored as a reasoning part. Metric documents copy the publisher model and the token count for that row's `input` or `output` type. These logs do not include a caller principal, so `user.name` is not set.
+
+When a response contains several function calls, `gen_ai.tool.name`, `gen_ai.tool.type`, and `gen_ai.tool.call.id` are arrays in the order the model generated them. That pairing exists only in `_source`. `MV_COUNT(gen_ai.tool.call.id)` counts the calls.
+
 ## Metrics reference
 
 {{event "metrics"}}

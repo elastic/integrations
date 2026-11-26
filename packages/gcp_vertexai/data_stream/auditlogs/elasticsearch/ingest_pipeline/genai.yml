@@ -1,0 +1,28 @@
+---
+description: Map Vertex AI audit logs to ECS gen_ai fields. event.action already holds the full method name.
+processors:
+  - set:
+      tag: set_gen_ai_provider_name
+      field: gen_ai.provider.name
+      value: gcp.vertex_ai
+  - script:
+      tag: script_set_gen_ai_operation_name
+      description: >-
+        Map GenerateContent, StreamGenerateContent, and BidiGenerateContent to
+        gen_ai.operation.name generate_content. CountTokens and admin methods stay unset.
+      lang: painless
+      if: ctx.event?.action instanceof String
+      source: |
+        def action = ctx.event.action;
+        int dot = action.lastIndexOf('.');
+        def leaf = dot >= 0 ? action.substring(dot + 1) : action;
+        if (leaf == 'GenerateContent' || leaf == 'StreamGenerateContent' || leaf == 'BidiGenerateContent') {
+          ctx.gen_ai = ctx.gen_ai ?: new HashMap();
+          ctx.gen_ai.operation = ['name': 'generate_content'];
+        }
+  - set:
+      tag: set_gen_ai_request_model_from_resource
+      field: gen_ai.request.model
+      copy_from: gcp.vertexai.audit.resource_name
+      ignore_empty_value: true
+      if: ctx.gcp?.vertexai?.audit?.resource_name instanceof String && ctx.gcp.vertexai.audit.resource_name.contains('/models/')
