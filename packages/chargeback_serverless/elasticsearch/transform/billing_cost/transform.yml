@@ -387,6 +387,40 @@ source:
             } catch (Exception e) {}
           }
           emit('');
+    cb_group_first_seen_at:
+      type: date
+      script:
+        source: |
+          try {
+            if (doc.containsKey('group_first_seen_at') && !doc['group_first_seen_at'].empty) {
+              emit(doc['group_first_seen_at'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            def raw = params._source?.group_first_seen_at;
+            if (raw instanceof Number) {
+              emit(((Number)raw).longValue());
+            } else if (raw != null && raw.toString().trim() != '') {
+              emit(ZonedDateTime.parse(raw.toString().trim()).toInstant().toEpochMilli());
+            }
+          } catch (Exception e) {}
+    cb_group_initial_backfill:
+      type: boolean
+      script:
+        source: |
+          try {
+            if (doc.containsKey('group_initial_backfill') && !doc['group_initial_backfill'].empty) {
+              emit(Boolean.TRUE.equals(doc['group_initial_backfill'].value));
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            def raw = params._source?.group_initial_backfill;
+            if (raw != null) {
+              emit((raw instanceof Boolean) ? ((Boolean)raw).booleanValue() : raw.toString().trim().equalsIgnoreCase('true'));
+            }
+          } catch (Exception e) {}
 dest:
   index: serverless_billing_cost_lookup-1
   aliases:
@@ -422,6 +456,8 @@ pivot:
         init_script: |
           state.nat = null;
           state.leg = new HashMap();
+          state.grp_seen = new HashMap();
+          state.grp_bf = new HashMap();
         map_script: |
           boolean isNat = false;
           try {
@@ -577,6 +613,26 @@ pivot:
             'conf_currency_symbol': cSym
           ];
 
+          if (depGroup != '') {
+            try {
+              if (doc.containsKey('cb_group_first_seen_at') && !doc['cb_group_first_seen_at'].empty) {
+                long gs = doc['cb_group_first_seen_at'].value.toInstant().toEpochMilli();
+                if (gs > 0L) {
+                  Long prevGs = (Long)state.grp_seen.get(depGroup);
+                  if (prevGs == null || gs < prevGs.longValue()) {
+                    state.grp_seen.put(depGroup, gs);
+                  }
+                }
+              }
+            } catch (Exception e) {}
+            try {
+              if (doc.containsKey('cb_group_initial_backfill') && !doc['cb_group_initial_backfill'].empty
+                  && Boolean.TRUE.equals(doc['cb_group_initial_backfill'].value)) {
+                state.grp_bf.put(depGroup, true);
+              }
+            } catch (Exception e) {}
+          }
+
           if (isNat) {
             if (state.nat == null) {
               state.nat = rec;
@@ -632,8 +688,27 @@ pivot:
         reduce_script: |
           Map bestNat = null;
           Map mergedLeg = new HashMap();
+          Map mergedGrpSeen = new HashMap();
+          Map mergedGrpBf = new HashMap();
           for (def st : states) {
             if (st == null) { continue; }
+            if (st.grp_seen instanceof Map) {
+              for (def ge : ((Map)st.grp_seen).entrySet()) {
+                String gk = ge.getKey().toString();
+                long gv = ((Number)ge.getValue()).longValue();
+                Long cur = (Long)mergedGrpSeen.get(gk);
+                if (cur == null || gv < cur.longValue()) {
+                  mergedGrpSeen.put(gk, gv);
+                }
+              }
+            }
+            if (st.grp_bf instanceof Map) {
+              for (def be : ((Map)st.grp_bf).entrySet()) {
+                if (Boolean.TRUE.equals(be.getValue())) {
+                  mergedGrpBf.put(be.getKey().toString(), true);
+                }
+              }
+            }
             if (st.nat instanceof Map) {
               Map cand = (Map)st.nat;
               if (bestNat == null) {
@@ -672,6 +747,17 @@ pivot:
             out.remove('ing_ts');
             if (((Number)out.get('conf_chargeable_unit_rate')).doubleValue() < 0.0) {
               out.remove('conf_chargeable_unit_rate');
+            }
+            String outGrp = out.get('deployment_group') != null ? out.get('deployment_group').toString() : '';
+            if (outGrp != '') {
+              if (mergedGrpSeen.containsKey(outGrp)) {
+                out.put('group_first_seen_at', mergedGrpSeen.get(outGrp));
+              }
+              if (mergedGrpBf.containsKey(outGrp)) {
+                out.put('group_initial_backfill', Boolean.TRUE.equals(mergedGrpBf.get(outGrp)));
+              } else if (mergedGrpSeen.containsKey(outGrp)) {
+                out.put('group_initial_backfill', false);
+              }
             }
             return out;
           }
@@ -732,6 +818,17 @@ pivot:
           if (cRate >= 0.0) { out.put('conf_chargeable_unit_rate', cRate); }
           if (cUnit != '') { out.put('conf_chargeable_unit_rate_unit', cUnit); }
           if (cSym != '') { out.put('conf_currency_symbol', cSym); }
+          String outGrp = out.get('deployment_group') != null ? out.get('deployment_group').toString() : '';
+          if (outGrp != '') {
+            if (mergedGrpSeen.containsKey(outGrp)) {
+              out.put('group_first_seen_at', mergedGrpSeen.get(outGrp));
+            }
+            if (mergedGrpBf.containsKey(outGrp)) {
+              out.put('group_initial_backfill', Boolean.TRUE.equals(mergedGrpBf.get(outGrp)));
+            } else if (mergedGrpSeen.containsKey(outGrp)) {
+              out.put('group_initial_backfill', false);
+            }
+          }
           return out;
 settings:
   deduce_mappings: false

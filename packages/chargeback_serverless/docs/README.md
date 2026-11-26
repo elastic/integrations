@@ -177,6 +177,8 @@ The `metrics-chargeback_serverless.billing` data stream collects daily closed-da
 | ess.billing.type | Billing line item or credit commitment type (for example capacity, data_out, data_in, ingest, storage, support, usage). | keyword |
 | ess.billing.unit | Unit of the resource being billed (for example, hour, GB) for ESS Billing compatibility. | keyword |
 | event.ingested | Ingest pipeline execution timestamp. | date |
+| group_first_seen_at | Immutable timestamp when this chargeback_group value was first observed by the billing collector. | date |
+| group_initial_backfill | True when this chargeback_group value was already present during initial billing backfill. | boolean |
 | input.type | Type of Filebeat input. | keyword |
 | is_allocatable | True if charge is allocatable to project data streams. | boolean |
 | project_id | Serverless project identifier. | keyword |

@@ -101,6 +101,15 @@ processors:
           if (snap.conf_currency_symbol != null && snap.conf_currency_symbol.toString() != '') {
             ctx.conf_currency_symbol = snap.conf_currency_symbol.toString();
           }
+          if (snap.group_first_seen_at instanceof Number) {
+            ctx.group_first_seen_at = Instant.ofEpochMilli(((Number)snap.group_first_seen_at).longValue()).toString();
+          } else if (snap.group_first_seen_at != null && snap.group_first_seen_at.toString() != '') {
+            try { ctx.group_first_seen_at = ZonedDateTime.parse(snap.group_first_seen_at.toString()).toInstant().toString(); }
+            catch (Exception e) { ctx.group_first_seen_at = snap.group_first_seen_at.toString(); }
+          }
+          if (snap.group_initial_backfill != null) {
+            ctx.group_initial_backfill = (snap.group_initial_backfill instanceof Boolean) ? ((Boolean)snap.group_initial_backfill).booleanValue() : snap.group_initial_backfill.toString().trim().equalsIgnoreCase('true');
+          }
           ctx.remove('latest_snapshot');
         }
         if (ctx.conf_chargeable_unit_rate_unit instanceof Map) {
@@ -149,6 +158,10 @@ processors:
         }
         if (ctx.deployment_group == null) {
           ctx.deployment_group = '';
+        }
+        if (ctx.deployment_group == null || ctx.deployment_group == '') {
+          ctx.remove('group_first_seen_at');
+          ctx.remove('group_initial_backfill');
         }
         if (ctx.total_ecu instanceof Number) {
           ctx.total_chargeable_units = ((Number)ctx.total_ecu).doubleValue();

@@ -235,6 +235,9 @@ inputs:
             replay_start.format(time_layout.RFC3339).as(replay_start_str,
             state.?cursor.replay_completed_to.orValue("").as(replay_completed_to,
             state.?cursor.replay_target_to.orValue("").as(replay_target_to,
+            now.format("2006-01-02T15:04:05.000Z").as(now_obs_ts,
+            (state.?cursor.backfill_complete.orValue(false) || high_water >= latest_ready_to).as(was_backfill_complete,
+            state.?cursor.known_groups.orValue([]).as(prev_known_groups,
             state.?cursor.recent_day_keys.orValue([]).filter(pk,
             has(pk.day) && pk.day != null && string(pk.day) >= replay_start_str
             ).as(pruned_recent_keys,
@@ -281,6 +284,8 @@ inputs:
             "empty_inst_retries": int(state.?cursor.empty_inst_retries.orValue(0)),
             "conf_sig": conf_sig,
             "last_credit_day": cred_res.credit_day,
+            "backfill_complete": was_backfill_complete,
+            "known_groups": prev_known_groups,
             },
             "next_from": req.from.format(time_layout.RFC3339),
             "want_more": false,
@@ -313,6 +318,8 @@ inputs:
             "empty_inst_retries": int(state.?cursor.empty_inst_retries.orValue(0)),
             "conf_sig": conf_sig,
             "last_credit_day": cred_res.credit_day,
+            "backfill_complete": was_backfill_complete,
+            "known_groups": prev_known_groups,
             },
             "next_from": req.from.format(time_layout.RFC3339),
             "want_more": false,
@@ -345,6 +352,8 @@ inputs:
             "empty_inst_retries": int(state.?cursor.empty_inst_retries.orValue(0)),
             "conf_sig": conf_sig,
             "last_credit_day": cred_res.credit_day,
+            "backfill_complete": was_backfill_complete,
+            "known_groups": prev_known_groups,
             },
             "next_from": req.from.format(time_layout.RFC3339),
             "want_more": false,
@@ -474,6 +483,8 @@ inputs:
             "empty_inst_retries": int(state.?cursor.empty_inst_retries.orValue(0)),
             "conf_sig": conf_sig,
             "last_credit_day": cred_res.credit_day,
+            "backfill_complete": was_backfill_complete,
+            "known_groups": prev_known_groups,
             "disc_es_next": discovery.es_next,
             "disc_obs_next": discovery.obs_next,
             "disc_sec_next": discovery.sec_next,
@@ -507,6 +518,8 @@ inputs:
             "empty_inst_retries": int(state.?cursor.empty_inst_retries.orValue(0)),
             "conf_sig": conf_sig,
             "last_credit_day": cred_res.credit_day,
+            "backfill_complete": was_backfill_complete,
+            "known_groups": prev_known_groups,
             },
             "next_from": req.from.format(time_layout.RFC3339),
             "cached_projects": null,
@@ -858,6 +871,8 @@ inputs:
             "empty_inst_retries": (state.?cursor.empty_inst_day.orValue("") == req.from.format(time_layout.RFC3339) ? int(state.?cursor.empty_inst_retries.orValue(0)) : 0) + 1,
             "conf_sig": conf_sig,
             "last_credit_day": cred_res.credit_day,
+            "backfill_complete": was_backfill_complete,
+            "known_groups": prev_known_groups,
             },
             "next_from": req.from.format(time_layout.RFC3339),
             "cached_projects": discovery.cache_ok ? projects : null,
@@ -883,6 +898,35 @@ inputs:
             "conf_currency_symbol": state.conf_currency_symbol,
             "ess": { "billing": { "organization_id": clean_org_id } },
             }.with((has(pk.region) && pk.region != null && string(pk.region) != "") ? { "cloud": { "region": string(pk.region) } } : {}).with((has(pk.deployment_tags) && pk.deployment_tags != null && size(pk.deployment_tags) > 0) ? { "deployment_tags": pk.deployment_tags } : {}).with((has(pk.billing_unit) && pk.billing_unit != null && string(pk.billing_unit) != "") ? { "billing_unit": string(pk.billing_unit) } : {}).with((has(pk.billing_type) && pk.billing_type != null && string(pk.billing_type) != "") ? { "billing_type": string(pk.billing_type) } : {}).with((has(pk.billing_kind) && pk.billing_kind != null && string(pk.billing_kind) != "") ? { "billing_kind": string(pk.billing_kind) } : {})
+            )
+            ).as(raw_day_evts,
+            raw_day_evts.map(e,
+            (has(e.deployment_tags) && e.deployment_tags != null) ?
+            e.deployment_tags.map(t, string(t).trim_space()).filter(ts, ts.to_lower().startsWith("chargeback_group:") && size(ts.substring(17, size(ts)).trim_space()) > 0).map(ts, ts.substring(17, size(ts)).trim_space())
+            : []
+            ).flatten().filter(g, g != "" && !prev_known_groups.exists(kg, string(kg.group) == g)).as(raw_new_groups,
+            (size(raw_new_groups) > 0 ?
+            zip(raw_new_groups, raw_new_groups).keys().map(ng, {
+            "group": string(ng),
+            "first_seen": was_backfill_complete ? now_obs_ts : req.from.format(time_layout.RFC3339),
+            "backfill": !was_backfill_complete,
+            })
+            : []
+            ).as(added_groups,
+            (prev_known_groups + added_groups).as(updated_known_groups,
+            raw_day_evts.map(e,
+            ((has(e.deployment_tags) && e.deployment_tags != null) ?
+            e.deployment_tags.map(t, string(t).trim_space()).filter(ts, ts.to_lower().startsWith("chargeback_group:") && size(ts.substring(17, size(ts)).trim_space()) > 0).map(ts, ts.substring(17, size(ts)).trim_space())
+            : []
+            ).as(e_grps,
+            size(e_grps) > 0 ?
+            updated_known_groups.filter(kg, string(kg.group) == e_grps[0]).as(matched_kg,
+            size(matched_kg) > 0 ? e.with({
+            "group_first_seen_at": string(matched_kg[0].first_seen),
+            "group_initial_backfill": bool(matched_kg[0].backfill),
+            }) : e
+            )
+            : e
             )
             ).as(evts,
             (
@@ -917,11 +961,17 @@ inputs:
             "empty_inst_retries": 0,
             "conf_sig": conf_sig,
             "last_credit_day": cred_res.credit_day,
+            "backfill_complete": was_backfill_complete || req.to >= latest_ready_to || (req.to + duration("26h") > now),
+            "known_groups": updated_known_groups,
             },
             "next_from": (req.to + duration("26h") <= now) ? req.to.format(time_layout.RFC3339) : replay_start_str,
             "cached_projects": discovery.cache_ok ? projects : null,
             "want_more": req.to + duration("26h") <= now,
             }
+            )
+            )
+            )
+            )
             )
             )
             )
@@ -946,6 +996,8 @@ inputs:
             "empty_inst_retries": int(state.?cursor.empty_inst_retries.orValue(0)),
             "conf_sig": conf_sig,
             "last_credit_day": cred_res.credit_day,
+            "backfill_complete": was_backfill_complete,
+            "known_groups": prev_known_groups,
             },
             "next_from": req.from.format(time_layout.RFC3339),
             "want_more": false,
@@ -967,6 +1019,8 @@ inputs:
             "empty_inst_retries": int(state.?cursor.empty_inst_retries.orValue(0)),
             "conf_sig": conf_sig,
             "last_credit_day": cred_res.credit_day,
+            "backfill_complete": was_backfill_complete,
+            "known_groups": prev_known_groups,
             },
             "next_from": req.from.format(time_layout.RFC3339),
             "want_more": false,
@@ -979,7 +1033,7 @@ inputs:
             )
             )
             )
-            ))))))))))))))))))))))
+            )))))))))))))))))))))))))
           publisher_pipeline.disable_host: true
           redact:
             fields:

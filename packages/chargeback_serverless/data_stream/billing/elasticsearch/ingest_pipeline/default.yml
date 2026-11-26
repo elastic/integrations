@@ -79,6 +79,15 @@ processors:
       field: period_start
       ignore_missing: true
       tag: remove_period_start
+  - date:
+      field: group_first_seen_at
+      target_field: group_first_seen_at
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.group_first_seen_at != null
+      ignore_failure: true
+      tag: parse_group_first_seen_at
   - fingerprint:
       if: "(ctx.doc_type == 'billing_line_item' || (ctx.doc_type == null && ctx.sku != null)) && ctx.error?.message == null"
       fields:

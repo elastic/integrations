@@ -38,6 +38,21 @@ stdout '^stale_or_unauthorized_harvest$'
 exec jq -r '.[0].unit' alert_rows.json
 stdout '^ECU$'
 
+exec jq -r 'length' spike_rows.json
+stdout '^0$'
+
+exec jq -r '.[0].unit' monthly_rows.json
+stdout '^ZAR$'
+
+exec jq -r 'length' new_group_rows.json
+stdout '^1$'
+
+exec jq -r '.[0].deployment_group' new_group_rows.json
+stdout '^replayed-new-grp$'
+
+exec jq -r 'map(.idx_group) | index("serverless_billing_realized_pool_lookup") != null' health_rows.json
+stdout '^true$'
+
 exec jq -r '.docs[0].doc._source | "\(.ds_type)|\(.ds_dataset)|\(.ds_namespace)"' lookup_usage_sim.json
 stdout '^index\|logs-nginx\.access-prod-eu-west\|default$'
 
@@ -75,7 +90,7 @@ cleanup() {
   curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" \
     -X POST "${ES_HOST}/serverless_billing_cost_lookup-1,serverless_project_status_lookup-1,serverless_project_contribution_lookup-1/_delete_by_query?refresh=true" \
     -H 'Content-Type: application/json' \
-    -d '{"query":{"terms":{"project_id":["proj-healthy","proj-stale-unbilled","proj-inactive"]}}}' >/dev/null 2>&1 || true
+    -d '{"query":{"terms":{"project_id":["proj-healthy","proj-stale-unbilled","proj-inactive","proj-legacy-only","proj-currency-flip","proj-grp-backfill","proj-grp-new"]}}}' >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
 
@@ -94,6 +109,8 @@ BILL_DAY="$(jq -nr '(((now - 21600) / 86400 | floor) * 86400 - 86400) | strftime
 HEALTHY_UPDATED_AT="$(jq -nr '(now - 3600) | strftime("%Y-%m-%dT%H:%M:%SZ")')"
 STALE_DAY="$(jq -nr '(((now - 21600) / 86400 | floor) * 86400 - 4 * 86400) | strftime("%Y-%m-%dT00:00:00Z")')"
 STALE_UPDATED_AT="$(jq -nr '(now - 96 * 3600) | strftime("%Y-%m-%dT%H:%M:%SZ")')"
+PAST_DAY="$(jq -nr '(((now - 21600) / 86400 | floor) * 86400 - 5 * 86400) | strftime("%Y-%m-%dT00:00:00Z")')"
+REPLAY_OLD_DAY="$(jq -nr '(((now - 21600) / 86400 | floor) * 86400 - 6 * 86400) | strftime("%Y-%m-%dT00:00:00Z")')"
 
 BILL_PIPELINE="logs-chargeback_serverless.lookup-${CURRENT_VERSION}-lookup_billing"
 USAGE_PIPELINE="logs-chargeback_serverless.lookup-${CURRENT_VERSION}-lookup_usage"
@@ -212,8 +229,148 @@ jq '{query: .attributes.params.esqlQuery.esql}' "${RULE_FILE}" | \
 jq '
   .columns as $cols |
   [ .values[] | [ range(0; ($cols | length)) as $i | { ($cols[$i].name): .[$i] } ] | add ] |
-  map(select(.project_id == null or .project_id == "" or .project_id == "proj-healthy" or .project_id == "proj-stale-unbilled" or .project_id == "proj-inactive"))
+  map(select(.project_id == null or .project_id == "" or .project_id == "proj-healthy" or .project_id == "proj-stale-unbilled" or .project_id == "proj-inactive" or .project_id == "proj-legacy-only"))
 ' raw_query_resp.json > alert_rows.json
+
+# Legacy-only project (no native status row) while proj-healthy has native status:
+# must NOT trigger false harvest alert when its contribution row is fresh.
+jq -n \
+  --arg ts "${BILL_DAY}" \
+  --arg ing "${HEALTHY_UPDATED_AT}" \
+  '{
+    "@timestamp": $ts,
+    "project_id": "proj-legacy-only",
+    "deployment_sum_indexing_time": 100,
+    "deployment_sum_query_time": 50,
+    "deployment_sum_data_set_store_size": 1024,
+    "latest_currency": {
+      "project_name": "Legacy Only Project",
+      "project_type": "elasticsearch",
+      "conf_chargeable_unit_rate": "1.0",
+      "conf_chargeable_unit_rate_unit": "ECU",
+      "conf_currency_symbol": "ECU"
+    }
+  }' | es_curl -X POST "${ES_HOST}/serverless_project_contribution_lookup-1/_doc?refresh=true&pipeline=${USAGE_PIPELINE}" \
+  -H 'Content-Type: application/json' -d @- >/dev/null
+
+# Re-run data-trust-health with legacy-only project present
+jq '{query: .attributes.params.esqlQuery.esql}' "${RULE_FILE}" | \
+  es_curl -X POST "${ES_HOST}/_query?format=json" -H 'Content-Type: application/json' -d @- > raw_query_resp.json
+jq '
+  .columns as $cols |
+  [ .values[] | [ range(0; ($cols | length)) as $i | { ($cols[$i].name): .[$i] } ] | add ] |
+  map(select(.project_id == null or .project_id == "" or .project_id == "proj-healthy" or .project_id == "proj-stale-unbilled" or .project_id == "proj-inactive" or .project_id == "proj-legacy-only"))
+' raw_query_resp.json > alert_rows.json
+
+# Multi-currency spend & spike fixture (USD -> ZAR flip with identical ECU must not trigger spike)
+jq -n \
+  --arg ts "${PAST_DAY}" \
+  '{
+    "@timestamp": $ts,
+    "project_id": "proj-currency-flip",
+    "sku": "es.search-vcu",
+    "latest_snapshot": {
+      "project_name": "Currency Flip ES",
+      "project_type": "elasticsearch",
+      "total_ecu": 100.0,
+      "quantity_value": 100.0,
+      "conf_chargeable_unit_rate": 1.0,
+      "conf_chargeable_unit_rate_unit": "USD",
+      "conf_currency_symbol": "$"
+    }
+  }' | es_curl -X POST "${ES_HOST}/serverless_billing_cost_lookup-1/_doc?refresh=true&pipeline=${BILL_PIPELINE}" \
+  -H 'Content-Type: application/json' -d @- >/dev/null
+
+jq -n \
+  --arg ts "${BILL_DAY}" \
+  '{
+    "@timestamp": $ts,
+    "project_id": "proj-currency-flip",
+    "sku": "es.search-vcu",
+    "latest_snapshot": {
+      "project_name": "Currency Flip ES",
+      "project_type": "elasticsearch",
+      "total_ecu": 100.0,
+      "quantity_value": 100.0,
+      "conf_chargeable_unit_rate": 18.0,
+      "conf_chargeable_unit_rate_unit": "ZAR",
+      "conf_currency_symbol": "R"
+    }
+  }' | es_curl -X POST "${ES_HOST}/serverless_billing_cost_lookup-1/_doc?refresh=true&pipeline=${BILL_PIPELINE}" \
+  -H 'Content-Type: application/json' -d @- >/dev/null
+
+SPIKE_RULE="${DATA_STREAM_ROOT}/../../kibana/alerting_rule_template/chargeback_serverless-alert-project-spend-spike.json"
+jq '{query: .attributes.params.esqlQuery.esql}' "${SPIKE_RULE}" | \
+  es_curl -X POST "${ES_HOST}/_query?format=json" -H 'Content-Type: application/json' -d @- > raw_spike_resp.json
+jq '
+  .columns as $cols |
+  [ .values[] | [ range(0; ($cols | length)) as $i | { ($cols[$i].name): .[$i] } ] | add ] |
+  map(select(.project_id == "proj-currency-flip"))
+' raw_spike_resp.json > spike_rows.json
+
+MONTHLY_RULE="${DATA_STREAM_ROOT}/../../kibana/alerting_rule_template/chargeback_serverless-alert-total-monthly-spend.json"
+jq '{query: (.attributes.params.esqlQuery.esql | sub("threshold_budget = 25000.0"; "threshold_budget = 100.0"))}' "${MONTHLY_RULE}" | \
+  es_curl -X POST "${ES_HOST}/_query?format=json" -H 'Content-Type: application/json' -d @- > raw_monthly_resp.json
+jq '
+  .columns as $cols |
+  [ .values[] | [ range(0; ($cols | length)) as $i | { ($cols[$i].name): .[$i] } ] | add ]
+' raw_monthly_resp.json > monthly_rows.json
+
+# 7-day replay new-group fixture: backfill-grp (initial backfill) vs replayed-new-grp (new after backfill)
+jq -n \
+  --arg ts "${REPLAY_OLD_DAY}" \
+  '{
+    "@timestamp": $ts,
+    "project_id": "proj-grp-backfill",
+    "sku": "es.search-vcu",
+    "latest_snapshot": {
+      "project_name": "Backfill Group ES",
+      "project_type": "elasticsearch",
+      "deployment_group": "backfill-grp",
+      "total_ecu": 10.0,
+      "quantity_value": 10.0,
+      "group_first_seen_at": $ts,
+      "group_initial_backfill": true
+    }
+  }' | es_curl -X POST "${ES_HOST}/serverless_billing_cost_lookup-1/_doc?refresh=true&pipeline=${BILL_PIPELINE}" \
+  -H 'Content-Type: application/json' -d @- >/dev/null
+
+jq -n \
+  --arg ts "${REPLAY_OLD_DAY}" \
+  --arg seen "${HEALTHY_UPDATED_AT}" \
+  '{
+    "@timestamp": $ts,
+    "project_id": "proj-grp-new",
+    "sku": "es.search-vcu",
+    "latest_snapshot": {
+      "project_name": "Replayed New Group ES",
+      "project_type": "elasticsearch",
+      "deployment_group": "replayed-new-grp",
+      "total_ecu": 10.0,
+      "quantity_value": 10.0,
+      "group_first_seen_at": $seen,
+      "group_initial_backfill": false
+    }
+  }' | es_curl -X POST "${ES_HOST}/serverless_billing_cost_lookup-1/_doc?refresh=true&pipeline=${BILL_PIPELINE}" \
+  -H 'Content-Type: application/json' -d @- >/dev/null
+
+NEWGRP_RULE="${DATA_STREAM_ROOT}/../../kibana/alerting_rule_template/chargeback_serverless-alert-new-group-detected.json"
+jq '{query: .attributes.params.esqlQuery.esql}' "${NEWGRP_RULE}" | \
+  es_curl -X POST "${ES_HOST}/_query?format=json" -H 'Content-Type: application/json' -d @- > raw_newgrp_resp.json
+jq '
+  .columns as $cols |
+  [ .values[] | [ range(0; ($cols | length)) as $i | { ($cols[$i].name): .[$i] } ] | add ] |
+  map(select(.deployment_group == "backfill-grp" or .deployment_group == "replayed-new-grp"))
+' raw_newgrp_resp.json > new_group_rows.json
+
+# Missing-tolerant transform-health query (must succeed and report missing core lookups)
+HEALTH_RULE="${DATA_STREAM_ROOT}/../../kibana/alerting_rule_template/chargeback_serverless-alert-transform-health.json"
+jq '{query: .attributes.params.esqlQuery.esql, filter: {range: {"@timestamp": {gte: "now-35d"}}}}' "${HEALTH_RULE}" | \
+  es_curl -X POST "${ES_HOST}/_query?format=json" -H 'Content-Type: application/json' -d @- > raw_health_resp.json
+jq '
+  .columns as $cols |
+  [ .values[] | [ range(0; ($cols | length)) as $i | { ($cols[$i].name): .[$i] } ] | add ]
+' raw_health_resp.json > health_rows.json
 
 jq -n \
   --arg ts "${BILL_DAY}" \
