@@ -28,7 +28,10 @@ processors:
       field: event.dataset
       tag: set_event_dataset_managed_device_e68343d7
       value: microsoft_intune.managed_device
-      if: ctx._tmp?.json?.category == 'Devices'
+      description: >-
+        Devices holds the managed device inventory and DeviceComplianceOrg the device compliance
+        records. The managed_device pipeline parses both.
+      if: ctx._tmp?.json?.category == 'Devices' || ctx._tmp?.json?.category == 'DeviceComplianceOrg'
   - script:
       tag: script_replace_events_tag_with_routed_dataset_tag_5b1c7e2a
       lang: painless

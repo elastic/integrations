@@ -17,7 +17,7 @@ This integration collects audit and managed device logs from Microsoft Intune by
 | Log category | Data stream |
 | --- | --- |
 | `AuditLogs` | `microsoft_intune.audit` |
-| `Devices` | `microsoft_intune.managed_device` |
+| `Devices`, `DeviceComplianceOrg` | `microsoft_intune.managed_device` |
 | Any other category | `microsoft_intune.events` (not parsed) |
 
 The `audit` and `managed_device` data streams have no input of their own. They only receive events routed from `microsoft_intune.events`.
@@ -58,7 +58,7 @@ Integrating device inventory data and Microsoft Intune audit logs into SIEM dash
 - Set up an Azure Event Hub and add an Intune diagnostic setting that sends the logs to it. For more detail, refer to [Send Intune log data to Azure Storage, Event Hubs, or Log Analytics](https://learn.microsoft.com/en-us/intune/intune-service/fundamentals/review-logs-using-azure-monitor).
 - In the diagnostic setting, select the log categories to collect. All categories can go to the same Event Hub:
    - Audit: Select LOG > AuditLogs.
-   - Managed Device: Select LOG > IntuneDevices.
+   - Managed Device: Select LOG > IntuneDevices, and LOG > DeviceComplianceOrg to also collect device compliance records.
 
 ## How do I deploy this integration?
 
@@ -115,7 +115,7 @@ For more information on architectures that can be used for scaling this integrat
 
 ## Troubleshooting
 
-- **Events are missing from `audit` or `managed_device`:** check the `logs-microsoft_intune.events-*` data stream. Events whose log category is not `AuditLogs` or `Devices` stay there, with the category in `microsoft_intune.events.category`. Events that are not valid JSON also stay there, with `event.kind` set to `pipeline_error`.
+- **Events are missing from `audit` or `managed_device`:** check the `logs-microsoft_intune.events-*` data stream. Events whose log category is not `AuditLogs`, `Devices` or `DeviceComplianceOrg` stay there, with the category in `microsoft_intune.events.category`. Events that are not valid JSON also stay there, with `event.kind` set to `pipeline_error`.
 
 ## Reference
 

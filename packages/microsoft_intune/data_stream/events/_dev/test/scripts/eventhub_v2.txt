@@ -1,10 +1,11 @@
 # Verify that Microsoft Intune events read from a single Event Hub (AMQP,
 # processor v2) are routed to the data stream for their log category.
 #
-# The fake EventHub server delivers five test events:
-#   - 2 AuditLogs events       → microsoft_intune.audit
-#   - 2 Devices events         → microsoft_intune.managed_device
-#   - 1 OperationalLogs event  → microsoft_intune.events (not routed)
+# The fake EventHub server delivers six test events:
+#   - 2 AuditLogs events            → microsoft_intune.audit
+#   - 2 Devices events              → microsoft_intune.managed_device
+#   - 1 DeviceComplianceOrg event   → microsoft_intune.managed_device
+#   - 1 OperationalLogs event       → microsoft_intune.events (not routed)
 #
 # The server speaks AMQP 1.0 on port 5672 (EventHub emulator protocol) and
 # Azure Blob Storage REST on port 10000 (checkpoint store). Its source lives
@@ -34,7 +35,7 @@ add_package -profile ${CONFIG_PROFILES}/${PROFILE}
 add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml EVENTS_DS
 
 # Wait for all docs to arrive, then confirm the total holds.
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 5 -confirm 5s -timeout 5m logs-microsoft_intune.audit-*,logs-microsoft_intune.managed_device-*,${EVENTS_DS}
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 6 -confirm 5s -timeout 5m logs-microsoft_intune.audit-*,logs-microsoft_intune.managed_device-*,${EVENTS_DS}
 
 # Each destination got its documents (docs already indexed, these return immediately).
 get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 0 -timeout 30s logs-microsoft_intune.audit-*
@@ -42,8 +43,10 @@ get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 0 -timeout 30s 
 # that it replaces microsoft_intune-events; it is not checked here because the
 # wildcard also matches documents left in other namespaces by earlier runs.
 stdout '"microsoft_intune-audit"'
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 0 -timeout 30s logs-microsoft_intune.managed_device-*
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 3 -confirm 0 -timeout 30s logs-microsoft_intune.managed_device-*
 stdout '"microsoft_intune-managed_device"'
+# The device compliance event is parsed by the managed_device pipeline too.
+stdout '"category":\s*"DeviceComplianceOrg"'
 get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 0 -timeout 30s ${EVENTS_DS}
 
 # The unrouted event keeps the event.dataset set by the agent, its category
