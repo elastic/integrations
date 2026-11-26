@@ -291,6 +291,9 @@ source:
                   _index: chargeback_lookup.dest_billing_realized_pool-1
               - exists:
                   field: deployment_id
+            must_not:
+              - term:
+                  deployment_id: unassociated
       minimum_should_match: 1
   runtime_mappings:
     cb_sync_ts:
@@ -423,14 +426,17 @@ source:
             try {
               if (doc.containsKey(df) && !doc[df].empty) {
                 String dv = doc[df].value.toString().trim();
-                if (dv != '') { emit(dv); return; }
+                if (dv != '' && !dv.equalsIgnoreCase('unassociated')) { emit(dv); return; }
               }
             } catch (Exception e) {}
           }
           try {
-            if (params._source?.ess?.billing?.deployment_id != null && params._source.ess.billing.deployment_id.toString().trim() != '') {
-              emit(params._source.ess.billing.deployment_id.toString().trim());
-              return;
+            if (params._source?.ess?.billing?.deployment_id != null) {
+              String sdv = params._source.ess.billing.deployment_id.toString().trim();
+              if (sdv != '' && !sdv.equalsIgnoreCase('unassociated')) {
+                emit(sdv);
+                return;
+              }
             }
           } catch (Exception e) {}
           String dt = '';
@@ -528,27 +534,29 @@ pivot:
               String orgId = '';
               try {
                 if (doc.containsKey('ess.billing.organization_id') && !doc['ess.billing.organization_id'].empty) {
-                  orgId = doc['ess.billing.organization_id'].value.toString();
+                  orgId = doc['ess.billing.organization_id'].value.toString().trim();
                 } else if (params._source?.ess?.billing?.organization_id != null) {
-                  orgId = params._source.ess.billing.organization_id.toString();
+                  orgId = params._source.ess.billing.organization_id.toString().trim();
                 }
               } catch (Exception e) {}
 
               String depId = '';
               try {
-                if (doc.containsKey('ess.billing.deployment_id') && !doc['ess.billing.deployment_id'].empty) {
-                  depId = doc['ess.billing.deployment_id'].value.toString();
+                if (doc.containsKey('cb_deployment_id') && !doc['cb_deployment_id'].empty) {
+                  depId = doc['cb_deployment_id'].value.toString().trim();
+                } else if (doc.containsKey('ess.billing.deployment_id') && !doc['ess.billing.deployment_id'].empty) {
+                  depId = doc['ess.billing.deployment_id'].value.toString().trim();
                 } else if (params._source?.ess?.billing?.deployment_id != null) {
-                  depId = params._source.ess.billing.deployment_id.toString();
+                  depId = params._source.ess.billing.deployment_id.toString().trim();
                 }
               } catch (Exception e) {}
 
               String sku = '';
               try {
                 if (doc.containsKey('ess.billing.sku') && !doc['ess.billing.sku'].empty) {
-                  sku = doc['ess.billing.sku'].value.toString();
+                  sku = doc['ess.billing.sku'].value.toString().trim();
                 } else if (params._source?.ess?.billing?.sku != null) {
-                  sku = params._source.ess.billing.sku.toString();
+                  sku = params._source.ess.billing.sku.toString().trim();
                 }
               } catch (Exception e) {}
 
@@ -629,7 +637,7 @@ pivot:
                 }
               } catch (Exception e) {}
 
-              String dedupKey = orgId + '|' + depId + '|' + fromKey + '|' + toKey + '|' + sku + '|' + bType + '|' + bKind + (nodeStr != '' ? '|' + nodeStr : '');
+              String dedupKey = orgId + '|' + depId + '|' + fromKey + '|' + toKey + '|' + sku + (nodeStr != '' ? '|' + nodeStr : '');
 
               double ecu = 0.0;
               try {
@@ -837,27 +845,29 @@ pivot:
               String orgId = '';
               try {
                 if (doc.containsKey('ess.billing.organization_id') && !doc['ess.billing.organization_id'].empty) {
-                  orgId = doc['ess.billing.organization_id'].value.toString();
+                  orgId = doc['ess.billing.organization_id'].value.toString().trim();
                 } else if (params._source?.ess?.billing?.organization_id != null) {
-                  orgId = params._source.ess.billing.organization_id.toString();
+                  orgId = params._source.ess.billing.organization_id.toString().trim();
                 }
               } catch (Exception e) {}
 
               String depId = '';
               try {
-                if (doc.containsKey('ess.billing.deployment_id') && !doc['ess.billing.deployment_id'].empty) {
-                  depId = doc['ess.billing.deployment_id'].value.toString();
+                if (doc.containsKey('cb_deployment_id') && !doc['cb_deployment_id'].empty) {
+                  depId = doc['cb_deployment_id'].value.toString().trim();
+                } else if (doc.containsKey('ess.billing.deployment_id') && !doc['ess.billing.deployment_id'].empty) {
+                  depId = doc['ess.billing.deployment_id'].value.toString().trim();
                 } else if (params._source?.ess?.billing?.deployment_id != null) {
-                  depId = params._source.ess.billing.deployment_id.toString();
+                  depId = params._source.ess.billing.deployment_id.toString().trim();
                 }
               } catch (Exception e) {}
 
               String sku = '';
               try {
                 if (doc.containsKey('ess.billing.sku') && !doc['ess.billing.sku'].empty) {
-                  sku = doc['ess.billing.sku'].value.toString();
+                  sku = doc['ess.billing.sku'].value.toString().trim();
                 } else if (params._source?.ess?.billing?.sku != null) {
-                  sku = params._source.ess.billing.sku.toString();
+                  sku = params._source.ess.billing.sku.toString().trim();
                 }
               } catch (Exception e) {}
 
@@ -938,7 +948,7 @@ pivot:
                 }
               } catch (Exception e) {}
 
-              String dedupKey = orgId + '|' + depId + '|' + fromKey + '|' + toKey + '|' + sku + '|' + bType + '|' + bKind + (nodeStr != '' ? '|' + nodeStr : '');
+              String dedupKey = orgId + '|' + depId + '|' + fromKey + '|' + toKey + '|' + sku + (nodeStr != '' ? '|' + nodeStr : '');
 
               double ecu = 0.0;
               try {

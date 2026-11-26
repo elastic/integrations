@@ -257,6 +257,9 @@ program: |-
   replay_start.format(time_layout.RFC3339).as(replay_start_str,
   state.?cursor.replay_completed_to.orValue("").as(replay_completed_to,
   state.?cursor.replay_target_to.orValue("").as(replay_target_to,
+  ((!state.?cursor.initial_from.hasValue() && state.?cursor.last_to.hasValue()) ? high_water.format(time_layout.RFC3339) : state.?cursor.pre_v07_high_water.orValue("")).as(_raw_pre_v07_hw,
+  ((_raw_pre_v07_hw != "" && timestamp(_raw_pre_v07_hw) > replay_start) ? _raw_pre_v07_hw : "").as(pre_v07_hw_str,
+  (state.?cursor.ech_id_map.orValue(dyn({})).as(em, type(em) == map ? em : dyn({}))).as(prev_ech_id_map,
   state.?cursor.recent_day_keys.orValue([]).filter(pk,
   has(pk.day) && pk.day != null && string(pk.day) >= replay_start_str
   ).as(pruned_recent_keys,
@@ -310,6 +313,8 @@ program: |-
   "group_obs_seeded": (prev_gfs_seeded || size(pruned_recent_keys) > 0 || replay_completed_to != ""),
   "conf_sig": conf_sig,
   "last_credit_day": cred_res.credit_day,
+  "pre_v07_high_water": pre_v07_hw_str,
+  "ech_id_map": prev_ech_id_map,
   },
   "next_from": req.from.format(time_layout.RFC3339),
   "want_more": false,
@@ -610,6 +615,8 @@ program: |-
   (!vdb_page.ok ? [vdb_page.err] : [])
   ).as(disc_errs,
   (acc_ech + dep_page.items).as(ech_deps,
+  ech_deps.filter(d, has(d.dep_id) && has(d.id) && string(d.dep_id) != "" && string(d.id) != "" && string(d.dep_id) != string(d.id)).as(_ech_wrap_deps,
+  prev_ech_id_map.with(size(_ech_wrap_deps) > 0 ? zip(_ech_wrap_deps.map(d, string(d.dep_id)), _ech_wrap_deps.map(d, string(d.id))) : dyn({})).as(merged_ech_id_map,
   (acc_sls + es_page.items + obs_page.items + sec_page.items + vdb_page.items).as(sls_projs,
   (prev_dep_failed || !dep_page.ok).as(dep_failed,
   (prev_es_failed || !es_page.ok).as(es_failed,
@@ -632,6 +639,8 @@ program: |-
   "group_obs_seeded": prev_gfs_seeded,
   "conf_sig": conf_sig,
   "last_credit_day": cred_res.credit_day,
+  "pre_v07_high_water": pre_v07_hw_str,
+  "ech_id_map": merged_ech_id_map,
   },
   "next_from": req.from.format(time_layout.RFC3339),
   "want_more": false,
@@ -652,6 +661,8 @@ program: |-
   "group_obs_seeded": prev_gfs_seeded,
   "conf_sig": conf_sig,
   "last_credit_day": cred_res.credit_day,
+  "pre_v07_high_water": pre_v07_hw_str,
+  "ech_id_map": merged_ech_id_map,
   "disc_dep_from": dep_page.next_from,
   "disc_es_next": es_page.next,
   "disc_obs_next": obs_page.next,
@@ -693,6 +704,8 @@ program: |-
   "group_obs_seeded": prev_gfs_seeded,
   "conf_sig": conf_sig,
   "last_credit_day": cred_res.credit_day,
+  "pre_v07_high_water": pre_v07_hw_str,
+  "ech_id_map": merged_ech_id_map,
   },
   "next_from": req.from.format(time_layout.RFC3339),
   "want_more": false,
@@ -713,6 +726,8 @@ program: |-
   "group_obs_seeded": prev_gfs_seeded,
   "conf_sig": conf_sig,
   "last_credit_day": cred_res.credit_day,
+  "pre_v07_high_water": pre_v07_hw_str,
+  "ech_id_map": merged_ech_id_map,
   },
   "next_from": req.from.format(time_layout.RFC3339),
   "want_more": false,
@@ -752,6 +767,8 @@ program: |-
   "group_obs_seeded": prev_gfs_seeded,
   "conf_sig": conf_sig,
   "last_credit_day": cred_res.credit_day,
+  "pre_v07_high_water": pre_v07_hw_str,
+  "ech_id_map": merged_ech_id_map,
   },
   "next_from": req.from.format(time_layout.RFC3339),
   "want_more": false,
@@ -761,12 +778,12 @@ program: |-
   raw_instances.map(instance,
   ((has(instance.type) && instance.type != null) ? string(instance.type).to_lower().trim_space() : "").as(_raw_it,
   ((_raw_it == "oblt") ? "observability" : ((_raw_it == "sec") ? "security" : ((_raw_it == "vector") ? "vectordb" : ((_raw_it == "es") ? "elasticsearch" : ((_raw_it == "enterprise_search") ? "search" : _raw_it))))).as(_alias_it,
-  ((has(instance.product_line_items) && instance.product_line_items != null && instance.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(ls, ls.startsWith("observability.") || ls.startsWith("oblt.") || ls.startsWith("serverless.observability.") || ls.startsWith("serverless.oblt.") || ls.contains(".observability.") || ls.contains(".oblt.") || ls.contains("synthetic")))) ? "observability" : ((has(instance.product_line_items) && instance.product_line_items != null && instance.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(ls, ls.startsWith("security.") || ls.startsWith("sec.") || ls.startsWith("serverless.security.") || ls.startsWith("serverless.sec.") || ls.contains(".security.") || ls.contains(".sec.")))) ? "security" : ((has(instance.product_line_items) && instance.product_line_items != null && instance.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(ls, ls.startsWith("vectordb.") || ls.startsWith("serverless.vectordb.") || ls.contains(".vectordb.")))) ? "vectordb" : ((has(instance.product_line_items) && instance.product_line_items != null && instance.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(ls, ls.startsWith("search.") || ls.startsWith("serverless.search.")))) ? "search" : ((has(instance.product_line_items) && instance.product_line_items != null && instance.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(ls, ls.startsWith("elasticsearch.") || ls.startsWith("es.") || ls.startsWith("serverless.elasticsearch.") || ls.startsWith("serverless.es.") || ls.contains(".elasticsearch.")))) ? "elasticsearch" : ""))))).as(_sku_it,
+  ((has(instance.product_line_items) && instance.product_line_items != null && instance.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(ls, ls.startsWith("observability.") || ls.startsWith("oblt.") || ls.startsWith("serverless.observability.") || ls.startsWith("serverless.oblt.") || ls.contains(".observability.") || ls.contains(".oblt.") || ls.contains("synthetic")))) ? "observability" : ((has(instance.product_line_items) && instance.product_line_items != null && instance.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(ls, ls.startsWith("security.") || ls.startsWith("sec.") || ls.startsWith("serverless.security.") || ls.startsWith("serverless.sec.") || ls.contains(".security.") || ls.contains(".sec.")))) ? "security" : ((has(instance.product_line_items) && instance.product_line_items != null && instance.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(ls, ls.startsWith("vectordb.") || ls.startsWith("serverless.vectordb.") || ls.contains(".vectordb.")))) ? "vectordb" : ((has(instance.product_line_items) && instance.product_line_items != null && instance.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(ls, ls.startsWith("search.") || ls.startsWith("serverless.search.")))) ? "search" : ((has(instance.product_line_items) && instance.product_line_items != null && instance.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(ls, ls.startsWith("elasticsearch.") || ls.startsWith("es.") || ls.startsWith("serverless.elasticsearch.") || ls.startsWith("serverless.es.") || ls.contains(".elasticsearch.") || ls.contains("-vcu") || ls.contains(".vcu") || ls.startsWith("serverless.")))) ? "elasticsearch" : ""))))).as(_sku_it,
   ((_alias_it != "" && _alias_it != "serverless") ? _alias_it : (_sku_it != "" ? _sku_it : (_alias_it == "serverless" ? "serverless" : "deployment"))).as(norm_itype,
   ((has(instance.id) && instance.id != null && string(instance.id) != "") ? string(instance.id) : ("unassociated_" + ((norm_itype != "" && norm_itype != "deployment") ? norm_itype : "serverless"))).as(inst_id,
   ech_deps.filter(d, string(d.id) == inst_id || string(d.dep_id) == inst_id).as(matched_ech,
   sls_projs.filter(p, has(p.id) && string(p.id) == inst_id).as(matched_sls,
-  ((size(matched_ech) > 0) ? string(matched_ech[0].id) : inst_id).as(resolved_id,
+  ((size(matched_ech) > 0) ? string(matched_ech[0].id) : ((inst_id in merged_ech_id_map) ? string(merged_ech_id_map[inst_id]) : inst_id)).as(resolved_id,
   ((size(matched_ech) > 0) ? string(matched_ech[0].name) : (
   (size(matched_sls) > 0 && has(matched_sls[0].name) && matched_sls[0].name != null && string(matched_sls[0].name) != "") ? string(matched_sls[0].name) : (
   (has(instance.name) && instance.name != null && string(instance.name) != "") ? string(instance.name) : (
@@ -774,7 +791,7 @@ program: |-
   )
   )
   )).as(resolved_name,
-  ((size(matched_ech) > 0) ? "deployment" : (
+  ((size(matched_ech) > 0 || (inst_id in merged_ech_id_map)) ? "deployment" : (
   (size(matched_sls) > 0 && has(matched_sls[0].project_type) && matched_sls[0].project_type != null && string(matched_sls[0].project_type) != "") ? string(matched_sls[0].project_type).to_lower().trim_space() : norm_itype
   )).as(resolved_type,
   (
@@ -911,13 +928,15 @@ program: |-
   "group_obs_seeded": prev_gfs_seeded,
   "conf_sig": conf_sig,
   "last_credit_day": cred_res.credit_day,
+  "pre_v07_high_water": pre_v07_hw_str,
+  "ech_id_map": merged_ech_id_map,
   },
   "next_from": req.from.format(time_layout.RFC3339),
   "want_more": false,
   }
   :
   items_res.body.as(items_body,
-  ((has(items_body.products) && items_body.products != null) ?
+  (((pre_v07_hw_str == "" || req.from >= timestamp(pre_v07_hw_str)) && has(items_body.products) && items_body.products != null) ?
   items_body.products.filter(prod,
   !has(prod.type) || prod.type == null || string(prod.type).to_lower() != "deployment"
   ).map(prod,
@@ -982,7 +1001,7 @@ program: |-
   igrp.exists(ie, ie.prod_type == "") ||
   string(e.ess.billing.deployment_type).to_lower() == eff_prod_type ||
   string(e.ess.billing.deployment_id) == ("unassociated_" + eff_prod_type) ||
-  (eff_prod_type == "elasticsearch" && string(e.ess.billing.deployment_id) == "unassociated_serverless")
+  (eff_prod_type == "elasticsearch" && (string(e.ess.billing.deployment_id) == "unassociated_serverless" || string(e.ess.billing.deployment_type).to_lower() == "serverless"))
   )
   ).as(matched_evts,
   matched_evts.map(e, double(e.ess.billing.total_ecu)).as(matched_ecus,
@@ -1042,6 +1061,7 @@ program: |-
   (pos_evts + residual_evts).as(curr_pos_evts,
   (
   curr_pos_evts +
+  ((pre_v07_hw_str == "" || req.from >= timestamp(pre_v07_hw_str)) ?
   prev_day_keys.filter(pk,
   !curr_pos_evts.exists(e, string(e.ess.billing.deployment_id) == string(pk.deployment_id) && string(e.ess.billing.sku) == string(pk.sku))
   ).map(pk,
@@ -1067,6 +1087,7 @@ program: |-
   },
   })
   )
+  : [])
   ).as(day_evts,
   (dep_failed || es_failed || obs_failed || sec_failed || vdb_failed).as(disc_had_err,
   (req.to + duration("26h") <= now).as(has_more_days,
@@ -1121,6 +1142,8 @@ program: |-
   "group_obs_seeded": next_gfs_seeded,
   "conf_sig": conf_sig,
   "last_credit_day": cred_res.credit_day,
+  "pre_v07_high_water": pre_v07_hw_str,
+  "ech_id_map": merged_ech_id_map,
   "disc_dep_from": -1,
   "disc_es_next": "",
   "disc_obs_next": "",
@@ -1139,6 +1162,8 @@ program: |-
   "group_obs_seeded": next_gfs_seeded,
   "conf_sig": conf_sig,
   "last_credit_day": cred_res.credit_day,
+  "pre_v07_high_water": pre_v07_hw_str,
+  "ech_id_map": merged_ech_id_map,
   },
   "next_from": has_more_days ? req.to.format(time_layout.RFC3339) : replay_start_str,
   "want_more": has_more_days,
@@ -1171,21 +1196,23 @@ program: |-
   "group_obs_seeded": prev_gfs_seeded,
   "conf_sig": conf_sig,
   "last_credit_day": cred_res.credit_day,
+  "pre_v07_high_water": pre_v07_hw_str,
+  "ech_id_map": merged_ech_id_map,
   },
   "next_from": req.from.format(time_layout.RFC3339),
   "want_more": false,
   }
   )
   )
-  )))))))))
+  )))))))))))
   ))))))))))))
   )
   )
   ))))
-  )
+  ))))
   )))))))))
   ))))))
-  ))))))))))))))))))))
+  ))))))))))))))))))
   )
 {{#if tags.length}}
 tags:
