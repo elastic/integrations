@@ -1,0 +1,188 @@
+# Test deployment_api_keys auth fallback and strict short-circuiting:
+# - dep-ech-01: first key returns 401 -> falls back to second key (200), emitting node_sample.
+# - hub-cluster-01: first key returns 500 -> short-circuits immediately (does NOT try fallback 200 key), emitting error.code == "500".
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} cb-mock
+
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# Expect 3 documents:
+#   1 config_snapshot
+#   1 node_sample (dep-ech-01 after 401 -> 200 fallback)
+#   1 error (hub-cluster-01 500 short-circuit without retrying fallback 200 key)
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 3 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+exec jq '[.hits.hits[]._source | select(.elasticsearch.cluster.name == "dep-ech-01" and .elasticsearch.node.name == "instance-0000000001")] | length' got_docs.json
+stdout '^1$'
+
+exec jq '[.hits.hits[]._source | select(.error.code == "500" and (.error.message | contains("/hub/_nodes")) and .event.ingested != null)] | length' got_docs.json
+stdout '^1$'
+
+exec jq '[.hits.hits[]._source | select(.elasticsearch.cluster.name == "hub-cluster-01")] | length' got_docs.json
+stdout '^0$'
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down cb-mock
+
+-- test_config.yaml --
+input: cel
+vars:
+  organization_id: "1111"
+  cloud_api_key: cloud-key
+  cloud_api_base: http://cb-mock:8080
+  hub_es_url: http://cb-mock:8080/hub
+  hub_es_api_key: hub-fallback-200
+  deployment_api_keys: "dep-ech-01:ech-bad-401,dep-ech-01:ech-good-200,hub-cluster-01:hub-err-500"
+  sync_fleet_config: false
+  enable_request_tracer: false
+data_stream:
+  vars:
+    utilization_memory_weight: 70
+    utilization_storage_weight: 30
+    utilization_floor: "0.10"
+-- cb-mock/docker-compose.yml --
+version: '2.3'
+services:
+  cb-mock:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: cb-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+-- cb-mock/config.yml --
+rules:
+  - path: /api/v1/deployments/_search
+    methods: ["POST"]
+    request_headers:
+      Authorization:
+        - "ApiKey cloud-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"match_count":1,"deployments":[{"id":"dep-ech-01-wrap","name":"prod-observability","resources":{"elasticsearch":[{"id":"dep-ech-01","region":"us-east-1","info":{"metadata":{"service_url":"http://cb-mock:8080/ech1"}}}]}}]}
+
+  - path: /api/v1/serverless/projects/elasticsearch
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"items":[],"next_page":""}
+
+  - path: /api/v1/serverless/projects/observability
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"items":[],"next_page":""}
+
+  - path: /api/v1/serverless/projects/security
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"items":[],"next_page":""}
+
+  - path: /api/v1/serverless/projects/vectordb
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"items":[],"next_page":""}
+
+  - path: /hub/
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey hub-fallback-200"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"cluster_name":"hub-cluster-01"}
+
+  - path: /ech1/_nodes/data:true,data_hot:true,data_warm:true,data_cold:true,data_frozen:true,data_content:true/stats/{metrics}
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey ech-bad-401"
+    responses:
+      - status_code: 401
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"error":"unauthorized"}
+
+  - path: /ech1/_nodes/data:true,data_hot:true,data_warm:true,data_cold:true,data_frozen:true,data_content:true/stats/{metrics}
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey ech-good-200"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"_nodes":{"total":1,"successful":1,"failed":0},"nodes":{"node-ech-1":{"name":"instance-0000000001","roles":["data_hot"],"jvm":{"mem":{"heap_used_percent":68}},"fs":{"total":{"total_in_bytes":107374182400,"available_in_bytes":32212254720}}}}}
+
+  - path: /hub/_nodes/data:true,data_hot:true,data_warm:true,data_cold:true,data_frozen:true,data_content:true/stats/{metrics}
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey hub-err-500"
+    responses:
+      - status_code: 500
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"error":"upstream 500"}
+
+  - path: /hub/_nodes/data:true,data_hot:true,data_warm:true,data_cold:true,data_frozen:true,data_content:true/stats/{metrics}
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey hub-fallback-200"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"_nodes":{"total":1,"successful":1,"failed":0},"nodes":{"node-hub-1":{"name":"hub-data-01","roles":["data_hot"],"jvm":{"mem":{"heap_used_percent":47}},"fs":{"total":{"total_in_bytes":536870912000,"available_in_bytes":268435456000}}}}}

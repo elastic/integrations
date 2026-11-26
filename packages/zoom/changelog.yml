@@ -1,4 +1,20 @@
 # newer versions go on top
+- version: "2.0.0"
+  changes:
+    - description: Add field definitions for `zoom.meeting.end_time` and `zoom.webinar.end_time` in the `webhook` data stream, mapping them as `date`.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/22555
+    - description: '`zoom.meeting.end_time` and `zoom.webinar.end_time` were previously mapped dynamically as `keyword` and are now `date`. Queries that treat them as `keyword` (for example term, wildcard or terms aggregations) no longer work on new backing indices, and existing backing indices keep the `keyword` mapping until they roll over or expire, which shows as a type conflict in data views.'
+      type: breaking-change
+      link: https://github.com/elastic/integrations/pull/22555
+- version: "1.29.1"
+  changes:
+    - description: Keep the report date window fixed while paginating in the `activity`, `meeting_activity` and `operation` data streams so page tokens remain valid across UTC midnight.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/22286
+    - description: Treat HTTP 200 responses with a non-JSON body as errors in the `activity`, `meeting_activity` and `operation` data streams so collection recovers instead of stalling.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/22286
 - version: "1.29.0"
   changes:
     - description: Update Elastic Managed integration documentation to the current wording and docs links.

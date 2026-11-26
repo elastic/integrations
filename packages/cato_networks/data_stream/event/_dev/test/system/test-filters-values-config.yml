@@ -1,0 +1,22 @@
+input: cel
+service: cato_networks
+wait_for_data_timeout: 1m
+vars:
+  url: http://{{Hostname}}:{{Port}}
+  api_key: xxxx
+data_stream:
+  vars:
+    account_ids:
+      - 44444
+    interval: 5s
+    # Unquoted numbers and booleans are parsed as such by Fleet. They must be sent to the
+    # API as the strings "1" and "true", or the mock server rules for account 44444 do not match.
+    filters: |-
+      - fieldName: event_sub_type
+        operator: in
+        values:
+          - 1
+          - true
+    preserve_original_event: true
+assert:
+  hit_count: 1

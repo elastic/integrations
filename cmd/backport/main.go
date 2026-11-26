@@ -53,7 +53,7 @@ Subcommands:
         Exit codes: 0 = active, 1 = inactive, 2 = error.
 
   detect-packages <before> <after> [--json]
-        List packages changed between two commits (git diff --name-only before..after).
+        List packages changed between two commits (git diff --name-only before...after).
 
   check-owners <remote> <source-branch> <before> <after>
         Report package owner mismatches between the current worktree and source-branch.
@@ -244,10 +244,17 @@ func runCheckActive(args []string) {
 
 // ── Packages subcommands ─────────────────────────────────────────────────────
 
-// diffPackages runs git diff --name-only before..after and maps changed files
+// diffPackages runs git diff --name-only before...after and maps changed files
 // to package names. Shared between detect-packages and check-owners.
+//
+// The three-dot notation (like gitDiff in backports/changelog) diffs against
+// the merge base of before and after rather than before itself, so commits
+// that landed on before after the branch was cut are not reported as changes
+// of the branch. Callers that already pass a merge base as before (such as
+// .buildkite/scripts/check_backport_owners.sh) are unaffected: the merge base
+// of a merge base and after is the merge base itself.
 func diffPackages(before, after string) ([]string, error) {
-	out, err := cmdOutput("git", "diff", "--name-only", before+".."+after)
+	out, err := cmdOutput("git", "diff", "--name-only", before+"..."+after)
 	if err != nil {
 		return nil, fmt.Errorf("running git diff: %w", err)
 	}

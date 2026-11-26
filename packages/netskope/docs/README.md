@@ -8,6 +8,14 @@ The log message is expected to be in JSON format. The data is mapped to
 ECS fields where applicable and the remaining fields are written under
 `netskope.<data-stream-name>.*`.
 
+## Elastic Managed enabled integration
+
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
+
+For Netskope, Elastic Managed collection is limited to the REST API v2 dataexport input on the **Alerts V2** and **Events V2** data streams. See [Collect data via REST API v2 dataexport](#for-collecting-data-via-rest-api-v2-dataexport). Cloud Log Shipper (TCP) and Log Streaming (AWS S3, Google Cloud Storage, and Azure Blob Storage) require a user-managed Elastic Agent.
+
 ## Setup steps
 
 ### For receiving log from Netskope Cloud Shipper
