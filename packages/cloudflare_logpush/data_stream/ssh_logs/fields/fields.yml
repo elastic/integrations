@@ -1,0 +1,48 @@
+- name: cloudflare_logpush.ssh_logs
+  type: group
+  fields:
+    - name: account_id
+      type: keyword
+      description: The Cloudflare account ID.
+    - name: error
+      type: keyword
+      description: The SSH error. Only set if an error occurred.
+    - name: payload
+      type: match_only_text
+      description: The captured request and response data of the SSH program, in asciicast v2 format. For the `exec` program type this includes the executed command.
+    - name: program
+      type: group
+      fields:
+        - name: end
+          type: date
+          description: The time when the SSH program terminated. Empty until the program ends.
+        - name: id
+          type: keyword
+          description: The SSH program ID. A single SSH session can have multiple programs running.
+        - name: start
+          type: date
+          description: The time when the SSH program was created.
+        - name: type
+          type: keyword
+          description: The SSH program being run (`shell`, `exec`, `x11`, `direct-tcpip` or `forwarded-tcpip`).
+    - name: pty
+      type: keyword
+      description: The PTY information used by certain program types to synchronize local and remote SSH terminal state.
+    - name: session
+      type: group
+      fields:
+        - name: end
+          type: date
+          description: The time when the SSH session terminated. Empty until the session ends.
+        - name: id
+          type: keyword
+          description: The SSH session ID.
+        - name: start
+          type: date
+          description: The time when the SSH session was created.
+    - name: target_id
+      type: keyword
+      description: The identifier of the target being accessed.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.

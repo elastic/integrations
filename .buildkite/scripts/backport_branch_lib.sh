@@ -200,3 +200,48 @@ remove_other_packages() {
     fi
   done
 }
+
+# restore_pipeline_env_line restores an entry of the top-level `env:` block of a
+# Buildkite pipeline file that the backport branch needs but the source branch
+# (main) no longer defines.
+#
+# If the key is still present in the file, its line is replaced (keeping the
+# value from the backport branch). Otherwise the line is inserted as the first
+# entry of the top-level `env:` block.
+#
+# Usage: restore_pipeline_env_line <pipeline_file> <env_line>
+#   env_line: the full line as found in the backport branch, including its
+#             indentation (e.g. '  FOO: "true"').
+restore_pipeline_env_line() {
+  local pipeline_file="${1}"
+  local env_line="${2}"
+  local key=""
+
+  if [[ -z "${env_line}" ]]; then
+    return 0
+  fi
+
+  if [[ ! -f "${pipeline_file}" ]]; then
+    echo "restore_pipeline_env_line: ${pipeline_file} does not exist" >&2
+    return 1
+  fi
+
+  key="$(echo "${env_line}" | sed -E 's/^[[:space:]]*([A-Za-z0-9_]+)[[:space:]]*:.*/\1/')"
+  if [[ -z "${key}" ]] || [[ "${key}" == "${env_line}" ]]; then
+    echo "restore_pipeline_env_line: could not read a key from line: ${env_line}" >&2
+    return 1
+  fi
+
+  if grep -qE "^[[:space:]]*${key}[[:space:]]*:" "${pipeline_file}"; then
+    sed -i "s|^[[:space:]]*${key}[[:space:]]*:.*|${env_line}|" "${pipeline_file}"
+    return 0
+  fi
+
+  if ! grep -qE '^env:[[:space:]]*$' "${pipeline_file}"; then
+    echo "restore_pipeline_env_line: no top-level env block found in ${pipeline_file}, cannot restore ${key}" >&2
+    return 1
+  fi
+
+  # Insert as the first entry of the top-level env block.
+  sed -i "0,/^env:[[:space:]]*$/s|^env:[[:space:]]*$|env:\n${env_line}|" "${pipeline_file}"
+}
