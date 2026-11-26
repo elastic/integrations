@@ -77,6 +77,24 @@ processors:
                       }
                     }
                   }
+                  if (chosenSku.grp_min_gfs instanceof Map) {
+                    for (def gf : ((Map)chosenSku.grp_min_gfs).entrySet()) {
+                      String gk = gf.getKey() != null ? gf.getKey().toString() : '';
+                      long gv = 0L;
+                      if (gf.getValue() instanceof Number) {
+                        gv = ((Number)gf.getValue()).longValue();
+                      } else if (gf.getValue() != null) {
+                        String gs = gf.getValue().toString().trim();
+                        if (gs != '') {
+                          try { gv = ZonedDateTime.parse(gs).toInstant().toEpochMilli(); } catch (Exception e) {}
+                        }
+                      }
+                      if (gk != '' && gv > 0L) {
+                        long cur = targetGrpExpGfs.get(gk) instanceof Number ? ((Number)targetGrpExpGfs.get(gk)).longValue() : 0L;
+                        if (cur <= 0L || gv < cur) { targetGrpExpGfs[gk] = gv; }
+                      }
+                    }
+                  }
                   if (Boolean.TRUE.equals(chosenSku.get('is_onprem'))) { anyOnprem = true; }
                   if (chosenSku.ai_chargeable_units instanceof Number) {
                     double aiVal = ((Number)chosenSku.ai_chargeable_units).doubleValue();
@@ -97,6 +115,11 @@ processors:
                   long skuGfs = 0L;
                   if (chosenSku.group_first_seen instanceof Number) {
                     skuGfs = ((Number)chosenSku.group_first_seen).longValue();
+                  } else if (chosenSku.group_first_seen != null) {
+                    String sg = chosenSku.group_first_seen.toString().trim();
+                    if (sg != '') {
+                      try { skuGfs = ZonedDateTime.parse(sg).toInstant().toEpochMilli(); } catch (Exception e) {}
+                    }
                   }
                   for (String fn : ['deployment_group', 'deployment_name']) {
                     def rawV = chosenSku.get(fn);
@@ -172,11 +195,8 @@ processors:
               Map chosenGrpExp = hasNativeSku ? nativeGrpExplicitGfs : legacyGrpExplicitGfs;
               long gm = chosenGrpMin.get(ctx.deployment_group) instanceof Number ? ((Number)chosenGrpMin.get(ctx.deployment_group)).longValue() : 0L;
               long ge = chosenGrpExp.get(ctx.deployment_group) instanceof Number ? ((Number)chosenGrpExp.get(ctx.deployment_group)).longValue() : 0L;
-              if (gm > 0L && minBucketIng > 0L && gm > minBucketIng) {
-                resolvedGfs = gm;
-              } else if (ge > 0L && (minBucketIng <= 0L || ge > minBucketIng)) {
-                resolvedGfs = ge;
-              }
+              long bestReplayIng = (gm > 0L && minBucketIng > 0L && gm > minBucketIng) ? gm : 0L;
+              resolvedGfs = bestReplayIng > ge ? bestReplayIng : ge;
             }
             if (resolvedGfs > 0L) {
               ctx.group_first_seen = Instant.ofEpochMilli(resolvedGfs).toString();

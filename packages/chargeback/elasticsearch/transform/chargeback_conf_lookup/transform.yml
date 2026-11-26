@@ -26,6 +26,17 @@ source:
       type: keyword
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'chargeback_conf_lookup') {
+            String docId = (doc.containsKey('_id') && !doc['_id'].empty) ? doc['_id'].value.toString() : '';
+            String srcJoinKey = (params._source != null && params._source.get('config_join_key') != null) ? params._source.get('config_join_key').toString().trim() : '';
+            if (docId == 'config_onprem' || 'chargeback_config_onprem'.equals(srcJoinKey)) {
+              emit('chargeback_config_onprem');
+            } else {
+              emit('chargeback_config');
+              emit('chargeback_config_onprem');
+            }
+            return;
+          }
           emit('chargeback_config');
           emit('chargeback_config_onprem');
     cb_sync_ts:
@@ -116,13 +127,14 @@ pivot:
                 : '';
               if (srcIdx == 'chargeback_conf_lookup') {
                 String docId = (doc.containsKey('_id') && !doc['_id'].empty) ? doc['_id'].value.toString() : '';
-                if (docId == 'config_onprem') {
-                  return;
+                String srcJoinKey = params._source.get('config_join_key') != null ? params._source.get('config_join_key').toString().trim() : '';
+                if (srcJoinKey == '' && docId == 'config_onprem') {
+                  srcJoinKey = 'chargeback_config_onprem';
                 }
                 long lSync = (doc.containsKey('cb_sync_ts') && !doc['cb_sync_ts'].empty)
                   ? doc['cb_sync_ts'].value.toInstant().toEpochMilli()
                   : 0L;
-                int prio = (docId == 'config') ? 2 : 1;
+                int prio = (docId == 'config_onprem') ? 4 : ('chargeback_config_onprem'.equals(srcJoinKey) ? 3 : ((docId == 'config') ? 2 : 1));
                 boolean take = (state.legacyConf == null);
                 if (!take) {
                   int curPrio = state.legacyConf.prio instanceof Number ? ((Number)state.legacyConf.prio).intValue() : 0;
@@ -134,6 +146,7 @@ pivot:
                 if (take) {
                   Map lc = ['prio': prio, 'ts': lSync];
                   for (String k : [
+                    'config_join_key',
                     'conf_start_date', 'conf_end_date',
                     'conf_chargeable_unit_rate', 'conf_chargeable_unit_rate_unit',
                     'conf_ecu_rate', 'conf_ecu_rate_unit',
@@ -144,6 +157,9 @@ pivot:
                     if (params._source.get(k) != null) {
                       lc[k] = params._source.get(k);
                     }
+                  }
+                  if (lc.get('config_join_key') == null && docId == 'config_onprem') {
+                    lc['config_join_key'] = 'chargeback_config_onprem';
                   }
                   state.legacyConf = lc;
                 }
