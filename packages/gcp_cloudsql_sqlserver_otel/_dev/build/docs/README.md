@@ -22,3 +22,9 @@ When configuring the input package, set the dataset name to `gcp.cloudsql_sqlser
 |-----------|-------------|
 | **[GCP OTel] Cloud SQL - SQL Server Overview** | Fleet overview of Cloud SQL for SQL Server instances. Covers availability, CPU, memory and disk saturation, batch throughput, and blocking. |
 | **[GCP OTel] Cloud SQL - SQL Server Instance Detail** | Detail view of a single Cloud SQL for SQL Server instance. Covers availability, capacity, traffic and errors, connections, locking and blocking, memory and I/O, and high availability and replication. |
+
+## Alerting Rule Templates
+{{alertRuleTemplates}}
+
+## SLO Templates
+{{sloTemplates}}
