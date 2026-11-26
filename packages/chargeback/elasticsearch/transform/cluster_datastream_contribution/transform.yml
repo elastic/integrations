@@ -6,9 +6,8 @@ source:
     - "*:monitoring-indices*"
     - -monitoring-indices-chargeback*
     - "*:-monitoring-indices-chargeback*"
-    - chargeback_lookup.dest_cluster_datastream_contribution-1*
     - -partial-*
-    - -chargeback_lookup.dest_cluster_datastream_contribution-2*
+    - -chargeback_lookup.*
     - "*:-chargeback_lookup.*"
   query:
     bool:
@@ -25,21 +24,6 @@ source:
       type: keyword
       script:
         source: |
-          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'chargeback_lookup.dest_cluster_datastream_contribution-1') {
-            for (String cf : ['cluster_name', 'cluster_name.keyword', 'deployment_id', 'deployment_id.keyword']) {
-              try {
-                if (doc.containsKey(cf) && !doc[cf].empty) {
-                  String cv = doc[cf].value.toString().trim();
-                  if (cv != '') { emit(cv); return; }
-                }
-              } catch (Exception e) {}
-            }
-            try {
-              def sc = params._source?.cluster_name != null ? params._source.cluster_name : params._source?.deployment_id;
-              if (sc != null && sc.toString().trim() != '') { emit(sc.toString().trim()); return; }
-            } catch (Exception e) {}
-            return;
-          }
           String kw = 'elasticsearch.cluster.name.keyword';
           if (doc.containsKey(kw) && !doc[kw].empty) {
             emit(doc[kw].value.toString());
@@ -179,10 +163,6 @@ source:
       type: date
       script:
         source: |
-          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'chargeback_lookup.dest_cluster_datastream_contribution-1') {
-            emit(1262304000000L);
-            return;
-          }
           try {
             if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
               emit(doc['event.ingested'].value.toInstant().toEpochMilli());
@@ -276,24 +256,6 @@ source:
       type: keyword
       script:
         source: |
-          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'chargeback_lookup.dest_cluster_datastream_contribution-1') {
-            for (String dsf : ['datastream', 'datastream.keyword']) {
-              try {
-                if (doc.containsKey(dsf) && !doc[dsf].empty) {
-                  String dv = doc[dsf].value.toString().trim();
-                  if (dv != '') { emit(dv); return; }
-                }
-              } catch (Exception e) {}
-            }
-            try {
-              if (params._source?.datastream != null && params._source.datastream.toString().trim() != '') {
-                emit(params._source.datastream.toString().trim());
-                return;
-              }
-            } catch (Exception e) {}
-            emit('unknown');
-            return;
-          }
           String name = '';
           String kw = 'elasticsearch.index.name.keyword';
           if (doc.containsKey(kw) && !doc[kw].empty) {
@@ -356,7 +318,7 @@ source:
           } catch (Exception e) {}
           emit('unknown');
 dest:
-  index: chargeback_lookup.dest_cluster_datastream_contribution-2
+  index: chargeback_lookup.dest_cluster_datastream_contribution-1
   aliases:
     - alias: chargeback_lookup.cluster_datastream_contribution
       move_on_creation: true
@@ -395,14 +357,6 @@ pivot:
           state.leg_cnt_by_tier = new HashMap();
           state.nat_cnt = 0L;
           state.leg_cnt = 0L;
-          state.dep_name = '';
-          state.dep_name_ts = -1L;
-          state.dep_name_ing = -1L;
-          state.dep_group = '';
-          state.dep_group_ts = -1L;
-          state.dep_group_ing = -1L;
-          state.v1_doc = null;
-          state.v1_ts = -1L;
         map_script: |
           if (!doc.containsKey('@timestamp') || doc['@timestamp'].empty) { return; }
           long ts = doc['@timestamp'].value.toInstant().toEpochMilli();
@@ -414,108 +368,6 @@ pivot:
               ingTs = ZonedDateTime.parse(params._source.event.ingested.toString().trim()).toInstant().toEpochMilli();
             }
           } catch (Exception e) {}
-          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'chargeback_lookup.dest_cluster_datastream_contribution-1') {
-            Map v1 = new HashMap();
-            String vSrc = 'legacy';
-            try {
-              for (String uf : ['usage_source', 'usage_source.keyword']) {
-                if (doc.containsKey(uf) && !doc[uf].empty) { vSrc = doc[uf].value.toString(); break; }
-              }
-              if (vSrc == 'legacy' && params._source?.usage_source != null) { vSrc = params._source.usage_source.toString(); }
-            } catch (Exception e) {}
-            v1.put('usage_source', vSrc);
-            for (String sf : ['sum_indexing_time', 'sum_query_time', 'sum_store_size', 'sum_data_set_store_size']) {
-              String fk = 'datastream_' + sf;
-              long mv = 0L;
-              try {
-                if (doc.containsKey(fk) && !doc[fk].empty) { mv = ((Number)doc[fk].value).longValue(); }
-                else if (params._source?.get(fk) instanceof Number) { mv = ((Number)params._source.get(fk)).longValue(); }
-              } catch (Exception e) {}
-              v1.put('selected_' + sf, mv);
-            }
-            for (String sf : ['sum_indexing_time', 'sum_query_time', 'sum_store_size', 'sum_data_set_store_size']) {
-              for (String spfx : ['native_', 'legacy_']) {
-                String fk = spfx + sf;
-                long mv = 0L;
-                try {
-                  if (doc.containsKey(fk) && !doc[fk].empty) { mv = ((Number)doc[fk].value).longValue(); }
-                  else if (params._source?.get(fk) instanceof Number) { mv = ((Number)params._source.get(fk)).longValue(); }
-                } catch (Exception e) {}
-                v1[fk] = mv;
-              }
-            }
-            for (String bf : ['has_native_usage', 'has_legacy_usage']) {
-              boolean bv = false;
-              try {
-                if (doc.containsKey(bf) && !doc[bf].empty) { bv = Boolean.TRUE.equals(doc[bf].value); }
-                else if (params._source?.get(bf) != null) { bv = Boolean.TRUE.equals(params._source.get(bf)) || params._source.get(bf).toString().equalsIgnoreCase('true'); }
-              } catch (Exception e) {}
-              v1[bf] = bv;
-            }
-            String vDn = '';
-            try {
-              for (String dnf : ['deployment_name', 'deployment_name.keyword']) {
-                if (doc.containsKey(dnf) && !doc[dnf].empty) { vDn = doc[dnf].value.toString(); if (vDn != '') { break; } }
-              }
-              if (vDn == '' && params._source?.deployment_name != null) { vDn = params._source.deployment_name.toString(); }
-            } catch (Exception e) {}
-            if (vDn != '') { v1.put('deployment_name', vDn); }
-            try {
-              if (params._source != null && params._source.containsKey('deployment_group') && params._source.get('deployment_group') != null) {
-                v1.put('deployment_group', params._source.get('deployment_group').toString());
-              } else {
-                for (String dgf : ['deployment_group', 'deployment_group.keyword']) {
-                  if (doc.containsKey(dgf) && !doc[dgf].empty) { v1.put('deployment_group', doc[dgf].value.toString()); break; }
-                }
-              }
-            } catch (Exception e) {}
-            if (state.v1_doc == null || ingTs >= state.v1_ts) {
-              state.v1_doc = v1;
-              state.v1_ts = ingTs;
-            }
-            return;
-          }
-          String dn = '';
-          for (String dnf : ['deployment_name.keyword', 'deployment_name']) {
-            try {
-              if (doc.containsKey(dnf) && !doc[dnf].empty) {
-                dn = doc[dnf].value.toString();
-                if (dn != '') { break; }
-              }
-            } catch (Exception e) {}
-          }
-          if (dn == '') {
-            try {
-              def sdn = params._source?.deployment_name;
-              if (sdn != null && sdn.toString() != '') { dn = sdn.toString(); }
-            } catch (Exception e) {}
-          }
-          if (dn != '' && (ts > state.dep_name_ts || (ts == state.dep_name_ts && ingTs >= state.dep_name_ing))) {
-            state.dep_name_ts = ts;
-            state.dep_name_ing = ingTs;
-            state.dep_name = dn;
-          }
-          boolean hasDg = false;
-          String dg = '';
-          if (params._source != null && params._source.containsKey('deployment_group') && params._source.get('deployment_group') != null) {
-            hasDg = true;
-            dg = params._source.get('deployment_group').toString();
-          } else {
-            for (String dgf : ['deployment_group.keyword', 'deployment_group']) {
-              try {
-                if (doc.containsKey(dgf) && !doc[dgf].empty) {
-                  hasDg = true;
-                  dg = doc[dgf].value.toString();
-                  break;
-                }
-              } catch (Exception e) {}
-            }
-          }
-          if (hasDg && (ts > state.dep_group_ts || (ts == state.dep_group_ts && ingTs >= state.dep_group_ing))) {
-            state.dep_group_ts = ts;
-            state.dep_group_ing = ingTs;
-            state.dep_group = dg;
-          }
           long rem = ts % 86400000L;
           if (rem < 0L) { rem += 86400000L; }
           long dayStartMs = ts - rem;
@@ -881,38 +733,8 @@ pivot:
           Map legCntByTier = new HashMap();
           long natCnt = 0L;
           long legCnt = 0L;
-          String bestDepName = '';
-          long bestNameTs = -1L;
-          long bestNameIng = -1L;
-          String bestDepGroup = '';
-          long bestGroupTs = -1L;
-          long bestGroupIng = -1L;
-          Map mergedV1 = null;
-          long bestV1Ts = -1L;
           for (def st : states) {
-            if (st != null && st.v1_doc instanceof Map) {
-              long svTs = st.v1_ts instanceof Number ? ((Number)st.v1_ts).longValue() : -1L;
-              if (mergedV1 == null || svTs >= bestV1Ts) {
-                mergedV1 = new HashMap((Map)st.v1_doc);
-                bestV1Ts = svTs;
-              }
-            }
             if (st == null) { continue; }
-            long stNameTs = (st.dep_name_ts instanceof Number) ? ((Number)st.dep_name_ts).longValue() : -1L;
-            long stNameIng = (st.dep_name_ing instanceof Number) ? ((Number)st.dep_name_ing).longValue() : -1L;
-            String sdn = st.dep_name != null ? st.dep_name.toString() : '';
-            if (sdn != '' && stNameTs >= 0L && (stNameTs > bestNameTs || (stNameTs == bestNameTs && stNameIng >= bestNameIng))) {
-              bestNameTs = stNameTs;
-              bestNameIng = stNameIng;
-              bestDepName = sdn;
-            }
-            long stGroupTs = (st.dep_group_ts instanceof Number) ? ((Number)st.dep_group_ts).longValue() : -1L;
-            long stGroupIng = (st.dep_group_ing instanceof Number) ? ((Number)st.dep_group_ing).longValue() : -1L;
-            if (stGroupTs >= 0L && (stGroupTs > bestGroupTs || (stGroupTs == bestGroupTs && stGroupIng >= bestGroupIng))) {
-              bestGroupTs = stGroupTs;
-              bestGroupIng = stGroupIng;
-              bestDepGroup = st.dep_group != null ? st.dep_group.toString() : '';
-            }
             if (st.nat_cnt instanceof Number) { natCnt += ((Number)st.nat_cnt).longValue(); }
             if (st.leg_cnt instanceof Number) { legCnt += ((Number)st.leg_cnt).longValue(); }
             if (st.raw_nat instanceof List) {
@@ -1073,10 +895,6 @@ pivot:
                 }
               }
             }
-          }
-
-          if (natCnt == 0L && legCnt == 0L && mergedV1 != null) {
-            return mergedV1;
           }
 
           boolean hasDsUnit = false;
@@ -1519,8 +1337,6 @@ pivot:
           res.put('legacy_sum_query_time', rawLeg.get(1));
           res.put('legacy_sum_store_size', rawLeg.get(2));
           res.put('legacy_sum_data_set_store_size', rawLeg.get(3));
-          if (bestDepName != '') { res.put('deployment_name', bestDepName); }
-          if (bestGroupTs >= 0L) { res.put('deployment_group', bestDepGroup); }
           return res;
 settings:
   align_checkpoints: false

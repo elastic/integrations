@@ -8,14 +8,8 @@ processors:
         try {
           if (ctx.by_sku instanceof Map) {
             double sumEcu = 0.0;
-            boolean anyDataTier = false;
-            double sumAi = 0.0;
-            double sumSyn = 0.0;
-            double sumSynPing = 0.0;
-            double sumSynExec = 0.0;
             Double maxHours = null;
             Long maxRam = null;
-            boolean anyRawSku = false;
             boolean hasNativeSku = false;
             String nativeGroup = '';
             long nativeGroupTs = -1L;
@@ -53,7 +47,6 @@ processors:
                   chosenSku = (Map)skuObj.legacy;
                 }
                 if (chosenSku != null) {
-                  anyRawSku = true;
                   if (skuIsNative) {
                     hasNativeSku = true;
                   }
@@ -61,31 +54,11 @@ processors:
                   if (Boolean.TRUE.equals(chosenSku.get('is_onprem'))) {
                     anyOnprem = true;
                   }
-                  boolean hasDt = !chosenSku.containsKey('has_data_tier') || Boolean.TRUE.equals(chosenSku.get('has_data_tier'));
-                  if (hasDt) {
-                    anyDataTier = true;
-                    if (chosenSku.data_tier_capacity_ecu instanceof Number) {
-                      double ecuVal = ((Number)chosenSku.data_tier_capacity_ecu).doubleValue();
-                      if (!Double.isNaN(ecuVal) && !Double.isInfinite(ecuVal)) {
-                        sumEcu += ecuVal;
-                      }
+                  if (chosenSku.data_tier_capacity_ecu instanceof Number) {
+                    double ecuVal = ((Number)chosenSku.data_tier_capacity_ecu).doubleValue();
+                    if (!Double.isNaN(ecuVal) && !Double.isInfinite(ecuVal)) {
+                      sumEcu += ecuVal;
                     }
-                  }
-                  if (chosenSku.ai_chargeable_units instanceof Number) {
-                    double aiVal = ((Number)chosenSku.ai_chargeable_units).doubleValue();
-                    if (!Double.isNaN(aiVal) && !Double.isInfinite(aiVal)) { sumAi += aiVal; }
-                  }
-                  if (chosenSku.synthetics_chargeable_units instanceof Number) {
-                    double synVal = ((Number)chosenSku.synthetics_chargeable_units).doubleValue();
-                    if (!Double.isNaN(synVal) && !Double.isInfinite(synVal)) { sumSyn += synVal; }
-                  }
-                  if (chosenSku.synthetics_pings_units instanceof Number) {
-                    double spVal = ((Number)chosenSku.synthetics_pings_units).doubleValue();
-                    if (!Double.isNaN(spVal) && !Double.isInfinite(spVal)) { sumSynPing += spVal; }
-                  }
-                  if (chosenSku.synthetics_executions_units instanceof Number) {
-                    double seVal = ((Number)chosenSku.synthetics_executions_units).doubleValue();
-                    if (!Double.isNaN(seVal) && !Double.isInfinite(seVal)) { sumSynExec += seVal; }
                   }
                   if (chosenSku.data_tier_capacity_hours instanceof Number) {
                     double h = ((Number)chosenSku.data_tier_capacity_hours).doubleValue();
@@ -154,67 +127,35 @@ processors:
                 }
               }
             }
-            if (!anyRawSku && ctx.carryover_v1 instanceof Map && ctx.carryover_v1.doc_cnt instanceof Number && ((Number)ctx.carryover_v1.doc_cnt).longValue() > 0L) {
-              Map cv = (Map)ctx.carryover_v1;
-              for (String ck : ['data_tier_capacity_ecu', 'data_tier_capacity_hours', 'data_tier_ram_per_zone_mb', 'ai_chargeable_units', 'synthetics_chargeable_units', 'synthetics_pings_units', 'synthetics_executions_units', 'deployment_group', 'deployment_name', 'is_onprem']) {
-                if (cv.containsKey(ck)) {
-                  ctx[ck] = cv[ck];
-                } else if (ck == 'deployment_group') {
-                  ctx[ck] = '';
-                }
-              }
-              ctx.is_onprem = Boolean.TRUE.equals(ctx.is_onprem);
-              if (ctx.deployment_group == null) { ctx.deployment_group = ''; } else { ctx.deployment_group = ctx.deployment_group.toString(); }
-              String fallbackName = ctx.deployment_id != null ? ctx.deployment_id.toString() : 'unknown';
-              if (fallbackName.startsWith('unassociated_')) {
-                fallbackName = 'Unassociated (' + fallbackName.substring('unassociated_'.length()) + ')';
-              } else if (fallbackName == 'unassociated') {
-                fallbackName = 'Unassociated';
-              }
-              ctx.deployment_name = (ctx.deployment_name != null && ctx.deployment_name.toString() != '') ? ctx.deployment_name.toString() : fallbackName;
-            } else {
-              String bestGroup = hasNativeSku ? nativeGroup : legacyGroup;
-              String bestName = nativeName != '' ? nativeName : legacyName;
-              if (anyDataTier || (sumAi == 0.0 && sumSyn == 0.0)) {
-                ctx.data_tier_capacity_ecu = sumEcu;
-              }
-              if (sumAi > 0.0) {
-                ctx.ai_chargeable_units = sumAi;
-              }
-              if (sumSyn > 0.0) {
-                ctx.synthetics_chargeable_units = sumSyn;
-                ctx.synthetics_pings_units = sumSynPing;
-                ctx.synthetics_executions_units = sumSynExec;
-              }
-              ctx.is_onprem = anyOnprem;
-              if (maxHours != null) {
-                ctx.data_tier_capacity_hours = maxHours.doubleValue();
-              }
-              if (maxRam != null) {
-                ctx.data_tier_ram_per_zone_mb = maxRam.longValue();
-              }
-              ctx.deployment_group = bestGroup != null ? bestGroup : '';
-              String fallbackName = ctx.deployment_id != null ? ctx.deployment_id.toString() : 'unknown';
-              if (fallbackName.startsWith('unassociated_')) {
-                fallbackName = 'Unassociated (' + fallbackName.substring('unassociated_'.length()) + ')';
-              } else if (fallbackName == 'unassociated') {
-                fallbackName = 'Unassociated';
-              }
-              ctx.deployment_name = (bestName != null && bestName != '')
-                ? bestName
-                : fallbackName;
+            String bestGroup = hasNativeSku ? nativeGroup : legacyGroup;
+            String bestName = nativeName != '' ? nativeName : legacyName;
+            ctx.data_tier_capacity_ecu = sumEcu;
+            ctx.is_onprem = anyOnprem;
+            if (maxHours != null) {
+              ctx.data_tier_capacity_hours = maxHours.doubleValue();
             }
+            if (maxRam != null) {
+              ctx.data_tier_ram_per_zone_mb = maxRam.longValue();
+            }
+            ctx.deployment_group = bestGroup != null ? bestGroup : '';
+            String fallbackName = ctx.deployment_id != null ? ctx.deployment_id.toString() : 'unknown';
+            if (fallbackName.startsWith('unassociated_')) {
+              fallbackName = 'Unassociated (' + fallbackName.substring('unassociated_'.length()) + ')';
+            } else if (fallbackName == 'unassociated') {
+              fallbackName = 'Unassociated';
+            }
+            ctx.deployment_name = (bestName != null && bestName != '')
+              ? bestName
+              : fallbackName;
           } else {
             Map chosen = ctx;
             if (ctx.native instanceof Map && ctx.native.doc_cnt instanceof Number && ((Number)ctx.native.doc_cnt).longValue() > 0L) {
               chosen = ctx.native;
-            } else if (ctx.legacy instanceof Map && !(ctx.carryover_v1 instanceof Map && ctx.carryover_v1.doc_cnt instanceof Number && ((Number)ctx.carryover_v1.doc_cnt).longValue() > 0L)) {
+            } else if (ctx.legacy instanceof Map) {
               chosen = ctx.legacy;
-            } else if (ctx.carryover_v1 instanceof Map && ctx.carryover_v1.doc_cnt instanceof Number && ((Number)ctx.carryover_v1.doc_cnt).longValue() > 0L) {
-              chosen = ctx.carryover_v1;
             }
             if (chosen != ctx) {
-              for (String k : ['data_tier_capacity_ecu', 'data_tier_capacity_hours', 'data_tier_ram_per_zone_mb', 'ai_chargeable_units', 'synthetics_chargeable_units', 'synthetics_pings_units', 'synthetics_executions_units', 'deployment_group', 'deployment_name', 'is_onprem']) {
+              for (String k : ['data_tier_capacity_ecu', 'data_tier_capacity_hours', 'data_tier_ram_per_zone_mb', 'deployment_group', 'deployment_name', 'is_onprem']) {
                 if (chosen.containsKey(k)) {
                   ctx[k] = chosen[k];
                 } else if (k == 'deployment_group') {
@@ -259,13 +200,11 @@ processors:
           ctx.remove('by_sku');
           ctx.remove('native');
           ctx.remove('legacy');
-          ctx.remove('carryover_v1');
           throw e;
         }
         ctx.remove('by_sku');
         ctx.remove('native');
         ctx.remove('legacy');
-        ctx.remove('carryover_v1');
 
         if (ctx['@timestamp'] != null && ctx.deployment_id != null) {
           def rawTs = ctx['@timestamp'];

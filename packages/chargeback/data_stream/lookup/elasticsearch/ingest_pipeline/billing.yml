@@ -13,13 +13,11 @@ processors:
             chosen = ctx.native;
           } else if (ctx.legacy instanceof Map && ctx.legacy.doc_cnt instanceof Number && ((Number)ctx.legacy.doc_cnt).longValue() > 0L) {
             chosen = ctx.legacy;
-          } else if (ctx.carryover_v1 instanceof Map && ctx.carryover_v1.doc_cnt instanceof Number && ((Number)ctx.carryover_v1.doc_cnt).longValue() > 0L) {
-            chosen = ctx.carryover_v1;
           } else if (ctx.legacy instanceof Map && !ctx.legacy.containsKey('doc_cnt')) {
             chosen = ctx.legacy;
           }
           if (chosen != ctx) {
-            for (String k : ['total_chargeable_units', 'quantity_value', 'deployment_group', 'group_first_seen', 'deployment_name', 'organization_id', 'deployment_type', 'billing_type', 'billing_kind', 'billing_unit', 'cloud_region', 'is_onprem']) {
+            for (String k : ['total_chargeable_units', 'quantity_value', 'deployment_group', 'deployment_name', 'organization_id', 'deployment_type', 'billing_type', 'billing_kind', 'cloud_region', 'is_onprem']) {
               if (chosen.containsKey(k)) {
                 ctx[k] = chosen[k];
               } else if (k == 'deployment_group') {
@@ -31,12 +29,10 @@ processors:
         } catch (Exception e) {
           ctx.remove('native');
           ctx.remove('legacy');
-          ctx.remove('carryover_v1');
           throw e;
         }
         ctx.remove('native');
         ctx.remove('legacy');
-        ctx.remove('carryover_v1');
 
         // Unwrap optional transform terms-aggregation buckets
         for (String fn : ['deployment_group', 'deployment_name', 'organization_id', 'deployment_type', 'billing_type', 'billing_kind', 'cloud_region']) {
@@ -58,34 +54,6 @@ processors:
           ctx.deployment_group = '';
         } else {
           ctx.deployment_group = ctx.deployment_group.toString();
-        }
-        if (ctx.deployment_group == '') {
-          ctx.remove('group_first_seen');
-        } else if (ctx.group_first_seen != null) {
-          if (ctx.group_first_seen instanceof Number) {
-            long gMs = ((Number)ctx.group_first_seen).longValue();
-            if (gMs > 0L) {
-              ctx.group_first_seen = Instant.ofEpochMilli(gMs).toString();
-            } else {
-              ctx.remove('group_first_seen');
-            }
-          } else {
-            String gs = ctx.group_first_seen.toString().trim();
-            if (gs == '') {
-              ctx.remove('group_first_seen');
-            } else {
-              ctx.group_first_seen = gs;
-            }
-          }
-        }
-        if (ctx.deployment_group != '' && ctx.group_first_seen == null && ctx['@timestamp'] != null) {
-          def rawGts = ctx['@timestamp'];
-          if (rawGts instanceof Number) {
-            ctx.group_first_seen = Instant.ofEpochMilli(((Number)rawGts).longValue()).toString();
-          } else {
-            String gts = rawGts.toString().trim();
-            if (gts != '') { ctx.group_first_seen = gts; }
-          }
         }
         if (ctx.deployment_name == null || ctx.deployment_name.toString() == '') {
           if (ctx.deployment_id != null && ctx.deployment_id.toString().startsWith('unassociated_')) {
@@ -158,9 +126,6 @@ processors:
           ctx.ess.billing.kind = 'search';
         } else if (sLower == 'none' && depType != '' && depType != 'deployment') {
           ctx.ess.billing.kind = depType;
-        }
-        if (ctx.billing_unit != null && ctx.billing_unit != '') {
-          ctx.ess.billing.unit = ctx.billing_unit.toString();
         }
 
         String btype = (ctx.billing_type != null && ctx.billing_type != '') ? ctx.billing_type.toString() : '';
@@ -312,7 +277,7 @@ processors:
 
         ctx.is_onprem = (incomingOnprem || ctx.cloud.provider == 'onprem' || s == 'onprem_node' || depType == 'onprem' || depType == 'ece' || depType == 'eck');
 
-        for (String tmp : ['quantity_value', 'organization_id', 'deployment_type', 'billing_type', 'billing_kind', 'billing_unit', 'cloud_region']) {
+        for (String tmp : ['quantity_value', 'organization_id', 'deployment_type', 'billing_type', 'billing_kind', 'cloud_region']) {
           ctx.remove(tmp);
         }
   - set:

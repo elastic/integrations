@@ -3,43 +3,27 @@ source:
   index:
     - metrics-chargeback.billing-*
     - metrics-ess_billing.billing-*
-    - chargeback_lookup.dest_billing_cluster_cost-1*
     - -metrics-ess_billing.billing-chargeback*
     - -partial-*
-    - -chargeback_lookup.dest_billing_cluster_cost-2*
+    - -chargeback_lookup.*
   query:
     bool:
-      should:
-        - bool:
-            filter:
-              - exists:
-                  field: ess.billing.sku
-              - range:
-                  ess.billing.total_ecu:
-                    gte: 0
-            must_not:
-              - terms:
-                  doc_type:
-                    - config_snapshot
-                    - credit_line_item
-              - term:
-                  _index: chargeback_lookup.dest_billing_cluster_cost-1
-        - bool:
-            filter:
-              - term:
-                  _index: chargeback_lookup.dest_billing_cluster_cost-1
-              - exists:
-                  field: sku
-      minimum_should_match: 1
+      filter:
+        - exists:
+            field: ess.billing.sku
+        - range:
+            ess.billing.total_ecu:
+              gte: 0
+      must_not:
+        - terms:
+            doc_type:
+              - config_snapshot
+              - credit_line_item
   runtime_mappings:
     cb_sync_ts:
       type: date
       script:
         source: |
-          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'chargeback_lookup.dest_billing_cluster_cost-1') {
-            emit(1262304000000L);
-            return;
-          }
           try {
             if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
               emit(doc['event.ingested'].value.toInstant().toEpochMilli());
@@ -80,24 +64,6 @@ source:
       type: keyword
       script:
         source: |
-          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'chargeback_lookup.dest_billing_cluster_cost-1') {
-            for (String dgf : ['deployment_group', 'deployment_group.keyword']) {
-              try {
-                if (doc.containsKey(dgf) && !doc[dgf].empty) {
-                  emit(doc[dgf].value.toString().trim());
-                  return;
-                }
-              } catch (Exception e) {}
-            }
-            try {
-              if (params._source?.deployment_group != null) {
-                emit(params._source.deployment_group.toString().trim());
-                return;
-              }
-            } catch (Exception e) {}
-            emit('');
-            return;
-          }
           for (String tf : ['ess.billing.deployment_tags', 'ess.billing.deployment_tags.keyword']) {
             try {
               if (doc.containsKey(tf) && !doc[tf].empty) {
@@ -140,77 +106,6 @@ source:
       type: keyword
       script:
         source: |
-          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'chargeback_lookup.dest_billing_cluster_cost-1') {
-            for (String df : ['deployment_id', 'deployment_id.keyword', 'ess.billing.deployment_id', 'ess.billing.deployment_id.keyword']) {
-              try {
-                if (doc.containsKey(df) && !doc[df].empty) {
-                  String dv = doc[df].value.toString().trim();
-                  if (dv != '' && !dv.equalsIgnoreCase('unassociated')) { emit(dv); return; }
-                }
-              } catch (Exception e) {}
-            }
-            try {
-              if (params._source?.deployment_id != null) {
-                String sdv = params._source.deployment_id.toString().trim();
-                if (sdv != '' && !sdv.equalsIgnoreCase('unassociated')) {
-                  emit(sdv);
-                  return;
-                }
-              }
-              if (params._source?.ess?.billing?.deployment_id != null) {
-                String edv = params._source.ess.billing.deployment_id.toString().trim();
-                if (edv != '' && !edv.equalsIgnoreCase('unassociated')) {
-                  emit(edv);
-                  return;
-                }
-              }
-            } catch (Exception e) {}
-            String v1Dt = '';
-            for (String dtf : ['deployment_type', 'deployment_type.keyword', 'ess.billing.deployment_type', 'ess.billing.deployment_type.keyword']) {
-              try {
-                if (doc.containsKey(dtf) && !doc[dtf].empty && doc[dtf].value.toString().trim() != '') {
-                  v1Dt = doc[dtf].value.toString().trim().toLowerCase(Locale.ROOT);
-                  break;
-                }
-              } catch (Exception e) {}
-            }
-            if (v1Dt == '' && params._source?.deployment_type != null) {
-              v1Dt = params._source.deployment_type.toString().trim().toLowerCase(Locale.ROOT);
-            }
-            if (v1Dt == '' && params._source?.ess?.billing?.deployment_type != null) {
-              v1Dt = params._source.ess.billing.deployment_type.toString().trim().toLowerCase(Locale.ROOT);
-            }
-            if (v1Dt == 'oblt') { v1Dt = 'observability'; }
-            else if (v1Dt == 'sec') { v1Dt = 'security'; }
-            else if (v1Dt == 'vector') { v1Dt = 'vectordb'; }
-            else if (v1Dt == 'es') { v1Dt = 'elasticsearch'; }
-            else if (v1Dt == 'enterprise_search') { v1Dt = 'search'; }
-            if (v1Dt == '' || v1Dt == 'serverless') {
-              String v1Sk = '';
-              for (String sf : ['sku', 'sku.keyword', 'ess.billing.sku', 'ess.billing.sku.keyword']) {
-                try {
-                  if (doc.containsKey(sf) && !doc[sf].empty && doc[sf].value.toString().trim() != '') {
-                    v1Sk = doc[sf].value.toString().trim().toLowerCase(Locale.ROOT);
-                    break;
-                  }
-                } catch (Exception e) {}
-              }
-              if (v1Sk == '' && params._source?.sku != null) {
-                v1Sk = params._source.sku.toString().trim().toLowerCase(Locale.ROOT);
-              }
-              if (v1Sk == '' && params._source?.ess?.billing?.sku != null) {
-                v1Sk = params._source.ess.billing.sku.toString().trim().toLowerCase(Locale.ROOT);
-              }
-              if (v1Sk.startsWith('observability.') || v1Sk.startsWith('oblt.') || v1Sk.startsWith('serverless.observability.') || v1Sk.startsWith('serverless.oblt.') || v1Sk.contains('.observability.') || v1Sk.contains('.oblt.') || v1Sk.contains('synthetic')) { v1Dt = 'observability'; }
-              else if (v1Sk.startsWith('security.') || v1Sk.startsWith('sec.') || v1Sk.startsWith('serverless.security.') || v1Sk.startsWith('serverless.sec.') || v1Sk.contains('.security.') || v1Sk.contains('.sec.')) { v1Dt = 'security'; }
-              else if (v1Sk.startsWith('vectordb.') || v1Sk.startsWith('serverless.vectordb.') || v1Sk.contains('.vectordb.')) { v1Dt = 'vectordb'; }
-              else if (v1Sk.startsWith('search.') || v1Sk.startsWith('serverless.search.')) { v1Dt = 'search'; }
-              else if (v1Sk.startsWith('elasticsearch.') || v1Sk.startsWith('es.') || v1Sk.startsWith('serverless.elasticsearch.') || v1Sk.startsWith('serverless.es.') || v1Sk.contains('.elasticsearch.')) { v1Dt = 'elasticsearch'; }
-              else { v1Dt = 'serverless'; }
-            }
-            emit('unassociated_' + v1Dt);
-            return;
-          }
           for (String df : ['ess.billing.deployment_id', 'ess.billing.deployment_id.keyword']) {
             try {
               if (doc.containsKey(df) && !doc[df].empty) {
@@ -270,22 +165,6 @@ source:
       type: keyword
       script:
         source: |
-          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'chargeback_lookup.dest_billing_cluster_cost-1') {
-            for (String sf : ['sku', 'sku.keyword', 'ess.billing.sku', 'ess.billing.sku.keyword']) {
-              try {
-                if (doc.containsKey(sf) && !doc[sf].empty) {
-                  String sv = doc[sf].value.toString().trim();
-                  if (sv != '') { emit(sv); return; }
-                }
-              } catch (Exception e) {}
-            }
-            try {
-              if (params._source?.sku != null && params._source.sku.toString().trim() != '') {
-                emit(params._source.sku.toString().trim());
-                return;
-              }
-            } catch (Exception e) {}
-          }
           for (String sf : ['ess.billing.sku', 'ess.billing.sku.keyword']) {
             try {
               if (doc.containsKey(sf) && !doc[sf].empty) {
@@ -300,7 +179,7 @@ source:
             }
           } catch (Exception e) {}
 dest:
-  index: chargeback_lookup.dest_billing_cluster_cost-2
+  index: chargeback_lookup.dest_billing_cluster_cost-1
   aliases:
     - alias: chargeback_lookup.billing_cluster_cost
       move_on_creation: true
@@ -329,11 +208,8 @@ pivot:
   aggregations:
     native:
       scripted_metric:
-        init_script: "state.items = new HashMap(); state.min_bucket_ing = 0L; state.grp_min_ing = new HashMap(); state.grp_min_gfs = new HashMap();"
+        init_script: "state.items = new HashMap();"
         map_script: |
-          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'chargeback_lookup.dest_billing_cluster_cost-1') {
-            return;
-          }
           boolean isNat = false;
           try {
             if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
@@ -500,15 +376,6 @@ pivot:
             }
           } catch (Exception e) {}
 
-          String bUnit = '';
-          try {
-            if (doc.containsKey('ess.billing.unit') && !doc['ess.billing.unit'].empty) {
-              bUnit = doc['ess.billing.unit'].value.toString();
-            } else if (params._source?.ess?.billing?.unit != null) {
-              bUnit = params._source.ess.billing.unit.toString();
-            }
-          } catch (Exception e) {}
-
           String dedupKey = orgId + '|' + depId + '|' + fromKey + '|' + toKey + '|' + sku + (nodeStr != '' ? '|' + nodeStr : '');
 
           String cRegion = '';
@@ -520,39 +387,8 @@ pivot:
             }
           } catch (Exception e) {}
 
-          long docGfsMs = 0L;
-          try {
-            if (doc.containsKey('group_first_seen') && !doc['group_first_seen'].empty) {
-              docGfsMs = doc['group_first_seen'].value.toInstant().toEpochMilli();
-            } else if (params._source?.get('group_first_seen') != null) {
-              def rgfs = params._source.get('group_first_seen');
-              if (rgfs instanceof Number) { docGfsMs = ((Number)rgfs).longValue(); }
-              else {
-                String gstr = rgfs.toString().trim();
-                if (gstr != '') { docGfsMs = ZonedDateTime.parse(gstr).toInstant().toEpochMilli(); }
-              }
-            }
-          } catch (Exception e) {}
-
-          if (ingTs > 0L && (state.min_bucket_ing <= 0L || ingTs < state.min_bucket_ing)) {
-            state.min_bucket_ing = ingTs;
-          }
-          if (depGroup != '') {
-            if (ingTs > 0L) {
-              long curGm = state.grp_min_ing.get(depGroup) instanceof Number ? ((Number)state.grp_min_ing.get(depGroup)).longValue() : 0L;
-              if (curGm <= 0L || ingTs < curGm) { state.grp_min_ing.put(depGroup, ingTs); }
-            }
-            if (docGfsMs > 0L) {
-              long curGf = state.grp_min_gfs.get(depGroup) instanceof Number ? ((Number)state.grp_min_gfs.get(depGroup)).longValue() : 0L;
-              if (curGf <= 0L || docGfsMs < curGf) { state.grp_min_gfs.put(depGroup, docGfsMs); }
-            }
-          }
-
           Map rec = [
             'ing_ts': ingTs,
-            'gfs': docGfsMs,
-            'min_any_ing': ingTs,
-            'min_grp_ing': ingTs,
             'ecu': ecu,
             'qty': qty,
             'dep_group': depGroup,
@@ -561,7 +397,6 @@ pivot:
             'dep_type': depType,
             'b_type': bType,
             'b_kind': bKind,
-            'b_unit': bUnit,
             'c_region': cRegion
           ];
           Map ex = (Map)state.items.get(dedupKey);
@@ -571,56 +406,15 @@ pivot:
             long exTs = ((Number)ex.get('ing_ts')).longValue();
             int newMeta = (depGroup != '' ? 2 : 0) + (depName != '' ? 1 : 0);
             int oldMeta = (ex.get('dep_group') != '' ? 2 : 0) + (ex.get('dep_name') != '' ? 1 : 0);
-            long rMinAny = ((Number)rec.get('min_any_ing')).longValue();
-            long eMinAny = ((Number)ex.get('min_any_ing')).longValue();
-            long mergedMinAny = (rMinAny > 0L && (eMinAny <= 0L || rMinAny < eMinAny)) ? rMinAny : eMinAny;
-            boolean recWins = (ingTs > exTs || (ingTs == exTs && (newMeta > oldMeta || (newMeta == oldMeta && ecu >= ((Number)ex.get('ecu')).doubleValue()))));
-            Map win = recWins ? rec : ex;
-            Map lose = recWins ? ex : rec;
-            win.put('min_any_ing', mergedMinAny);
-            String wGrp = win.get('dep_group') != null ? win.get('dep_group').toString() : '';
-            String lGrp = lose.get('dep_group') != null ? lose.get('dep_group').toString() : '';
-            if (wGrp != '' && wGrp.equals(lGrp)) {
-              long wMinG = ((Number)win.get('min_grp_ing')).longValue();
-              long lMinG = ((Number)lose.get('min_grp_ing')).longValue();
-              if (lMinG > 0L && (wMinG <= 0L || lMinG < wMinG)) { win.put('min_grp_ing', lMinG); }
-              long wGfs = ((Number)win.get('gfs')).longValue();
-              long lGfs = ((Number)lose.get('gfs')).longValue();
-              if (lGfs > 0L && (wGfs <= 0L || lGfs < wGfs)) { win.put('gfs', lGfs); }
-            }
-            if (recWins) {
-              state.items.put(dedupKey, win);
+            if (ingTs > exTs || (ingTs == exTs && (newMeta > oldMeta || (newMeta == oldMeta && ecu >= ((Number)ex.get('ecu')).doubleValue())))) {
+              state.items.put(dedupKey, rec);
             }
           }
         combine_script: "return state;"
         reduce_script: |
           Map merged = new HashMap();
-          long mergedMinBucketIng = 0L;
-          Map mergedGrpMinIng = new HashMap();
-          Map mergedGrpMinGfs = new HashMap();
           for (def st : states) {
-            if (st == null) { continue; }
-            long mbi = st.min_bucket_ing instanceof Number ? ((Number)st.min_bucket_ing).longValue() : 0L;
-            if (mbi > 0L && (mergedMinBucketIng <= 0L || mbi < mergedMinBucketIng)) {
-              mergedMinBucketIng = mbi;
-            }
-            if (st.grp_min_ing instanceof Map) {
-              for (def ge : ((Map)st.grp_min_ing).entrySet()) {
-                String gk = ge.getKey().toString();
-                long gv = ge.getValue() instanceof Number ? ((Number)ge.getValue()).longValue() : 0L;
-                long cv = mergedGrpMinIng.get(gk) instanceof Number ? ((Number)mergedGrpMinIng.get(gk)).longValue() : 0L;
-                if (gv > 0L && (cv <= 0L || gv < cv)) { mergedGrpMinIng.put(gk, gv); }
-              }
-            }
-            if (st.grp_min_gfs instanceof Map) {
-              for (def ge : ((Map)st.grp_min_gfs).entrySet()) {
-                String gk = ge.getKey().toString();
-                long gv = ge.getValue() instanceof Number ? ((Number)ge.getValue()).longValue() : 0L;
-                long cv = mergedGrpMinGfs.get(gk) instanceof Number ? ((Number)mergedGrpMinGfs.get(gk)).longValue() : 0L;
-                if (gv > 0L && (cv <= 0L || gv < cv)) { mergedGrpMinGfs.put(gk, gv); }
-              }
-            }
-            if (!(st.items instanceof Map)) { continue; }
+            if (st == null || !(st.items instanceof Map)) { continue; }
             for (def e : ((Map)st.items).entrySet()) {
               String k = e.getKey().toString();
               Map rec = (Map)e.getValue();
@@ -632,25 +426,8 @@ pivot:
                 long exTs = ((Number)ex.get('ing_ts')).longValue();
                 int newMeta = (rec.get('dep_group') != '' ? 2 : 0) + (rec.get('dep_name') != '' ? 1 : 0);
                 int oldMeta = (ex.get('dep_group') != '' ? 2 : 0) + (ex.get('dep_name') != '' ? 1 : 0);
-                long rMinAny = rec.get('min_any_ing') instanceof Number ? ((Number)rec.get('min_any_ing')).longValue() : ((Number)rec.get('ing_ts')).longValue();
-                long eMinAny = ex.get('min_any_ing') instanceof Number ? ((Number)ex.get('min_any_ing')).longValue() : ((Number)ex.get('ing_ts')).longValue();
-                long mergedMinAny = (rMinAny > 0L && (eMinAny <= 0L || rMinAny < eMinAny)) ? rMinAny : eMinAny;
-                boolean recWins = (ingTs > exTs || (ingTs == exTs && (newMeta > oldMeta || (newMeta == oldMeta && ((Number)rec.get('ecu')).doubleValue() >= ((Number)ex.get('ecu')).doubleValue()))));
-                Map win = recWins ? rec : ex;
-                Map lose = recWins ? ex : rec;
-                win.put('min_any_ing', mergedMinAny);
-                String wGrp = win.get('dep_group') != null ? win.get('dep_group').toString() : '';
-                String lGrp = lose.get('dep_group') != null ? lose.get('dep_group').toString() : '';
-                if (wGrp != '' && wGrp.equals(lGrp)) {
-                  long wMinG = win.get('min_grp_ing') instanceof Number ? ((Number)win.get('min_grp_ing')).longValue() : ((Number)win.get('ing_ts')).longValue();
-                  long lMinG = lose.get('min_grp_ing') instanceof Number ? ((Number)lose.get('min_grp_ing')).longValue() : ((Number)lose.get('ing_ts')).longValue();
-                  if (lMinG > 0L && (wMinG <= 0L || lMinG < wMinG)) { win.put('min_grp_ing', lMinG); }
-                  long wGfs = win.get('gfs') instanceof Number ? ((Number)win.get('gfs')).longValue() : 0L;
-                  long lGfs = lose.get('gfs') instanceof Number ? ((Number)lose.get('gfs')).longValue() : 0L;
-                  if (lGfs > 0L && (wGfs <= 0L || lGfs < wGfs)) { win.put('gfs', lGfs); }
-                }
-                if (recWins) {
-                  merged.put(k, win);
+                if (ingTs > exTs || (ingTs == exTs && (newMeta > oldMeta || (newMeta == oldMeta && ((Number)rec.get('ecu')).doubleValue() >= ((Number)ex.get('ecu')).doubleValue())))) {
+                  merged.put(k, rec);
                 }
               }
             }
@@ -668,7 +445,6 @@ pivot:
           String depType = '';
           String bType = '';
           String bKind = '';
-          String bUnit = '';
           String cRegion = '';
           for (def recObj : merged.values()) {
             Map rec = (Map)recObj;
@@ -687,199 +463,24 @@ pivot:
             if (rec.get('dep_type') != '' && (depType == '' || isNewer)) { depType = rec.get('dep_type').toString(); }
             if (rec.get('b_type') != '' && (bType == '' || isNewer)) { bType = rec.get('b_type').toString(); }
             if (rec.get('b_kind') != '' && (bKind == '' || isNewer)) { bKind = rec.get('b_kind').toString(); }
-            if (rec.get('b_unit') != '' && (bUnit == '' || isNewer)) { bUnit = rec.get('b_unit').toString(); }
             if (rec.get('c_region') != '' && (cRegion == '' || isNewer)) { cRegion = rec.get('c_region').toString(); }
-          }
-          long resolvedGfs = 0L;
-          if (depGroup != '') {
-            long bestExplicitGfs = mergedGrpMinGfs.get(depGroup) instanceof Number ? ((Number)mergedGrpMinGfs.get(depGroup)).longValue() : 0L;
-            long grpMinIng = mergedGrpMinIng.get(depGroup) instanceof Number ? ((Number)mergedGrpMinIng.get(depGroup)).longValue() : 0L;
-            long bestReplayIng = (mergedMinBucketIng > 0L && grpMinIng > mergedMinBucketIng) ? grpMinIng : 0L;
-            resolvedGfs = bestReplayIng > bestExplicitGfs ? bestReplayIng : bestExplicitGfs;
           }
           return [
             'doc_cnt': (long)merged.size(),
             'total_chargeable_units': sumEcu,
             'quantity_value': sumQty,
             'deployment_group': depGroup,
-            'group_first_seen': resolvedGfs > 0L ? resolvedGfs : null,
             'deployment_name': depName,
             'organization_id': orgId,
             'deployment_type': depType,
             'billing_type': bType,
             'billing_kind': bKind,
-            'billing_unit': bUnit,
             'cloud_region': cRegion
           ];
-    carryover_v1:
-      scripted_metric:
-        init_script: "state.best = null; state.best_ts = -1L; state.best_meta = -1; state.best_ecu = -1.0;"
-        map_script: |
-          if (!doc.containsKey('_index') || doc['_index'].empty || doc['_index'].value.toString() != 'chargeback_lookup.dest_billing_cluster_cost-1') {
-            return;
-          }
-          long ingTs = 0L;
-          try {
-            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
-              ingTs = doc['event.ingested'].value.toInstant().toEpochMilli();
-            } else if (params._source?.event?.ingested != null) {
-              ingTs = ZonedDateTime.parse(params._source.event.ingested.toString().trim()).toInstant().toEpochMilli();
-            }
-          } catch (Exception e) {}
-          double ecu = 0.0;
-          try {
-            if (doc.containsKey('total_chargeable_units') && !doc['total_chargeable_units'].empty) {
-              ecu = ((Number)doc['total_chargeable_units'].value).doubleValue();
-            } else if (params._source?.total_chargeable_units instanceof Number) {
-              ecu = ((Number)params._source.total_chargeable_units).doubleValue();
-            } else if (doc.containsKey('ess.billing.total_ecu') && !doc['ess.billing.total_ecu'].empty) {
-              ecu = ((Number)doc['ess.billing.total_ecu'].value).doubleValue();
-            } else if (params._source?.ess?.billing?.total_ecu instanceof Number) {
-              ecu = ((Number)params._source.ess.billing.total_ecu).doubleValue();
-            }
-          } catch (Exception e) {}
-          double qty = 0.0;
-          try {
-            if (doc.containsKey('ess.billing.quantity.value') && !doc['ess.billing.quantity.value'].empty) {
-              qty = ((Number)doc['ess.billing.quantity.value'].value).doubleValue();
-            } else if (params._source?.ess?.billing?.quantity?.value instanceof Number) {
-              qty = ((Number)params._source.ess.billing.quantity.value).doubleValue();
-            }
-          } catch (Exception e) {}
-          String depGroup = '';
-          try {
-            if (doc.containsKey('deployment_group') && !doc['deployment_group'].empty) {
-              depGroup = doc['deployment_group'].value.toString();
-            }
-          } catch (Exception e) {}
-          String depName = '';
-          try {
-            for (String dnf : ['deployment_name', 'deployment_name.keyword', 'ess.billing.deployment_name', 'ess.billing.deployment_name.keyword']) {
-              if (doc.containsKey(dnf) && !doc[dnf].empty) { depName = doc[dnf].value.toString(); if (depName != '') { break; } }
-            }
-            if (depName == '' && params._source?.deployment_name != null) { depName = params._source.deployment_name.toString(); }
-            if (depName == '' && params._source?.ess?.billing?.deployment_name != null) { depName = params._source.ess.billing.deployment_name.toString(); }
-          } catch (Exception e) {}
-          String orgId = '';
-          try {
-            for (String of : ['ess.billing.organization_id', 'ess.billing.organization_id.keyword', 'cloud.account.id', 'cloud.account.id.keyword']) {
-              if (doc.containsKey(of) && !doc[of].empty) { orgId = doc[of].value.toString(); if (orgId != '') { break; } }
-            }
-            if (orgId == '' && params._source?.ess?.billing?.organization_id != null) { orgId = params._source.ess.billing.organization_id.toString(); }
-          } catch (Exception e) {}
-          String depType = '';
-          try {
-            if (doc.containsKey('ess.billing.deployment_type') && !doc['ess.billing.deployment_type'].empty) {
-              depType = doc['ess.billing.deployment_type'].value.toString();
-            } else if (params._source?.ess?.billing?.deployment_type != null) {
-              depType = params._source.ess.billing.deployment_type.toString();
-            }
-          } catch (Exception e) {}
-          String bType = '';
-          try {
-            if (doc.containsKey('ess.billing.type') && !doc['ess.billing.type'].empty) {
-              bType = doc['ess.billing.type'].value.toString();
-            } else if (params._source?.ess?.billing?.type != null) {
-              bType = params._source.ess.billing.type.toString();
-            }
-          } catch (Exception e) {}
-          String bKind = '';
-          try {
-            if (doc.containsKey('ess.billing.kind') && !doc['ess.billing.kind'].empty) {
-              bKind = doc['ess.billing.kind'].value.toString();
-            } else if (params._source?.ess?.billing?.kind != null) {
-              bKind = params._source.ess.billing.kind.toString();
-            }
-          } catch (Exception e) {}
-          String bUnit = '';
-          try {
-            if (doc.containsKey('ess.billing.unit') && !doc['ess.billing.unit'].empty) {
-              bUnit = doc['ess.billing.unit'].value.toString();
-            } else if (params._source?.ess?.billing?.unit != null) {
-              bUnit = params._source.ess.billing.unit.toString();
-            }
-          } catch (Exception e) {}
-          String cRegion = '';
-          try {
-            if (doc.containsKey('cloud.region') && !doc['cloud.region'].empty) {
-              cRegion = doc['cloud.region'].value.toString();
-            } else if (params._source?.cloud?.region != null) {
-              cRegion = params._source.cloud.region.toString();
-            }
-          } catch (Exception e) {}
-          boolean isOnprem = false;
-          try {
-            if (doc.containsKey('is_onprem') && !doc['is_onprem'].empty) {
-              isOnprem = Boolean.TRUE.equals(doc['is_onprem'].value);
-            } else if (params._source?.is_onprem != null) {
-              isOnprem = Boolean.TRUE.equals(params._source.is_onprem) || params._source.is_onprem.toString().equalsIgnoreCase('true');
-            }
-          } catch (Exception e) {}
-          long docGfsMs = 0L;
-          try {
-            if (doc.containsKey('group_first_seen') && !doc['group_first_seen'].empty) {
-              docGfsMs = doc['group_first_seen'].value.toInstant().toEpochMilli();
-            } else if (params._source?.get('group_first_seen') != null) {
-              def rgfs = params._source.get('group_first_seen');
-              if (rgfs instanceof Number) { docGfsMs = ((Number)rgfs).longValue(); }
-              else { String gstr = rgfs.toString().trim(); if (gstr != '') { docGfsMs = ZonedDateTime.parse(gstr).toInstant().toEpochMilli(); } }
-            }
-          } catch (Exception e) {}
-          int metaScore = (depGroup != '' ? 2 : 0) + (depName != '' ? 1 : 0);
-          if (state.best == null || ingTs > state.best_ts || (ingTs == state.best_ts && (metaScore > state.best_meta || (metaScore == state.best_meta && ecu >= state.best_ecu)))) {
-            state.best_ts = ingTs;
-            state.best_meta = metaScore;
-            state.best_ecu = ecu;
-            state.best = [
-              'ing_ts': ingTs,
-              'meta': metaScore,
-              'doc_cnt': 1L,
-              'total_chargeable_units': ecu,
-              'quantity_value': qty,
-              'deployment_group': depGroup,
-              'group_first_seen': docGfsMs > 0L ? docGfsMs : null,
-              'deployment_name': depName,
-              'organization_id': orgId,
-              'deployment_type': depType,
-              'billing_type': bType,
-              'billing_kind': bKind,
-              'billing_unit': bUnit,
-              'cloud_region': cRegion,
-              'is_onprem': isOnprem
-            ];
-          }
-        combine_script: "return state.best;"
-        reduce_script: |
-          Map win = null;
-          long winTs = -1L;
-          int winMeta = -1;
-          double winEcu = -1.0;
-          for (def stObj : states) {
-            if (!(stObj instanceof Map)) { continue; }
-            Map st = (Map)stObj;
-            long stTs = st.ing_ts instanceof Number ? ((Number)st.ing_ts).longValue() : 0L;
-            int stMeta = st.meta instanceof Number ? ((Number)st.meta).intValue() : 0;
-            double stEcu = st.total_chargeable_units instanceof Number ? ((Number)st.total_chargeable_units).doubleValue() : 0.0;
-            if (win == null || stTs > winTs || (stTs == winTs && (stMeta > winMeta || (stMeta == winMeta && stEcu >= winEcu)))) {
-              win = new HashMap(st);
-              winTs = stTs;
-              winMeta = stMeta;
-              winEcu = stEcu;
-            }
-          }
-          if (win == null) {
-            return ['doc_cnt': 0L];
-          }
-          win.remove('ing_ts');
-          win.remove('meta');
-          return win;
     legacy:
       scripted_metric:
-        init_script: "state.items = new HashMap(); state.min_bucket_ing = 0L; state.grp_min_ing = new HashMap(); state.grp_min_gfs = new HashMap();"
+        init_script: "state.items = new HashMap();"
         map_script: |
-          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'chargeback_lookup.dest_billing_cluster_cost-1') {
-            return;
-          }
           boolean isNat = false;
           try {
             if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
@@ -1046,15 +647,6 @@ pivot:
             }
           } catch (Exception e) {}
 
-          String bUnit = '';
-          try {
-            if (doc.containsKey('ess.billing.unit') && !doc['ess.billing.unit'].empty) {
-              bUnit = doc['ess.billing.unit'].value.toString();
-            } else if (params._source?.ess?.billing?.unit != null) {
-              bUnit = params._source.ess.billing.unit.toString();
-            }
-          } catch (Exception e) {}
-
           String dedupKey = orgId + '|' + depId + '|' + fromKey + '|' + toKey + '|' + sku + (nodeStr != '' ? '|' + nodeStr : '');
 
           String cRegion = '';
@@ -1066,39 +658,8 @@ pivot:
             }
           } catch (Exception e) {}
 
-          long docGfsMs = 0L;
-          try {
-            if (doc.containsKey('group_first_seen') && !doc['group_first_seen'].empty) {
-              docGfsMs = doc['group_first_seen'].value.toInstant().toEpochMilli();
-            } else if (params._source?.get('group_first_seen') != null) {
-              def rgfs = params._source.get('group_first_seen');
-              if (rgfs instanceof Number) { docGfsMs = ((Number)rgfs).longValue(); }
-              else {
-                String gstr = rgfs.toString().trim();
-                if (gstr != '') { docGfsMs = ZonedDateTime.parse(gstr).toInstant().toEpochMilli(); }
-              }
-            }
-          } catch (Exception e) {}
-
-          if (ingTs > 0L && (state.min_bucket_ing <= 0L || ingTs < state.min_bucket_ing)) {
-            state.min_bucket_ing = ingTs;
-          }
-          if (depGroup != '') {
-            if (ingTs > 0L) {
-              long curGm = state.grp_min_ing.get(depGroup) instanceof Number ? ((Number)state.grp_min_ing.get(depGroup)).longValue() : 0L;
-              if (curGm <= 0L || ingTs < curGm) { state.grp_min_ing.put(depGroup, ingTs); }
-            }
-            if (docGfsMs > 0L) {
-              long curGf = state.grp_min_gfs.get(depGroup) instanceof Number ? ((Number)state.grp_min_gfs.get(depGroup)).longValue() : 0L;
-              if (curGf <= 0L || docGfsMs < curGf) { state.grp_min_gfs.put(depGroup, docGfsMs); }
-            }
-          }
-
           Map rec = [
             'ing_ts': ingTs,
-            'gfs': docGfsMs,
-            'min_any_ing': ingTs,
-            'min_grp_ing': ingTs,
             'ecu': ecu,
             'qty': qty,
             'dep_group': depGroup,
@@ -1107,7 +668,6 @@ pivot:
             'dep_type': depType,
             'b_type': bType,
             'b_kind': bKind,
-            'b_unit': bUnit,
             'c_region': cRegion
           ];
           Map ex = (Map)state.items.get(dedupKey);
@@ -1117,56 +677,15 @@ pivot:
             long exTs = ((Number)ex.get('ing_ts')).longValue();
             int newMeta = (depGroup != '' ? 2 : 0) + (depName != '' ? 1 : 0);
             int oldMeta = (ex.get('dep_group') != '' ? 2 : 0) + (ex.get('dep_name') != '' ? 1 : 0);
-            long rMinAny = ((Number)rec.get('min_any_ing')).longValue();
-            long eMinAny = ((Number)ex.get('min_any_ing')).longValue();
-            long mergedMinAny = (rMinAny > 0L && (eMinAny <= 0L || rMinAny < eMinAny)) ? rMinAny : eMinAny;
-            boolean recWins = (ingTs > exTs || (ingTs == exTs && (newMeta > oldMeta || (newMeta == oldMeta && ecu >= ((Number)ex.get('ecu')).doubleValue()))));
-            Map win = recWins ? rec : ex;
-            Map lose = recWins ? ex : rec;
-            win.put('min_any_ing', mergedMinAny);
-            String wGrp = win.get('dep_group') != null ? win.get('dep_group').toString() : '';
-            String lGrp = lose.get('dep_group') != null ? lose.get('dep_group').toString() : '';
-            if (wGrp != '' && wGrp.equals(lGrp)) {
-              long wMinG = ((Number)win.get('min_grp_ing')).longValue();
-              long lMinG = ((Number)lose.get('min_grp_ing')).longValue();
-              if (lMinG > 0L && (wMinG <= 0L || lMinG < wMinG)) { win.put('min_grp_ing', lMinG); }
-              long wGfs = ((Number)win.get('gfs')).longValue();
-              long lGfs = ((Number)lose.get('gfs')).longValue();
-              if (lGfs > 0L && (wGfs <= 0L || lGfs < wGfs)) { win.put('gfs', lGfs); }
-            }
-            if (recWins) {
-              state.items.put(dedupKey, win);
+            if (ingTs > exTs || (ingTs == exTs && (newMeta > oldMeta || (newMeta == oldMeta && ecu >= ((Number)ex.get('ecu')).doubleValue())))) {
+              state.items.put(dedupKey, rec);
             }
           }
         combine_script: "return state;"
         reduce_script: |
           Map merged = new HashMap();
-          long mergedMinBucketIng = 0L;
-          Map mergedGrpMinIng = new HashMap();
-          Map mergedGrpMinGfs = new HashMap();
           for (def st : states) {
-            if (st == null) { continue; }
-            long mbi = st.min_bucket_ing instanceof Number ? ((Number)st.min_bucket_ing).longValue() : 0L;
-            if (mbi > 0L && (mergedMinBucketIng <= 0L || mbi < mergedMinBucketIng)) {
-              mergedMinBucketIng = mbi;
-            }
-            if (st.grp_min_ing instanceof Map) {
-              for (def ge : ((Map)st.grp_min_ing).entrySet()) {
-                String gk = ge.getKey().toString();
-                long gv = ge.getValue() instanceof Number ? ((Number)ge.getValue()).longValue() : 0L;
-                long cv = mergedGrpMinIng.get(gk) instanceof Number ? ((Number)mergedGrpMinIng.get(gk)).longValue() : 0L;
-                if (gv > 0L && (cv <= 0L || gv < cv)) { mergedGrpMinIng.put(gk, gv); }
-              }
-            }
-            if (st.grp_min_gfs instanceof Map) {
-              for (def ge : ((Map)st.grp_min_gfs).entrySet()) {
-                String gk = ge.getKey().toString();
-                long gv = ge.getValue() instanceof Number ? ((Number)ge.getValue()).longValue() : 0L;
-                long cv = mergedGrpMinGfs.get(gk) instanceof Number ? ((Number)mergedGrpMinGfs.get(gk)).longValue() : 0L;
-                if (gv > 0L && (cv <= 0L || gv < cv)) { mergedGrpMinGfs.put(gk, gv); }
-              }
-            }
-            if (!(st.items instanceof Map)) { continue; }
+            if (st == null || !(st.items instanceof Map)) { continue; }
             for (def e : ((Map)st.items).entrySet()) {
               String k = e.getKey().toString();
               Map rec = (Map)e.getValue();
@@ -1178,25 +697,8 @@ pivot:
                 long exTs = ((Number)ex.get('ing_ts')).longValue();
                 int newMeta = (rec.get('dep_group') != '' ? 2 : 0) + (rec.get('dep_name') != '' ? 1 : 0);
                 int oldMeta = (ex.get('dep_group') != '' ? 2 : 0) + (ex.get('dep_name') != '' ? 1 : 0);
-                long rMinAny = rec.get('min_any_ing') instanceof Number ? ((Number)rec.get('min_any_ing')).longValue() : ((Number)rec.get('ing_ts')).longValue();
-                long eMinAny = ex.get('min_any_ing') instanceof Number ? ((Number)ex.get('min_any_ing')).longValue() : ((Number)ex.get('ing_ts')).longValue();
-                long mergedMinAny = (rMinAny > 0L && (eMinAny <= 0L || rMinAny < eMinAny)) ? rMinAny : eMinAny;
-                boolean recWins = (ingTs > exTs || (ingTs == exTs && (newMeta > oldMeta || (newMeta == oldMeta && ((Number)rec.get('ecu')).doubleValue() >= ((Number)ex.get('ecu')).doubleValue()))));
-                Map win = recWins ? rec : ex;
-                Map lose = recWins ? ex : rec;
-                win.put('min_any_ing', mergedMinAny);
-                String wGrp = win.get('dep_group') != null ? win.get('dep_group').toString() : '';
-                String lGrp = lose.get('dep_group') != null ? lose.get('dep_group').toString() : '';
-                if (wGrp != '' && wGrp.equals(lGrp)) {
-                  long wMinG = win.get('min_grp_ing') instanceof Number ? ((Number)win.get('min_grp_ing')).longValue() : ((Number)win.get('ing_ts')).longValue();
-                  long lMinG = lose.get('min_grp_ing') instanceof Number ? ((Number)lose.get('min_grp_ing')).longValue() : ((Number)lose.get('ing_ts')).longValue();
-                  if (lMinG > 0L && (wMinG <= 0L || lMinG < wMinG)) { win.put('min_grp_ing', lMinG); }
-                  long wGfs = win.get('gfs') instanceof Number ? ((Number)win.get('gfs')).longValue() : 0L;
-                  long lGfs = lose.get('gfs') instanceof Number ? ((Number)lose.get('gfs')).longValue() : 0L;
-                  if (lGfs > 0L && (wGfs <= 0L || lGfs < wGfs)) { win.put('gfs', lGfs); }
-                }
-                if (recWins) {
-                  merged.put(k, win);
+                if (ingTs > exTs || (ingTs == exTs && (newMeta > oldMeta || (newMeta == oldMeta && ((Number)rec.get('ecu')).doubleValue() >= ((Number)ex.get('ecu')).doubleValue())))) {
+                  merged.put(k, rec);
                 }
               }
             }
@@ -1214,7 +716,6 @@ pivot:
           String depType = '';
           String bType = '';
           String bKind = '';
-          String bUnit = '';
           String cRegion = '';
           for (def recObj : merged.values()) {
             Map rec = (Map)recObj;
@@ -1233,28 +734,18 @@ pivot:
             if (rec.get('dep_type') != '' && (depType == '' || isNewer)) { depType = rec.get('dep_type').toString(); }
             if (rec.get('b_type') != '' && (bType == '' || isNewer)) { bType = rec.get('b_type').toString(); }
             if (rec.get('b_kind') != '' && (bKind == '' || isNewer)) { bKind = rec.get('b_kind').toString(); }
-            if (rec.get('b_unit') != '' && (bUnit == '' || isNewer)) { bUnit = rec.get('b_unit').toString(); }
             if (rec.get('c_region') != '' && (cRegion == '' || isNewer)) { cRegion = rec.get('c_region').toString(); }
-          }
-          long resolvedGfs = 0L;
-          if (depGroup != '') {
-            long bestExplicitGfs = mergedGrpMinGfs.get(depGroup) instanceof Number ? ((Number)mergedGrpMinGfs.get(depGroup)).longValue() : 0L;
-            long grpMinIng = mergedGrpMinIng.get(depGroup) instanceof Number ? ((Number)mergedGrpMinIng.get(depGroup)).longValue() : 0L;
-            long bestReplayIng = (mergedMinBucketIng > 0L && grpMinIng > mergedMinBucketIng) ? grpMinIng : 0L;
-            resolvedGfs = bestReplayIng > bestExplicitGfs ? bestReplayIng : bestExplicitGfs;
           }
           return [
             'doc_cnt': (long)merged.size(),
             'total_chargeable_units': sumEcu,
             'quantity_value': sumQty,
             'deployment_group': depGroup,
-            'group_first_seen': resolvedGfs > 0L ? resolvedGfs : null,
             'deployment_name': depName,
             'organization_id': orgId,
             'deployment_type': depType,
             'billing_type': bType,
             'billing_kind': bKind,
-            'billing_unit': bUnit,
             'cloud_region': cRegion
           ];
 settings:

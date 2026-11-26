@@ -6,11 +6,9 @@ source:
     - metrics-chargeback.node_stats-*
     - metrics-ess_billing.billing-*
     - chargeback_conf_lookup*
-    - chargeback_lookup.dest_chargeback_conf-1*
-    - chargeback_lookup.dest_chargeback_conf_init-1*
     - -partial-*
     - -metrics-ess_billing.billing-chargeback*
-    - -chargeback_lookup.dest_chargeback_conf-2*
+    - -chargeback_lookup.*
   query:
     bool:
       should:
@@ -18,133 +16,22 @@ source:
             doc_type: config_snapshot
         - bool:
             must:
-              - terms:
-                  _index:
-                    - chargeback_conf_lookup
-                    - chargeback_lookup.dest_chargeback_conf-1
+              - term:
+                  _index: chargeback_conf_lookup
               - exists:
                   field: conf_start_date
-        - bool:
-            must:
-              - term:
-                  _index: chargeback_lookup.dest_chargeback_conf_init-1
-              - exists:
-                  field: config_join_key
       minimum_should_match: 1
   runtime_mappings:
-    cb_conf_bucket_key:
+    config_join_key:
       type: keyword
       script:
         source: |
-          String idx = (doc.containsKey('_index') && !doc['_index'].empty) ? doc['_index'].value.toString() : '';
-          if (idx == 'chargeback_lookup.dest_chargeback_conf_init-1') {
-            if (doc.containsKey('config_join_key') && !doc['config_join_key'].empty) {
-              String ik = doc['config_join_key'].value.toString().trim();
-              if (ik != '') { emit(ik); }
-            } else if (params._source?.get('config_join_key') != null) {
-              String ik = params._source.get('config_join_key').toString().trim();
-              if (ik != '') { emit(ik); }
-            }
-            return;
-          }
-          if (idx == 'chargeback_lookup.dest_chargeback_conf-1' || idx == 'chargeback_conf_lookup') {
-            String rowId = '';
-            try {
-              if (doc.containsKey('conf_row_id') && !doc['conf_row_id'].empty) {
-                rowId = doc['conf_row_id'].value.toString().trim();
-              } else if (params._source?.get('conf_row_id') != null) {
-                rowId = params._source.get('conf_row_id').toString().trim();
-              }
-            } catch (Exception e) {}
-            if (rowId == 'config') {
-              emit('chargeback_config');
-              if (idx == 'chargeback_conf_lookup') {
-                emit('chargeback_config_onprem');
-              }
-              return;
-            }
-            if (rowId == 'config_onprem') {
-              if (idx == 'chargeback_lookup.dest_chargeback_conf-1') {
-                emit('chargeback_config_onprem');
-              }
-              return;
-            }
-            if (rowId != '') {
-              emit('manual:' + rowId);
-              return;
-            }
-            String joinKey = 'chargeback_config';
-            try {
-              if (doc.containsKey('config_join_key') && !doc['config_join_key'].empty) {
-                String jk = doc['config_join_key'].value.toString().trim();
-                if (jk != '') { joinKey = jk; }
-              } else if (params._source?.get('config_join_key') != null) {
-                String jk = params._source.get('config_join_key').toString().trim();
-                if (jk != '') { joinKey = jk; }
-              }
-            } catch (Exception e) {}
-            long startMs = 1262304000000L;
-            try {
-              if (doc.containsKey('conf_start_date') && !doc['conf_start_date'].empty) {
-                startMs = doc['conf_start_date'].value.toInstant().toEpochMilli();
-              } else if (params._source?.get('conf_start_date') != null) {
-                def rs = params._source.get('conf_start_date');
-                if (rs instanceof Number) { startMs = ((Number)rs).longValue(); }
-                else {
-                  String ss = rs.toString().trim();
-                  if (ss != '') {
-                    try { startMs = Long.parseLong(ss); }
-                    catch (Exception pe) { startMs = ZonedDateTime.parse(ss.contains('T') ? ss : (ss + 'T00:00:00Z')).toInstant().toEpochMilli(); }
-                  }
-                }
-              }
-            } catch (Exception e) {}
-            long endMs = 2430518399999L;
-            try {
-              if (doc.containsKey('conf_end_date') && !doc['conf_end_date'].empty) {
-                endMs = doc['conf_end_date'].value.toInstant().toEpochMilli();
-              } else if (params._source?.get('conf_end_date') != null) {
-                def re = params._source.get('conf_end_date');
-                if (re instanceof Number) { endMs = ((Number)re).longValue(); }
-                else {
-                  String es = re.toString().trim();
-                  if (es != '') {
-                    try { endMs = Long.parseLong(es); }
-                    catch (Exception pe) { endMs = ZonedDateTime.parse(es.contains('T') ? es : (es + 'T23:59:59.999Z')).toInstant().toEpochMilli(); }
-                  }
-                }
-              }
-            } catch (Exception e) {}
-            if (endMs == 2430518399999L && (joinKey == 'chargeback_config' || joinKey == 'chargeback_config_onprem')) {
-              if (joinKey == 'chargeback_config') {
-                emit('chargeback_config');
-                if (idx == 'chargeback_conf_lookup') {
-                  emit('chargeback_config_onprem');
-                }
-              } else if (idx == 'chargeback_lookup.dest_chargeback_conf-1') {
-                emit('chargeback_config_onprem');
-              }
-              return;
-            }
-            String synId = (joinKey == 'chargeback_config_onprem'
-              ? 'config_onprem_'
-              : (joinKey == 'chargeback_config' ? 'config_' : (joinKey + '_'))) + Long.toString(startMs) + '_' + Long.toString(endMs);
-            emit('manual:' + synId);
-            return;
-          }
           emit('chargeback_config');
           emit('chargeback_config_onprem');
     cb_sync_ts:
       type: date
       script:
         source: |
-          if (doc.containsKey('_index') && !doc['_index'].empty) {
-            String cbIdx = doc['_index'].value.toString();
-            if (cbIdx == 'chargeback_lookup.dest_chargeback_conf_init-1' || cbIdx == 'chargeback_lookup.dest_chargeback_conf-1' || cbIdx == 'chargeback_conf_lookup') {
-              emit(1262304000000L);
-              return;
-            }
-          }
           try {
             if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
               emit(doc['event.ingested'].value.toInstant().toEpochMilli());
@@ -180,14 +67,11 @@ source:
             emit(doc['@timestamp'].value.toInstant().toEpochMilli());
             return;
           }
-          if (doc.containsKey('_index') && !doc['_index'].empty) {
-            String fbIdx = doc['_index'].value.toString();
-            if (fbIdx == 'chargeback_conf_lookup' || fbIdx == 'chargeback_lookup.dest_chargeback_conf-1') {
-              emit(1262304000000L);
-            }
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'chargeback_conf_lookup') {
+            emit(1262304000000L);
           }
 dest:
-  index: chargeback_lookup.dest_chargeback_conf-2
+  index: chargeback_lookup.dest_chargeback_conf-1
   aliases:
     - alias: chargeback_lookup.chargeback_conf
       move_on_creation: true
@@ -201,7 +85,7 @@ pivot:
   group_by:
     config_join_key:
       terms:
-        field: cb_conf_bucket_key
+        field: config_join_key
   aggregations:
     snapshots:
       filter:
@@ -211,18 +95,10 @@ pivot:
                 doc_type: config_snapshot
             - bool:
                 must:
-                  - terms:
-                      _index:
-                        - chargeback_conf_lookup
-                        - chargeback_lookup.dest_chargeback_conf-1
+                  - term:
+                      _index: chargeback_conf_lookup
                   - exists:
                       field: conf_start_date
-            - bool:
-                must:
-                  - term:
-                      _index: chargeback_lookup.dest_chargeback_conf_init-1
-                  - exists:
-                      field: config_join_key
           minimum_should_match: 1
       aggs:
         latest:
@@ -231,7 +107,6 @@ pivot:
               state.owners = [:];
               state.emitters = [:];
               state.legacyConf = null;
-              state.destInitialized = false;
             map_script: |
               if (params._source == null) {
                 return;
@@ -239,94 +114,15 @@ pivot:
               String srcIdx = (doc.containsKey('_index') && !doc['_index'].empty)
                 ? doc['_index'].value.toString()
                 : '';
-              if (srcIdx == 'chargeback_lookup.dest_chargeback_conf_init-1') {
-                state.destInitialized = true;
-                return;
-              }
-              if (srcIdx == 'chargeback_conf_lookup' || srcIdx == 'chargeback_lookup.dest_chargeback_conf-1') {
-                boolean isDestV1 = (srcIdx == 'chargeback_lookup.dest_chargeback_conf-1');
-                String rowId = '';
-                try {
-                  if (doc.containsKey('conf_row_id') && !doc['conf_row_id'].empty) {
-                    rowId = doc['conf_row_id'].value.toString().trim();
-                  } else if (params._source.get('conf_row_id') != null) {
-                    rowId = params._source.get('conf_row_id').toString().trim();
-                  }
-                } catch (Exception e) {}
-                String joinKey = 'chargeback_config';
-                try {
-                  if (doc.containsKey('config_join_key') && !doc['config_join_key'].empty) {
-                    String jk = doc['config_join_key'].value.toString().trim();
-                    if (jk != '') { joinKey = jk; }
-                  } else if (params._source.get('config_join_key') != null) {
-                    String jk = params._source.get('config_join_key').toString().trim();
-                    if (jk != '') { joinKey = jk; }
-                  }
-                } catch (Exception e) {}
-                long startMs = 1262304000000L;
-                try {
-                  if (doc.containsKey('conf_start_date') && !doc['conf_start_date'].empty) {
-                    startMs = doc['conf_start_date'].value.toInstant().toEpochMilli();
-                  } else if (params._source.get('conf_start_date') != null) {
-                    def rs = params._source.get('conf_start_date');
-                    if (rs instanceof Number) { startMs = ((Number)rs).longValue(); }
-                    else {
-                      String ss = rs.toString().trim();
-                      if (ss != '') {
-                        try { startMs = Long.parseLong(ss); }
-                        catch (Exception pe) { startMs = ZonedDateTime.parse(ss.contains('T') ? ss : (ss + 'T00:00:00Z')).toInstant().toEpochMilli(); }
-                      }
-                    }
-                  }
-                } catch (Exception e) {}
-                long endMs = 2430518399999L;
-                try {
-                  if (doc.containsKey('conf_end_date') && !doc['conf_end_date'].empty) {
-                    endMs = doc['conf_end_date'].value.toInstant().toEpochMilli();
-                  } else if (params._source.get('conf_end_date') != null) {
-                    def re = params._source.get('conf_end_date');
-                    if (re instanceof Number) { endMs = ((Number)re).longValue(); }
-                    else {
-                      String es = re.toString().trim();
-                      if (es != '') {
-                        try { endMs = Long.parseLong(es); }
-                        catch (Exception pe) { endMs = ZonedDateTime.parse(es.contains('T') ? es : (es + 'T23:59:59.999Z')).toInstant().toEpochMilli(); }
-                      }
-                    }
-                  }
-                } catch (Exception e) {}
-                if (!isDestV1 && (rowId == 'config_onprem' || (rowId == '' && joinKey == 'chargeback_config_onprem' && endMs == 2430518399999L))) {
+              if (srcIdx == 'chargeback_conf_lookup') {
+                String docId = (doc.containsKey('_id') && !doc['_id'].empty) ? doc['_id'].value.toString() : '';
+                if (docId == 'config_onprem') {
                   return;
                 }
-                String resolvedId = rowId;
-                if (resolvedId == '') {
-                  if (endMs == 2430518399999L && joinKey == 'chargeback_config') {
-                    resolvedId = 'config';
-                  } else if (endMs == 2430518399999L && joinKey == 'chargeback_config_onprem') {
-                    resolvedId = 'config_onprem';
-                  } else {
-                    resolvedId = (joinKey == 'chargeback_config_onprem'
-                      ? 'config_onprem_'
-                      : (joinKey == 'chargeback_config' ? 'config_' : (joinKey + '_'))) + Long.toString(startMs) + '_' + Long.toString(endMs);
-                  }
-                }
-                long lSync = 0L;
-                try {
-                  if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
-                    lSync = doc['event.ingested'].value.toInstant().toEpochMilli();
-                  } else if (params._source?.event instanceof Map && params._source.event.ingested != null) {
-                    def re = params._source.event.ingested;
-                    if (re instanceof Number) { lSync = ((Number)re).longValue(); }
-                    else { lSync = ZonedDateTime.parse(re.toString().trim()).toInstant().toEpochMilli(); }
-                  } else if (params._source.get('event.ingested') != null) {
-                    def re = params._source.get('event.ingested');
-                    if (re instanceof Number) { lSync = ((Number)re).longValue(); }
-                    else { lSync = ZonedDateTime.parse(re.toString().trim()).toInstant().toEpochMilli(); }
-                  } else if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
-                    lSync = doc['@timestamp'].value.toInstant().toEpochMilli();
-                  }
-                } catch (Exception e) {}
-                int prio = isDestV1 ? 4 : (joinKey == 'chargeback_config_onprem' ? 3 : (resolvedId == 'config' ? 2 : 1));
+                long lSync = (doc.containsKey('cb_sync_ts') && !doc['cb_sync_ts'].empty)
+                  ? doc['cb_sync_ts'].value.toInstant().toEpochMilli()
+                  : 0L;
+                int prio = (docId == 'config') ? 2 : 1;
                 boolean take = (state.legacyConf == null);
                 if (!take) {
                   int curPrio = state.legacyConf.prio instanceof Number ? ((Number)state.legacyConf.prio).intValue() : 0;
@@ -336,15 +132,10 @@ pivot:
                   }
                 }
                 if (take) {
-                  Map lc = ['prio': prio, 'ts': lSync, 'from_dest_v1': isDestV1];
-                  if (resolvedId != '' && resolvedId != 'config' && resolvedId != 'config_onprem') {
-                    lc['manual_id'] = resolvedId;
-                  }
+                  Map lc = ['prio': prio, 'ts': lSync];
                   for (String k : [
-                    'conf_row_id',
-                    'config_join_key',
                     'conf_start_date', 'conf_end_date',
-                    'conf_chargeable_unit_rate', 'conf_chargeable_unit_rate_unit', 'conf_currency_symbol',
+                    'conf_chargeable_unit_rate', 'conf_chargeable_unit_rate_unit',
                     'conf_ecu_rate', 'conf_ecu_rate_unit',
                     'conf_onprem_chargeable_unit_rate',
                     'conf_indexing_weight', 'conf_query_weight', 'conf_storage_weight',
@@ -381,7 +172,6 @@ pivot:
               }
               def rawSync = params._source.get('conf_sync_enabled');
               boolean syncEnabled = (rawSync == null) || rawSync.toString().equalsIgnoreCase('true');
-              // Destination initialization is tracked independently via chargeback_lookup.dest_chargeback_conf_init-1.
 
               String ns = (params._source.data_stream instanceof Map && params._source.data_stream.namespace != null)
                 ? params._source.data_stream.namespace.toString().trim()
@@ -502,11 +292,7 @@ pivot:
               Map mergedOwners = [:];
               Map mergedEmitters = [:];
               Map mergedLegacy = null;
-              boolean destInitialized = false;
               for (def s : states) {
-                if (s instanceof Map && Boolean.TRUE.equals(s.destInitialized)) {
-                  destInitialized = true;
-                }
                 if (s instanceof Map && s.legacyConf instanceof Map) {
                   Map slc = (Map)s.legacyConf;
                   if (mergedLegacy == null) {
@@ -586,7 +372,7 @@ pivot:
               }
 
               if (mergedOwners.isEmpty()) {
-                if (mergedLegacy != null && !destInitialized) {
+                if (mergedLegacy != null) {
                   return [
                     'has_snapshots': true,
                     'policy_sync_enabled': true,
@@ -741,17 +527,6 @@ pivot:
                 }
               }
 
-              if (!ownerConflict && !policySyncEnabled && mergedLegacy != null && !destInitialized) {
-                return [
-                  'has_snapshots': true,
-                  'policy_sync_enabled': true,
-                  'owner_conflict': false,
-                  'from_legacy_conf': true,
-                  'legacy_conf': mergedLegacy,
-                  'streams': [:]
-                ];
-              }
-
               return [
                 'has_snapshots': true,
                 'policy_sync_enabled': policySyncEnabled,
@@ -764,6 +539,5 @@ settings:
   unattended: true
 _meta:
   managed: true
-  order: 0
   run_as_kibana_system: false
   fleet_transform_version: 0.7.0

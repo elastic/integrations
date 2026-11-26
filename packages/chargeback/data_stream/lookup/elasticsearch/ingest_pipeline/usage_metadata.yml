@@ -1,0 +1,73 @@
+---
+description: "Chargeback: Populate additive usage_deployment_metadata lookup with deployment_name, deployment_group, and composite_key."
+processors:
+  - script:
+      ignore_failure: true
+      lang: painless
+      tag: usage_metadata
+      source: |
+        try {
+          if (ctx.usage_meta instanceof Map) {
+            Map um = (Map)ctx.usage_meta;
+            if (um.get('deployment_name') != null && um.get('deployment_name').toString() != '') {
+              ctx.deployment_name = um.get('deployment_name').toString();
+            }
+            if (um.containsKey('deployment_group')) {
+              def dg = um.get('deployment_group');
+              if (dg != null && dg.toString() != '') {
+                ctx.deployment_group = dg.toString();
+              } else {
+                ctx.remove('deployment_group');
+              }
+            }
+          }
+        } catch (Exception e) {
+          ctx.remove('usage_meta');
+          throw e;
+        }
+        ctx.remove('usage_meta');
+
+        if (ctx.cluster_name != null) {
+          ctx.deployment_id = ctx.cluster_name;
+        } else if (ctx.elasticsearch?.cluster?.name != null) {
+          ctx.deployment_id = ctx.elasticsearch.cluster.name;
+        }
+        ctx.remove('cluster_name');
+
+        if (ctx['@timestamp'] != null && ctx.deployment_id != null) {
+          def rawTs = ctx['@timestamp'];
+          String date = null;
+          if (rawTs instanceof Number) {
+            date = Instant.ofEpochMilli(((Number)rawTs).longValue()).atZone(ZoneOffset.UTC).toLocalDate().toString();
+          } else {
+            String tsStr = rawTs.toString().trim();
+            try {
+              date = ZonedDateTime.parse(tsStr).toInstant().atZone(ZoneOffset.UTC).toLocalDate().toString();
+            } catch (Exception e) {
+              try {
+                date = LocalDate.parse(tsStr).toString();
+              } catch (Exception e2) {}
+            }
+          }
+          if (date != null) {
+            ctx.composite_key = date + '_' + ctx.deployment_id;
+          }
+        }
+  - set:
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+      tag: set_event_ingested
+  - pipeline:
+      description: '[Fleet] Pipeline for Chargeback lookup destination rows'
+      ignore_missing_pipeline: true
+      name: logs-chargeback.lookup@custom
+  - pipeline:
+      description: '[Fleet] Pipeline for Chargeback usage metadata lookup destination rows'
+      ignore_missing_pipeline: true
+      name: logs-chargeback.lookup-usage_metadata@custom
+on_failure:
+  - fail:
+      message: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
