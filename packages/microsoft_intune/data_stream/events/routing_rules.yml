@@ -1,0 +1,17 @@
+# All Microsoft Intune log categories arrive on microsoft_intune.events from a
+# single Azure Event Hub input. The events pipeline sets event.dataset from the
+# Azure Monitor log category, and these rules reroute the event to the data
+# stream for that category. Events with other categories stay in
+# microsoft_intune.events.
+- source_dataset: microsoft_intune.events
+  rules:
+    - target_dataset: microsoft_intune.audit
+      if: ctx.event?.dataset == 'microsoft_intune.audit'
+      namespace:
+        - "{{data_stream.namespace}}"
+        - default
+    - target_dataset: microsoft_intune.managed_device
+      if: ctx.event?.dataset == 'microsoft_intune.managed_device'
+      namespace:
+        - "{{data_stream.namespace}}"
+        - default

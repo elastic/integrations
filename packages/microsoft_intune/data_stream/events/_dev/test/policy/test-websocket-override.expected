@@ -4,22 +4,23 @@ inputs:
       meta:
         package:
             name: microsoft_intune
-      name: test-default-microsoft_intune
+      name: test-websocket-override-microsoft_intune
       streams:
         - authority_host: https://login.microsoftonline.com
           connection_string: ${SECRET_0}
           consumer_group: $Default
           data_stream:
-            dataset: microsoft_intune.audit
+            dataset: microsoft_intune.events
           eventhub: example
+          processor_version: v2
           publisher_pipeline.disable_host: true
           storage_account: default
           storage_account_container: azure-eventhub-input-example
           storage_account_key: ${SECRET_1}
           tags:
             - forwarded
-            - microsoft_intune-audit
-          transport: amqp
+            - microsoft_intune-events
+          transport: websocket
       type: azure-eventhub
       use_output: default
 output_permissions:
@@ -32,7 +33,7 @@ output_permissions:
         uuid-for-permissions-on-related-indices:
             indices:
                 - names:
-                    - logs-microsoft_intune.audit-ep
+                    - logs-*-*
                   privileges:
                     - auto_configure
                     - create_doc

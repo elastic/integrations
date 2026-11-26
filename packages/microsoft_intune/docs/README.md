@@ -12,7 +12,15 @@ The Microsoft Intune integration uses Azure Event Hub to collect audit and manag
 
 ### How it works
 
-This integration collects audit and managed device logs from Microsoft Intune by consuming events from an Azure Event Hub. Intune audit and managed device logs are forwarded to the Event Hub, and the Elastic Agent reads these events in real-time, processes them through ingest pipelines, and indexes them in Elasticsearch.
+This integration collects audit and managed device logs from Microsoft Intune by consuming events from an Azure Event Hub. Intune sends all its log categories to the Event Hub, and the Elastic Agent reads the Event Hub once with a single input. The events arrive in the `microsoft_intune.events` data stream, and the ingest pipeline routes each event by its log category:
+
+| Log category | Data stream |
+| --- | --- |
+| `AuditLogs` | `microsoft_intune.audit` |
+| `Devices` | `microsoft_intune.managed_device` |
+| Any other category | `microsoft_intune.events` (not parsed) |
+
+The `audit` and `managed_device` data streams have no input of their own. They only receive events routed from `microsoft_intune.events`.
 
 ### Proxy support
 
@@ -47,8 +55,8 @@ Integrating device inventory data and Microsoft Intune audit logs into SIEM dash
 
 ### Collect data from Microsoft Azure Event Hub
 
--  Set up Azure Event Hub for Intune Audit Logs and Managed device logs and send audit logs and managed device logs from Intune to Azure Event Hub. For more detail, refer to the link [here](https://learn.microsoft.com/en-us/intune/intune-service/fundamentals/review-logs-using-azure-monitor).
-- **Note:**
+- Set up an Azure Event Hub and add an Intune diagnostic setting that sends the logs to it. For more detail, refer to [Send Intune log data to Azure Storage, Event Hubs, or Log Analytics](https://learn.microsoft.com/en-us/intune/intune-service/fundamentals/review-logs-using-azure-monitor).
+- In the diagnostic setting, select the log categories to collect. All categories can go to the same Event Hub:
    - Audit: Select LOG > AuditLogs.
    - Managed Device: Select LOG > IntuneDevices.
 
@@ -65,15 +73,21 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 1. In Kibana navigate to **Management** > **Integrations**.
 2. In the search bar, type **Microsoft Intune**.
 3. Select the **Microsoft Intune** integration and add it.
-4. While adding the integration, to collect logs via **Azure Event Hub**, enter the following details:
-   - eventhub
-   - consumer_group
-   - connection_string
-   - storage_account
-   - storage_account_key
-   - storage_account_container (optional)
-   - resource_manager_endpoint (optional)
-5. Select **Save and continue** to save the integration.
+4. While adding the integration, enter the following Event Hub settings. They apply to the whole integration:
+   - Azure Event Hub
+   - Consumer Group
+   - Connection String
+   - Storage Account
+   - Storage Account Key
+   - Resource Manager Endpoint (optional)
+5. Under **Collect Microsoft Intune logs via Azure Event Hub**, optionally set the **Storage Account Container**.
+6. Select **Save and continue** to save the integration.
+
+### Upgrading from version 0.3.x
+
+Version 0.4.0 replaces the two Event Hub inputs (one for `audit` and one for `managed_device`) with a single input. After the upgrade, you must enter the Event Hub settings again in the integration policy.
+
+The default checkpoint container name (`azure-eventhub-input-<eventhub>`) has not changed. If you set a custom **Storage Account Container** on one of the old inputs, set the same value on the new input so that the agent continues from the existing checkpoints instead of reading the Event Hub again from the start.
 
 ### Validation
 
@@ -87,7 +101,32 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
+## Troubleshooting
+
+- **Events are missing from `audit` or `managed_device`:** check the `logs-microsoft_intune.events-*` data stream. Events whose log category is not `AuditLogs` or `Devices` stay there, with the category in `microsoft_intune.events.category`. Events that are not valid JSON also stay there, with `event.kind` set to `pipeline_error`.
+
 ## Reference
+
+### events
+
+The `events` data stream receives all events from the Event Hub and routes them to the other data streams. It keeps the events whose log category is not routed.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| microsoft_intune.events.category | Azure Monitor log category of an event that is not routed to another data stream of this package. | keyword |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| tags | User defined tags. | keyword |
+
 
 ### managed_device
 

@@ -1,0 +1,59 @@
+---
+description: >-
+  Pipeline for routing Microsoft Intune events by their Azure Monitor log category.
+  The routing rules in routing_rules.yml reroute the event based on event.dataset,
+  and the pipeline of the target data stream parses it.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version_8efb762c
+      value: 9.3.0
+  - set:
+      field: event.kind
+      tag: set_event_kind_d452ef2c
+      value: event
+  - json:
+      field: message
+      tag: json_message_to_tmp_json_3430dc7f
+      target_field: _tmp.json
+      description: Parses the message field into a temporary field to read the log category.
+  # Events with any other category keep the event.dataset value set by the
+  # agent (microsoft_intune.events) and stay in this data stream.
+  - set:
+      field: event.dataset
+      tag: set_event_dataset_audit_4a996d04
+      value: microsoft_intune.audit
+      if: ctx._tmp?.json?.category == 'AuditLogs'
+  - set:
+      field: event.dataset
+      tag: set_event_dataset_managed_device_e68343d7
+      value: microsoft_intune.managed_device
+      if: ctx._tmp?.json?.category == 'Devices'
+  - set:
+      field: microsoft_intune.events.category
+      tag: set_microsoft_intune_events_category_615f4cf5
+      copy_from: _tmp.json.category
+      ignore_empty_value: true
+      description: Keeps the log category on events that are not routed to another data stream.
+      if: ctx.event?.dataset != 'microsoft_intune.audit' && ctx.event?.dataset != 'microsoft_intune.managed_device'
+  - remove:
+      field: _tmp
+      tag: remove_tmp_26da7c12
+      ignore_missing: true
+on_failure:
+  - append:
+      tag: append_error_message_511381e3
+      field: error.message
+      value: >-
+        Processor '{{{_ingest.on_failure_processor_type}}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{_ingest.on_failure_processor_tag}}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_tags_279d5a5c
+      value: preserve_original_event
+      allow_duplicates: false
