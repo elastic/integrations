@@ -1,0 +1,24 @@
+# Filter scenario: exercises the type_tags_include / tags_exclude drop branches.
+# drop_below_threshold=false isolates the filter drops (so a record is dropped only because of a
+# filter, not the indicator threshold):
+#   doc 1 type_tag peexe, tags [peexe,...]   -> kept (type_tag allowed, no excluded tag)
+#   doc 2 type_tag elf                        -> dropped (not in type_tags_include)
+#   doc 3 type_tag peexe, tags [peexe,nsrl]   -> dropped (nsrl is in tags_exclude)
+# Note: malformed/un-parseable JSON lines are handled by the pipeline's top-level on_failure
+# (which tags event.kind=pipeline_error and strips the internal _conf/_is_indicator/_should_drop
+# fields). elastic-package pipeline tests reject un-parseable input as an "unexpected pipeline
+# error", so that path is not exercised as a fixture here.
+fields:
+  tags:
+    - forwarded
+  _conf:
+    drop_below_threshold: false
+    keep_engine_results: false
+    indicator_verdicts:
+      - VERDICT_MALICIOUS
+    indicator_min_threat_score: 70
+    indicator_min_malicious_detections: 5
+    type_tags_include:
+      - peexe
+    tags_exclude:
+      - nsrl

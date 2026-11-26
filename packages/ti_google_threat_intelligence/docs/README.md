@@ -4,10 +4,11 @@
 
 [Google Threat Intelligence](https://gtidocs.virustotal.com/) is a security solution that helps organizations detect, analyze, and mitigate threats. It leverages Google's global telemetry, advanced analytics, and vast infrastructure to provide actionable insights. Key features include threat detection, malware and phishing analysis, and real-time threat alerts.
 
-Google Threat Intelligence integration offers support for three APIs:
+Google Threat Intelligence integration offers support for three APIs and a file-based feed:
 1. **[Threat List API](https://gtidocs.virustotal.com/reference/get-hourly-threat-list)** to deliver hourly data chunks. The Threat Lists feature allows customers to consume **Indicators of Compromise (IOCs)** categorized by various threat types.
 2. **[IOC Stream API](https://gtidocs.virustotal.com/reference/get-objects-from-the-ioc-stream)** to deliver various types of **Indicators of Compromise (IOCs)** originating from multiple sources. Depending on the source of the notification, different context-specific attributes are added to the IOCs.
 3. **[Vulnerability API](https://gtidocs.virustotal.com/reference/list-vulnerabilities)** to deliver **Vulnerability** objects enriched with GTI's assessment data, such as CVSS scores, EPSS, exploitation status, and CISA Known Exploited Vulnerabilities (KEV) information. Requires an **Enterprise Plus** subscription.
+4. **[File Feed](https://gtidocs.virustotal.com/reference/file-feeds)** to deliver full file reports as downloadable packages, ingested from files on disk via the filestream input rather than a polling API. Requires a GTI subscription with file feed access. See the [File Feed](#file-feed) section for sourcing and setup.
 
 ## Threat List API Feeds
 
@@ -37,6 +38,8 @@ Customers can access a subset of the available threat lists based on their **Goo
 - **GTI Enterprise+**: Access to all available threat lists
 
 **Note:** The **Vulnerability** data stream is a separate API from the Threat List API above and requires an **Enterprise Plus** subscription.
+
+**Note:** The **File Feed** data stream is a separate, file-based source (not part of the Threat List API) and requires a GTI subscription with file feed access. See the [File Feed](#file-feed) section.
 
 ## Data Streams
 
@@ -136,7 +139,7 @@ For example:
 
 A **retention policy** is used to remove data older than the default retention period. For more details, refer to the [Retention Policy Documentation](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-transform-put-transform#operation-transform-put-transform-body-application-json-retention_policy).
 
-In this integration, all data streams have a **retention period of 30 days**.
+In this integration, the transform destination indices have a **retention period of 30 days**. This does not apply to the File Feed source data stream (`logs-ti_google_threat_intelligence.file_feed-*`), which is kept for about **7 days** - see the [File Feed](#file-feed) section for how to extend it.
 
 ### Customizing Detection Rules
 
@@ -423,6 +426,1025 @@ An example event for `cryptominer` looks as following:
 | log.file.vol | The serial number of the volume that contains a file. (Windows-only). | keyword |
 | log.offset | Log offset. | long |
 | threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
+
+
+### File Feed
+
+This is the `File Feed` dataset. It collects Google Threat Intelligence File Feed records from files on disk using the filestream input. The File Feed is distributed as bzip2-compressed NDJSON. Decompress each package to NDJSON on disk before pointing the input at it. Each line is one File Feed object exactly as delivered by Google - a bare JSON object parsed into `gti.file_feed`, with no `{"data": {...}}` wrapper (unlike the threat-list files described above).
+
+**Producing the files.** File Feed packages are published by the Google Threat Intelligence [file feed API](https://gtidocs.virustotal.com/reference/file-feeds) (base path `/api/v3/feeds/files/{time}`) as time-based batches, and access requires a GTI subscription with file feed access (verify the exact endpoint, batch granularity, and entitlement against your [GTI documentation](https://gtidocs.virustotal.com/reference/file-feeds)). On a host with API access, download each batch and decompress the bzip2 package to a `.ndjson` file (one File Feed object per line), then copy the files to the host running Elastic Agent and point **Paths** at them, for example `/path/to/file_feed/*.ndjson`.
+
+A record is promoted to `threat.indicator.*` when any of the following is true:
+
+- its GTI verdict is in the **Indicator verdicts** list (default `VERDICT_MALICIOUS`), or
+- it is `VERDICT_SUSPICIOUS` and its threat score is greater than or equal to the **Minimum threat score for suspicious promotion** (default `70`), or
+- its `last_analysis_stats.malicious` count is greater than or equal to the **Minimum malicious detections** value (default `5`), regardless of verdict.
+
+By default, **Drop records below the indicator threshold** (`drop_below_threshold`) is enabled, so records that are not promoted are discarded and never stored. Disable it to retain every record under `gti.file_feed.*`. Only promoted records carry `threat.indicator.*` and feed the File IOC transform.
+
+File Feed source data is short-lived regardless of this setting: the packaged ILM policy `logs-ti_google_threat_intelligence.file_feed-default_policy` rolls over daily and deletes after about **7 days** on stateful deployments, and `lifecycle.yml` sets `data_retention: 7d` on Serverless. Disabling the drop therefore keeps non-indicator records for roughly a week, not indefinitely. To build a longer local reputation/hunting corpus, extend retention on both mechanisms: edit or replace the `logs-ti_google_threat_intelligence.file_feed-default_policy` ILM policy on stateful deployments, and use `PUT _data_stream/logs-ti_google_threat_intelligence.file_feed-<namespace>/_lifecycle` on Serverless.
+
+#### Example
+
+An example event for `file_feed` looks as following:
+
+```json
+{
+    "@timestamp": "2026-08-19T03:59:59.000Z",
+    "agent": {
+        "ephemeral_id": "a5465750-aae4-4b96-8bf4-503c0819ea57",
+        "id": "a3e83a1f-2319-4955-85c2-de7eaa01bca5",
+        "name": "elastic-agent-49076",
+        "type": "filebeat",
+        "version": "8.19.0"
+    },
+    "data_stream": {
+        "dataset": "ti_google_threat_intelligence.file_feed",
+        "namespace": "86603",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "a3e83a1f-2319-4955-85c2-de7eaa01bca5",
+        "snapshot": false,
+        "version": "8.19.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "threat",
+            "file"
+        ],
+        "dataset": "ti_google_threat_intelligence.file_feed",
+        "ingested": "2026-11-25T06:00:38Z",
+        "kind": "enrichment",
+        "module": "ti_google_threat_intelligence",
+        "original": "{\"id\":\"466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc\",\"type\":\"file\",\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc\"},\"attributes\":{\"trid\":[{\"file_type\":\"Adobe Portable Document Format\",\"probability\":100.0}],\"creation_date\":1775210168,\"tlsh\":\"T19E549DB5BD52081DE64786FD653FB2CA07846129C39CB9B8A510B880583FA781EF51FF\",\"type_tags\":[\"document\",\"pdf\"],\"ssdeep\":\"3072:L6M1oA096wBAwaH6UkHi1QvYwADYoIGNWLJGld3ySqNPPLRzk4NClDX/My6:JuH8wBfaH6UkHiSYwczWLmqNPzbCTi\",\"type_extension\":\"pdf\",\"available_tools\":[\"sigcheck\"],\"sha256\":\"466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc\",\"total_votes\":{\"harmless\":0,\"malicious\":0},\"type_description\":\"PDF\",\"popular_threat_classification\":{\"popular_threat_name\":[{\"count\":1,\"value\":\"qrcode\"}],\"popular_threat_category\":[{\"count\":7,\"value\":\"phishing\"},{\"count\":5,\"value\":\"trojan\"}],\"suggested_threat_label\":\"phishing.qrcode\"},\"tags\":[\"pdf\"],\"last_analysis_stats\":{\"malicious\":11,\"suspicious\":0,\"undetected\":52,\"harmless\":0,\"timeout\":0,\"confirmed-timeout\":0,\"failure\":1,\"type-unsupported\":12},\"size\":286982,\"main_icon\":{\"raw_md5\":\"899ccaa963f6a4d55471c891598ae93a\",\"dhash\":\"0d4c232b55410517\"},\"meaningful_name\":\"Friday-April-2026 0256 AM Example___fdp.pdf\",\"vhash\":\"9ad44949929ff778ce770afb03f643b9d\",\"downloadable\":true,\"first_submission_date\":1785676668,\"reputation\":0,\"last_analysis_results\":{\"Bkav\":{\"method\":\"blacklist\",\"engine_name\":\"Bkav\",\"engine_version\":\"8.2.40(8338)\",\"engine_update\":\"20260818\",\"category\":\"undetected\",\"result\":null},\"Lionic\":{\"method\":\"blacklist\",\"engine_name\":\"Lionic\",\"engine_version\":\"8.16\",\"engine_update\":\"20260818\",\"category\":\"undetected\",\"result\":null},\"MicroWorld-eScan\":{\"method\":\"blacklist\",\"engine_name\":\"MicroWorld-eScan\",\"engine_version\":\"14.0.409.0\",\"engine_update\":\"20260818\",\"category\":\"malicious\",\"result\":\"Trojan.GenericKD.81107671\"}},\"unique_sources\":1,\"filecondis\":{\"raw_md5\":\"c2326e8ab452f32f132b5e937279b790\",\"dhash\":\"00003d3c3c280000\"},\"times_submitted\":1,\"magic\":\"PDF document, version 1.4, 2 pages\",\"pdf_info\":{\"encrypted\":0,\"openaction\":0,\"header\":\"%PDF-1.4\",\"num_object_streams\":0,\"num_obj\":70,\"num_endstream\":29,\"flash\":0,\"embedded_file\":0,\"jbig2_compression\":0,\"num_endobj\":70,\"xfa\":0,\"javascript\":0,\"js\":0,\"startxref\":1,\"xref\":1,\"num_stream\":29,\"acroform\":0,\"num_launch_actions\":0,\"num_pages\":2,\"suspicious_colors\":0,\"trailer\":1,\"autoaction\":0},\"sha1\":\"2b6925e920c93241958085c30b6ec564b60fa7fc\",\"magika\":\"PDF\",\"type_tag\":\"pdf\",\"last_analysis_date\":1787111735,\"last_submission_date\":1785676668,\"md5\":\"3ef89ef41922fcbea756b7ba9c0deae0\",\"names\":[\"Friday-April-2026 0256 AM Example___fdp.pdf\"],\"last_modification_date\":1787111999,\"threat_severity\":{\"version\":5,\"threat_severity_level\":\"SEVERITY_NONE\",\"threat_severity_data\":{\"num_av_detections\":1},\"last_analysis_date\":\"1785676690\",\"level_description\":\"Severity NONE because the file has no Google antivirus detections and no bad network activity\"},\"gti_assessment\":{\"contributing_factors\":{\"gti_confidence_score\":19},\"threat_score\":{\"value\":1},\"severity\":{\"value\":\"SEVERITY_NONE\"},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"},\"description\":\"This indicator did not match our detection criteria and there is currently no evidence of malicious activity.\",\"gti_description_cards\":{\"BULK_SIGNALS\":[{\"influence\":\"medium\",\"title\":\"Multi-Engine AV Detections: 11\",\"sub_title\":\"\",\"related_links\":[],\"collection_type\":null}]}},\"crowdsourced_ai_results\":[{\"verdict\":\"malicious\",\"source\":\"palm\",\"category\":\"code_insight\",\"analysis\":\"The analyzed document presents itself as an HR Benefits Overview targeting an employee at Example Corp. While low-level technical analysis found no executable payloads or active streams, structural analysis revealed hidden text rendered in white font used to evade security scanners. This hidden text content is paired with generic corporate branding designed to prompt immediate user interaction.\\n\\nThe primary attack vector is a embedded QR code intended to bypass standard secure email gateways and push the target to an unmonitored mobile browser. The QR code resolves directly to the external URL https://circuitscale.surf/$jane.doe@example.com, which incorporates the recipient's email address as a parameter for a targeted credential harvesting campaign. Due to the presence of evasion techniques and a malicious quishing URL, the document is classified as malicious.\",\"id\":\"466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc-file-palm\"}]},\"relationships\":{\"contacted_domains\":{\"data\":[],\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/relationships/contacted_domains?limit=20\",\"related\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/contacted_domains\"}},\"itw_urls\":{\"data\":[],\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/relationships/itw_urls?limit=20\",\"related\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/itw_urls\"}},\"associations\":{\"data\":[],\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/relationships/associations?limit=20\",\"related\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/associations\"}},\"embedded_ips\":{\"data\":[],\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/relationships/embedded_ips?limit=20\",\"related\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/embedded_ips\"}},\"embedded_urls\":{\"data\":[{\"type\":\"url\",\"id\":\"7daf671f840dcecb20c37ecdd868eb517cf332fde60c6534cbc834224d8e15c6\",\"context_attributes\":{\"url\":\"https://circuitscale.surf/$jane.doe@example.com\"}}],\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/relationships/embedded_urls?limit=20\",\"related\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/embedded_urls\"}},\"contacted_ips\":{\"data\":[],\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/relationships/contacted_ips?limit=20\",\"related\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/contacted_ips\"}},\"contacted_urls\":{\"data\":[],\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/relationships/contacted_urls?limit=20\",\"related\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/contacted_urls\"}},\"embedded_domains\":{\"data\":[],\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/relationships/embedded_domains?limit=20\",\"related\":\"https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc/embedded_domains\"}}},\"context_attributes\":{\"download_url\":\"https://www.virustotal.com/api/v3/feeds/files/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2/download\"}}",
+        "risk_score": 1,
+        "type": [
+            "indicator",
+            "info"
+        ]
+    },
+    "gti": {
+        "file_feed": {
+            "attributes": {
+                "available_tools": [
+                    "sigcheck"
+                ],
+                "crowdsourced_ai_results": [
+                    {
+                        "analysis": "The analyzed document presents itself as an HR Benefits Overview targeting an employee at Example Corp. While low-level technical analysis found no executable payloads or active streams, structural analysis revealed hidden text rendered in white font used to evade security scanners. This hidden text content is paired with generic corporate branding designed to prompt immediate user interaction.\n\nThe primary attack vector is a embedded QR code intended to bypass standard secure email gateways and push the target to an unmonitored mobile browser. The QR code resolves directly to the external URL https://circuitscale.surf/$jane.doe@example.com, which incorporates the recipient's email address as a parameter for a targeted credential harvesting campaign. Due to the presence of evasion techniques and a malicious quishing URL, the document is classified as malicious.",
+                        "category": "code_insight",
+                        "id": "466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc-file-palm",
+                        "source": "palm",
+                        "verdict": "malicious"
+                    }
+                ],
+                "downloadable": true,
+                "filecondis": {
+                    "dhash": "00003d3c3c280000",
+                    "raw_md5": "c2326e8ab452f32f132b5e937279b790"
+                },
+                "first_submission_date": "2026-08-02T13:17:48.000Z",
+                "gti_assessment": {
+                    "contributing_factors": {
+                        "gti_confidence_score": 19
+                    },
+                    "gti_description_cards": {
+                        "bulk_signals": [
+                            {
+                                "influence": "medium",
+                                "title": "Multi-Engine AV Detections: 11"
+                            }
+                        ]
+                    },
+                    "severity": {
+                        "value": "SEVERITY_NONE"
+                    },
+                    "verdict": {
+                        "value": "VERDICT_UNDETECTED"
+                    }
+                },
+                "last_analysis_date": "2026-08-19T03:55:35.000Z",
+                "last_analysis_stats": {
+                    "confirmed_timeout": 0,
+                    "failure": 1,
+                    "harmless": 0,
+                    "suspicious": 0,
+                    "timeout": 0,
+                    "type_unsupported": 12,
+                    "undetected": 52
+                },
+                "last_modification_date": "2026-08-19T03:59:59.000Z",
+                "last_submission_date": "2026-08-02T13:17:48.000Z",
+                "magic": "PDF document, version 1.4, 2 pages",
+                "magika": "PDF",
+                "main_icon": {
+                    "dhash": "0d4c232b55410517",
+                    "raw_md5": "899ccaa963f6a4d55471c891598ae93a"
+                },
+                "names": [
+                    "Friday-April-2026 0256 AM Example___fdp.pdf"
+                ],
+                "pdf_info": {
+                    "acroform": 0,
+                    "autoaction": 0,
+                    "embedded_file": 0,
+                    "encrypted": 0,
+                    "flash": 0,
+                    "header": "%PDF-1.4",
+                    "javascript": 0,
+                    "jbig2_compression": 0,
+                    "js": 0,
+                    "num_endobj": 70,
+                    "num_endstream": 29,
+                    "num_launch_actions": 0,
+                    "num_obj": 70,
+                    "num_object_streams": 0,
+                    "num_pages": 2,
+                    "num_stream": 29,
+                    "openaction": 0,
+                    "startxref": 1,
+                    "suspicious_colors": 0,
+                    "trailer": 1,
+                    "xfa": 0,
+                    "xref": 1
+                },
+                "popular_threat_classification": {
+                    "popular_threat_category": [
+                        {
+                            "count": 7,
+                            "value": "phishing"
+                        },
+                        {
+                            "count": 5,
+                            "value": "trojan"
+                        }
+                    ],
+                    "popular_threat_name": [
+                        {
+                            "count": 1
+                        }
+                    ],
+                    "suggested_threat_label": "phishing.qrcode"
+                },
+                "reputation": 0,
+                "tags": [
+                    "pdf"
+                ],
+                "threat_severity": {
+                    "last_analysis_date": "2026-08-02T13:18:10.000Z",
+                    "level_description": "Severity NONE because the file has no Google antivirus detections and no bad network activity",
+                    "threat_severity_data": {
+                        "num_av_detections": 1
+                    },
+                    "threat_severity_level": "SEVERITY_NONE",
+                    "version": 5
+                },
+                "total_votes": {
+                    "harmless": 0,
+                    "malicious": 0
+                },
+                "trid": [
+                    {
+                        "file_type": "Adobe Portable Document Format",
+                        "probability": 100
+                    }
+                ],
+                "type_description": "PDF",
+                "type_tag": "pdf",
+                "type_tags": [
+                    "document",
+                    "pdf"
+                ],
+                "unique_sources": 1,
+                "vhash": "9ad44949929ff778ce770afb03f643b9d"
+            },
+            "context_attributes": {
+                "download_url": "https://www.virustotal.com/api/v3/feeds/files/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2/download"
+            },
+            "relationships": {
+                "embedded_urls": {
+                    "data": [
+                        {
+                            "context_attributes": {
+                                "url": "https://circuitscale.surf/$jane.doe@example.com"
+                            },
+                            "id": "7daf671f840dcecb20c37ecdd868eb517cf332fde60c6534cbc834224d8e15c6",
+                            "type": "url"
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "input": {
+        "type": "filestream"
+    },
+    "log": {
+        "file": {
+            "device_id": "44",
+            "inode": "210",
+            "path": "/tmp/service_logs/test-file_feed.log"
+        },
+        "offset": 0
+    },
+    "observer": {
+        "product": "Threat Intelligence",
+        "vendor": "Google"
+    },
+    "related": {
+        "hash": [
+            "00003d3c3c280000",
+            "c2326e8ab452f32f132b5e937279b790",
+            "0d4c232b55410517",
+            "899ccaa963f6a4d55471c891598ae93a",
+            "3ef89ef41922fcbea756b7ba9c0deae0",
+            "2b6925e920c93241958085c30b6ec564b60fa7fc",
+            "466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc",
+            "3072:L6M1oA096wBAwaH6UkHi1QvYwADYoIGNWLJGld3ySqNPPLRzk4NClDX/My6:JuH8wBfaH6UkHiSYwczWLmqNPzbCTi",
+            "T19E549DB5BD52081DE64786FD653FB2CA07846129C39CB9B8A510B880583FA781EF51FF",
+            "9ad44949929ff778ce770afb03f643b9d"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "google_threat_intelligence-file_feed"
+    ],
+    "threat": {
+        "feed": {
+            "name": "GTI File Feed"
+        },
+        "indicator": {
+            "description": "This indicator did not match our detection criteria and there is currently no evidence of malicious activity.",
+            "file": {
+                "created": "2026-04-03T09:56:08.000Z",
+                "extension": "pdf",
+                "hash": {
+                    "md5": "3ef89ef41922fcbea756b7ba9c0deae0",
+                    "sha1": "2b6925e920c93241958085c30b6ec564b60fa7fc",
+                    "sha256": "466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc",
+                    "ssdeep": "3072:L6M1oA096wBAwaH6UkHi1QvYwADYoIGNWLJGld3ySqNPPLRzk4NClDX/My6:JuH8wBfaH6UkHiSYwczWLmqNPzbCTi",
+                    "tlsh": "T19E549DB5BD52081DE64786FD653FB2CA07846129C39CB9B8A510B880583FA781EF51FF"
+                },
+                "name": "Friday-April-2026 0256 AM Example___fdp.pdf",
+                "size": 286982
+            },
+            "id": [
+                "466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc"
+            ],
+            "modified_at": "2026-08-19T03:59:59.000Z",
+            "reference": "https://www.virustotal.com/api/v3/files/466a7fd5af3c49d302d8d573e708972bddab89282f49cba17254b643e484b5dc",
+            "scanner_stats": 11,
+            "sightings": 1,
+            "type": "file"
+        },
+        "software": {
+            "name": [
+                "qrcode"
+            ]
+        }
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| gti.file_feed.attributes.androguard.activities | The Activities of the Android (androguard) analysis. | keyword |
+| gti.file_feed.attributes.androguard.androguard_version | The AndroguardVersion of the Android (androguard) analysis. | keyword |
+| gti.file_feed.attributes.androguard.android_application | The AndroidApplication of the Android (androguard) analysis. | long |
+| gti.file_feed.attributes.androguard.android_application_error | Indicates whether an error occurred while analysing the Android application. | boolean |
+| gti.file_feed.attributes.androguard.android_application_info | The AndroidApplicationInfo of the Android (androguard) analysis. | keyword |
+| gti.file_feed.attributes.androguard.android_version_code | The AndroidVersionCode of the Android (androguard) analysis. | keyword |
+| gti.file_feed.attributes.androguard.android_version_name | The AndroidVersionName of the Android (androguard) analysis. | keyword |
+| gti.file_feed.attributes.androguard.certificate.issuer.c | The C of the Android certificate issuer. | keyword |
+| gti.file_feed.attributes.androguard.certificate.issuer.cn | The CN of the Android certificate issuer. | keyword |
+| gti.file_feed.attributes.androguard.certificate.issuer.dn | The DN of the Android certificate issuer. | keyword |
+| gti.file_feed.attributes.androguard.certificate.issuer.email | The email of the Android certificate issuer. | keyword |
+| gti.file_feed.attributes.androguard.certificate.issuer.l | The L of the Android certificate issuer. | keyword |
+| gti.file_feed.attributes.androguard.certificate.issuer.o | The O of the Android certificate issuer. | keyword |
+| gti.file_feed.attributes.androguard.certificate.issuer.ou | The OU of the Android certificate issuer. | keyword |
+| gti.file_feed.attributes.androguard.certificate.issuer.st | The ST of the Android certificate issuer. | keyword |
+| gti.file_feed.attributes.androguard.certificate.serialnumber | The serialnumber of the Android certificate. | keyword |
+| gti.file_feed.attributes.androguard.certificate.subject.c | The C of the Android certificate subject. | keyword |
+| gti.file_feed.attributes.androguard.certificate.subject.cn | The CN of the Android certificate subject. | keyword |
+| gti.file_feed.attributes.androguard.certificate.subject.dn | The DN of the Android certificate subject. | keyword |
+| gti.file_feed.attributes.androguard.certificate.subject.email | The email of the Android certificate subject. | keyword |
+| gti.file_feed.attributes.androguard.certificate.subject.l | The L of the Android certificate subject. | keyword |
+| gti.file_feed.attributes.androguard.certificate.subject.o | The O of the Android certificate subject. | keyword |
+| gti.file_feed.attributes.androguard.certificate.subject.ou | The OU of the Android certificate subject. | keyword |
+| gti.file_feed.attributes.androguard.certificate.subject.st | The ST of the Android certificate subject. | keyword |
+| gti.file_feed.attributes.androguard.certificate.thumbprint | The thumbprint hash of the Android certificate. | keyword |
+| gti.file_feed.attributes.androguard.certificate.validfrom | The validfrom of the Android certificate. | date |
+| gti.file_feed.attributes.androguard.certificate.validto | The validto of the Android certificate. | date |
+| gti.file_feed.attributes.androguard.intent_filters.activities | An object containing the Activities of the Android (androguard) intent filters. | flattened |
+| gti.file_feed.attributes.androguard.intent_filters.receivers | An object containing the Receivers of the Android (androguard) intent filters. | flattened |
+| gti.file_feed.attributes.androguard.intent_filters.services | An object containing the Services of the Android (androguard) intent filters. | flattened |
+| gti.file_feed.attributes.androguard.libraries | The Libraries of the Android (androguard) analysis. | keyword |
+| gti.file_feed.attributes.androguard.main_activity | The main activity of the Android (androguard) analysis. | keyword |
+| gti.file_feed.attributes.androguard.min_sdk_version | The MinSdkVersion of the Android (androguard) analysis. | keyword |
+| gti.file_feed.attributes.androguard.package | The Package of the Android (androguard) analysis. | keyword |
+| gti.file_feed.attributes.androguard.permission_details | An object containing the permission details of the Android (androguard) analysis. | flattened |
+| gti.file_feed.attributes.androguard.providers | The Providers of the Android (androguard) analysis. | keyword |
+| gti.file_feed.attributes.androguard.receivers | The Receivers of the Android (androguard) analysis. | keyword |
+| gti.file_feed.attributes.androguard.risk_indicator.apk.apk | The number of APK risk indicators reported by the Android (androguard) analysis. | long |
+| gti.file_feed.attributes.androguard.risk_indicator.apk.dex | The number of DEX risk indicators reported by the Android (androguard) analysis. | long |
+| gti.file_feed.attributes.androguard.risk_indicator.apk.shared_libraries | The number of shared-library risk indicators reported by the Android (androguard) analysis. | long |
+| gti.file_feed.attributes.androguard.risk_indicator.apk.zip | The number of ZIP risk indicators reported by the Android (androguard) analysis. | long |
+| gti.file_feed.attributes.androguard.risk_indicator.perm | An object containing the PERM of the RiskIndicator. | flattened |
+| gti.file_feed.attributes.androguard.services | The Services of the Android (androguard) analysis. | keyword |
+| gti.file_feed.attributes.androguard.strings_information | The StringsInformation of the Android (androguard) analysis. | keyword |
+| gti.file_feed.attributes.androguard.target_sdk_version | The TargetSdkVersion of the Android (androguard) analysis. | keyword |
+| gti.file_feed.attributes.androguard.vt_android_info | The VTAndroidInfo of the Android (androguard) analysis. | double |
+| gti.file_feed.attributes.authentihash | The file's Authentihash. | keyword |
+| gti.file_feed.attributes.autostart_locations.entry | The entry of the autostart locations. | keyword |
+| gti.file_feed.attributes.autostart_locations.location | The location of the autostart locations. | keyword |
+| gti.file_feed.attributes.available_tools | The available tools of the file. | keyword |
+| gti.file_feed.attributes.bundle_info.extensions | An object containing the extensions of the bundle. | flattened |
+| gti.file_feed.attributes.bundle_info.file_types | An object containing the file types of the bundle. | flattened |
+| gti.file_feed.attributes.bundle_info.highest_datetime | The highest date and time of the bundle. | date |
+| gti.file_feed.attributes.bundle_info.lowest_datetime | The lowest date and time of the bundle. | date |
+| gti.file_feed.attributes.bundle_info.num_children | The number of children for the bundle. | long |
+| gti.file_feed.attributes.bundle_info.type | The type of the bundle. | keyword |
+| gti.file_feed.attributes.bundle_info.uncompressed_size | The uncompressed size of the bundle. | long |
+| gti.file_feed.attributes.contenthash | A hash of the file's content. | keyword |
+| gti.file_feed.attributes.creation_date | The date when the file was built or compiled. | date |
+| gti.file_feed.attributes.crowdsourced_ai_results.analysis | The analysis of the AI analysis result. | keyword |
+| gti.file_feed.attributes.crowdsourced_ai_results.category | The category of the AI analysis result. | keyword |
+| gti.file_feed.attributes.crowdsourced_ai_results.id | The id of the AI analysis result. | keyword |
+| gti.file_feed.attributes.crowdsourced_ai_results.source | The source of the AI analysis result. | keyword |
+| gti.file_feed.attributes.crowdsourced_ai_results.verdict | The verdict of the AI analysis result. | keyword |
+| gti.file_feed.attributes.crowdsourced_ids_results.alert_context.dest_ip | The dest ip of the IDS alert context. | ip |
+| gti.file_feed.attributes.crowdsourced_ids_results.alert_context.dest_port | The dest port of the IDS alert context. | long |
+| gti.file_feed.attributes.crowdsourced_ids_results.alert_context.hostname | The hostname in the IDS alert context. | keyword |
+| gti.file_feed.attributes.crowdsourced_ids_results.alert_context.ja3 | The ja3 of the IDS alert context. | keyword |
+| gti.file_feed.attributes.crowdsourced_ids_results.alert_context.ja3s | The ja3s of the IDS alert context. | keyword |
+| gti.file_feed.attributes.crowdsourced_ids_results.alert_context.src_ip | The src ip of the IDS alert context. | ip |
+| gti.file_feed.attributes.crowdsourced_ids_results.alert_context.src_port | The src port of the IDS alert context. | long |
+| gti.file_feed.attributes.crowdsourced_ids_results.alert_context.url | The url of the IDS alert context. | keyword |
+| gti.file_feed.attributes.crowdsourced_ids_results.alert_severity | The alert severity of the IDS result. | keyword |
+| gti.file_feed.attributes.crowdsourced_ids_results.rule_category | The rule category of the IDS result. | keyword |
+| gti.file_feed.attributes.crowdsourced_ids_results.rule_id | The rule id of the IDS result. | keyword |
+| gti.file_feed.attributes.crowdsourced_ids_results.rule_msg | The rule msg of the IDS result. | keyword |
+| gti.file_feed.attributes.crowdsourced_ids_results.rule_raw | The rule raw of the IDS result. | keyword |
+| gti.file_feed.attributes.crowdsourced_ids_results.rule_references | The rule references of the IDS result. | keyword |
+| gti.file_feed.attributes.crowdsourced_ids_results.rule_source | The rule source of the IDS result. | keyword |
+| gti.file_feed.attributes.crowdsourced_ids_results.rule_url | The rule url of the IDS result. | keyword |
+| gti.file_feed.attributes.crowdsourced_ids_stats.high | The high of the crowdsourced ids stats. | long |
+| gti.file_feed.attributes.crowdsourced_ids_stats.info | The info of the crowdsourced ids stats. | long |
+| gti.file_feed.attributes.crowdsourced_ids_stats.low | The low of the crowdsourced ids stats. | long |
+| gti.file_feed.attributes.crowdsourced_ids_stats.medium | The medium of the crowdsourced ids stats. | long |
+| gti.file_feed.attributes.crowdsourced_yara_results.author | The author of the YARA match. | keyword |
+| gti.file_feed.attributes.crowdsourced_yara_results.description | The description of the YARA match. | keyword |
+| gti.file_feed.attributes.crowdsourced_yara_results.match_date | The match date and time of the YARA match. | date |
+| gti.file_feed.attributes.crowdsourced_yara_results.match_in_subfile | Indicates whether the YARA rule matched inside a subfile of the file. | boolean |
+| gti.file_feed.attributes.crowdsourced_yara_results.rule_name | The rule name of the YARA match. | keyword |
+| gti.file_feed.attributes.crowdsourced_yara_results.ruleset_id | The ruleset id of the YARA match. | keyword |
+| gti.file_feed.attributes.crowdsourced_yara_results.ruleset_name | The ruleset name of the YARA match. | keyword |
+| gti.file_feed.attributes.crowdsourced_yara_results.ruleset_version | The ruleset version of the YARA match. | keyword |
+| gti.file_feed.attributes.crowdsourced_yara_results.source | The source of the YARA match. | keyword |
+| gti.file_feed.attributes.deb_info.changelog.author | The Author of the Debian package changelog. | keyword |
+| gti.file_feed.attributes.deb_info.changelog.date | The Date of the Debian package changelog. | date |
+| gti.file_feed.attributes.deb_info.changelog.distributions | The Distributions of the Debian package changelog. | keyword |
+| gti.file_feed.attributes.deb_info.changelog.full_version | The Full version of the Debian package changelog. | keyword |
+| gti.file_feed.attributes.deb_info.changelog.package | The Package of the Debian package changelog. | keyword |
+| gti.file_feed.attributes.deb_info.changelog.urgency | The Urgency of the Debian package changelog. | keyword |
+| gti.file_feed.attributes.deb_info.changelog.version_history | The Version history of the Debian package changelog. | keyword |
+| gti.file_feed.attributes.deb_info.control_metadata.architecture | The Architecture of the Debian package control metadata. | keyword |
+| gti.file_feed.attributes.deb_info.control_metadata.depends | The Depends of the Debian package control metadata. | keyword |
+| gti.file_feed.attributes.deb_info.control_metadata.description | The Description of the Debian package control metadata. | keyword |
+| gti.file_feed.attributes.deb_info.control_metadata.homepage | The Homepage of the Debian package control metadata. | keyword |
+| gti.file_feed.attributes.deb_info.control_metadata.installed_size | The Installed Size of the Debian package control metadata. | keyword |
+| gti.file_feed.attributes.deb_info.control_metadata.license | The License of the Debian package control metadata. | keyword |
+| gti.file_feed.attributes.deb_info.control_metadata.maintainer | The Maintainer of the Debian package control metadata. | keyword |
+| gti.file_feed.attributes.deb_info.control_metadata.package | The Package of the Debian package control metadata. | keyword |
+| gti.file_feed.attributes.deb_info.control_metadata.priority | The Priority of the Debian package control metadata. | keyword |
+| gti.file_feed.attributes.deb_info.control_metadata.recommends | The Recommends of the Debian package control metadata. | keyword |
+| gti.file_feed.attributes.deb_info.control_metadata.section | The Section of the Debian package control metadata. | keyword |
+| gti.file_feed.attributes.deb_info.control_metadata.vendor | The Vendor of the Debian package control metadata. | keyword |
+| gti.file_feed.attributes.deb_info.control_metadata.version | The Version of the Debian package control metadata. | keyword |
+| gti.file_feed.attributes.deb_info.control_scripts.postinst | The postinst of the control scripts. | keyword |
+| gti.file_feed.attributes.deb_info.control_scripts.postrm | The postrm of the control scripts. | keyword |
+| gti.file_feed.attributes.deb_info.control_scripts.preinst | The preinst of the control scripts. | keyword |
+| gti.file_feed.attributes.deb_info.control_scripts.prerm | The prerm of the control scripts. | keyword |
+| gti.file_feed.attributes.deb_info.structural_metadata.contained_files | The contained files of the structural metadata. | long |
+| gti.file_feed.attributes.deb_info.structural_metadata.contained_items | The contained items of the structural metadata. | long |
+| gti.file_feed.attributes.deb_info.structural_metadata.max_date | The max date and time of the structural metadata. | date |
+| gti.file_feed.attributes.deb_info.structural_metadata.min_date | The min date and time of the structural metadata. | date |
+| gti.file_feed.attributes.detectiteasy.filetype | The filetype of the Detect It Easy result. | keyword |
+| gti.file_feed.attributes.detectiteasy.values.info | The info of the values. | keyword |
+| gti.file_feed.attributes.detectiteasy.values.name | The name of the values. | keyword |
+| gti.file_feed.attributes.detectiteasy.values.type | The type of the values. | keyword |
+| gti.file_feed.attributes.detectiteasy.values.version | The version of the values. | keyword |
+| gti.file_feed.attributes.dot_net_assembly.assembly_data.buildnumber | The buildnumber of the assembly data. | long |
+| gti.file_feed.attributes.dot_net_assembly.assembly_data.culture | The culture of the assembly data. | keyword |
+| gti.file_feed.attributes.dot_net_assembly.assembly_data.flags | The flags of the assembly data. | long |
+| gti.file_feed.attributes.dot_net_assembly.assembly_data.flags_text | The flags text of the assembly data. | keyword |
+| gti.file_feed.attributes.dot_net_assembly.assembly_data.hashalgid | The hashalgid of the assembly data. | long |
+| gti.file_feed.attributes.dot_net_assembly.assembly_data.majorversion | The majorversion of the assembly data. | long |
+| gti.file_feed.attributes.dot_net_assembly.assembly_data.minorversion | The minorversion of the assembly data. | long |
+| gti.file_feed.attributes.dot_net_assembly.assembly_data.name | The name of the assembly data. | keyword |
+| gti.file_feed.attributes.dot_net_assembly.assembly_data.pubkey | The pubkey of the assembly data. | keyword |
+| gti.file_feed.attributes.dot_net_assembly.assembly_data.revisionnumber | The revisionnumber of the assembly data. | long |
+| gti.file_feed.attributes.dot_net_assembly.assembly_flags | The assembly flags of the .NET assembly. | long |
+| gti.file_feed.attributes.dot_net_assembly.assembly_flags_txt | The assembly flags txt of the .NET assembly. | keyword |
+| gti.file_feed.attributes.dot_net_assembly.assembly_name | The assembly name of the .NET assembly. | keyword |
+| gti.file_feed.attributes.dot_net_assembly.clr_meta_version | The clr meta version of the .NET assembly. | keyword |
+| gti.file_feed.attributes.dot_net_assembly.clr_version | The clr version of the .NET assembly. | keyword |
+| gti.file_feed.attributes.dot_net_assembly.entry_point_rva | The entry point rva of the .NET assembly. | long |
+| gti.file_feed.attributes.dot_net_assembly.entry_point_token | The entry point token of the .NET assembly. | long |
+| gti.file_feed.attributes.dot_net_assembly.external_assemblies | An object containing the external assemblies of the .NET assembly. | flattened |
+| gti.file_feed.attributes.dot_net_assembly.external_modules | The external modules of the .NET assembly. | keyword |
+| gti.file_feed.attributes.dot_net_assembly.manifest_resource | The manifest resource of the .NET assembly. | keyword |
+| gti.file_feed.attributes.dot_net_assembly.metadata_header_rva | The metadata header rva of the .NET assembly. | long |
+| gti.file_feed.attributes.dot_net_assembly.resources_va | The resources va of the .NET assembly. | long |
+| gti.file_feed.attributes.dot_net_assembly.streams.blob.chi2 | The chi2 of the #Blob stream of the .NET assembly. | double |
+| gti.file_feed.attributes.dot_net_assembly.streams.blob.entropy | The entropy of the #Blob stream of the .NET assembly. | double |
+| gti.file_feed.attributes.dot_net_assembly.streams.blob.md5 | The MD5 hash of the #Blob stream of the .NET assembly. | keyword |
+| gti.file_feed.attributes.dot_net_assembly.streams.blob.size | The size of the #Blob stream of the .NET assembly. | long |
+| gti.file_feed.attributes.dot_net_assembly.streams.guid.chi2 | The chi2 of the #GUID stream of the .NET assembly. | double |
+| gti.file_feed.attributes.dot_net_assembly.streams.guid.entropy | The entropy of the #GUID stream of the .NET assembly. | double |
+| gti.file_feed.attributes.dot_net_assembly.streams.guid.md5 | The MD5 hash of the #GUID stream of the .NET assembly. | keyword |
+| gti.file_feed.attributes.dot_net_assembly.streams.guid.size | The size of the #GUID stream of the .NET assembly. | long |
+| gti.file_feed.attributes.dot_net_assembly.streams.schema.chi2 | The chi2 of the #Schema stream of the .NET assembly. | double |
+| gti.file_feed.attributes.dot_net_assembly.streams.schema.entropy | The entropy of the #Schema stream of the .NET assembly. | double |
+| gti.file_feed.attributes.dot_net_assembly.streams.schema.md5 | The MD5 hash of the #Schema stream of the .NET assembly. | keyword |
+| gti.file_feed.attributes.dot_net_assembly.streams.schema.size | The size of the #Schema stream of the .NET assembly. | long |
+| gti.file_feed.attributes.dot_net_assembly.streams.strings.chi2 | The chi2 of the #Strings stream of the .NET assembly. | double |
+| gti.file_feed.attributes.dot_net_assembly.streams.strings.entropy | The entropy of the #Strings stream of the .NET assembly. | double |
+| gti.file_feed.attributes.dot_net_assembly.streams.strings.md5 | The MD5 hash of the #Strings stream of the .NET assembly. | keyword |
+| gti.file_feed.attributes.dot_net_assembly.streams.strings.size | The size of the #Strings stream of the .NET assembly. | long |
+| gti.file_feed.attributes.dot_net_assembly.streams.tilde.chi2 | The chi2 of the #~ stream of the .NET assembly. | double |
+| gti.file_feed.attributes.dot_net_assembly.streams.tilde.entropy | The entropy of the #~ stream of the .NET assembly. | double |
+| gti.file_feed.attributes.dot_net_assembly.streams.tilde.md5 | The MD5 hash of the #~ stream of the .NET assembly. | keyword |
+| gti.file_feed.attributes.dot_net_assembly.streams.tilde.size | The size of the #~ stream of the .NET assembly. | long |
+| gti.file_feed.attributes.dot_net_assembly.streams.us.chi2 | The chi2 of the #US stream of the .NET assembly. | double |
+| gti.file_feed.attributes.dot_net_assembly.streams.us.entropy | The entropy of the #US stream of the .NET assembly. | double |
+| gti.file_feed.attributes.dot_net_assembly.streams.us.md5 | The MD5 hash of the #US stream of the .NET assembly. | keyword |
+| gti.file_feed.attributes.dot_net_assembly.streams.us.size | The size of the #US stream of the .NET assembly. | long |
+| gti.file_feed.attributes.dot_net_assembly.strongname_va | The strongname va of the .NET assembly. | long |
+| gti.file_feed.attributes.dot_net_assembly.tables_present | The tables present of the .NET assembly. | long |
+| gti.file_feed.attributes.dot_net_assembly.tables_present_map | The tables present map of the .NET assembly. | keyword |
+| gti.file_feed.attributes.dot_net_assembly.tables_rows_map | The tables rows map of the .NET assembly. | keyword |
+| gti.file_feed.attributes.dot_net_assembly.tables_rows_map_log | The tables rows map log of the .NET assembly. | keyword |
+| gti.file_feed.attributes.dot_net_assembly.type_definition_list.namespace | The namespace of the type definition list. | keyword |
+| gti.file_feed.attributes.dot_net_assembly.type_definition_list.type_definitions | The type definitions of the type definition list. | keyword |
+| gti.file_feed.attributes.dot_net_assembly.unmanaged_method_list.methods | The methods of the unmanaged method list. | keyword |
+| gti.file_feed.attributes.dot_net_assembly.unmanaged_method_list.name | The name of the unmanaged method list. | keyword |
+| gti.file_feed.attributes.dot_net_assembly.unmanaged_methods | An object mapping each unmanaged module or DLL name to the methods the .NET assembly imports from it. | flattened |
+| gti.file_feed.attributes.dot_net_guids.mvid | The mvid of the .NET assembly. | keyword |
+| gti.file_feed.attributes.dot_net_guids.typelib_id | The typelib id of the .NET assembly. | keyword |
+| gti.file_feed.attributes.downloadable | Whether the file is available for download. | boolean |
+| gti.file_feed.attributes.elf_info.build_id | The build id of the ELF file. | keyword |
+| gti.file_feed.attributes.elf_info.export_list.name | The name of the ELF export. | keyword |
+| gti.file_feed.attributes.elf_info.export_list.type | The type of the ELF export. | keyword |
+| gti.file_feed.attributes.elf_info.header.abi_version | The abi version of the ELF header. | keyword |
+| gti.file_feed.attributes.elf_info.header.class | The class of the ELF header. | keyword |
+| gti.file_feed.attributes.elf_info.header.data | The data of the ELF header. | keyword |
+| gti.file_feed.attributes.elf_info.header.entrypoint | The entrypoint of the ELF header. | long |
+| gti.file_feed.attributes.elf_info.header.hdr_version | The hdr version of the ELF header. | keyword |
+| gti.file_feed.attributes.elf_info.header.machine | The machine of the ELF header. | keyword |
+| gti.file_feed.attributes.elf_info.header.num_prog_headers | The number of prog headers for the ELF header. | long |
+| gti.file_feed.attributes.elf_info.header.num_section_headers | The number of section headers for the ELF header. | long |
+| gti.file_feed.attributes.elf_info.header.obj_version | The obj version of the ELF header. | keyword |
+| gti.file_feed.attributes.elf_info.header.os_abi | The os abi of the ELF header. | keyword |
+| gti.file_feed.attributes.elf_info.header.type | The type of the ELF header. | keyword |
+| gti.file_feed.attributes.elf_info.import_list.name | The name of the ELF import. | keyword |
+| gti.file_feed.attributes.elf_info.import_list.type | The type of the ELF import. | keyword |
+| gti.file_feed.attributes.elf_info.interp | The interp of the ELF file. | keyword |
+| gti.file_feed.attributes.elf_info.section_list.flags | The flags of the ELF section. | keyword |
+| gti.file_feed.attributes.elf_info.section_list.name | The name of the ELF section. | keyword |
+| gti.file_feed.attributes.elf_info.section_list.physical_offset | The physical offset of the ELF section. | keyword |
+| gti.file_feed.attributes.elf_info.section_list.section_type | The section type of the ELF section. | keyword |
+| gti.file_feed.attributes.elf_info.section_list.size | The size of the ELF section. | long |
+| gti.file_feed.attributes.elf_info.section_list.virtual_address | The virtual address of the ELF section. | long |
+| gti.file_feed.attributes.elf_info.segment_list.resources | The resources of the ELF segment. | keyword |
+| gti.file_feed.attributes.elf_info.segment_list.segment_type | The segment type of the ELF segment. | keyword |
+| gti.file_feed.attributes.elf_info.shared_libraries | The shared libraries of the ELF file. | keyword |
+| gti.file_feed.attributes.exiftool | An object containing the exiftool of the file. | flattened |
+| gti.file_feed.attributes.filecondis.dhash | The difference (dhash) hash of the filecondis. | keyword |
+| gti.file_feed.attributes.filecondis.raw_md5 | The raw MD5 hash of the filecondis. | keyword |
+| gti.file_feed.attributes.first_seen_itw_date | The date the file was first seen in the wild. | date |
+| gti.file_feed.attributes.first_submission_date | The date and time when the file was first submitted to Google Threat Intelligence. | date |
+| gti.file_feed.attributes.goresym.report_preview.arch | The arch of the report preview. | keyword |
+| gti.file_feed.attributes.goresym.report_preview.build_id | The buildId of the report preview. | keyword |
+| gti.file_feed.attributes.goresym.report_preview.build_info.go_version | The goVersion of the buildInfo. | keyword |
+| gti.file_feed.attributes.goresym.report_preview.build_info.path | The path of the buildInfo. | keyword |
+| gti.file_feed.attributes.goresym.report_preview.build_info.settings.key | The key of the settings. | keyword |
+| gti.file_feed.attributes.goresym.report_preview.build_info.settings.value | The value of the settings. | keyword |
+| gti.file_feed.attributes.goresym.report_preview.os | The os of the report preview. | keyword |
+| gti.file_feed.attributes.goresym.report_preview.version | The version of the report preview. | keyword |
+| gti.file_feed.attributes.goresym.summary.total_dependencies | The number of dependencies for the summary. | long |
+| gti.file_feed.attributes.goresym.summary.total_files | The number of files for the summary. | long |
+| gti.file_feed.attributes.goresym.summary.total_interfaces | The number of interfaces for the summary. | long |
+| gti.file_feed.attributes.goresym.summary.total_std_functions | The number of stdFunctions for the summary. | long |
+| gti.file_feed.attributes.goresym.summary.total_types | The number of types for the summary. | long |
+| gti.file_feed.attributes.goresym.summary.total_user_functions | The number of userFunctions for the summary. | long |
+| gti.file_feed.attributes.gti_assessment.contributing_factors.associated_malware_configuration | Indicates whether an associated malware configuration contributed to the assessment. | boolean |
+| gti.file_feed.attributes.gti_assessment.contributing_factors.gavs_detections | The gavs detections of the GTI assessment contributing factor. | long |
+| gti.file_feed.attributes.gti_assessment.contributing_factors.google_malware_analysis | Indicates whether Google malware analysis contributed to the assessment. | boolean |
+| gti.file_feed.attributes.gti_assessment.contributing_factors.gti_confidence_score | The gti confidence score of the GTI assessment contributing factor. | long |
+| gti.file_feed.attributes.gti_assessment.contributing_factors.malicious_sandbox_verdict | Indicates whether a malicious sandbox verdict contributed to the assessment. | boolean |
+| gti.file_feed.attributes.gti_assessment.contributing_factors.mandiant_analyst_malicious | Indicates whether a Mandiant analyst assessed the file as malicious. | boolean |
+| gti.file_feed.attributes.gti_assessment.contributing_factors.mandiant_confidence_score | The mandiant confidence score of the GTI assessment contributing factor. | long |
+| gti.file_feed.attributes.gti_assessment.contributing_factors.matched_malicious_yara | Indicates whether the file matched a malicious YARA rule. | boolean |
+| gti.file_feed.attributes.gti_assessment.contributing_factors.normalised_categories | The normalised categories of the GTI assessment contributing factor. | keyword |
+| gti.file_feed.attributes.gti_assessment.description | A description of the Google Threat Intelligence assessment. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.bulk_signals.collection_type | The collection type of the bulk signals GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.bulk_signals.influence | The influence of the bulk signals GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.bulk_signals.related_links | The related links of the bulk signals GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.bulk_signals.sub_title | The subtitle of the bulk signals GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.bulk_signals.title | The title of the bulk signals GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.highest_impact_factor.collection_type | The collection type of the highest impact factor GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.highest_impact_factor.influence | The influence of the highest impact factor GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.highest_impact_factor.related_links.title | The title of the related link of the highest impact factor GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.highest_impact_factor.related_links.url.id | The id of the related link of the highest impact factor GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.highest_impact_factor.related_links.url.object_type | The object type of the related link of the highest impact factor GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.highest_impact_factor.sub_title | The subtitle of the highest impact factor GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.highest_impact_factor.title | The title of the highest impact factor GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.human_verified_ground_truth.collection_type | The collection type of the human-verified ground truth GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.human_verified_ground_truth.influence | The influence of the human-verified ground truth GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.human_verified_ground_truth.related_links.title | The title of the related link of the human-verified ground truth GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.human_verified_ground_truth.related_links.url.id | The id of the related link of the human-verified ground truth GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.human_verified_ground_truth.related_links.url.object_type | The object type of the related link of the human-verified ground truth GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.human_verified_ground_truth.sub_title | The subtitle of the human-verified ground truth GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.human_verified_ground_truth.title | The title of the human-verified ground truth GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.mandiant_intelligence.collection_type | The collection type of the Mandiant intelligence GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.mandiant_intelligence.influence | The influence of the Mandiant intelligence GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.mandiant_intelligence.related_links.title | The title of the related link of the Mandiant intelligence GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.mandiant_intelligence.related_links.url.id | The id of the related link of the Mandiant intelligence GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.mandiant_intelligence.related_links.url.object_type | The object type of the related link of the Mandiant intelligence GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.mandiant_intelligence.sub_title | The subtitle of the Mandiant intelligence GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.mandiant_intelligence.title | The title of the Mandiant intelligence GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.technical_evidence.collection_type | The collection type of the technical evidence GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.technical_evidence.influence | The influence of the technical evidence GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.technical_evidence.related_links.title | The title of the related link of the technical evidence GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.technical_evidence.related_links.url.id | The id of the related link of the technical evidence GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.technical_evidence.related_links.url.object_type | The object type of the related link of the technical evidence GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.technical_evidence.sub_title | The subtitle of the technical evidence GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.gti_description_cards.technical_evidence.title | The title of the technical evidence GTI assessment description card. | keyword |
+| gti.file_feed.attributes.gti_assessment.severity.value | The assessed threat severity level. | keyword |
+| gti.file_feed.attributes.gti_assessment.threat_score.value | The Google Threat Intelligence threat score, derived from the verdict and severity. | long |
+| gti.file_feed.attributes.gti_assessment.verdict.value | The assessed threat verdict (benign, undetected, suspicious, malicious, or unknown). | keyword |
+| gti.file_feed.attributes.html_info.hrefs | The hrefs of the HTML content. | keyword |
+| gti.file_feed.attributes.html_info.html_meta | An object containing the html meta of the HTML content. | flattened |
+| gti.file_feed.attributes.html_info.iframes.attributes.allowfullscreen | The allowfullscreen of the iframe. | keyword |
+| gti.file_feed.attributes.html_info.iframes.attributes.allowtransparency | The allowtransparency of the iframe. | keyword |
+| gti.file_feed.attributes.html_info.iframes.attributes.class | The class of the iframe. | keyword |
+| gti.file_feed.attributes.html_info.iframes.attributes.frameborder | The frameborder of the iframe. | keyword |
+| gti.file_feed.attributes.html_info.iframes.attributes.height | The height of the iframe. | keyword |
+| gti.file_feed.attributes.html_info.iframes.attributes.id | The id of the iframe. | keyword |
+| gti.file_feed.attributes.html_info.iframes.attributes.scrolling | The scrolling of the iframe. | keyword |
+| gti.file_feed.attributes.html_info.iframes.attributes.src | The src of the iframe. | keyword |
+| gti.file_feed.attributes.html_info.iframes.attributes.style | The style of the iframe. | keyword |
+| gti.file_feed.attributes.html_info.iframes.attributes.textalign | The textalign of the iframe. | keyword |
+| gti.file_feed.attributes.html_info.iframes.attributes.width | The width of the iframe. | keyword |
+| gti.file_feed.attributes.html_info.iframes.attributes.youtube_src_id | The youtube src id of the iframe. | keyword |
+| gti.file_feed.attributes.html_info.iframes.sha256 | The SHA-256 hash of the iframes. | keyword |
+| gti.file_feed.attributes.html_info.scripts.attributes | An object containing the attributes of the scripts. | flattened |
+| gti.file_feed.attributes.html_info.scripts.sha256 | The SHA-256 hash of the scripts. | keyword |
+| gti.file_feed.attributes.html_info.title | The title of the HTML content. | keyword |
+| gti.file_feed.attributes.html_info.trackers.amazon_associates.url | The URL of the Amazon Associates tracker found in the HTML content. | keyword |
+| gti.file_feed.attributes.html_info.trackers.amazon_cloudfront.id | The id of the Amazon Cloudfront tracker found in the HTML content. | keyword |
+| gti.file_feed.attributes.html_info.trackers.amazon_cloudfront.url | The URL of the Amazon Cloudfront tracker found in the HTML content. | keyword |
+| gti.file_feed.attributes.html_info.trackers.facebook_connect.id | The id of the Facebook Connect tracker found in the HTML content. | keyword |
+| gti.file_feed.attributes.html_info.trackers.facebook_connect.url | The URL of the Facebook Connect tracker found in the HTML content. | keyword |
+| gti.file_feed.attributes.html_info.trackers.google_ad_sense.id | The id of the Google AdSense tracker found in the HTML content. | keyword |
+| gti.file_feed.attributes.html_info.trackers.google_ad_sense.url | The URL of the Google AdSense tracker found in the HTML content. | keyword |
+| gti.file_feed.attributes.html_info.trackers.google_analytics.id | The id of the Google Analytics tracker found in the HTML content. | keyword |
+| gti.file_feed.attributes.html_info.trackers.google_analytics.url | The URL of the Google Analytics tracker found in the HTML content. | keyword |
+| gti.file_feed.attributes.html_info.trackers.google_tag_manager.id | The id of the Google Tag Manager tracker found in the HTML content. | keyword |
+| gti.file_feed.attributes.html_info.trackers.google_tag_manager.url | The URL of the Google Tag Manager tracker found in the HTML content. | keyword |
+| gti.file_feed.attributes.html_info.trackers.yandex.id | The id of the Yandex tracker found in the HTML content. | keyword |
+| gti.file_feed.attributes.html_info.trackers.yandex.url | The URL of the Yandex tracker found in the HTML content. | keyword |
+| gti.file_feed.attributes.jar_info.filenames | The filenames of the JAR archive. | keyword |
+| gti.file_feed.attributes.jar_info.files_by_type | An object containing the number of files of each type in the JAR archive. | flattened |
+| gti.file_feed.attributes.jar_info.manifest | The manifest of the JAR archive. | keyword |
+| gti.file_feed.attributes.jar_info.max_date | The max date and time of the JAR archive. | date |
+| gti.file_feed.attributes.jar_info.max_depth | The max depth of the JAR archive. | long |
+| gti.file_feed.attributes.jar_info.min_date | The min date and time of the JAR archive. | date |
+| gti.file_feed.attributes.jar_info.packages | The packages of the JAR archive. | keyword |
+| gti.file_feed.attributes.jar_info.strings | The strings of the JAR archive. | keyword |
+| gti.file_feed.attributes.jar_info.total_dirs | The number of dirs for the JAR archive. | long |
+| gti.file_feed.attributes.jar_info.total_files | The number of files for the JAR archive. | long |
+| gti.file_feed.attributes.javascript_info.tags | The tags of the JavaScript. | keyword |
+| gti.file_feed.attributes.known_distributors.data_sources | The data sources of the known distributor. | keyword |
+| gti.file_feed.attributes.known_distributors.distributors | The distributors of the known distributor. | keyword |
+| gti.file_feed.attributes.known_distributors.filenames | The filenames of the known distributor. | keyword |
+| gti.file_feed.attributes.known_distributors.products | The products of the known distributor. | keyword |
+| gti.file_feed.attributes.last_analysis_date | The most recent date the file was scanned. | date |
+| gti.file_feed.attributes.last_analysis_results | The detailed results reported by each analysis engine for the file. | flattened |
+| gti.file_feed.attributes.last_analysis_stats.confirmed_timeout | The number of engines with a confirmed timeout analysing the file. | long |
+| gti.file_feed.attributes.last_analysis_stats.failure | The number of engines that failed to analyse the file. | long |
+| gti.file_feed.attributes.last_analysis_stats.harmless | The number of engines that reported the file as harmless. | long |
+| gti.file_feed.attributes.last_analysis_stats.malicious | The number of engines that reported the file as malicious. | long |
+| gti.file_feed.attributes.last_analysis_stats.suspicious | The number of engines that reported the file as suspicious. | long |
+| gti.file_feed.attributes.last_analysis_stats.timeout | The number of engines that timed out analysing the file. | long |
+| gti.file_feed.attributes.last_analysis_stats.type_unsupported | The number of engines that do not support this file type. | long |
+| gti.file_feed.attributes.last_analysis_stats.undetected | The number of engines that did not detect the file. | long |
+| gti.file_feed.attributes.last_modification_date | The date when the file object was last modified. | date |
+| gti.file_feed.attributes.last_submission_date | The most recent date the file was submitted for analysis. | date |
+| gti.file_feed.attributes.lnk_info.access_date | The access date and time of the LNK shortcut. | date |
+| gti.file_feed.attributes.lnk_info.creation_date | The creation date and time of the LNK shortcut. | date |
+| gti.file_feed.attributes.lnk_info.extra_data.dlt_properties.birth_droid_file_id | The birth droid file id of the dlt properties. | keyword |
+| gti.file_feed.attributes.lnk_info.extra_data.dlt_properties.birth_droid_volume_id | The birth droid volume id of the dlt properties. | keyword |
+| gti.file_feed.attributes.lnk_info.extra_data.dlt_properties.droid_file_id | The droid file id of the dlt properties. | keyword |
+| gti.file_feed.attributes.lnk_info.extra_data.dlt_properties.droid_volume_id | The droid volume id of the dlt properties. | keyword |
+| gti.file_feed.attributes.lnk_info.header.file_size | The file size of the binary header. | long |
+| gti.file_feed.attributes.lnk_info.header.hot_key | The hot key of the binary header. | keyword |
+| gti.file_feed.attributes.lnk_info.header.show_window | The show window of the binary header. | long |
+| gti.file_feed.attributes.lnk_info.header.show_window_str | The show window str of the binary header. | keyword |
+| gti.file_feed.attributes.lnk_info.link_flags | The link flags of the LNK shortcut. | keyword |
+| gti.file_feed.attributes.lnk_info.link_target_id_list.clsid | The clsid of the link target id list. | keyword |
+| gti.file_feed.attributes.lnk_info.link_target_id_list.item_type | The item type of the link target id list. | long |
+| gti.file_feed.attributes.lnk_info.link_target_id_list.item_type_str | The item type str of the link target id list. | keyword |
+| gti.file_feed.attributes.lnk_info.local_path | The local path of the LNK shortcut. | keyword |
+| gti.file_feed.attributes.lnk_info.mac_address | The mac address of the LNK shortcut. | keyword |
+| gti.file_feed.attributes.lnk_info.mac_vendor_name | The mac vendor name of the LNK shortcut. | keyword |
+| gti.file_feed.attributes.lnk_info.machine_id | The machine id of the LNK shortcut. | keyword |
+| gti.file_feed.attributes.lnk_info.modification_date | The modification date and time of the LNK shortcut. | date |
+| gti.file_feed.attributes.lnk_info.relative_path | The relative path of the LNK shortcut. | keyword |
+| gti.file_feed.attributes.lnk_info.target_path | The target path of the LNK shortcut. | keyword |
+| gti.file_feed.attributes.lnk_info.volume_serial_number | The volume serial number of the LNK shortcut. | keyword |
+| gti.file_feed.attributes.lnk_info.working_directory | The working directory of the LNK shortcut. | keyword |
+| gti.file_feed.attributes.macho_info.commands.type | The type of the Mach-O load command. | keyword |
+| gti.file_feed.attributes.macho_info.headers.cpu_subtype | The cpu subtype of the Mach-O header. | keyword |
+| gti.file_feed.attributes.macho_info.headers.cpu_subtype_lib64 | Indicates whether the Mach-O CPU subtype uses the LIB64 capability flag. | boolean |
+| gti.file_feed.attributes.macho_info.headers.cpu_type | The cpu type of the Mach-O header. | keyword |
+| gti.file_feed.attributes.macho_info.headers.entrypoint | The entrypoint of the Mach-O header. | keyword |
+| gti.file_feed.attributes.macho_info.headers.file_type | The file type of the Mach-O header. | keyword |
+| gti.file_feed.attributes.macho_info.headers.flags | The flags of the Mach-O header. | keyword |
+| gti.file_feed.attributes.macho_info.headers.magic | The magic of the Mach-O header. | keyword |
+| gti.file_feed.attributes.macho_info.headers.num_cmds | The number of cmds for the Mach-O header. | long |
+| gti.file_feed.attributes.macho_info.headers.reserved | The reserved of the Mach-O header. | keyword |
+| gti.file_feed.attributes.macho_info.headers.size_cmds | The size cmds of the Mach-O header. | long |
+| gti.file_feed.attributes.macho_info.info.sha256 | The SHA-256 hash of the info. | keyword |
+| gti.file_feed.attributes.macho_info.libs | The libs of the Mach-O file. | keyword |
+| gti.file_feed.attributes.macho_info.platform | The platform of the Mach-O file. | long |
+| gti.file_feed.attributes.macho_info.segments.fileoff | The fileoff of the Mach-O segment. | keyword |
+| gti.file_feed.attributes.macho_info.segments.filesize | The filesize of the Mach-O segment. | keyword |
+| gti.file_feed.attributes.macho_info.segments.name | The name of the Mach-O segment. | keyword |
+| gti.file_feed.attributes.macho_info.segments.sections.flags | The flags of the Mach-O section. | keyword |
+| gti.file_feed.attributes.macho_info.segments.sections.name | The name of the Mach-O section. | keyword |
+| gti.file_feed.attributes.macho_info.segments.sections.type | The type of the Mach-O section. | keyword |
+| gti.file_feed.attributes.macho_info.segments.vmaddr | The vmaddr of the Mach-O segment. | keyword |
+| gti.file_feed.attributes.macho_info.segments.vmsize | The vmsize of the Mach-O segment. | keyword |
+| gti.file_feed.attributes.magic | The file type as reported by the libmagic tool. | keyword |
+| gti.file_feed.attributes.magika | The file type as detected by Google's Magika tool. | keyword |
+| gti.file_feed.attributes.main_icon.dhash | The difference (dhash) hash of the main icon. | keyword |
+| gti.file_feed.attributes.main_icon.raw_md5 | The raw MD5 hash of the main icon. | keyword |
+| gti.file_feed.attributes.malware_config.families.alt_names | The alt names of the malware family. | keyword |
+| gti.file_feed.attributes.malware_config.families.configs.extra_info.crypto_info.data | The data of the crypto info. | keyword |
+| gti.file_feed.attributes.malware_config.families.configs.extra_info.crypto_info.data_bytes | The data bytes of the crypto info. | keyword |
+| gti.file_feed.attributes.malware_config.families.configs.extra_info.crypto_info.description | The description of the crypto info. | keyword |
+| gti.file_feed.attributes.malware_config.families.configs.extra_info.crypto_info.format | The format of the crypto info. | keyword |
+| gti.file_feed.attributes.malware_config.families.configs.extra_info.crypto_info.tags | The tags of the crypto info. | keyword |
+| gti.file_feed.attributes.malware_config.families.configs.extra_info.http_settings_get_hash | The http settings get hash of the extra info. | keyword |
+| gti.file_feed.attributes.malware_config.families.configs.extra_info.http_settings_post_hash | The http settings post hash of the extra info. | keyword |
+| gti.file_feed.attributes.malware_config.families.configs.extra_info.watermark | The watermark of the extra info. | keyword |
+| gti.file_feed.attributes.malware_config.families.configs.files_dropped.path | The path of the dropped file. | keyword |
+| gti.file_feed.attributes.malware_config.families.configs.files_dropped.sha256 | The SHA-256 hash of the dropped file. | keyword |
+| gti.file_feed.attributes.malware_config.families.configs.host_info.files.file_name | The file name of the files. | keyword |
+| gti.file_feed.attributes.malware_config.families.configs.host_info.mutexes | The mutexes of the malware host configuration. | keyword |
+| gti.file_feed.attributes.malware_config.families.configs.host_info.process_inject_targets | The process inject targets of the malware host configuration. | keyword |
+| gti.file_feed.attributes.malware_config.families.configs.implant_info.campaign_ids | The campaign ids of the malware implant configuration. | keyword |
+| gti.file_feed.attributes.malware_config.families.configs.implant_info.version | The version of the malware implant configuration. | keyword |
+| gti.file_feed.attributes.malware_config.families.configs.net_info.beacon_interval | The beacon interval of the malware network configuration. | keyword |
+| gti.file_feed.attributes.malware_config.families.configs.net_info.beacon_timeout | The beacon timeout of the malware network configuration. | keyword |
+| gti.file_feed.attributes.malware_config.families.configs.net_info.connections.categories | The categories of the malware C2 connection. | keyword |
+| gti.file_feed.attributes.malware_config.families.configs.net_info.connections.host | The host of the malware C2 connection. | keyword |
+| gti.file_feed.attributes.malware_config.families.configs.net_info.connections.port | The port of the malware C2 connection. | long |
+| gti.file_feed.attributes.malware_config.families.configs.net_info.connections.protocol_tags | The protocol tags of the malware C2 connection. | keyword |
+| gti.file_feed.attributes.malware_config.families.configs.net_info.connections.url | The url of the malware C2 connection. | keyword |
+| gti.file_feed.attributes.malware_config.families.configs.tool | The tool of the malware configuration. | keyword |
+| gti.file_feed.attributes.malware_config.families.configs.txt_configs | The txt configs of the malware configuration. | keyword |
+| gti.file_feed.attributes.malware_config.families.family | The family of the malware family. | keyword |
+| gti.file_feed.attributes.md5 | The file's MD5 hash. | keyword |
+| gti.file_feed.attributes.meaningful_name | The most representative name out of all the file's names. | keyword |
+| gti.file_feed.attributes.modelscan.issues | The issues of the modelscan. | keyword |
+| gti.file_feed.attributes.names | The names of the file. | keyword |
+| gti.file_feed.attributes.network_infrastructure | The network infrastructure of the file. | keyword |
+| gti.file_feed.attributes.office_info.entries.clsid | The clsid of the entries. | keyword |
+| gti.file_feed.attributes.office_info.entries.name | The name of the entries. | keyword |
+| gti.file_feed.attributes.office_info.entries.sid | The sid of the entries. | long |
+| gti.file_feed.attributes.office_info.entries.size | The size of the entries. | long |
+| gti.file_feed.attributes.office_info.entries.type | The type of the entries. | keyword |
+| gti.file_feed.attributes.office_info.entries.type_literal | The type literal of the entries. | keyword |
+| gti.file_feed.attributes.office_info.summary_info.application_name | The application name of the Office document summary. | keyword |
+| gti.file_feed.attributes.office_info.summary_info.author | The author recorded in the Office document metadata. | keyword |
+| gti.file_feed.attributes.office_info.summary_info.code_page | The code page of the Office document summary. | keyword |
+| gti.file_feed.attributes.office_info.summary_info.comments | The comments of the Office document summary. | keyword |
+| gti.file_feed.attributes.office_info.summary_info.creation_datetime | The creation date and time of the Office document summary. | date |
+| gti.file_feed.attributes.office_info.summary_info.keywords | The keywords of the Office document summary. | keyword |
+| gti.file_feed.attributes.office_info.summary_info.last_saved | The last saved of the Office document summary. | date |
+| gti.file_feed.attributes.office_info.summary_info.page_count | The number of page count for the Office document summary. | long |
+| gti.file_feed.attributes.office_info.summary_info.revision_number | The revision number of the Office document summary. | keyword |
+| gti.file_feed.attributes.office_info.summary_info.security | The security of the Office document summary. | long |
+| gti.file_feed.attributes.office_info.summary_info.subject | The subject of the Office document summary. | keyword |
+| gti.file_feed.attributes.office_info.summary_info.template | The template of the Office document summary. | keyword |
+| gti.file_feed.attributes.office_info.summary_info.title | The title of the Office document summary. | keyword |
+| gti.file_feed.attributes.office_info.summary_info.word_count | The number of word count for the Office document summary. | long |
+| gti.file_feed.attributes.packers.f_prot | The packer detected by the F-PROT engine. | keyword |
+| gti.file_feed.attributes.packers.p_ei_d | The packer detected by the PEiD engine. | keyword |
+| gti.file_feed.attributes.packers.varist | The packer detected by the Varist engine. | keyword |
+| gti.file_feed.attributes.pdf_info.acroform | The acroform of the PDF document. | long |
+| gti.file_feed.attributes.pdf_info.autoaction | The autoaction of the PDF document. | long |
+| gti.file_feed.attributes.pdf_info.embedded_file | The embedded file of the PDF document. | long |
+| gti.file_feed.attributes.pdf_info.encrypted | The encrypted of the PDF document. | long |
+| gti.file_feed.attributes.pdf_info.flash | The flash of the PDF document. | long |
+| gti.file_feed.attributes.pdf_info.header | The header of the PDF document. | keyword |
+| gti.file_feed.attributes.pdf_info.javascript | The javascript of the PDF document. | long |
+| gti.file_feed.attributes.pdf_info.jbig2_compression | The jbig2 compression of the PDF document. | long |
+| gti.file_feed.attributes.pdf_info.js | The js of the PDF document. | long |
+| gti.file_feed.attributes.pdf_info.num_endobj | The number of endobj for the PDF document. | long |
+| gti.file_feed.attributes.pdf_info.num_endstream | The number of endstream for the PDF document. | long |
+| gti.file_feed.attributes.pdf_info.num_launch_actions | The number of launch actions for the PDF document. | long |
+| gti.file_feed.attributes.pdf_info.num_obj | The number of obj for the PDF document. | long |
+| gti.file_feed.attributes.pdf_info.num_object_streams | The number of object streams for the PDF document. | long |
+| gti.file_feed.attributes.pdf_info.num_pages | The number of pages for the PDF document. | long |
+| gti.file_feed.attributes.pdf_info.num_stream | The number of stream for the PDF document. | long |
+| gti.file_feed.attributes.pdf_info.openaction | The openaction of the PDF document. | long |
+| gti.file_feed.attributes.pdf_info.startxref | The startxref of the PDF document. | long |
+| gti.file_feed.attributes.pdf_info.suspicious_colors | The suspicious colors of the PDF document. | long |
+| gti.file_feed.attributes.pdf_info.trailer | The trailer of the PDF document. | long |
+| gti.file_feed.attributes.pdf_info.xfa | The xfa of the PDF document. | long |
+| gti.file_feed.attributes.pdf_info.xref | The xref of the PDF document. | long |
+| gti.file_feed.attributes.pe_info.compiler_product_versions | The compiler product versions of the PE header. | keyword |
+| gti.file_feed.attributes.pe_info.debug.codeview.age | The age field of the PE CodeView debug record. | long |
+| gti.file_feed.attributes.pe_info.debug.codeview.guid | The GUID of the PE CodeView debug record. | keyword |
+| gti.file_feed.attributes.pe_info.debug.codeview.name | The PDB file name from the PE CodeView debug record. | keyword |
+| gti.file_feed.attributes.pe_info.debug.codeview.offset | The offset of the PE CodeView debug record. | long |
+| gti.file_feed.attributes.pe_info.debug.codeview.signature | The signature of the PE CodeView debug record. | keyword |
+| gti.file_feed.attributes.pe_info.debug.codeview.timestamp | The timestamp of the PE CodeView debug record. | date |
+| gti.file_feed.attributes.pe_info.debug.offset | The offset of the PE debug entry. | long |
+| gti.file_feed.attributes.pe_info.debug.reserved10.value | The value of the PE debug reserved10 record. | keyword |
+| gti.file_feed.attributes.pe_info.debug.size | The size of the PE debug entry. | long |
+| gti.file_feed.attributes.pe_info.debug.timestamp | The relevant date and time of the PE debug entry. | date |
+| gti.file_feed.attributes.pe_info.debug.type | The type of the PE debug entry. | long |
+| gti.file_feed.attributes.pe_info.debug.type_str | The type str of the PE debug entry. | keyword |
+| gti.file_feed.attributes.pe_info.entry_point | The entry point of the PE header. | long |
+| gti.file_feed.attributes.pe_info.exports | The exports of the PE header. | keyword |
+| gti.file_feed.attributes.pe_info.imphash | The import (imphash) hash of the PE header. | keyword |
+| gti.file_feed.attributes.pe_info.import_list.imported_functions | The imported functions of the PE import. | keyword |
+| gti.file_feed.attributes.pe_info.import_list.library_name | The library name of the PE import. | keyword |
+| gti.file_feed.attributes.pe_info.machine_type | The machine type of the PE header. | long |
+| gti.file_feed.attributes.pe_info.overlay.chi2 | The chi2 of the PE overlay. | double |
+| gti.file_feed.attributes.pe_info.overlay.entropy | The entropy of the PE overlay. | double |
+| gti.file_feed.attributes.pe_info.overlay.filetype | The filetype of the PE overlay. | keyword |
+| gti.file_feed.attributes.pe_info.overlay.md5 | The MD5 hash of the PE overlay. | keyword |
+| gti.file_feed.attributes.pe_info.overlay.offset | The offset of the PE overlay. | long |
+| gti.file_feed.attributes.pe_info.overlay.size | The size of the PE overlay. | long |
+| gti.file_feed.attributes.pe_info.resource_details.chi2 | The chi2 of the PE resource. | double |
+| gti.file_feed.attributes.pe_info.resource_details.entropy | The entropy of the PE resource. | double |
+| gti.file_feed.attributes.pe_info.resource_details.filetype | The filetype of the PE resource. | keyword |
+| gti.file_feed.attributes.pe_info.resource_details.lang | The lang of the PE resource. | keyword |
+| gti.file_feed.attributes.pe_info.resource_details.sha256 | The SHA-256 hash of the PE resource. | keyword |
+| gti.file_feed.attributes.pe_info.resource_details.type | The type of the PE resource. | keyword |
+| gti.file_feed.attributes.pe_info.resource_langs | An object containing the resource langs of the PE header. | flattened |
+| gti.file_feed.attributes.pe_info.resource_types | An object containing the resource types of the PE header. | flattened |
+| gti.file_feed.attributes.pe_info.rich_pe_header_hash | The Rich PE header hash of the PE header. | keyword |
+| gti.file_feed.attributes.pe_info.sections.chi2 | The chi2 of the PE section. | double |
+| gti.file_feed.attributes.pe_info.sections.entropy | The entropy of the PE section. | double |
+| gti.file_feed.attributes.pe_info.sections.flags | The flags of the PE section. | keyword |
+| gti.file_feed.attributes.pe_info.sections.md5 | The MD5 hash of the PE section. | keyword |
+| gti.file_feed.attributes.pe_info.sections.name | The name of the PE section. | keyword |
+| gti.file_feed.attributes.pe_info.sections.raw_size | The raw size of the PE section. | long |
+| gti.file_feed.attributes.pe_info.sections.virtual_address | The virtual address of the PE section. | long |
+| gti.file_feed.attributes.pe_info.sections.virtual_size | The virtual size of the PE section. | long |
+| gti.file_feed.attributes.pe_info.timestamp | The relevant date and time of the PE header. | date |
+| gti.file_feed.attributes.permhash | A hash of the permissions declared by the file. | keyword |
+| gti.file_feed.attributes.picklescan.contains_invalid_pickle | Indicates whether the file contains an invalid pickle. | boolean |
+| gti.file_feed.attributes.picklescan.globals | The globals of the picklescan. | keyword |
+| gti.file_feed.attributes.picklescan.issues_count | The number of issues count for the picklescan. | long |
+| gti.file_feed.attributes.popular_threat_classification.popular_threat_category.count | The number of engines using this threat category for the file. | long |
+| gti.file_feed.attributes.popular_threat_classification.popular_threat_category.value | A popular threat category assigned to the file. | keyword |
+| gti.file_feed.attributes.popular_threat_classification.popular_threat_name.count | The number of engines using this threat name for the file. | long |
+| gti.file_feed.attributes.popular_threat_classification.popular_threat_name.value | A popular threat/malware family name assigned to the file. | keyword |
+| gti.file_feed.attributes.popular_threat_classification.suggested_threat_label | The suggested threat label summarising the file's classification. | keyword |
+| gti.file_feed.attributes.powershell_info.cmdlets | The cmdlets of the PowerShell script. | keyword |
+| gti.file_feed.attributes.powershell_info.dotnet_calls | The dotnet calls of the PowerShell script. | keyword |
+| gti.file_feed.attributes.powershell_info.functions | The functions of the PowerShell script. | keyword |
+| gti.file_feed.attributes.powershell_info.ps_variables | The ps variables of the PowerShell script. | keyword |
+| gti.file_feed.attributes.reputation | The community reputation score of the file. | long |
+| gti.file_feed.attributes.saferpickle.classification | The classification of the saferpickle. | keyword |
+| gti.file_feed.attributes.saferpickle.justification | The justification of the saferpickle. | keyword |
+| gti.file_feed.attributes.sandbox_verdicts | An object containing the sandbox verdicts of the file. | flattened |
+| gti.file_feed.attributes.sha1 | The file's SHA-1 hash. | keyword |
+| gti.file_feed.attributes.sha256 | The file's SHA-256 hash. | keyword |
+| gti.file_feed.attributes.sigma_analysis_results.match_context.values | An object containing the values of the match context. | flattened |
+| gti.file_feed.attributes.sigma_analysis_results.rule_author | The rule author of the Sigma match. | keyword |
+| gti.file_feed.attributes.sigma_analysis_results.rule_description | The rule description of the Sigma match. | keyword |
+| gti.file_feed.attributes.sigma_analysis_results.rule_id | The rule id of the Sigma match. | keyword |
+| gti.file_feed.attributes.sigma_analysis_results.rule_level | The rule level of the Sigma match. | keyword |
+| gti.file_feed.attributes.sigma_analysis_results.rule_source | The rule source of the Sigma match. | keyword |
+| gti.file_feed.attributes.sigma_analysis_results.rule_title | The rule title of the Sigma match. | keyword |
+| gti.file_feed.attributes.sigma_analysis_stats.critical | The critical of the sigma analysis stats. | long |
+| gti.file_feed.attributes.sigma_analysis_stats.high | The high of the sigma analysis stats. | long |
+| gti.file_feed.attributes.sigma_analysis_stats.low | The low of the sigma analysis stats. | long |
+| gti.file_feed.attributes.sigma_analysis_stats.medium | The medium of the sigma analysis stats. | long |
+| gti.file_feed.attributes.sigma_analysis_summary | An object containing the sigma analysis summary of the file. | flattened |
+| gti.file_feed.attributes.signature_info.authority | The Authority of the code signature. | keyword |
+| gti.file_feed.attributes.signature_info.candidate_cd_hash_full_sha256 | The CandidateCDHashFull sha256 of the code signature. | keyword |
+| gti.file_feed.attributes.signature_info.candidate_cd_hash_sha256 | The CandidateCDHash sha256 of the code signature. | keyword |
+| gti.file_feed.attributes.signature_info.cd_hash | The Code Directory hash of the signed file. | keyword |
+| gti.file_feed.attributes.signature_info.cms_digest | The CMSDigest of the code signature. | keyword |
+| gti.file_feed.attributes.signature_info.cms_digest_type | The CMSDigestType of the code signature. | keyword |
+| gti.file_feed.attributes.signature_info.comments | The comments of the code signature. | keyword |
+| gti.file_feed.attributes.signature_info.copyright | The copyright of the code signature. | keyword |
+| gti.file_feed.attributes.signature_info.counter_signers | The counter signers of the code signature. | keyword |
+| gti.file_feed.attributes.signature_info.counter_signers_details.algorithm | The algorithm of the code signature counter-signer. | keyword |
+| gti.file_feed.attributes.signature_info.counter_signers_details.cert_issuer | The cert issuer of the code signature counter-signer. | keyword |
+| gti.file_feed.attributes.signature_info.counter_signers_details.name | The name of the code signature counter-signer. | keyword |
+| gti.file_feed.attributes.signature_info.counter_signers_details.serial_number | The serial number of the code signature counter-signer. | keyword |
+| gti.file_feed.attributes.signature_info.counter_signers_details.status | The status of the code signature counter-signer. | keyword |
+| gti.file_feed.attributes.signature_info.counter_signers_details.thumbprint | The thumbprint hash of the code signature counter-signer. | keyword |
+| gti.file_feed.attributes.signature_info.counter_signers_details.valid_from | The valid from of the code signature counter-signer. | date |
+| gti.file_feed.attributes.signature_info.counter_signers_details.valid_to | The valid to of the code signature counter-signer. | date |
+| gti.file_feed.attributes.signature_info.counter_signers_details.valid_usage | The valid usage of the code signature counter-signer. | keyword |
+| gti.file_feed.attributes.signature_info.description | The description from the file's signature information. | keyword |
+| gti.file_feed.attributes.signature_info.file_version | The file version of the code signature. | keyword |
+| gti.file_feed.attributes.signature_info.format | The Format of the code signature. | keyword |
+| gti.file_feed.attributes.signature_info.hash_choices | The Hash choices of the code signature. | keyword |
+| gti.file_feed.attributes.signature_info.identifier | The code-signing identifier of the file. | keyword |
+| gti.file_feed.attributes.signature_info.info_plist | The Info.plist content from the file's code signature. | keyword |
+| gti.file_feed.attributes.signature_info.internal_name | The internal name of the code signature. | keyword |
+| gti.file_feed.attributes.signature_info.original_name | The original name of the code signature. | keyword |
+| gti.file_feed.attributes.signature_info.pkcs7.opusinfo.more_info | The moreInfo of the opusinfo. | keyword |
+| gti.file_feed.attributes.signature_info.pkcs7.opusinfo.program_name | The programName of the opusinfo. | keyword |
+| gti.file_feed.attributes.signature_info.product | The product name from the file's signature information. | keyword |
+| gti.file_feed.attributes.signature_info.runtime_version | The Runtime Version of the code signature. | keyword |
+| gti.file_feed.attributes.signature_info.signers | The signers of the code signature. | keyword |
+| gti.file_feed.attributes.signature_info.signers_details.algorithm | The algorithm of the code signature signer. | keyword |
+| gti.file_feed.attributes.signature_info.signers_details.cert_issuer | The cert issuer of the code signature signer. | keyword |
+| gti.file_feed.attributes.signature_info.signers_details.name | The name of the code signature signer. | keyword |
+| gti.file_feed.attributes.signature_info.signers_details.serial_number | The serial number of the code signature signer. | keyword |
+| gti.file_feed.attributes.signature_info.signers_details.status | The status of the code signature signer. | keyword |
+| gti.file_feed.attributes.signature_info.signers_details.thumbprint | The thumbprint hash of the code signature signer. | keyword |
+| gti.file_feed.attributes.signature_info.signers_details.valid_from | The valid from of the code signature signer. | date |
+| gti.file_feed.attributes.signature_info.signers_details.valid_to | The valid to of the code signature signer. | date |
+| gti.file_feed.attributes.signature_info.signers_details.valid_usage | The valid usage of the code signature signer. | keyword |
+| gti.file_feed.attributes.signature_info.signing_date | The signing date and time of the code signature. | date |
+| gti.file_feed.attributes.signature_info.team_identifier | The code-signing team identifier of the file. | keyword |
+| gti.file_feed.attributes.signature_info.verified | The verification status of the file's code signature. | keyword |
+| gti.file_feed.attributes.signature_info.x509.algorithm | The algorithm of the code signature X.509 certificate. | keyword |
+| gti.file_feed.attributes.signature_info.x509.cert_issuer | The cert issuer of the code signature X.509 certificate. | keyword |
+| gti.file_feed.attributes.signature_info.x509.name | The name of the code signature X.509 certificate. | keyword |
+| gti.file_feed.attributes.signature_info.x509.serial_number | The serial number of the code signature X.509 certificate. | keyword |
+| gti.file_feed.attributes.signature_info.x509.thumbprint | The thumbprint hash of the code signature X.509 certificate. | keyword |
+| gti.file_feed.attributes.signature_info.x509.thumbprint_md5 | The thumbprint (MD5) hash of the code signature X.509 certificate. | keyword |
+| gti.file_feed.attributes.signature_info.x509.thumbprint_sha256 | The thumbprint (SHA-256) hash of the code signature X.509 certificate. | keyword |
+| gti.file_feed.attributes.signature_info.x509.valid_from | The valid from of the code signature X.509 certificate. | date |
+| gti.file_feed.attributes.signature_info.x509.valid_to | The valid to of the code signature X.509 certificate. | date |
+| gti.file_feed.attributes.signature_info.x509.valid_usage | The valid usage of the code signature X.509 certificate. | keyword |
+| gti.file_feed.attributes.size | The size of the file in bytes. | long |
+| gti.file_feed.attributes.ssdeep | The file's SSDEEP fuzzy hash. | keyword |
+| gti.file_feed.attributes.symhash | A hash of the symbols imported by the file. | keyword |
+| gti.file_feed.attributes.tags | The tags of the file. | keyword |
+| gti.file_feed.attributes.telfhash | The TELF hash of the ELF file. | keyword |
+| gti.file_feed.attributes.threat_severity.last_analysis_date | The last analysis date and time of the threat severity assessment. | date |
+| gti.file_feed.attributes.threat_severity.level_description | The level description of the threat severity assessment. | keyword |
+| gti.file_feed.attributes.threat_severity.threat_severity_data.is_matched_by_crowdsourced_yara_with_detections | Indicates whether the file is matched by a crowdsourced YARA rule with detections. | boolean |
+| gti.file_feed.attributes.threat_severity.threat_severity_data.num_av_detections | The number of av detections for the threat severity data. | long |
+| gti.file_feed.attributes.threat_severity.threat_severity_data.num_gav_detections | The number of gav detections for the threat severity data. | long |
+| gti.file_feed.attributes.threat_severity.threat_severity_data.popular_threat_category | The popular threat category of the threat severity data. | keyword |
+| gti.file_feed.attributes.threat_severity.threat_severity_level | The threat severity level of the threat severity assessment. | keyword |
+| gti.file_feed.attributes.threat_severity.version | The version of the threat severity assessment. | long |
+| gti.file_feed.attributes.threat_verdict | The threat verdict assigned by Google Threat Intelligence (for example VERDICT_UNDETECTED, VERDICT_SUSPICIOUS, or VERDICT_MALICIOUS). | keyword |
+| gti.file_feed.attributes.times_submitted | The number of times the file has been submitted for analysis. | long |
+| gti.file_feed.attributes.tlsh | The file's TLSH fuzzy hash. | keyword |
+| gti.file_feed.attributes.total_votes.harmless | The number of community votes classifying the file as harmless. | long |
+| gti.file_feed.attributes.total_votes.malicious | The number of community votes classifying the file as malicious. | long |
+| gti.file_feed.attributes.trid.file_type | The file type of the TrID file-type match. | keyword |
+| gti.file_feed.attributes.trid.probability | The probability of the TrID file-type match. | double |
+| gti.file_feed.attributes.type_description | A human-readable description of the file type. | keyword |
+| gti.file_feed.attributes.type_extension | The file extension. | keyword |
+| gti.file_feed.attributes.type_tag | A short tag identifying the file type. | keyword |
+| gti.file_feed.attributes.type_tags | The type tags of the file. | keyword |
+| gti.file_feed.attributes.unique_sources | The number of unique sources that submitted the file. | long |
+| gti.file_feed.attributes.vba_info.deobfuscated_strings | The deobfuscated strings of the vba info. | keyword |
+| gti.file_feed.attributes.vba_info.strings | The strings of the vba info. | keyword |
+| gti.file_feed.attributes.vhash | An in-house similarity clustering value based on the file's structural features. | keyword |
+| gti.file_feed.context_attributes.download_url | The download url of the file submission context. | keyword |
+| gti.file_feed.context_attributes.submitter.city | The city of the submitter. | keyword |
+| gti.file_feed.context_attributes.submitter.country | The country of the submitter. | keyword |
+| gti.file_feed.context_attributes.submitter.id | The identifier of the user that submitted the file. | keyword |
+| gti.file_feed.context_attributes.submitter.interface | The interface of the submitter. | keyword |
+| gti.file_feed.context_attributes.submitter.region | The region of the submitter. | keyword |
+| gti.file_feed.id | The unique identifier of the file (its SHA-256 hash). | keyword |
+| gti.file_feed.links.self | The API URL of the file object. | keyword |
+| gti.file_feed.relationships.analyses.data.id | Analyses for the file. | keyword |
+| gti.file_feed.relationships.analyses.data.type | The object type returned by the 'analyses' relationship. | keyword |
+| gti.file_feed.relationships.associations.data.id | The id of the data. | keyword |
+| gti.file_feed.relationships.associations.data.type | The type of the data. | keyword |
+| gti.file_feed.relationships.behaviours.data.id | Behaviour reports for the file. See [File behaviour](https://virustotal.readme.io/reference/file-behaviour-summary). | keyword |
+| gti.file_feed.relationships.behaviours.data.type | The object type returned by the 'behaviours' relationship. | keyword |
+| gti.file_feed.relationships.bundled_files.data.id | Files bundled within the file. | keyword |
+| gti.file_feed.relationships.bundled_files.data.type | The object type returned by the 'bundled_files' relationship. | keyword |
+| gti.file_feed.relationships.carbonblack_children.data.id | Files derived from the file according to Carbon Black. | keyword |
+| gti.file_feed.relationships.carbonblack_children.data.type | The object type returned by the 'carbonblack_children' relationship. | keyword |
+| gti.file_feed.relationships.carbonblack_parents.data.id | Files from where the file was derived according to Carbon Black. | keyword |
+| gti.file_feed.relationships.carbonblack_parents.data.type | The object type returned by the 'carbonblack_parents' relationship. | keyword |
+| gti.file_feed.relationships.ciphered_bundled_files.data.id | Files within a ciphered bundle. | keyword |
+| gti.file_feed.relationships.ciphered_bundled_files.data.type | The object type returned by the 'ciphered_bundled_files' relationship. | keyword |
+| gti.file_feed.relationships.ciphered_parents.data.id | Compressed bundle files where a file is contained. | keyword |
+| gti.file_feed.relationships.ciphered_parents.data.type | The object type returned by the 'ciphered_parents' relationship. | keyword |
+| gti.file_feed.relationships.collections.data.id | Collections where the file is present. | keyword |
+| gti.file_feed.relationships.collections.data.type | The object type returned by the 'collections' relationship. | keyword |
+| gti.file_feed.relationships.comments.data.id | Comments for the file. | keyword |
+| gti.file_feed.relationships.comments.data.type | The object type returned by the 'comments' relationship. | keyword |
+| gti.file_feed.relationships.compressed_parents.data.id | Compressed files that contain the file. | keyword |
+| gti.file_feed.relationships.compressed_parents.data.type | The object type returned by the 'compressed_parents' relationship. | keyword |
+| gti.file_feed.relationships.contacted_domains.data.id | A domain contacted by the file. | keyword |
+| gti.file_feed.relationships.contacted_domains.data.type | The type of the data. | keyword |
+| gti.file_feed.relationships.contacted_ips.data.id | An IP address contacted by the file. | ip |
+| gti.file_feed.relationships.contacted_ips.data.type | The type of the data. | keyword |
+| gti.file_feed.relationships.contacted_urls.data.context_attributes.url | The url of the file submission context. | keyword |
+| gti.file_feed.relationships.contacted_urls.data.id | The id of the data. | keyword |
+| gti.file_feed.relationships.contacted_urls.data.type | The type of the data. | keyword |
+| gti.file_feed.relationships.dropped_files.data.id | Files dropped by the file during its execution. | keyword |
+| gti.file_feed.relationships.dropped_files.data.type | The object type returned by the 'dropped_files' relationship. | keyword |
+| gti.file_feed.relationships.email_attachments.data.id | Files attached to the email. | keyword |
+| gti.file_feed.relationships.email_attachments.data.type | The object type returned by the 'email_attachments' relationship. | keyword |
+| gti.file_feed.relationships.email_parents.data.id | Email files that contained the file. | keyword |
+| gti.file_feed.relationships.email_parents.data.type | The object type returned by the 'email_parents' relationship. | keyword |
+| gti.file_feed.relationships.embedded_domains.data.id | A domain embedded in the file. | keyword |
+| gti.file_feed.relationships.embedded_domains.data.type | The type of the data. | keyword |
+| gti.file_feed.relationships.embedded_ips.data.id | An IP address embedded in the file. | ip |
+| gti.file_feed.relationships.embedded_ips.data.type | The type of the data. | keyword |
+| gti.file_feed.relationships.embedded_urls.data.context_attributes.url | The url of the file submission context. | keyword |
+| gti.file_feed.relationships.embedded_urls.data.id | The id of the data. | keyword |
+| gti.file_feed.relationships.embedded_urls.data.type | The type of the data. | keyword |
+| gti.file_feed.relationships.execution_parents.data.id | Files that executed the file. | keyword |
+| gti.file_feed.relationships.execution_parents.data.type | The object type returned by the 'execution_parents' relationship. | keyword |
+| gti.file_feed.relationships.graphs.data.id | Graphs that include the file. | keyword |
+| gti.file_feed.relationships.graphs.data.type | The object type returned by the 'graphs' relationship. | keyword |
+| gti.file_feed.relationships.itw_domains.data.id | In the wild domain names from where the file has been downloaded. | keyword |
+| gti.file_feed.relationships.itw_domains.data.type | The object type returned by the 'itw_domains' relationship. | keyword |
+| gti.file_feed.relationships.itw_ips.data.id | In the wild IP addresses from where the file has been downloaded. | keyword |
+| gti.file_feed.relationships.itw_ips.data.type | The object type returned by the 'itw_ips' relationship. | keyword |
+| gti.file_feed.relationships.itw_urls.data.context_attributes.url | The url of the file submission context. | keyword |
+| gti.file_feed.relationships.itw_urls.data.id | The id of the data. | keyword |
+| gti.file_feed.relationships.itw_urls.data.type | The type of the data. | keyword |
+| gti.file_feed.relationships.memory_pattern_domains.data.id | Domain names in the memory pattern of the file. | keyword |
+| gti.file_feed.relationships.memory_pattern_domains.data.type | The object type returned by the 'memory_pattern_domains' relationship. | keyword |
+| gti.file_feed.relationships.memory_pattern_ips.data.id | IP addresses in the memory pattern of the file. | keyword |
+| gti.file_feed.relationships.memory_pattern_ips.data.type | The object type returned by the 'memory_pattern_ips' relationship. | keyword |
+| gti.file_feed.relationships.memory_pattern_urls.data.context_attributes.url | The URL of the related object in the 'memory_pattern_urls' relationship. | keyword |
+| gti.file_feed.relationships.memory_pattern_urls.data.id | URLs in the memory pattern of the file. | keyword |
+| gti.file_feed.relationships.memory_pattern_urls.data.type | The object type returned by the 'memory_pattern_urls' relationship. | keyword |
+| gti.file_feed.relationships.overlay_children.data.id | Files contained by the file as an overlay. | keyword |
+| gti.file_feed.relationships.overlay_children.data.type | The object type returned by the 'overlay_children' relationship. | keyword |
+| gti.file_feed.relationships.overlay_parents.data.id | File that contain the file as an overlay. | keyword |
+| gti.file_feed.relationships.overlay_parents.data.type | The object type returned by the 'overlay_parents' relationship. | keyword |
+| gti.file_feed.relationships.pcap_children.data.id | Files contained within the PCAP file. | keyword |
+| gti.file_feed.relationships.pcap_children.data.type | The object type returned by the 'pcap_children' relationship. | keyword |
+| gti.file_feed.relationships.pcap_parents.data.id | PCAP files that contain the file. | keyword |
+| gti.file_feed.relationships.pcap_parents.data.type | The object type returned by the 'pcap_parents' relationship. | keyword |
+| gti.file_feed.relationships.pe_resource_children.data.id | Files contained by a PE file as a resource. | keyword |
+| gti.file_feed.relationships.pe_resource_children.data.type | The object type returned by the 'pe_resource_children' relationship. | keyword |
+| gti.file_feed.relationships.pe_resource_parents.data.id | PE files containing the file as a resource. | keyword |
+| gti.file_feed.relationships.pe_resource_parents.data.type | The object type returned by the 'pe_resource_parents' relationship. | keyword |
+| gti.file_feed.relationships.related_references.data.id | References related to the file. | keyword |
+| gti.file_feed.relationships.related_references.data.type | The object type returned by the 'related_references' relationship. | keyword |
+| gti.file_feed.relationships.related_threat_actors.data.id | Threat actors related to the file. | keyword |
+| gti.file_feed.relationships.related_threat_actors.data.type | The object type returned by the 'related_threat_actors' relationship. | keyword |
+| gti.file_feed.relationships.screenshots.data.id | Screenshots related to the sandbox execution of the file. | keyword |
+| gti.file_feed.relationships.screenshots.data.type | The object type returned by the 'screenshots' relationship. | keyword |
+| gti.file_feed.relationships.similar_files.data.id | Files that are similar to the file. | keyword |
+| gti.file_feed.relationships.similar_files.data.type | The object type returned by the 'similar_files' relationship. | keyword |
+| gti.file_feed.relationships.submissions.data.id | Submissions for the file. | keyword |
+| gti.file_feed.relationships.submissions.data.type | The object type returned by the 'submissions' relationship. | keyword |
+| gti.file_feed.relationships.urls_for_embedded_js.data.context_attributes.url | The URL of the related object in the 'urls_for_embedded_js' relationship. | keyword |
+| gti.file_feed.relationships.urls_for_embedded_js.data.id | URLs where a given JS script is embedded. | keyword |
+| gti.file_feed.relationships.urls_for_embedded_js.data.type | The object type returned by the 'urls_for_embedded_js' relationship. | keyword |
+| gti.file_feed.relationships.votes.data.id | Votes for the file. | keyword |
+| gti.file_feed.relationships.votes.data.type | The object type returned by the 'votes' relationship. | keyword |
+| gti.file_feed.type | The type of the indicator object (for example, file). | keyword |
+| input.type | Type of filebeat input. | keyword |
+| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or in the latest destination index. | constant_keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only). | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only). | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only). | keyword |
+| log.offset | Log offset. | long |
+| threat.indicator.file.elf.sections | An array containing an object for each section of the ELF file. The keys that should be present in these objects are defined by sub-fields underneath `elf.sections.\*`. | nested |
+| threat.indicator.file.elf.segments | An array containing an object for each segment of the ELF file. The keys that should be present in these objects are defined by sub-fields underneath `elf.segments.\*`. | nested |
+| threat.indicator.file.pe.sections | An array containing an object for each section of the PE file. The keys that should be present in these objects are defined by sub-fields underneath `pe.sections.\*`. | nested |
 
 
 ### First Stage Delivery Vectors

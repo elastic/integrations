@@ -4,10 +4,11 @@
 
 [Google Threat Intelligence](https://gtidocs.virustotal.com/) is a security solution that helps organizations detect, analyze, and mitigate threats. It leverages Google's global telemetry, advanced analytics, and vast infrastructure to provide actionable insights. Key features include threat detection, malware and phishing analysis, and real-time threat alerts.
 
-Google Threat Intelligence integration offers support for three APIs:
+Google Threat Intelligence integration offers support for three APIs and a file-based feed:
 1. **[Threat List API](https://gtidocs.virustotal.com/reference/get-hourly-threat-list)** to deliver hourly data chunks. The Threat Lists feature allows customers to consume **Indicators of Compromise (IOCs)** categorized by various threat types.
 2. **[IOC Stream API](https://gtidocs.virustotal.com/reference/get-objects-from-the-ioc-stream)** to deliver various types of **Indicators of Compromise (IOCs)** originating from multiple sources. Depending on the source of the notification, different context-specific attributes are added to the IOCs.
 3. **[Vulnerability API](https://gtidocs.virustotal.com/reference/list-vulnerabilities)** to deliver **Vulnerability** objects enriched with GTI's assessment data, such as CVSS scores, EPSS, exploitation status, and CISA Known Exploited Vulnerabilities (KEV) information. Requires an **Enterprise Plus** subscription.
+4. **[File Feed](https://gtidocs.virustotal.com/reference/file-feeds)** to deliver full file reports as downloadable packages, ingested from files on disk via the filestream input rather than a polling API. Requires a GTI subscription with file feed access. See the [File Feed](#file-feed) section for sourcing and setup.
 
 ## Threat List API Feeds
 
@@ -37,6 +38,8 @@ Customers can access a subset of the available threat lists based on their **Goo
 - **GTI Enterprise+**: Access to all available threat lists
 
 **Note:** The **Vulnerability** data stream is a separate API from the Threat List API above and requires an **Enterprise Plus** subscription.
+
+**Note:** The **File Feed** data stream is a separate, file-based source (not part of the Threat List API) and requires a GTI subscription with file feed access. See the [File Feed](#file-feed) section.
 
 ## Data Streams
 
@@ -136,7 +139,7 @@ For example:
 
 A **retention policy** is used to remove data older than the default retention period. For more details, refer to the [Retention Policy Documentation](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-transform-put-transform#operation-transform-put-transform-body-application-json-retention_policy).
 
-In this integration, all data streams have a **retention period of 30 days**.
+In this integration, the transform destination indices have a **retention period of 30 days**. This does not apply to the File Feed source data stream (`logs-ti_google_threat_intelligence.file_feed-*`), which is kept for about **7 days** - see the [File Feed](#file-feed) section for how to extend it.
 
 ### Customizing Detection Rules
 
@@ -209,6 +212,28 @@ This is the `Cryptominer` dataset.
 {{event "cryptominer"}}
 
 {{fields "cryptominer"}}
+
+### File Feed
+
+This is the `File Feed` dataset. It collects Google Threat Intelligence File Feed records from files on disk using the filestream input. The File Feed is distributed as bzip2-compressed NDJSON. Decompress each package to NDJSON on disk before pointing the input at it. Each line is one File Feed object exactly as delivered by Google - a bare JSON object parsed into `gti.file_feed`, with no `{"data": {...}}` wrapper (unlike the threat-list files described above).
+
+**Producing the files.** File Feed packages are published by the Google Threat Intelligence [file feed API](https://gtidocs.virustotal.com/reference/file-feeds) (base path `/api/v3/feeds/files/{time}`) as time-based batches, and access requires a GTI subscription with file feed access (verify the exact endpoint, batch granularity, and entitlement against your [GTI documentation](https://gtidocs.virustotal.com/reference/file-feeds)). On a host with API access, download each batch and decompress the bzip2 package to a `.ndjson` file (one File Feed object per line), then copy the files to the host running Elastic Agent and point **Paths** at them, for example `/path/to/file_feed/*.ndjson`.
+
+A record is promoted to `threat.indicator.*` when any of the following is true:
+
+- its GTI verdict is in the **Indicator verdicts** list (default `VERDICT_MALICIOUS`), or
+- it is `VERDICT_SUSPICIOUS` and its threat score is greater than or equal to the **Minimum threat score for suspicious promotion** (default `70`), or
+- its `last_analysis_stats.malicious` count is greater than or equal to the **Minimum malicious detections** value (default `5`), regardless of verdict.
+
+By default, **Drop records below the indicator threshold** (`drop_below_threshold`) is enabled, so records that are not promoted are discarded and never stored. Disable it to retain every record under `gti.file_feed.*`. Only promoted records carry `threat.indicator.*` and feed the File IOC transform.
+
+File Feed source data is short-lived regardless of this setting: the packaged ILM policy `logs-ti_google_threat_intelligence.file_feed-default_policy` rolls over daily and deletes after about **7 days** on stateful deployments, and `lifecycle.yml` sets `data_retention: 7d` on Serverless. Disabling the drop therefore keeps non-indicator records for roughly a week, not indefinitely. To build a longer local reputation/hunting corpus, extend retention on both mechanisms: edit or replace the `logs-ti_google_threat_intelligence.file_feed-default_policy` ILM policy on stateful deployments, and use `PUT _data_stream/logs-ti_google_threat_intelligence.file_feed-<namespace>/_lifecycle` on Serverless.
+
+#### Example
+
+{{event "file_feed"}}
+
+{{fields "file_feed"}}
 
 ### First Stage Delivery Vectors
 
