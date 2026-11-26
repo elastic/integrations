@@ -1,5 +1,5 @@
-# Every listing request gets a 503. The listing is kept and requested again
-# at the next interval, not skipped.
+# Every listing request gets a 503, with client retries off. The same listing
+# is requested once per poll: not skipped, and not retried in a loop.
 
 [!external_stack] skip 'Skipping external stack test.'
 [!exec:jq] skip 'Skipping test requiring absent jq command'
@@ -10,12 +10,14 @@ docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} o365-m
 add_package -profile ${CONFIG_PROFILES}/${PROFILE}
 add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
 
-# An error from at least two polls.
 get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -timeout 5m ${DATA_STREAM_NAME}
 cp stdout got_docs.json
 
-exec jq -r '[.hits.hits[]._source.error.message // empty] | flatten | .[]' got_docs.json
-stdout 'AF50000'
+# Two or three errors (one per poll), all for the same listing URL.
+exec jq '[.hits.hits[]._source.error.message // empty | if type == "array" then .[0] else . end] | length <= 3' got_docs.json
+stdout '^true$'
+exec jq '[.hits.hits[]._source.error.message // empty | if type == "array" then .[0] else . end | split(": ")[0]] | unique | length' got_docs.json
+stdout '^1$'
 
 remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
 uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
@@ -34,6 +36,7 @@ data_stream:
     azure_tenant_id: test-cel-tenant-id
     content_types: "Audit.Exchange"
     interval: 20s
+    resource_retry_max_attempts: "1"
     # Bounds a regression.
     max_executions: 20
     initial_interval: 1h

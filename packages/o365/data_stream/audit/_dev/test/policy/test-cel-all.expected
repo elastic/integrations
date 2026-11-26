@@ -102,12 +102,10 @@ inputs:
                         // AF20055; a link queued before a prolonged period without
                         // successful fetches (agent downtime, auth failures,
                         // credential rotation gaps, etc.) may have aged past that
-                        // boundary while parked in the cursor. The listing-error
-                        // branch cannot evict it reliably because its map-shaped
-                        // error return is treated by the runtime as a freeze signal
-                        // that discards cursor mutations. Once pruned, the bottom
-                        // branch generates a fresh link clamped to the valid window
-                        // on the next iteration.
+                        // boundary while parked in the cursor, and links requeued
+                        // after 429 or 5xx listing errors stay until they age out
+                        // here. Once pruned, the bottom branch generates a fresh link
+                        // clamped to the valid window on the next iteration.
                         "todo_links": state.?cursor.todo_links.orValue([]).filter(link,
                           configured_types.exists(ct, link.to_lower().contains("contenttype=" + ct.to_lower()))
                           &&
@@ -449,28 +447,34 @@ inputs:
                     )
                   )
                 :
-                  // Listing error - Log it, skip this link and continue
-                  state.with(
-                    {
-                      "events": {
-                        "error": {
-                          "code": string(list_resp.StatusCode),
-                          "id": string(list_resp.Status),
-                          "message": "GET " + state.cursor.todo_links[0] + ": " + (
-                            (size(list_resp.Body) != 0) ?
-                              string(list_resp.Body)
-                            :
-                              string(list_resp.Status) + " (" + string(list_resp.StatusCode) + ")"
-                          ),
-                        },
-                      },
-                      "cursor": state.cursor.with(
-                        {
-                          "todo_links": tail(state.cursor.todo_links),
-                        }
-                      ),
-                      "want_more": true,
-                    }
+                  // Listing error - Log it. Requeue the link and stop this cycle on
+                  // 429 and 5xx; skip it and continue on other errors. The events
+                  // value is a list, so the runtime keeps the cursor change.
+                  (list_resp.StatusCode == 429 || list_resp.StatusCode >= 500).as(transient,
+                    state.with(
+                      {
+                        "events": [
+                          {
+                            "error": {
+                              "code": string(list_resp.StatusCode),
+                              "id": list_resp.Status,
+                              "message": "GET " + state.cursor.todo_links[0] + ": " + (
+                                (size(list_resp.Body) != 0) ?
+                                  string(list_resp.Body)
+                                :
+                                  list_resp.Status + " (" + string(list_resp.StatusCode) + ")"
+                              ),
+                            },
+                          },
+                        ],
+                        "cursor": state.cursor.with(
+                          {
+                            "todo_links": tail(state.cursor.todo_links) + (transient ? [state.cursor.todo_links[0]] : []),
+                          }
+                        ),
+                        "want_more": !transient,
+                      }
+                    )
                   )
                 )
               :
