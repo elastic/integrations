@@ -54,6 +54,8 @@ processors:
           if (stripped.startsWith('restored-')) { stripped = stripped.substring(9); }
           def sm = /^shrink-.{4}-(.*)$/.matcher(stripped);
           if (sm.matches()) { stripped = sm.group(1); }
+          def dsm = /^downsample-[^-]+-(.*)$/.matcher(stripped);
+          if (dsm.matches()) { stripped = dsm.group(1); }
           if (stripped.equals(prev)) { break; }
         }
         String cbBase = stripped;
@@ -107,7 +109,7 @@ processors:
         if (idx.datastream == null || idx.datastream == '') {
           String resolvedDs = null;
           if (stripped.startsWith('.ds-')) {
-            def dm = /^\.ds-([^:\s]+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d{6,})?$/.matcher(stripped);
+            def dm = /^\.ds-([^:\s]+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?(?:-\d{6,})?)?$/.matcher(stripped);
             if (dm.matches() && !dm.group(1).startsWith('.')) {
               resolvedDs = dm.group(1);
             }
