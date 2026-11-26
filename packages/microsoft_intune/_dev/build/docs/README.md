@@ -143,7 +143,7 @@ For more information on architectures that can be used for scaling this integrat
 
 ### events
 
-The `events` data stream receives all events from the Event Hub and routes them to the other data streams. It keeps the events whose log category is not routed.
+The `events` data stream receives all events from the Event Hub and routes them to the other data streams. It keeps the events whose log category is not routed. These events are not parsed: the raw event is in `message`, and also in `event.original` when **Preserve original event** is enabled or when the event is not valid JSON.
 
 {{fields "events"}}
 

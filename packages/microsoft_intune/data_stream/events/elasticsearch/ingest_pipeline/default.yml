@@ -56,6 +56,21 @@ processors:
       ignore_empty_value: true
       description: Keeps the log category on events that are not routed to another data stream.
       if: ctx.event?.dataset != 'microsoft_intune.audit' && ctx.event?.dataset != 'microsoft_intune.managed_device'
+  - set:
+      field: event.original
+      tag: set_event_original_from_message_7c3e0b54
+      copy_from: message
+      ignore_empty_value: true
+      description: >-
+        Keeps a raw copy in event.original when Preserve original event is enabled, for events that
+        stay in this data stream. The message field is kept as well, because it is the only
+        searchable content of these events. For routed events, the pipeline of the target data
+        stream sets event.original.
+      if: >-
+        ctx.event?.original == null &&
+        ctx.event?.dataset != 'microsoft_intune.audit' &&
+        ctx.event?.dataset != 'microsoft_intune.managed_device' &&
+        ctx.tags instanceof List && ctx.tags.contains('preserve_original_event')
   - remove:
       field: _tmp
       tag: remove_tmp_26da7c12
@@ -77,3 +92,15 @@ on_failure:
       tag: append_tags_279d5a5c
       value: preserve_original_event
       allow_duplicates: false
+  - set:
+      field: event.original
+      tag: set_event_original_from_message_on_failure_d18a4f67
+      copy_from: message
+      ignore_empty_value: true
+      description: Keeps a raw copy of events that failed, as the preserve_original_event tag indicates.
+      if: ctx.event?.original == null && ctx.message != null
+  - remove:
+      field: _tmp
+      tag: remove_tmp_on_failure_5f92c0ad
+      ignore_missing: true
+      description: Removes the temporary field when a processor fails after the message is parsed, for example when the message is JSON but not an object.
