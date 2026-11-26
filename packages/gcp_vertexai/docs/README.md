@@ -378,7 +378,7 @@ An example event for `auditlogs` looks as following:
             "name": "gcp.vertex_ai"
         },
         "request": {
-            "model": "projects/elastic-abs/locations/us-central1/publishers/google/models/gemini-2.0-flash-exp"
+            "model": "gemini-2.0-flash-exp"
         }
     }
 }
@@ -612,12 +612,12 @@ An example event for `prompt_response` looks as following:
         },
         "request": {
             "max_tokens": 8192,
-            "model": "publishers/google/models/gemini-2.5-pro",
+            "model": "gemini-2.5-pro",
             "temperature": 0.0
         },
         "response": {
             "finish_reasons": [
-                "STOP"
+                "stop"
             ],
             "id": "y0S_aMGPArCYqsMPntGNyA4",
             "model": "gemini-2.5-pro"

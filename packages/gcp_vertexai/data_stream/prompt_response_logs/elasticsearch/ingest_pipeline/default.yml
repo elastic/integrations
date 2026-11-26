@@ -49,9 +49,10 @@ processors:
             for (entry in m.entrySet()) {
             def k = entry.getKey();
             def v = entry.getValue();
-            if (v instanceof Map) {
+            boolean opaque = k == 'args' || k == 'response' || k == 'parameters' || k == 'parametersJsonSchema' || k == 'responseJsonSchema';
+            if (!opaque && v instanceof Map) {
                 v = keysToSnakeCase(v);
-            } else if (v instanceof List) {
+            } else if (!opaque && v instanceof List) {
                 for (int i = 0; i < v.size(); i++) {
                 def item = v.get(i);
                 if (item instanceof Map) {
@@ -72,21 +73,25 @@ processors:
             ctx.gcp.vertexai.prompt_response_logs.full_response = keysToSnakeCase(ctx.gcp.vertexai.prompt_response_logs.full_response);
         }
 
-  - pipeline:
-      name: '{{ IngestPipeline "genai" }}'
-      tag: pipeline_genai
   # Remove null and empty values recursively
   - script:
       lang: painless
       description: Drops null/empty values recursively.
       tag: painless_remove_null
       source: |-
+        boolean opaque(def key) {
+          return key == 'args' || key == 'arguments' || key == 'response' || key == 'parameters' || key == 'parametersJsonSchema' || key == 'parameters_json_schema' || key == 'responseJsonSchema' || key == 'response_json_schema';
+        }
         boolean drop(Object object) {
           if (object == null || object == '') {
             return true;
           } else if (object instanceof Map) {
-            ((Map) object).values().removeIf(v -> drop(v));
-            return (((Map) object).size() == 0);
+            Map m = (Map) object;
+            for (def key : new ArrayList(m.keySet())) {
+              if (opaque(key)) { continue; }
+              if (drop(m.get(key))) { m.remove(key); }
+            }
+            return m.size() == 0;
           } else if (object instanceof List) {
             ((List) object).removeIf(v -> drop(v));
             return (((List) object).length == 0);
@@ -95,6 +100,9 @@ processors:
         }
         drop(ctx);
       ignore_failure: true
+  - pipeline:
+      name: '{{ IngestPipeline "genai" }}'
+      tag: pipeline_genai
 
   # Remove the original gcp.metrics field after processing
   - remove:

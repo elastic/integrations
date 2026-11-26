@@ -102,12 +102,12 @@
                 },
                 "request": {
                     "max_tokens": 8192,
-                    "model": "publishers/google/models/gemini-2.5-pro",
+                    "model": "gemini-2.5-pro",
                     "temperature": 0.0
                 },
                 "response": {
                     "finish_reasons": [
-                        "STOP"
+                        "stop"
                     ],
                     "id": "y0S_aMGPArCYqsMPntGNyA4",
                     "model": "gemini-2.5-pro"
@@ -145,6 +145,13 @@
                         "api_method": "StreamGenerateContent",
                         "full_request": {
                             "contents": [
+                                {
+                                    "parts": [
+                                        {
+                                            "text": "Hi"
+                                        }
+                                    ]
+                                },
                                 {
                                     "parts": [
                                         {
@@ -193,10 +200,25 @@
                                             "name": "get_weather",
                                             "parameters": {
                                                 "properties": {
-                                                    "city": {
+                                                    "postalCode": {
                                                         "type": "string"
                                                     }
                                                 },
+                                                "required": [
+                                                    "postalCode"
+                                                ],
+                                                "type": "object"
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    "function_declarations": [
+                                        {
+                                            "name": "noop",
+                                            "parameters": {
+                                                "properties": {},
+                                                "required": [],
                                                 "type": "object"
                                             }
                                         }
@@ -216,7 +238,10 @@
                                             {
                                                 "function_call": {
                                                     "args": {
-                                                        "city": "Paris"
+                                                        "filter": null,
+                                                        "ids": [],
+                                                        "postalCode": "75001",
+                                                        "query": ""
                                                     },
                                                     "id": "call_1",
                                                     "name": "get_weather"
@@ -242,6 +267,15 @@
             "gen_ai": {
                 "input": {
                     "messages": [
+                        {
+                            "parts": [
+                                {
+                                    "content": "Hi",
+                                    "type": "text"
+                                }
+                            ],
+                            "role": "user"
+                        },
                         {
                             "parts": [
                                 {
@@ -279,7 +313,10 @@
                                 },
                                 {
                                     "arguments": {
-                                        "city": "Paris"
+                                        "filter": null,
+                                        "ids": [],
+                                        "postalCode": "75001",
+                                        "query": ""
                                     },
                                     "id": "call_1",
                                     "name": "get_weather",
@@ -298,7 +335,7 @@
                     "choice": {
                         "count": 1
                     },
-                    "model": "publishers/google/models/gemini-2.0-flash",
+                    "model": "gemini-2.0-flash",
                     "seed": 7,
                     "stop_sequences": [
                         "END"
@@ -309,7 +346,7 @@
                 },
                 "response": {
                     "finish_reasons": [
-                        "STOP"
+                        "stop"
                     ],
                     "id": "resp-weather-1",
                     "model": "gemini-2.0-flash"
@@ -332,10 +369,22 @@
                             "name": "get_weather",
                             "parameters": {
                                 "properties": {
-                                    "city": {
+                                    "postalCode": {
                                         "type": "string"
                                     }
                                 },
+                                "required": [
+                                    "postalCode"
+                                ],
+                                "type": "object"
+                            },
+                            "type": "function"
+                        },
+                        {
+                            "name": "noop",
+                            "parameters": {
+                                "properties": {},
+                                "required": [],
                                 "type": "object"
                             },
                             "type": "function"

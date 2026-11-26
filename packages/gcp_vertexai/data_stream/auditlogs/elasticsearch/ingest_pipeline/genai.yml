@@ -20,9 +20,16 @@ processors:
           ctx.gen_ai = ctx.gen_ai ?: new HashMap();
           ctx.gen_ai.operation = ['name': 'generate_content'];
         }
-  - set:
-      tag: set_gen_ai_request_model_from_resource
-      field: gen_ai.request.model
-      copy_from: gcp.vertexai.audit.resource_name
-      ignore_empty_value: true
+  - script:
+      tag: script_set_gen_ai_request_model_from_resource
+      description: Copy the model id after the last /models/ segment of the audited resource name.
+      lang: painless
       if: ctx.gcp?.vertexai?.audit?.resource_name instanceof String && ctx.gcp.vertexai.audit.resource_name.contains('/models/')
+      source: |
+        def r = ctx.gcp.vertexai.audit.resource_name;
+        def m = r.substring(r.lastIndexOf('/models/') + 8);
+        if (m != '') {
+          ctx.gen_ai = ctx.gen_ai ?: new HashMap();
+          ctx.gen_ai.request = ctx.gen_ai.request ?: new HashMap();
+          ctx.gen_ai.request.model = m;
+        }
