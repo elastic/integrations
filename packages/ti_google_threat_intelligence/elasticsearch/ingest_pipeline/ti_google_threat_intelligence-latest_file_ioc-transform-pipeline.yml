@@ -7,11 +7,12 @@ processors:
   #  1. Flatten the gti_assessment verdict/severity/threat_score objects to their `.value` scalars so
   #     they match the keyword/long types the destination maps for gti.threat.indicator.attributes.*
   #     (renaming the objects as-is would cause an object-vs-keyword conflict and reject the document).
-  #  2. Drop the unbounded/flattened report subtrees (per-engine results, exiftool, sandbox verdicts,
-  #     language-specific analysis) and the relationship graph-navigation subtree so they do not expand
-  #     the shared destination's dynamic mapping toward the 3000-field limit and stall updates for every
-  #     other feed. The relationships data stays on the raw file_feed source docs; the latest-IOC
-  #     enrichment index only needs the indicator fields the detection rules match on.
+  #  2. Allow-list the attributes the shared destination maps and drop everything else (per-engine
+  #     results, exiftool, sandbox verdicts, language-specific report subtrees, relationship graph) so
+  #     new or rare report sections cannot expand the shared destination's dynamic mapping toward the
+  #     3000-field limit and stall updates for every other feed. The full report stays on the raw
+  #     file_feed source docs; the latest-IOC enrichment index only needs the indicator fields the
+  #     detection rules match on.
   - set:
       field: gti.file_feed.attributes.gti_assessment.verdict
       tag: flatten_file_feed_gti_assessment_verdict
@@ -30,62 +31,36 @@ processors:
       copy_from: gti.file_feed.attributes.gti_assessment.threat_score.value
       ignore_empty_value: true
       if: ctx.gti?.file_feed?.attributes?.gti_assessment?.threat_score instanceof Map
+  - script:
+      tag: keep_file_feed_indicator_attributes
+      lang: painless
+      if: ctx.gti?.file_feed?.attributes instanceof Map
+      description: >-
+        Allow-list the attributes the shared File IOC destination maps and drop every other file-report
+        subtree, so new or rare report sections cannot leak into the shared dynamic index. Keep this
+        list in sync with _dev/shared/transform/fields/fields_threatlist.yml.
+      source: |-
+        def keep = ['creation_date', 'first_submission_date', 'gti_assessment',
+          'last_analysis_date', 'last_analysis_stats', 'last_modification_date',
+          'last_submission_date', 'md5', 'meaningful_name', 'names', 'size',
+          'tags', 'times_submitted', 'type_tags', 'vhash'];
+        ctx.gti.file_feed.attributes.keySet().retainAll(keep);
   - remove:
       field:
-        # File-report attributes that are not part of the shared gti.threat.indicator schema the
-        # other source feeds contribute. The full report stays on the raw file_feed source docs;
-        # the shared latest-IOC enrichment index keeps only the common indicator fields (hashes,
-        # gti_assessment, last_analysis_stats, names, size, context_attributes.threat_list_id, ...).
-        - gti.file_feed.attributes.androguard
-        - gti.file_feed.attributes.authentihash
-        - gti.file_feed.attributes.available_tools
-        - gti.file_feed.attributes.bundle_info
-        - gti.file_feed.attributes.contenthash
-        - gti.file_feed.attributes.crowdsourced_ai_results
-        - gti.file_feed.attributes.crowdsourced_ids_results
-        - gti.file_feed.attributes.crowdsourced_ids_stats
-        - gti.file_feed.attributes.crowdsourced_yara_results
-        - gti.file_feed.attributes.detectiteasy
-        - gti.file_feed.attributes.dot_net_assembly
-        - gti.file_feed.attributes.dot_net_guids
-        - gti.file_feed.attributes.downloadable
-        - gti.file_feed.attributes.exiftool
-        - gti.file_feed.attributes.filecondis
+        # gti_assessment is kept whole above, but the destination maps only its scalar `.value` fields
+        # and contributing_factors.gti_confidence_score. Drop the unmapped nested report subtrees.
         - gti.file_feed.attributes.gti_assessment.contributing_factors.associated_malware_configuration
         - gti.file_feed.attributes.gti_assessment.contributing_factors.gavs_detections
         - gti.file_feed.attributes.gti_assessment.contributing_factors.malicious_sandbox_verdict
         - gti.file_feed.attributes.gti_assessment.contributing_factors.matched_malicious_yara
         - gti.file_feed.attributes.gti_assessment.contributing_factors.normalised_categories
         - gti.file_feed.attributes.gti_assessment.gti_description_cards
-        - gti.file_feed.attributes.html_info
-        - gti.file_feed.attributes.javascript_info
-        - gti.file_feed.attributes.last_analysis_results
-        - gti.file_feed.attributes.magic
-        - gti.file_feed.attributes.magika
-        - gti.file_feed.attributes.main_icon
-        - gti.file_feed.attributes.malware_config
-        - gti.file_feed.attributes.packers
-        - gti.file_feed.attributes.pdf_info
-        - gti.file_feed.attributes.pe_info
-        - gti.file_feed.attributes.picklescan
-        - gti.file_feed.attributes.popular_threat_classification
-        - gti.file_feed.attributes.reputation
-        - gti.file_feed.attributes.sandbox_verdicts
-        - gti.file_feed.attributes.sigma_analysis_results
-        - gti.file_feed.attributes.sigma_analysis_stats
-        - gti.file_feed.attributes.sigma_analysis_summary
-        - gti.file_feed.attributes.signature_info
-        - gti.file_feed.attributes.threat_severity
-        - gti.file_feed.attributes.total_votes
-        - gti.file_feed.attributes.trid
-        - gti.file_feed.attributes.type_description
-        - gti.file_feed.attributes.type_tag
-        - gti.file_feed.attributes.unique_sources
-        - gti.file_feed.attributes.vba_info
+        # Sibling objects under gti.file_feed (outside attributes) that the destination does not map.
         - gti.file_feed.context_attributes.download_url
         - gti.file_feed.context_attributes.submitter
+        - gti.file_feed.links
         - gti.file_feed.relationships
-      tag: remove_file_feed_unbounded_report_objects
+      tag: remove_file_feed_non_indicator_objects
       ignore_missing: true
   - rename:
       field: gti.file_feed

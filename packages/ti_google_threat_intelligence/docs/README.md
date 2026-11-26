@@ -4,10 +4,11 @@
 
 [Google Threat Intelligence](https://gtidocs.virustotal.com/) is a security solution that helps organizations detect, analyze, and mitigate threats. It leverages Google's global telemetry, advanced analytics, and vast infrastructure to provide actionable insights. Key features include threat detection, malware and phishing analysis, and real-time threat alerts.
 
-Google Threat Intelligence integration offers support for three APIs:
+Google Threat Intelligence integration offers support for three APIs and a file-based feed:
 1. **[Threat List API](https://gtidocs.virustotal.com/reference/get-hourly-threat-list)** to deliver hourly data chunks. The Threat Lists feature allows customers to consume **Indicators of Compromise (IOCs)** categorized by various threat types.
 2. **[IOC Stream API](https://gtidocs.virustotal.com/reference/get-objects-from-the-ioc-stream)** to deliver various types of **Indicators of Compromise (IOCs)** originating from multiple sources. Depending on the source of the notification, different context-specific attributes are added to the IOCs.
 3. **[Vulnerability API](https://gtidocs.virustotal.com/reference/list-vulnerabilities)** to deliver **Vulnerability** objects enriched with GTI's assessment data, such as CVSS scores, EPSS, exploitation status, and CISA Known Exploited Vulnerabilities (KEV) information. Requires an **Enterprise Plus** subscription.
+4. **[File Feed](https://gtidocs.virustotal.com/reference/file-feeds)** to deliver full file reports as downloadable packages, ingested from files on disk via the filestream input rather than a polling API. Requires a GTI subscription with file feed access. See the [File Feed](#file-feed) section for sourcing and setup.
 
 ## Threat List API Feeds
 
@@ -37,6 +38,8 @@ Customers can access a subset of the available threat lists based on their **Goo
 - **GTI Enterprise+**: Access to all available threat lists
 
 **Note:** The **Vulnerability** data stream is a separate API from the Threat List API above and requires an **Enterprise Plus** subscription.
+
+**Note:** The **File Feed** data stream is a separate, file-based source (not part of the Threat List API) and requires a GTI subscription with file feed access. See the [File Feed](#file-feed) section.
 
 ## Data Streams
 
@@ -427,7 +430,9 @@ An example event for `cryptominer` looks as following:
 
 ### File Feed
 
-This is the `File Feed` dataset. It collects Google Threat Intelligence File Feed records from files on disk using the filestream input. The File Feed is distributed as bzip2-compressed NDJSON; decompress each package to NDJSON on disk before pointing the input at it. Each line is one File Feed object exactly as delivered by Google - a bare JSON object parsed into `gti.file_feed`, with no `{"data": {...}}` wrapper (unlike the threat-list files described above).
+This is the `File Feed` dataset. It collects Google Threat Intelligence File Feed records from files on disk using the filestream input. The File Feed is distributed as bzip2-compressed NDJSON. Decompress each package to NDJSON on disk before pointing the input at it. Each line is one File Feed object exactly as delivered by Google - a bare JSON object parsed into `gti.file_feed`, with no `{"data": {...}}` wrapper (unlike the threat-list files described above).
+
+**Producing the files.** File Feed packages are published by the Google Threat Intelligence [file feed API](https://gtidocs.virustotal.com/reference/file-feeds) (base path `/api/v3/feeds/files/{time}`) as time-based batches, and access requires a GTI subscription with file feed access (verify the exact endpoint, batch granularity, and entitlement against your [GTI documentation](https://gtidocs.virustotal.com/reference/file-feeds)). On a host with API access, download each batch and decompress the bzip2 package to a `.ndjson` file (one File Feed object per line), then copy the files to the host running Elastic Agent and point **Paths** at them, for example `/path/to/file_feed/*.ndjson`.
 
 A record is promoted to `threat.indicator.*` when any of the following is true:
 
@@ -913,16 +918,7 @@ An example event for `file_feed` looks as following:
 | gti.file_feed.attributes.dot_net_assembly.type_definition_list.type_definitions | The type definitions of the type definition list. | keyword |
 | gti.file_feed.attributes.dot_net_assembly.unmanaged_method_list.methods | The methods of the unmanaged method list. | keyword |
 | gti.file_feed.attributes.dot_net_assembly.unmanaged_method_list.name | The name of the unmanaged method list. | keyword |
-| gti.file_feed.attributes.dot_net_assembly.unmanaged_methods.advapi32.dll | The unmanaged methods imported from advapi32.dll by the .NET assembly. | keyword |
-| gti.file_feed.attributes.dot_net_assembly.unmanaged_methods.avicap32.dll | The unmanaged methods imported from avicap32.dll by the .NET assembly. | keyword |
-| gti.file_feed.attributes.dot_net_assembly.unmanaged_methods.kernel32 | The unmanaged methods imported from kernel32 by the .NET assembly. | keyword |
-| gti.file_feed.attributes.dot_net_assembly.unmanaged_methods.key | The unmanaged methods imported from Key by the .NET assembly. | keyword |
-| gti.file_feed.attributes.dot_net_assembly.unmanaged_methods.n_tdll.dll | The unmanaged methods imported from NTdll.dll by the .NET assembly. | keyword |
-| gti.file_feed.attributes.dot_net_assembly.unmanaged_methods.nominal_diameter | The unmanaged methods imported from NominalDiameter by the .NET assembly. | keyword |
-| gti.file_feed.attributes.dot_net_assembly.unmanaged_methods.ntdll.dll | The unmanaged methods imported from ntdll.dll by the .NET assembly. | keyword |
-| gti.file_feed.attributes.dot_net_assembly.unmanaged_methods.pose.cad | The unmanaged methods imported from pose.CAD by the .NET assembly. | keyword |
-| gti.file_feed.attributes.dot_net_assembly.unmanaged_methods.shfolder | The unmanaged methods imported from shfolder by the .NET assembly. | keyword |
-| gti.file_feed.attributes.dot_net_assembly.unmanaged_methods.user32 | The unmanaged methods imported from user32 by the .NET assembly. | keyword |
+| gti.file_feed.attributes.dot_net_assembly.unmanaged_methods | An object mapping each unmanaged module or DLL name to the methods the .NET assembly imports from it. | flattened |
 | gti.file_feed.attributes.dot_net_guids.mvid | The mvid of the .NET assembly. | keyword |
 | gti.file_feed.attributes.dot_net_guids.typelib_id | The typelib id of the .NET assembly. | keyword |
 | gti.file_feed.attributes.downloadable | Whether the file is available for download. | boolean |
@@ -1015,7 +1011,7 @@ An example event for `file_feed` looks as following:
 | gti.file_feed.attributes.gti_assessment.gti_description_cards.technical_evidence.sub_title | The subtitle of the technical evidence GTI assessment description card. | keyword |
 | gti.file_feed.attributes.gti_assessment.gti_description_cards.technical_evidence.title | The title of the technical evidence GTI assessment description card. | keyword |
 | gti.file_feed.attributes.gti_assessment.severity.value | The assessed threat severity level. | keyword |
-| gti.file_feed.attributes.gti_assessment.threat_score.value | The Google Threat Intelligence threat score, derived from the verdict and severity. | float |
+| gti.file_feed.attributes.gti_assessment.threat_score.value | The Google Threat Intelligence threat score, derived from the verdict and severity. | long |
 | gti.file_feed.attributes.gti_assessment.verdict.value | The assessed threat verdict (benign, undetected, suspicious, malicious, or unknown). | keyword |
 | gti.file_feed.attributes.html_info.hrefs | The hrefs of the HTML content. | keyword |
 | gti.file_feed.attributes.html_info.html_meta | An object containing the html meta of the HTML content. | flattened |
@@ -1049,12 +1045,7 @@ An example event for `file_feed` looks as following:
 | gti.file_feed.attributes.html_info.trackers.yandex.id | The id of the Yandex tracker found in the HTML content. | keyword |
 | gti.file_feed.attributes.html_info.trackers.yandex.url | The URL of the Yandex tracker found in the HTML content. | keyword |
 | gti.file_feed.attributes.jar_info.filenames | The filenames of the JAR archive. | keyword |
-| gti.file_feed.attributes.jar_info.files_by_type.ascii | The number of ascii files contained in the JAR archive. | long |
-| gti.file_feed.attributes.jar_info.files_by_type.binary | The number of binary files contained in the JAR archive. | long |
-| gti.file_feed.attributes.jar_info.files_by_type.class | The number of class files contained in the JAR archive. | long |
-| gti.file_feed.attributes.jar_info.files_by_type.elf | The number of elf files contained in the JAR archive. | long |
-| gti.file_feed.attributes.jar_info.files_by_type.pdf | The number of pdf files contained in the JAR archive. | long |
-| gti.file_feed.attributes.jar_info.files_by_type.png | The number of png files contained in the JAR archive. | long |
+| gti.file_feed.attributes.jar_info.files_by_type | An object containing the number of files of each type in the JAR archive. | flattened |
 | gti.file_feed.attributes.jar_info.manifest | The manifest of the JAR archive. | keyword |
 | gti.file_feed.attributes.jar_info.max_date | The max date and time of the JAR archive. | date |
 | gti.file_feed.attributes.jar_info.max_depth | The max depth of the JAR archive. | long |

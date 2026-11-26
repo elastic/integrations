@@ -152,6 +152,28 @@
                                 "data_stream.dataset": "ti_google_threat_intelligence.file_feed"
                             }
                         }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "event.type",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "event.type",
+                            "negate": false,
+                            "params": {
+                                "query": "indicator"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "event.type": "indicator"
+                            }
+                        }
                     }
                 ],
                 "query": {
@@ -307,7 +329,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "This dashboard provides an overview of file indicators collected via the Google Threat Intelligence File Feed, focusing on indicator distribution and threat analysis.\n\nIt tracks total and unique file IOCs (by SHA-256), the malicious subset, and the average threat score. IOCs are broken down by verdict, severity, threat score, file type, threat category, malware family, tags and submitter country. Only records promoted to indicators (above the configured threshold) are stored, so counts reflect actionable file IOCs.\n\n[**Integrations Page**](/app/integrations/detail/ti_google_threat_intelligence/overview)",
+                            "markdown": "This dashboard provides an overview of file indicators collected via the Google Threat Intelligence File Feed, focusing on indicator distribution and threat analysis.\n\nIt tracks total and unique file IOCs (by SHA-256), the malicious subset, and the average threat score. IOCs are broken down by verdict, severity, threat score, file type, threat category, malware family, tags and submitter country. These panels count only records promoted to indicators (`event.type: indicator`), so counts reflect actionable file IOCs. With **Drop records below the indicator threshold** disabled, non-indicator records are also stored under `gti.file_feed.*`, but this dashboard's indicator filter keeps them out of these counts.\n\n[**Integrations Page**](/app/integrations/detail/ti_google_threat_intelligence/overview)",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -2439,6 +2461,11 @@
         {
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
             "type": "index-pattern"
         },
         {

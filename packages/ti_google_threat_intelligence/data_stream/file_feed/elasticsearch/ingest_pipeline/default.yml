@@ -1267,60 +1267,8 @@ processors:
           tag: append_attributes_html_info_scripts_sha256_into_related_hash
           value: '{{{_ingest._value.sha256}}}'
           allow_duplicates: false
-  - convert:
-      field: gti.file_feed.attributes.jar_info.files_by_type.ascii
-      tag: convert_attributes_jar_info_files_by_type_ascii_to_long
-      type: long
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      field: gti.file_feed.attributes.jar_info.files_by_type.binary
-      tag: convert_attributes_jar_info_files_by_type_binary_to_long
-      type: long
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      field: gti.file_feed.attributes.jar_info.files_by_type.class
-      tag: convert_attributes_jar_info_files_by_type_class_to_long
-      type: long
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      field: gti.file_feed.attributes.jar_info.files_by_type.elf
-      tag: convert_attributes_jar_info_files_by_type_elf_to_long
-      type: long
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      field: gti.file_feed.attributes.jar_info.files_by_type.pdf
-      tag: convert_attributes_jar_info_files_by_type_pdf_to_long
-      type: long
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      field: gti.file_feed.attributes.jar_info.files_by_type.png
-      tag: convert_attributes_jar_info_files_by_type_png_to_long
-      type: long
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # jar_info.files_by_type is keyed by an open set of file-type names and is mapped as `flattened`,
+  # so no per-key numeric convert is needed (the counts are stored as-is under the flattened field).
   - date:
       field: gti.file_feed.attributes.jar_info.max_date
       tag: date_attributes_jar_info_max_date
@@ -3043,7 +2991,6 @@ processors:
           ignore_missing: true
   - remove:
       field:
-        - gti.file_feed.attributes.creation_date
         - gti.file_feed.attributes.elf_info.header.abi_version
         - gti.file_feed.attributes.elf_info.header.class
         - gti.file_feed.attributes.elf_info.header.data
@@ -3203,10 +3150,11 @@ processors:
 on_failure:
   - append:
       field: error.message
-      value: |-
-        Processor '{{{_ingest.on_failure_processor_type}}}'
-        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{_ingest.on_failure_processor_tag}}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{_ingest.on_failure_message}}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       tag: set_pipeline_error_to_event_kind

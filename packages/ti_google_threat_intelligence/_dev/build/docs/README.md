@@ -4,10 +4,11 @@
 
 [Google Threat Intelligence](https://gtidocs.virustotal.com/) is a security solution that helps organizations detect, analyze, and mitigate threats. It leverages Google's global telemetry, advanced analytics, and vast infrastructure to provide actionable insights. Key features include threat detection, malware and phishing analysis, and real-time threat alerts.
 
-Google Threat Intelligence integration offers support for three APIs:
+Google Threat Intelligence integration offers support for three APIs and a file-based feed:
 1. **[Threat List API](https://gtidocs.virustotal.com/reference/get-hourly-threat-list)** to deliver hourly data chunks. The Threat Lists feature allows customers to consume **Indicators of Compromise (IOCs)** categorized by various threat types.
 2. **[IOC Stream API](https://gtidocs.virustotal.com/reference/get-objects-from-the-ioc-stream)** to deliver various types of **Indicators of Compromise (IOCs)** originating from multiple sources. Depending on the source of the notification, different context-specific attributes are added to the IOCs.
 3. **[Vulnerability API](https://gtidocs.virustotal.com/reference/list-vulnerabilities)** to deliver **Vulnerability** objects enriched with GTI's assessment data, such as CVSS scores, EPSS, exploitation status, and CISA Known Exploited Vulnerabilities (KEV) information. Requires an **Enterprise Plus** subscription.
+4. **[File Feed](https://gtidocs.virustotal.com/reference/file-feeds)** to deliver full file reports as downloadable packages, ingested from files on disk via the filestream input rather than a polling API. Requires a GTI subscription with file feed access. See the [File Feed](#file-feed) section for sourcing and setup.
 
 ## Threat List API Feeds
 
@@ -37,6 +38,8 @@ Customers can access a subset of the available threat lists based on their **Goo
 - **GTI Enterprise+**: Access to all available threat lists
 
 **Note:** The **Vulnerability** data stream is a separate API from the Threat List API above and requires an **Enterprise Plus** subscription.
+
+**Note:** The **File Feed** data stream is a separate, file-based source (not part of the Threat List API) and requires a GTI subscription with file feed access. See the [File Feed](#file-feed) section.
 
 ## Data Streams
 
@@ -212,7 +215,9 @@ This is the `Cryptominer` dataset.
 
 ### File Feed
 
-This is the `File Feed` dataset. It collects Google Threat Intelligence File Feed records from files on disk using the filestream input. The File Feed is distributed as bzip2-compressed NDJSON; decompress each package to NDJSON on disk before pointing the input at it. Each line is one File Feed object exactly as delivered by Google - a bare JSON object parsed into `gti.file_feed`, with no `{"data": {...}}` wrapper (unlike the threat-list files described above).
+This is the `File Feed` dataset. It collects Google Threat Intelligence File Feed records from files on disk using the filestream input. The File Feed is distributed as bzip2-compressed NDJSON. Decompress each package to NDJSON on disk before pointing the input at it. Each line is one File Feed object exactly as delivered by Google - a bare JSON object parsed into `gti.file_feed`, with no `{"data": {...}}` wrapper (unlike the threat-list files described above).
+
+**Producing the files.** File Feed packages are published by the Google Threat Intelligence [file feed API](https://gtidocs.virustotal.com/reference/file-feeds) (base path `/api/v3/feeds/files/{time}`) as time-based batches, and access requires a GTI subscription with file feed access (verify the exact endpoint, batch granularity, and entitlement against your [GTI documentation](https://gtidocs.virustotal.com/reference/file-feeds)). On a host with API access, download each batch and decompress the bzip2 package to a `.ndjson` file (one File Feed object per line), then copy the files to the host running Elastic Agent and point **Paths** at them, for example `/path/to/file_feed/*.ndjson`.
 
 A record is promoted to `threat.indicator.*` when any of the following is true:
 
