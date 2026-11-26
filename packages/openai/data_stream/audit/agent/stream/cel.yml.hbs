@@ -56,9 +56,11 @@ program: |-
           :
             []
         ),
-        // Records come newest first: move the cursor only after the last page.
+        // Records come newest first: keep the window start until the last page.
         "cursor": {
-          ?"last_timestamp": (body.?has_more.orValue(false) || size(seen) == 0) ?
+          ?"last_timestamp": body.?has_more.orValue(false) ?
+            optional.of(state.?cursor.last_timestamp.orValue(state.start_time))
+          : (size(seen) == 0) ?
             state.?cursor.last_timestamp
           :
             optional.of(max(seen))
