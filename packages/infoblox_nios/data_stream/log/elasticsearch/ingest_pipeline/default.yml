@@ -22,6 +22,14 @@ processors:
       field: host.name
       tag: lowercase_host_name
       ignore_missing: true
+  # host.domain is the appliance's DNS domain: the part of the FQDN after the
+  # first dot. A host name without a dot has no domain part.
+  - grok:
+      field: host.name
+      tag: grok_host_domain_from_host_name
+      if: ctx.host?.name instanceof String && ctx.host.name.indexOf('.') > 0 && !ctx.host.name.endsWith('.')
+      patterns:
+        - '^[^.]+\.%{GREEDYDATA:host.domain}$'
   - rename:
       field: _conf.tz_offset
       target_field: event.timezone
