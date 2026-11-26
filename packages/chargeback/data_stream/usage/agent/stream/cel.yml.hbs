@@ -28,6 +28,7 @@ state:
   conf_query_weight: !!int {{query_weight}}
   conf_storage_weight: !!int {{storage_weight}}
   poll_interval: !!str {{escape_string interval}}
+{{!-- _meta.agent.version requires Kibana >= 9.4.0; Kibana 9.2.x/9.3.x and base/cached policies enforce Elastic Agent >= 9.2.0 at runtime via the Filebeat useragent global below. --}}
 {{#if _meta.agent.version}}
 {{#semverSatisfies _meta.agent.version "<9.2.0"}}
   unsupported_agent_version: !!str "{{_meta.agent.version}}"
@@ -43,13 +44,30 @@ redact:
     - proxy_url
 program: |-
   state.with(
-  (state.?unsupported_agent_version.orValue("") != "") ?
+  (state.?unsupported_agent_version.orValue("") != "" ?
+  string(state.unsupported_agent_version)
+  : (
+  string(useragent).trim_space().split(" ")[0].split("/").as(ua_parts,
+  (size(ua_parts) == 2 && ua_parts[1] != "") ?
+  ua_parts[1].as(ua_raw_ver,
+  ua_raw_ver.split("-")[0].split("+")[0].as(ua_core_ver,
+  (ua_core_ver.matches("^[0-9]+\\.[0-9]+\\.[0-9]+$") && int(ua_core_ver.split(".")[0]) > 0 && (
+  int(ua_core_ver.split(".")[0]) < 9 ||
+  (int(ua_core_ver.split(".")[0]) == 9 && int(ua_core_ver.split(".")[1]) < 2) ||
+  (int(ua_core_ver.split(".")[0]) == 9 && int(ua_core_ver.split(".")[1]) == 2 && int(ua_core_ver.split(".")[2]) == 0 && ua_raw_ver.contains("-") && !ua_raw_ver.startsWith("9.2.0-SNAPSHOT"))
+  )) ? ua_raw_ver : ""
+  )
+  )
+  : ""
+  )
+  )).as(unsupported_ver,
+  (unsupported_ver != "") ?
   {
   "events": [dyn({
   "error": {
   "code": "unsupported_agent_version",
   "id": "agent_version_guard",
-  "message": "Unsupported Elastic Agent version " + string(state.unsupported_agent_version) + ": chargeback requires a Fleet-managed Elastic Agent >= 9.2.0",
+  "message": "Unsupported Elastic Agent version " + unsupported_ver + ": chargeback requires a Fleet-managed Elastic Agent >= 9.2.0",
   },
   })],
   "cursor": state.?cursor.orValue({}),
@@ -1618,7 +1636,7 @@ program: |-
   )
   )
   )
-  ))))))))))))))))))))))))))))))))))))))
+  )))))))))))))))))))))))))))))))))))))))
   )
 {{#if tags.length}}
 tags:
