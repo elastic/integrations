@@ -1,0 +1,242 @@
+---
+description: Parse the heterogeneous line formats found in Amazon Bedrock AgentCore `[runtime-logs]` container stdout/stderr streams.
+processors:
+  # --- current SDK (bedrock-agentcore >= 0.1.4) JSON lines ---
+  - json:
+      tag: parse_json_line
+      field: event.original
+      target_field: _tmp.json
+      description: Opportunistically parse JSON log lines. Lines that are not valid JSON are kept as raw text.
+      if: ctx.event?.original != null && ctx.event.original.startsWith('{')
+      on_failure:
+        - remove:
+            tag: remove_invalid_tmp_json
+            field: _tmp.json
+            ignore_missing: true
+            description: The line looked like JSON but did not parse; keep it as raw text.
+
+  - set:
+      tag: set_tmp_sdk_json
+      field: _tmp.sdk_json
+      value: true
+      description: Mark lines that match the bedrock-agentcore SDK RequestContextFormatter JSON shape.
+      if: ctx._tmp?.json instanceof Map && ctx._tmp.json.timestamp instanceof String && ctx._tmp.json.level instanceof String
+
+  - date:
+      tag: date_sdk_json_timestamp
+      field: _tmp.json.timestamp
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      description: Prefer the timestamp carried inside the SDK JSON line over the CloudWatch event time.
+      if: ctx._tmp?.sdk_json == true
+      on_failure:
+        - append:
+            tag: append_date_sdk_json_timestamp_failure
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+
+  - rename:
+      tag: rename_sdk_json_level
+      field: _tmp.json.level
+      target_field: log.level
+      ignore_missing: true
+      if: ctx._tmp?.sdk_json == true
+
+  - rename:
+      tag: rename_sdk_json_logger
+      field: _tmp.json.logger
+      target_field: log.logger
+      ignore_missing: true
+      if: ctx._tmp?.sdk_json == true
+
+  - rename:
+      tag: rename_sdk_json_message
+      field: _tmp.json.message
+      target_field: message
+      ignore_missing: true
+      if: ctx._tmp?.sdk_json == true && ctx._tmp.json.message instanceof String
+
+  - rename:
+      tag: rename_sdk_json_request_id
+      field: _tmp.json.requestId
+      target_field: aws.bedrock_agentcore.runtime_logs.request_id
+      ignore_missing: true
+      if: ctx._tmp?.sdk_json == true
+
+  - set:
+      tag: set_sdk_json_session_id
+      field: aws.bedrock_agentcore.runtime_logs.session_id
+      copy_from: _tmp.json.sessionId
+      description: The session ID inside the line is more specific than one derived from the log stream name.
+      if: ctx._tmp?.sdk_json == true && ctx._tmp.json.sessionId != null
+
+  - rename:
+      tag: rename_sdk_json_error_type
+      field: _tmp.json.errorType
+      target_field: error.type
+      ignore_missing: true
+      if: ctx._tmp?.sdk_json == true
+
+  - rename:
+      tag: rename_sdk_json_error_message
+      field: _tmp.json.errorMessage
+      target_field: aws.bedrock_agentcore.runtime_logs.error_message
+      description: Vendor error text is kept out of ECS error.message, which is reserved for pipeline failures in pipeline tests.
+      ignore_missing: true
+      if: ctx._tmp?.sdk_json == true
+
+  - script:
+      tag: join_sdk_json_stack_trace
+      description: Join the SDK stackTrace string array into the ECS error.stack_trace field.
+      lang: painless
+      if: ctx._tmp?.sdk_json == true && ctx._tmp.json.stackTrace instanceof List
+      source: |-
+        StringBuilder sb = new StringBuilder();
+        for (def item : ctx._tmp.json.stackTrace) {
+          if (item != null) {
+            sb.append(item.toString());
+          }
+        }
+        if (sb.length() > 0) {
+          if (ctx.error == null) {
+            ctx.error = new HashMap();
+          }
+          ctx.error.stack_trace = sb.toString();
+        }
+
+  - rename:
+      tag: rename_sdk_json_location
+      field: _tmp.json.location
+      target_field: aws.bedrock_agentcore.runtime_logs.location
+      ignore_missing: true
+      if: ctx._tmp?.sdk_json == true
+
+  # --- service-written InvokeAgentRuntimeCommand audit line ---
+  - grok:
+      tag: grok_invoke_command_audit_line
+      field: event.original
+      description: Parse the service-written audit line for InvokeAgentRuntimeCommand (`[<epoch-ms>] awsRequestId=<uuid> command=<shell command>`). Non-matching lines stay raw.
+      patterns:
+        - '^\[%{INT:_tmp.audit_epoch_ms}\] awsRequestId=%{UUID:aws.bedrock_agentcore.runtime_logs.request_id} command=(?<process.command_line>[\s\S]*)$'
+        - '^(?<message>[\s\S]*)$'
+      if: ctx._tmp?.json == null && ctx.event?.original != null && ctx.event.original.startsWith('[')
+
+  - date:
+      tag: date_audit_epoch_ms
+      field: _tmp.audit_epoch_ms
+      target_field: '@timestamp'
+      formats:
+        - UNIX_MS
+      description: Prefer the epoch-milliseconds timestamp carried inside the audit line over the CloudWatch event time.
+      if: ctx._tmp?.audit_epoch_ms != null
+      on_failure:
+        - append:
+            tag: append_date_audit_epoch_ms_failure
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+
+  - append:
+      tag: append_event_category_process
+      field: event.category
+      value: process
+      allow_duplicates: false
+      if: ctx._tmp?.audit_epoch_ms != null
+
+  - append:
+      tag: append_event_type_start
+      field: event.type
+      value: start
+      allow_duplicates: false
+      if: ctx._tmp?.audit_epoch_ms != null
+
+  - set:
+      tag: set_event_action_invoke_command
+      field: event.action
+      value: invoke-agent-runtime-command
+      if: ctx._tmp?.audit_epoch_ms != null
+
+  # --- legacy SDK (< 0.1.4) and OTel auto-instrumentation text lines ---
+  - grok:
+      tag: grok_text_line
+      field: event.original
+      description: Parse legacy SDK text lines (`<ts> - <logger> - <LEVEL> - [rid:..] [sid:..] <msg>`) and OTel auto-instrumentation text lines (`<ts> <LEVEL> [<logger>] [<file:line>] [trace_id=..] - <msg>`). Non-matching lines stay raw.
+      patterns:
+        - '^%{TIMESTAMP_ISO8601:_tmp.ts} - %{DATA:log.logger} - %{LOGLEVEL:log.level} - \[rid:%{DATA:aws.bedrock_agentcore.runtime_logs.request_id}\] \[sid:%{DATA:_tmp.text_session_id}\] (?<message>[\s\S]*)$'
+        - '^%{TIMESTAMP_ISO8601:_tmp.ts} %{LOGLEVEL:log.level} \[%{DATA:log.logger}\] \[%{DATA:aws.bedrock_agentcore.runtime_logs.location}\] \[trace_id=%{NOTSPACE:_tmp.trace_id} span_id=%{NOTSPACE:_tmp.span_id}%{DATA}\] - (?<message>[\s\S]*)$'
+        - '^(?<message>[\s\S]*)$'
+      if: ctx._tmp?.json == null && ctx.event?.original != null && !ctx.event.original.startsWith('{') && !ctx.event.original.startsWith('[')
+
+  - date:
+      tag: date_text_line_timestamp
+      field: _tmp.ts
+      target_field: '@timestamp'
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss,SSS'
+      timezone: UTC
+      description: Text line timestamps are UTC without an offset.
+      if: ctx._tmp?.ts != null
+      on_failure:
+        - append:
+            tag: append_date_text_line_timestamp_failure
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+
+  - set:
+      tag: set_text_session_id
+      field: aws.bedrock_agentcore.runtime_logs.session_id
+      copy_from: _tmp.text_session_id
+      description: The session ID inside the line is more specific than one derived from the log stream name.
+      if: ctx._tmp?.text_session_id != null
+
+  - set:
+      tag: set_trace_id
+      field: trace.id
+      copy_from: _tmp.trace_id
+      description: OTel auto-instrumentation writes trace_id=0 when no trace is active.
+      if: ctx._tmp?.trace_id != null && ctx._tmp.trace_id != '0'
+
+  - set:
+      tag: set_span_id
+      field: span.id
+      copy_from: _tmp.span_id
+      if: ctx._tmp?.span_id != null && ctx._tmp.span_id != '0'
+
+  # --- error classification for parsed lines ---
+  - append:
+      tag: append_event_type_error
+      field: event.type
+      value: error
+      allow_duplicates: false
+      if: ctx.event?.type == null && (ctx.error?.type != null || ['ERROR', 'CRITICAL', 'FATAL'].contains(ctx.log?.level))
+
+on_failure:
+  - append:
+      tag: append_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

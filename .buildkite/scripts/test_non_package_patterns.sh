@@ -57,6 +57,7 @@ NON_PACKAGE_PATHS=(
     ".buildkite/scripts/test_check_changelog_entries.sh"
     ".buildkite/scripts/test_helpers.sh"
     ".buildkite/scripts/test_non_package_patterns.sh"
+    ".buildkite/scripts/test_select_shard_packages.sh"
     ".buildkite/scripts/test_trigger_backport.sh"
     ".github/dependabot.yml"
     ".github/stale.yml"

@@ -23,6 +23,14 @@ For detailed docs on setting up the ZPA log receiver, refer to the Zscaler docum
 **Domain or IP**: Use the IP address/hostname of the Elastic Agent  
 **TCP port**: Use the listening port of the Elastic Agent
 
+With the default **Listen Address** of `localhost`, only an App Connector on the same host as the Elastic Agent can deliver logs. Set it to `0.0.0.0`, or to the address of a specific interface, to accept logs from other hosts.
+
+Use one log receiver per log type, pointed at the listening port of the matching data stream. LSS can resend up to 15 minutes of logs after a connection outage, so duplicate records are possible.
+
+### Log templates with `version` and `sourcetype` keys
+
+Data streams whose response format starts with `version` and `sourcetype` keys have an advanced **Require Strict Field/Version Check** setting, which is off by default. When it is on, a record gets an `error.message` if its `version` or `sourcetype` is missing or doesn't match the data stream. Such records are still indexed.
+
 ## Compatibility
 
 This package has been tested against `Zscaler Private Access Client Connector version 3.7.1.44`
@@ -111,6 +119,78 @@ Sample Response:
 {"LogTimestamp":"Fri May 31 17:34:48 2019","Customer":"Customer XYZ","Username":"ZPA LSS Client","SessionID":"vkczUERSLl88Y+ytH8v5","SessionStatus":"ZPN_STATUS_AUTHENTICATED","Version":"19.12.0-36-g87dad18","ZEN":"broker2b.pdx","CertificateCN":"loggerz2x.pde.zpabeta.net","PrivateIP":"","PublicIP":"81.2.69.144","Latitude":45,"Longitude":-119,"CountryCode":"US","TimestampAuthentication":"2019-05-29T21:18:38.000Z","TimestampUnAuthentication":"","TotalBytesRx":31274866,"TotalBytesTx":25424152,"Idp":"IDP Config","Hostname":"DESKTOP-99HCSJ1","Platform":"windows","ClientType":"zpn_client_type_zapp","TrustedNetworks":"TN1_stc1","TrustedNetworksNames":"145248739466696953","SAMLAttributes":"myname:user,myemail:user@zscaler.com","PosturesHit":"sm-posture1,sm-posture2","PosturesMiss":"sm-posture11,sm-posture12","ZENLatitude":47,"ZENLongitude":-122,"ZENCountryCode":""}
 ```
 
+### AppProtection Logs
+
+Default port: _9020_
+
+Vendor documentation: https://help.zscaler.com/zpa/understanding-appprotection-log-fields
+
+Zscaler AppProtection response format (v1):  
+```
+{"version":"v1","sourcetype":"zscaler_zpa.app_protection","LogTimestamp": %j{LogTimestamp:time},"Customer": %j{Customer},"ConnectionID": %j{ConnectionID},"UserID": %j{UserID},"AssistantID": %j{AssistantID},"ExchangeSequenceIndex": %d{ExchangeSequenceIndex},"TimestampRequestReceiveStart": %d{TimestampRequestReceiveStart},"TimestampRequestReceiveHeaderFinish": %d{TimestampRequestReceiveHeaderFinish},"TimestampRequestReceiveFinish": %d{TimestampRequestReceiveFinish},"TimestampRequestTransmitStart": %d{TimestampRequestTransmitStart},"TimestampRequestTransmitFinish": %d{TimestampRequestTransmitFinish},"TimestampResponseReceiveStart": %d{TimestampResponseReceiveStart},"TimestampResponseReceiveFinish": %d{TimestampResponseReceiveFinish},"TimestampResponseTransmitStart": %d{TimestampResponseTransmitStart},"TimestampResponseTransmitFinish": %d{TimestampResponseTransmitFinish},"TotalTimeRequestReceive": %d{TotalTimeRequestReceive},"TotalTimeRequestTransmit": %d{TotalTimeRequestTransmit},"TotalTimeResponseReceive": %d{TotalTimeResponseReceive},"TotalTimeResponseTransmit": %d{TotalTimeResponseTransmit},"Domain": %j{Domain},"Method": %j{Method},"Protocol": %j{Protocol},"ProtocolVersion": %j{ProtocolVersion},"ContentType": %j{ContentType},"ContentEncoding": %j{ContentEncoding},"TransferEncoding": %j{TransferEncoding},"Host": %j{Host},"Destination": %j{Destination},"OriginDomain": %j{OriginDomain},"URL": %j{URL},"UserAgent": %j{UserAgent},"HTTPError": %j{HTTPError},"ClientPublicIp": %j{ClientPublicIp},"ClientPort": %d{ClientPort},"UpgradeHeaderPresent": %d{UpgradeHeaderPresent},"StatusCode": %d{StatusCode},"RequestHdrSize": %d{RequestHdrSize},"ResponseHdrSize": %d{ResponseHdrSize},"RequestBodySize": %d{RequestBodySize},"ResponseBodySize": %d{ResponseBodySize},"Application": %d{Application},"ApplicationGroup": %d{ApplicationGroup},"InspectionPolicy": %d{InspectionPolicy},"InspectionProfile": %d{InspectionProfile},"ParanoiaLevel": %d{ParanoiaLevel},"InspectionControlsHitCount": %d{InspectionControlsHitCount},"InspectionRuleProcessingTime": %d{InspectionRuleProcessingTime},"InspectionReqHeadersProcessingTime": %d{InspectionReqHeadersProcessingTime},"InspectionReqBodyProcessingTime": %d{InspectionReqBodyProcessingTime},"InspectionRespHeadersProcessingTime": %d{InspectionRespHeadersProcessingTime},"InspectionRespBodyProcessingTime": %d{InspectionRespBodyProcessingTime},"CertificateId": %d{CertificateId},"DoubleEncryption": %d{DoubleEncryption},"SSLInspection": %d{SSLInspection},"TotalBytesProcessed": %d{TotalBytesProcessed},"InspectionControls": [%j(,){InspectionControlArray}],"InspectionControlTypes": [%j(,){ControlTypeArray}],"InspectionControlCategories": [%j(,){InspectionControlCategories}],"Actions": [%j(,){Actions}],"Severities": [%j(,){SeveritiesArray}],"Descriptions": [%j(,){DescriptiveExplanationsArray}]}\n
+```
+
+Sample Response: 
+```json
+{"version":"v1","sourcetype":"zscaler_zpa.app_protection","LogTimestamp": "Mon Nov  2 15:32:26 2026","Customer": "Example Corp","ConnectionID": "q7Rk2LmXw9TfB4vNe1Hs,Zp3YdG8uKc+Wj0aQxE5n","UserID": "10000001","AssistantID": "Example Connector-1700000000001","ExchangeSequenceIndex": 0,"TimestampRequestReceiveStart": 1793633546400202,"TimestampRequestReceiveHeaderFinish": 1793633546400227,"TimestampRequestReceiveFinish": 1793633546401233,"TimestampRequestTransmitStart": 0,"TimestampRequestTransmitFinish": 0,"TimestampResponseReceiveStart": 1793633546404520,"TimestampResponseReceiveFinish": 1793633546404612,"TimestampResponseTransmitStart": 0,"TimestampResponseTransmitFinish": 1793633546404684,"TotalTimeRequestReceive": 0,"TotalTimeRequestTransmit": 0,"TotalTimeResponseReceive": 92,"TotalTimeResponseTransmit": 0,"Domain": "dvwa.example.com","Method": "GET","Protocol": "HTTP","ProtocolVersion": "1.1","ContentType": "","ContentEncoding": "","TransferEncoding": "","Host": "dvwa.example.com","Destination": "dvwa.example.com","OriginDomain": "","URL": "/","UserAgent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36","HTTPError": "success","ClientPublicIp": "203.0.113.11","ClientPort": 80,"UpgradeHeaderPresent": 0,"StatusCode": 302,"RequestHdrSize": 364,"ResponseHdrSize": 405,"RequestBodySize": 0,"ResponseBodySize": 0,"Application": 216172782113784001,"ApplicationGroup": 216172782113783942,"InspectionPolicy": 216172782113784010,"InspectionProfile": 216172782113784008,"ParanoiaLevel": 4,"InspectionControlsHitCount": 0,"InspectionRuleProcessingTime": 2798,"InspectionReqHeadersProcessingTime": 964,"InspectionReqBodyProcessingTime": 1758,"InspectionRespHeadersProcessingTime": 34,"InspectionRespBodyProcessingTime": 42,"CertificateId": 0,"DoubleEncryption": 0,"SSLInspection": 0,"TotalBytesProcessed": 0,"InspectionControls": [],"InspectionControlTypes": [],"InspectionControlCategories": [],"Actions": [],"Severities": [],"Descriptions": []}
+```
+
+**Note: AppProtection logs are only produced when the ZPA AppProtection add-on is in use. Records where AppProtection controls were hit are indexed with `event.kind: alert`. This data stream is enabled by default, so upgrading adds a listener on port 9020.**
+
+### Microsegmentation Flow Logs
+
+Default port: _9021_
+
+Vendor documentation: https://help.zscaler.com/zpa/understanding-microsegmentation-flow-log-fields
+
+Zscaler Microsegmentation Flow response format (v1):  
+```
+{"version":"v1","sourcetype":"zscaler_zpa.microsegmentation_flow","LogTimestamp": %j{LogTimestamp:time},"Customer": %j{Customer},"AgentID": %j{AgentID},"AgentName": %j{AgentName},"ResourceID": %j{ResourceID},"ResourceName": %j{ResourceName},"AppZoneID": %j{AppZoneID},"AppZoneName": %j{AppZoneName},"ConnectionStartTime": %j{ConnectionStartTime:iso8601},"SourceIP": %j{SourceIP},"DestinationIP": %j{DestinationIP},"SourcePorts": [%d(,){SourcePorts}],"DestinationPort": %d{DestinationPort},"Protocol": %d{Protocol},"AppName": [%j(,){AppName}],"AppExecutablePath": [%j(,){AppExecutablePath}],"Direction": %j{Direction},"PolicyID": %j{PolicyID},"PolicyName": %j{PolicyName},"EnforcementReason": %j{EnforcementReason},"EnforcementAction": %j{EnforcementAction},"EnforcementDisposition": %j{EnforcementDisposition}}\n
+```
+
+Sample Response: 
+```json
+{"version":"v1","sourcetype":"zscaler_zpa.microsegmentation_flow","LogTimestamp": "Mon Nov  2 15:40:18 2026","Customer": "Example Corp","AgentID": "71234567890123456-98032e15dee3d704713d9a8368a2c50f","AgentName": "srv-app-01.example.com-98032e15dee3d704713d9a8368a2c50f","ResourceID": "71234567890123456-8fe5a00c3ad21356fc301228968e970c","ResourceName": "srv-app-01.example.com","AppZoneID": "71234567890123456-6547eeb570535a78db73d4b2c59cdc01","AppZoneName": "example-zone-app","ConnectionStartTime": "2026-11-02T15:40:13.463Z","SourceIP": "192.0.2.10","DestinationIP": "192.0.2.20","SourcePorts": [45566,45568,45582,45584,45586],"DestinationPort": 1443,"Protocol": 6,"AppName": ["ncat"],"AppExecutablePath": ["/usr/bin/ncat"],"Direction": "OUTBOUND","PolicyID": "71234567890123456-b435222fdcaa2795a9ff0032c27e9181","PolicyName": "example_app_to_api_allow","EnforcementReason": "RULE","EnforcementAction": "ALLOW","EnforcementDisposition": "CONNECTED"}
+```
+
+**Note: Microsegmentation Flow logs are only produced when Zscaler Microsegmentation is provisioned for the tenant. This data stream is enabled by default, so upgrading adds a listener on port 9021.**
+
+### Private Service Edge Status Logs
+
+Default port: _9022_
+
+Vendor documentation: https://help.zscaler.com/zpa/understanding-private-service-edge-status-log-fields
+
+Zscaler Private Service Edge Status response format (v1):  
+```
+{"version":"v1","sourcetype":"zscaler_zpa.private_service_edge_status","LogTimestamp": %j{LogTimestamp:time},"Customer": %j{Customer},"SessionID": %j{SessionID},"SessionType": %j{SessionType},"SessionStatus": %j{SessionStatus},"Version": %j{Version},"PackageVersion": %j{PackageVersion},"Platform": %j{Platform},"ZEN": %j{ZEN},"ServiceEdge": %j{ServiceEdge},"ServiceEdgeGroup": %j{ServiceEdgeGroup},"PrivateIP": %j{PrivateIP},"PublicIP": %j{PublicIP},"Latitude": %f{Latitude},"Longitude": %f{Longitude},"CountryCode": %j{CountryCode},"TimestampAuthentication": %j{TimestampAuthentication:iso8601},"TimestampUnAuthentication": %j{TimestampUnAuthentication:iso8601},"CPUUtilization": %d{CPUUtilization},"MemUtilization": %d{MemUtilization},"InterfaceDefRoute": %j{InterfaceDefRoute},"DefRouteGW": %j{DefRouteGW},"PrimaryDNSResolver": %j{PrimaryDNSResolver},"HostUpTime": %j{HostUpTime},"ServiceEdgeStartTime": %j{ServiceEdgeStartTime},"NumOfInterfaces": %d{NumOfInterfaces},"BytesRxInterface": %d{BytesRxInterface},"PacketsRxInterface": %d{PacketsRxInterface},"ErrorsRxInterface": %d{ErrorsRxInterface},"DiscardsRxInterface": %d{DiscardsRxInterface},"BytesTxInterface": %d{BytesTxInterface},"PacketsTxInterface": %d{PacketsTxInterface},"ErrorsTxInterface": %d{ErrorsTxInterface},"DiscardsTxInterface": %d{DiscardsTxInterface},"TotalBytesRx": %d{TotalBytesRx},"TotalBytesTx": %d{TotalBytesTx},"MicroTenantID": %j{MicroTenantID}}\n
+```
+
+Sample Response: 
+```json
+{"version":"v1","sourcetype":"zscaler_zpa.private_service_edge_status","LogTimestamp": "Wed Dec  1 10:38:41 2021","Customer": "Example Corp","SessionID": "Xk3pQ9vLm2Rt7bNc4WzA","SessionType": "ZPN_TUNNEL_CONTROL","SessionStatus": "ZPN_STATUS_AUTHENTICATED","Version": "21.268.1-341-g71d6f30","PackageVersion": "","Platform": "el7","ZEN": "US-CA-1001","ServiceEdge": "Example PSE-1700000000001","ServiceEdgeGroup": "Example PSE Group","PrivateIP": "10.10.20.15","PublicIP": "198.51.100.40","Latitude": 0.000000,"Longitude": 0.000000,"CountryCode": "","TimestampAuthentication": "2021-12-01T10:34:42.067Z","TimestampUnAuthentication": "","CPUUtilization": 0,"MemUtilization": 3,"InterfaceDefRoute": "","DefRouteGW": "10.10.20.1","PrimaryDNSResolver": "10.10.0.2","HostUpTime": "1636416451","ServiceEdgeStartTime": "1638354879","NumOfInterfaces": 2,"BytesRxInterface": 15435341381,"PacketsRxInterface": 144152768,"ErrorsRxInterface": 0,"DiscardsRxInterface": 2058,"BytesTxInterface": 22304497040,"PacketsTxInterface": 149703945,"ErrorsTxInterface": 0,"DiscardsTxInterface": 0,"TotalBytesRx": 5257,"TotalBytesTx": 7543,"MicroTenantID": "216172782113784200"}
+```
+
+**Note: Private Service Edge Status logs are only produced for Private Service Edges deployed in your environment. This data stream is enabled by default, so upgrading adds a listener on port 9022.**
+
+### Private Cloud Controller Status Logs
+
+Default port: _9023_
+
+Vendor documentation: https://help.zscaler.com/zpa/understanding-private-cloud-controller-status-log-fields
+
+Zscaler Private Cloud Controller Status response format (v1):  
+```
+{"version":"v1","sourcetype":"zscaler_zpa.private_cloud_controller_status","LogTimestamp": %j{LogTimestamp:time},"Customer": %j{Customer},"SessionID": %j{SessionID},"SessionType": %j{SessionType},"SessionStatus": %j{SessionStatus},"Version": %j{Version},"PackageVersion": %j{PackageVersion},"Platform": %j{Platform},"ZEN": %j{ZEN},"PrivateCloudController": %j{SiteController},"PrivateCloudControllerGroup": %j{SiteControllerGroup},"PrivateIP": %j{PrivateIP},"PublicIP": %j{PublicIP},"Latitude": %f{Latitude},"Longitude": %f{Longitude},"CountryCode": %j{CountryCode},"TimestampAuthentication": %j{TimestampAuthentication:iso8601},"TimestampUnAuthentication": %j{TimestampUnAuthentication:iso8601},"CPUUtilization": %d{CPUUtilization},"MemUtilization": %d{MemUtilization},"InterfaceDefRoute": %j{InterfaceDefRoute},"DefRouteGW": %j{DefRouteGW},"PrimaryDNSResolver": %j{PrimaryDNSResolver},"HostUpTime": %j{HostUpTime},"PrivateCloudControllerStartTime": %j{SiteControllerStartTime},"NumOfInterfaces": %d{NumOfInterfaces},"BytesRxInterface": %d{BytesRxInterface},"PacketsRxInterface": %d{PacketsRxInterface},"ErrorsRxInterface": %d{ErrorsRxInterface},"DiscardsRxInterface": %d{DiscardsRxInterface},"BytesTxInterface": %d{BytesTxInterface},"PacketsTxInterface": %d{PacketsTxInterface},"ErrorsTxInterface": %d{ErrorsTxInterface},"DiscardsTxInterface": %d{DiscardsTxInterface},"TotalBytesRx": %d{TotalBytesRx},"TotalBytesTx": %d{TotalBytesTx},"MicroTenantID": %j{MicroTenantID}}\n
+```
+
+Sample Response: 
+```json
+{"version":"v1","sourcetype":"zscaler_zpa.private_cloud_controller_status","LogTimestamp": "Wed Aug 21 09:23:34 2024","Customer": "Example Corp","SessionID": "Qm8sTz2Lw5Yc1Hn6Ve0B","SessionType": "ZPN_TUNNEL_CONTROL","SessionStatus": "ZPN_STATUS_AUTHENTICATED","Version": "24.353.4-230-g1d191f1abe","PackageVersion": "","Platform": "el7","ZEN": "unset","PrivateCloudController": "Example PCC-1","PrivateCloudControllerGroup": "Example PCC Group","PrivateIP": "10.18.11.214","PublicIP": "10.18.11.214","Latitude": 12.971599,"Longitude": 77.594563,"CountryCode": "IN","TimestampAuthentication": "2024-08-21T09:23:34.903Z","TimestampUnAuthentication": "","CPUUtilization": 7,"MemUtilization": 4,"InterfaceDefRoute": "eth0","DefRouteGW": "10.18.0.1","PrimaryDNSResolver": "10.18.0.2","HostUpTime": "1718277251","PrivateCloudControllerStartTime": "1724232211","NumOfInterfaces": 5,"BytesRxInterface": 65413384825,"PacketsRxInterface": 654880671,"ErrorsRxInterface": 0,"DiscardsRxInterface": 0,"BytesTxInterface": 59824288939,"PacketsTxInterface": 652135932,"ErrorsTxInterface": 0,"DiscardsTxInterface": 0,"TotalBytesRx": 1835,"TotalBytesTx": 0,"MicroTenantID": "0"}
+```
+
+**Note: Private Cloud Controller Status logs are only produced when Private Cloud Controllers are deployed for ZPA Business Continuity. This data stream is enabled by default, so upgrading adds a listener on port 9023.**
+
 ## Fields and Sample Event
 
 ### App Connector Status Logs
@@ -119,26 +199,50 @@ Sample Response:
 
 {{event "app_connector_status"}}
 
-## Audit Logs
+### Audit Logs
 
 {{fields "audit"}}
 
 {{event "audit"}}
 
-## Browser Access Logs
+### Browser Access Logs
 
 {{fields "browser_access"}}
 
 {{event "browser_access"}}
 
-## User Activity Logs
+### User Activity Logs
 
 {{fields "user_activity"}}
 
 {{event "user_activity"}}
 
-## User Status Logs
+### User Status Logs
 
 {{fields "user_status"}}
 
 {{event "user_status"}}
+
+### AppProtection Logs
+
+{{fields "app_protection"}}
+
+{{event "app_protection"}}
+
+### Microsegmentation Flow Logs
+
+{{fields "microsegmentation_flow"}}
+
+{{event "microsegmentation_flow"}}
+
+### Private Service Edge Status Logs
+
+{{fields "private_service_edge_status"}}
+
+{{event "private_service_edge_status"}}
+
+### Private Cloud Controller Status Logs
+
+{{fields "private_cloud_controller_status"}}
+
+{{event "private_cloud_controller_status"}}

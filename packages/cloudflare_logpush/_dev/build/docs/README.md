@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, Audit Logs v2, CASB, Device Posture, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, WARP Config Changes, WARP Toggle Changes, Zero Trust Network Session, and Workers Trace Events logs.
+The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, Audit Logs v2, CASB, Device Posture, DEX Application Tests, DEX Device State Events, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, SSH Logs, WARP Config Changes, WARP Toggle Changes, Zero Trust Network Session, and Workers Trace Events logs.
 
 Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
 
@@ -41,10 +41,13 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 - `audit`: Authentication events through Cloudflare Access, plus account-level configuration and administrative actions. See [Audit Logs schema](https://developers.cloudflare.com/logs/reference/log-fields/account/audit_logs/).
 - `casb`: Security issues detected by Cloudflare CASB in connected SaaS applications. See [CASB Findings schema](https://developers.cloudflare.com/logs/reference/log-fields/account/casb_findings/).
 - `device_posture`: Device posture status from the Cloudflare One Client (WARP). See [Device Posture Results schema](https://developers.cloudflare.com/logs/reference/log-fields/account/device_posture_results/).
+- `dex_application_tests`: Cloudflare DEX synthetic application monitoring (HTTP and traceroute) test results from the Cloudflare One Client (WARP). See [DEX Application Tests schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/dex_application_tests/).
+- `dex_device_state_events`: Cloudflare DEX device state telemetry (connectivity, resource usage, and WARP status) from the Cloudflare One Client (WARP). See [DEX Device State Events schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/dex_device_state_events/).
 - `gateway_dns`: DNS queries inspected by Cloudflare Gateway. See [Gateway DNS schema](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_dns/).
 - `gateway_http`: HTTP requests inspected by Cloudflare Gateway. See [Gateway HTTP schema](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_http/).
 - `gateway_network`: Network packets inspected by Cloudflare Gateway. See [Gateway Network schema](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_network/).
 - `network_session`: Network session logs for traffic proxied by Cloudflare Gateway. See [Zero Trust Network Session schema](https://developers.cloudflare.com/logs/reference/log-fields/account/zero_trust_network_sessions/).
+- `ssh_logs`: SSH command logs for Access for Infrastructure targets, including the SSH session and program details and the captured command data. See [SSH Logs schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/ssh_logs/).
 - `warp_config_changes`: WARP configuration switch events from the Cloudflare One Client (WARP), recording the account and configuration a device switched from and to. See [WARP Config Changes schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/warp_config_changes/).
 - `warp_toggle_changes`: WARP on/off toggle events from the Cloudflare One Client (WARP) per device. See [WARP Toggle Changes schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/warp_toggle_changes/).
 
@@ -70,7 +73,8 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 Integrating Cloudflare Logpush with Elastic provides centralized visibility across Cloudflare's edge, Zero Trust, and network-layer products. Common use cases include:
 
 - Investigating traffic, WAF, and DDoS-mitigation events from the Cloudflare edge (`http_request`, `firewall_event`, `network_analytics`).
-- Monitoring Zero Trust user activity, policy decisions, and device posture (`gateway_http`, `gateway_dns`, `gateway_network`, `access_request`, `device_posture`, `network_session`, `warp_config_changes`, `warp_toggle_changes`).
+- Monitoring Zero Trust user activity, policy decisions, and device posture (`gateway_http`, `gateway_dns`, `gateway_network`, `access_request`, `device_posture`, `network_session`, `ssh_logs`, `warp_config_changes`, `warp_toggle_changes`).
+- Monitoring Cloudflare DEX digital experience, synthetic test results, and device health (`dex_application_tests`, `dex_device_state_events`).
 - Detecting data exfiltration and SaaS misconfigurations (`dlp_forensic_copies`, `casb`, `email_security_alerts`).
 - Auditing administrative activity on the Cloudflare account (`audit`, `audit_logs_v2`).
 - Troubleshooting DNS and client-side performance issues (`dns`, `dns_firewall`, `nel_report`, `workers_trace`).
@@ -90,7 +94,7 @@ To use this integration, you must be able to create and manage [Cloudflare Logpu
 Creating and managing Logpush jobs requires an API token or user role with the `Logs Write` permission (or a role that includes it, such as **Super Administrator**, **Administrator**, or **Log Share** with edit permissions). Refer to [Cloudflare Logpush permissions](https://developers.cloudflare.com/logs/logpush/permissions/) for details.
 
 - **Zone-scoped datasets** (for example, `http_requests`, `firewall_events`, `dns_logs`, `spectrum_events`, `nel_reports`, `page_shield_events`) require a **zone-scoped token**.
-- **Account-scoped datasets** (for example, `audit_logs`, `audit_logs_v2`, `access_requests`, `casb_findings`, `device_posture_results`, `dlp_forensic_copies`, `email_security_alerts`, `gateway_*`, `dns_firewall_logs`, `magic_ids_detections`, `network_analytics_logs`, `sinkhole_http_logs`, `workers_trace_events`, `zero_trust_network_sessions`) require an **account-scoped token**.
+- **Account-scoped datasets** (for example, `audit_logs`, `audit_logs_v2`, `access_requests`, `casb_findings`, `device_posture_results`, `dlp_forensic_copies`, `email_security_alerts`, `gateway_*`, `dns_firewall_logs`, `magic_ids_detections`, `network_analytics_logs`, `sinkhole_http_logs`, `ssh_logs`, `workers_trace_events`, `zero_trust_network_sessions`) require an **account-scoped token**.
 - Zero Trust datasets (Access, Gateway, DEX) additionally require `Zero Trust: PII Read`.
 
 **Destination-specific credentials**
@@ -119,32 +123,35 @@ Configure one of the following delivery pipelines before enabling the integratio
 - Configure [Cloudflare Logpush to Amazon S3](https://developers.cloudflare.com/logs/logpush/logpush-job/enable-destinations/aws-s3/) to send Cloudflare's data to an AWS S3 bucket.
 - The default values of the **Bucket Prefix** are listed below. However, users can set the parameter **Bucket Prefix** according to their requirements.
 
-  | Data Stream Name           | Bucket Prefix          |
-  | -------------------------- | ---------------------- |
-  | Access Request             | access_request         |
-  | Audit Logs                 | audit_logs/            |
-  | Audit Logs v2              | audit_logs_v2          |
-  | CASB findings              | casb                   |
-  | Device Posture Results     | device_posture         |
-  | DLP Forensic Copies        | dlp_forensic_copies    |
-  | DNS                        | dns                    |
-  | DNS Firewall               | dns_firewall           |
-  | Email Security Alerts      | email_security_alerts  |
-  | Firewall Event             | firewall_event         |
-  | Gateway DNS                | gateway_dns            |
-  | Gateway HTTP               | gateway_http           |
-  | Gateway Network            | gateway_network        |
-  | HTTP Request               | http_request           |
-  | Magic IDS                  | magic_ids              |
-  | NEL Report                 | nel_report             |
-  | Network Analytics          | network_analytics_logs |
-  | Page Shield Events         | page_shield_events     |
-  | Zero Trust Network Session | network_session        |
-  | Sinkhole HTTP              | sinkhole_http          |
-  | Spectrum Event             | spectrum_event         |
-  | WARP Config Changes        | warp_config_changes    |
-  | WARP Toggle Changes        | warp_toggle_changes    |
-  | Workers Trace Events       | workers_trace          |
+  | Data Stream Name           | Bucket Prefix           |
+  | -------------------------- | ----------------------- |
+  | Access Request             | access_request          |
+  | Audit Logs                 | audit_logs/             |
+  | Audit Logs v2              | audit_logs_v2           |
+  | CASB findings              | casb                    |
+  | Device Posture Results     | device_posture          |
+  | DEX Application Tests      | dex_application_tests   |
+  | DEX Device State Events    | dex_device_state_events |
+  | DLP Forensic Copies        | dlp_forensic_copies     |
+  | DNS                        | dns                     |
+  | DNS Firewall               | dns_firewall            |
+  | Email Security Alerts      | email_security_alerts   |
+  | Firewall Event             | firewall_event          |
+  | Gateway DNS                | gateway_dns             |
+  | Gateway HTTP               | gateway_http            |
+  | Gateway Network            | gateway_network         |
+  | HTTP Request               | http_request            |
+  | Magic IDS                  | magic_ids               |
+  | NEL Report                 | nel_report              |
+  | Network Analytics          | network_analytics_logs  |
+  | Page Shield Events         | page_shield_events      |
+  | Zero Trust Network Session | network_session         |
+  | Sinkhole HTTP              | sinkhole_http           |
+  | Spectrum Event             | spectrum_event          |
+  | SSH Logs                   | ssh_logs                |
+  | WARP Config Changes        | warp_config_changes     |
+  | WARP Toggle Changes        | warp_toggle_changes     |
+  | Workers Trace Events       | workers_trace           |
 
 **Note:** Upgrading the integration does not change a Bucket Prefix that is already saved in a policy. Before version 2.3.0, the default prefix of the Audit Logs data stream was `audit_logs`, which also matches `audit_logs_v2/` objects. If your existing policy uses `audit_logs` and you enable Audit Logs v2 on the same bucket, set the **[S3] Bucket Prefix** of the Audit Logs data stream to `audit_logs/` first, so that Audit Logs v2 objects are not collected twice.
 
@@ -339,6 +346,26 @@ This is the `device_posture` dataset.
 
 {{fields "device_posture"}}
 
+#### dex_application_tests
+
+This is the `dex_application_tests` dataset.
+
+##### Example
+
+{{event "dex_application_tests"}}
+
+{{fields "dex_application_tests"}}
+
+#### dex_device_state_events
+
+This is the `dex_device_state_events` dataset.
+
+##### Example
+
+{{event "dex_device_state_events"}}
+
+{{fields "dex_device_state_events"}}
+
 #### dlp_forensic_copies
 
 This is the `dlp_forensic_copies` dataset.
@@ -498,6 +525,16 @@ This is the `spectrum_event` dataset.
 {{event "spectrum_event"}}
 
 {{fields "spectrum_event"}}
+
+#### ssh_logs
+
+This is the `ssh_logs` dataset.
+
+##### Example
+
+{{event "ssh_logs"}}
+
+{{fields "ssh_logs"}}
 
 #### warp_config_changes
 
