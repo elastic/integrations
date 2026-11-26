@@ -17,7 +17,7 @@ The integration uses the [CEL input](https://www.elastic.co/docs/reference/beats
 - The `vulnerability` data stream pages through scan results that are sorted by `updated_at` and stores the newest timestamp it has seen as its cursor.
 - The `asset` data stream pages through the asset enumeration contents in the same way.
 
-Each data stream saves its cursor only after a full pass has finished. If a pass is interrupted, it starts again from the previous cursor, so no data is lost, but some events can be duplicated.
+Each data stream saves its cursor only after a full pass has finished. The asset stream also persists its current offset so an interrupted pass can resume. Events can be duplicated; asset deletions during an offset-based pass can shift an unseen asset before the next page, causing it to be missed until it is updated again.
 
 Two transforms keep the latest state of each finding and each asset in lookup mode indices. The latest vulnerability index keeps findings of every status, so a finding that changes from `open` to `fixed` is updated in place. Filter on `projectdiscovery.vulnerability.vuln_status` to select current open findings. You can enrich findings with asset context by using an ES|QL `LOOKUP JOIN`.
 
@@ -48,7 +48,7 @@ The integration includes two dashboards. Both are built with ES|QL and share das
 
 ![ProjectDiscovery assets dashboard](../img/projectdiscovery-assets.png)
 
-Trend panels count distinct findings or assets per time bucket on `@timestamp`, which ProjectDiscovery updates on every rescan. A finding or asset therefore appears in each bucket in which it was seen, not only when it was first discovered.
+Current-state panels and tables show retained findings or assets independently of the dashboard time range. Trend panels follow the selected time range and count distinct findings or assets per time bucket on `@timestamp`, which ProjectDiscovery updates on every rescan. A finding or asset therefore appears in each bucket in which it was seen, not only when it was first discovered.
 
 ### Root domain fields
 
@@ -182,9 +182,11 @@ The integration installs two transforms:
 | Transform | Destination alias | Unique key | Retention |
 |---|---|---|---|
 | `latest_cdr_vulnerabilities` | `security_solution-projectdiscovery.vulnerability_latest` | `event.id`, `data_stream.namespace` | 90 days on `@timestamp`. Findings of every status are kept. |
-| `latest_asset` | `logs-projectdiscovery_latest.asset` | `event.dataset`, `entity.id` | 3 days on `entity.last_seen_timestamp` |
+| `latest_asset` | `logs-projectdiscovery_latest.asset` | `event.dataset`, `entity.id`, `data_stream.namespace` | 3 days on `entity.last_seen_timestamp` |
 
-Both destination indices use lookup mode, so you can join them in ES|QL. Findings reference their asset through `projectdiscovery.vulnerability.asset_metadata.id`, which matches `entity.id` in the asset index.
+Both destination indices use lookup mode, so you can join them in ES|QL. Findings reference their asset through `projectdiscovery.vulnerability.asset_metadata.id`, which matches `entity.id` in the asset index. Join on `data_stream.namespace` as well to match assets within the same namespace.
+
+The latest asset transform sorts by `projectdiscovery.asset.updated_at` with microsecond precision. When `updated_at` is missing or empty, the pipeline uses `created_at` if it is valid, including for `entity.last_seen_timestamp`. Since retention uses that field, an asset whose fallback `created_at` is more than 3 days old can be removed from the latest index. If neither timestamp is available, or multiple snapshots share the same fallback timestamp, the latest transform cannot reliably order those snapshots.
 
 `LOOKUP JOIN` replaces every column that also exists in the lookup index, including `@timestamp`, `event.*`, `host.*`, `server.*`, `url.*`, `tls.*` and `cloud.*`. When no asset matches, these columns become `null`. Copy the finding columns you need under new names and keep only those before the join:
 
@@ -192,8 +194,8 @@ Both destination indices use lookup mode, so you can join them in ES|QL. Finding
 FROM logs-projectdiscovery.vulnerability-*
 | WHERE projectdiscovery.vulnerability.asset_metadata.id IS NOT NULL
 | EVAL finding.timestamp = @timestamp, finding.id = event.id, entity.id = projectdiscovery.vulnerability.asset_metadata.id
-| KEEP finding.timestamp, finding.id, entity.id, vulnerability.id, vulnerability.severity, projectdiscovery.vulnerability.vuln_status
-| LOOKUP JOIN logs-projectdiscovery_latest.asset ON entity.id
+| KEEP finding.timestamp, finding.id, entity.id, data_stream.namespace, vulnerability.id, vulnerability.severity, projectdiscovery.vulnerability.vuln_status
+| LOOKUP JOIN logs-projectdiscovery_latest.asset ON entity.id, data_stream.namespace
 | KEEP finding.timestamp, finding.id, vulnerability.id, vulnerability.severity, projectdiscovery.vulnerability.vuln_status, entity.id, entity.name, entity.type, host.ip
 ```
 
@@ -630,7 +632,7 @@ The `asset` data stream provides the asset inventory discovered by ProjectDiscov
 | projectdiscovery.asset.tls_self_signed | Whether the TLS certificate is self-signed. | boolean |
 | projectdiscovery.asset.tls_untrusted | Whether the TLS certificate is untrusted. | boolean |
 | projectdiscovery.asset.type | Type of the asset. | keyword |
-| projectdiscovery.asset.updated_at | Time the asset was last seen by a discovery run (UTC). | date |
+| projectdiscovery.asset.updated_at | Time the asset was last seen by a discovery run (UTC). | date_nanos |
 | projectdiscovery.asset.vulnerabilities | Number of vulnerability findings linked to the asset. | long |
 | projectdiscovery.asset.waf_name | Web application firewall protecting the asset. | keyword |
 | projectdiscovery.asset.webserver | Web server of the asset. | keyword |
@@ -674,22 +676,22 @@ An example event for `asset` looks as following:
 {
     "@timestamp": "2026-03-01T12:00:00.250Z",
     "agent": {
-        "ephemeral_id": "2e672147-210e-4a04-99b6-b18d32564a97",
-        "id": "6b421445-9ab2-4e46-9e68-ca52fb4d1058",
-        "name": "elastic-agent-19879",
+        "ephemeral_id": "aaeb1d05-c525-49f5-a8ea-07265c67f13b",
+        "id": "9eff223a-056f-45ab-b119-9bfa004206ef",
+        "name": "elastic-agent-23670",
         "type": "filebeat",
         "version": "9.5.6"
     },
     "data_stream": {
         "dataset": "projectdiscovery.asset",
-        "namespace": "42606",
+        "namespace": "13533",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "6b421445-9ab2-4e46-9e68-ca52fb4d1058",
+        "id": "9eff223a-056f-45ab-b119-9bfa004206ef",
         "snapshot": false,
         "version": "9.5.6"
     },
@@ -709,7 +711,7 @@ An example event for `asset` looks as following:
         ],
         "dataset": "projectdiscovery.asset",
         "id": "4204700004",
-        "ingested": "2026-11-24T21:47:11Z",
+        "ingested": "2026-11-26T23:42:43Z",
         "kind": "asset",
         "module": "projectdiscovery",
         "original": "{\"asset_hash\":\"c3d4e5f60718293a4b5c6d7e8f90a1b2\",\"created_at\":\"2025-10-15T15:45:00.5Z\",\"domain_name\":\"example.com\",\"enumeration_id\":\"d0abcdefgh1234567890\",\"enumeration_name\":\"example.com\",\"host\":\"mail.example.com\",\"id\":4204700004,\"ip\":[\"192.0.2.25\"],\"is_new\":false,\"name\":\"mail.example.com\",\"port\":7785,\"source_type\":\"dns_passive\",\"technology_details\":{},\"tls_not_after\":\"0001-01-01T00:00:00Z\",\"tls_not_before\":\"0001-01-01T00:00:00Z\",\"updated_at\":\"2026-03-01T12:00:00.25Z\"}",
@@ -885,7 +887,7 @@ An example event for `asset` looks as following:
 | projectdiscovery.asset.tls_self_signed | Whether the TLS certificate is self-signed. | boolean |
 | projectdiscovery.asset.tls_untrusted | Whether the TLS certificate is untrusted. | boolean |
 | projectdiscovery.asset.type | Type of the asset. | keyword |
-| projectdiscovery.asset.updated_at | Time the asset was last seen by a discovery run (UTC). | date |
+| projectdiscovery.asset.updated_at | Time the asset was last seen by a discovery run (UTC). | date_nanos |
 | projectdiscovery.asset.vulnerabilities | Number of vulnerability findings linked to the asset. | long |
 | projectdiscovery.asset.waf_name | Web application firewall protecting the asset. | keyword |
 | projectdiscovery.asset.webserver | Web server of the asset. | keyword |

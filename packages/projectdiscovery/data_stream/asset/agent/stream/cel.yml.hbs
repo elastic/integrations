@@ -68,14 +68,13 @@ program: |-
           }
         ).do_request().as(response,
           (response.StatusCode == 200) ?
-            // try() with a key turns a decoding failure into {"decode_error": <message>}.
-            try(response.Body.decode_json(), "decode_error").as(response_body,
-              (type(response_body) == map && has(response_body.decode_error)) ?
+            response.Body.decode_json().as(response_body,
+              is_error(response_body) ?
                 {
                   "error": {
                     "code": string(response.StatusCode),
-                    "id": string(response.Status),
-                    "message": "GET /v1/asset/enumerate/contents: " + string(response_body.decode_error) + ": " + string(response.Body).substring(0, [size(string(response.Body)), 512].min()),
+                    "id": response.Status,
+                    "message": "GET " + state.url.trim_right("/") + "/v1/asset/enumerate/contents: invalid JSON response: " + try(response_body),
                   },
                 }
               :
@@ -89,8 +88,8 @@ program: |-
                   {
                     "error": {
                       "code": string(response.StatusCode),
-                      "id": string(response.Status),
-                      "message": "GET /v1/asset/enumerate/contents: unexpected response shape: data is not a list: " + string(response.Body).substring(0, [size(string(response.Body)), 512].min()),
+                      "id": response.Status,
+                      "message": "GET " + state.url.trim_right("/") + "/v1/asset/enumerate/contents: unexpected response shape: data is not a list: " + try(response_body),
                     },
                   }
             )
@@ -98,12 +97,12 @@ program: |-
             {
               "error": {
                 "code": string(response.StatusCode),
-                "id": string(response.Status),
-                "message": "GET /v1/asset/enumerate/contents: " + (
+                "id": response.Status,
+                "message": "GET " + state.url.trim_right("/") + "/v1/asset/enumerate/contents: " + (
                   (size(response.Body) != 0) ?
-                    (string(response.Body).substring(0, [size(string(response.Body)), 512].min()))
+                    string(response.Body)
                   :
-                    string(response.Status) + " (" + string(response.StatusCode) + ")"
+                    response.Status + " (" + string(response.StatusCode) + ")"
                 ),
               },
             }

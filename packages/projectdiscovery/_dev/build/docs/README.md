@@ -16,7 +16,7 @@ The integration uses the [CEL input](https://www.elastic.co/docs/reference/beats
 - The `vulnerability` data stream pages through scan results that are sorted by `updated_at` and stores the newest timestamp it has seen as its cursor.
 - The `asset` data stream pages through the asset enumeration contents in the same way.
 
-Each data stream saves its cursor only after a full pass has finished. If a pass is interrupted, it starts again from the previous cursor, so no data is lost, but some events can be duplicated.
+Each data stream saves its cursor only after a full pass has finished. The asset stream also persists its current offset so an interrupted pass can resume. Events can be duplicated; asset deletions during an offset-based pass can shift an unseen asset before the next page, causing it to be missed until it is updated again.
 
 Two transforms keep the latest state of each finding and each asset in lookup mode indices. The latest vulnerability index keeps findings of every status, so a finding that changes from `open` to `fixed` is updated in place. Filter on `projectdiscovery.vulnerability.vuln_status` to select current open findings. You can enrich findings with asset context by using an ES|QL `LOOKUP JOIN`.
 
@@ -47,7 +47,7 @@ The integration includes two dashboards. Both are built with ES|QL and share das
 
 ![ProjectDiscovery assets dashboard](../img/projectdiscovery-assets.png)
 
-Trend panels count distinct findings or assets per time bucket on `@timestamp`, which ProjectDiscovery updates on every rescan. A finding or asset therefore appears in each bucket in which it was seen, not only when it was first discovered.
+Current-state panels and tables show retained findings or assets independently of the dashboard time range. Trend panels follow the selected time range and count distinct findings or assets per time bucket on `@timestamp`, which ProjectDiscovery updates on every rescan. A finding or asset therefore appears in each bucket in which it was seen, not only when it was first discovered.
 
 ### Root domain fields
 
@@ -156,9 +156,11 @@ The integration installs two transforms:
 | Transform | Destination alias | Unique key | Retention |
 |---|---|---|---|
 | `latest_cdr_vulnerabilities` | `security_solution-projectdiscovery.vulnerability_latest` | `event.id`, `data_stream.namespace` | 90 days on `@timestamp`. Findings of every status are kept. |
-| `latest_asset` | `logs-projectdiscovery_latest.asset` | `event.dataset`, `entity.id` | 3 days on `entity.last_seen_timestamp` |
+| `latest_asset` | `logs-projectdiscovery_latest.asset` | `event.dataset`, `entity.id`, `data_stream.namespace` | 3 days on `entity.last_seen_timestamp` |
 
-Both destination indices use lookup mode, so you can join them in ES|QL. Findings reference their asset through `projectdiscovery.vulnerability.asset_metadata.id`, which matches `entity.id` in the asset index.
+Both destination indices use lookup mode, so you can join them in ES|QL. Findings reference their asset through `projectdiscovery.vulnerability.asset_metadata.id`, which matches `entity.id` in the asset index. Join on `data_stream.namespace` as well to match assets within the same namespace.
+
+The latest asset transform sorts by `projectdiscovery.asset.updated_at` with microsecond precision. When `updated_at` is missing or empty, the pipeline uses `created_at` if it is valid, including for `entity.last_seen_timestamp`. Since retention uses that field, an asset whose fallback `created_at` is more than 3 days old can be removed from the latest index. If neither timestamp is available, or multiple snapshots share the same fallback timestamp, the latest transform cannot reliably order those snapshots.
 
 `LOOKUP JOIN` replaces every column that also exists in the lookup index, including `@timestamp`, `event.*`, `host.*`, `server.*`, `url.*`, `tls.*` and `cloud.*`. When no asset matches, these columns become `null`. Copy the finding columns you need under new names and keep only those before the join:
 
@@ -166,8 +168,8 @@ Both destination indices use lookup mode, so you can join them in ES|QL. Finding
 FROM logs-projectdiscovery.vulnerability-*
 | WHERE projectdiscovery.vulnerability.asset_metadata.id IS NOT NULL
 | EVAL finding.timestamp = @timestamp, finding.id = event.id, entity.id = projectdiscovery.vulnerability.asset_metadata.id
-| KEEP finding.timestamp, finding.id, entity.id, vulnerability.id, vulnerability.severity, projectdiscovery.vulnerability.vuln_status
-| LOOKUP JOIN logs-projectdiscovery_latest.asset ON entity.id
+| KEEP finding.timestamp, finding.id, entity.id, data_stream.namespace, vulnerability.id, vulnerability.severity, projectdiscovery.vulnerability.vuln_status
+| LOOKUP JOIN logs-projectdiscovery_latest.asset ON entity.id, data_stream.namespace
 | KEEP finding.timestamp, finding.id, vulnerability.id, vulnerability.severity, projectdiscovery.vulnerability.vuln_status, entity.id, entity.name, entity.type, host.ip
 ```
 

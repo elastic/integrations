@@ -92,6 +92,11 @@ processors:
       value: ProjectDiscovery Cloud Platform
 
   # Timestamps. Asset timestamps are RFC 3339 in UTC.
+  - set:
+      field: _temp.updated_at_present
+      tag: mark_updated_at_present
+      value: true
+      if: ctx.json?.updated_at != null
   - date:
       field: json.updated_at
       tag: date_updated_at_to_timestamp
@@ -110,17 +115,9 @@ processors:
             tag: append_updated_at_error
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      field: json.updated_at
-      tag: date_updated_at
-      target_field: json.updated_at
-      formats:
-        - ISO8601
-      timezone: UTC
-      if: ctx.json?.updated_at != null
-  - date:
       field: json.created_at
       tag: date_created_at
-      target_field: json.created_at
+      target_field: _temp.created_at
       formats:
         - ISO8601
       timezone: UTC
@@ -130,10 +127,26 @@ processors:
             field: json.created_at
             tag: remove_invalid_created_at
             ignore_missing: true
+        - remove:
+            field: _temp.created_at
+            tag: remove_invalid_created_at_temp
+            ignore_missing: true
         - append:
             field: error.message
             tag: append_created_at_error
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: json.updated_at
+      tag: set_updated_at_from_created_at
+      copy_from: json.created_at
+      ignore_empty_value: true
+      if: ctx._temp?.updated_at_present == null && ctx._temp?.created_at != null && ctx.json?.created_at != null
+  - set:
+      field: json.created_at
+      tag: set_normalized_created_at
+      copy_from: _temp.created_at
+      ignore_empty_value: true
+      if: ctx._temp?.created_at != null
 
   # Entity identity.
   - convert:
@@ -187,9 +200,30 @@ processors:
       tag: set_entity_last_seen_timestamp
       copy_from: '@timestamp'
       ignore_empty_value: true
+      if: ctx._temp?.updated_at_present != null || ctx._temp?.created_at == null
       description: >-
         Last time a discovery run observed the asset (`updated_at`).
-        Falls back to the collection time when `updated_at` is missing or invalid.
+        Uses valid `created_at` when `updated_at` is missing or empty, and otherwise
+        falls back to the collection time when `updated_at` is malformed or both
+        source timestamps are unavailable.
+  - set:
+      field: entity.last_seen_timestamp
+      tag: set_entity_last_seen_from_created_at
+      copy_from: _temp.created_at
+      ignore_empty_value: true
+      if: ctx._temp?.updated_at_present == null && ctx._temp?.created_at != null
+      description: Uses the parsed `created_at` timestamp when `updated_at` is missing or empty.
+  - remove:
+      field:
+        - _temp.updated_at_present
+        - _temp.created_at
+      tag: remove_temp_timestamps
+      ignore_missing: true
+  - remove:
+      field: _temp
+      tag: remove_empty_temp
+      ignore_missing: true
+      if: ctx._temp instanceof Map && ctx._temp.isEmpty()
 
   # Host and cloud.
   - rename:
@@ -309,6 +343,11 @@ processors:
       tag: rename_as_name
       target_field: server.as.organization.name
       ignore_missing: true
+  - remove:
+      field: json.asn
+      tag: remove_empty_asn
+      ignore_missing: true
+      if: ctx.json?.asn instanceof Map && ctx.json.asn.isEmpty()
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: host.ip
