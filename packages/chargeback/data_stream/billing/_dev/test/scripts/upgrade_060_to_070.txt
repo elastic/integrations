@@ -46,8 +46,9 @@ remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
 uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
 docker_down cb-mock
 
-# Final stack cleanup so subsequent tests start cleanly.
+# Final stack cleanup and restore the local 0.7.0 package so subsequent test suites can run against it.
 exec sh scripts/cleanup.sh
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
 
 -- scripts/cleanup.sh --
 #!/bin/sh

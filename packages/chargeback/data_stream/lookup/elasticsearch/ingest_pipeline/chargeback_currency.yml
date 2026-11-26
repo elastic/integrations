@@ -2,7 +2,7 @@
 description: Post-process chargeback display currency symbol configuration while preserving manual overrides when Fleet sync is inactive
 processors:
   - script:
-      description: Gate on newest policy-wide sync marker and reject invalid currency writes
+      description: Gate on newest policy-wide sync marker, merge active streams, and default to EUR for usage-only or node_stats-only policies
       lang: painless
       source: |
         // Pass manual operator documents straight through because Fleet sets this pipeline as index.default_pipeline.
@@ -46,18 +46,55 @@ processors:
           return;
         }
 
-        String rawUnit = snapRoot.get('conf_currency_unit') != null ? snapRoot.get('conf_currency_unit').toString().trim() : '';
-        String resolvedUnit = (rawUnit != '') ? rawUnit.toUpperCase(Locale.ROOT) : 'EUR';
-        String rawSym = snapRoot.get('conf_currency_symbol') != null ? snapRoot.get('conf_currency_symbol').toString().trim() : '';
-        if (rawUnit == '' && rawSym == '') {
-          ctx._skip_conf_write = true;
-          return;
+        Map m = [:];
+        if (snapRoot.streams instanceof Map) {
+          boolean anyActiveStream = false;
+          String expectedOwnerKey = snapRoot.get('owner_key') != null ? snapRoot.get('owner_key').toString().trim() : '';
+          Map streamsMap = (Map)snapRoot.streams;
+          for (String ds : ['chargeback.billing', 'chargeback.usage', 'chargeback.node_stats']) {
+            def bucket = streamsMap.get(ds);
+            if (bucket instanceof Map) {
+              def syncFlag = bucket.get('sync');
+              boolean syncEnabled = (syncFlag == null) || syncFlag.toString().equalsIgnoreCase('true');
+              if (syncEnabled) {
+                String bOwner = bucket.get('conf_owner_key') != null ? bucket.get('conf_owner_key').toString().trim() : '';
+                if (bOwner != '') {
+                  if (expectedOwnerKey == '') {
+                    expectedOwnerKey = bOwner;
+                  } else if (!expectedOwnerKey.equals(bOwner)) {
+                    ctx._skip_conf_write = true;
+                    return;
+                  }
+                }
+                anyActiveStream = true;
+                for (def entry : bucket.entrySet()) {
+                  String k = entry.getKey().toString();
+                  if (entry.getValue() != null && k.startsWith('conf_') && k != 'conf_sync_enabled' && k != 'conf_owner_key' && k != 'conf_owner_id' && k != 'conf_policy_id' && k != 'conf_policy_scope') {
+                    m[k] = entry.getValue();
+                  }
+                }
+              }
+            }
+          }
+          if (!anyActiveStream) {
+            ctx._skip_conf_write = true;
+            return;
+          }
+        } else {
+          m = snapRoot;
         }
+
+        String rawUnit = m.get('conf_currency_unit') != null ? m.get('conf_currency_unit').toString().trim() : '';
+        if (rawUnit == '' && m.get('conf_chargeable_unit_rate_unit') != null) {
+          rawUnit = m.get('conf_chargeable_unit_rate_unit').toString().trim();
+        }
+        String resolvedUnit = (rawUnit != '') ? rawUnit.toUpperCase(Locale.ROOT) : 'EUR';
+        String rawSym = m.get('conf_currency_symbol') != null ? m.get('conf_currency_symbol').toString().trim() : '';
         String resolvedSym = (rawSym != '') ? rawSym : (resolvedUnit == 'USD' ? '$' : (resolvedUnit == 'GBP' ? '£' : (resolvedUnit == 'ZAR' ? 'R' : '€')));
 
         long startMillis = 1262304000000L;
         long endMillis = 2430518399999L;
-        String effFrom = snapRoot.get('conf_effective_from') != null ? snapRoot.get('conf_effective_from').toString().trim() : '';
+        String effFrom = m.get('conf_effective_from') != null ? m.get('conf_effective_from').toString().trim() : '';
         if (effFrom != '') {
           try {
             ZonedDateTime parsedEff = effFrom.contains('T') ? ZonedDateTime.parse(effFrom) : ZonedDateTime.parse(effFrom + 'T00:00:00Z');

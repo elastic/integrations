@@ -172,39 +172,91 @@ processors:
         }
   - drop:
       if: "ctx._drop_internal == true"
+  - script:
+      lang: painless
+      tag: build_usage_fingerprint_key
+      if: "ctx.doc_type == 'ai_model' || ctx.doc_type == 'synthetics_monitor' || ctx.elasticsearch?.index?.name != null"
+      source: |
+        String ns = (ctx.data_stream instanceof Map && ctx.data_stream.namespace != null)
+          ? ctx.data_stream.namespace.toString().trim()
+          : (ctx.get('data_stream.namespace') != null ? ctx.get('data_stream.namespace').toString().trim() : 'default');
+        if (ns == '') { ns = 'default'; }
+
+        String polId = '';
+        if (ctx.conf_policy_id != null) { polId = ctx.conf_policy_id.toString().trim(); }
+        else if (ctx.package_policy_id != null) { polId = ctx.package_policy_id.toString().trim(); }
+        else if (ctx.input instanceof Map && ctx.input.package_policy_id != null) { polId = ctx.input.package_policy_id.toString().trim(); }
+        else if (ctx.get('input.package_policy_id') != null) { polId = ctx.get('input.package_policy_id').toString().trim(); }
+        else if (ctx.elastic_agent instanceof Map && ctx.elastic_agent.package_policy_id != null) { polId = ctx.elastic_agent.package_policy_id.toString().trim(); }
+        else if (ctx.get('elastic_agent.package_policy_id') != null) { polId = ctx.get('elastic_agent.package_policy_id').toString().trim(); }
+        else if (ctx.input instanceof Map && ctx.input.id != null) { polId = ctx.input.id.toString().trim(); }
+        else if (ctx.get('input.id') != null) { polId = ctx.get('input.id').toString().trim(); }
+        else if (ctx.elastic_agent instanceof Map && ctx.elastic_agent.policy_id != null) { polId = ctx.elastic_agent.policy_id.toString().trim(); }
+        else if (ctx.get('elastic_agent.policy_id') != null) { polId = ctx.get('elastic_agent.policy_id').toString().trim(); }
+        if (polId == '') { polId = '_default_'; }
+
+        String collectorId = '';
+        if (ctx.agent instanceof Map && ctx.agent.id != null && ctx.agent.id.toString().trim() != '') {
+          collectorId = 'agent:' + ctx.agent.id.toString().trim();
+        } else if (ctx.get('agent.id') != null && ctx.get('agent.id').toString().trim() != '') {
+          collectorId = 'agent:' + ctx.get('agent.id').toString().trim();
+        } else if (ctx.elastic_agent instanceof Map && ctx.elastic_agent.id != null && ctx.elastic_agent.id.toString().trim() != '') {
+          collectorId = 'ea:' + ctx.elastic_agent.id.toString().trim();
+        } else if (ctx.get('elastic_agent.id') != null && ctx.get('elastic_agent.id').toString().trim() != '') {
+          collectorId = 'ea:' + ctx.get('elastic_agent.id').toString().trim();
+        } else if (ctx.host instanceof Map && ctx.host.id != null && ctx.host.id.toString().trim() != '') {
+          collectorId = 'host_id:' + ctx.host.id.toString().trim();
+        } else if (ctx.get('host.id') != null && ctx.get('host.id').toString().trim() != '') {
+          collectorId = 'host_id:' + ctx.get('host.id').toString().trim();
+        } else if (ctx.host instanceof Map && ctx.host.name != null && ctx.host.name.toString().trim() != '') {
+          collectorId = 'host_name:' + ctx.host.name.toString().trim();
+        } else if (ctx.get('host.name') != null && ctx.get('host.name').toString().trim() != '') {
+          collectorId = 'host_name:' + ctx.get('host.name').toString().trim();
+        } else {
+          collectorId = '_default_';
+        }
+
+        String clusterName = (ctx.elasticsearch instanceof Map && ctx.elasticsearch.cluster instanceof Map && ctx.elasticsearch.cluster.name != null)
+          ? ctx.elasticsearch.cluster.name.toString().trim()
+          : (ctx.get('elasticsearch.cluster.name') != null ? ctx.get('elasticsearch.cluster.name').toString().trim() : '');
+        String ts = ctx['@timestamp'] != null ? ctx['@timestamp'].toString().trim() : '';
+        String obsTs = ctx.period_obs_ts != null ? ctx.period_obs_ts.toString().trim() : '';
+        String dtype = ctx.doc_type != null ? ctx.doc_type.toString().trim() : '';
+
+        String fpKey = 'v1|ns=' + ns + '|pol=' + polId + '|col=' + collectorId + '|cluster=' + clusterName + '|ts=' + ts + '|obs=' + obsTs + '|type=' + dtype;
+        if (dtype == 'ai_model') {
+          String modelId = ctx.model_id != null ? ctx.model_id.toString().trim() : '';
+          String taskType = ctx.task_type != null ? ctx.task_type.toString().trim() : '';
+          String intStart = ctx.interval_start != null ? ctx.interval_start.toString().trim() : '';
+          String intEnd = ctx.interval_end != null ? ctx.interval_end.toString().trim() : '';
+          fpKey += '|model=' + modelId + '|task=' + taskType + '|istart=' + intStart + '|iend=' + intEnd;
+        } else if (dtype == 'synthetics_monitor') {
+          String monId = ctx.monitor_id != null ? ctx.monitor_id.toString().trim() : '';
+          String monType = ctx.monitor_type != null ? ctx.monitor_type.toString().trim() : '';
+          String intStart = ctx.interval_start != null ? ctx.interval_start.toString().trim() : '';
+          String intEnd = ctx.interval_end != null ? ctx.interval_end.toString().trim() : '';
+          fpKey += '|mon=' + monId + '|mtype=' + monType + '|istart=' + intStart + '|iend=' + intEnd;
+        } else {
+          String idxName = (ctx.elasticsearch instanceof Map && ctx.elasticsearch.index instanceof Map && ctx.elasticsearch.index.name != null)
+            ? ctx.elasticsearch.index.name.toString().trim()
+            : '';
+          String idxTier = (ctx.elasticsearch instanceof Map && ctx.elasticsearch.index instanceof Map && ctx.elasticsearch.index.tier != null)
+            ? ctx.elasticsearch.index.tier.toString().trim()
+            : '';
+          fpKey += '|idx=' + idxName + '|tier=' + idxTier;
+        }
+        ctx._cb_fp_key = fpKey;
   - fingerprint:
-      if: "ctx.doc_type == 'ai_model' || ctx.doc_type == 'synthetics_monitor'"
+      if: "ctx._cb_fp_key != null"
       fields:
-        - conf_policy_id
-        - agent.id
-        - elastic_agent.id
-        - data_stream.namespace
-        - elasticsearch.cluster.name
-        - "@timestamp"
-        - period_obs_ts
-        - doc_type
-        - model_id
-        - task_type
-        - monitor_id
-        - monitor_type
+        - _cb_fp_key
       target_field: _id
       ignore_missing: true
-      tag: fingerprint_ai_or_synthetics_event
-  - fingerprint:
-      if: "ctx.doc_type != 'ai_model' && ctx.doc_type != 'synthetics_monitor'"
-      fields:
-        - conf_policy_id
-        - data_stream.namespace
-        - elasticsearch.cluster.name
-        - "@timestamp"
-        - period_obs_ts
-        - elasticsearch.index.name
-        - elasticsearch.index.tier
-      target_field: _id
-      ignore_missing: true
-      tag: fingerprint_usage_event
+      tag: fingerprint_usage_or_aux_event
   - remove:
-      field: period_obs_ts
+      field:
+        - _cb_fp_key
+        - period_obs_ts
       ignore_missing: true
 on_failure:
   - set:
