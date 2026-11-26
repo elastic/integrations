@@ -1,6 +1,16 @@
 vars:
   hosts:
     - "oracle://sys:Oradoc_db1@{{Hostname}}:{{Port}}/ORCLCDB.localdomain?sysdba=1"
+# Guard against a run that ingests only the metricbeat failed-fetch error
+# event. Stacks >= 8.15 surface that as a HEALTHY->DEGRADED agent log line
+# and fail the test, but the default PR CI stack (8.13.0) does not, so
+# without this assertion an error-only run passes silently. elastic-package
+# keeps collecting until the field shows up in any ingested document.
+assert:
+  fields_present:
+    # `sum(bytes) FROM v$sgastat WHERE pool = 'shared pool'` is an
+    # unconditional aggregate, so this is emitted on every fetch.
+    - oracle.memory.sga.total_memory
 agent:
   runtime: docker
   provisioning_script:
@@ -47,8 +57,9 @@ agent:
   # for the agent container to report healthy, so a probe that genuinely waited
   # would stall agent startup until it timed out and the Oracle service
   # container would never be created at all.
-  # Oracle readiness is gated by the service healthcheck in
-  # _dev/deploy/docker/docker-compose.yml. See #17894 and #18821 for two
+  # Oracle readiness is gated by the service healthcheck in the
+  # package-level packages/oracle/_dev/deploy/docker/docker-compose.yml,
+  # shared by all five metrics data streams. See #17894 and #18821 for two
   # attempts that could not work, and #22502 for the analysis.
   # The lines below only put the Oracle Instant Client on LD_LIBRARY_PATH and
   # PATH for the agent process, replacing the ENV/WORKDIR of the custom agent
