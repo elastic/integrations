@@ -50,7 +50,16 @@ processors:
         boolean fromLegacyConf = (legacyFlagObj != null) && legacyFlagObj.toString().equalsIgnoreCase('true');
         if (fromLegacyConf && snapRoot.get('legacy_conf') instanceof Map) {
           Map lc = (Map)snapRoot.get('legacy_conf');
-          double lRate = 0.85;
+          boolean fromDestV1 = Boolean.TRUE.equals(lc.get('from_dest_v1'))
+            || (lc.get('from_dest_v1') != null && lc.get('from_dest_v1').toString().equalsIgnoreCase('true'));
+          String manualId = lc.get('manual_id') != null ? lc.get('manual_id').toString().trim() : '';
+          if (manualId != '') {
+            ctx._manual_doc_id = manualId;
+            String origJoinKey = lc.get('config_join_key') != null ? lc.get('config_join_key').toString().trim() : '';
+            ctx.config_join_key = (origJoinKey != '') ? origJoinKey : 'chargeback_config';
+          }
+          boolean isLegacyOnpremKey = 'chargeback_config_onprem'.equals(ctx.config_join_key);
+          double lRate = isLegacyOnpremKey ? 0.00085 : 0.85;
           def rawLRate = lc.get('conf_chargeable_unit_rate') != null ? lc.get('conf_chargeable_unit_rate') : lc.get('conf_ecu_rate');
           try {
             if (rawLRate instanceof Number) {
@@ -162,8 +171,7 @@ processors:
           String lUnit = (rawLUnit != null && rawLUnit.toString().trim() != '') ? rawLUnit.toString().trim().toUpperCase(Locale.ROOT) : 'EUR';
           def rawLSym = lc.get('conf_currency_symbol');
           String lSym = (rawLSym != null && rawLSym.toString().trim() != '') ? rawLSym.toString().trim() : (lUnit == 'USD' ? '$' : (lUnit == 'GBP' ? '£' : (lUnit == 'ZAR' ? 'R' : '€')));
-          boolean isLegacyOnpremKey = 'chargeback_config_onprem'.equals(ctx.config_join_key);
-          ctx.conf_chargeable_unit_rate = isLegacyOnpremKey ? lOnpremRate : lRate;
+          ctx.conf_chargeable_unit_rate = (!fromDestV1 && manualId == '' && isLegacyOnpremKey) ? lOnpremRate : lRate;
           ctx.conf_chargeable_unit_rate_unit = lUnit;
           ctx.conf_currency_symbol = lSym;
           ctx.conf_indexing_weight = lIdxW;
@@ -331,18 +339,26 @@ processors:
       tag: remove_conf_timestamp
   - set:
       field: _id
+      value: "{{{_manual_doc_id}}}"
+      if: "ctx._from_transform == true && ctx._manual_doc_id != null"
+      override: true
+      tag: set_manual_config_document_id
+  - set:
+      field: _id
       value: config
-      if: "ctx._from_transform == true && ctx.config_join_key != 'chargeback_config_onprem'"
+      if: "ctx._from_transform == true && ctx._manual_doc_id == null && ctx.config_join_key != 'chargeback_config_onprem'"
       override: true
       tag: set_config_document_id
   - set:
       field: _id
       value: config_onprem
-      if: "ctx._from_transform == true && ctx.config_join_key == 'chargeback_config_onprem'"
+      if: "ctx._from_transform == true && ctx._manual_doc_id == null && ctx.config_join_key == 'chargeback_config_onprem'"
       override: true
       tag: set_onprem_config_document_id
   - remove:
-      field: _from_transform
+      field:
+        - _from_transform
+        - _manual_doc_id
       ignore_missing: true
       tag: remove_transform_flag
   - set:

@@ -1375,6 +1375,7 @@ inputs:
             "up_checks": { "filter": { "term": { "monitor.status": "up" } } },
             "down_checks": { "filter": { "term": { "monitor.status": "down" } } },
             "locations": { "cardinality": { "field": "observer.geo.name" } },
+            "location_names": { "terms": { "field": "observer.geo.name", "size": 200 } },
             "avg_duration_us": { "avg": { "field": "monitor.duration.us" } },
             },
             },
@@ -1401,6 +1402,9 @@ inputs:
             tb.monitors.buckets.map(b,
             (has(b.doc_count) ? int(b.doc_count) : 0).as(chk_cnt,
             ((has(b.avg_duration_us) && has(b.avg_duration_us.value) && b.avg_duration_us.value != null) ? (double(b.avg_duration_us.value) / 1000.0) : 0.0).as(avg_dur_ms,
+            ((has(b.location_names) && has(b.location_names.buckets) && b.location_names.buckets != null) ?
+            b.location_names.buckets.filter(lb, has(lb.key) && lb.key != null && string(lb.key) != "").map(lb, string(lb.key))
+            : []).as(loc_names,
             dyn({
             "period_start": sw.p_start,
             "period_obs_ts": sw.p_obs,
@@ -1414,11 +1418,12 @@ inputs:
             "check_count": chk_cnt,
             "up_count": (has(b.up_checks) && has(b.up_checks.doc_count)) ? int(b.up_checks.doc_count) : 0,
             "down_count": (has(b.down_checks) && has(b.down_checks.doc_count)) ? int(b.down_checks.doc_count) : 0,
-            "locations_count": (has(b.locations) && has(b.locations.value) && b.locations.value != null) ? int(b.locations.value) : 1,
+            "observer_locations": loc_names,
+            "locations_count": size(loc_names) > 0 ? size(loc_names) : ((has(b.locations) && has(b.locations.value) && b.locations.value != null) ? int(b.locations.value) : 1),
             "average_duration_ms": avg_dur_ms,
             "total_duration_ms": double(chk_cnt) * avg_dur_ms,
             })
-            ))
+            )))
             )
             : [])
             )

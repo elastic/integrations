@@ -24,6 +24,8 @@ processors:
               for (String fk : ['deployment_name', 'deployment_group', 'monitor_name', 'monitor_namespace']) {
                 if (tm.get(fk) != null && tm.get(fk).toString() != '') {
                   ctx[fk] = tm.get(fk).toString();
+                } else if (tm.containsKey(fk)) {
+                  ctx.remove(fk);
                 }
               }
             }
@@ -43,6 +45,11 @@ processors:
             ctx.average_duration_ms = chk > 0L ? (totDur / (double)chk) : maxDur;
             ctx.total_duration_ms = totDur;
             ctx.remove('max_avg_duration_ms');
+            long cardLoc = ctx.distinct_locations_count instanceof Number ? ((Number)ctx.distinct_locations_count).longValue() : 0L;
+            long maxLoc = ctx.max_locations_count instanceof Number ? ((Number)ctx.max_locations_count).longValue() : (ctx.locations_count instanceof Number ? ((Number)ctx.locations_count).longValue() : 0L);
+            ctx.locations_count = cardLoc > 0L ? cardLoc : maxLoc;
+            ctx.remove('distinct_locations_count');
+            ctx.remove('max_locations_count');
           }
           ctx.usage_source = 'native';
         } else {
@@ -56,8 +63,13 @@ processors:
             if (r.get('deployment_name') != null && r.get('deployment_name').toString() != '') {
               ctx.deployment_name = r.get('deployment_name').toString();
             }
-            if (r.get('deployment_group') != null && r.get('deployment_group').toString() != '') {
-              ctx.deployment_group = r.get('deployment_group').toString();
+            if (r.containsKey('deployment_group')) {
+              String rdg = r.get('deployment_group') != null ? r.get('deployment_group').toString() : '';
+              if (rdg != '') {
+                ctx.deployment_group = rdg;
+              } else {
+                ctx.remove('deployment_group');
+              }
             }
             String[] metrics = new String[] { 'sum_indexing_time', 'sum_query_time', 'sum_store_size', 'sum_data_set_store_size' };
             if (ctx.tier != null && r.sel_by_tier instanceof Map) {

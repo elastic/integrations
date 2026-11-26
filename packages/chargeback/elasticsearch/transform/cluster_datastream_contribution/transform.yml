@@ -313,7 +313,7 @@ source:
           } catch (Exception e) {}
           emit('unknown');
 dest:
-  index: chargeback_lookup.dest_cluster_datastream_contribution-1
+  index: chargeback_lookup.dest_cluster_datastream_contribution-2
   aliases:
     - alias: chargeback_lookup.cluster_datastream_contribution
       move_on_creation: true
@@ -353,11 +353,20 @@ pivot:
           state.nat_cnt = 0L;
           state.leg_cnt = 0L;
           state.dep_name = '';
+          state.dep_name_ts = -1L;
+          state.dep_name_ing = -1L;
           state.dep_group = '';
-          state.dep_ts = -1L;
+          state.dep_group_ts = -1L;
+          state.dep_group_ing = -1L;
         map_script: |
           if (!doc.containsKey('@timestamp') || doc['@timestamp'].empty) { return; }
           long ts = doc['@timestamp'].value.toInstant().toEpochMilli();
+          long ingTs = -1L;
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              ingTs = doc['event.ingested'].value.toInstant().toEpochMilli();
+            }
+          } catch (Exception e) {}
           String dn = '';
           for (String dnf : ['deployment_name.keyword', 'deployment_name']) {
             try {
@@ -373,25 +382,31 @@ pivot:
               if (sdn != null && sdn.toString() != '') { dn = sdn.toString(); }
             } catch (Exception e) {}
           }
+          if (dn != '' && (ts > state.dep_name_ts || (ts == state.dep_name_ts && ingTs >= state.dep_name_ing))) {
+            state.dep_name_ts = ts;
+            state.dep_name_ing = ingTs;
+            state.dep_name = dn;
+          }
+          boolean hasDg = false;
           String dg = '';
-          for (String dgf : ['deployment_group.keyword', 'deployment_group']) {
-            try {
-              if (doc.containsKey(dgf) && !doc[dgf].empty) {
-                dg = doc[dgf].value.toString();
-                if (dg != '') { break; }
-              }
-            } catch (Exception e) {}
+          if (params._source != null && params._source.containsKey('deployment_group') && params._source.get('deployment_group') != null) {
+            hasDg = true;
+            dg = params._source.get('deployment_group').toString();
+          } else {
+            for (String dgf : ['deployment_group.keyword', 'deployment_group']) {
+              try {
+                if (doc.containsKey(dgf) && !doc[dgf].empty) {
+                  hasDg = true;
+                  dg = doc[dgf].value.toString();
+                  break;
+                }
+              } catch (Exception e) {}
+            }
           }
-          if (dg == '') {
-            try {
-              def sdg = params._source?.deployment_group;
-              if (sdg != null && sdg.toString() != '') { dg = sdg.toString(); }
-            } catch (Exception e) {}
-          }
-          if ((dn != '' || dg != '') && ts >= state.dep_ts) {
-            state.dep_ts = ts;
-            if (dn != '') { state.dep_name = dn; }
-            if (dg != '') { state.dep_group = dg; }
+          if (hasDg && (ts > state.dep_group_ts || (ts == state.dep_group_ts && ingTs >= state.dep_group_ing))) {
+            state.dep_group_ts = ts;
+            state.dep_group_ing = ingTs;
+            state.dep_group = dg;
           }
           long rem = ts % 86400000L;
           if (rem < 0L) { rem += 86400000L; }
@@ -760,15 +775,27 @@ pivot:
           long legCnt = 0L;
           String bestDepName = '';
           long bestNameTs = -1L;
+          long bestNameIng = -1L;
           String bestDepGroup = '';
           long bestGroupTs = -1L;
+          long bestGroupIng = -1L;
           for (def st : states) {
             if (st == null) { continue; }
-            long stDepTs = (st.dep_ts instanceof Number) ? ((Number)st.dep_ts).longValue() : -1L;
+            long stNameTs = (st.dep_name_ts instanceof Number) ? ((Number)st.dep_name_ts).longValue() : -1L;
+            long stNameIng = (st.dep_name_ing instanceof Number) ? ((Number)st.dep_name_ing).longValue() : -1L;
             String sdn = st.dep_name != null ? st.dep_name.toString() : '';
-            if (sdn != '' && stDepTs >= bestNameTs) { bestNameTs = stDepTs; bestDepName = sdn; }
-            String sdg = st.dep_group != null ? st.dep_group.toString() : '';
-            if (sdg != '' && stDepTs >= bestGroupTs) { bestGroupTs = stDepTs; bestDepGroup = sdg; }
+            if (sdn != '' && stNameTs >= 0L && (stNameTs > bestNameTs || (stNameTs == bestNameTs && stNameIng >= bestNameIng))) {
+              bestNameTs = stNameTs;
+              bestNameIng = stNameIng;
+              bestDepName = sdn;
+            }
+            long stGroupTs = (st.dep_group_ts instanceof Number) ? ((Number)st.dep_group_ts).longValue() : -1L;
+            long stGroupIng = (st.dep_group_ing instanceof Number) ? ((Number)st.dep_group_ing).longValue() : -1L;
+            if (stGroupTs >= 0L && (stGroupTs > bestGroupTs || (stGroupTs == bestGroupTs && stGroupIng >= bestGroupIng))) {
+              bestGroupTs = stGroupTs;
+              bestGroupIng = stGroupIng;
+              bestDepGroup = st.dep_group != null ? st.dep_group.toString() : '';
+            }
             if (st.nat_cnt instanceof Number) { natCnt += ((Number)st.nat_cnt).longValue(); }
             if (st.leg_cnt instanceof Number) { legCnt += ((Number)st.leg_cnt).longValue(); }
             if (st.raw_nat instanceof List) {
@@ -1372,7 +1399,7 @@ pivot:
           res.put('legacy_sum_store_size', rawLeg.get(2));
           res.put('legacy_sum_data_set_store_size', rawLeg.get(3));
           if (bestDepName != '') { res.put('deployment_name', bestDepName); }
-          if (bestDepGroup != '') { res.put('deployment_group', bestDepGroup); }
+          if (bestGroupTs >= 0L) { res.put('deployment_group', bestDepGroup); }
           return res;
 settings:
   align_checkpoints: false
