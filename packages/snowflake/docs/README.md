@@ -150,7 +150,7 @@ In Discover, filter on `event.dataset: snowflake.query_history`, `event.dataset:
 - No data is being collected: Confirm the warehouse can auto-resume, the role has the required SNOWFLAKE database or application roles (or imported privileges), and the account URL is reachable on HTTPS 443. ACCOUNT_USAGE latency means new rows can take up to 45 minutes to 3 hours to appear.
 - `access_history` returns an error: The `ACCESS_HISTORY` view exists only on Enterprise Edition or later. Turn off the data stream on lower editions.
 - Authentication failures: Service users cannot use passwords. Provide a programmatic access token. The integration always sends `X-Snowflake-Authorization-Token-Type: PROGRAMMATIC_ACCESS_TOKEN`.
-- Token creation fails, or the SQL API is blocked by a network policy: A service user must be subject to a network policy that contains at least one network rule before Snowflake will create or accept a programmatic access token. Allow the Elastic Agent egress address on the existing policy, or create one and attach it, then run the token statement again. For an Elastic Managed deployment, use the static egress addresses for your Elastic Cloud region from [Elastic Cloud traffic filtering](https://www.elastic.co/guide/en/cloud/current/ec-traffic-filtering-ip.html). For PrivateLink, allow the endpoint from `SYSTEM$GET_PRIVATELINK_CONFIG()` instead of a public CIDR.
+- Token creation fails, or the SQL API is blocked by a network policy: Snowflake requires a network policy with at least one network rule before it creates or accepts a programmatic access token. Allow the Elastic Agent egress CIDR, or the PrivateLink endpoint from `SYSTEM$GET_PRIVATELINK_CONFIG()`, then retry the token statement.
 
   ```sql
   CREATE DATABASE IF NOT EXISTS ELASTIC_AGENT_DB;
@@ -1145,37 +1145,43 @@ An example event for `login_history` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-29T13:18:07.579Z",
+    "@timestamp": "2020-06-15T08:00:00.123Z",
     "agent": {
-        "ephemeral_id": "33212952-ef99-41a8-92a6-550f998e0b36",
-        "id": "668e68ec-ba14-49d3-bec8-011748ae0b9a",
-        "name": "elastic-agent-81728",
+        "ephemeral_id": "5516fff1-8ecf-4e14-b756-516f327c5883",
+        "id": "2d0e0768-6742-4799-9f4d-ed051ff65975",
+        "name": "elastic-agent-56427",
         "type": "filebeat",
         "version": "9.4.0"
     },
     "data_stream": {
         "dataset": "snowflake.login_history",
-        "namespace": "71092",
+        "namespace": "44418",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "668e68ec-ba14-49d3-bec8-011748ae0b9a",
+        "id": "2d0e0768-6742-4799-9f4d-ed051ff65975",
         "snapshot": false,
         "version": "9.4.0"
     },
-    "error": {
-        "code": "422",
-        "id": "422 Unprocessable Entity",
-        "message": "POST http://svc-snowflake:8090/api/v2/statements?async=true&requestId=e6eed418-8f0e-4718-9b81-83707a867944: {\"code\":\"002003\",\"sqlState\":\"02000\",\"message\":\"SQL compilation error: Object 'SNOWFLAKE.ACCOUNT_USAGE.LOGIN_HISTORY' does not exist or not authorized.\",\"statementHandle\":\"019c06a4-0000-df4f-0000-0010000659ff\"}"
-    },
     "event": {
+        "action": "LOGIN",
         "agent_id_status": "verified",
+        "category": [
+            "authentication"
+        ],
         "dataset": "snowflake.login_history",
-        "ingested": "2026-10-29T13:18:10Z",
-        "module": "snowflake"
+        "id": "1001",
+        "ingested": "2026-09-29T09:48:15Z",
+        "kind": "event",
+        "module": "snowflake",
+        "original": "{\"AUTHORIZING_INTEGRATION_NAME\":null,\"CLIENT_IP\":\"198.51.100.10\",\"CLIENT_PRIVATE_LINK_ID\":null,\"CONNECTION\":null,\"ERROR_CODE\":null,\"ERROR_MESSAGE\":null,\"EVENT_ID\":\"1001\",\"EVENT_TIMESTAMP\":\"2020-06-15 08:00:00.123 +0000\",\"EVENT_TYPE\":\"LOGIN\",\"FIRST_AUTHENTICATION_FACTOR\":\"PASSWORD\",\"IS_SUCCESS\":\"YES\",\"LOGIN_DETAILS\":null,\"REPORTED_CLIENT_TYPE\":\"JDBC_DRIVER\",\"REPORTED_CLIENT_VERSION\":\"3.14.4\",\"SECOND_AUTHENTICATION_FACTOR\":\"MFA_TOKEN\",\"USER_NAME\":\"alice.johnson\"}",
+        "outcome": "success",
+        "type": [
+            "start"
+        ]
     },
     "input": {
         "type": "cel"
@@ -1184,11 +1190,51 @@ An example event for `login_history` looks as following:
         "product": "Snowflake",
         "vendor": "Snowflake"
     },
+    "related": {
+        "ip": [
+            "198.51.100.10"
+        ],
+        "user": [
+            "alice.johnson"
+        ]
+    },
+    "snowflake": {
+        "login_history": {
+            "first_authentication_factor": "PASSWORD",
+            "reported_client_type": "JDBC_DRIVER",
+            "reported_client_version": "3.14.4",
+            "second_authentication_factor": "MFA_TOKEN"
+        }
+    },
+    "source": {
+        "as": {
+            "number": 64501,
+            "organization": {
+                "name": "Documentation ASN"
+            }
+        },
+        "geo": {
+            "city_name": "Amsterdam",
+            "continent_name": "Europe",
+            "country_iso_code": "NL",
+            "country_name": "Netherlands",
+            "location": {
+                "lat": 52.37404,
+                "lon": 4.88969
+            },
+            "region_iso_code": "NL-NH",
+            "region_name": "North Holland"
+        },
+        "ip": "198.51.100.10"
+    },
     "tags": [
         "preserve_original_event",
         "forwarded",
         "snowflake-login_history"
-    ]
+    ],
+    "user": {
+        "name": "alice.johnson"
+    }
 }
 ```
 
