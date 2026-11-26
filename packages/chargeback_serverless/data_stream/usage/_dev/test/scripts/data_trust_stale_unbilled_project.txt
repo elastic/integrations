@@ -98,6 +98,12 @@ stdout '^true$'
 exec jq -r '.chained_ok' alias_targets.json
 stdout '^true$'
 
+exec jq -r '.mappings_ok' alias_targets.json
+stdout '^true$'
+
+exec jq -r '[.docs[].doc._source.datastream] | any(. == "serverless_billing_credits_lines-1" or . == "partial-serverless_billing_credits_lines-1")' e2e_ds_overlap_out.json
+stdout '^false$'
+
 exec jq -r '.docs[0].doc._source | "\(.conf_chargeable_unit_rate)|\(.conf_chargeable_unit_rate_unit)|\(.conf_currency_symbol)"' e2e_conf_out.json
 stdout '^0\.92\|EUR\|€$'
 
@@ -562,22 +568,44 @@ jq -n \
   -H 'Content-Type: application/json' -d @- > lookup_usage_sim.json
 
 
-# Verify installed transforms configure -2 destinations (upgraded from 0.1.0) and -1 (new in 0.2.0) with move_on_creation aliases
+# Ensure all 7 upgraded -2 lookup indices and remaining -1 lookup indices are materialised,
+# then verify -2 / -1 aliases and 0.2.0 field mappings across every upgraded destination.
+for pair in \
+  "serverless_billing_realized_pool_lookup-2:serverless_billing_realized_pool_lookup" \
+  "serverless_datastream_contribution_lookup-2:serverless_datastream_contribution_lookup" \
+  "serverless_billing_credits_lines-1:serverless_billing_credits_lines" \
+  "serverless_chargeback_conf_lookup-1:serverless_chargeback_conf_lookup"; do
+  IDX="${pair%%:*}"
+  AL="${pair##*:}"
+  if ! es_curl "${ES_HOST}/${IDX}" >/dev/null 2>&1; then
+    es_curl -X PUT "${ES_HOST}/${IDX}" -H 'Content-Type: application/json' -d '{"aliases":{"'"${AL}"'":{}}}' >/dev/null
+  fi
+done
 es_curl "${ES_HOST}/_alias/serverless_*" > alias_map.json
 es_curl "${ES_HOST}/_transform/_all" > all_transforms.json
+es_curl "${ES_HOST}/serverless_*_lookup-2/_mapping" > upgraded_mappings.json
 jq -s '
   (.[0]) as $am |
   (.[1].transforms) as $full |
+  (.[2]) as $maps |
   ($full | map({key: .id, value: .dest})) as $ts |
+  def has_alias($idx; $alias):
+    ($am | has($idx)) and ($am[$idx].aliases | has($alias));
   def has_dest($part; $idx; $alias):
     ([$ts[] | select((.key | contains("." + $part + "-")) and .value.index == $idx and any(.value.aliases[]?; .alias == $alias and .move_on_creation == true))] | length) == 1;
   def has_src($part; $src):
     ([$full[] | select((.id | contains("." + $part + "-")) and (.source.index | index($src) != null))] | length) == 1;
+  def prop_type($idx; $field):
+    $maps[$idx].mappings.properties[$field].type;
   {
     upgraded_ok: (
-      ($am | has("serverless_billing_cost_lookup-2")) and
-      ($am | has("serverless_project_status_lookup-2")) and
-      ($am | has("serverless_project_contribution_lookup-2")) and
+      has_alias("serverless_billing_cost_lookup-2"; "serverless_billing_cost_lookup") and
+      has_alias("serverless_billing_realized_pool_lookup-2"; "serverless_billing_realized_pool_lookup") and
+      has_alias("serverless_project_status_lookup-2"; "serverless_project_status_lookup") and
+      has_alias("serverless_datastream_contribution_lookup-2"; "serverless_datastream_contribution_lookup") and
+      has_alias("serverless_project_contribution_lookup-2"; "serverless_project_contribution_lookup") and
+      has_alias("serverless_ai_model_contribution_lookup-2"; "serverless_ai_model_contribution_lookup") and
+      has_alias("serverless_synthetics_monitor_contribution_lookup-2"; "serverless_synthetics_monitor_contribution_lookup") and
       has_dest("billing_cost"; "serverless_billing_cost_lookup-2"; "serverless_billing_cost_lookup") and
       has_dest("project_status"; "serverless_project_status_lookup-2"; "serverless_project_status_lookup") and
       has_dest("proj_contrib"; "serverless_project_contribution_lookup-2"; "serverless_project_contribution_lookup") and
@@ -587,6 +615,9 @@ jq -s '
       has_dest("synthetics_contrib"; "serverless_synthetics_monitor_contribution_lookup-2"; "serverless_synthetics_monitor_contribution_lookup")
     ),
     new_ok: (
+      has_alias("serverless_billing_credits_lines-1"; "serverless_billing_credits_lines") and
+      has_alias("serverless_billing_credits_lookup-1"; "serverless_billing_credits_lookup") and
+      has_alias("serverless_chargeback_conf_lookup-1"; "serverless_chargeback_conf_lookup") and
       has_dest("billing_credits_lines"; "serverless_billing_credits_lines-1"; "serverless_billing_credits_lines") and
       has_dest("billing_credits"; "serverless_billing_credits_lookup-1"; "serverless_billing_credits_lookup") and
       has_dest("chargeback_conf"; "serverless_chargeback_conf_lookup-1"; "serverless_chargeback_conf_lookup")
@@ -596,9 +627,23 @@ jq -s '
       has_src("realized_pool"; "serverless_billing_cost_lookup-2") and
       has_src("proj_contrib"; "serverless_datastream_contribution_lookup-2") and
       ([$full[] | ._meta.order] | map(select(. != null)) | unique | length) == 10
+    ),
+    mappings_ok: (
+      prop_type("serverless_billing_cost_lookup-2"; "deployment_group") == "keyword" and
+      prop_type("serverless_billing_cost_lookup-2"; "group_first_seen_at") == "date" and
+      $maps["serverless_billing_cost_lookup-2"].mappings.properties.ess.properties.billing.properties.sku.type == "keyword" and
+      prop_type("serverless_billing_realized_pool_lookup-2"; "deployment_group") == "keyword" and
+      prop_type("serverless_project_status_lookup-2"; "deployment_group") == "keyword" and
+      prop_type("serverless_datastream_contribution_lookup-2"; "deployment_group") == "keyword" and
+      prop_type("serverless_datastream_contribution_lookup-2"; "has_native_usage") == "boolean" and
+      prop_type("serverless_datastream_contribution_lookup-2"; "source_sync_ts") == "date" and
+      prop_type("serverless_project_contribution_lookup-2"; "deployment_group") == "keyword" and
+      prop_type("serverless_ai_model_contribution_lookup-2"; "deployment_group") == "keyword" and
+      prop_type("serverless_synthetics_monitor_contribution_lookup-2"; "deployment_group") == "keyword" and
+      prop_type("serverless_synthetics_monitor_contribution_lookup-2"; "total_duration_ms") == "double"
     )
   }
-' alias_map.json all_transforms.json > alias_targets.json
+' alias_map.json all_transforms.json upgraded_mappings.json > alias_targets.json
 
 # End-to-end transform preview + lookup pipeline verification for non-scripted transforms
 CONF_PIPELINE="logs-chargeback_serverless.lookup-${CURRENT_VERSION}-lookup_conf"
@@ -986,6 +1031,10 @@ es_curl -X POST "${ES_HOST}/cb-e2e-src-overlap/_bulk?refresh=true" -H 'Content-T
 {"@timestamp":"'"${SLOT1_TS}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"monitoring-indices"},"elasticsearch":{"cluster":{"name":"proj-e2e-overlap"},"index":{"name":"legacy-orders-000001","total":{"indexing":{"index_time_in_millis_delta":60},"search":{"query_time_in_millis":150}},"primaries":{"store":{"total_data_set_size_in_bytes":1000}}}}}
 {"index":{}}
 {"@timestamp":"'"${SLOT2_TS}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"monitoring-indices"},"elasticsearch":{"cluster":{"name":"proj-e2e-overlap"},"index":{"name":"legacy-orders-000001","total":{"indexing":{"index_time_in_millis_delta":40},"search":{"query_time_in_millis":200}},"primaries":{"store":{"total_data_set_size_in_bytes":3000}}}}}
+{"index":{}}
+{"@timestamp":"'"${SLOT1_TS}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"monitoring-indices"},"elasticsearch":{"cluster":{"name":"proj-e2e-overlap"},"index":{"name":"serverless_billing_credits_lines-1","total":{"indexing":{"index_time_in_millis_delta":7777},"search":{"query_time_in_millis_delta":7777},"store":{"size_in_bytes":7777777}}}}}
+{"index":{}}
+{"@timestamp":"'"${SLOT1_TS}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"monitoring-indices"},"elasticsearch":{"cluster":{"name":"proj-e2e-overlap"},"index":{"name":"partial-serverless_billing_credits_lines-1","total":{"indexing":{"index_time_in_millis_delta":8888},"search":{"query_time_in_millis_delta":8888},"store":{"size_in_bytes":8888888}}}}}
 ' >/dev/null
 run_preview_and_sim "ds_contrib" "cb-e2e-src-overlap" "${USAGE_PIPELINE}" "e2e_ds_overlap_out.json"
 es_curl -X PUT "${ES_HOST}/cb-e2e-ds-stage1" -H 'Content-Type: application/json' -d '{

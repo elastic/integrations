@@ -726,7 +726,7 @@ program: |-
   !row.index.contains("logs-chargeback_serverless.") &&
   !row.index.contains("metrics-chargeback.") &&
   !row.index.contains("logs-chargeback.") &&
-  !row.index.matches("^(?:partial-|restored-|shrink-.{4}-)*(?:\\.ds-ilm-history|ilm-history|monitoring-indices|chargeback_lookup\\.|serverless_.*_lookup(?:-[0-9]+)?$)")
+  !row.index.matches("^(?:partial-|restored-|shrink-.{4}-)*(?:\\.ds-ilm-history|ilm-history|monitoring-indices|chargeback_lookup\\.|serverless_billing_credits_lines(?:-[0-9]+)?$|serverless_.*_lookup(?:-[0-9]+)?$)")
   ).map(row,
   string(row.index).as(raw_idx,
   (raw_idx.startsWith("partial-") ? raw_idx.substring(8, size(raw_idx)) : raw_idx).as(s1,
@@ -1370,6 +1370,7 @@ program: |-
   }
   })],
   "cursor": {
+  "cursor_version": int(state.?cursor.cursor_version.orValue(0)),
   "last_day": state.?cursor.last_day.orValue(""),
   "pending_day": day_ts,
   "pending_retries": state.?cursor.pending_day.orValue("") == day_ts ? int(state.?cursor.pending_retries.orValue(0)) : 0,

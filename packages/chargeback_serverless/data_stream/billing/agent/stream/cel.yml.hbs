@@ -225,7 +225,7 @@ program: |-
   timestamp("2023-01-01T00:00:00Z")
   ).as(initial_from,
   (!is_continuation && state.?cursor.last_to.hasValue() && !state.?cursor.backfill_complete.hasValue()).as(is_v1_cursor,
-  (is_v1_cursor ? initial_from : max(
+  (is_v1_cursor ? max(initial_from, (now - duration("8760h")).format(time_layout.DateOnly).parse_time(time_layout.DateOnly)) : max(
   state.?cursor.last_to.optMap(ts, (type(ts) == string) ? timestamp(ts) : ts).orValue(
   initial_from
   ).format(
