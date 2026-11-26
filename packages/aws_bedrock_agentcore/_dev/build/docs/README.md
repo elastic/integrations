@@ -19,6 +19,11 @@ The Amazon Bedrock AgentCore integration collects runtime metrics and observabil
 
 Data streams:
  - `metrics`: Collects Amazon Bedrock AgentCore runtime metrics including invocations, sessions, latency, performance indicators, error rates, throttling metrics, token counts, target execution metrics, and authorization metrics from the following AgentCore components: Agent runtime, Gateway, Memory, Identity, Browser Tool and Code Interpreter.
+ - `runtime_application_logs`: Collects agent runtime application logs (vended `APPLICATION_LOGS`) describing `InvokeAgentRuntime` operations.
+ - `memory_application_logs`: Collects AgentCore Memory application logs (vended `APPLICATION_LOGS`).
+ - `gateway_application_logs`: Collects AgentCore Gateway application logs (vended `APPLICATION_LOGS`).
+ - `code_interpreter_application_logs`: Collects Code Interpreter application logs (vended `APPLICATION_LOGS`) with one record per `InvokeCodeInterpreter` invocation, including the executed code or shell command and its stdout, stderr, and exit code.
+ - `runtime_logs`: Collects agent runtime container logs (stdout/stderr) from the auto-created `/aws/bedrock-agentcore/runtimes/*` CloudWatch log groups, including the service-written audit line for `InvokeAgentRuntimeCommand` shell command executions.
 
 ## What do I need to use this integration?
 
@@ -37,11 +42,11 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 Elastic Agent is required to collect metrics and logs from CloudWatch and ship the data to Elastic, where the events will then be processed through the integration's ingest pipelines.
 
-### Elastic Managed deployment
+### Elastic Managed enabled integration
 
-Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments. Elastic Managed deployments provide a means to ingest data while avoiding the orchestration, management, and maintenance needs associated with standard ingest infrastructure. Using an Elastic Managed deployment makes manual agent deployment unnecessary, allowing you to focus on your data instead of the agent that collects it.
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and [Elastic Managed integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ### How to find the `log_group_arn` (for log-based datasets)
 
@@ -116,3 +121,19 @@ For more details about enabling logs for the AgentCore Gateway, see the [Amazon 
 
 {{event "gateway_application_logs"}}
 {{fields "gateway_application_logs"}}
+
+### Code Interpreter Application Logs
+
+Vended Code Interpreter `APPLICATION_LOGS` (`InvokeCodeInterpreter`). Enable log delivery on custom interpreters in the AgentCore console. See [Configure observability](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/observability-configure.html).
+
+Code Interpreter logs contain the submitted code, shell commands, stdout and file contents verbatim. These can include credentials or other secrets that the sandboxed code reads or prints, so restrict access to this data stream accordingly.
+
+{{event "code_interpreter_application_logs"}}
+{{fields "code_interpreter_application_logs"}}
+
+### Runtime Container Logs
+
+Auto-created runtime container log groups under `/aws/bedrock-agentcore/runtimes/*`. See the [Observability guide](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/observability-view.html).
+
+{{event "runtime_logs"}}
+{{fields "runtime_logs"}}

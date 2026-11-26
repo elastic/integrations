@@ -4,10 +4,11 @@ ESET PROTECT enables you to manage ESET products on workstations and servers in 
 
 ## Data streams
 
-## Agentless Enabled Integration
+## Elastic Managed enabled integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it.
+
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 
 The ESET PROTECT integration collects three types of logs: Detection, Device Task and Event.
@@ -591,7 +592,7 @@ An example event for `event` looks as following:
 | eset_protect.event.group_description | Description of the static group. | keyword |
 | eset_protect.event.group_name | The full path to the static group of the computer generating the event. If the path is longer than 255 characters, group_name only contains the static group name. | keyword |
 | eset_protect.event.handled | Indicates whether or not the detection was handled. | keyword |
-| eset_protect.event.hash | SHA1 hash associated with the event. | keyword |
+| eset_protect.event.hash | SHA1 or SHA256 hash associated with the event. | keyword |
 | eset_protect.event.hostname | Hostname of the computer generating the event. | keyword |
 | eset_protect.event.inbound | Whether or not the connection was inbound. | boolean |
 | eset_protect.event.ipv4 | IPv4 address of the computer generating the event. | ip |

@@ -74,6 +74,25 @@ processors:
     if: ctx.event?.action == 'webinar.started'
     ignore_failure: true
 - date:
+    tag: date_zoom_webinar_end_time_9a7e5d12
+    field: zoom.webinar.end_time
+    target_field: zoom.webinar.end_time
+    formats:
+    - ISO8601
+    if: ctx.zoom?.webinar?.end_time != null
+    on_failure:
+    - remove:
+        tag: remove_zoom_webinar_end_time_c58f0b36
+        field: zoom.webinar.end_time
+        ignore_missing: true
+    - append:
+        tag: append_error_message_b21d6f83
+        field: error.message
+        value: |-
+          Processor '{{{ _ingest.on_failure_processor_type }}}'
+          {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+          {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+- date:
     tag: date_zoom_participant_join_time_to_timestamp_64f9b5aa
     field: zoom.participant.join_time
     target_field: '@timestamp'

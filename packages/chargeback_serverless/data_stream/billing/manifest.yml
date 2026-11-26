@@ -1,0 +1,30 @@
+title: "Chargeback Serverless Billing"
+type: metrics
+dataset: chargeback_serverless.billing
+elasticsearch:
+  source_mode: synthetic
+streams:
+  - input: cel
+    title: Serverless Daily Billing
+    description: Collect daily billing information from Elasticsearch Service billing API.
+    template_path: cel.yml.hbs
+    enabled: true
+    vars:
+      - name: lookbehind
+        type: integer
+        title: Billing Lookbehind Days
+        description: >-
+          Number of historical days of billing data to backfill on initial install (default: 60, clamped to 0-365).
+        multi: false
+        required: true
+        show_user: true
+        default: 60
+      - name: interval
+        type: text
+        title: Collection Interval
+        description: >-
+          Polling interval for the CEL billing stream (default: 1h).
+        multi: false
+        required: false
+        show_user: false
+        default: 1h

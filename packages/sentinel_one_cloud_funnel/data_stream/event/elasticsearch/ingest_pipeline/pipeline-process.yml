@@ -314,17 +314,6 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      tag: rename_json_tgt_process_lUserName_to_sentinel_one_cloud_funnel_event_tgt_process_l_user_name_00afd15f
-      field: json.tgt.process.lUserName
-      target_field: sentinel_one_cloud_funnel.event.tgt.process.l_user.name
-      ignore_missing: true
-  - append:
-      tag: append_related_user_3d7736a5
-      field: related.user
-      value: '{{{sentinel_one_cloud_funnel.event.tgt.process.l_user.name}}}'
-      allow_duplicates: false
-      if: ctx.sentinel_one_cloud_funnel?.event?.tgt?.process?.l_user?.name != null
-  - rename:
       tag: rename_json_tgt_process_name_to_sentinel_one_cloud_funnel_event_tgt_process_name_27916ab4
       field: json.tgt.process.name
       target_field: sentinel_one_cloud_funnel.event.tgt.process.name
@@ -376,8 +365,8 @@ processors:
       tag: date_json_tgt_process_startTime_63ee28d5
       target_field: sentinel_one_cloud_funnel.event.tgt.process.start_time
       formats:
-        - ISO8601
         - epoch_millis
+        - ISO8601
       if: ctx.json?.tgt?.process?.startTime != null && ctx.json.tgt.process.startTime != ''
       on_failure:
         - append:
@@ -393,11 +382,6 @@ processors:
       tag: rename_json_tgt_process_subsystem_to_sentinel_one_cloud_funnel_event_tgt_process_subsystem_f2387370
       field: json.tgt.process.subsystem
       target_field: sentinel_one_cloud_funnel.event.tgt.process.subsystem
-      ignore_missing: true
-  - rename:
-      tag: rename_json_tgt_process_uid_to_sentinel_one_cloud_funnel_event_tgt_process_uid_d0b00836
-      field: json.tgt.process.uid
-      target_field: sentinel_one_cloud_funnel.event.tgt.process.uid
       ignore_missing: true
   - rename:
       tag: rename_json_tgt_process_verifiedStatus_to_sentinel_one_cloud_funnel_event_tgt_process_verified_status_99559a2f

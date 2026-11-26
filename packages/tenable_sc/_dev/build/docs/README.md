@@ -2,10 +2,11 @@
 
 The Tenable Security Center integration collects and parses data from the [Tenable Security Center](https://docs.tenable.com/tenablesc/Content/Welcome.htm) APIs.
 
-## Agentless Enabled Integration
+## Elastic Managed enabled integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it.
+
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ## Compatibility
 
@@ -23,6 +24,32 @@ See Tenable's documentation for more information on:
 * [Generating API keys]( https://docs.tenable.com/tenablesc/Content/GenerateAPIKey.htm)
 
 >  Note: The default value is the recommended value for a batch size by Tenable. It can be found under _Advanced Options_ and can be configured as per requirements. A very large value might not work as intended depending on the API and instance limitations.
+
+## Breaking Changes
+
+### Support for Elastic Vulnerability Findings page
+
+Version `3.0.0` of the Tenable Security Center integration adds support for the [Elastic Cloud Security workflow](https://www.elastic.co/docs/solutions/security/cloud/ingest-third-party-cloud-security-data#_ingest_third_party_security_posture_and_vulnerability_data). Vulnerabilities collected from Tenable Security Center are shown on the Elastic [Vulnerability Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page-3) and in the vulnerability insights of the Alert and Entity details flyouts for the affected host.
+
+This update adds an [Elastic Latest Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview) which copies the latest vulnerability findings from source indices matching the pattern `logs-tenable_sc.vulnerability-*` into new destination indices matching the pattern `security_solution-tenable_sc.vulnerability_latest-*`. The Elastic Vulnerability Findings page displays vulnerabilities based on the destination indices. The transform keeps the latest copy of each vulnerability finding per asset, and removes findings that were last seen more than 90 days ago.
+
+For existing users of the Tenable Security Center integration, before upgrading to `3.0.0`, ensure the following requirements are met:
+
+1. Users need [Elastic Security solution](https://www.elastic.co/docs/solutions/security) which has requirements documented [here](https://www.elastic.co/docs/solutions/security/get-started/elastic-security-requirements).
+2. To use transforms, users must have:
+   - at least one [transform node](https://www.elastic.co/docs/deploy-manage/distributed-architecture/clusters-nodes-shards/node-roles#transform-node-role),
+   - management features visible in the Kibana space, and
+   - security privileges that:
+     - grant use of transforms, and
+     - grant access to source and destination indices
+   For more details on Transform Setup, refer to the link [here](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup)
+3. Because the latest copy of vulnerabilities is now indexed in two places, that is, in both source and destination indices, users must anticipate storage requirements accordingly.
+
+The vulnerability data stream collects vulnerabilities incrementally, requesting only vulnerabilities that were last seen after the previous poll. **Initial Interval** only applies to the first poll of a new integration. To populate the Vulnerability Findings page with vulnerabilities that were last seen before the integration was added, set **Initial Interval** to `2160h` (90 days) when adding the integration. Changing **Initial Interval** on an existing integration has no effect, because collection continues from the last poll. To populate the page for an existing integration after the upgrade, remove the integration and add it again with **Initial Interval** set to `2160h`. Vulnerabilities that were already collected may be indexed again in the source indices, but the latest index keeps one copy of each vulnerability.
+
+Informational vulnerabilities are collected, but are not shown on the Vulnerability Findings page. A vulnerability that a recast risk rule changes to Info is still shown, with severity `None`, so that it replaces the vulnerability's earlier severity on the page. Because vulnerabilities are collected when their last seen time changes, this happens after a scan next finds the vulnerability; until then, it is shown with its earlier severity. A vulnerability whose plugin severity Tenable changes to Info without a recast risk rule is still shown with its earlier severity until it was last seen more than 90 days ago.
+
+Vulnerabilities that Tenable Security Center moves out of its cumulative database, for example after they are mitigated, are no longer collected. Until collection of mitigated vulnerabilities is added, a mitigated vulnerability is still shown as open on the Vulnerability Findings page until it was last seen more than 90 days ago.
 
 ## Logs
 

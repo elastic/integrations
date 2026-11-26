@@ -1,0 +1,158 @@
+{
+    "attributes": {
+        "alert_suppression": {
+            "duration": {
+                "unit": "h",
+                "value": 1
+            },
+            "group_by": [
+                "github.org",
+                "github.repo",
+                "github.data.workflow_run_id"
+            ],
+            "missing_fields_strategy": "doNotSuppress"
+        },
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when a GitHub Actions workflow run is deleted within 30 minutes of its creation. Adversaries who abuse Actions for execution or secret theft may delete short-lived runs afterward to remove job logs that show the malicious steps.",
+        "false_positives": [
+            "Automation that deletes failed or temporary workflow runs shortly after execution. Review whether the workflow, repository, and actors are expected."
+        ],
+        "from": "now-39m",
+        "investigation_fields": {
+            "field_names": [
+                "Esql.workflow_run_created_at",
+                "Esql.workflow_run_deleted_at",
+                "Esql.time_diff_seconds",
+                "user.name",
+                "github.org",
+                "github.repo",
+                "github.actor_ip",
+                "github.hashed_token",
+                "github.programmatic_access_type",
+                "github.user_agent",
+                "github.data.workflow_id",
+                "github.data.workflow_run_id"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "GitHub Actions Workflow Run Rapidly Deleted",
+        "note": "## Triage and analysis\n\n### Investigating GitHub Actions Workflow Run Rapidly Deleted\n\n`workflows.delete_workflow_run` is recorded when a run is deleted. GitHub does not always emit a separate audit event for deleting only the logs; the run deletion itself is the reliable cover-up signal. This rule correlates workflow-run creation and deletion events for the same organization, repository, and workflow when they occur within 30 minutes.\n\n### Possible investigation steps\n\n- Review `user.name`, `github.repo`, `github.data.workflow_id`, and the correlated creation and deletion timestamps.\n- Determine which workflow file ran and whether it was recently added or modified.\n- Look for `git.push` by `github-actions[bot]` or unexpected `GITHUB_TOKEN` usage around the same time.\n- Check org/repo secrets access (`api.request` for secrets) from the same actor.\n\n### False positive analysis\n\n- Admins pruning old CI history.\n- Tools that delete runs after collecting artifacts.\n\n### Response and remediation\n\n- If unauthorized, disable the suspect workflow and rotate secrets used by Actions.\n- Review commits to `.github/workflows/` and restrict `GITHUB_TOKEN` permissions.\n- Preserve remaining Actions logs and audit events for the incident window.\n",
+        "query": "FROM logs-github.audit-*\n| WHERE event.module == \"github\" AND data_stream.dataset == \"github.audit\"\n    AND event.action IN (\n      \"workflows.created_workflow_run\",\n      \"workflows.delete_workflow_run\"\n    )\n| EVAL\n    Esql.is_workflow_run_created = event.action == \"workflows.created_workflow_run\",\n    Esql.is_workflow_run_deleted = event.action == \"workflows.delete_workflow_run\"\n| STATS\n    Esql.workflow_run_created_count = SUM(CASE(Esql.is_workflow_run_created, 1, 0)),\n    Esql.workflow_run_deleted_count = SUM(CASE(Esql.is_workflow_run_deleted, 1, 0)),\n    Esql.workflow_run_created_at = MIN(CASE(Esql.is_workflow_run_created, @timestamp, null)),\n    Esql.workflow_run_deleted_at = MAX(CASE(Esql.is_workflow_run_deleted, @timestamp, null)),\n    user.name = VALUES(user.name),\n    github.actor_ip = VALUES(github.actor_ip),\n    github.hashed_token = VALUES(github.hashed_token),\n    github.programmatic_access_type = VALUES(github.programmatic_access_type),\n    github.user_agent = VALUES(github.user_agent),\n    github.data.workflow_run_id = VALUES(github.data.workflow_run_id)\n  BY github.org, github.repo, github.data.workflow_id\n| EVAL Esql.time_diff_seconds = DATE_DIFF(\n    \"second\", Esql.workflow_run_created_at, Esql.workflow_run_deleted_at\n  )\n| WHERE Esql.workflow_run_created_count > 0\n    AND Esql.workflow_run_deleted_count > 0\n    AND Esql.time_diff_seconds >= 0\n    AND Esql.time_diff_seconds <= 1800\n    AND DATE_DIFF(\"minute\", Esql.workflow_run_deleted_at, NOW()) <= 10\n| KEEP\n    Esql.workflow_run_created_at,\n    Esql.workflow_run_deleted_at,\n    Esql.time_diff_seconds,\n    Esql.workflow_run_created_count,\n    Esql.workflow_run_deleted_count,\n    user.name,\n    github.org,\n    github.repo,\n    github.actor_ip,\n    github.hashed_token,\n    github.programmatic_access_type,\n    github.user_agent,\n    github.data.workflow_id,\n    github.data.workflow_run_id\n",
+        "references": [
+            "https://docs.github.com/en/rest/actions/workflow-runs#delete-a-workflow-run"
+        ],
+        "related_integrations": [
+            {
+                "package": "github",
+                "version": ">=3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.actor_ip",
+                "type": "ip"
+            },
+            {
+                "ecs": false,
+                "name": "github.data.workflow_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.data.workflow_run_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.hashed_token",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.org",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.programmatic_access_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.repo",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.user_agent",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "c3767835-ee6d-4523-8d11-3cabeecbb8cf",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: SaaS",
+            "Platform: GitHub",
+            "Use Case: Threat Detection",
+            "Data Source: Github",
+            "Data Source: GitHub Audit Logs",
+            "Service: GitHub Actions",
+            "Rule Type: ES|QL",
+            "Resources: Investigation Guide",
+            "Tactic: Stealth"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Stealth",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1070",
+                        "name": "Indicator Removal",
+                        "reference": "https://attack.mitre.org/techniques/T1070/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 2
+    },
+    "id": "c3767835-ee6d-4523-8d11-3cabeecbb8cf_2",
+    "type": "security-rule"
+}
