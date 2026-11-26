@@ -67,7 +67,7 @@ program: |-
   (trimmed_hub_url.endsWith("/") ? trimmed_hub_url.substring(0, size(trimmed_hub_url) - 1) : trimmed_hub_url).as(clean_hub_url,
   (int(state.conf_indexing_weight) >= 0 && int(state.conf_query_weight) >= 0 && int(state.conf_storage_weight) >= 0 && (int(state.conf_query_weight) + int(state.conf_storage_weight)) > 0).as(weights_valid,
   (!state.sync_fleet_config ? ("disabled|" + clean_owner_id) : (
-  weights_valid ? (clean_owner_id + "|" + string(state.conf_indexing_weight) + "|" + string(state.conf_query_weight) + "|" + string(state.conf_storage_weight) + "|" + today_utc) : state.?cursor.conf_sig.orValue("")
+  weights_valid ? ("v2|" + clean_owner_id + "|" + string(state.conf_indexing_weight) + "|" + string(state.conf_query_weight) + "|" + string(state.conf_storage_weight) + "|" + today_utc) : state.?cursor.conf_sig.orValue("")
   )).as(conf_sig,
   ((state.sync_fleet_config && !weights_valid) ?
   [dyn({
@@ -92,7 +92,7 @@ program: |-
   "doc_type": "config_snapshot",
   "conf_sync_enabled": false,
   "conf_owner_id": clean_owner_id,
-  }.with(state.?cursor.conf_sig.orValue("") != "" ? { "conf_schema_version": 2 } : {}))]
+  }.with(state.?cursor.conf_sig.orValue("").startsWith("v2|") ? { "conf_schema_version": 2 } : { "conf_schema_version": 1 }))]
   : []))).as(conf_evts,
   state.poll_interval.trim_space().as(raw_poll_iv,
   try(int(duration(raw_poll_iv != "" ? raw_poll_iv : "10m").getSeconds()), "iv_err").as(parsed_iv_sec,

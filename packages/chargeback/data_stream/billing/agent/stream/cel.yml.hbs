@@ -81,7 +81,7 @@ program: |-
   )).as(eff_valid,
   ((clean_eff_from == "" || !eff_valid) ? "" : (clean_eff_from.substring(0, 10) + "T00:00:00Z")).as(norm_eff_from,
   (!state.sync_fleet_config ? ("disabled|" + clean_owner_id) : (
-  (rate_valid && onprem_rate_valid && eff_valid) ? (clean_owner_id + "|" + clean_rate + "|" + clean_onprem_rate + "|" + state.conf_currency_unit + "|" + state.conf_currency_symbol + "|" + norm_eff_from + "|" + today_utc) : state.?cursor.conf_sig.orValue("")
+  (rate_valid && onprem_rate_valid && eff_valid) ? ("v2|" + clean_owner_id + "|" + clean_rate + "|" + clean_onprem_rate + "|" + state.conf_currency_unit + "|" + state.conf_currency_symbol + "|" + norm_eff_from + "|" + today_utc) : state.?cursor.conf_sig.orValue("")
   )).as(conf_sig,
   ((state.sync_fleet_config && !rate_valid) ?
   [dyn({
@@ -124,7 +124,7 @@ program: |-
   "doc_type": "config_snapshot",
   "conf_sync_enabled": false,
   "conf_owner_id": clean_owner_id,
-  }.with(state.?cursor.conf_sig.orValue("") != "" ? { "conf_schema_version": 2 } : {}))]
+  }.with(state.?cursor.conf_sig.orValue("").startsWith("v2|") ? { "conf_schema_version": 2 } : { "conf_schema_version": 1 }))]
   : []))))).as(conf_evts,
   (clean_org_id == "" || clean_api_key == "" || clean_api_key.startsWith("$co.elastic.secret")) ?
   {
@@ -306,7 +306,7 @@ program: |-
   "next_from": state.?cursor.next_from.orValue(req.from.format(time_layout.RFC3339)),
   "recent_day_keys": pruned_recent_keys,
   "group_first_seen": seeded_gfs,
-  "group_obs_seeded": prev_gfs_seeded,
+  "group_obs_seeded": (prev_gfs_seeded || size(pruned_recent_keys) > 0 || replay_completed_to != ""),
   "conf_sig": conf_sig,
   "last_credit_day": cred_res.credit_day,
   },
@@ -1069,18 +1069,12 @@ program: |-
   ).as(day_evts,
   (dep_failed || es_failed || obs_failed || sec_failed || vdb_failed).as(disc_had_err,
   (req.to + duration("26h") <= now).as(has_more_days,
-  ((!prev_gfs_seeded) ?
-  ((high_water >= latest_ready_to) ? initial_from.format(time_layout.RFC3339) : req.from.format(time_layout.RFC3339))
-  : now.format(time_layout.RFC3339)
-  ).as(new_gfs_ts,
-  (
+  (!prev_gfs_seeded && state.?cursor.replay_target_to.orValue("") == "" && replay_completed_to == "" && high_water < latest_ready_to).as(is_initial_backfill,
+  (is_initial_backfill ? initial_from.format(time_layout.RFC3339) : now.format(time_layout.RFC3339)).as(new_gfs_ts,
   day_evts.map(e,
   (has(e.ess) && e.ess != null && has(e.ess.billing) && e.ess.billing != null && has(e.ess.billing.deployment_tags) && e.ess.billing.deployment_tags != null && type(e.ess.billing.deployment_tags) == list) ?
   (e.ess.billing.deployment_tags.map(tg, string(tg).to_lower().startsWith("chargeback_group:") ? string(tg).substring(17, size(string(tg))).trim_space() : "").filter(g, g != "")).as(gs, size(gs) > 0 ? gs[0] : "")
   : ""
-  ) +
-  ech_deps.map(d, (has(d.tags) && d.tags != null && type(d.tags) == list) ? (d.tags.map(tg, string(tg).to_lower().startsWith("chargeback_group:") ? string(tg).substring(17, size(string(tg))).trim_space() : "").filter(g, g != "")).as(gs, size(gs) > 0 ? gs[0] : "") : "") +
-  sls_projs.map(p, (has(p.tags) && p.tags != null && type(p.tags) == list) ? (p.tags.map(tg, string(tg).to_lower().startsWith("chargeback_group:") ? string(tg).substring(17, size(string(tg))).trim_space() : "").filter(g, g != "")).as(gs, size(gs) > 0 ? gs[0] : "") : "")
   ).filter(g, g != "" && !(g in seeded_gfs)).as(new_obs_groups,
   (seeded_gfs.with(
   size(new_obs_groups) > 0 ? zip(new_obs_groups, new_obs_groups.map(g, new_gfs_ts)) : dyn({})
@@ -1149,7 +1143,7 @@ program: |-
   "want_more": has_more_days,
   }
   )
-  ))))))))))
+  )))))))))))
   )
   )
   )

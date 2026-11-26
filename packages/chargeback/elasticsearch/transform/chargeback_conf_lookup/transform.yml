@@ -230,9 +230,6 @@ pivot:
                     if (jk != '') { joinKey = jk; }
                   }
                 } catch (Exception e) {}
-                if (!isDestV1 && (rowId == 'config_onprem' || joinKey == 'chargeback_config_onprem')) {
-                  return;
-                }
                 long startMs = 1262304000000L;
                 try {
                   if (doc.containsKey('conf_start_date') && !doc['conf_start_date'].empty) {
@@ -265,6 +262,9 @@ pivot:
                     }
                   }
                 } catch (Exception e) {}
+                if (!isDestV1 && (rowId == 'config_onprem' || (rowId == '' && joinKey == 'chargeback_config_onprem' && endMs == 2430518399999L))) {
+                  return;
+                }
                 String resolvedId = rowId;
                 if (resolvedId == '') {
                   if (endMs == 2430518399999L && joinKey == 'chargeback_config') {
@@ -716,18 +716,15 @@ pivot:
                 }
               }
 
-              if (!ownerConflict && !policySyncEnabled && mergedLegacy != null) {
-                long legTs = mergedLegacy.get('ts') instanceof Number ? ((Number)mergedLegacy.get('ts')).longValue() : 0L;
-                if (!hasV2Snap && (maxEnabledSnapTs < 0L || legTs >= maxEnabledSnapTs)) {
-                  return [
-                    'has_snapshots': true,
-                    'policy_sync_enabled': true,
-                    'owner_conflict': false,
-                    'from_legacy_conf': true,
-                    'legacy_conf': mergedLegacy,
-                    'streams': [:]
-                  ];
-                }
+              if (!ownerConflict && !policySyncEnabled && mergedLegacy != null && !hasV2Snap) {
+                return [
+                  'has_snapshots': true,
+                  'policy_sync_enabled': true,
+                  'owner_conflict': false,
+                  'from_legacy_conf': true,
+                  'legacy_conf': mergedLegacy,
+                  'streams': [:]
+                ];
               }
 
               return [

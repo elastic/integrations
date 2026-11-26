@@ -187,7 +187,7 @@ pivot:
   aggregations:
     native:
       scripted_metric:
-        init_script: "state.items = new HashMap();"
+        init_script: "state.items = new HashMap(); state.min_bucket_ing = 0L; state.grp_min_ing = new HashMap(); state.grp_min_gfs = new HashMap();"
         map_script: |
           boolean isNat = false;
           try {
@@ -387,6 +387,20 @@ pivot:
             }
           } catch (Exception e) {}
 
+          if (ingTs > 0L && (state.min_bucket_ing <= 0L || ingTs < state.min_bucket_ing)) {
+            state.min_bucket_ing = ingTs;
+          }
+          if (depGroup != '') {
+            if (ingTs > 0L) {
+              long curGm = state.grp_min_ing.get(depGroup) instanceof Number ? ((Number)state.grp_min_ing.get(depGroup)).longValue() : 0L;
+              if (curGm <= 0L || ingTs < curGm) { state.grp_min_ing.put(depGroup, ingTs); }
+            }
+            if (docGfsMs > 0L) {
+              long curGf = state.grp_min_gfs.get(depGroup) instanceof Number ? ((Number)state.grp_min_gfs.get(depGroup)).longValue() : 0L;
+              if (curGf <= 0L || docGfsMs < curGf) { state.grp_min_gfs.put(depGroup, docGfsMs); }
+            }
+          }
+
           Map rec = [
             'ing_ts': ingTs,
             'gfs': docGfsMs,
@@ -434,8 +448,32 @@ pivot:
         combine_script: "return state;"
         reduce_script: |
           Map merged = new HashMap();
+          long mergedMinBucketIng = 0L;
+          Map mergedGrpMinIng = new HashMap();
+          Map mergedGrpMinGfs = new HashMap();
           for (def st : states) {
-            if (st == null || !(st.items instanceof Map)) { continue; }
+            if (st == null) { continue; }
+            long mbi = st.min_bucket_ing instanceof Number ? ((Number)st.min_bucket_ing).longValue() : 0L;
+            if (mbi > 0L && (mergedMinBucketIng <= 0L || mbi < mergedMinBucketIng)) {
+              mergedMinBucketIng = mbi;
+            }
+            if (st.grp_min_ing instanceof Map) {
+              for (def ge : ((Map)st.grp_min_ing).entrySet()) {
+                String gk = ge.getKey().toString();
+                long gv = ge.getValue() instanceof Number ? ((Number)ge.getValue()).longValue() : 0L;
+                long cv = mergedGrpMinIng.get(gk) instanceof Number ? ((Number)mergedGrpMinIng.get(gk)).longValue() : 0L;
+                if (gv > 0L && (cv <= 0L || gv < cv)) { mergedGrpMinIng.put(gk, gv); }
+              }
+            }
+            if (st.grp_min_gfs instanceof Map) {
+              for (def ge : ((Map)st.grp_min_gfs).entrySet()) {
+                String gk = ge.getKey().toString();
+                long gv = ge.getValue() instanceof Number ? ((Number)ge.getValue()).longValue() : 0L;
+                long cv = mergedGrpMinGfs.get(gk) instanceof Number ? ((Number)mergedGrpMinGfs.get(gk)).longValue() : 0L;
+                if (gv > 0L && (cv <= 0L || gv < cv)) { mergedGrpMinGfs.put(gk, gv); }
+              }
+            }
+            if (!(st.items instanceof Map)) { continue; }
             for (def e : ((Map)st.items).entrySet()) {
               String k = e.getKey().toString();
               Map rec = (Map)e.getValue();
@@ -507,23 +545,10 @@ pivot:
           }
           long resolvedGfs = 0L;
           if (depGroup != '') {
-            long bestExplicitGfs = 0L;
-            long bestReplayIng = 0L;
-            for (def recObj : merged.values()) {
-              Map rec = (Map)recObj;
-              String rg = rec.get('dep_group') != null ? rec.get('dep_group').toString() : '';
-              if (!depGroup.equals(rg)) { continue; }
-              long eg = rec.get('gfs') instanceof Number ? ((Number)rec.get('gfs')).longValue() : 0L;
-              if (eg > 0L && (bestExplicitGfs <= 0L || eg < bestExplicitGfs)) {
-                bestExplicitGfs = eg;
-              }
-              long rAny = rec.get('min_any_ing') instanceof Number ? ((Number)rec.get('min_any_ing')).longValue() : 0L;
-              long rGrp = rec.get('min_grp_ing') instanceof Number ? ((Number)rec.get('min_grp_ing')).longValue() : 0L;
-              if (rAny > 0L && rGrp > rAny && (bestReplayIng <= 0L || rGrp < bestReplayIng)) {
-                bestReplayIng = rGrp;
-              }
-            }
-            resolvedGfs = bestExplicitGfs > 0L ? bestExplicitGfs : bestReplayIng;
+            long bestExplicitGfs = mergedGrpMinGfs.get(depGroup) instanceof Number ? ((Number)mergedGrpMinGfs.get(depGroup)).longValue() : 0L;
+            long grpMinIng = mergedGrpMinIng.get(depGroup) instanceof Number ? ((Number)mergedGrpMinIng.get(depGroup)).longValue() : 0L;
+            long bestReplayIng = (mergedMinBucketIng > 0L && grpMinIng > mergedMinBucketIng) ? grpMinIng : 0L;
+            resolvedGfs = bestReplayIng > bestExplicitGfs ? bestReplayIng : bestExplicitGfs;
           }
           return [
             'doc_cnt': (long)merged.size(),
@@ -541,7 +566,7 @@ pivot:
           ];
     legacy:
       scripted_metric:
-        init_script: "state.items = new HashMap();"
+        init_script: "state.items = new HashMap(); state.min_bucket_ing = 0L; state.grp_min_ing = new HashMap(); state.grp_min_gfs = new HashMap();"
         map_script: |
           boolean isNat = false;
           try {
@@ -741,6 +766,20 @@ pivot:
             }
           } catch (Exception e) {}
 
+          if (ingTs > 0L && (state.min_bucket_ing <= 0L || ingTs < state.min_bucket_ing)) {
+            state.min_bucket_ing = ingTs;
+          }
+          if (depGroup != '') {
+            if (ingTs > 0L) {
+              long curGm = state.grp_min_ing.get(depGroup) instanceof Number ? ((Number)state.grp_min_ing.get(depGroup)).longValue() : 0L;
+              if (curGm <= 0L || ingTs < curGm) { state.grp_min_ing.put(depGroup, ingTs); }
+            }
+            if (docGfsMs > 0L) {
+              long curGf = state.grp_min_gfs.get(depGroup) instanceof Number ? ((Number)state.grp_min_gfs.get(depGroup)).longValue() : 0L;
+              if (curGf <= 0L || docGfsMs < curGf) { state.grp_min_gfs.put(depGroup, docGfsMs); }
+            }
+          }
+
           Map rec = [
             'ing_ts': ingTs,
             'gfs': docGfsMs,
@@ -788,8 +827,32 @@ pivot:
         combine_script: "return state;"
         reduce_script: |
           Map merged = new HashMap();
+          long mergedMinBucketIng = 0L;
+          Map mergedGrpMinIng = new HashMap();
+          Map mergedGrpMinGfs = new HashMap();
           for (def st : states) {
-            if (st == null || !(st.items instanceof Map)) { continue; }
+            if (st == null) { continue; }
+            long mbi = st.min_bucket_ing instanceof Number ? ((Number)st.min_bucket_ing).longValue() : 0L;
+            if (mbi > 0L && (mergedMinBucketIng <= 0L || mbi < mergedMinBucketIng)) {
+              mergedMinBucketIng = mbi;
+            }
+            if (st.grp_min_ing instanceof Map) {
+              for (def ge : ((Map)st.grp_min_ing).entrySet()) {
+                String gk = ge.getKey().toString();
+                long gv = ge.getValue() instanceof Number ? ((Number)ge.getValue()).longValue() : 0L;
+                long cv = mergedGrpMinIng.get(gk) instanceof Number ? ((Number)mergedGrpMinIng.get(gk)).longValue() : 0L;
+                if (gv > 0L && (cv <= 0L || gv < cv)) { mergedGrpMinIng.put(gk, gv); }
+              }
+            }
+            if (st.grp_min_gfs instanceof Map) {
+              for (def ge : ((Map)st.grp_min_gfs).entrySet()) {
+                String gk = ge.getKey().toString();
+                long gv = ge.getValue() instanceof Number ? ((Number)ge.getValue()).longValue() : 0L;
+                long cv = mergedGrpMinGfs.get(gk) instanceof Number ? ((Number)mergedGrpMinGfs.get(gk)).longValue() : 0L;
+                if (gv > 0L && (cv <= 0L || gv < cv)) { mergedGrpMinGfs.put(gk, gv); }
+              }
+            }
+            if (!(st.items instanceof Map)) { continue; }
             for (def e : ((Map)st.items).entrySet()) {
               String k = e.getKey().toString();
               Map rec = (Map)e.getValue();
@@ -861,23 +924,10 @@ pivot:
           }
           long resolvedGfs = 0L;
           if (depGroup != '') {
-            long bestExplicitGfs = 0L;
-            long bestReplayIng = 0L;
-            for (def recObj : merged.values()) {
-              Map rec = (Map)recObj;
-              String rg = rec.get('dep_group') != null ? rec.get('dep_group').toString() : '';
-              if (!depGroup.equals(rg)) { continue; }
-              long eg = rec.get('gfs') instanceof Number ? ((Number)rec.get('gfs')).longValue() : 0L;
-              if (eg > 0L && (bestExplicitGfs <= 0L || eg < bestExplicitGfs)) {
-                bestExplicitGfs = eg;
-              }
-              long rAny = rec.get('min_any_ing') instanceof Number ? ((Number)rec.get('min_any_ing')).longValue() : 0L;
-              long rGrp = rec.get('min_grp_ing') instanceof Number ? ((Number)rec.get('min_grp_ing')).longValue() : 0L;
-              if (rAny > 0L && rGrp > rAny && (bestReplayIng <= 0L || rGrp < bestReplayIng)) {
-                bestReplayIng = rGrp;
-              }
-            }
-            resolvedGfs = bestExplicitGfs > 0L ? bestExplicitGfs : bestReplayIng;
+            long bestExplicitGfs = mergedGrpMinGfs.get(depGroup) instanceof Number ? ((Number)mergedGrpMinGfs.get(depGroup)).longValue() : 0L;
+            long grpMinIng = mergedGrpMinIng.get(depGroup) instanceof Number ? ((Number)mergedGrpMinIng.get(depGroup)).longValue() : 0L;
+            long bestReplayIng = (mergedMinBucketIng > 0L && grpMinIng > mergedMinBucketIng) ? grpMinIng : 0L;
+            resolvedGfs = bestReplayIng > bestExplicitGfs ? bestReplayIng : bestExplicitGfs;
           }
           return [
             'doc_cnt': (long)merged.size(),

@@ -222,36 +222,9 @@ processors:
         } else if (ctx.elasticsearch?.cluster?.name != null) {
           ctx.deployment_id = ctx.elasticsearch.cluster.name;
         }
-        if (ctx['@timestamp'] != null && ctx.deployment_id != null) {
-          def rawTs = ctx['@timestamp'];
-          String date = null;
-          if (rawTs instanceof Number) {
-            date = Instant.ofEpochMilli(((Number)rawTs).longValue()).atZone(ZoneOffset.UTC).toLocalDate().toString();
-          } else {
-            String tsStr = rawTs.toString().trim();
-            try {
-              date = ZonedDateTime.parse(tsStr).toInstant().atZone(ZoneOffset.UTC).toLocalDate().toString();
-            } catch (Exception e) {
-              try {
-                date = LocalDate.parse(tsStr).toString();
-              } catch (Exception e2) {}
-            }
-          }
-          if (date != null) {
-            ctx.composite_key = date + '_' + ctx.deployment_id;
-
-            if (ctx.tier != null) {
-              ctx.composite_tier_key = ctx.composite_key + '_' + ctx.tier.toString().replace('/', '_');
-            }
-
-            if (ctx.datastream != null) {
-              ctx.composite_datastream_key = ctx.composite_key + '_' + ctx.datastream;
-            }
-          }
-        }
 
         // Parse Fleet data stream naming: <type>-<dataset>-<namespace>
-        // Handle .ds- backing indices, system/dot indices, and multi-hyphen namespaces cleanly.
+        // Normalise backing/downsampled names before deriving composite_datastream_key.
         if (ctx.datastream != null && ctx.datastream.toString() != '') {
           String rawDs = ctx.datastream.toString();
           def dsPattern = /^(?:partial-)?(?:restored-)?(?:shrink-.{4}-)?(?:downsample-[^-]+-)?\.ds-(.+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d+)?$/;
@@ -278,6 +251,34 @@ processors:
             } else {
               ctx.ds_type = 'other';
               ctx.ds_namespace = 'other';
+            }
+          }
+        }
+
+        if (ctx['@timestamp'] != null && ctx.deployment_id != null) {
+          def rawTs = ctx['@timestamp'];
+          String date = null;
+          if (rawTs instanceof Number) {
+            date = Instant.ofEpochMilli(((Number)rawTs).longValue()).atZone(ZoneOffset.UTC).toLocalDate().toString();
+          } else {
+            String tsStr = rawTs.toString().trim();
+            try {
+              date = ZonedDateTime.parse(tsStr).toInstant().atZone(ZoneOffset.UTC).toLocalDate().toString();
+            } catch (Exception e) {
+              try {
+                date = LocalDate.parse(tsStr).toString();
+              } catch (Exception e2) {}
+            }
+          }
+          if (date != null) {
+            ctx.composite_key = date + '_' + ctx.deployment_id;
+
+            if (ctx.tier != null) {
+              ctx.composite_tier_key = ctx.composite_key + '_' + ctx.tier.toString().replace('/', '_');
+            }
+
+            if (ctx.datastream != null) {
+              ctx.composite_datastream_key = ctx.composite_key + '_' + ctx.datastream;
             }
           }
         }

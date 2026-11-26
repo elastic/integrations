@@ -120,7 +120,7 @@ pivot:
           }
 
           String polId = '';
-          for (String pf : ['conf_policy_id.keyword', 'conf_policy_id', 'package_policy_id.keyword', 'package_policy_id', 'input.package_policy_id.keyword', 'input.package_policy_id', 'elastic_agent.package_policy_id.keyword', 'elastic_agent.package_policy_id', 'input.id.keyword', 'input.id', 'elastic_agent.policy_id.keyword', 'elastic_agent.policy_id', 'agent.id.keyword', 'agent.id']) {
+          for (String pf : ['conf_policy_id.keyword', 'conf_policy_id', 'package_policy_id.keyword', 'package_policy_id', 'input.package_policy_id.keyword', 'input.package_policy_id', 'elastic_agent.package_policy_id.keyword', 'elastic_agent.package_policy_id', 'input.id.keyword', 'input.id', 'elastic_agent.policy_id.keyword', 'elastic_agent.policy_id']) {
             try {
               if (doc.containsKey(pf) && !doc[pf].empty) {
                 String pv = doc[pf].value.toString().trim();
@@ -135,10 +135,26 @@ pivot:
             else if (params._source.elastic_agent instanceof Map && params._source.elastic_agent.get('package_policy_id') != null) { polId = params._source.elastic_agent.get('package_policy_id').toString().trim(); }
             else if (params._source.input instanceof Map && params._source.input.get('id') != null) { polId = params._source.input.get('id').toString().trim(); }
             else if (params._source.elastic_agent instanceof Map && params._source.elastic_agent.get('policy_id') != null) { polId = params._source.elastic_agent.get('policy_id').toString().trim(); }
-            else if (params._source.agent instanceof Map && params._source.agent.get('id') != null) { polId = params._source.agent.get('id').toString().trim(); }
           }
           if (polId == '') { polId = '_default_'; }
-          String emKey = ns + '|' + polId;
+
+          String collectorId = '';
+          for (String cf : ['agent.id.keyword', 'agent.id', 'elastic_agent.id.keyword', 'elastic_agent.id', 'host.id.keyword', 'host.id', 'host.name.keyword', 'host.name']) {
+            try {
+              if (doc.containsKey(cf) && !doc[cf].empty) {
+                String cv = doc[cf].value.toString().trim();
+                if (cv != '') { collectorId = cv; break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (collectorId == '' && params._source != null) {
+            if (params._source.agent instanceof Map && params._source.agent.get('id') != null) { collectorId = params._source.agent.get('id').toString().trim(); }
+            else if (params._source.elastic_agent instanceof Map && params._source.elastic_agent.get('id') != null) { collectorId = params._source.elastic_agent.get('id').toString().trim(); }
+            else if (params._source.host instanceof Map && params._source.host.get('id') != null) { collectorId = params._source.host.get('id').toString().trim(); }
+            else if (params._source.host instanceof Map && params._source.host.get('name') != null) { collectorId = params._source.host.get('name').toString().trim(); }
+          }
+          if (collectorId == '') { collectorId = '_default_'; }
+          String emKey = ns + '|' + polId + '|' + collectorId;
 
           long infCnt = 0L;
           try {
