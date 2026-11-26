@@ -421,44 +421,81 @@ source:
               emit((raw instanceof Boolean) ? ((Boolean)raw).booleanValue() : raw.toString().trim().equalsIgnoreCase('true'));
             }
           } catch (Exception e) {}
-dest:
-  index: serverless_billing_cost_lookup-1
-  aliases:
-    - alias: serverless_billing_cost_lookup
-      move_on_creation: true
-  pipeline: 'logs-chargeback_serverless.lookup-{{ ingestPipelineName "lookup_billing" }}'
-frequency: 5m
-sync:
-  time:
-    field: cb_sync_ts
-    delay: 120s
-retention_policy:
-  time:
-    field: "@timestamp"
-    max_age: 365d
-pivot:
-  group_by:
-    "@timestamp":
-      date_histogram:
-        field: "@timestamp"
-        calendar_interval: 1d
-    project_id:
-      terms:
-        field: cb_project_id
-    sku:
-      terms:
-        field: cb_sku
-  aggregations:
-    # Prefer native chargeback_serverless.billing snapshots over legacy ess_billing.billing
-    # for the same (day, project_id, sku) bucket to guarantee zero double-counting during cutover.
-    latest_snapshot:
-      scripted_metric:
-        init_script: |
-          state.nat = null;
-          state.leg = new HashMap();
-          state.grp_seen = new HashMap();
-          state.grp_bf = new HashMap();
-        map_script: |
+    cb_sync_ms:
+      type: long
+      script:
+        source: |
+          long syncMs = 0L;
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              syncMs = doc['event.ingested'].value.toInstant().toEpochMilli();
+            } else if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+              syncMs = doc['event.created'].value.toInstant().toEpochMilli();
+            } else {
+              for (String k : ['ingested', 'created']) {
+                def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get(k) : null;
+                if (rawVal == null && params._source != null) { rawVal = params._source.get('event.' + k); }
+                if (rawVal != null) {
+                  if (rawVal instanceof Number) { syncMs = ((Number)rawVal).longValue(); break; }
+                  String s = rawVal.toString().trim();
+                  if (s != '') {
+                    try { syncMs = ZonedDateTime.parse(s).toInstant().toEpochMilli(); break; } catch (Exception e) {}
+                  }
+                }
+              }
+            }
+          } catch (Exception e) {}
+          if (syncMs == 0L) {
+            try {
+              if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+                syncMs = doc['@timestamp'].value.toInstant().toEpochMilli();
+              } else if (params._source?.get('@timestamp') != null) {
+                syncMs = ZonedDateTime.parse(params._source.get('@timestamp').toString().trim()).toInstant().toEpochMilli();
+              }
+            } catch (Exception e) {}
+          }
+          emit(syncMs);
+    cb_group_first_seen_ms:
+      type: long
+      script:
+        source: |
+          try {
+            if (doc.containsKey('group_first_seen_at') && !doc['group_first_seen_at'].empty) {
+              long gs = doc['group_first_seen_at'].value.toInstant().toEpochMilli();
+              if (gs > 0L) { emit(gs); }
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            def raw = params._source?.group_first_seen_at;
+            if (raw instanceof Number && ((Number)raw).longValue() > 0L) {
+              emit(((Number)raw).longValue());
+            } else if (raw != null && raw.toString().trim() != '') {
+              long gs = ZonedDateTime.parse(raw.toString().trim()).toInstant().toEpochMilli();
+              if (gs > 0L) { emit(gs); }
+            }
+          } catch (Exception e) {}
+    cb_group_initial_backfill_num:
+      type: long
+      script:
+        source: |
+          try {
+            if (doc.containsKey('group_initial_backfill') && !doc['group_initial_backfill'].empty) {
+              emit(Boolean.TRUE.equals(doc['group_initial_backfill'].value) ? 1L : 0L);
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            def raw = params._source?.group_initial_backfill;
+            if (raw != null) {
+              boolean bf = (raw instanceof Boolean) ? ((Boolean)raw).booleanValue() : raw.toString().trim().equalsIgnoreCase('true');
+              emit(bf ? 1L : 0L);
+            }
+          } catch (Exception e) {}
+    cb_nat_rec:
+      type: keyword
+      script:
+        source: |
           boolean isNat = false;
           try {
             if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
@@ -467,48 +504,163 @@ pivot:
               isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.billing';
             }
           } catch (Exception e) {}
-
-          long ingTs = 0L;
+          if (!isNat) { return; }
+          long syncMs = 0L;
           try {
-            if (doc.containsKey('cb_sync_ts') && !doc['cb_sync_ts'].empty) {
-              ingTs = doc['cb_sync_ts'].value.toInstant().toEpochMilli();
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              syncMs = doc['event.ingested'].value.toInstant().toEpochMilli();
+            } else if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+              syncMs = doc['event.created'].value.toInstant().toEpochMilli();
+            } else {
+              for (String k : ['ingested', 'created']) {
+                def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get(k) : null;
+                if (rawVal == null && params._source != null) { rawVal = params._source.get('event.' + k); }
+                if (rawVal != null) {
+                  if (rawVal instanceof Number) { syncMs = ((Number)rawVal).longValue(); break; }
+                  String s = rawVal.toString().trim();
+                  if (s != '') {
+                    try { syncMs = ZonedDateTime.parse(s).toInstant().toEpochMilli(); break; } catch (Exception e) {}
+                  }
+                }
+              }
             }
           } catch (Exception e) {}
-
+          if (syncMs == 0L) {
+            try {
+              if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+                syncMs = doc['@timestamp'].value.toInstant().toEpochMilli();
+              } else if (params._source?.get('@timestamp') != null) {
+                syncMs = ZonedDateTime.parse(params._source.get('@timestamp').toString().trim()).toInstant().toEpochMilli();
+              }
+            } catch (Exception e) {}
+          }
           String pName = '';
-          try {
-            if (doc.containsKey('cb_project_name') && !doc['cb_project_name'].empty) {
-              pName = doc['cb_project_name'].value.toString();
-            }
-          } catch (Exception e) {}
-
+          for (String f : ['project_name', 'ess.billing.deployment_name', 'ess.billing.deployment_name.keyword']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                String v = doc[f].value.toString().trim();
+                if (v != '') { pName = v; break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (pName == '') {
+            try {
+              if (params._source?.project_name != null && params._source.project_name.toString().trim() != '') {
+                pName = params._source.project_name.toString().trim();
+              } else if (params._source?.ess?.billing?.deployment_name != null && params._source.ess.billing.deployment_name.toString().trim() != '') {
+                pName = params._source.ess.billing.deployment_name.toString().trim();
+              }
+            } catch (Exception e) {}
+          }
           String pType = '';
-          try {
-            if (doc.containsKey('cb_project_type') && !doc['cb_project_type'].empty) {
-              pType = doc['cb_project_type'].value.toString();
-            }
-          } catch (Exception e) {}
+          for (String f : ['project_type', 'ess.billing.deployment_type', 'ess.billing.deployment_type.keyword']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                String v = doc[f].value.toString().trim().toLowerCase(Locale.ROOT);
+                if (v != '') { pType = v; break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (pType == '') {
+            try {
+              if (params._source?.project_type != null && params._source.project_type.toString().trim() != '') {
+                pType = params._source.project_type.toString().trim().toLowerCase(Locale.ROOT);
+              } else if (params._source?.ess?.billing?.deployment_type != null && params._source.ess.billing.deployment_type.toString().trim() != '') {
+                pType = params._source.ess.billing.deployment_type.toString().trim().toLowerCase(Locale.ROOT);
+              }
+            } catch (Exception e) {}
+          }
+          if (pType == 'oblt') { pType = 'observability'; }
+          else if (pType == 'sec') { pType = 'security'; }
+          else if (pType == 'vector') { pType = 'vectordb'; }
+          else if (pType == 'es') { pType = 'elasticsearch'; }
+          else if (pType == 'enterprise_search') { pType = 'search'; }
 
           String depGroup = '';
-          try {
-            if (doc.containsKey('cb_deployment_group') && !doc['cb_deployment_group'].empty) {
-              depGroup = doc['cb_deployment_group'].value.toString();
+          for (String tf : ['deployment_tags', 'deployment_tags.keyword', 'ess.billing.deployment_tags', 'ess.billing.deployment_tags.keyword']) {
+            if (depGroup != '') { break; }
+            try {
+              if (doc.containsKey(tf) && !doc[tf].empty) {
+                for (def tv : doc[tf]) {
+                  if (tv != null) {
+                    String s = tv.toString().trim();
+                    if (s.toLowerCase(Locale.ROOT).startsWith('chargeback_group:')) {
+                      String gv = s.substring('chargeback_group:'.length()).trim();
+                      if (gv != '') { depGroup = gv; break; }
+                    }
+                  }
+                }
+              }
+            } catch (Exception e) {}
+          }
+          if (depGroup == '') {
+            try {
+              for (def tags : [params._source?.deployment_tags, params._source?.ess?.billing?.deployment_tags]) {
+                if (depGroup != '') { break; }
+                if (tags instanceof List) {
+                  for (def tag : tags) {
+                    if (tag != null) {
+                      String s = tag.toString().trim();
+                      if (s.toLowerCase(Locale.ROOT).startsWith('chargeback_group:')) {
+                        String gv = s.substring('chargeback_group:'.length()).trim();
+                        if (gv != '') { depGroup = gv; break; }
+                      }
+                    }
+                  }
+                } else if (tags != null) {
+                  String s = tags.toString().trim();
+                  if (s.toLowerCase(Locale.ROOT).startsWith('chargeback_group:')) {
+                    String gv = s.substring('chargeback_group:'.length()).trim();
+                    if (gv != '') { depGroup = gv; }
+                  }
+                }
+              }
+            } catch (Exception e) {}
+          }
+          if (depGroup == '') {
+            for (String gf : ['deployment_group', 'deployment_group.keyword']) {
+              try {
+                if (doc.containsKey(gf) && !doc[gf].empty) {
+                  String v = doc[gf].value.toString().trim();
+                  if (v != '') { depGroup = v; break; }
+                }
+              } catch (Exception e) {}
             }
-          } catch (Exception e) {}
+          }
 
           double ecu = 0.0;
-          try {
-            if (doc.containsKey('cb_total_ecu') && !doc['cb_total_ecu'].empty) {
-              ecu = ((Number)doc['cb_total_ecu'].value).doubleValue();
-            }
-          } catch (Exception e) {}
+          boolean hasEcu = false;
+          for (String f : ['total_ecu', 'ess.billing.total_ecu']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                ecu = ((Number)doc[f].value).doubleValue();
+                hasEcu = true; break;
+              }
+            } catch (Exception e) {}
+          }
+          if (!hasEcu) {
+            try {
+              if (params._source?.total_ecu instanceof Number) { ecu = ((Number)params._source.total_ecu).doubleValue(); }
+              else if (params._source?.ess?.billing?.total_ecu instanceof Number) { ecu = ((Number)params._source.ess.billing.total_ecu).doubleValue(); }
+            } catch (Exception e) {}
+          }
 
           double qty = 0.0;
-          try {
-            if (doc.containsKey('cb_quantity_value') && !doc['cb_quantity_value'].empty) {
-              qty = ((Number)doc['cb_quantity_value'].value).doubleValue();
-            }
-          } catch (Exception e) {}
+          boolean hasQty = false;
+          for (String f : ['quantity_value', 'ess.billing.quantity.value']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                qty = ((Number)doc[f].value).doubleValue();
+                hasQty = true; break;
+              }
+            } catch (Exception e) {}
+          }
+          if (!hasQty) {
+            try {
+              if (params._source?.quantity_value instanceof Number) { qty = ((Number)params._source.quantity_value).doubleValue(); }
+              else if (params._source?.ess?.billing?.quantity?.value instanceof Number) { qty = ((Number)params._source.ess.billing.quantity.value).doubleValue(); }
+            } catch (Exception e) {}
+          }
 
           String orgId = '';
           try {
@@ -596,59 +748,79 @@ pivot:
             }
           } catch (Exception e) {}
 
-          Map rec = [
-            'ing_ts': ingTs,
-            'project_name': pName,
-            'project_type': pType,
-            'deployment_group': depGroup,
-            'total_ecu': ecu,
-            'quantity_value': qty,
-            'organization_id': orgId,
-            'cloud_region': cRegion,
-            'billing_type': bType,
-            'billing_kind': bKind,
-            'billing_unit': bUnit,
-            'conf_chargeable_unit_rate': cRate,
-            'conf_chargeable_unit_rate_unit': cUnit,
-            'conf_currency_symbol': cSym
-          ];
-
-          if (depGroup != '') {
-            try {
-              if (doc.containsKey('cb_group_first_seen_at') && !doc['cb_group_first_seen_at'].empty) {
-                long gs = doc['cb_group_first_seen_at'].value.toInstant().toEpochMilli();
-                if (gs > 0L) {
-                  Long prevGs = (Long)state.grp_seen.get(depGroup);
-                  if (prevGs == null || gs < prevGs.longValue()) {
-                    state.grp_seen.put(depGroup, gs);
-                  }
-                }
-              }
-            } catch (Exception e) {}
-            try {
-              if (doc.containsKey('cb_group_initial_backfill') && !doc['cb_group_initial_backfill'].empty
-                  && Boolean.TRUE.equals(doc['cb_group_initial_backfill'].value)) {
-                state.grp_bf.put(depGroup, true);
-              }
-            } catch (Exception e) {}
-          }
-
-          if (isNat) {
-            if (state.nat == null) {
-              state.nat = rec;
-            } else {
-              long exTs = ((Number)state.nat.get('ing_ts')).longValue();
-              int newMeta = (depGroup != '' ? 2 : 0) + (pName != '' ? 1 : 0);
-              int oldMeta = (state.nat.get('deployment_group') != '' ? 2 : 0) + (state.nat.get('project_name') != '' ? 1 : 0);
-              if (ingTs > exTs || (ingTs == exTs && (newMeta > oldMeta || (newMeta == oldMeta && ecu >= ((Number)state.nat.get('total_ecu')).doubleValue())))) {
-                state.nat = rec;
-              }
+          String sep = Character.toString((char)31);
+          emit(
+            Long.toString(syncMs) + sep
+            + Double.toString(ecu) + sep
+            + Double.toString(qty) + sep
+            + pName.replace(sep, '') + sep
+            + pType.replace(sep, '') + sep
+            + depGroup.replace(sep, '') + sep
+            + orgId.replace(sep, '') + sep
+            + cRegion.replace(sep, '') + sep
+            + bType.replace(sep, '') + sep
+            + bKind.replace(sep, '') + sep
+            + bUnit.replace(sep, '') + sep
+            + Double.toString(cRate) + sep
+            + cUnit.replace(sep, '') + sep
+            + cSym.replace(sep, '')
+          );
+    cb_leg_interval_key:
+      type: keyword
+      script:
+        source: |
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.billing';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.billing';
             }
-            return;
+          } catch (Exception e) {}
+          if (isNat) { return; }
+          String orgId = '';
+          try {
+            if (doc.containsKey('ess.billing.organization_id') && !doc['ess.billing.organization_id'].empty) {
+              orgId = doc['ess.billing.organization_id'].value.toString();
+            } else if (params._source?.ess?.billing?.organization_id != null) {
+              orgId = params._source.ess.billing.organization_id.toString();
+            } else if (params._source?.organization_id != null) {
+              orgId = params._source.organization_id.toString();
+            }
+          } catch (Exception e) {}
+          String depId = '';
+          for (String f : ['project_id', 'ess.billing.deployment_id', 'ess.billing.deployment_id.keyword']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                String v = doc[f].value.toString().trim();
+                if (v != '') { depId = v; break; }
+              }
+            } catch (Exception e) {}
           }
-
-          String depId = (doc.containsKey('cb_project_id') && !doc['cb_project_id'].empty) ? doc['cb_project_id'].value.toString() : '';
-          String skuVal = (doc.containsKey('cb_sku') && !doc['cb_sku'].empty) ? doc['cb_sku'].value.toString() : '';
+          if (depId == '') {
+            try {
+              if (params._source?.project_id != null && params._source.project_id.toString().trim() != '') {
+                depId = params._source.project_id.toString().trim();
+              } else if (params._source?.ess?.billing?.deployment_id != null && params._source.ess.billing.deployment_id.toString().trim() != '') {
+                depId = params._source.ess.billing.deployment_id.toString().trim();
+              }
+            } catch (Exception e) {}
+          }
+          String skuVal = '';
+          for (String f : ['sku', 'ess.billing.sku', 'ess.billing.sku.keyword']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                String v = doc[f].value.toString().trim();
+                if (v != '') { skuVal = v; break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (skuVal == '') {
+            try {
+              if (params._source?.sku != null) { skuVal = params._source.sku.toString().trim(); }
+              else if (params._source?.ess?.billing?.sku != null) { skuVal = params._source.ess.billing.sku.toString().trim(); }
+            } catch (Exception e) {}
+          }
           String fromKey = '';
           try {
             if (doc.containsKey('ess.billing.from') && !doc['ess.billing.from'].empty) {
@@ -671,168 +843,373 @@ pivot:
               catch (Exception pe) { toKey = tsStr; }
             }
           } catch (Exception e) {}
-
-          String dedupKey = orgId + '|' + depId + '|' + fromKey + '|' + toKey + '|' + skuVal + '|' + bType + '|' + bKind;
-          Map ex = (Map)state.leg.get(dedupKey);
-          if (ex == null) {
-            state.leg.put(dedupKey, rec);
-          } else {
-            long exTs = ((Number)ex.get('ing_ts')).longValue();
-            int newMeta = (depGroup != '' ? 2 : 0) + (pName != '' ? 1 : 0);
-            int oldMeta = (ex.get('deployment_group') != '' ? 2 : 0) + (ex.get('project_name') != '' ? 1 : 0);
-            if (ingTs > exTs || (ingTs == exTs && (newMeta > oldMeta || (newMeta == oldMeta && ecu >= ((Number)ex.get('total_ecu')).doubleValue())))) {
-              state.leg.put(dedupKey, rec);
+          String bType = '';
+          try {
+            if (doc.containsKey('billing_type') && !doc['billing_type'].empty) { bType = doc['billing_type'].value.toString(); }
+            else if (params._source?.billing_type != null) { bType = params._source.billing_type.toString(); }
+            else if (doc.containsKey('ess.billing.type') && !doc['ess.billing.type'].empty) { bType = doc['ess.billing.type'].value.toString(); }
+            else if (params._source?.ess?.billing?.type != null) { bType = params._source.ess.billing.type.toString(); }
+          } catch (Exception e) {}
+          String bKind = '';
+          try {
+            if (doc.containsKey('billing_kind') && !doc['billing_kind'].empty) { bKind = doc['billing_kind'].value.toString(); }
+            else if (params._source?.billing_kind != null) { bKind = params._source.billing_kind.toString(); }
+            else if (doc.containsKey('ess.billing.kind') && !doc['ess.billing.kind'].empty) { bKind = doc['ess.billing.kind'].value.toString(); }
+            else if (params._source?.ess?.billing?.kind != null) { bKind = params._source.ess.billing.kind.toString(); }
+          } catch (Exception e) {}
+          String sep = Character.toString((char)31);
+          emit(
+            orgId.replace(sep, '') + sep
+            + depId.replace(sep, '') + sep
+            + fromKey.replace(sep, '') + sep
+            + toKey.replace(sep, '') + sep
+            + skuVal.replace(sep, '') + sep
+            + bType.replace(sep, '') + sep
+            + bKind.replace(sep, '')
+          );
+    cb_leg_rec:
+      type: keyword
+      script:
+        source: |
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.billing';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.billing';
             }
-          }
-        combine_script: "return state;"
-        reduce_script: |
-          Map bestNat = null;
-          Map mergedLeg = new HashMap();
-          Map mergedGrpSeen = new HashMap();
-          Map mergedGrpBf = new HashMap();
-          for (def st : states) {
-            if (st == null) { continue; }
-            if (st.grp_seen instanceof Map) {
-              for (def ge : ((Map)st.grp_seen).entrySet()) {
-                String gk = ge.getKey().toString();
-                long gv = ((Number)ge.getValue()).longValue();
-                Long cur = (Long)mergedGrpSeen.get(gk);
-                if (cur == null || gv < cur.longValue()) {
-                  mergedGrpSeen.put(gk, gv);
-                }
-              }
-            }
-            if (st.grp_bf instanceof Map) {
-              for (def be : ((Map)st.grp_bf).entrySet()) {
-                if (Boolean.TRUE.equals(be.getValue())) {
-                  mergedGrpBf.put(be.getKey().toString(), true);
-                }
-              }
-            }
-            if (st.nat instanceof Map) {
-              Map cand = (Map)st.nat;
-              if (bestNat == null) {
-                bestNat = cand;
-              } else {
-                long cTs = ((Number)cand.get('ing_ts')).longValue();
-                long bTs = ((Number)bestNat.get('ing_ts')).longValue();
-                int cMeta = (cand.get('deployment_group') != '' ? 2 : 0) + (cand.get('project_name') != '' ? 1 : 0);
-                int bMeta = (bestNat.get('deployment_group') != '' ? 2 : 0) + (bestNat.get('project_name') != '' ? 1 : 0);
-                if (cTs > bTs || (cTs == bTs && (cMeta > bMeta || (cMeta == bMeta && ((Number)cand.get('total_ecu')).doubleValue() >= ((Number)bestNat.get('total_ecu')).doubleValue())))) {
-                  bestNat = cand;
-                }
-              }
-            }
-            if (st.leg instanceof Map) {
-              for (def e : ((Map)st.leg).entrySet()) {
-                String k = e.getKey().toString();
-                Map rec = (Map)e.getValue();
-                Map ex = (Map)mergedLeg.get(k);
-                if (ex == null) {
-                  mergedLeg.put(k, rec);
-                } else {
-                  long ingTs = ((Number)rec.get('ing_ts')).longValue();
-                  long exTs = ((Number)ex.get('ing_ts')).longValue();
-                  int newMeta = (rec.get('deployment_group') != '' ? 2 : 0) + (rec.get('project_name') != '' ? 1 : 0);
-                  int oldMeta = (ex.get('deployment_group') != '' ? 2 : 0) + (ex.get('project_name') != '' ? 1 : 0);
-                  if (ingTs > exTs || (ingTs == exTs && (newMeta > oldMeta || (newMeta == oldMeta && ((Number)rec.get('total_ecu')).doubleValue() >= ((Number)ex.get('total_ecu')).doubleValue())))) {
-                    mergedLeg.put(k, rec);
+          } catch (Exception e) {}
+          if (isNat) { return; }
+          long syncMs = 0L;
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              syncMs = doc['event.ingested'].value.toInstant().toEpochMilli();
+            } else if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+              syncMs = doc['event.created'].value.toInstant().toEpochMilli();
+            } else {
+              for (String k : ['ingested', 'created']) {
+                def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get(k) : null;
+                if (rawVal == null && params._source != null) { rawVal = params._source.get('event.' + k); }
+                if (rawVal != null) {
+                  if (rawVal instanceof Number) { syncMs = ((Number)rawVal).longValue(); break; }
+                  String s = rawVal.toString().trim();
+                  if (s != '') {
+                    try { syncMs = ZonedDateTime.parse(s).toInstant().toEpochMilli(); break; } catch (Exception e) {}
                   }
                 }
               }
             }
-          }
-          if (bestNat != null) {
-            Map out = new HashMap(bestNat);
-            out.remove('ing_ts');
-            if (((Number)out.get('conf_chargeable_unit_rate')).doubleValue() < 0.0) {
-              out.remove('conf_chargeable_unit_rate');
-            }
-            String outGrp = out.get('deployment_group') != null ? out.get('deployment_group').toString() : '';
-            if (outGrp != '') {
-              if (mergedGrpSeen.containsKey(outGrp)) {
-                out.put('group_first_seen_at', mergedGrpSeen.get(outGrp));
+          } catch (Exception e) {}
+          if (syncMs == 0L) {
+            try {
+              if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+                syncMs = doc['@timestamp'].value.toInstant().toEpochMilli();
+              } else if (params._source?.get('@timestamp') != null) {
+                syncMs = ZonedDateTime.parse(params._source.get('@timestamp').toString().trim()).toInstant().toEpochMilli();
               }
-              if (mergedGrpBf.containsKey(outGrp)) {
-                out.put('group_initial_backfill', Boolean.TRUE.equals(mergedGrpBf.get(outGrp)));
-              } else if (mergedGrpSeen.containsKey(outGrp)) {
-                out.put('group_initial_backfill', false);
-              }
-            }
-            return out;
+            } catch (Exception e) {}
           }
-          if (mergedLeg.isEmpty()) {
-            return [:];
-          }
-          double sumEcu = 0.0;
-          double sumQty = 0.0;
-          long bestTs = -1L;
-          long bestGroupTs = -1L;
           String pName = '';
+          for (String f : ['project_name', 'ess.billing.deployment_name', 'ess.billing.deployment_name.keyword']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                String v = doc[f].value.toString().trim();
+                if (v != '') { pName = v; break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (pName == '') {
+            try {
+              if (params._source?.project_name != null && params._source.project_name.toString().trim() != '') {
+                pName = params._source.project_name.toString().trim();
+              } else if (params._source?.ess?.billing?.deployment_name != null && params._source.ess.billing.deployment_name.toString().trim() != '') {
+                pName = params._source.ess.billing.deployment_name.toString().trim();
+              }
+            } catch (Exception e) {}
+          }
           String pType = '';
+          for (String f : ['project_type', 'ess.billing.deployment_type', 'ess.billing.deployment_type.keyword']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                String v = doc[f].value.toString().trim().toLowerCase(Locale.ROOT);
+                if (v != '') { pType = v; break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (pType == '') {
+            try {
+              if (params._source?.project_type != null && params._source.project_type.toString().trim() != '') {
+                pType = params._source.project_type.toString().trim().toLowerCase(Locale.ROOT);
+              } else if (params._source?.ess?.billing?.deployment_type != null && params._source.ess.billing.deployment_type.toString().trim() != '') {
+                pType = params._source.ess.billing.deployment_type.toString().trim().toLowerCase(Locale.ROOT);
+              }
+            } catch (Exception e) {}
+          }
+          if (pType == 'oblt') { pType = 'observability'; }
+          else if (pType == 'sec') { pType = 'security'; }
+          else if (pType == 'vector') { pType = 'vectordb'; }
+          else if (pType == 'es') { pType = 'elasticsearch'; }
+          else if (pType == 'enterprise_search') { pType = 'search'; }
+
           String depGroup = '';
+          for (String tf : ['deployment_tags', 'deployment_tags.keyword', 'ess.billing.deployment_tags', 'ess.billing.deployment_tags.keyword']) {
+            if (depGroup != '') { break; }
+            try {
+              if (doc.containsKey(tf) && !doc[tf].empty) {
+                for (def tv : doc[tf]) {
+                  if (tv != null) {
+                    String s = tv.toString().trim();
+                    if (s.toLowerCase(Locale.ROOT).startsWith('chargeback_group:')) {
+                      String gv = s.substring('chargeback_group:'.length()).trim();
+                      if (gv != '') { depGroup = gv; break; }
+                    }
+                  }
+                }
+              }
+            } catch (Exception e) {}
+          }
+          if (depGroup == '') {
+            try {
+              for (def tags : [params._source?.deployment_tags, params._source?.ess?.billing?.deployment_tags]) {
+                if (depGroup != '') { break; }
+                if (tags instanceof List) {
+                  for (def tag : tags) {
+                    if (tag != null) {
+                      String s = tag.toString().trim();
+                      if (s.toLowerCase(Locale.ROOT).startsWith('chargeback_group:')) {
+                        String gv = s.substring('chargeback_group:'.length()).trim();
+                        if (gv != '') { depGroup = gv; break; }
+                      }
+                    }
+                  }
+                } else if (tags != null) {
+                  String s = tags.toString().trim();
+                  if (s.toLowerCase(Locale.ROOT).startsWith('chargeback_group:')) {
+                    String gv = s.substring('chargeback_group:'.length()).trim();
+                    if (gv != '') { depGroup = gv; }
+                  }
+                }
+              }
+            } catch (Exception e) {}
+          }
+          if (depGroup == '') {
+            for (String gf : ['deployment_group', 'deployment_group.keyword']) {
+              try {
+                if (doc.containsKey(gf) && !doc[gf].empty) {
+                  String v = doc[gf].value.toString().trim();
+                  if (v != '') { depGroup = v; break; }
+                }
+              } catch (Exception e) {}
+            }
+          }
+
+          double ecu = 0.0;
+          boolean hasEcu = false;
+          for (String f : ['total_ecu', 'ess.billing.total_ecu']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                ecu = ((Number)doc[f].value).doubleValue();
+                hasEcu = true; break;
+              }
+            } catch (Exception e) {}
+          }
+          if (!hasEcu) {
+            try {
+              if (params._source?.total_ecu instanceof Number) { ecu = ((Number)params._source.total_ecu).doubleValue(); }
+              else if (params._source?.ess?.billing?.total_ecu instanceof Number) { ecu = ((Number)params._source.ess.billing.total_ecu).doubleValue(); }
+            } catch (Exception e) {}
+          }
+
+          double qty = 0.0;
+          boolean hasQty = false;
+          for (String f : ['quantity_value', 'ess.billing.quantity.value']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                qty = ((Number)doc[f].value).doubleValue();
+                hasQty = true; break;
+              }
+            } catch (Exception e) {}
+          }
+          if (!hasQty) {
+            try {
+              if (params._source?.quantity_value instanceof Number) { qty = ((Number)params._source.quantity_value).doubleValue(); }
+              else if (params._source?.ess?.billing?.quantity?.value instanceof Number) { qty = ((Number)params._source.ess.billing.quantity.value).doubleValue(); }
+            } catch (Exception e) {}
+          }
+
           String orgId = '';
+          try {
+            if (doc.containsKey('ess.billing.organization_id') && !doc['ess.billing.organization_id'].empty) {
+              orgId = doc['ess.billing.organization_id'].value.toString();
+            } else if (params._source?.ess?.billing?.organization_id != null) {
+              orgId = params._source.ess.billing.organization_id.toString();
+            } else if (params._source?.organization_id != null) {
+              orgId = params._source.organization_id.toString();
+            }
+          } catch (Exception e) {}
+
           String cRegion = '';
+          try {
+            if (doc.containsKey('cloud.region') && !doc['cloud.region'].empty) {
+              cRegion = doc['cloud.region'].value.toString();
+            } else if (params._source?.cloud?.region != null) {
+              cRegion = params._source.cloud.region.toString();
+            }
+          } catch (Exception e) {}
+
           String bType = '';
+          try {
+            if (doc.containsKey('billing_type') && !doc['billing_type'].empty) {
+              bType = doc['billing_type'].value.toString();
+            } else if (params._source?.billing_type != null) {
+              bType = params._source.billing_type.toString();
+            } else if (doc.containsKey('ess.billing.type') && !doc['ess.billing.type'].empty) {
+              bType = doc['ess.billing.type'].value.toString();
+            } else if (params._source?.ess?.billing?.type != null) {
+              bType = params._source.ess.billing.type.toString();
+            }
+          } catch (Exception e) {}
+
           String bKind = '';
+          try {
+            if (doc.containsKey('billing_kind') && !doc['billing_kind'].empty) {
+              bKind = doc['billing_kind'].value.toString();
+            } else if (params._source?.billing_kind != null) {
+              bKind = params._source.billing_kind.toString();
+            } else if (doc.containsKey('ess.billing.kind') && !doc['ess.billing.kind'].empty) {
+              bKind = doc['ess.billing.kind'].value.toString();
+            } else if (params._source?.ess?.billing?.kind != null) {
+              bKind = params._source.ess.billing.kind.toString();
+            }
+          } catch (Exception e) {}
+
           String bUnit = '';
+          try {
+            if (doc.containsKey('billing_unit') && !doc['billing_unit'].empty) {
+              bUnit = doc['billing_unit'].value.toString();
+            } else if (params._source?.billing_unit != null) {
+              bUnit = params._source.billing_unit.toString();
+            } else if (doc.containsKey('ess.billing.unit') && !doc['ess.billing.unit'].empty) {
+              bUnit = doc['ess.billing.unit'].value.toString();
+            } else if (params._source?.ess?.billing?.unit != null) {
+              bUnit = params._source.ess.billing.unit.toString();
+            }
+          } catch (Exception e) {}
+
           double cRate = -1.0;
+          try {
+            if (doc.containsKey('conf_chargeable_unit_rate') && !doc['conf_chargeable_unit_rate'].empty) {
+              cRate = ((Number)doc['conf_chargeable_unit_rate'].value).doubleValue();
+            } else if (params._source?.conf_chargeable_unit_rate instanceof Number) {
+              cRate = ((Number)params._source.conf_chargeable_unit_rate).doubleValue();
+            }
+          } catch (Exception e) {}
+
           String cUnit = '';
+          try {
+            if (doc.containsKey('conf_chargeable_unit_rate_unit') && !doc['conf_chargeable_unit_rate_unit'].empty) {
+              cUnit = doc['conf_chargeable_unit_rate_unit'].value.toString();
+            } else if (params._source?.conf_chargeable_unit_rate_unit != null) {
+              cUnit = params._source.conf_chargeable_unit_rate_unit.toString();
+            }
+          } catch (Exception e) {}
+
           String cSym = '';
-          for (def recObj : mergedLeg.values()) {
-            Map rec = (Map)recObj;
-            sumEcu += ((Number)rec.get('total_ecu')).doubleValue();
-            sumQty += ((Number)rec.get('quantity_value')).doubleValue();
-            long rTs = ((Number)rec.get('ing_ts')).longValue();
-            String rGroup = rec.get('deployment_group') != null ? rec.get('deployment_group').toString() : '';
-            if (rTs > bestGroupTs || (rTs == bestGroupTs && rGroup != '')) {
-              bestGroupTs = rTs;
-              depGroup = rGroup;
+          try {
+            if (doc.containsKey('conf_currency_symbol') && !doc['conf_currency_symbol'].empty) {
+              cSym = doc['conf_currency_symbol'].value.toString();
+            } else if (params._source?.conf_currency_symbol != null) {
+              cSym = params._source.conf_currency_symbol.toString();
             }
-            boolean isNewer = rTs >= bestTs;
-            if (isNewer) { bestTs = rTs; }
-            if (rec.get('project_name') != '' && (pName == '' || isNewer)) { pName = rec.get('project_name').toString(); }
-            if (rec.get('project_type') != '' && (pType == '' || isNewer)) { pType = rec.get('project_type').toString(); }
-            if (rec.get('organization_id') != '' && (orgId == '' || isNewer)) { orgId = rec.get('organization_id').toString(); }
-            if (rec.get('cloud_region') != '' && (cRegion == '' || isNewer)) { cRegion = rec.get('cloud_region').toString(); }
-            if (rec.get('billing_type') != '' && (bType == '' || isNewer)) { bType = rec.get('billing_type').toString(); }
-            if (rec.get('billing_kind') != '' && (bKind == '' || isNewer)) { bKind = rec.get('billing_kind').toString(); }
-            if (rec.get('billing_unit') != '' && (bUnit == '' || isNewer)) { bUnit = rec.get('billing_unit').toString(); }
-            double rr = rec.get('conf_chargeable_unit_rate') instanceof Number ? ((Number)rec.get('conf_chargeable_unit_rate')).doubleValue() : -1.0;
-            if (rr >= 0.0 && (cRate < 0.0 || isNewer)) { cRate = rr; }
-            if (rec.get('conf_chargeable_unit_rate_unit') != null && rec.get('conf_chargeable_unit_rate_unit').toString() != '' && (cUnit == '' || isNewer)) { cUnit = rec.get('conf_chargeable_unit_rate_unit').toString(); }
-            if (rec.get('conf_currency_symbol') != null && rec.get('conf_currency_symbol').toString() != '' && (cSym == '' || isNewer)) { cSym = rec.get('conf_currency_symbol').toString(); }
-          }
-          Map out = [
-            'project_name': pName,
-            'project_type': pType,
-            'deployment_group': depGroup,
-            'total_ecu': sumEcu,
-            'quantity_value': sumQty,
-            'organization_id': orgId,
-            'cloud_region': cRegion,
-            'billing_type': bType,
-            'billing_kind': bKind,
-            'billing_unit': bUnit
-          ];
-          if (cRate >= 0.0) { out.put('conf_chargeable_unit_rate', cRate); }
-          if (cUnit != '') { out.put('conf_chargeable_unit_rate_unit', cUnit); }
-          if (cSym != '') { out.put('conf_currency_symbol', cSym); }
-          String outGrp = out.get('deployment_group') != null ? out.get('deployment_group').toString() : '';
-          if (outGrp != '') {
-            if (mergedGrpSeen.containsKey(outGrp)) {
-              out.put('group_first_seen_at', mergedGrpSeen.get(outGrp));
-            }
-            if (mergedGrpBf.containsKey(outGrp)) {
-              out.put('group_initial_backfill', Boolean.TRUE.equals(mergedGrpBf.get(outGrp)));
-            } else if (mergedGrpSeen.containsKey(outGrp)) {
-              out.put('group_initial_backfill', false);
-            }
-          }
-          return out;
+          } catch (Exception e) {}
+
+          String sep = Character.toString((char)31);
+          emit(
+            Long.toString(syncMs) + sep
+            + Double.toString(ecu) + sep
+            + Double.toString(qty) + sep
+            + pName.replace(sep, '') + sep
+            + pType.replace(sep, '') + sep
+            + depGroup.replace(sep, '') + sep
+            + orgId.replace(sep, '') + sep
+            + cRegion.replace(sep, '') + sep
+            + bType.replace(sep, '') + sep
+            + bKind.replace(sep, '') + sep
+            + bUnit.replace(sep, '') + sep
+            + Double.toString(cRate) + sep
+            + cUnit.replace(sep, '') + sep
+            + cSym.replace(sep, '')
+          );
+dest:
+  index: serverless_billing_cost_lookup-2
+  aliases:
+    - alias: serverless_billing_cost_lookup
+      move_on_creation: true
+  pipeline: 'logs-chargeback_serverless.lookup-{{ ingestPipelineName "lookup_billing" }}'
+frequency: 5m
+sync:
+  time:
+    field: cb_sync_ts
+    delay: 120s
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 365d
+pivot:
+  group_by:
+    "@timestamp":
+      date_histogram:
+        field: "@timestamp"
+        calendar_interval: 1d
+    project_id:
+      terms:
+        field: cb_project_id
+    sku:
+      terms:
+        field: cb_sku
+  aggregations:
+    # Prefer native chargeback_serverless.billing snapshots over legacy ess_billing.billing
+    # for the same (day, project_id, sku) bucket using Serverless-supported aggregations.
+    nat_snapshots:
+      terms:
+        field: cb_nat_rec
+        size: 20
+        order:
+          ing_ms: desc
+      aggs:
+        ing_ms:
+          max:
+            field: cb_sync_ms
+    leg_intervals:
+      terms:
+        field: cb_leg_interval_key
+        size: 200
+      aggs:
+        snaps:
+          terms:
+            field: cb_leg_rec
+            size: 5
+            order:
+              ing_ms: desc
+          aggs:
+            ing_ms:
+              max:
+                field: cb_sync_ms
+    grp_meta:
+      terms:
+        field: cb_deployment_group
+        size: 20
+      aggs:
+        first_seen:
+          min:
+            field: cb_group_first_seen_ms
+        any_backfill:
+          max:
+            field: cb_group_initial_backfill_num
 settings:
   deduce_mappings: false
   unattended: true
+  max_page_search_size: 100
 _meta:
   managed: true
   run_as_kibana_system: false

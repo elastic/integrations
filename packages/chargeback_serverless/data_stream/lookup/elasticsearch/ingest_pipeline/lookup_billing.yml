@@ -51,6 +51,207 @@ processors:
         String bType = '';
         String bKind = '';
         String bUnit = '';
+        if (ctx.nat_snapshots instanceof Map || ctx.leg_intervals instanceof Map || ctx.grp_meta instanceof Map) {
+          String sep = Character.toString((char)31);
+          Map mergedGrpSeen = new HashMap();
+          Map mergedGrpBf = new HashMap();
+          if (ctx.grp_meta instanceof Map) {
+            for (def ge : ((Map)ctx.grp_meta).entrySet()) {
+              String gk = ge.getKey() != null ? ge.getKey().toString() : '';
+              if (gk == '' || !(ge.getValue() instanceof Map)) { continue; }
+              Map gv = (Map)ge.getValue();
+              if (gv.get('first_seen') instanceof Number) {
+                long fs = Math.round(((Number)gv.get('first_seen')).doubleValue());
+                if (fs > 0L) { mergedGrpSeen.put(gk, fs); }
+              }
+              if (gv.get('any_backfill') instanceof Number) {
+                mergedGrpBf.put(gk, ((Number)gv.get('any_backfill')).doubleValue() > 0.0);
+              }
+            }
+          }
+          Map bestNat = null;
+          if (ctx.nat_snapshots instanceof Map && !((Map)ctx.nat_snapshots).isEmpty()) {
+            for (def keyObj : ((Map)ctx.nat_snapshots).keySet()) {
+              String recKey = keyObj.toString();
+              List parts = new ArrayList();
+              int pStart = 0;
+              while (true) {
+                int pIdx = recKey.indexOf(sep, pStart);
+                if (pIdx < 0) {
+                  parts.add(recKey.substring(pStart));
+                  break;
+                }
+                parts.add(recKey.substring(pStart, pIdx));
+                pStart = pIdx + 1;
+              }
+              if (parts.size() < 14) { continue; }
+              Map cand = [
+                'ing_ts': Long.parseLong(parts.get(0).toString()),
+                'total_ecu': Double.parseDouble(parts.get(1).toString()),
+                'quantity_value': Double.parseDouble(parts.get(2).toString()),
+                'project_name': parts.get(3).toString(),
+                'project_type': parts.get(4).toString(),
+                'deployment_group': parts.get(5).toString(),
+                'organization_id': parts.get(6).toString(),
+                'cloud_region': parts.get(7).toString(),
+                'billing_type': parts.get(8).toString(),
+                'billing_kind': parts.get(9).toString(),
+                'billing_unit': parts.get(10).toString(),
+                'conf_chargeable_unit_rate': Double.parseDouble(parts.get(11).toString()),
+                'conf_chargeable_unit_rate_unit': parts.get(12).toString(),
+                'conf_currency_symbol': parts.get(13).toString()
+              ];
+              if (bestNat == null) {
+                bestNat = cand;
+              } else {
+                long cTs = ((Number)cand.get('ing_ts')).longValue();
+                long bTs = ((Number)bestNat.get('ing_ts')).longValue();
+                int cMeta = (cand.get('deployment_group') != '' ? 2 : 0) + (cand.get('project_name') != '' ? 1 : 0);
+                int bMeta = (bestNat.get('deployment_group') != '' ? 2 : 0) + (bestNat.get('project_name') != '' ? 1 : 0);
+                if (cTs > bTs || (cTs == bTs && (cMeta > bMeta || (cMeta == bMeta && ((Number)cand.get('total_ecu')).doubleValue() >= ((Number)bestNat.get('total_ecu')).doubleValue())))) {
+                  bestNat = cand;
+                }
+              }
+            }
+          }
+          if (bestNat != null) {
+            bestNat.remove('ing_ts');
+            if (((Number)bestNat.get('conf_chargeable_unit_rate')).doubleValue() < 0.0) {
+              bestNat.remove('conf_chargeable_unit_rate');
+            }
+            String outGrp = bestNat.get('deployment_group') != null ? bestNat.get('deployment_group').toString() : '';
+            if (outGrp != '') {
+              if (mergedGrpSeen.containsKey(outGrp)) {
+                bestNat.put('group_first_seen_at', mergedGrpSeen.get(outGrp));
+              }
+              if (mergedGrpBf.containsKey(outGrp)) {
+                bestNat.put('group_initial_backfill', Boolean.TRUE.equals(mergedGrpBf.get(outGrp)));
+              } else if (mergedGrpSeen.containsKey(outGrp)) {
+                bestNat.put('group_initial_backfill', false);
+              }
+            }
+            ctx.latest_snapshot = bestNat;
+          } else if (ctx.leg_intervals instanceof Map && !((Map)ctx.leg_intervals).isEmpty()) {
+            List legWinners = new ArrayList();
+            for (def ivObj : ((Map)ctx.leg_intervals).values()) {
+              if (!(ivObj instanceof Map) || !(((Map)ivObj).get('snaps') instanceof Map)) { continue; }
+              Map bestRec = null;
+              for (def keyObj : ((Map)((Map)ivObj).get('snaps')).keySet()) {
+                String recKey = keyObj.toString();
+                List parts = new ArrayList();
+                int pStart = 0;
+                while (true) {
+                  int pIdx = recKey.indexOf(sep, pStart);
+                  if (pIdx < 0) {
+                    parts.add(recKey.substring(pStart));
+                    break;
+                  }
+                  parts.add(recKey.substring(pStart, pIdx));
+                  pStart = pIdx + 1;
+                }
+                if (parts.size() < 14) { continue; }
+                Map cand = [
+                  'ing_ts': Long.parseLong(parts.get(0).toString()),
+                  'total_ecu': Double.parseDouble(parts.get(1).toString()),
+                  'quantity_value': Double.parseDouble(parts.get(2).toString()),
+                  'project_name': parts.get(3).toString(),
+                  'project_type': parts.get(4).toString(),
+                  'deployment_group': parts.get(5).toString(),
+                  'organization_id': parts.get(6).toString(),
+                  'cloud_region': parts.get(7).toString(),
+                  'billing_type': parts.get(8).toString(),
+                  'billing_kind': parts.get(9).toString(),
+                  'billing_unit': parts.get(10).toString(),
+                  'conf_chargeable_unit_rate': Double.parseDouble(parts.get(11).toString()),
+                  'conf_chargeable_unit_rate_unit': parts.get(12).toString(),
+                  'conf_currency_symbol': parts.get(13).toString()
+                ];
+                if (bestRec == null) {
+                  bestRec = cand;
+                } else {
+                  long cTs = ((Number)cand.get('ing_ts')).longValue();
+                  long bTs = ((Number)bestRec.get('ing_ts')).longValue();
+                  int cMeta = (cand.get('deployment_group') != '' ? 2 : 0) + (cand.get('project_name') != '' ? 1 : 0);
+                  int bMeta = (bestRec.get('deployment_group') != '' ? 2 : 0) + (bestRec.get('project_name') != '' ? 1 : 0);
+                  if (cTs > bTs || (cTs == bTs && (cMeta > bMeta || (cMeta == bMeta && ((Number)cand.get('total_ecu')).doubleValue() >= ((Number)bestRec.get('total_ecu')).doubleValue())))) {
+                    bestRec = cand;
+                  }
+                }
+              }
+              if (bestRec != null) { legWinners.add(bestRec); }
+            }
+            if (!legWinners.isEmpty()) {
+              double sumEcu = 0.0;
+              double sumQty = 0.0;
+              long bestTs = -1L;
+              long bestGroupTs = -1L;
+              String pName = '';
+              String pType = '';
+              String depGroup = '';
+              String pOrgId = '';
+              String pRegion = '';
+              String pBType = '';
+              String pBKind = '';
+              String pBUnit = '';
+              double cRate = -1.0;
+              String cUnit = '';
+              String cSym = '';
+              for (def recObj : legWinners) {
+                Map rec = (Map)recObj;
+                sumEcu += ((Number)rec.get('total_ecu')).doubleValue();
+                sumQty += ((Number)rec.get('quantity_value')).doubleValue();
+                long rTs = ((Number)rec.get('ing_ts')).longValue();
+                String rGroup = rec.get('deployment_group') != null ? rec.get('deployment_group').toString() : '';
+                if (rTs > bestGroupTs || (rTs == bestGroupTs && rGroup != '')) {
+                  bestGroupTs = rTs;
+                  depGroup = rGroup;
+                }
+                boolean isNewer = rTs >= bestTs;
+                if (isNewer) { bestTs = rTs; }
+                if (rec.get('project_name') != '' && (pName == '' || isNewer)) { pName = rec.get('project_name').toString(); }
+                if (rec.get('project_type') != '' && (pType == '' || isNewer)) { pType = rec.get('project_type').toString(); }
+                if (rec.get('organization_id') != '' && (pOrgId == '' || isNewer)) { pOrgId = rec.get('organization_id').toString(); }
+                if (rec.get('cloud_region') != '' && (pRegion == '' || isNewer)) { pRegion = rec.get('cloud_region').toString(); }
+                if (rec.get('billing_type') != '' && (pBType == '' || isNewer)) { pBType = rec.get( 'billing_type').toString(); }
+                if (rec.get('billing_kind') != '' && (pBKind == '' || isNewer)) { pBKind = rec.get('billing_kind').toString(); }
+                if (rec.get('billing_unit') != '' && (pBUnit == '' || isNewer)) { pBUnit = rec.get('billing_unit').toString(); }
+                double rr = ((Number)rec.get('conf_chargeable_unit_rate')).doubleValue();
+                if (rr >= 0.0 && (cRate < 0.0 || isNewer)) { cRate = rr; }
+                if (rec.get('conf_chargeable_unit_rate_unit') != '' && (cUnit == '' || isNewer)) { cUnit = rec.get('conf_chargeable_unit_rate_unit').toString(); }
+                if (rec.get('conf_currency_symbol') != '' && (cSym == '' || isNewer)) { cSym = rec.get('conf_currency_symbol').toString(); }
+              }
+              Map legOut = [
+                'project_name': pName,
+                'project_type': pType,
+                'deployment_group': depGroup,
+                'total_ecu': sumEcu,
+                'quantity_value': sumQty,
+                'organization_id': pOrgId,
+                'cloud_region': pRegion,
+                'billing_type': pBType,
+                'billing_kind': pBKind,
+                'billing_unit': pBUnit
+              ];
+              if (cRate >= 0.0) { legOut.put('conf_chargeable_unit_rate', cRate); }
+              if (cUnit != '') { legOut.put('conf_chargeable_unit_rate_unit', cUnit); }
+              if (cSym != '') { legOut.put('conf_currency_symbol', cSym); }
+              if (depGroup != '') {
+                if (mergedGrpSeen.containsKey(depGroup)) {
+                  legOut.put('group_first_seen_at', mergedGrpSeen.get(depGroup));
+                }
+                if (mergedGrpBf.containsKey(depGroup)) {
+                  legOut.put('group_initial_backfill', Boolean.TRUE.equals(mergedGrpBf.get(depGroup)));
+                } else if (mergedGrpSeen.containsKey(depGroup)) {
+                  legOut.put('group_initial_backfill', false);
+                }
+              }
+              ctx.latest_snapshot = legOut;
+            }
+          }
+          ctx.remove('nat_snapshots');
+          ctx.remove('leg_intervals');
+          ctx.remove('grp_meta');
+        }
         if (ctx.latest_snapshot instanceof Map) {
           def snap = ctx.latest_snapshot;
           if (snap.top instanceof List && snap.top.size() > 0 && snap.top[0] instanceof Map && snap.top[0].metrics instanceof Map) {

@@ -33,6 +33,175 @@ source:
           if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
             emit(doc['@timestamp'].value.toInstant().toEpochMilli());
           }
+    cb_conf_ts:
+      type: long
+      script:
+        source: |
+          if (params._source == null || params._source.doc_type != 'config_snapshot') { return; }
+          long ts = (doc.containsKey('@timestamp') && !doc['@timestamp'].empty)
+            ? doc['@timestamp'].value.toInstant().toEpochMilli()
+            : 0L;
+          long syncTs = -1L;
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              syncTs = doc['event.ingested'].value.toInstant().toEpochMilli();
+            } else if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+              syncTs = doc['event.created'].value.toInstant().toEpochMilli();
+            }
+          } catch (Exception e) {}
+          if (syncTs > 0L && ts > (syncTs + 300000L)) {
+            ts = syncTs;
+          }
+          emit(ts);
+    cb_conf_emitter_rec:
+      type: keyword
+      script:
+        source: |
+          if (params._source == null || params._source.doc_type != 'config_snapshot') { return; }
+          String ns = (params._source.data_stream instanceof Map && params._source.data_stream.namespace != null)
+            ? params._source.data_stream.namespace.toString().trim()
+            : (params._source.get('data_stream.namespace') != null ? params._source.get('data_stream.namespace').toString().trim() : 'default');
+          if (ns == '') { ns = 'default'; }
+
+          String explicitId = params._source.get('conf_owner_id') != null
+            ? params._source.get('conf_owner_id').toString().trim()
+            : '';
+          boolean isExplicit = explicitId != '';
+          boolean fromInputId = false;
+          String pkgPolId = '';
+          if (params._source.get('package_policy_id') != null) {
+            pkgPolId = params._source.get('package_policy_id').toString().trim();
+          } else if (params._source.input instanceof Map && params._source.input.package_policy_id != null) {
+            pkgPolId = params._source.input.package_policy_id.toString().trim();
+          } else if (params._source.get('input.package_policy_id') != null) {
+            pkgPolId = params._source.get('input.package_policy_id').toString().trim();
+          } else if (params._source.elastic_agent instanceof Map && params._source.elastic_agent.package_policy_id != null) {
+            pkgPolId = params._source.elastic_agent.package_policy_id.toString().trim();
+          } else if (params._source.get('elastic_agent.package_policy_id') != null) {
+            pkgPolId = params._source.get('elastic_agent.package_policy_id').toString().trim();
+          } else if (params._source.get('conf_policy_id') != null) {
+            pkgPolId = params._source.get('conf_policy_id').toString().trim();
+            fromInputId = true;
+          } else if (params._source.input instanceof Map && params._source.input.id != null) {
+            pkgPolId = params._source.input.id.toString().trim();
+            fromInputId = true;
+          } else if (params._source.get('input.id') != null) {
+            pkgPolId = params._source.get('input.id').toString().trim();
+            fromInputId = true;
+          }
+          if (pkgPolId != '') {
+            def pm = /^(?:.*-)?([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$/.matcher(pkgPolId);
+            if (pm.matches()) {
+              pkgPolId = pm.group(1).toLowerCase(Locale.ROOT);
+            } else if (fromInputId) {
+              def sm = /^cel-chargeback_serverless\.(?:billing|usage)(?:-(.+))?$/.matcher(pkgPolId);
+              if (sm.matches()) {
+                pkgPolId = sm.group(1) != null ? ('cel-chargeback_serverless-' + sm.group(1)) : '';
+              } else if (!pkgPolId.startsWith('cel-chargeback_serverless-') && pkgPolId.contains('.')) {
+                pkgPolId = '';
+              }
+            }
+          }
+          if (pkgPolId == '') { return; }
+          String polId = pkgPolId;
+          String ownerKey = isExplicit ? ('explicit:' + explicitId) : ('implicit:pol:' + polId);
+          String sep = Character.toString((char)31);
+          String emId = ('pkg:' + ns + '|' + pkgPolId).replace(sep, '');
+          emit(emId + sep + ownerKey.replace(sep, ''));
+    cb_conf_owner_key:
+      type: keyword
+      script:
+        source: |
+          if (params._source == null || params._source.doc_type != 'config_snapshot') { return; }
+          String ns = (params._source.data_stream instanceof Map && params._source.data_stream.namespace != null)
+            ? params._source.data_stream.namespace.toString().trim()
+            : (params._source.get('data_stream.namespace') != null ? params._source.get('data_stream.namespace').toString().trim() : 'default');
+          if (ns == '') { ns = 'default'; }
+
+          String explicitId = params._source.get('conf_owner_id') != null
+            ? params._source.get('conf_owner_id').toString().trim()
+            : '';
+          boolean isExplicit = explicitId != '';
+          boolean fromInputId = false;
+          String pkgPolId = '';
+          if (params._source.get('package_policy_id') != null) {
+            pkgPolId = params._source.get('package_policy_id').toString().trim();
+          } else if (params._source.input instanceof Map && params._source.input.package_policy_id != null) {
+            pkgPolId = params._source.input.package_policy_id.toString().trim();
+          } else if (params._source.get('input.package_policy_id') != null) {
+            pkgPolId = params._source.get('input.package_policy_id').toString().trim();
+          } else if (params._source.elastic_agent instanceof Map && params._source.elastic_agent.package_policy_id != null) {
+            pkgPolId = params._source.elastic_agent.package_policy_id.toString().trim();
+          } else if (params._source.get('elastic_agent.package_policy_id') != null) {
+            pkgPolId = params._source.get('elastic_agent.package_policy_id').toString().trim();
+          } else if (params._source.get('conf_policy_id') != null) {
+            pkgPolId = params._source.get('conf_policy_id').toString().trim();
+            fromInputId = true;
+          } else if (params._source.input instanceof Map && params._source.input.id != null) {
+            pkgPolId = params._source.input.id.toString().trim();
+            fromInputId = true;
+          } else if (params._source.get('input.id') != null) {
+            pkgPolId = params._source.get('input.id').toString().trim();
+            fromInputId = true;
+          }
+          if (pkgPolId != '') {
+            def pm = /^(?:.*-)?([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$/.matcher(pkgPolId);
+            if (pm.matches()) {
+              pkgPolId = pm.group(1).toLowerCase(Locale.ROOT);
+            } else if (fromInputId) {
+              def sm = /^cel-chargeback_serverless\.(?:billing|usage)(?:-(.+))?$/.matcher(pkgPolId);
+              if (sm.matches()) {
+                pkgPolId = sm.group(1) != null ? ('cel-chargeback_serverless-' + sm.group(1)) : '';
+              } else if (!pkgPolId.startsWith('cel-chargeback_serverless-') && pkgPolId.contains('.')) {
+                pkgPolId = '';
+              }
+            }
+          }
+          String polId = pkgPolId;
+          if (polId == '') {
+            if (params._source.elastic_agent instanceof Map && params._source.elastic_agent.policy_id != null) {
+              polId = params._source.elastic_agent.policy_id.toString().trim();
+            } else if (params._source.get('elastic_agent.policy_id') != null) {
+              polId = params._source.get('elastic_agent.policy_id').toString().trim();
+            } else if (params._source.agent instanceof Map && params._source.agent.policy instanceof Map && params._source.agent.policy.id != null) {
+              polId = params._source.agent.policy.id.toString().trim();
+            } else if (params._source.get('agent.policy.id') != null) {
+              polId = params._source.get('agent.policy.id').toString().trim();
+            } else if (params._source.component instanceof Map && params._source.component.id != null) {
+              polId = params._source.component.id.toString().trim();
+            }
+          }
+          String ownerKey = isExplicit
+            ? ('explicit:' + explicitId)
+            : (polId != '' ? ('implicit:pol:' + polId) : ('implicit:ns:' + ns));
+          emit(ownerKey.replace(Character.toString((char)31), ''));
+    cb_conf_snap_rec:
+      type: keyword
+      script:
+        source: |
+          if (params._source == null || params._source.doc_type != 'config_snapshot') { return; }
+          long ts = (doc.containsKey('@timestamp') && !doc['@timestamp'].empty)
+            ? doc['@timestamp'].value.toInstant().toEpochMilli()
+            : 0L;
+          long syncTs = -1L;
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              syncTs = doc['event.ingested'].value.toInstant().toEpochMilli();
+            } else if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+              syncTs = doc['event.created'].value.toInstant().toEpochMilli();
+            }
+          } catch (Exception e) {}
+          if (syncTs > 0L && ts > (syncTs + 300000L)) {
+            ts = syncTs;
+          }
+          def rawSync = params._source.get('conf_sync_enabled');
+          boolean syncEnabled = (rawSync == null) || rawSync.toString().equalsIgnoreCase('true');
+          String sep = Character.toString((char)31);
+          String rateStr = params._source.get('conf_chargeable_unit_rate') != null ? params._source.get('conf_chargeable_unit_rate').toString().replace(sep, '') : '';
+          String unitStr = params._source.get('conf_chargeable_unit_rate_unit') != null ? params._source.get('conf_chargeable_unit_rate_unit').toString().replace(sep, '') : '';
+          String symStr = params._source.get('conf_currency_symbol') != null ? params._source.get('conf_currency_symbol').toString().replace(sep, '') : '';
+          String effFromStr = params._source.get('conf_effective_from') != null ? params._source.get('conf_effective_from').toString().replace(sep, '') : '';
+          emit(Long.toString(ts) + sep + (syncEnabled ? '1' : '0') + sep + rateStr + sep + unitStr + sep + symStr + sep + effFromStr);
 dest:
   index: serverless_chargeback_conf_lookup-1
   aliases:
@@ -55,265 +224,44 @@ pivot:
         term:
           doc_type: config_snapshot
       aggs:
-        latest:
-          scripted_metric:
-            init_script: |
-              state.owners = [:];
-              state.emitters = [:];
-            map_script: |
-              if (params._source == null || params._source.doc_type != 'config_snapshot') { return; }
-              long ts = (doc.containsKey('@timestamp') && !doc['@timestamp'].empty)
-                ? doc['@timestamp'].value.toInstant().toEpochMilli()
-                : 0L;
-              long syncTs = (doc.containsKey('cb_sync_ts') && !doc['cb_sync_ts'].empty)
-                ? doc['cb_sync_ts'].value.toInstant().toEpochMilli()
-                : -1L;
-              if (syncTs > 0L && ts > (syncTs + 300000L)) {
-                ts = syncTs;
-              }
-              def rawSync = params._source.get('conf_sync_enabled');
-              boolean syncEnabled = (rawSync == null) || rawSync.toString().equalsIgnoreCase('true');
-
-              String ns = (params._source.data_stream instanceof Map && params._source.data_stream.namespace != null)
-                ? params._source.data_stream.namespace.toString().trim()
-                : (params._source.get('data_stream.namespace') != null ? params._source.get('data_stream.namespace').toString().trim() : 'default');
-              if (ns == '') { ns = 'default'; }
-
-              String explicitId = params._source.get('conf_owner_id') != null
-                ? params._source.get('conf_owner_id').toString().trim()
-                : '';
-              boolean isExplicit = explicitId != '';
-              boolean fromInputId = false;
-              String pkgPolId = '';
-              if (params._source.get('package_policy_id') != null) {
-                pkgPolId = params._source.get('package_policy_id').toString().trim();
-              } else if (params._source.input instanceof Map && params._source.input.package_policy_id != null) {
-                pkgPolId = params._source.input.package_policy_id.toString().trim();
-              } else if (params._source.get('input.package_policy_id') != null) {
-                pkgPolId = params._source.get('input.package_policy_id').toString().trim();
-              } else if (params._source.elastic_agent instanceof Map && params._source.elastic_agent.package_policy_id != null) {
-                pkgPolId = params._source.elastic_agent.package_policy_id.toString().trim();
-              } else if (params._source.get('elastic_agent.package_policy_id') != null) {
-                pkgPolId = params._source.get('elastic_agent.package_policy_id').toString().trim();
-              } else if (params._source.get('conf_policy_id') != null) {
-                pkgPolId = params._source.get('conf_policy_id').toString().trim();
-                fromInputId = true;
-              } else if (params._source.input instanceof Map && params._source.input.id != null) {
-                pkgPolId = params._source.input.id.toString().trim();
-                fromInputId = true;
-              } else if (params._source.get('input.id') != null) {
-                pkgPolId = params._source.get('input.id').toString().trim();
-                fromInputId = true;
-              }
-              if (pkgPolId != '') {
-                def pm = /^(?:.*-)?([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$/.matcher(pkgPolId);
-                if (pm.matches()) {
-                  pkgPolId = pm.group(1).toLowerCase(Locale.ROOT);
-                } else if (fromInputId) {
-                  def sm = /^cel-chargeback_serverless\.(?:billing|usage)(?:-(.+))?$/.matcher(pkgPolId);
-                  if (sm.matches()) {
-                    pkgPolId = sm.group(1) != null ? ('cel-chargeback_serverless-' + sm.group(1)) : '';
-                  } else if (!pkgPolId.startsWith('cel-chargeback_serverless-') && pkgPolId.contains('.')) {
-                    pkgPolId = '';
-                  }
-                }
-              }
-              String polId = pkgPolId;
-              if (polId == '') {
-                if (params._source.elastic_agent instanceof Map && params._source.elastic_agent.policy_id != null) {
-                  polId = params._source.elastic_agent.policy_id.toString().trim();
-                } else if (params._source.get('elastic_agent.policy_id') != null) {
-                  polId = params._source.get('elastic_agent.policy_id').toString().trim();
-                } else if (params._source.agent instanceof Map && params._source.agent.policy instanceof Map && params._source.agent.policy.id != null) {
-                  polId = params._source.agent.policy.id.toString().trim();
-                } else if (params._source.get('agent.policy.id') != null) {
-                  polId = params._source.get('agent.policy.id').toString().trim();
-                } else if (params._source.component instanceof Map && params._source.component.id != null) {
-                  polId = params._source.component.id.toString().trim();
-                }
-              }
-              String ownerKey = isExplicit
-                ? ('explicit:' + explicitId)
-                : (polId != '' ? ('implicit:pol:' + polId) : ('implicit:ns:' + ns));
-
-              if (pkgPolId != '') {
-                String emitterId = 'pkg:' + ns + '|' + pkgPolId;
-                Map em = (Map)state.emitters.get(emitterId);
-                if (em == null) {
-                  em = [:];
-                  state.emitters.put(emitterId, em);
-                }
-                long prevEmTs = em.get(ownerKey) instanceof Number ? ((Number)em.get(ownerKey)).longValue() : -1L;
-                if (ts > prevEmTs) {
-                  em.put(ownerKey, ts);
-                }
-              }
-
-              Map owner = (Map)state.owners.get(ownerKey);
-              if (owner == null) {
-                owner = [
-                  'explicit': isExplicit,
-                  'newestTs': -1L,
-                  'newestSync': false,
-                  'snap': [:]
-                ];
-                state.owners.put(ownerKey, owner);
-              }
-              long oTs = ((Number)owner.get('newestTs')).longValue();
-              if (ts > oTs || (ts == oTs && !syncEnabled)) {
-                owner.put('newestTs', ts);
-                owner.put('newestSync', syncEnabled);
-                Map snap = ['ts': ts, 'sync': syncEnabled];
-                for (def entry : params._source.entrySet()) {
-                  String k = entry.getKey().toString();
-                  if (k.startsWith('conf_') && entry.getValue() != null) {
-                    snap[k] = entry.getValue();
-                  }
-                }
-                owner.put('snap', snap);
-              }
-            combine_script: "return state;"
-            reduce_script: |
-              Map mergedOwners = [:];
-              Map mergedEmitters = [:];
-              for (def s : states) {
-                if (s instanceof Map && s.emitters instanceof Map) {
-                  for (def ee : ((Map)s.emitters).entrySet()) {
-                    String eid = ee.getKey().toString();
-                    if (!(ee.getValue() instanceof Map)) { continue; }
-                    Map dstEm = (Map)mergedEmitters.get(eid);
-                    if (dstEm == null) {
-                      dstEm = [:];
-                      mergedEmitters.put(eid, dstEm);
-                    }
-                    for (def oke : ((Map)ee.getValue()).entrySet()) {
-                      String eok = oke.getKey().toString();
-                      long ets = oke.getValue() instanceof Number ? ((Number)oke.getValue()).longValue() : -1L;
-                      long curEts = dstEm.get(eok) instanceof Number ? ((Number)dstEm.get(eok)).longValue() : -1L;
-                      if (ets > curEts) {
-                        dstEm.put(eok, ets);
-                      }
-                    }
-                  }
-                }
-                if (!(s instanceof Map) || !(s.owners instanceof Map)) { continue; }
-                for (def oe : ((Map)s.owners).entrySet()) {
-                  String ok = oe.getKey().toString();
-                  if (!(oe.getValue() instanceof Map)) { continue; }
-                  Map src = (Map)oe.getValue();
-                  boolean srcExp = Boolean.TRUE.equals(src.get('explicit'));
-                  long srcTs = src.get('newestTs') instanceof Number ? ((Number)src.get('newestTs')).longValue() : -1L;
-                  boolean srcSync = Boolean.TRUE.equals(src.get('newestSync'));
-                  Map dst = (Map)mergedOwners.get(ok);
-                  if (dst == null) {
-                    dst = [
-                      'explicit': srcExp,
-                      'newestTs': -1L,
-                      'newestSync': false,
-                      'snap': [:]
-                    ];
-                    mergedOwners.put(ok, dst);
-                  }
-                  if (srcExp) { dst.put('explicit', true); }
-                  long dstTs = ((Number)dst.get('newestTs')).longValue();
-                  if (srcTs >= 0L && (srcTs > dstTs || (srcTs == dstTs && !srcSync))) {
-                    dst.put('newestTs', srcTs);
-                    dst.put('newestSync', srcSync);
-                    if (src.get('snap') instanceof Map) {
-                      dst.put('snap', src.get('snap'));
-                    }
-                  }
-                }
-              }
-              if (mergedOwners.isEmpty()) {
-                return ['has_snapshots': false, 'policy_sync_enabled': false, 'owner_conflict': false, 'snap': [:]];
-              }
-              Set currentEmitterKeys = new HashSet();
-              Map supersededAt = [:];
-              for (def ee : mergedEmitters.entrySet()) {
-                Map em = (Map)ee.getValue();
-                long maxEmTs = -1L;
-                for (def v : em.values()) {
-                  long vts = v instanceof Number ? ((Number)v).longValue() : -1L;
-                  if (vts > maxEmTs) { maxEmTs = vts; }
-                }
-                for (def oke : em.entrySet()) {
-                  String kName = oke.getKey().toString();
-                  long kts = oke.getValue() instanceof Number ? ((Number)oke.getValue()).longValue() : -1L;
-                  if (kts >= 0L && kts == maxEmTs) {
-                    currentEmitterKeys.add(kName);
-                  } else if (kts >= 0L && kts < maxEmTs) {
-                    long prevSup = supersededAt.get(kName) instanceof Number ? ((Number)supersededAt.get(kName)).longValue() : -1L;
-                    if (kts > prevSup) {
-                      supersededAt.put(kName, kts);
-                    }
-                  }
-                }
-              }
-              Map activeOwners = [:];
-              for (def e : mergedOwners.entrySet()) {
-                String ok = e.getKey().toString();
-                Map ov = (Map)e.getValue();
-                long ovTs = ov.get('newestTs') instanceof Number ? ((Number)ov.get('newestTs')).longValue() : -1L;
-                long supTs = supersededAt.get(ok) instanceof Number ? ((Number)supersededAt.get(ok)).longValue() : -1L;
-                if (!currentEmitterKeys.contains(ok) && supTs >= 0L && ovTs <= supTs) {
-                  continue;
-                }
-                activeOwners.put(ok, ov);
-              }
-              if (activeOwners.isEmpty()) {
-                activeOwners = mergedOwners;
-              }
-              long maxActiveTs = -1L;
-              for (def ovObj : activeOwners.values()) {
-                long tsVal = ((Number)((Map)ovObj).get('newestTs')).longValue();
-                if (tsVal > maxActiveTs) { maxActiveTs = tsVal; }
-              }
-              long staleCutoffMs = 172800000L;
-              List enabledExplicit = new ArrayList();
-              List enabledImplicit = new ArrayList();
-              for (def e : activeOwners.entrySet()) {
-                String ok = e.getKey().toString();
-                Map ov = (Map)e.getValue();
-                if (!Boolean.TRUE.equals(ov.get('newestSync'))) { continue; }
-                long ovTs = ((Number)ov.get('newestTs')).longValue();
-                if (maxActiveTs > 0L && ovTs >= 0L && (maxActiveTs - ovTs) > staleCutoffMs) { continue; }
-                if (Boolean.TRUE.equals(ov.get('explicit'))) {
-                  enabledExplicit.add(ok);
-                } else {
-                  enabledImplicit.add(ok);
-                }
-              }
-              String selectedOwner = null;
-              boolean ownerConflict = false;
-              if (enabledExplicit.size() == 1) {
-                selectedOwner = enabledExplicit.get(0).toString();
-              } else if (enabledExplicit.size() > 1) {
-                ownerConflict = true;
-              } else if (enabledImplicit.size() == 1) {
-                selectedOwner = enabledImplicit.get(0).toString();
-              } else if (enabledImplicit.size() > 1) {
-                ownerConflict = true;
-              }
-              boolean policySyncEnabled = false;
-              Map bestSnap = [:];
-              if (!ownerConflict && selectedOwner != null) {
-                Map sel = (Map)activeOwners.get(selectedOwner);
-                policySyncEnabled = Boolean.TRUE.equals(sel.get('newestSync'));
-                if (policySyncEnabled && sel.get('snap') instanceof Map) {
-                  bestSnap = new HashMap((Map)sel.get('snap'));
-                }
-              }
-              return [
-                'has_snapshots': true,
-                'policy_sync_enabled': policySyncEnabled,
-                'owner_conflict': ownerConflict,
-                'owner_key': selectedOwner != null ? selectedOwner : '',
-                'snap': bestSnap
-              ];
+        doc_cnt:
+          value_count:
+            field: cb_conf_ts
+        emitters:
+          terms:
+            field: cb_conf_emitter_rec
+            size: 500
+            order:
+              max_ts: desc
+          aggs:
+            max_ts:
+              max:
+                field: cb_conf_ts
+        owners:
+          terms:
+            field: cb_conf_owner_key
+            size: 200
+            order:
+              newest_ts: desc
+          aggs:
+            newest_ts:
+              max:
+                field: cb_conf_ts
+            snaps:
+              terms:
+                field: cb_conf_snap_rec
+                size: 5
+                order:
+                  - snap_ts: desc
+                  - _key: asc
+              aggs:
+                snap_ts:
+                  max:
+                    field: cb_conf_ts
 settings:
   deduce_mappings: false
   unattended: true
+  max_page_search_size: 100
 _meta:
   managed: true
   run_as_kibana_system: false

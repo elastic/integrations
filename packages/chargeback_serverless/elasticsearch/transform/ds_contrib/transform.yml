@@ -237,8 +237,359 @@ source:
             }
           }
           emit(false);
+    cb_sync_ms:
+      type: long
+      script:
+        source: |
+          long syncMs = 0L;
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              syncMs = doc['event.ingested'].value.toInstant().toEpochMilli();
+            } else if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+              syncMs = doc['event.created'].value.toInstant().toEpochMilli();
+            } else {
+              for (String k : ['ingested', 'created']) {
+                def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get(k) : null;
+                if (rawVal == null && params._source != null) { rawVal = params._source.get('event.' + k); }
+                if (rawVal != null) {
+                  if (rawVal instanceof Number) { syncMs = ((Number)rawVal).longValue(); break; }
+                  String s = rawVal.toString().trim();
+                  if (s != '') {
+                    try { syncMs = ZonedDateTime.parse(s).toInstant().toEpochMilli(); break; } catch (Exception e) {}
+                  }
+                }
+              }
+            }
+          } catch (Exception e) {}
+          if (syncMs == 0L) {
+            try {
+              if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+                syncMs = doc['@timestamp'].value.toInstant().toEpochMilli();
+              } else if (params._source?.get('@timestamp') != null) {
+                syncMs = ZonedDateTime.parse(params._source.get('@timestamp').toString().trim()).toInstant().toEpochMilli();
+              }
+            } catch (Exception e) {}
+          }
+          emit(syncMs);
+    cb_is_native_usage:
+      type: boolean
+      script:
+        source: |
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
+            }
+          } catch (Exception e) {}
+          emit(isNat);
+    cb_nat_idx_time:
+      type: long
+      script:
+        source: |
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
+            }
+          } catch (Exception e) {}
+          if (!isNat) { return; }
+          long v = 0L;
+          try {
+            if (doc.containsKey('datastream_sum_indexing_time') && !doc['datastream_sum_indexing_time'].empty) {
+              v = ((Number)doc['datastream_sum_indexing_time'].value).longValue();
+            } else if (params._source?.datastream_sum_indexing_time instanceof Number) {
+              v = ((Number)params._source.datastream_sum_indexing_time).longValue();
+            }
+          } catch (Exception e) {}
+          emit(v);
+    cb_nat_qry_time:
+      type: long
+      script:
+        source: |
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
+            }
+          } catch (Exception e) {}
+          if (!isNat) { return; }
+          long v = 0L;
+          try {
+            if (doc.containsKey('datastream_sum_query_time') && !doc['datastream_sum_query_time'].empty) {
+              v = ((Number)doc['datastream_sum_query_time'].value).longValue();
+            } else if (params._source?.datastream_sum_query_time instanceof Number) {
+              v = ((Number)params._source.datastream_sum_query_time).longValue();
+            }
+          } catch (Exception e) {}
+          emit(v);
+    cb_nat_sto_size:
+      type: long
+      script:
+        source: |
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
+            }
+          } catch (Exception e) {}
+          if (!isNat) { return; }
+          long v = 0L;
+          try {
+            if (doc.containsKey('datastream_sum_data_set_store_size') && !doc['datastream_sum_data_set_store_size'].empty) {
+              v = ((Number)doc['datastream_sum_data_set_store_size'].value).longValue();
+            } else if (params._source?.datastream_sum_data_set_store_size instanceof Number) {
+              v = ((Number)params._source.datastream_sum_data_set_store_size).longValue();
+            }
+          } catch (Exception e) {}
+          emit(v);
+    cb_nat_meta_rec:
+      type: keyword
+      script:
+        source: |
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
+            }
+          } catch (Exception e) {}
+          if (!isNat) { return; }
+          long syncMs = 0L;
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              syncMs = doc['event.ingested'].value.toInstant().toEpochMilli();
+            } else if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+              syncMs = doc['event.created'].value.toInstant().toEpochMilli();
+            } else {
+              for (String k : ['ingested', 'created']) {
+                def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get(k) : null;
+                if (rawVal == null && params._source != null) { rawVal = params._source.get('event.' + k); }
+                if (rawVal != null) {
+                  if (rawVal instanceof Number) { syncMs = ((Number)rawVal).longValue(); break; }
+                  String s = rawVal.toString().trim();
+                  if (s != '') {
+                    try { syncMs = ZonedDateTime.parse(s).toInstant().toEpochMilli(); break; } catch (Exception e) {}
+                  }
+                }
+              }
+            }
+          } catch (Exception e) {}
+          if (syncMs == 0L) {
+            try {
+              if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+                syncMs = doc['@timestamp'].value.toInstant().toEpochMilli();
+              } else if (params._source?.get('@timestamp') != null) {
+                syncMs = ZonedDateTime.parse(params._source.get('@timestamp').toString().trim()).toInstant().toEpochMilli();
+              }
+            } catch (Exception e) {}
+          }
+          Map m = [:];
+          for (String mf : ['project_name', 'project_type', 'deployment_group', 'ds_type', 'ds_dataset', 'ds_namespace', 'conf_chargeable_unit_rate_unit', 'conf_currency_symbol']) {
+            try {
+              if (doc.containsKey(mf) && !doc[mf].empty) {
+                m[mf] = doc[mf].value.toString();
+              } else if (params._source != null && params._source.get(mf) != null) {
+                m[mf] = params._source.get(mf).toString();
+              }
+            } catch (Exception e) {}
+          }
+          double cRate = -1.0;
+          try {
+            if (doc.containsKey('conf_chargeable_unit_rate') && !doc['conf_chargeable_unit_rate'].empty) {
+              cRate = ((Number)doc['conf_chargeable_unit_rate'].value).doubleValue();
+            } else if (params._source?.conf_chargeable_unit_rate instanceof Number) {
+              cRate = ((Number)params._source.conf_chargeable_unit_rate).doubleValue();
+            }
+          } catch (Exception e) {}
+          String sep = Character.toString((char)31);
+          String pName = m.containsKey('project_name') ? m.get('project_name').toString().replace(sep, '') : '';
+          String pType = m.containsKey('project_type') ? m.get('project_type').toString().replace(sep, '') : '';
+          String depGrp = m.containsKey('deployment_group') ? m.get('deployment_group').toString().replace(sep, '') : '';
+          String dsType = m.containsKey('ds_type') ? m.get('ds_type').toString().replace(sep, '') : '';
+          String dsDataset = m.containsKey('ds_dataset') ? m.get('ds_dataset').toString().replace(sep, '') : '';
+          String dsNamespace = m.containsKey('ds_namespace') ? m.get('ds_namespace').toString().replace(sep, '') : '';
+          String cUnit = m.containsKey('conf_chargeable_unit_rate_unit') ? m.get('conf_chargeable_unit_rate_unit').toString().replace(sep, '') : '';
+          String cSym = m.containsKey('conf_currency_symbol') ? m.get('conf_currency_symbol').toString().replace(sep, '') : '';
+          emit(
+            Long.toString(syncMs) + sep + pName + sep + pType + sep + depGrp + sep
+            + dsType + sep + dsDataset + sep + dsNamespace + sep
+            + Double.toString(cRate) + sep + cUnit + sep + cSym
+          );
+    cb_leg_index_name:
+      type: keyword
+      script:
+        source: |
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
+            }
+          } catch (Exception e) {}
+          if (isNat) { return; }
+          String idxName = '_default_';
+          for (String nf : ['elasticsearch.index.name.keyword', 'elasticsearch.index.name']) {
+            try {
+              if (doc.containsKey(nf) && !doc[nf].empty) {
+                idxName = doc[nf].value.toString();
+                if (idxName != '') { break; }
+              }
+            } catch (Exception e) {}
+          }
+          if ((idxName == '' || idxName == '_default_') && params._source?.elasticsearch?.index?.name != null) {
+            idxName = params._source.elasticsearch.index.name.toString();
+          }
+          emit(idxName == '' ? '_default_' : idxName);
+    cb_leg_slot:
+      type: long
+      script:
+        source: |
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
+            }
+          } catch (Exception e) {}
+          if (isNat) { return; }
+          long slot = 0L;
+          try {
+            if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+              slot = doc['@timestamp'].value.toInstant().toEpochMilli() / 600000L;
+            }
+          } catch (Exception e) {}
+          emit(slot);
+    cb_leg_idx_delta:
+      type: long
+      script:
+        source: |
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
+            }
+          } catch (Exception e) {}
+          if (isNat) { return; }
+          try {
+            if (doc.containsKey('elasticsearch.index.total.indexing.index_time_in_millis_delta') && !doc['elasticsearch.index.total.indexing.index_time_in_millis_delta'].empty) {
+              long v = ((Number)doc['elasticsearch.index.total.indexing.index_time_in_millis_delta'].value).longValue();
+              emit(v < 0L ? 0L : v);
+            } else if (params._source?.elasticsearch?.index?.total?.indexing?.index_time_in_millis_delta instanceof Number) {
+              long v = ((Number)params._source.elasticsearch.index.total.indexing.index_time_in_millis_delta).longValue();
+              emit(v < 0L ? 0L : v);
+            }
+          } catch (Exception e) {}
+    cb_leg_idx_cum:
+      type: long
+      script:
+        source: |
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
+            }
+          } catch (Exception e) {}
+          if (isNat) { return; }
+          try {
+            if (doc.containsKey('elasticsearch.index.total.indexing.index_time_in_millis_delta') && !doc['elasticsearch.index.total.indexing.index_time_in_millis_delta'].empty) { return; }
+            if (params._source?.elasticsearch?.index?.total?.indexing?.index_time_in_millis_delta instanceof Number) { return; }
+            if (doc.containsKey('elasticsearch.index.total.indexing.index_time_in_millis') && !doc['elasticsearch.index.total.indexing.index_time_in_millis'].empty) {
+              long v = ((Number)doc['elasticsearch.index.total.indexing.index_time_in_millis'].value).longValue();
+              if (v >= 0L) { emit(v); }
+            } else if (params._source?.elasticsearch?.index?.total?.indexing?.index_time_in_millis instanceof Number) {
+              long v = ((Number)params._source.elasticsearch.index.total.indexing.index_time_in_millis).longValue();
+              if (v >= 0L) { emit(v); }
+            }
+          } catch (Exception e) {}
+    cb_leg_qry_delta:
+      type: long
+      script:
+        source: |
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
+            }
+          } catch (Exception e) {}
+          if (isNat) { return; }
+          try {
+            if (doc.containsKey('elasticsearch.index.total.search.query_time_in_millis_delta') && !doc['elasticsearch.index.total.search.query_time_in_millis_delta'].empty) {
+              long v = ((Number)doc['elasticsearch.index.total.search.query_time_in_millis_delta'].value).longValue();
+              emit(v < 0L ? 0L : v);
+            } else if (params._source?.elasticsearch?.index?.total?.search?.query_time_in_millis_delta instanceof Number) {
+              long v = ((Number)params._source.elasticsearch.index.total.search.query_time_in_millis_delta).longValue();
+              emit(v < 0L ? 0L : v);
+            }
+          } catch (Exception e) {}
+    cb_leg_qry_cum:
+      type: long
+      script:
+        source: |
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
+            }
+          } catch (Exception e) {}
+          if (isNat) { return; }
+          try {
+            if (doc.containsKey('elasticsearch.index.total.search.query_time_in_millis_delta') && !doc['elasticsearch.index.total.search.query_time_in_millis_delta'].empty) { return; }
+            if (params._source?.elasticsearch?.index?.total?.search?.query_time_in_millis_delta instanceof Number) { return; }
+            if (doc.containsKey('elasticsearch.index.total.search.query_time_in_millis') && !doc['elasticsearch.index.total.search.query_time_in_millis'].empty) {
+              long v = ((Number)doc['elasticsearch.index.total.search.query_time_in_millis'].value).longValue();
+              if (v >= 0L) { emit(v); }
+            } else if (params._source?.elasticsearch?.index?.total?.search?.query_time_in_millis instanceof Number) {
+              long v = ((Number)params._source.elasticsearch.index.total.search.query_time_in_millis).longValue();
+              if (v >= 0L) { emit(v); }
+            }
+          } catch (Exception e) {}
+    cb_leg_sto_bytes:
+      type: long
+      script:
+        source: |
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
+            }
+          } catch (Exception e) {}
+          if (isNat) { return; }
+          long stoB = 0L;
+          try {
+            if (doc.containsKey('elasticsearch.index.primaries.store.total_data_set_size_in_bytes') && !doc['elasticsearch.index.primaries.store.total_data_set_size_in_bytes'].empty) {
+              stoB = ((Number)doc['elasticsearch.index.primaries.store.total_data_set_size_in_bytes'].value).longValue();
+            } else if (params._source?.elasticsearch?.index?.primaries?.store?.total_data_set_size_in_bytes instanceof Number) {
+              stoB = ((Number)params._source.elasticsearch.index.primaries.store.total_data_set_size_in_bytes).longValue();
+            } else if (doc.containsKey('elasticsearch.index.total.store.size_in_bytes') && !doc['elasticsearch.index.total.store.size_in_bytes'].empty) {
+              stoB = ((Number)doc['elasticsearch.index.total.store.size_in_bytes'].value).longValue();
+            } else if (params._source?.elasticsearch?.index?.total?.store?.size_in_bytes instanceof Number) {
+              stoB = ((Number)params._source.elasticsearch.index.total.store.size_in_bytes).longValue();
+            }
+          } catch (Exception e) {}
+          emit(stoB < 0L ? 0L : stoB);
 dest:
-  index: serverless_datastream_contribution_lookup-1
+  index: serverless_datastream_contribution_lookup-2
   aliases:
     - alias: serverless_datastream_contribution_lookup
       move_on_creation: true
@@ -266,311 +617,87 @@ pivot:
         field: cb_datastream
   aggregations:
     # Prefer native chargeback_serverless.usage metrics over legacy monitoring-indices*
-    # when both exist for the same (day, project_id, datastream) bucket.
+    # for the same (day, project_id, datastream) bucket using Serverless-supported aggregations.
     rollup:
-      scripted_metric:
-        init_script: |
-          state.nat_cnt = 0L;
-          state.nat_idx = 0L;
-          state.nat_qry = 0L;
-          state.nat_sto = 0L;
-          state.nat_ts = -1L;
-          state.nat_meta = [:];
-          state.leg_units = new HashMap();
-          state.leg_all_slots = new HashSet();
-        map_script: |
-          boolean isNat = false;
-          try {
-            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
-              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
-            } else if (params._source?.data_stream?.dataset != null) {
-              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
-            }
-          } catch (Exception e) {}
-
-          if (isNat) {
-            state.nat_cnt = ((Number)state.nat_cnt).longValue() + 1L;
-            long idxV = 0L;
-            long qryV = 0L;
-            long stoV = 0L;
-            try {
-              if (doc.containsKey('datastream_sum_indexing_time') && !doc['datastream_sum_indexing_time'].empty) {
-                idxV = ((Number)doc['datastream_sum_indexing_time'].value).longValue();
-              } else if (params._source?.datastream_sum_indexing_time instanceof Number) {
-                idxV = ((Number)params._source.datastream_sum_indexing_time).longValue();
-              }
-            } catch (Exception e) {}
-            try {
-              if (doc.containsKey('datastream_sum_query_time') && !doc['datastream_sum_query_time'].empty) {
-                qryV = ((Number)doc['datastream_sum_query_time'].value).longValue();
-              } else if (params._source?.datastream_sum_query_time instanceof Number) {
-                qryV = ((Number)params._source.datastream_sum_query_time).longValue();
-              }
-            } catch (Exception e) {}
-            try {
-              if (doc.containsKey('datastream_sum_data_set_store_size') && !doc['datastream_sum_data_set_store_size'].empty) {
-                stoV = ((Number)doc['datastream_sum_data_set_store_size'].value).longValue();
-              } else if (params._source?.datastream_sum_data_set_store_size instanceof Number) {
-                stoV = ((Number)params._source.datastream_sum_data_set_store_size).longValue();
-              }
-            } catch (Exception e) {}
-            if (idxV > ((Number)state.nat_idx).longValue()) { state.nat_idx = idxV; }
-            if (qryV > ((Number)state.nat_qry).longValue()) { state.nat_qry = qryV; }
-            if (stoV > ((Number)state.nat_sto).longValue()) { state.nat_sto = stoV; }
-
-            long syncTs = 0L;
-            try {
-              if (doc.containsKey('cb_sync_ts') && !doc['cb_sync_ts'].empty) {
-                syncTs = doc['cb_sync_ts'].value.toInstant().toEpochMilli();
-              }
-            } catch (Exception e) {}
-            if (syncTs >= ((Number)state.nat_ts).longValue()) {
-              state.nat_ts = syncTs;
-              for (String mf : ['project_name', 'project_type', 'deployment_group', 'ds_type', 'ds_dataset', 'ds_namespace', 'conf_chargeable_unit_rate_unit', 'conf_currency_symbol']) {
-                try {
-                  if (doc.containsKey(mf) && !doc[mf].empty) {
-                    state.nat_meta.put(mf, doc[mf].value.toString());
-                  } else if (params._source != null && params._source.get(mf) != null) {
-                    state.nat_meta.put(mf, params._source.get(mf).toString());
-                  }
-                } catch (Exception e) {}
-              }
-              try {
-                if (doc.containsKey('conf_chargeable_unit_rate') && !doc['conf_chargeable_unit_rate'].empty) {
-                  state.nat_meta.put('conf_chargeable_unit_rate', ((Number)doc['conf_chargeable_unit_rate'].value).doubleValue());
-                } else if (params._source?.conf_chargeable_unit_rate instanceof Number) {
-                  state.nat_meta.put('conf_chargeable_unit_rate', ((Number)params._source.conf_chargeable_unit_rate).doubleValue());
-                }
-              } catch (Exception e) {}
-            }
-            return;
-          }
-
-          // Legacy monitoring-indices* document
-          String idxName = '_default_';
-          for (String nf : ['elasticsearch.index.name.keyword', 'elasticsearch.index.name']) {
-            try {
-              if (doc.containsKey(nf) && !doc[nf].empty) {
-                idxName = doc[nf].value.toString();
-                if (idxName != '') { break; }
-              }
-            } catch (Exception e) {}
-          }
-          if ((idxName == '' || idxName == '_default_') && params._source?.elasticsearch?.index?.name != null) {
-            idxName = params._source.elasticsearch.index.name.toString();
-          }
-
-          long idxMs = 0L;
-          long qryMs = 0L;
-          boolean hasIdxDelta = false;
-          boolean hasQryDelta = false;
-          long idxCum = -1L;
-          long qryCum = -1L;
-          long stoB = 0L;
-          long slot = 0L;
-          try {
-            if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
-              slot = doc['@timestamp'].value.toInstant().toEpochMilli() / 600000L;
-            }
-          } catch (Exception e) {}
-          state.leg_all_slots.add(slot);
-          try {
-            if (doc.containsKey('elasticsearch.index.total.indexing.index_time_in_millis_delta') && !doc['elasticsearch.index.total.indexing.index_time_in_millis_delta'].empty) {
-              idxMs = ((Number)doc['elasticsearch.index.total.indexing.index_time_in_millis_delta'].value).longValue();
-              hasIdxDelta = true;
-            } else if (params._source?.elasticsearch?.index?.total?.indexing?.index_time_in_millis_delta instanceof Number) {
-              idxMs = ((Number)params._source.elasticsearch.index.total.indexing.index_time_in_millis_delta).longValue();
-              hasIdxDelta = true;
-            } else if (doc.containsKey('elasticsearch.index.total.indexing.index_time_in_millis') && !doc['elasticsearch.index.total.indexing.index_time_in_millis'].empty) {
-              idxCum = ((Number)doc['elasticsearch.index.total.indexing.index_time_in_millis'].value).longValue();
-            } else if (params._source?.elasticsearch?.index?.total?.indexing?.index_time_in_millis instanceof Number) {
-              idxCum = ((Number)params._source.elasticsearch.index.total.indexing.index_time_in_millis).longValue();
-            }
-          } catch (Exception e) {}
-          try {
-            if (doc.containsKey('elasticsearch.index.total.search.query_time_in_millis_delta') && !doc['elasticsearch.index.total.search.query_time_in_millis_delta'].empty) {
-              qryMs = ((Number)doc['elasticsearch.index.total.search.query_time_in_millis_delta'].value).longValue();
-              hasQryDelta = true;
-            } else if (params._source?.elasticsearch?.index?.total?.search?.query_time_in_millis_delta instanceof Number) {
-              qryMs = ((Number)params._source.elasticsearch.index.total.search.query_time_in_millis_delta).longValue();
-              hasQryDelta = true;
-            } else if (doc.containsKey('elasticsearch.index.total.search.query_time_in_millis') && !doc['elasticsearch.index.total.search.query_time_in_millis'].empty) {
-              qryCum = ((Number)doc['elasticsearch.index.total.search.query_time_in_millis'].value).longValue();
-            } else if (params._source?.elasticsearch?.index?.total?.search?.query_time_in_millis instanceof Number) {
-              qryCum = ((Number)params._source.elasticsearch.index.total.search.query_time_in_millis).longValue();
-            }
-          } catch (Exception e) {}
-          try {
-            if (doc.containsKey('elasticsearch.index.primaries.store.total_data_set_size_in_bytes') && !doc['elasticsearch.index.primaries.store.total_data_set_size_in_bytes'].empty) {
-              stoB = ((Number)doc['elasticsearch.index.primaries.store.total_data_set_size_in_bytes'].value).longValue();
-            } else if (params._source?.elasticsearch?.index?.primaries?.store?.total_data_set_size_in_bytes instanceof Number) {
-              stoB = ((Number)params._source.elasticsearch.index.primaries.store.total_data_set_size_in_bytes).longValue();
-            } else if (doc.containsKey('elasticsearch.index.total.store.size_in_bytes') && !doc['elasticsearch.index.total.store.size_in_bytes'].empty) {
-              stoB = ((Number)doc['elasticsearch.index.total.store.size_in_bytes'].value).longValue();
-            } else if (params._source?.elasticsearch?.index?.total?.store?.size_in_bytes instanceof Number) {
-              stoB = ((Number)params._source.elasticsearch.index.total.store.size_in_bytes).longValue();
-            }
-          } catch (Exception e) {}
-          if (idxMs < 0L) { idxMs = 0L; }
-          if (qryMs < 0L) { qryMs = 0L; }
-          if (stoB < 0L) { stoB = 0L; }
-
-          Map u = (Map)state.leg_units.get(idxName);
-          if (u == null) {
-            u = [
-              'idx_d': 0L, 'qry_d': 0L, 'has_idx_d': false, 'has_qry_d': false,
-              'idx_min': -1L, 'idx_max': -1L, 'qry_min': -1L, 'qry_max': -1L,
-              'slots': new HashMap()
-            ];
-            state.leg_units.put(idxName, u);
-          }
-          if (hasIdxDelta) {
-            u.put('idx_d', ((Number)u.get('idx_d')).longValue() + idxMs);
-            u.put('has_idx_d', true);
-          } else if (idxCum >= 0L) {
-            long imn = ((Number)u.get('idx_min')).longValue();
-            long imx = ((Number)u.get('idx_max')).longValue();
-            if (imn < 0L || idxCum < imn) { u.put('idx_min', idxCum); }
-            if (idxCum > imx) { u.put('idx_max', idxCum); }
-          }
-          if (hasQryDelta) {
-            u.put('qry_d', ((Number)u.get('qry_d')).longValue() + qryMs);
-            u.put('has_qry_d', true);
-          } else if (qryCum >= 0L) {
-            long qmn = ((Number)u.get('qry_min')).longValue();
-            long qmx = ((Number)u.get('qry_max')).longValue();
-            if (qmn < 0L || qryCum < qmn) { u.put('qry_min', qryCum); }
-            if (qryCum > qmx) { u.put('qry_max', qryCum); }
-          }
-          Map slotMap = (Map)u.get('slots');
-          Long prevSlotSto = (Long)slotMap.get(slot);
-          if (prevSlotSto == null || stoB > prevSlotSto.longValue()) {
-            slotMap.put(slot, stoB);
-          }
-        combine_script: "return state;"
-        reduce_script: |
-          long natCnt = 0L;
-          long natIdx = 0L;
-          long natQry = 0L;
-          long natSto = 0L;
-          long bestNatTs = -1L;
-          Map natMeta = [:];
-          Map legMerged = new HashMap();
-          Set allLegSlots = new HashSet();
-          for (def st : states) {
-            if (st == null) { continue; }
-            long sc = st.nat_cnt instanceof Number ? ((Number)st.nat_cnt).longValue() : 0L;
-            if (sc > 0L) {
-              natCnt += sc;
-              long si = ((Number)st.nat_idx).longValue();
-              long sq = ((Number)st.nat_qry).longValue();
-              long ss = ((Number)st.nat_sto).longValue();
-              if (si > natIdx) { natIdx = si; }
-              if (sq > natQry) { natQry = sq; }
-              if (ss > natSto) { natSto = ss; }
-              long sTs = ((Number)st.nat_ts).longValue();
-              if (sTs >= bestNatTs && st.nat_meta instanceof Map) {
-                bestNatTs = sTs;
-                natMeta = new HashMap((Map)st.nat_meta);
-              }
-            }
-            if (st.leg_all_slots instanceof Collection) {
-              for (def sl : (Collection)st.leg_all_slots) {
-                if (sl != null) { allLegSlots.add(sl); }
-              }
-            }
-            if (st.leg_units instanceof Map) {
-              for (def e : ((Map)st.leg_units).entrySet()) {
-                String k = e.getKey().toString();
-                Map sv = (Map)e.getValue();
-                Map dv = (Map)legMerged.get(k);
-                if (dv == null) {
-                  Map copySlots = new HashMap();
-                  if (sv.get('slots') instanceof Map) {
-                    for (def se : ((Map)sv.get('slots')).entrySet()) {
-                      copySlots.put(se.getKey(), ((Number)se.getValue()).longValue());
-                    }
-                  }
-                  legMerged.put(k, [
-                    'idx_d': ((Number)sv.get('idx_d')).longValue(),
-                    'qry_d': ((Number)sv.get('qry_d')).longValue(),
-                    'has_idx_d': Boolean.TRUE.equals(sv.get('has_idx_d')),
-                    'has_qry_d': Boolean.TRUE.equals(sv.get('has_qry_d')),
-                    'idx_min': ((Number)sv.get('idx_min')).longValue(),
-                    'idx_max': ((Number)sv.get('idx_max')).longValue(),
-                    'qry_min': ((Number)sv.get('qry_min')).longValue(),
-                    'qry_max': ((Number)sv.get('qry_max')).longValue(),
-                    'slots': copySlots
-                  ]);
-                } else {
-                  dv.put('idx_d', ((Number)dv.get('idx_d')).longValue() + ((Number)sv.get('idx_d')).longValue());
-                  dv.put('qry_d', ((Number)dv.get('qry_d')).longValue() + ((Number)sv.get('qry_d')).longValue());
-                  if (Boolean.TRUE.equals(sv.get('has_idx_d'))) { dv.put('has_idx_d', true); }
-                  if (Boolean.TRUE.equals(sv.get('has_qry_d'))) { dv.put('has_qry_d', true); }
-                  long sImn = ((Number)sv.get('idx_min')).longValue();
-                  long sImx = ((Number)sv.get('idx_max')).longValue();
-                  if (sImn >= 0L && (((Number)dv.get('idx_min')).longValue() < 0L || sImn < ((Number)dv.get('idx_min')).longValue())) { dv.put('idx_min', sImn); }
-                  if (sImx > ((Number)dv.get('idx_max')).longValue()) { dv.put('idx_max', sImx); }
-                  long sQmn = ((Number)sv.get('qry_min')).longValue();
-                  long sQmx = ((Number)sv.get('qry_max')).longValue();
-                  if (sQmn >= 0L && (((Number)dv.get('qry_min')).longValue() < 0L || sQmn < ((Number)dv.get('qry_min')).longValue())) { dv.put('qry_min', sQmn); }
-                  if (sQmx > ((Number)dv.get('qry_max')).longValue()) { dv.put('qry_max', sQmx); }
-                  if (sv.get('slots') instanceof Map) {
-                    Map dstSlots = (Map)dv.get('slots');
-                    for (def se : ((Map)sv.get('slots')).entrySet()) {
-                      long svSto = ((Number)se.getValue()).longValue();
-                      Long dvSto = (Long)dstSlots.get(se.getKey());
-                      if (dvSto == null || svSto > dvSto.longValue()) {
-                        dstSlots.put(se.getKey(), svSto);
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-          if (natCnt > 0L) {
-            Map out = new HashMap(natMeta);
-            out.put('datastream_sum_indexing_time', natIdx);
-            out.put('datastream_sum_query_time', natQry);
-            out.put('datastream_sum_data_set_store_size', natSto);
-            return out;
-          }
-          long legIdx = 0L;
-          long legQry = 0L;
-          long legStoSlotSum = 0L;
-          for (def uObj : legMerged.values()) {
-            Map u = (Map)uObj;
-            if (Boolean.TRUE.equals(u.get('has_idx_d'))) {
-              legIdx += ((Number)u.get('idx_d')).longValue();
-            } else {
-              long imn = ((Number)u.get('idx_min')).longValue();
-              long imx = ((Number)u.get('idx_max')).longValue();
-              if (imn >= 0L && imx > imn) { legIdx += (imx - imn); }
-            }
-            if (Boolean.TRUE.equals(u.get('has_qry_d'))) {
-              legQry += ((Number)u.get('qry_d')).longValue();
-            } else {
-              long qmn = ((Number)u.get('qry_min')).longValue();
-              long qmx = ((Number)u.get('qry_max')).longValue();
-              if (qmn >= 0L && qmx > qmn) { legQry += (qmx - qmn); }
-            }
-            if (u.get('slots') instanceof Map) {
-              for (def stoV : ((Map)u.get('slots')).values()) {
-                legStoSlotSum += ((Number)stoV).longValue();
-              }
-            }
-          }
-          long slotDenom = allLegSlots.size() > 1 ? (long)allLegSlots.size() : 1L;
-          long legSto = Math.round((double)legStoSlotSum / (double)slotDenom);
-          return [
-            'datastream_sum_indexing_time': legIdx,
-            'datastream_sum_query_time': legQry,
-            'datastream_sum_data_set_store_size': legSto
-          ];
+      filter:
+        match_all: {}
+      aggs:
+        nat:
+          filter:
+            term:
+              cb_is_native_usage: true
+          aggs:
+            cnt:
+              value_count:
+                field: cb_sync_ms
+            idx:
+              max:
+                field: cb_nat_idx_time
+            qry:
+              max:
+                field: cb_nat_qry_time
+            sto:
+              max:
+                field: cb_nat_sto_size
+            meta:
+              terms:
+                field: cb_nat_meta_rec
+                size: 5
+                order:
+                  sync_ms: desc
+              aggs:
+                sync_ms:
+                  max:
+                    field: cb_sync_ms
+        leg:
+          filter:
+            term:
+              cb_is_native_usage: false
+          aggs:
+            all_slots:
+              cardinality:
+                field: cb_leg_slot
+                precision_threshold: 1000
+            by_idx:
+              terms:
+                field: cb_leg_index_name
+                size: 500
+              aggs:
+                idx_d:
+                  sum:
+                    field: cb_leg_idx_delta
+                idx_d_cnt:
+                  value_count:
+                    field: cb_leg_idx_delta
+                idx_min:
+                  min:
+                    field: cb_leg_idx_cum
+                idx_max:
+                  max:
+                    field: cb_leg_idx_cum
+                qry_d:
+                  sum:
+                    field: cb_leg_qry_delta
+                qry_d_cnt:
+                  value_count:
+                    field: cb_leg_qry_delta
+                qry_min:
+                  min:
+                    field: cb_leg_qry_cum
+                qry_max:
+                  max:
+                    field: cb_leg_qry_cum
+                sto_avg:
+                  avg:
+                    field: cb_leg_sto_bytes
+                slots:
+                  cardinality:
+                    field: cb_leg_slot
+                    precision_threshold: 1000
 settings:
   deduce_mappings: false
   unattended: true
+  max_page_search_size: 100
 _meta:
   managed: true
   run_as_kibana_system: false

@@ -8,10 +8,131 @@ processors:
       tag: set_usage_lookup_keys
       source: |
         if (ctx.rollup instanceof Map) {
-          def r = ctx.rollup;
-          for (String k : ['datastream_sum_indexing_time', 'datastream_sum_query_time', 'datastream_sum_data_set_store_size', 'deployment_sum_indexing_time', 'deployment_sum_query_time', 'deployment_sum_data_set_store_size', 'project_name', 'project_type', 'deployment_group', 'ds_type', 'ds_dataset', 'ds_namespace', 'conf_chargeable_unit_rate', 'conf_chargeable_unit_rate_unit', 'conf_currency_symbol']) {
-            if (r.containsKey(k) && r.get(k) != null) {
-              ctx[k] = r.get(k);
+          Map r = (Map)ctx.rollup;
+          if (r.nat instanceof Map || r.leg instanceof Map) {
+            boolean isProjLevel = !ctx.containsKey('datastream');
+            Map natMap = (r.nat instanceof Map) ? (Map)r.nat : null;
+            long natCnt = (natMap != null && natMap.get('cnt') instanceof Number)
+              ? Math.round(((Number)natMap.get('cnt')).doubleValue())
+              : 0L;
+            if (natCnt > 0L) {
+              if (natMap.get('by_ds') instanceof Map) {
+                long sumIdx = 0L;
+                long sumQry = 0L;
+                long sumSto = 0L;
+                for (def dsObj : ((Map)natMap.get('by_ds')).values()) {
+                  if (!(dsObj instanceof Map)) { continue; }
+                  Map dm = (Map)dsObj;
+                  if (dm.get('idx') instanceof Number) { sumIdx += Math.round(((Number)dm.get('idx')).doubleValue()); }
+                  if (dm.get('qry') instanceof Number) { sumQry += Math.round(((Number)dm.get('qry')).doubleValue()); }
+                  if (dm.get('sto') instanceof Number) { sumSto += Math.round(((Number)dm.get('sto')).doubleValue()); }
+                }
+                ctx.deployment_sum_indexing_time = sumIdx;
+                ctx.deployment_sum_query_time = sumQry;
+                ctx.deployment_sum_data_set_store_size = sumSto;
+              } else {
+                long dsIdx = (natMap.get('idx') instanceof Number) ? Math.round(((Number)natMap.get('idx')).doubleValue()) : 0L;
+                long dsQry = (natMap.get('qry') instanceof Number) ? Math.round(((Number)natMap.get('qry')).doubleValue()) : 0L;
+                long dsSto = (natMap.get('sto') instanceof Number) ? Math.round(((Number)natMap.get('sto')).doubleValue()) : 0L;
+                if (isProjLevel) {
+                  ctx.deployment_sum_indexing_time = dsIdx;
+                  ctx.deployment_sum_query_time = dsQry;
+                  ctx.deployment_sum_data_set_store_size = dsSto;
+                } else {
+                  ctx.datastream_sum_indexing_time = dsIdx;
+                  ctx.datastream_sum_query_time = dsQry;
+                  ctx.datastream_sum_data_set_store_size = dsSto;
+                }
+              }
+              if (natMap.get('meta') instanceof Map) {
+                String sep = Character.toString((char)31);
+                long bestSyncTs = -1L;
+                for (def keyObj : ((Map)natMap.get('meta')).keySet()) {
+                  String recKey = keyObj.toString();
+                  List parts = new ArrayList();
+                  int pStart = 0;
+                  while (true) {
+                    int pIdx = recKey.indexOf(sep, pStart);
+                    if (pIdx < 0) {
+                      parts.add(recKey.substring(pStart));
+                      break;
+                    }
+                    parts.add(recKey.substring(pStart, pIdx));
+                    pStart = pIdx + 1;
+                  }
+                  if (parts.size() < 10) { continue; }
+                  long sTs = 0L;
+                  try { sTs = Long.parseLong(parts.get(0).toString()); } catch (Exception e) {}
+                  if (sTs >= bestSyncTs) {
+                    bestSyncTs = sTs;
+                    if (parts.get(1).toString() != '') { ctx.project_name = parts.get(1).toString(); }
+                    if (parts.get(2).toString() != '') { ctx.project_type = parts.get(2).toString(); }
+                    if (parts.get(3).toString() != '') { ctx.deployment_group = parts.get(3).toString(); }
+                    if (parts.get(4).toString() != '') { ctx.ds_type = parts.get(4).toString(); }
+                    if (parts.get(5).toString() != '') { ctx.ds_dataset = parts.get(5).toString(); }
+                    if (parts.get(6).toString() != '') { ctx.ds_namespace = parts.get(6).toString(); }
+                    try {
+                      double cr = Double.parseDouble(parts.get(7).toString());
+                      if (cr >= 0.0) { ctx.conf_chargeable_unit_rate = cr; }
+                    } catch (Exception e) {}
+                    if (parts.get(8).toString() != '') { ctx.conf_chargeable_unit_rate_unit = parts.get(8).toString(); }
+                    if (parts.get(9).toString() != '') { ctx.conf_currency_symbol = parts.get(9).toString(); }
+                  }
+                }
+              }
+            } else if (r.leg instanceof Map) {
+              Map legMap = (Map)r.leg;
+              long legIdx = 0L;
+              long legQry = 0L;
+              double legStoSlotSum = 0.0;
+              long allSlots = (legMap.get('all_slots') instanceof Number)
+                ? Math.round(((Number)legMap.get('all_slots')).doubleValue())
+                : 0L;
+              if (legMap.get('by_idx') instanceof Map) {
+                for (def uObj : ((Map)legMap.get('by_idx')).values()) {
+                  if (!(uObj instanceof Map)) { continue; }
+                  Map u = (Map)uObj;
+                  long idxDCnt = (u.get('idx_d_cnt') instanceof Number) ? Math.round(((Number)u.get('idx_d_cnt')).doubleValue()) : 0L;
+                  if (idxDCnt > 0L && u.get('idx_d') instanceof Number) {
+                    legIdx += Math.round(((Number)u.get('idx_d')).doubleValue());
+                  } else if (u.get('idx_min') instanceof Number && u.get('idx_max') instanceof Number) {
+                    long imn = Math.round(((Number)u.get('idx_min')).doubleValue());
+                    long imx = Math.round(((Number)u.get('idx_max')).doubleValue());
+                    if (imn >= 0L && imx > imn) { legIdx += (imx - imn); }
+                  }
+                  long qryDCnt = (u.get('qry_d_cnt') instanceof Number) ? Math.round(((Number)u.get('qry_d_cnt')).doubleValue()) : 0L;
+                  if (qryDCnt > 0L && u.get('qry_d') instanceof Number) {
+                    legQry += Math.round(((Number)u.get('qry_d')).doubleValue());
+                  } else if (u.get('qry_min') instanceof Number && u.get('qry_max') instanceof Number) {
+                    long qmn = Math.round(((Number)u.get('qry_min')).doubleValue());
+                    long qmx = Math.round(((Number)u.get('qry_max')).doubleValue());
+                    if (qmn >= 0L && qmx > qmn) { legQry += (qmx - qmn); }
+                  }
+                  if (u.get('sto_avg') instanceof Number) {
+                    double avgSto = ((Number)u.get('sto_avg')).doubleValue();
+                    double uSlots = (u.get('slots') instanceof Number) ? ((Number)u.get('slots')).doubleValue() : 1.0;
+                    if (uSlots < 1.0) { uSlots = 1.0; }
+                    legStoSlotSum += avgSto * uSlots;
+                  }
+                }
+              }
+              long slotDenom = allSlots > 1L ? allSlots : 1L;
+              long legSto = Math.round(legStoSlotSum / (double)slotDenom);
+              if (isProjLevel) {
+                ctx.deployment_sum_indexing_time = legIdx;
+                ctx.deployment_sum_query_time = legQry;
+                ctx.deployment_sum_data_set_store_size = legSto;
+              } else {
+                ctx.datastream_sum_indexing_time = legIdx;
+                ctx.datastream_sum_query_time = legQry;
+                ctx.datastream_sum_data_set_store_size = legSto;
+              }
+            }
+          } else {
+            for (String k : ['datastream_sum_indexing_time', 'datastream_sum_query_time', 'datastream_sum_data_set_store_size', 'deployment_sum_indexing_time', 'deployment_sum_query_time', 'deployment_sum_data_set_store_size', 'project_name', 'project_type', 'deployment_group', 'ds_type', 'ds_dataset', 'ds_namespace', 'conf_chargeable_unit_rate', 'conf_chargeable_unit_rate_unit', 'conf_currency_symbol']) {
+              if (r.containsKey(k) && r.get(k) != null) {
+                ctx[k] = r.get(k);
+              }
             }
           }
           ctx.remove('rollup');
