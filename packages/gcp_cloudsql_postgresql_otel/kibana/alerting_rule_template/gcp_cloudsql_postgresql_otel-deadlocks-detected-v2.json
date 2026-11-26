@@ -1,0 +1,75 @@
+{
+  "id": "gcp_cloudsql_postgresql_otel-deadlocks-detected-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud SQL PostgreSQL OTel] Deadlocks detected",
+        "description": "Alerts when a PostgreSQL database records 5 or more deadlocks within 15 minutes. PostgreSQL resolves each deadlock by aborting one transaction, so a burst means application requests are failing because of conflicting lock ordering. PostgreSQL-only metric, so no engine marker is needed. Grouped by database_id and database.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudsql",
+          "postgresql"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "15m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudsql_postgresql.otel-*\n| WHERE gcp.resource_type == \"cloudsql_database\"\n// PostgreSQL-only metric: no engine marker needed.\n// deadlock_count is a DELTA metric (deadlocks per 60 s sample): SUM(SUM_OVER_TIME)\n// gives an exact total across fragments. Never use RATE() on DELTA metrics.\n| STATS deadlocks = SUM(SUM_OVER_TIME(`cloudsql.googleapis.com/database/postgresql/deadlock_count`))\n    BY database_id, attributes.database",
+        "breach": {
+          "segment": "// Keep the source attribute name (no RENAME): alert grouping uses this column,\n// and some rule-creation paths map grouping back to the source field.\n// Alert threshold: deadlocks per database within the rule window.\n// Isolated deadlocks are resolved by PostgreSQL (one transaction is aborted);\n// a burst indicates conflicting lock ordering in application code.\n// Set to >= 1 to be notified of every deadlock.\nWHERE deadlocks >= 5\n| KEEP database_id, attributes.database, deadlocks\n| SORT deadlocks DESC\n| LIMIT 100"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "database_id",
+          "attributes.database"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudsql_postgresql_otel-deadlocks-detected-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud SQL PostgreSQL deadlocks detected\n\nPostgreSQL detected repeated deadlocks and aborted the affected transactions.\n\n### Triage\n1. Find the statements involved in the PostgreSQL error log in Cloud Logging (`deadlock detected`, with the process and lock details).\n2. Check `backends_in_wait` with wait_event_type `Lock` and, with Query Insights, `lock_time` by user, to identify the workload.\n3. Fix lock ordering in the application (touch rows/tables in a consistent order), keep transactions short, and use retries for serialization failures.\n\n### Tuning\n- Set the threshold to 1 to be notified of every deadlock, or raise it for workloads with known, retried deadlocks."
+          }
+        },
+        {
+          "id": "gcp_cloudsql_postgresql_otel-deadlocks-detected-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_postgresql_otel-86472830-c83c-4f8b-8753-5d275d1d9391"
+          }
+        },
+        {
+          "id": "gcp_cloudsql_postgresql_otel-deadlocks-detected-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_postgresql_otel-b8e67303-561a-4a0c-9acf-b35357a26541"
+          }
+        }
+      ]
+    }
+  }
+}
