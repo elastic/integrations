@@ -257,7 +257,7 @@ program: |-
   replay_start.format(time_layout.RFC3339).as(replay_start_str,
   state.?cursor.replay_completed_to.orValue("").as(replay_completed_to,
   state.?cursor.replay_target_to.orValue("").as(replay_target_to,
-  ((!state.?cursor.initial_from.hasValue() && state.?cursor.last_to.hasValue()) ? high_water.format(time_layout.RFC3339) : state.?cursor.pre_v07_high_water.orValue("")).as(_raw_pre_v07_hw,
+  ((!state.?cursor.initial_from.hasValue() && state.?cursor.last_to.hasValue()) ? high_water.format(time_layout.RFC3339) : string(state.?cursor.pre_v07_high_water.orValue(""))).as(_raw_pre_v07_hw,
   ((_raw_pre_v07_hw != "" && timestamp(_raw_pre_v07_hw) > replay_start) ? _raw_pre_v07_hw : "").as(pre_v07_hw_str,
   (state.?cursor.ech_id_map.orValue(dyn({})).as(em, type(em) == map ? em : dyn({}))).as(prev_ech_id_map,
   state.?cursor.recent_day_keys.orValue([]).filter(pk,
@@ -1169,7 +1169,7 @@ program: |-
   "want_more": has_more_days,
   }
   )
-  )))))))))))
+  )))))))))
   )
   )
   )
@@ -1212,7 +1212,7 @@ program: |-
   ))))
   )))))))))
   ))))))
-  ))))))))))))))))))
+  ))))))))))))))))))))
   )
 {{#if tags.length}}
 tags:
