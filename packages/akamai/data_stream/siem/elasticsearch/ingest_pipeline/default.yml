@@ -420,6 +420,8 @@ processors:
         ArrayList rules_array = new ArrayList();
         ArrayList rule_actions = new ArrayList();
         ArrayList rule_tags = new ArrayList();
+        ArrayList rule_ids = new ArrayList();
+        ArrayList rule_messages = new ArrayList();
         for (def i = 0; i < ctx.json.attackData.rules.length; i++) {
           HashMap map = new HashMap();
           for (String key: params.items) {
@@ -433,6 +435,10 @@ processors:
                   rule_tags.add(value.toLowerCase());
                 } else if (key == "ruleActions") {
                   rule_actions.add(value.toLowerCase());
+                } else if (key == "rules") {
+                  rule_ids.add(value);
+                } else if (key == "ruleMessages") {
+                  rule_messages.add(value);
                 }
               }
               catch (Exception e) {
@@ -459,6 +465,8 @@ processors:
         ctx.akamai.siem.rules = rules_array;
         ctx._rule_actions = rule_actions;
         ctx._rule_tags = rule_tags;
+        ctx._rule_ids = rule_ids;
+        ctx._rule_messages = rule_messages;
   - foreach:
       tag: foreach__rule_actions_8dcb88da
       field: _rule_actions
@@ -487,6 +495,36 @@ processors:
   - remove:
       tag: remove__rule_tags_6a724da0
       field: _rule_tags
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      tag: foreach__rule_ids_9e981be7
+      field: _rule_ids
+      ignore_missing: true
+      processor:
+        append:
+          tag: append_akamai_siem_rule_ids_fc06d4d9
+          field: akamai.siem.rule_ids
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - remove:
+      tag: remove__rule_ids_c79f347f
+      field: _rule_ids
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      tag: foreach__rule_messages_bff59ee4
+      field: _rule_messages
+      ignore_missing: true
+      processor:
+        append:
+          tag: append_akamai_siem_rule_messages_106825f9
+          field: akamai.siem.rule_messages
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - remove:
+      tag: remove__rule_messages_44099fec
+      field: _rule_messages
       ignore_missing: true
       ignore_failure: true
   - rename:
