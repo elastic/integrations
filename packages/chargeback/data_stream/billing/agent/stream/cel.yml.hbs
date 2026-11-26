@@ -753,8 +753,8 @@ program: |-
   :
   ((has(body.instances) && body.instances != null) ? body.instances : []).as(raw_instances,
   (dep_failed && raw_instances.exists(instance,
-  ((has(instance.id) && instance.id != null && string(instance.id) != "") ? string(instance.id) : "unassociated_serverless").as(iid,
-  !iid.startsWith("unassociated_") &&
+  ((has(instance.id) && instance.id != null && string(instance.id) != "") ? string(instance.id) : "unassociated").as(iid,
+  iid != "unassociated" && !iid.startsWith("unassociated_") &&
   has(instance.product_line_items) && instance.product_line_items != null &&
   instance.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku) != "" && (!has(li.total_ecu) || li.total_ecu == null || double(li.total_ecu) >= 0.0)) &&
   !ech_deps.exists(d, string(d.id) == iid || string(d.dep_id) == iid) &&
@@ -798,14 +798,14 @@ program: |-
   ((_raw_it == "oblt") ? "observability" : ((_raw_it == "sec") ? "security" : ((_raw_it == "vector") ? "vectordb" : ((_raw_it == "es") ? "elasticsearch" : ((_raw_it == "enterprise_search") ? "search" : _raw_it))))).as(_alias_it,
   ((has(instance.product_line_items) && instance.product_line_items != null && instance.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(ls, ls.startsWith("observability.") || ls.startsWith("oblt.") || ls.startsWith("serverless.observability.") || ls.startsWith("serverless.oblt.") || ls.contains(".observability.") || ls.contains(".oblt.") || ls.contains("synthetic")))) ? "observability" : ((has(instance.product_line_items) && instance.product_line_items != null && instance.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(ls, ls.startsWith("security.") || ls.startsWith("sec.") || ls.startsWith("serverless.security.") || ls.startsWith("serverless.sec.") || ls.contains(".security.") || ls.contains(".sec.")))) ? "security" : ((has(instance.product_line_items) && instance.product_line_items != null && instance.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(ls, ls.startsWith("vectordb.") || ls.startsWith("serverless.vectordb.") || ls.contains(".vectordb.")))) ? "vectordb" : ((has(instance.product_line_items) && instance.product_line_items != null && instance.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(ls, ls.startsWith("search.") || ls.startsWith("serverless.search.")))) ? "search" : ((has(instance.product_line_items) && instance.product_line_items != null && instance.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(ls, ls.startsWith("elasticsearch.") || ls.startsWith("es.") || ls.startsWith("serverless.elasticsearch.") || ls.startsWith("serverless.es.") || ls.contains(".elasticsearch.") || ls.contains("-vcu") || ls.contains(".vcu") || ls.startsWith("serverless.")))) ? "elasticsearch" : ""))))).as(_sku_it,
   ((_alias_it != "" && _alias_it != "serverless") ? _alias_it : (_sku_it != "" ? _sku_it : (_alias_it == "serverless" ? "serverless" : "deployment"))).as(norm_itype,
-  ((has(instance.id) && instance.id != null && string(instance.id) != "") ? string(instance.id) : ("unassociated_" + ((norm_itype != "" && norm_itype != "deployment") ? norm_itype : "serverless"))).as(inst_id,
+  ((has(instance.id) && instance.id != null && string(instance.id) != "") ? string(instance.id) : "unassociated").as(inst_id,
   ech_deps.filter(d, string(d.id) == inst_id || string(d.dep_id) == inst_id).as(matched_ech,
   sls_projs.filter(p, has(p.id) && string(p.id) == inst_id).as(matched_sls,
   ((size(matched_ech) > 0) ? string(matched_ech[0].id) : ((inst_id in merged_ech_id_map) ? string(merged_ech_id_map[inst_id]) : inst_id)).as(resolved_id,
   ((size(matched_ech) > 0) ? string(matched_ech[0].name) : (
   (size(matched_sls) > 0 && has(matched_sls[0].name) && matched_sls[0].name != null && string(matched_sls[0].name) != "") ? string(matched_sls[0].name) : (
   (has(instance.name) && instance.name != null && string(instance.name) != "") ? string(instance.name) : (
-  resolved_id.startsWith("unassociated_") ? ("Unassociated (" + ((norm_itype != "" && norm_itype != "deployment") ? norm_itype : "serverless") + ")") : resolved_id
+  (resolved_id == "unassociated" || resolved_id.startsWith("unassociated_")) ? ("Unassociated (" + ((norm_itype != "" && norm_itype != "deployment") ? norm_itype : "serverless") + ")") : resolved_id
   )
   )
   )).as(resolved_name,

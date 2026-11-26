@@ -323,58 +323,18 @@ source:
           for (String df : ['ess.billing.deployment_id', 'ess.billing.deployment_id.keyword']) {
             try {
               if (doc.containsKey(df) && !doc[df].empty) {
-                String dv = doc[df].value.toString().trim();
-                if (dv != '' && !dv.equalsIgnoreCase('unassociated')) { emit(dv); return; }
+                String dv = doc[df].value.toString();
+                if (dv.trim() != '') { emit(dv); return; }
               }
             } catch (Exception e) {}
           }
           try {
             if (params._source?.ess?.billing?.deployment_id != null) {
-              String sdv = params._source.ess.billing.deployment_id.toString().trim();
-              if (sdv != '' && !sdv.equalsIgnoreCase('unassociated')) {
-                emit(sdv);
-                return;
-              }
+              String sdv = params._source.ess.billing.deployment_id.toString();
+              if (sdv.trim() != '') { emit(sdv); return; }
             }
           } catch (Exception e) {}
-          String dt = '';
-          for (String dtf : ['ess.billing.deployment_type', 'ess.billing.deployment_type.keyword']) {
-            try {
-              if (doc.containsKey(dtf) && !doc[dtf].empty && doc[dtf].value.toString().trim() != '') {
-                dt = doc[dtf].value.toString().trim().toLowerCase(Locale.ROOT);
-                break;
-              }
-            } catch (Exception e) {}
-          }
-          if (dt == '' && params._source?.ess?.billing?.deployment_type != null) {
-            dt = params._source.ess.billing.deployment_type.toString().trim().toLowerCase(Locale.ROOT);
-          }
-          if (dt == 'oblt') { dt = 'observability'; }
-          else if (dt == 'sec') { dt = 'security'; }
-          else if (dt == 'vector') { dt = 'vectordb'; }
-          else if (dt == 'es') { dt = 'elasticsearch'; }
-          else if (dt == 'enterprise_search') { dt = 'search'; }
-          if (dt == '' || dt == 'serverless') {
-            String sk = '';
-            for (String sf : ['ess.billing.sku', 'ess.billing.sku.keyword']) {
-              try {
-                if (doc.containsKey(sf) && !doc[sf].empty && doc[sf].value.toString().trim() != '') {
-                  sk = doc[sf].value.toString().trim().toLowerCase(Locale.ROOT);
-                  break;
-                }
-              } catch (Exception e) {}
-            }
-            if (sk == '' && params._source?.ess?.billing?.sku != null) {
-              sk = params._source.ess.billing.sku.toString().trim().toLowerCase(Locale.ROOT);
-            }
-            if (sk.startsWith('observability.') || sk.startsWith('oblt.') || sk.startsWith('serverless.observability.') || sk.startsWith('serverless.oblt.') || sk.contains('.observability.') || sk.contains('.oblt.') || sk.contains('synthetic')) { dt = 'observability'; }
-            else if (sk.startsWith('security.') || sk.startsWith('sec.') || sk.startsWith('serverless.security.') || sk.startsWith('serverless.sec.') || sk.contains('.security.') || sk.contains('.sec.')) { dt = 'security'; }
-            else if (sk.startsWith('vectordb.') || sk.startsWith('serverless.vectordb.') || sk.contains('.vectordb.')) { dt = 'vectordb'; }
-            else if (sk.startsWith('search.') || sk.startsWith('serverless.search.')) { dt = 'search'; }
-            else if (sk.startsWith('elasticsearch.') || sk.startsWith('es.') || sk.startsWith('serverless.elasticsearch.') || sk.startsWith('serverless.es.') || sk.contains('.elasticsearch.')) { dt = 'elasticsearch'; }
-            else { dt = 'serverless'; }
-          }
-          emit('unassociated_' + dt);
+          emit('unassociated');
 dest:
   index: chargeback_lookup.dest_billing_realized_pool-1
   aliases:
@@ -532,7 +492,16 @@ pivot:
                 }
               } catch (Exception e) {}
 
-              String dedupKey = orgId + '|' + depId + '|' + fromKey + '|' + toKey + '|' + sku + (nodeStr != '' ? '|' + nodeStr : '');
+              String depType = '';
+              try {
+                if (doc.containsKey('ess.billing.deployment_type') && !doc['ess.billing.deployment_type'].empty) {
+                  depType = doc['ess.billing.deployment_type'].value.toString();
+                } else if (params._source?.ess?.billing?.deployment_type != null) {
+                  depType = params._source.ess.billing.deployment_type.toString();
+                }
+              } catch (Exception e) {}
+              String dedupDep = ('unassociated'.equals(depId) && depType != '') ? ('unassociated:' + depType) : depId;
+              String dedupKey = orgId + '|' + dedupDep + '|' + fromKey + '|' + toKey + '|' + sku + (nodeStr != '' ? '|' + nodeStr : '');
 
               double ecu = 0.0;
               try {
@@ -583,14 +552,6 @@ pivot:
                 }
               } catch (Exception e) {}
 
-              String depType = '';
-              try {
-                if (doc.containsKey('ess.billing.deployment_type') && !doc['ess.billing.deployment_type'].empty) {
-                  depType = doc['ess.billing.deployment_type'].value.toString();
-                } else if (params._source?.ess?.billing?.deployment_type != null) {
-                  depType = params._source.ess.billing.deployment_type.toString();
-                }
-              } catch (Exception e) {}
               boolean isOnprem = ('onprem_node'.equals(sku) || 'onprem'.equals(depType) || 'ece'.equals(depType) || 'eck'.equals(depType));
               Map rec = [
                 'ing_ts': ingTs,
@@ -810,7 +771,16 @@ pivot:
                 }
               } catch (Exception e) {}
 
-              String dedupKey = orgId + '|' + depId + '|' + fromKey + '|' + toKey + '|' + sku + (nodeStr != '' ? '|' + nodeStr : '');
+              String depType = '';
+              try {
+                if (doc.containsKey('ess.billing.deployment_type') && !doc['ess.billing.deployment_type'].empty) {
+                  depType = doc['ess.billing.deployment_type'].value.toString();
+                } else if (params._source?.ess?.billing?.deployment_type != null) {
+                  depType = params._source.ess.billing.deployment_type.toString();
+                }
+              } catch (Exception e) {}
+              String dedupDep = ('unassociated'.equals(depId) && depType != '') ? ('unassociated:' + depType) : depId;
+              String dedupKey = orgId + '|' + dedupDep + '|' + fromKey + '|' + toKey + '|' + sku + (nodeStr != '' ? '|' + nodeStr : '');
 
               double ecu = 0.0;
               try {
@@ -861,14 +831,6 @@ pivot:
                 }
               } catch (Exception e) {}
 
-              String depType = '';
-              try {
-                if (doc.containsKey('ess.billing.deployment_type') && !doc['ess.billing.deployment_type'].empty) {
-                  depType = doc['ess.billing.deployment_type'].value.toString();
-                } else if (params._source?.ess?.billing?.deployment_type != null) {
-                  depType = params._source.ess.billing.deployment_type.toString();
-                }
-              } catch (Exception e) {}
               boolean isOnprem = ('onprem_node'.equals(sku) || 'onprem'.equals(depType) || 'ece'.equals(depType) || 'eck'.equals(depType));
               Map rec = [
                 'ing_ts': ingTs,
