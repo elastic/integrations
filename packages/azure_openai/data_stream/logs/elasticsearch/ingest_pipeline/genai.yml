@@ -129,16 +129,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_gen_ai_request_max_tokens_legacy
-      field: _temp.request.max_tokens
-      target_field: gen_ai.request.max_tokens
+      field: azure.open_ai.properties.backend_request_body.max_tokens
+      target_field: _temp.max_tokens_legacy
       type: long
       ignore_missing: true
-      if: ctx.gen_ai?.request?.max_tokens == null && ctx._temp?.request?.max_tokens != null
+      if: ctx.azure?.open_ai?.properties?.backend_request_body?.max_tokens != null
       on_failure:
-        - remove:
-            tag: remove_temp_request_max_tokens_on_convert_failure
-            field: _temp.request.max_tokens
-            ignore_missing: true
         - remove:
             tag: remove_azure_open_ai_properties_backend_request_body_max_tokens_on_convert_failure
             field: azure.open_ai.properties.backend_request_body.max_tokens
@@ -146,6 +142,12 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_gen_ai_request_max_tokens_from_legacy
+      field: gen_ai.request.max_tokens
+      copy_from: _temp.max_tokens_legacy
+      ignore_empty_value: true
+      if: ctx.gen_ai?.request?.max_tokens == null && ctx._temp?.max_tokens_legacy != null
   - convert:
       tag: convert_gen_ai_request_temperature
       field: _temp.request.temperature
