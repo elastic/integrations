@@ -57,8 +57,8 @@ Integrating device inventory data and Microsoft Intune audit logs into SIEM dash
 
 - Set up an Azure Event Hub and add an Intune diagnostic setting that sends the logs to it. For more detail, refer to [Send Intune log data to Azure Storage, Event Hubs, or Log Analytics](https://learn.microsoft.com/en-us/intune/intune-service/fundamentals/review-logs-using-azure-monitor).
 - In the diagnostic setting, select the log categories to collect. All categories can go to the same Event Hub:
-   - Audit: Select LOG > AuditLogs.
-   - Managed Device: Select LOG > IntuneDevices, and LOG > DeviceComplianceOrg to also collect device compliance records.
+   - Audit: Select LOG → AuditLogs.
+   - Managed Device: Select LOG → IntuneDevices, and LOG → DeviceComplianceOrg to also collect device compliance records.
 
 ## How do I deploy this integration?
 
@@ -129,6 +129,8 @@ Version 0.4.0 also removes the **Preserve duplicate custom fields** setting. Ven
 2. In the search bar, type **Microsoft Intune**.
 3. Select a dashboard for the dataset you are collecting, and verify the dashboard information is populated.
 
+The **Managed Device** dashboard shows the device inventory (`Devices` log category). Its **Category** control selects `Devices` by default, so that device compliance records are not counted as devices. To look at the compliance records, change the **Category** control to `DeviceComplianceOrg`, or search the `microsoft_intune.managed_device` data stream in Discover.
+
 ## Performance and scaling
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
@@ -162,7 +164,12 @@ The `events` data stream receives all events from the Event Hub and routes them 
 
 ### managed_device
 
-This is the `managed_device` dataset.
+The `managed_device` data stream holds two kinds of records, which you can tell apart by `microsoft_intune.managed_device.category`:
+
+- `Devices`: the device inventory, with fields such as `properties.compliant_state`, `properties.ownership` and `properties.manufacturer`.
+- `DeviceComplianceOrg`: device compliance records, with fields such as `properties.compliance_state`, `properties.owner_type` and `properties.device_health_threat_level`.
+
+Both kinds have the common device and user fields, such as `device.id`, `host.name`, `host.os.name` and `user.email`.
 
 **Exported fields**
 
@@ -176,14 +183,20 @@ This is the `managed_device` dataset.
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| microsoft_intune.managed_device.category | Diagnostic category indicating the type of Intune data (Devices). | keyword |
+| microsoft_intune.managed_device.category | Diagnostic category indicating the type of Intune data (Devices or DeviceComplianceOrg). | keyword |
 | microsoft_intune.managed_device.properties.aad_tenant_id | Azure Active Directory tenant identifier associated with the device. | keyword |
+| microsoft_intune.managed_device.properties.account_id | Identifier of the Intune account, as reported in device compliance records. | keyword |
 | microsoft_intune.managed_device.properties.android_patch_level | Android security patch level installed on the device. | keyword |
 | microsoft_intune.managed_device.properties.batch_id | Identifier of the batch in which the device record was exported. | keyword |
 | microsoft_intune.managed_device.properties.category_name | Category name assigned to the device in Intune. | keyword |
+| microsoft_intune.managed_device.properties.compliance_state | Compliance state of the device as reported in device compliance records (DeviceComplianceOrg), for example Compliant. | keyword |
+| microsoft_intune.managed_device.properties.compliance_state_code | Numeric code of the compliance state in device compliance records. | keyword |
 | microsoft_intune.managed_device.properties.compliant_state | Compliance status of the device as evaluated by Intune. | keyword |
+| microsoft_intune.managed_device.properties.device_health_threat_level | Device health threat level as reported in device compliance records. | keyword |
+| microsoft_intune.managed_device.properties.device_health_threat_level_code | Numeric code of the device health threat level in device compliance records. | keyword |
 | microsoft_intune.managed_device.properties.device_registration_state | Registration state of the device with Intune. | keyword |
 | microsoft_intune.managed_device.properties.device_state | Current management state of the device. | keyword |
+| microsoft_intune.managed_device.properties.device_type | Numeric code of the device type in device compliance records. | keyword |
 | microsoft_intune.managed_device.properties.eas_id | Exchange ActiveSync identifier associated with the device. | keyword |
 | microsoft_intune.managed_device.properties.encryption_status_string | Indicates whether the device storage is encrypted. | keyword |
 | microsoft_intune.managed_device.properties.graph_device_is_managed | Indicates whether the device is managed according to Microsoft Graph. | boolean |
@@ -195,11 +208,17 @@ This is the `managed_device` dataset.
 | microsoft_intune.managed_device.properties.last_contact | Date and time when the device last communicated with Intune. | date |
 | microsoft_intune.managed_device.properties.managed_by | Management authority responsible for the device. | keyword |
 | microsoft_intune.managed_device.properties.managed_device_name | Managed device name generated by Intune. | keyword |
+| microsoft_intune.managed_device.properties.management_agents | Management agents of the device as reported in device compliance records. | keyword |
+| microsoft_intune.managed_device.properties.management_agents_code | Numeric code of the management agents in device compliance records. | keyword |
 | microsoft_intune.managed_device.properties.manufacturer | Name of the device manufacturer. | keyword |
 | microsoft_intune.managed_device.properties.meid | Mobile Equipment Identifier of the device, if applicable. | keyword |
+| microsoft_intune.managed_device.properties.os_description | Operating system description as reported in device compliance records. | keyword |
+| microsoft_intune.managed_device.properties.owner_type | Ownership type of the device as reported in device compliance records, for example Company or Personal. | keyword |
+| microsoft_intune.managed_device.properties.owner_type_code | Numeric code of the ownership type in device compliance records. | keyword |
 | microsoft_intune.managed_device.properties.ownership | Ownership type of the device (Corporate or Personal). | keyword |
 | microsoft_intune.managed_device.properties.phone_number | Phone number associated with the device, if available. | keyword |
 | microsoft_intune.managed_device.properties.reference_id | Azure Active Directory device identifier. | keyword |
+| microsoft_intune.managed_device.properties.retire_after_datetime | Date and time after which the device is retired, as reported in device compliance records. | date |
 | microsoft_intune.managed_device.properties.sku_family | Stock-keeping unit family associated with the device. | keyword |
 | microsoft_intune.managed_device.properties.storage_free | Available free storage capacity on the device. | long |
 | microsoft_intune.managed_device.properties.storage_total | Total storage capacity available on the device. | long |

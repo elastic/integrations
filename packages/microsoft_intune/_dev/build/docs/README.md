@@ -57,8 +57,8 @@ Integrating device inventory data and Microsoft Intune audit logs into SIEM dash
 
 - Set up an Azure Event Hub and add an Intune diagnostic setting that sends the logs to it. For more detail, refer to [Send Intune log data to Azure Storage, Event Hubs, or Log Analytics](https://learn.microsoft.com/en-us/intune/intune-service/fundamentals/review-logs-using-azure-monitor).
 - In the diagnostic setting, select the log categories to collect. All categories can go to the same Event Hub:
-   - Audit: Select LOG > AuditLogs.
-   - Managed Device: Select LOG > IntuneDevices, and LOG > DeviceComplianceOrg to also collect device compliance records.
+   - Audit: Select LOG → AuditLogs.
+   - Managed Device: Select LOG → IntuneDevices, and LOG → DeviceComplianceOrg to also collect device compliance records.
 
 ## How do I deploy this integration?
 
@@ -129,6 +129,8 @@ Version 0.4.0 also removes the **Preserve duplicate custom fields** setting. Ven
 2. In the search bar, type **Microsoft Intune**.
 3. Select a dashboard for the dataset you are collecting, and verify the dashboard information is populated.
 
+The **Managed Device** dashboard shows the device inventory (`Devices` log category). Its **Category** control selects `Devices` by default, so that device compliance records are not counted as devices. To look at the compliance records, change the **Category** control to `DeviceComplianceOrg`, or search the `microsoft_intune.managed_device` data stream in Discover.
+
 ## Performance and scaling
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
@@ -147,7 +149,12 @@ The `events` data stream receives all events from the Event Hub and routes them 
 
 ### managed_device
 
-This is the `managed_device` dataset.
+The `managed_device` data stream holds two kinds of records, which you can tell apart by `microsoft_intune.managed_device.category`:
+
+- `Devices`: the device inventory, with fields such as `properties.compliant_state`, `properties.ownership` and `properties.manufacturer`.
+- `DeviceComplianceOrg`: device compliance records, with fields such as `properties.compliance_state`, `properties.owner_type` and `properties.device_health_threat_level`.
+
+Both kinds have the common device and user fields, such as `device.id`, `host.name`, `host.os.name` and `user.email`.
 
 {{fields "managed_device"}}
 
