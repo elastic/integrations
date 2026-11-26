@@ -1397,7 +1397,7 @@ An example event for `group` looks as following:
 
 This is the `threat` dataset.
 
-`sentinel_one.threat.updated_at` maps SentinelOne `threatInfo.updatedAt`. `@timestamp` continues to be set from that value for threat documents. Use `sentinel_one.threat.created_at` and `sentinel_one.threat.updated_at` to compare when a threat was created versus last updated.
+`sentinel_one.threat.updated_at` maps SentinelOne `threatInfo.updatedAt`. `@timestamp` is set from `threatInfo.updatedAt` unless `timeline.createdAt` is present, in which case `@timestamp` is set from `timeline.createdAt`. Use `sentinel_one.threat.created_at` and `sentinel_one.threat.updated_at` to compare when a threat was created versus last updated.
 
 An example event for `threat` looks as following:
 
