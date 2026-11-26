@@ -120,6 +120,10 @@ processors:
             tag: remove_temp_request_max_completion_tokens_on_convert_failure
             field: _temp.request.max_completion_tokens
             ignore_missing: true
+        - remove:
+            tag: remove_azure_open_ai_properties_backend_request_body_max_completion_tokens_on_convert_failure
+            field: azure.open_ai.properties.backend_request_body.max_completion_tokens
+            ignore_missing: true
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -135,6 +139,10 @@ processors:
             tag: remove_temp_request_max_tokens_on_convert_failure
             field: _temp.request.max_tokens
             ignore_missing: true
+        - remove:
+            tag: remove_azure_open_ai_properties_backend_request_body_max_tokens_on_convert_failure
+            field: azure.open_ai.properties.backend_request_body.max_tokens
+            ignore_missing: true
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -148,6 +156,10 @@ processors:
         - remove:
             tag: remove_temp_request_temperature_on_convert_failure
             field: _temp.request.temperature
+            ignore_missing: true
+        - remove:
+            tag: remove_azure_open_ai_properties_backend_request_body_temperature_on_convert_failure
+            field: azure.open_ai.properties.backend_request_body.temperature
             ignore_missing: true
         - append:
             field: error.message
@@ -163,6 +175,10 @@ processors:
             tag: remove_temp_request_top_p_on_convert_failure
             field: _temp.request.top_p
             ignore_missing: true
+        - remove:
+            tag: remove_azure_open_ai_properties_backend_request_body_top_p_on_convert_failure
+            field: azure.open_ai.properties.backend_request_body.top_p
+            ignore_missing: true
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -176,6 +192,10 @@ processors:
         - remove:
             tag: remove_temp_request_frequency_penalty_on_convert_failure
             field: _temp.request.frequency_penalty
+            ignore_missing: true
+        - remove:
+            tag: remove_azure_open_ai_properties_backend_request_body_frequency_penalty_on_convert_failure
+            field: azure.open_ai.properties.backend_request_body.frequency_penalty
             ignore_missing: true
         - append:
             field: error.message
@@ -191,6 +211,10 @@ processors:
             tag: remove_temp_request_presence_penalty_on_convert_failure
             field: _temp.request.presence_penalty
             ignore_missing: true
+        - remove:
+            tag: remove_azure_open_ai_properties_backend_request_body_presence_penalty_on_convert_failure
+            field: azure.open_ai.properties.backend_request_body.presence_penalty
+            ignore_missing: true
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -205,6 +229,10 @@ processors:
             tag: remove_temp_request_seed_on_convert_failure
             field: _temp.request.seed
             ignore_missing: true
+        - remove:
+            tag: remove_azure_open_ai_properties_backend_request_body_seed_on_convert_failure
+            field: azure.open_ai.properties.backend_request_body.seed
+            ignore_missing: true
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -218,6 +246,10 @@ processors:
         - remove:
             tag: remove_temp_request_n_on_convert_failure
             field: _temp.request.n
+            ignore_missing: true
+        - remove:
+            tag: remove_azure_open_ai_properties_backend_request_body_n_on_convert_failure
+            field: azure.open_ai.properties.backend_request_body.n
             ignore_missing: true
         - append:
             field: error.message
@@ -366,9 +398,9 @@ processors:
   - script:
       tag: script_drop_empty_values_keep_tool_definitions
       description: >-
-        Drop null and empty values recursively. gen_ai.tool.definitions is left
-        out, because empty and null values in a tool's parameter schema are
-        part of the tool interface.
+        Drop null and empty values recursively. Tool definitions, raw tool
+        schemas, response_format, tool-call arguments, and tool responses are
+        left out, because empty and null values there are part of the payload.
       lang: painless
       source: |
         boolean drop(Object o) {
@@ -383,15 +415,50 @@ processors:
           }
           return false;
         }
+        boolean parkPayload(Object o, List parked) {
+          if (o instanceof Map) {
+            Map m = (Map) o;
+            if (m.get('type') == 'tool_call' && m.containsKey('arguments')) {
+              parked.add(['parent': m, 'key': 'arguments', 'value': m.remove('arguments')]);
+            }
+            if (m.get('type') == 'tool_call_response' && m.containsKey('response')) {
+              parked.add(['parent': m, 'key': 'response', 'value': m.remove('response')]);
+            }
+            for (def v : new ArrayList(m.values())) { parkPayload(v, parked); }
+          } else if (o instanceof List) {
+            for (def v : (List) o) { parkPayload(v, parked); }
+          }
+          return false;
+        }
+        List parked = new ArrayList();
         def defs = null;
         if (ctx.gen_ai?.tool instanceof Map && ctx.gen_ai.tool.definitions != null) {
           defs = ctx.gen_ai.tool.remove('definitions');
         }
+        def req = ctx.azure?.open_ai?.properties?.backend_request_body;
+        def rawTools = null;
+        def rawFormat = null;
+        if (req instanceof Map) {
+          if (req.containsKey('tools')) { rawTools = req.remove('tools'); }
+          if (req.containsKey('response_format')) { rawFormat = req.remove('response_format'); }
+        }
+        parkPayload(ctx.gen_ai, parked);
         drop(ctx);
+        for (def item : parked) { item.parent.put(item.key, item.value); }
         if (defs != null) {
           if (!(ctx.gen_ai instanceof Map)) { ctx.gen_ai = new HashMap(); }
           if (!(ctx.gen_ai.tool instanceof Map)) { ctx.gen_ai.tool = new HashMap(); }
           ctx.gen_ai.tool.definitions = defs;
+        }
+        if (rawTools != null || rawFormat != null) {
+          if (!(ctx.azure instanceof Map)) { ctx.azure = new HashMap(); }
+          if (!(ctx.azure.open_ai instanceof Map)) { ctx.azure.open_ai = new HashMap(); }
+          if (!(ctx.azure.open_ai.properties instanceof Map)) { ctx.azure.open_ai.properties = new HashMap(); }
+          if (!(ctx.azure.open_ai.properties.backend_request_body instanceof Map)) {
+            ctx.azure.open_ai.properties.backend_request_body = new HashMap();
+          }
+          if (rawTools != null) { ctx.azure.open_ai.properties.backend_request_body.tools = rawTools; }
+          if (rawFormat != null) { ctx.azure.open_ai.properties.backend_request_body.response_format = rawFormat; }
         }
   - script:
       tag: script_cap_flattened_depth
@@ -406,6 +473,8 @@ processors:
           - [gen_ai, input, messages]
           - [gen_ai, output, messages]
           - [gen_ai, tool, definitions]
+          - [azure, open_ai, properties, backend_request_body, tools]
+          - [azure, open_ai, properties, backend_request_body, response_format]
       source: |
         int depth(def v) {
           int d = 0;
