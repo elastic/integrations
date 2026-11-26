@@ -1,0 +1,219 @@
+---
+description: "Chargeback Serverless: Normalize stage-1 per-line and per-poll credit commitment snapshots before stage-2 contract aggregation."
+processors:
+  - script:
+      ignore_failure: true
+      lang: painless
+      tag: normalize_credit_line_stage1
+      source: |
+        if (ctx.credit_entry_key == null) {
+          return;
+        }
+        String sep = Character.toString((char)31);
+        try {
+          DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC);
+          String keyStr = ctx.credit_entry_key.toString();
+          List kParts = new ArrayList();
+          int ks = 0;
+          while (true) {
+            int ki = keyStr.indexOf(sep, ks);
+            if (ki < 0) {
+              kParts.add(keyStr.substring(ks));
+              break;
+            }
+            kParts.add(keyStr.substring(ks, ki));
+            ks = ki + 1;
+          }
+          String entryMode = kParts.size() > 0 ? kParts.get(0).toString() : '';
+          String pollOwner = kParts.size() > 1 ? kParts.get(1).toString() : '';
+          ctx.source_kind = entryMode.startsWith('nat_') ? 'nat' : 'leg';
+          ctx.poll_owner = pollOwner;
+
+          if (ctx.snapshot_day != null) {
+            if (ctx.snapshot_day instanceof Number) {
+              String dayIso = fmt.format(Instant.ofEpochMilli(((Number)ctx.snapshot_day).longValue()));
+              ctx['@timestamp'] = dayIso;
+              ctx.snapshot_day = dayIso;
+            } else {
+              String rawDay = ctx.snapshot_day.toString().trim();
+              if (rawDay != '') {
+                try {
+                  String dayIso = fmt.format(ZonedDateTime.parse(rawDay).toInstant());
+                  ctx['@timestamp'] = dayIso;
+                  ctx.snapshot_day = dayIso;
+                } catch (Exception e) {
+                  try {
+                    String dayIso = fmt.format(LocalDate.parse(rawDay).atStartOfDay(ZoneOffset.UTC).toInstant());
+                    ctx['@timestamp'] = dayIso;
+                    ctx.snapshot_day = dayIso;
+                  } catch (Exception e2) {}
+                }
+              }
+            }
+          }
+
+          for (String df : ['credit_start', 'credit_end']) {
+            def dv = ctx.get(df);
+            if (dv == null) {
+              ctx.remove(df);
+            } else if (dv instanceof Number) {
+              ctx.put(df, fmt.format(Instant.ofEpochMilli(((Number)dv).longValue())));
+            } else {
+              String ds = dv.toString().trim();
+              if (ds == '' || ds == 'null') {
+                ctx.remove(df);
+              } else {
+                try {
+                  ctx.put(df, fmt.format(ZonedDateTime.parse(ds).toInstant()));
+                } catch (Exception e) {
+                  try {
+                    ctx.put(df, fmt.format(LocalDate.parse(ds).atStartOfDay(ZoneOffset.UTC).toInstant()));
+                  } catch (Exception e2) {}
+                }
+              }
+            }
+          }
+
+          if (ctx.credit_type == null) {
+            ctx.remove('credit_type');
+          } else {
+            String ct = ctx.credit_type.toString().trim();
+            if (ct == '' || ct == 'null') {
+              ctx.remove('credit_type');
+            } else {
+              ctx.credit_type = ct;
+            }
+          }
+
+          long pollTs = 0L;
+          long ingTs = 0L;
+          double actQty = 0.0;
+          double actBal = 0.0;
+          long actCnt = 0L;
+          double allQty = 0.0;
+          double allBal = 0.0;
+          long allCnt = 0L;
+
+          if (entryMode.endsWith('_line') && ctx.line_states instanceof Map) {
+            Map lm = (Map)ctx.line_states;
+            List entries = new ArrayList();
+            if (lm.get('buckets') instanceof List) {
+              for (def bObj : (List)lm.get('buckets')) {
+                if (bObj instanceof Map && ((Map)bObj).get('key') != null) {
+                  entries.add(((Map)bObj).get('key').toString());
+                }
+              }
+            } else {
+              for (def kObj : lm.keySet()) {
+                entries.add(kObj.toString());
+              }
+            }
+            long bestTs = -1L;
+            long bestIng = -1L;
+            String bestKey = '';
+            List bestParts = null;
+            for (def recObj : entries) {
+              String recStr = recObj.toString();
+              List rParts = new ArrayList();
+              int rs = 0;
+              while (true) {
+                int ri = recStr.indexOf(sep, rs);
+                if (ri < 0) {
+                  rParts.add(recStr.substring(rs));
+                  break;
+                }
+                rParts.add(recStr.substring(rs, ri));
+                rs = ri + 1;
+              }
+              if (rParts.size() < 5) { continue; }
+              long sTs = Long.parseLong(rParts.get(0).toString());
+              long sIng = Long.parseLong(rParts.get(1).toString());
+              if (bestParts == null || sTs > bestTs || (sTs == bestTs && (sIng > bestIng || (sIng == bestIng && recStr.compareTo(bestKey) > 0)))) {
+                bestTs = sTs;
+                bestIng = sIng;
+                bestKey = recStr;
+                bestParts = rParts;
+              }
+            }
+            if (bestParts != null) {
+              pollTs = bestTs;
+              ingTs = bestIng;
+              allQty = Double.parseDouble(bestParts.get(2).toString());
+              allBal = Double.parseDouble(bestParts.get(3).toString());
+              allCnt = 1L;
+              boolean isAct = bestParts.get(4).toString() == '1';
+              if (isAct) {
+                actQty = allQty;
+                actBal = allBal;
+                actCnt = 1L;
+              }
+            }
+          } else {
+            def rawPollTs = ctx.max_poll_ts;
+            if (rawPollTs instanceof Number) { pollTs = Math.round(((Number)rawPollTs).doubleValue()); }
+            else if (rawPollTs instanceof Map && ((Map)rawPollTs).get('value') instanceof Number) { pollTs = Math.round(((Number)((Map)rawPollTs).get('value')).doubleValue()); }
+
+            def rawIngTs = ctx.max_ing_ts;
+            if (rawIngTs instanceof Number) { ingTs = Math.round(((Number)rawIngTs).doubleValue()); }
+            else if (rawIngTs instanceof Map && ((Map)rawIngTs).get('value') instanceof Number) { ingTs = Math.round(((Number)((Map)rawIngTs).get('value')).doubleValue()); }
+
+            for (String pairField : ['sum_act_qty', 'sum_act_bal', 'cnt_act', 'sum_all_qty', 'sum_all_bal', 'cnt_all']) {
+              def fv = ctx.get(pairField);
+              double numVal = 0.0;
+              if (fv instanceof Number) {
+                numVal = ((Number)fv).doubleValue();
+              } else if (fv instanceof Map) {
+                Map fm = (Map)fv;
+                def inner = fm.get('val');
+                if (inner instanceof Number) { numVal = ((Number)inner).doubleValue(); }
+                else if (inner instanceof Map && ((Map)inner).get('value') instanceof Number) { numVal = ((Number)((Map)inner).get('value')).doubleValue(); }
+                else if (fm.get('value') instanceof Number) { numVal = ((Number)fm.get('value')).doubleValue(); }
+              }
+              if (pairField == 'sum_act_qty') { actQty = numVal; }
+              else if (pairField == 'sum_act_bal') { actBal = numVal; }
+              else if (pairField == 'cnt_act') { actCnt = Math.round(numVal); }
+              else if (pairField == 'sum_all_qty') { allQty = numVal; }
+              else if (pairField == 'sum_all_bal') { allBal = numVal; }
+              else if (pairField == 'cnt_all') { allCnt = Math.round(numVal); }
+            }
+          }
+
+          ctx.poll_ts = pollTs;
+          ctx.ing_ts = ingTs;
+          ctx.active_ecu_quantity = actQty;
+          ctx.active_ecu_balance = actBal;
+          ctx.active_line_count = actCnt;
+          ctx.total_ecu_quantity = allQty;
+          ctx.total_ecu_balance = allBal;
+          ctx.total_line_count = allCnt;
+        } catch (Exception e) {
+          for (String tmp : ['max_poll_ts', 'max_ing_ts', 'sum_act_qty', 'sum_act_bal', 'cnt_act', 'sum_all_qty', 'sum_all_bal', 'cnt_all', 'line_states']) {
+            ctx.remove(tmp);
+          }
+          throw e;
+        }
+        for (String tmp : ['max_poll_ts', 'max_ing_ts', 'sum_act_qty', 'sum_act_bal', 'cnt_act', 'sum_all_qty', 'sum_all_bal', 'cnt_all', 'line_states']) {
+          ctx.remove(tmp);
+        }
+  - set:
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+      tag: set_event_ingested
+  - pipeline:
+      description: '[Fleet] Pipeline for Chargeback Serverless lookup destination rows'
+      ignore_missing_pipeline: true
+      name: logs-chargeback_serverless.lookup@custom
+      tag: lookup_custom_pipeline
+on_failure:
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: "pipeline_error"
+  - append:
+      tag: append_pipeline_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'

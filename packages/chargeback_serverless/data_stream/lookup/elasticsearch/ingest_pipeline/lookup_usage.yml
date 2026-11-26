@@ -8,6 +8,135 @@ processors:
       tag: set_usage_lookup_keys
       source: |
         String sep = Character.toString((char)31);
+        if (ctx.status_meta instanceof Map) {
+          Map sm = (Map)ctx.status_meta;
+          List smEntries = new ArrayList();
+          if (sm.get('buckets') instanceof List) {
+            for (def bObj : (List)sm.get('buckets')) {
+              if (bObj instanceof Map && ((Map)bObj).get('key') != null) {
+                smEntries.add([((Map)bObj).get('key').toString(), bObj]);
+              }
+            }
+          } else {
+            for (def eObj : sm.entrySet()) {
+              Map.Entry e = (Map.Entry)eObj;
+              smEntries.add([e.getKey().toString(), e.getValue()]);
+            }
+          }
+          long bestUpd = -1L;
+          String bestSKey = '';
+          List bestSParts = null;
+          for (def pairObj : smEntries) {
+            List pair = (List)pairObj;
+            String recKey = pair.get(0).toString();
+            def valObj = pair.get(1);
+            List parts = new ArrayList();
+            int pStart = 0;
+            while (true) {
+              int pIdx = recKey.indexOf(sep, pStart);
+              if (pIdx < 0) { parts.add(recKey.substring(pStart)); break; }
+              parts.add(recKey.substring(pStart, pIdx));
+              pStart = pIdx + 1;
+            }
+            if (parts.size() < 4) { continue; }
+            long uMs = 0L;
+            try { uMs = Long.parseLong(parts.get(0).toString()); } catch (Exception e) {}
+            if (valObj instanceof Map && ((Map)valObj).get('max_upd') instanceof Number) {
+              uMs = Math.round(((Number)((Map)valObj).get('max_upd')).doubleValue());
+            } else if (valObj instanceof Map && ((Map)valObj).get('max_upd') instanceof Map && ((Map)((Map)valObj).get('max_upd')).get('value') instanceof Number) {
+              uMs = Math.round(((Number)((Map)((Map)valObj).get('max_upd')).get('value')).doubleValue());
+            }
+            if (bestSParts == null || uMs > bestUpd || (uMs == bestUpd && recKey.compareTo(bestSKey) > 0)) {
+              bestUpd = uMs;
+              bestSKey = recKey;
+              bestSParts = parts;
+            }
+          }
+          if (bestSParts != null) {
+            String ls = bestSParts.get(1).toString();
+            String ak = bestSParts.get(2).toString();
+            String ss = bestSParts.get(3).toString();
+            ctx.last_status = (ls == '' || ls == 'null') ? 'ok' : ls;
+            ctx.api_key_type = (ak == '' || ak == 'null') ? 'missing_key' : ak;
+            ctx.synthetics_status = (ss == '' || ss == 'null') ? 'ok' : ss;
+          }
+          ctx.remove('status_meta');
+        }
+        if (ctx.usage_meta instanceof Map) {
+          Map um = (Map)ctx.usage_meta;
+          List umEntries = new ArrayList();
+          if (um.get('buckets') instanceof List) {
+            for (def bObj : (List)um.get('buckets')) {
+              if (bObj instanceof Map && ((Map)bObj).get('key') != null) {
+                umEntries.add([((Map)bObj).get('key').toString(), bObj]);
+              }
+            }
+          } else {
+            for (def eObj : um.entrySet()) {
+              Map.Entry e = (Map.Entry)eObj;
+              umEntries.add([e.getKey().toString(), e.getValue()]);
+            }
+          }
+          long bestIng = -1L;
+          String bestUKey = '';
+          List bestUParts = null;
+          for (def pairObj : umEntries) {
+            List pair = (List)pairObj;
+            String recKey = pair.get(0).toString();
+            def valObj = pair.get(1);
+            List parts = new ArrayList();
+            int pStart = 0;
+            while (true) {
+              int pIdx = recKey.indexOf(sep, pStart);
+              if (pIdx < 0) { parts.add(recKey.substring(pStart)); break; }
+              parts.add(recKey.substring(pStart, pIdx));
+              pStart = pIdx + 1;
+            }
+            if (parts.size() < 8) { continue; }
+            long iMs = 0L;
+            try { iMs = Long.parseLong(parts.get(1).toString()); } catch (Exception e) {}
+            if (valObj instanceof Map && ((Map)valObj).get('max_ing') instanceof Number) {
+              iMs = Math.round(((Number)((Map)valObj).get('max_ing')).doubleValue());
+            } else if (valObj instanceof Map && ((Map)valObj).get('max_ing') instanceof Map && ((Map)((Map)valObj).get('max_ing')).get('value') instanceof Number) {
+              iMs = Math.round(((Number)((Map)((Map)valObj).get('max_ing')).get('value')).doubleValue());
+            }
+            if (bestUParts == null || iMs > bestIng || (iMs == bestIng && recKey.compareTo(bestUKey) > 0)) {
+              bestIng = iMs;
+              bestUKey = recKey;
+              bestUParts = parts;
+            }
+          }
+          if (bestUParts != null) {
+            String uMode = bestUParts.get(0).toString();
+            String uName = bestUParts.get(2).toString();
+            String uType = bestUParts.get(3).toString();
+            String uGrp = bestUParts.get(4).toString();
+            String uRate = bestUParts.get(5).toString();
+            String uUnit = bestUParts.get(6).toString();
+            String uSym = bestUParts.get(7).toString();
+            if (uName != '' && uName != 'null') { ctx.project_name = uName; }
+            if (uType != '' && uType != 'null') { ctx.project_type = uType; }
+            ctx.deployment_group = (uGrp == 'null') ? '' : uGrp;
+            try {
+              double cr = Double.parseDouble(uRate);
+              if (cr >= 0.0) { ctx.conf_chargeable_unit_rate = cr; }
+            } catch (Exception e) {}
+            if (uUnit != '' && uUnit != 'null') { ctx.conf_chargeable_unit_rate_unit = uUnit; }
+            if (uSym != '' && uSym != 'null') { ctx.conf_currency_symbol = uSym; }
+            if (uMode == 'ps' && bestUParts.size() >= 10) {
+              String uOpt = bestUParts.get(8).toString();
+              String uUrl = bestUParts.get(9).toString();
+              if (uOpt != '' && uOpt != 'null') { ctx.optimized_for = uOpt; }
+              ctx.es_url = (uUrl == 'null') ? '' : uUrl;
+            } else if (uMode == 'sy' && bestUParts.size() >= 10) {
+              String mName = bestUParts.get(8).toString();
+              String mNs = bestUParts.get(9).toString();
+              if (mName != '' && mName != 'null') { ctx.monitor_name = mName; }
+              if (mNs != '' && mNs != 'null') { ctx.monitor_namespace = mNs; }
+            }
+          }
+          ctx.remove('usage_meta');
+        }
         if (ctx.proj_meta instanceof Map) {
           Map pm = (Map)ctx.proj_meta;
           List bestProjParts = null;
@@ -493,7 +622,7 @@ processors:
           } else if (ctx.backing_index instanceof String && dsPattern.matcher(ctx.backing_index).matches()) {
             isBackingIndex = true;
           }
-          if (ctx.datastream.startsWith('.') || ctx.datastream == 'system' || (ctx.datastream.startsWith('serverless_') && (ctx.datastream.endsWith('_lookup') || ctx.datastream.contains('_lookup-')))) {
+          if (ctx.datastream.startsWith('.') || ctx.datastream == 'system' || (ctx.datastream.startsWith('serverless_') && (ctx.datastream.endsWith('_lookup') || ctx.datastream.contains('_lookup-') || ctx.datastream.startsWith('serverless_billing_credits_lines')))) {
             ctx.datastream = 'system';
             ctx.ds_type = 'system';
             ctx.ds_namespace = 'system';

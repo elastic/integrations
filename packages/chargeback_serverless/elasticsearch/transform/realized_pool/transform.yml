@@ -2,6 +2,95 @@ description: Aggregates daily allocatable ECU pools (indexing, query, storage, A
 source:
   index:
     - serverless_billing_cost_lookup-2
+  runtime_mappings:
+    cb_ing_ms:
+      type: long
+      script:
+        source: |
+          long ingMs = 0L;
+          for (String tf : ['event.ingested', 'event.created', '@timestamp']) {
+            try {
+              if (doc.containsKey(tf) && !doc[tf].empty) {
+                ingMs = doc[tf].value.toInstant().toEpochMilli();
+                if (ingMs > 0L) { break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (ingMs <= 0L && params._source != null) {
+            try {
+              def ev = params._source.get('event');
+              def rawTs = (ev instanceof Map) ? (((Map)ev).get('ingested') != null ? ((Map)ev).get('ingested') : ((Map)ev).get('created')) : null;
+              if (rawTs == null) { rawTs = params._source.get('@timestamp'); }
+              if (rawTs instanceof Number) { ingMs = ((Number)rawTs).longValue(); }
+              else if (rawTs != null && rawTs.toString().trim() != '') {
+                ingMs = ZonedDateTime.parse(rawTs.toString().trim()).toInstant().toEpochMilli();
+              }
+            } catch (Exception e) {}
+          }
+          if (ingMs < 0L) { ingMs = 0L; }
+          emit(ingMs);
+    cb_pool_meta_rec:
+      type: keyword
+      script:
+        source: |
+          String sep = Character.toString((char)31);
+          long ingMs = 0L;
+          for (String tf : ['event.ingested', 'event.created', '@timestamp']) {
+            try {
+              if (doc.containsKey(tf) && !doc[tf].empty) {
+                ingMs = doc[tf].value.toInstant().toEpochMilli();
+                if (ingMs > 0L) { break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (ingMs <= 0L && params._source != null) {
+            try {
+              def ev = params._source.get('event');
+              def rawTs = (ev instanceof Map) ? (((Map)ev).get('ingested') != null ? ((Map)ev).get('ingested') : ((Map)ev).get('created')) : null;
+              if (rawTs == null) { rawTs = params._source.get('@timestamp'); }
+              if (rawTs instanceof Number) { ingMs = ((Number)rawTs).longValue(); }
+              else if (rawTs != null && rawTs.toString().trim() != '') {
+                ingMs = ZonedDateTime.parse(rawTs.toString().trim()).toInstant().toEpochMilli();
+              }
+            } catch (Exception e) {}
+          }
+          if (ingMs < 0L) { ingMs = 0L; }
+          String v_project_name = '';
+          for (String f : ['project_name', 'project_name.keyword']) {
+            try { if (doc.containsKey(f) && !doc[f].empty) { v_project_name = doc[f].value.toString().trim(); if (v_project_name != '') break; } } catch (Exception e) {}
+          }
+          if (v_project_name == '' && params._source?.project_name != null) { v_project_name = params._source.project_name.toString().trim(); }
+          String v_project_type = '';
+          for (String f : ['project_type', 'project_type.keyword']) {
+            try { if (doc.containsKey(f) && !doc[f].empty) { v_project_type = doc[f].value.toString().trim(); if (v_project_type != '') break; } } catch (Exception e) {}
+          }
+          if (v_project_type == '' && params._source?.project_type != null) { v_project_type = params._source.project_type.toString().trim(); }
+          String v_deployment_group = '';
+          for (String f : ['deployment_group', 'deployment_group.keyword']) {
+            try { if (doc.containsKey(f) && !doc[f].empty) { v_deployment_group = doc[f].value.toString().trim(); if (v_deployment_group != '') break; } } catch (Exception e) {}
+          }
+          if (v_deployment_group == '' && params._source?.deployment_group != null) { v_deployment_group = params._source.deployment_group.toString().trim(); }
+          String cRate = '-1';
+          try {
+            if (doc.containsKey('conf_chargeable_unit_rate') && !doc['conf_chargeable_unit_rate'].empty) {
+              double r = ((Number)doc['conf_chargeable_unit_rate'].value).doubleValue();
+              if (r >= 0.0) { cRate = String.valueOf(r); }
+            } else if (params._source?.conf_chargeable_unit_rate instanceof Number) {
+              double r = ((Number)params._source.conf_chargeable_unit_rate).doubleValue();
+              if (r >= 0.0) { cRate = String.valueOf(r); }
+            }
+          } catch (Exception e) {}
+          String v_conf_chargeable_unit_rate_unit = '';
+          for (String f : ['conf_chargeable_unit_rate_unit', 'conf_chargeable_unit_rate_unit.keyword']) {
+            try { if (doc.containsKey(f) && !doc[f].empty) { v_conf_chargeable_unit_rate_unit = doc[f].value.toString().trim(); if (v_conf_chargeable_unit_rate_unit != '') break; } } catch (Exception e) {}
+          }
+          if (v_conf_chargeable_unit_rate_unit == '' && params._source?.conf_chargeable_unit_rate_unit != null) { v_conf_chargeable_unit_rate_unit = params._source.conf_chargeable_unit_rate_unit.toString().trim(); }
+          String v_conf_currency_symbol = '';
+          for (String f : ['conf_currency_symbol', 'conf_currency_symbol.keyword']) {
+            try { if (doc.containsKey(f) && !doc[f].empty) { v_conf_currency_symbol = doc[f].value.toString().trim(); if (v_conf_currency_symbol != '') break; } } catch (Exception e) {}
+          }
+          if (v_conf_currency_symbol == '' && params._source?.conf_currency_symbol != null) { v_conf_currency_symbol = params._source.conf_currency_symbol.toString().trim(); }
+          emit(String.valueOf(ingMs) + sep + v_project_name.replace(sep, ' ') + sep + v_project_type.replace(sep, ' ') + sep + v_deployment_group.replace(sep, ' ') + sep + cRate + sep + v_conf_chargeable_unit_rate_unit.replace(sep, ' ') + sep + v_conf_currency_symbol.replace(sep, ' '));
 dest:
   index: serverless_billing_realized_pool_lookup-2
   aliases:
@@ -95,17 +184,17 @@ pivot:
     all_sku_ecu:
       sum:
         field: total_ecu
-    latest_currency:
-      top_metrics:
-        metrics:
-          - field: project_name
-          - field: project_type
-          - field: deployment_group
-          - field: conf_chargeable_unit_rate
-          - field: conf_chargeable_unit_rate_unit
-          - field: conf_currency_symbol
-        sort:
-          event.ingested: desc
+    pool_meta:
+      terms:
+        field: cb_pool_meta_rec
+        size: 20
+        order:
+          - max_ing: desc
+          - _key: desc
+      aggs:
+        max_ing:
+          max:
+            field: cb_ing_ms
 settings:
   deduce_mappings: false
   unattended: true
@@ -113,4 +202,4 @@ _meta:
   managed: true
   run_as_kibana_system: false
   fleet_transform_version: 0.2.0
-  order: 7
+  order: 8

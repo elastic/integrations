@@ -6,7 +6,7 @@ processors:
       lang: painless
       tag: ess_billing_credits
       source: |
-        if (!ctx.containsKey('latest_credit') && !ctx.containsKey('nat_credits') && !ctx.containsKey('leg_credits') && !ctx.containsKey('snapshot_day') && ctx.ess?.billing instanceof Map) {
+        if (!ctx.containsKey('credit_polls') && !ctx.containsKey('latest_credit') && !ctx.containsKey('nat_credits') && !ctx.containsKey('leg_credits') && !ctx.containsKey('snapshot_day') && ctx.ess?.billing instanceof Map) {
           return;
         }
         try {
@@ -52,8 +52,143 @@ processors:
           boolean act = false;
           Long observedAtMs = null;
           double qty = ctx.ecu_quantity instanceof Number ? ((Number)ctx.ecu_quantity).doubleValue() : 0.0;
-          if (ctx.nat_credits instanceof Map || ctx.leg_credits instanceof Map) {
-            String sep = Character.toString((char)31);
+          String sep = Character.toString((char)31);
+
+          if (ctx.credit_polls instanceof Map) {
+            Map cp = (Map)ctx.credit_polls;
+            List pollEntries = new ArrayList();
+            if (cp.get('buckets') instanceof List) {
+              for (def bObj : (List)cp.get('buckets')) {
+                if (bObj instanceof Map && ((Map)bObj).get('key') != null) {
+                  pollEntries.add([((Map)bObj).get('key').toString(), bObj]);
+                }
+              }
+            } else {
+              for (def eObj : cp.entrySet()) {
+                Map.Entry e = (Map.Entry)eObj;
+                pollEntries.add([e.getKey().toString(), e.getValue()]);
+              }
+            }
+            List natPolls = new ArrayList();
+            List legPolls = new ArrayList();
+            long maxNatTs = -1L;
+            long maxNatIngTs = -1L;
+            String latestNatOwner = '';
+            long maxLegTs = -1L;
+            long maxLegIngTs = -1L;
+            String latestLegOwner = '';
+
+            for (def pairObj : pollEntries) {
+              List pair = (List)pairObj;
+              String recKey = pair.get(0).toString();
+              def valObj = pair.get(1);
+              if (!(valObj instanceof Map)) { continue; }
+              Map vm = (Map)valObj;
+              List parts = new ArrayList();
+              int pStart = 0;
+              while (true) {
+                int pIdx = recKey.indexOf(sep, pStart);
+                if (pIdx < 0) {
+                  parts.add(recKey.substring(pStart));
+                  break;
+                }
+                parts.add(recKey.substring(pStart, pIdx));
+                pStart = pIdx + 1;
+              }
+              if (parts.size() < 3) { continue; }
+              String srcKind = parts.get(0).toString();
+              String owner = parts.get(1).toString();
+              long pollTs = Long.parseLong(parts.get(2).toString());
+
+              long ingTs = pollTs;
+              def rawIng = vm.get('max_ing_ts');
+              if (rawIng instanceof Number) { ingTs = Math.round(((Number)rawIng).doubleValue()); }
+              else if (rawIng instanceof Map && ((Map)rawIng).get('value') instanceof Number) { ingTs = Math.round(((Number)((Map)rawIng).get('value')).doubleValue()); }
+
+              double actQty = 0.0;
+              def rawAq = vm.get('act_qty');
+              if (rawAq instanceof Number) { actQty = ((Number)rawAq).doubleValue(); }
+              else if (rawAq instanceof Map && ((Map)rawAq).get('value') instanceof Number) { actQty = ((Number)((Map)rawAq).get('value')).doubleValue(); }
+
+              double actBal = 0.0;
+              def rawAb = vm.get('act_bal');
+              if (rawAb instanceof Number) { actBal = ((Number)rawAb).doubleValue(); }
+              else if (rawAb instanceof Map && ((Map)rawAb).get('value') instanceof Number) { actBal = ((Number)((Map)rawAb).get('value')).doubleValue(); }
+
+              long actCnt = 0L;
+              def rawAc = vm.get('act_cnt');
+              if (rawAc instanceof Number) { actCnt = Math.round(((Number)rawAc).doubleValue()); }
+              else if (rawAc instanceof Map && ((Map)rawAc).get('value') instanceof Number) { actCnt = Math.round(((Number)((Map)rawAc).get('value')).doubleValue()); }
+
+              double allQty = 0.0;
+              def rawTq = vm.get('all_qty');
+              if (rawTq instanceof Number) { allQty = ((Number)rawTq).doubleValue(); }
+              else if (rawTq instanceof Map && ((Map)rawTq).get('value') instanceof Number) { allQty = ((Number)((Map)rawTq).get('value')).doubleValue(); }
+
+              double allBal = 0.0;
+              def rawTb = vm.get('all_bal');
+              if (rawTb instanceof Number) { allBal = ((Number)rawTb).doubleValue(); }
+              else if (rawTb instanceof Map && ((Map)rawTb).get('value') instanceof Number) { allBal = ((Number)((Map)rawTb).get('value')).doubleValue(); }
+
+              long allCnt = 0L;
+              def rawTc = vm.get('all_cnt');
+              if (rawTc instanceof Number) { allCnt = Math.round(((Number)rawTc).doubleValue()); }
+              else if (rawTc instanceof Map && ((Map)rawTc).get('value') instanceof Number) { allCnt = Math.round(((Number)((Map)rawTc).get('value')).doubleValue()); }
+
+              if (allCnt <= 0L) { continue; }
+              if (srcKind == 'nat') {
+                natPolls.add([pollTs, ingTs, owner, actQty, actBal, actCnt, allQty, allBal, allCnt]);
+                if (pollTs > maxNatTs || (pollTs == maxNatTs && (ingTs > maxNatIngTs || (ingTs == maxNatIngTs && owner.compareTo(latestNatOwner) > 0)))) {
+                  maxNatTs = pollTs;
+                  maxNatIngTs = ingTs;
+                  latestNatOwner = owner;
+                }
+              } else {
+                legPolls.add([pollTs, ingTs, owner, actQty, actBal, actCnt, allQty, allBal, allCnt]);
+                if (pollTs > maxLegTs || (pollTs == maxLegTs && (ingTs > maxLegIngTs || (ingTs == maxLegIngTs && owner.compareTo(latestLegOwner) > 0)))) {
+                  maxLegTs = pollTs;
+                  maxLegIngTs = ingTs;
+                  latestLegOwner = owner;
+                }
+              }
+            }
+
+            if (!natPolls.isEmpty()) {
+              long natActCnt = 0L; double natActQty = 0.0; double natActBal = 0.0; double natAllQty = 0.0; double natAllBal = 0.0;
+              for (def npObj : natPolls) {
+                List np = (List)npObj;
+                long pTs = ((Number)np.get(0)).longValue();
+                String pOwner = np.get(2).toString();
+                if (!pOwner.equals(latestNatOwner) || (maxNatTs - pTs) > 100L) { continue; }
+                natActQty += ((Number)np.get(3)).doubleValue();
+                natActBal += ((Number)np.get(4)).doubleValue();
+                natActCnt += ((Number)np.get(5)).longValue();
+                natAllQty += ((Number)np.get(6)).doubleValue();
+                natAllBal += ((Number)np.get(7)).doubleValue();
+              }
+              act = natActCnt > 0L;
+              qty = act ? natActQty : natAllQty;
+              bal = act ? natActBal : natAllBal;
+              if (maxNatTs > 0L) { observedAtMs = Long.valueOf(maxNatTs); }
+            } else if (!legPolls.isEmpty()) {
+              long legActCnt = 0L; double legActQty = 0.0; double legActBal = 0.0; double legAllQty = 0.0; double legAllBal = 0.0;
+              for (def lpObj : legPolls) {
+                List lp = (List)lpObj;
+                long pTs = ((Number)lp.get(0)).longValue();
+                String pOwner = lp.get(2).toString();
+                if (!pOwner.equals(latestLegOwner) || (maxLegTs - pTs) > 5000L) { continue; }
+                legActQty += ((Number)lp.get(3)).doubleValue();
+                legActBal += ((Number)lp.get(4)).doubleValue();
+                legActCnt += ((Number)lp.get(5)).longValue();
+                legAllQty += ((Number)lp.get(6)).doubleValue();
+                legAllBal += ((Number)lp.get(7)).doubleValue();
+              }
+              act = legActCnt > 0L;
+              qty = act ? legActQty : legAllQty;
+              bal = act ? legActBal : legAllBal;
+              if (maxLegTs > 0L) { observedAtMs = Long.valueOf(maxLegTs); }
+            }
+          } else if (ctx.nat_credits instanceof Map || ctx.leg_credits instanceof Map) {
             List natDocs = new ArrayList();
             long maxNatTs = -1L;
             long maxNatIngTs = -1L;
@@ -113,17 +248,6 @@ processors:
                 }
               }
             }
-            long maxNatPollIngTs = -1L;
-            for (def ndObj : natDocs) {
-              List nd = (List)ndObj;
-              long nTs = ((Number)nd.get(0)).longValue();
-              long nIngTs = ((Number)nd.get(1)).longValue();
-              String nOwner = nd.get(5).toString();
-              String nLineId = nd.get(6).toString().trim();
-              if (nLineId == '' && nOwner.equals(latestNatOwner) && (maxNatTs - nTs) <= 100L && nIngTs > maxNatPollIngTs) {
-                maxNatPollIngTs = nIngTs;
-              }
-            }
             Map latestNatItems = new LinkedHashMap();
             List unkeyedNatItems = new ArrayList();
             for (def ndObj : natDocs) {
@@ -143,7 +267,7 @@ processors:
                 if (prev == null || nIngTs >= ((Number)prev.get(0)).longValue()) {
                   latestNatItems.put(dedupKey, [nIngTs, nQty, nBal, nAct]);
                 }
-              } else if ((maxNatPollIngTs - nIngTs) <= 2000L) {
+              } else {
                 unkeyedNatItems.add([nIngTs, nQty * (double)nCnt, nBal * (double)nCnt, nAct]);
               }
             }
@@ -222,17 +346,6 @@ processors:
                   latestLegOwner = owner;
                 }
               }
-              long maxLegPollIngTs = -1L;
-              for (def ldObj : legDocs) {
-                List ld = (List)ldObj;
-                long lTs = ((Number)ld.get(0)).longValue();
-                long lIngTs = ((Number)ld.get(1)).longValue();
-                String lOwner = ld.get(5).toString();
-                String lLineId = ld.get(6).toString().trim();
-                if (lLineId == '' && lOwner.equals(latestLegOwner) && (maxLegTs - lTs) <= 5000L && lIngTs > maxLegPollIngTs) {
-                  maxLegPollIngTs = lIngTs;
-                }
-              }
               Map latestLegKeyed = new LinkedHashMap();
               List unkeyedLegItems = new ArrayList();
               for (def ldObj : legDocs) {
@@ -252,7 +365,7 @@ processors:
                   if (prevLeg == null || lIngTs >= ((Number)prevLeg.get(0)).longValue()) {
                     latestLegKeyed.put(legDedupKey, [lIngTs, lQty, lBal, lAct]);
                   }
-                } else if ((maxLegPollIngTs - lIngTs) <= 2000L) {
+                } else {
                   unkeyedLegItems.add([lIngTs, lQty * (double)lCnt, lBal * (double)lCnt, lAct]);
                 }
               }
@@ -329,12 +442,12 @@ processors:
             ctx.ess.billing.end = endIso;
           }
         } catch (Exception e) {
-          for (String tmp : ['snapshot_day', 'organization_id', 'credit_start', 'credit_end', 'credit_type', 'ecu_quantity', 'latest_credit', 'nat_credits', 'leg_credits']) {
+          for (String tmp : ['snapshot_day', 'organization_id', 'credit_start', 'credit_end', 'credit_type', 'ecu_quantity', 'credit_polls', 'latest_credit', 'nat_credits', 'leg_credits']) {
             ctx.remove(tmp);
           }
           throw e;
         }
-        for (String tmp : ['snapshot_day', 'organization_id', 'credit_start', 'credit_end', 'credit_type', 'ecu_quantity', 'latest_credit', 'nat_credits', 'leg_credits']) {
+        for (String tmp : ['snapshot_day', 'organization_id', 'credit_start', 'credit_end', 'credit_type', 'ecu_quantity', 'credit_polls', 'latest_credit', 'nat_credits', 'leg_credits']) {
           ctx.remove(tmp);
         }
   - set:

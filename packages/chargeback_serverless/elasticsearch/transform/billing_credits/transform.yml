@@ -1,229 +1,42 @@
-description: Materializes daily Elastic Cloud credit commitment snapshots across native Chargeback Serverless and legacy ESS Billing Credits sources without double-counting.
+description: Stage-2 transform aggregating stage-1 credit line and poll snapshots into daily Elastic Cloud credit commitment buckets without double-counting or truncation.
 source:
   index:
-    - metrics-chargeback_serverless.billing-*
-    - metrics-ess_billing.credits-*
-    - -metrics-ess_billing.credits-chargeback*
-    - -serverless_*_lookup*
-  query:
-    bool:
-      filter:
-        - exists:
-            field: ess.billing.ecu_quantity
-      should:
-        - term:
-            doc_type: credit_line_item
-        - term:
-            data_stream.dataset: ess_billing.credits
-        - term:
-            event.dataset: ess_billing.credits
-      minimum_should_match: 1
+    - serverless_billing_credits_lines-1
   runtime_mappings:
-    cb_sync_ts:
-      type: date
-      script:
-        source: |
-          try {
-            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
-              emit(doc['event.ingested'].value.toInstant().toEpochMilli());
-              return;
-            }
-          } catch (Exception e) {}
-          try {
-            if (doc.containsKey('event.created') && !doc['event.created'].empty) {
-              emit(doc['event.created'].value.toInstant().toEpochMilli());
-              return;
-            }
-          } catch (Exception e) {}
-          if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
-            emit(doc['@timestamp'].value.toInstant().toEpochMilli());
-          }
-    cb_ecu_quantity_whole:
-      type: long
-      script:
-        source: |
-          if (doc.containsKey('ess.billing.ecu_quantity') && !doc['ess.billing.ecu_quantity'].empty) {
-            emit(((Number)doc['ess.billing.ecu_quantity'].value).longValue());
-          } else if (params._source?.ess?.billing?.ecu_quantity instanceof Number) {
-            emit(((Number)params._source.ess.billing.ecu_quantity).longValue());
-          }
-    cb_credit_ts:
-      type: long
-      script:
-        source: |
-          long ts = (doc.containsKey('@timestamp') && !doc['@timestamp'].empty)
-            ? doc['@timestamp'].value.toInstant().toEpochMilli()
-            : 0L;
-          emit(ts);
-    cb_nat_credit_rec:
+    cb_stage1_poll_key:
       type: keyword
       script:
         source: |
-          boolean isNat = false;
-          try {
-            if (doc.containsKey('doc_type') && !doc['doc_type'].empty) {
-              isNat = doc['doc_type'].value.toString() == 'credit_line_item';
-            } else if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
-              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.billing';
-            } else if (params._source?.doc_type != null) {
-              isNat = params._source.doc_type.toString() == 'credit_line_item';
-            } else if (params._source?.data_stream?.dataset != null) {
-              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.billing';
-            }
-          } catch (Exception e) {}
-          if (!isNat) { return; }
-          long ts = (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) ? doc['@timestamp'].value.toInstant().toEpochMilli() : 0L;
-          long ingTs = ts;
-          try {
-            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
-              ingTs = doc['event.ingested'].value.toInstant().toEpochMilli();
-            } else if (doc.containsKey('event.created') && !doc['event.created'].empty) {
-              ingTs = doc['event.created'].value.toInstant().toEpochMilli();
-            }
-          } catch (Exception e) {}
-          double qty = 0.0;
-          if (doc.containsKey('ess.billing.ecu_quantity') && !doc['ess.billing.ecu_quantity'].empty) {
-            qty = ((Number)doc['ess.billing.ecu_quantity'].value).doubleValue();
-          } else if (params._source?.ess?.billing?.ecu_quantity instanceof Number) {
-            qty = ((Number)params._source.ess.billing.ecu_quantity).doubleValue();
+          String srcKind = 'leg';
+          if (doc.containsKey('source_kind') && !doc['source_kind'].empty) {
+            srcKind = doc['source_kind'].value.toString();
+          } else if (params._source?.source_kind != null) {
+            srcKind = params._source.source_kind.toString();
           }
-          double bal = 0.0;
-          if (doc.containsKey('ess.billing.ecu_balance') && !doc['ess.billing.ecu_balance'].empty) {
-            bal = ((Number)doc['ess.billing.ecu_balance'].value).doubleValue();
-          } else if (params._source?.ess?.billing?.ecu_balance instanceof Number) {
-            bal = ((Number)params._source.ess.billing.ecu_balance).doubleValue();
+          String pollOwner = '';
+          if (doc.containsKey('poll_owner') && !doc['poll_owner'].empty) {
+            pollOwner = doc['poll_owner'].value.toString();
+          } else if (params._source?.poll_owner != null) {
+            pollOwner = params._source.poll_owner.toString();
           }
-          boolean act = false;
-          if (doc.containsKey('ess.billing.active') && !doc['ess.billing.active'].empty) {
-            act = doc['ess.billing.active'].value.toString().equalsIgnoreCase('true');
-          } else if (params._source?.ess?.billing?.active != null) {
-            act = params._source.ess.billing.active.toString().equalsIgnoreCase('true');
-          }
-          String agentId = '';
-          try {
-            if (doc.containsKey('agent.id') && !doc['agent.id'].empty) {
-              agentId = doc['agent.id'].value.toString();
-            } else if (params._source?.agent?.id != null) {
-              agentId = params._source.agent.id.toString();
-            }
-          } catch (Exception e) {}
-          String dsNs = 'default';
-          try {
-            if (doc.containsKey('data_stream.namespace') && !doc['data_stream.namespace'].empty) {
-              dsNs = doc['data_stream.namespace'].value.toString();
-            } else if (params._source?.data_stream?.namespace != null) {
-              dsNs = params._source.data_stream.namespace.toString();
-            }
-          } catch (Exception e) {}
-          String policyId = '';
-          try {
-            if (doc.containsKey('conf_policy_id') && !doc['conf_policy_id'].empty) {
-              policyId = doc['conf_policy_id'].value.toString();
-            } else if (params._source?.conf_policy_id != null) {
-              policyId = params._source.conf_policy_id.toString();
-            }
-          } catch (Exception e) {}
-          String lineId = '';
-          try {
-            if (doc.containsKey('credit_line_id') && !doc['credit_line_id'].empty) {
-              lineId = doc['credit_line_id'].value.toString();
-            } else if (params._source?.credit_line_id != null) {
-              lineId = params._source.credit_line_id.toString();
-            }
-          } catch (Exception e) {}
-          String sep = Character.toString((char)31);
-          String pollOwner = (agentId + '|' + dsNs + '|' + policyId).replace(sep, '');
-          emit(Long.toString(ts) + sep + Long.toString(ingTs) + sep + Double.toString(qty) + sep + Double.toString(bal) + sep + (act ? '1' : '0') + sep + pollOwner + sep + lineId.replace(sep, ''));
-    cb_leg_credit_rec:
-      type: keyword
-      script:
-        source: |
-          boolean isNat = false;
-          try {
-            if (doc.containsKey('doc_type') && !doc['doc_type'].empty) {
-              isNat = doc['doc_type'].value.toString() == 'credit_line_item';
-            } else if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
-              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.billing';
-            } else if (params._source?.doc_type != null) {
-              isNat = params._source.doc_type.toString() == 'credit_line_item';
-            } else if (params._source?.data_stream?.dataset != null) {
-              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.billing';
-            }
-          } catch (Exception e) {}
-          if (isNat) { return; }
-          long ts = (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) ? doc['@timestamp'].value.toInstant().toEpochMilli() : 0L;
-          long ingTs = ts;
-          try {
-            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
-              ingTs = doc['event.ingested'].value.toInstant().toEpochMilli();
-            } else if (doc.containsKey('event.created') && !doc['event.created'].empty) {
-              ingTs = doc['event.created'].value.toInstant().toEpochMilli();
-            }
-          } catch (Exception e) {}
-          double qty = 0.0;
-          if (doc.containsKey('ess.billing.ecu_quantity') && !doc['ess.billing.ecu_quantity'].empty) {
-            qty = ((Number)doc['ess.billing.ecu_quantity'].value).doubleValue();
-          } else if (params._source?.ess?.billing?.ecu_quantity instanceof Number) {
-            qty = ((Number)params._source.ess.billing.ecu_quantity).doubleValue();
-          }
-          double bal = 0.0;
-          if (doc.containsKey('ess.billing.ecu_balance') && !doc['ess.billing.ecu_balance'].empty) {
-            bal = ((Number)doc['ess.billing.ecu_balance'].value).doubleValue();
-          } else if (params._source?.ess?.billing?.ecu_balance instanceof Number) {
-            bal = ((Number)params._source.ess.billing.ecu_balance).doubleValue();
-          }
-          boolean act = false;
-          if (doc.containsKey('ess.billing.active') && !doc['ess.billing.active'].empty) {
-            act = doc['ess.billing.active'].value.toString().equalsIgnoreCase('true');
-          } else if (params._source?.ess?.billing?.active != null) {
-            act = params._source.ess.billing.active.toString().equalsIgnoreCase('true');
-          }
-          String agentId = '';
-          try {
-            if (doc.containsKey('agent.id') && !doc['agent.id'].empty) {
-              agentId = doc['agent.id'].value.toString();
-            } else if (params._source?.agent?.id != null) {
-              agentId = params._source.agent.id.toString();
-            }
-          } catch (Exception e) {}
-          String dsNs = 'default';
-          try {
-            if (doc.containsKey('data_stream.namespace') && !doc['data_stream.namespace'].empty) {
-              dsNs = doc['data_stream.namespace'].value.toString();
-            } else if (params._source?.data_stream?.namespace != null) {
-              dsNs = params._source.data_stream.namespace.toString();
-            }
-          } catch (Exception e) {}
-          String lineId = '';
-          for (String lf : ['credit_line_id', 'credit_line_id.keyword', 'ess.billing.id', 'ess.billing.id.keyword', 'event.id']) {
-            try {
-              if (doc.containsKey(lf) && !doc[lf].empty) {
-                lineId = doc[lf].value.toString().trim();
-                if (lineId != '') { break; }
-              }
-            } catch (Exception e) {}
-          }
-          if (lineId == '' && params._source != null) {
-            if (params._source.get('credit_line_id') != null) { lineId = params._source.get('credit_line_id').toString().trim(); }
-            else if (params._source.get('ess') instanceof Map && ((Map)params._source.get('ess')).get('billing') instanceof Map && ((Map)((Map)params._source.get('ess')).get('billing')).get('id') != null) {
-              lineId = ((Map)((Map)params._source.get('ess')).get('billing')).get('id').toString().trim();
-            } else if (params._source.get('event') instanceof Map && ((Map)params._source.get('event')).get('id') != null) {
-              lineId = ((Map)params._source.get('event')).get('id').toString().trim();
-            }
+          long pollTs = 0L;
+          if (doc.containsKey('poll_ts') && !doc['poll_ts'].empty) {
+            pollTs = ((Number)doc['poll_ts'].value).longValue();
+          } else if (params._source?.poll_ts instanceof Number) {
+            pollTs = ((Number)params._source.poll_ts).longValue();
           }
           String sep = Character.toString((char)31);
-          String pollOwner = (agentId + '|' + dsNs + '|').replace(sep, '');
-          emit(Long.toString(ts) + sep + Long.toString(ingTs) + sep + Double.toString(qty) + sep + Double.toString(bal) + sep + (act ? '1' : '0') + sep + pollOwner + sep + lineId.replace(sep, ''));
+          emit(srcKind.replace(sep, '') + sep + pollOwner.replace(sep, '') + sep + Long.toString(pollTs));
 dest:
   index: serverless_billing_credits_lookup-1
   aliases:
     - alias: serverless_billing_credits_lookup
       move_on_creation: true
   pipeline: 'logs-chargeback_serverless.lookup-{{ ingestPipelineName "lookup_credits" }}'
-frequency: 60m
+frequency: 15m
 sync:
   time:
-    field: cb_sync_ts
+    field: event.ingested
     delay: 60s
 retention_policy:
   time:
@@ -237,55 +50,60 @@ pivot:
         calendar_interval: 1d
     organization_id:
       terms:
-        field: ess.billing.organization_id
+        field: organization_id
     credit_start:
       terms:
-        field: ess.billing.start
+        field: credit_start
         missing_bucket: true
     credit_end:
       terms:
-        field: ess.billing.end
+        field: credit_end
         missing_bucket: true
     credit_type:
       terms:
-        field: ess.billing.type
+        field: credit_type
         missing_bucket: true
     ecu_quantity:
       terms:
-        field: cb_ecu_quantity_whole
+        field: ecu_quantity
   aggregations:
-    nat_credits:
+    credit_polls:
       terms:
-        field: cb_nat_credit_rec
-        size: 200
+        field: cb_stage1_poll_key
+        size: 500
         order:
-          max_ts: desc
+          max_poll_ts: desc
       aggs:
-        max_ts:
+        max_poll_ts:
           max:
-            field: cb_credit_ts
-        doc_cnt:
-          value_count:
-            field: cb_credit_ts
-    leg_credits:
-      terms:
-        field: cb_leg_credit_rec
-        size: 200
-        order:
-          max_ts: desc
-      aggs:
-        max_ts:
+            field: poll_ts
+        max_ing_ts:
           max:
-            field: cb_credit_ts
-        doc_cnt:
-          value_count:
-            field: cb_credit_ts
+            field: ing_ts
+        act_qty:
+          sum:
+            field: active_ecu_quantity
+        act_bal:
+          sum:
+            field: active_ecu_balance
+        act_cnt:
+          sum:
+            field: active_line_count
+        all_qty:
+          sum:
+            field: total_ecu_quantity
+        all_bal:
+          sum:
+            field: total_ecu_balance
+        all_cnt:
+          sum:
+            field: total_line_count
 settings:
   deduce_mappings: false
   unattended: true
-  max_page_search_size: 100
+  max_page_search_size: 500
 _meta:
   managed: true
   run_as_kibana_system: false
   fleet_transform_version: 0.2.0
-  order: 1
+  order: 2

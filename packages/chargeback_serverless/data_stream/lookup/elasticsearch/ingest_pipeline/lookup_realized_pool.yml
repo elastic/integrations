@@ -113,6 +113,70 @@ processors:
           all_ecu = ((Number)ctx.all_sku_ecu).doubleValue();
         }
         ctx.all_sku_ecu = all_ecu;
+        String sep = Character.toString((char)31);
+        if (ctx.pool_meta instanceof Map) {
+          Map pm = (Map)ctx.pool_meta;
+          List entries = new ArrayList();
+          if (pm.get('buckets') instanceof List) {
+            for (def bObj : (List)pm.get('buckets')) {
+              if (bObj instanceof Map && ((Map)bObj).get('key') != null) {
+                entries.add([((Map)bObj).get('key').toString(), bObj]);
+              }
+            }
+          } else {
+            for (def eObj : pm.entrySet()) {
+              Map.Entry e = (Map.Entry)eObj;
+              entries.add([e.getKey().toString(), e.getValue()]);
+            }
+          }
+          long bestIng = -1L;
+          String bestKey = '';
+          List bestParts = null;
+          for (def pairObj : entries) {
+            List pair = (List)pairObj;
+            String recKey = pair.get(0).toString();
+            def valObj = pair.get(1);
+            List parts = new ArrayList();
+            int ps = 0;
+            while (true) {
+              int pi = recKey.indexOf(sep, ps);
+              if (pi < 0) { parts.add(recKey.substring(ps)); break; }
+              parts.add(recKey.substring(ps, pi));
+              ps = pi + 1;
+            }
+            if (parts.size() < 7) { continue; }
+            long iMs = 0L;
+            try { iMs = Long.parseLong(parts.get(0).toString()); } catch (Exception e) {}
+            if (valObj instanceof Map && ((Map)valObj).get('max_ing') instanceof Number) {
+              iMs = Math.round(((Number)((Map)valObj).get('max_ing')).doubleValue());
+            } else if (valObj instanceof Map && ((Map)valObj).get('max_ing') instanceof Map && ((Map)((Map)valObj).get('max_ing')).get('value') instanceof Number) {
+              iMs = Math.round(((Number)((Map)((Map)valObj).get('max_ing')).get('value')).doubleValue());
+            }
+            if (bestParts == null || iMs > bestIng || (iMs == bestIng && recKey.compareTo(bestKey) > 0)) {
+              bestIng = iMs;
+              bestKey = recKey;
+              bestParts = parts;
+            }
+          }
+          if (bestParts != null) {
+            String pName = bestParts.get(1).toString();
+            String pType = bestParts.get(2).toString();
+            String dGrp = bestParts.get(3).toString();
+            String pRate = bestParts.get(4).toString();
+            String pUnit = bestParts.get(5).toString();
+            String pSym = bestParts.get(6).toString();
+            if (pName != '' && pName != 'null') { ctx.project_name = pName; }
+            if (pType != '' && pType != 'null') { ctx.project_type = pType; }
+            ctx.deployment_group = (dGrp == 'null') ? '' : dGrp;
+            try {
+              double cr = Double.parseDouble(pRate);
+              if (cr >= 0.0) { ctx.conf_chargeable_unit_rate = cr; }
+            } catch (Exception e) {}
+            if (pUnit != '' && pUnit != 'null') { ctx.conf_chargeable_unit_rate_unit = pUnit; }
+            if (pSym != '' && pSym != 'null') { ctx.conf_currency_symbol = pSym; }
+          }
+          ctx.remove('pool_meta');
+        }
         if (ctx.latest_currency instanceof Map) {
           def curr = ctx.latest_currency;
           if (curr.top instanceof List && curr.top.size() > 0 && curr.top[0] instanceof Map && curr.top[0].metrics instanceof Map) {

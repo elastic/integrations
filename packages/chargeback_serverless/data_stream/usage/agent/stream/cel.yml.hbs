@@ -91,6 +91,7 @@ program: |-
   {
   "events": [dyn({ "fake": true })],
   "cursor": {
+  "cursor_version": int(state.?cursor.cursor_version.orValue(0)),
   "last_day": state.?cursor.last_day.orValue(""),
   "pending_day": state.?cursor.pending_day.orValue(""),
   "pending_retries": int(state.?cursor.pending_retries.orValue(0)),
@@ -103,10 +104,11 @@ program: |-
   "want_more": false,
   }
   :
-  (state.?cursor.last_day.orValue("") == day_ts) ?
+  (state.?cursor.last_day.orValue("") == day_ts && int(state.?cursor.cursor_version.orValue(0)) >= 2) ?
   {
   "events": [],
   "cursor": {
+  "cursor_version": 2,
   "last_day": day_ts,
   "pending_day": day_ts,
   "pending_retries": 0,
@@ -209,6 +211,7 @@ program: |-
   {
   "events": [dyn({ "fake": true })],
   "cursor": {
+  "cursor_version": int(state.?cursor.cursor_version.orValue(0)),
   "last_day": state.?cursor.last_day.orValue(""),
   "pending_day": day_ts,
   "pending_retries": state.?cursor.pending_day.orValue("") == day_ts ? int(state.?cursor.pending_retries.orValue(0)) : 0,
@@ -1327,6 +1330,7 @@ program: |-
   {
   "events": size(usage_evts) > 0 ? usage_evts : [ { "fake": true } ],
   "cursor": {
+  "cursor_version": all_projs_done ? 2 : int(state.?cursor.cursor_version.orValue(0)),
   "last_day": all_projs_done ? day_ts : state.?cursor.last_day.orValue(""),
   "pending_day": day_ts,
   "pending_retries": all_accounted_for ? 0 : (state.?cursor.pending_day.orValue("") == day_ts ? int(state.?cursor.pending_retries.orValue(0)) + 1 : 1),

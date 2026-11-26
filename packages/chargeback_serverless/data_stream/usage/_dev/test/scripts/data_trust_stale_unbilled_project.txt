@@ -116,6 +116,18 @@ stdout '^200$'
 exec jq -r '.docs[0].doc._source | "\(.deployment_sum_indexing_time)|\(.deployment_sum_query_time)|\(.deployment_sum_data_set_store_size)|\(.project_name)|\(.deployment_group)"' e2e_proj_out.json
 stdout '^200\|75\|3048\|Overlap Native ES\|finops-overlap$'
 
+exec jq -r '.docs[0].doc._source | "\(.ess.billing.ecu_quantity)|\(.ess.billing.ecu_balance)|\(.ess.billing.active)"' e2e_credits_250_out.json
+stdout '^250000(\.0)?\|200125(\.0)?\|true$'
+
+exec jq -r '[.docs[].doc._source | {day: .["@timestamp"], dgrp: .deployment_group, name: .project_name, opt: .optimized_for}] | sort_by(.day) | "\(.[0].dgrp)|\(.[0].name)|\(.[0].opt)|\(.[1].dgrp)|\(.[1].name)|\(.[1].opt)"' e2e_v1_ps_out.json
+stdout '^\|V1 Old Name\|general_purpose\|finops-core\|V2 New Name\|vector$'
+
+exec jq -r '[.docs[].doc._source | {day: .["@timestamp"], dgrp: .deployment_group, cnt: .inference_count}] | sort_by(.day) | "\(.[0].dgrp)|\(.[0].cnt)|\(.[1].dgrp)|\(.[1].cnt)"' e2e_v1_ai_out.json
+stdout '^\|120\|finops-core\|340$'
+
+exec jq -r '[.docs[].doc._source | {day: .["@timestamp"], dgrp: .deployment_group, dur: .total_duration_ms}] | sort_by(.day) | "\(.[0].dgrp)|\(.[0].dur)|\(.[1].dgrp)|\(.[1].dur)"' e2e_v1_sy_out.json
+stdout '^\|300(\.0)?\|finops-core\|500(\.0)?$'
+
 -- run_regression.sh --
 #!/bin/sh
 set -eu
@@ -150,11 +162,22 @@ es_curl() {
   rm -f "${BODY_FILE}"
 }
 
+cleanup_transforms_and_indices() {
+  for tid in cb-e2e-cred-250-t1 cb-e2e-cred-250-t2; do
+    curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" \
+      -X POST "${ES_HOST}/_transform/${tid}/_stop?force=true&wait_for_completion=true" >/dev/null 2>&1 || true
+    curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" \
+      -X DELETE "${ES_HOST}/_transform/${tid}" >/dev/null 2>&1 || true
+  done
+  curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" \
+    -X DELETE "${ES_HOST}/cb-e2e-src-conf,cb-e2e-src-credits,cb-e2e-src-credits-leg,cb-e2e-src-credits-250,cb-e2e-cred-stage1,cb-e2e-cred-leg-stage1,cb-e2e-cred-250-stage1,cb-e2e-cred-250-dest,cb-e2e-src-bill,cb-e2e-src-ds,cb-e2e-src-overlap,cb-e2e-ds-stage1,cb-e2e-v1-usage,cb-e2e-v2-usage?ignore_unavailable=true" >/dev/null 2>&1 || true
+}
+
 cleanup() {
+  RC=$?
   curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" \
     -X DELETE "${ES_HOST}/_data_stream/metrics-chargeback_serverless.billing-e2e-health,metrics-chargeback_serverless.usage-e2e-health?ignore_unavailable=true" >/dev/null 2>&1 || true
-  curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" \
-    -X DELETE "${ES_HOST}/cb-e2e-src-conf,cb-e2e-src-credits,cb-e2e-src-credits-leg,cb-e2e-src-bill,cb-e2e-src-ds,cb-e2e-src-overlap,cb-e2e-ds-stage1?ignore_unavailable=true" >/dev/null 2>&1 || true
+  cleanup_transforms_and_indices
   curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" \
     -X POST "${ES_HOST}/serverless_billing_cost_lookup-2,serverless_project_status_lookup-2,serverless_project_contribution_lookup-2/_delete_by_query?refresh=true" \
     -H 'Content-Type: application/json' \
@@ -167,6 +190,7 @@ cleanup() {
     -X POST "${ES_HOST}/serverless_ai_model_contribution_lookup-2,serverless_synthetics_monitor_contribution_lookup-2/_delete_by_query?refresh=true" \
     -H 'Content-Type: application/json' \
     -d '{"query":{"term":{"project_id":"proj-health-workload"}}}' >/dev/null 2>&1 || true
+  return "${RC}"
 }
 trap cleanup EXIT
 
@@ -546,9 +570,9 @@ jq -s '
   (.[1].transforms) as $full |
   ($full | map({key: .id, value: .dest})) as $ts |
   def has_dest($part; $idx; $alias):
-    ([$ts[] | select((.key | contains($part)) and .value.index == $idx and any(.value.aliases[]?; .alias == $alias and .move_on_creation == true))] | length) == 1;
+    ([$ts[] | select((.key | contains("." + $part + "-")) and .value.index == $idx and any(.value.aliases[]?; .alias == $alias and .move_on_creation == true))] | length) == 1;
   def has_src($part; $src):
-    ([$full[] | select((.id | contains($part)) and (.source.index | index($src) != null))] | length) == 1;
+    ([$full[] | select((.id | contains("." + $part + "-")) and (.source.index | index($src) != null))] | length) == 1;
   {
     upgraded_ok: (
       ($am | has("serverless_billing_cost_lookup-2")) and
@@ -563,19 +587,22 @@ jq -s '
       has_dest("synthetics_contrib"; "serverless_synthetics_monitor_contribution_lookup-2"; "serverless_synthetics_monitor_contribution_lookup")
     ),
     new_ok: (
+      has_dest("billing_credits_lines"; "serverless_billing_credits_lines-1"; "serverless_billing_credits_lines") and
       has_dest("billing_credits"; "serverless_billing_credits_lookup-1"; "serverless_billing_credits_lookup") and
       has_dest("chargeback_conf"; "serverless_chargeback_conf_lookup-1"; "serverless_chargeback_conf_lookup")
     ),
     chained_ok: (
+      has_src("billing_credits"; "serverless_billing_credits_lines-1") and
       has_src("realized_pool"; "serverless_billing_cost_lookup-2") and
       has_src("proj_contrib"; "serverless_datastream_contribution_lookup-2") and
-      ([$full[] | ._meta.order] | map(select(. != null)) | unique | length) == 9
+      ([$full[] | ._meta.order] | map(select(. != null)) | unique | length) == 10
     )
   }
 ' alias_map.json all_transforms.json > alias_targets.json
 
 # End-to-end transform preview + lookup pipeline verification for non-scripted transforms
 CONF_PIPELINE="logs-chargeback_serverless.lookup-${CURRENT_VERSION}-lookup_conf"
+CRED_LINES_PIPELINE="logs-chargeback_serverless.lookup-${CURRENT_VERSION}-lookup_credits_lines"
 CRED_PIPELINE="logs-chargeback_serverless.lookup-${CURRENT_VERSION}-lookup_credits"
 
 run_preview_and_sim() {
@@ -584,9 +611,9 @@ run_preview_and_sim() {
   PIPE_ID="$3"
   OUT_FILE="$4"
   jq --arg tn "$T_NAME" --arg si "$SRC_IDX" '
-    (.transforms[] | select(.id | contains($tn))) |
+    (.transforms[] | select(.id | contains("." + $tn + "-"))) |
     {
-      source: (.source + {index: [$si]}),
+      source: (.source + {index: ($si | split(","))}),
       pivot: .pivot,
       settings: .settings
     }
@@ -595,7 +622,78 @@ run_preview_and_sim() {
     es_curl -X POST "${ES_HOST}/_ingest/pipeline/${PIPE_ID}/_simulate" -H 'Content-Type: application/json' -d @- > "${OUT_FILE}"
 }
 
-curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" -X DELETE "${ES_HOST}/cb-e2e-src-conf,cb-e2e-src-credits,cb-e2e-src-credits-leg,cb-e2e-src-bill,cb-e2e-src-ds,cb-e2e-src-overlap,cb-e2e-ds-stage1?ignore_unavailable=true" >/dev/null 2>&1 || true
+run_credits_two_stage() {
+  C_SRC_IDX="$1"
+  C_STAGE1_IDX="$2"
+  C_FINAL_OUT="$3"
+  run_preview_and_sim "billing_credits_lines" "${C_SRC_IDX}" "${CRED_LINES_PIPELINE}" "${C_STAGE1_IDX}_sim.json"
+  es_curl -X PUT "${ES_HOST}/${C_STAGE1_IDX}" -H 'Content-Type: application/json' -d '{
+    "mappings": {
+      "properties": {
+        "@timestamp": {"type": "date"},
+        "snapshot_day": {"type": "date"},
+        "event": {"properties": {"ingested": {"type": "date"}}},
+        "organization_id": {"type": "keyword"},
+        "credit_start": {"type": "date"},
+        "credit_end": {"type": "date"},
+        "credit_type": {"type": "keyword"},
+        "ecu_quantity": {"type": "long"},
+        "credit_entry_key": {"type": "keyword"},
+        "source_kind": {"type": "keyword"},
+        "poll_owner": {"type": "keyword"},
+        "poll_ts": {"type": "long"},
+        "ing_ts": {"type": "long"},
+        "active_ecu_quantity": {"type": "double"},
+        "active_ecu_balance": {"type": "double"},
+        "active_line_count": {"type": "long"},
+        "total_ecu_quantity": {"type": "double"},
+        "total_ecu_balance": {"type": "double"},
+        "total_line_count": {"type": "long"}
+      }
+    }
+  }' >/dev/null
+  jq -c '.docs[].doc._source | {"index":{}}, .' "${C_STAGE1_IDX}_sim.json" |     es_curl -X POST "${ES_HOST}/${C_STAGE1_IDX}/_bulk?refresh=true" -H 'Content-Type: application/x-ndjson' --data-binary @- >/dev/null
+  run_preview_and_sim "billing_credits" "${C_STAGE1_IDX}" "${CRED_PIPELINE}" "${C_FINAL_OUT}"
+}
+
+run_batch_transform() {
+  BT_ID="$1"
+  BT_TMPL="$2"
+  BT_SRC="$3"
+  BT_DEST="$4"
+  BT_PIPE="$5"
+  BT_PAGE="$6"
+  jq --arg tn "$BT_TMPL" --arg si "$BT_SRC" --arg di "$BT_DEST" --arg pl "$BT_PIPE" --argjson ps "$BT_PAGE" '
+    (.transforms[] | select(.id | contains("." + $tn + "-"))) |
+    {
+      source: (.source + {index: ($si | split(","))}),
+      pivot: .pivot,
+      dest: {index: $di, pipeline: $pl},
+      settings: ((.settings // {}) + {max_page_search_size: $ps})
+    }
+  ' all_transforms.json | es_curl -X PUT "${ES_HOST}/_transform/${BT_ID}" -H 'Content-Type: application/json' -d @- >/dev/null
+  es_curl -X POST "${ES_HOST}/_transform/${BT_ID}/_start" >/dev/null
+  bt_i=0
+  while [ "${bt_i}" -lt 30 ]; do
+    bt_state="$(es_curl "${ES_HOST}/_transform/${BT_ID}/_stats" | jq -r '.transforms[0].state')"
+    if [ "${bt_state}" = "stopped" ]; then
+      break
+    fi
+    if [ "${bt_state}" = "failed" ]; then
+      es_curl "${ES_HOST}/_transform/${BT_ID}/_stats" >&2
+      return 1
+    fi
+    bt_i=$((bt_i + 1))
+    sleep 1
+  done
+  if [ "${bt_state}" != "stopped" ]; then
+    es_curl "${ES_HOST}/_transform/${BT_ID}/_stats" >&2
+    return 1
+  fi
+  es_curl -X POST "${ES_HOST}/${BT_DEST}/_refresh" >/dev/null
+}
+
+cleanup_transforms_and_indices
 
 # 1. chargeback_conf e2e (explicit owner wins over newer implicit owner, disabled old snapshot ignored)
 es_curl -X PUT "${ES_HOST}/cb-e2e-src-conf" -H 'Content-Type: application/json' -d '{
@@ -655,7 +753,7 @@ es_curl -X POST "${ES_HOST}/cb-e2e-src-credits/_bulk?refresh=true" -H 'Content-T
 {"index":{}}
 {"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'","dataset":"ess_billing.credits"},"data_stream":{"dataset":"ess_billing.credits","namespace":"default"},"agent":{"id":"ag-leg"},"ess":{"billing":{"organization_id":"org-e2e","start":"2026-01-01T00:00:00Z","end":"2026-12-31T23:59:59Z","type":"prepaid","active":true,"ecu_quantity":60000,"ecu_balance":999999.0}}}
 ' >/dev/null
-run_preview_and_sim "billing_credits" "cb-e2e-src-credits" "${CRED_PIPELINE}" "e2e_credits_out.json"
+run_credits_two_stage "cb-e2e-src-credits" "cb-e2e-cred-stage1" "e2e_credits_out.json"
 
 # 2b. billing_credits e2e (two identical legacy commitment lines in the same bucket MUST sum to 10000/6400)
 es_curl -X PUT "${ES_HOST}/cb-e2e-src-credits-leg" -H 'Content-Type: application/json' -d '{
@@ -680,6 +778,7 @@ es_curl -X PUT "${ES_HOST}/cb-e2e-src-credits-leg" -H 'Content-Type: application
 }' >/dev/null
 OLDER_CRED_TS="$(jq -nr '(((now - 21600) / 86400 | floor) * 86400 - 86400) | strftime("%Y-%m-%dT01:00:00Z")')"
 LATEST_CRED_TS="$(jq -nr '(((now - 21600) / 86400 | floor) * 86400 - 86400) | strftime("%Y-%m-%dT02:00:00Z")')"
+LATEST_CRED_ING2="$(jq -nr '(((now - 21600) / 86400 | floor) * 86400 - 86400) | strftime("%Y-%m-%dT02:00:10Z")')"
 es_curl -X POST "${ES_HOST}/cb-e2e-src-credits-leg/_bulk?refresh=true" -H 'Content-Type: application/x-ndjson' -d '
 {"index":{}}
 {"@timestamp":"'"${OLDER_CRED_TS}"'","event":{"ingested":"'"${OLDER_CRED_TS}"'","dataset":"ess_billing.credits"},"data_stream":{"dataset":"ess_billing.credits","namespace":"default"},"agent":{"id":"ag-leg"},"ess":{"billing":{"organization_id":"org-e2e-leg","start":"2026-01-01T00:00:00Z","end":"2026-12-31T23:59:59Z","type":"prepaid","active":true,"ecu_quantity":5000,"ecu_balance":4000.0}}}
@@ -688,9 +787,71 @@ es_curl -X POST "${ES_HOST}/cb-e2e-src-credits-leg/_bulk?refresh=true" -H 'Conte
 {"index":{}}
 {"@timestamp":"'"${LATEST_CRED_TS}"'","event":{"ingested":"'"${LATEST_CRED_TS}"'","dataset":"ess_billing.credits"},"data_stream":{"dataset":"ess_billing.credits","namespace":"default"},"agent":{"id":"ag-leg"},"ess":{"billing":{"organization_id":"org-e2e-leg","start":"2026-01-01T00:00:00Z","end":"2026-12-31T23:59:59Z","type":"prepaid","active":true,"ecu_quantity":5000,"ecu_balance":3200.0}}}
 {"index":{}}
-{"@timestamp":"'"${LATEST_CRED_TS}"'","event":{"ingested":"'"${LATEST_CRED_TS}"'","dataset":"ess_billing.credits"},"data_stream":{"dataset":"ess_billing.credits","namespace":"default"},"agent":{"id":"ag-leg"},"ess":{"billing":{"organization_id":"org-e2e-leg","start":"2026-01-01T00:00:00Z","end":"2026-12-31T23:59:59Z","type":"prepaid","active":true,"ecu_quantity":5000,"ecu_balance":3200.0}}}
+{"@timestamp":"'"${LATEST_CRED_TS}"'","event":{"ingested":"'"${LATEST_CRED_ING2}"'","dataset":"ess_billing.credits"},"data_stream":{"dataset":"ess_billing.credits","namespace":"default"},"agent":{"id":"ag-leg"},"ess":{"billing":{"organization_id":"org-e2e-leg","start":"2026-01-01T00:00:00Z","end":"2026-12-31T23:59:59Z","type":"prepaid","active":true,"ecu_quantity":5000,"ecu_balance":3200.0}}}
 ' >/dev/null
-run_preview_and_sim "billing_credits" "cb-e2e-src-credits-leg" "${CRED_PIPELINE}" "e2e_credits_leg_out.json"
+run_credits_two_stage "cb-e2e-src-credits-leg" "cb-e2e-cred-leg-stage1" "e2e_credits_leg_out.json"
+
+# 2c. billing_credits e2e (>200 distinct native commitment lines in a single contract bucket MUST NOT truncate)
+es_curl -X PUT "${ES_HOST}/cb-e2e-src-credits-250" -H 'Content-Type: application/json' -d '{
+  "mappings": {
+    "properties": {
+      "@timestamp": {"type": "date"},
+      "event": {"properties": {"ingested": {"type": "date"}, "dataset": {"type": "keyword"}}},
+      "data_stream": {"properties": {"dataset": {"type": "keyword"}, "namespace": {"type": "keyword"}}},
+      "agent": {"properties": {"id": {"type": "keyword"}}},
+      "doc_type": {"type": "keyword"},
+      "conf_policy_id": {"type": "keyword"},
+      "credit_line_id": {"type": "keyword"},
+      "ess": {"properties": {"billing": {"properties": {
+        "organization_id": {"type": "keyword"},
+        "start": {"type": "date"},
+        "end": {"type": "date"},
+        "type": {"type": "keyword"},
+        "active": {"type": "boolean"},
+        "ecu_quantity": {"type": "double"},
+        "ecu_balance": {"type": "double"}
+      }}}}
+    }
+  }
+}' >/dev/null
+jq -nc --arg ts "${LATEST_CRED_TS}" --arg old_ts "${OLDER_CRED_TS}" --arg ing "${HEALTHY_UPDATED_AT}" '
+  [
+    {"@timestamp":$old_ts,"event":{"ingested":$old_ts,"dataset":"chargeback_serverless.billing"},"data_stream":{"dataset":"chargeback_serverless.billing","namespace":"default"},"agent":{"id":"ag-250"},"doc_type":"credit_line_item","conf_policy_id":"pol-250","credit_line_id":"line-old","ess":{"billing":{"organization_id":"org-e2e-250","start":"2026-01-01T00:00:00Z","end":"2026-12-31T23:59:59Z","type":"prepaid","active":true,"ecu_quantity":1000,"ecu_balance":999.0}}},
+    {"@timestamp":$ts,"event":{"ingested":$ts,"dataset":"chargeback_serverless.billing"},"data_stream":{"dataset":"chargeback_serverless.billing","namespace":"default"},"agent":{"id":"ag-250"},"doc_type":"credit_line_item","conf_policy_id":"pol-250","credit_line_id":"line-001","ess":{"billing":{"organization_id":"org-e2e-250","start":"2026-01-01T00:00:00Z","end":"2026-12-31T23:59:59Z","type":"prepaid","active":true,"ecu_quantity":1000,"ecu_balance":999.0}}}
+  ] + [
+    range(1; 251) | {
+      "@timestamp":$ts,"event":{"ingested":$ing,"dataset":"chargeback_serverless.billing"},"data_stream":{"dataset":"chargeback_serverless.billing","namespace":"default"},"agent":{"id":"ag-250"},"doc_type":"credit_line_item","conf_policy_id":"pol-250","credit_line_id":("line-" + (if . < 10 then "00" elif . < 100 then "0" else "" end) + tostring),"ess":{"billing":{"organization_id":"org-e2e-250","start":"2026-01-01T00:00:00Z","end":"2026-12-31T23:59:59Z","type":"prepaid","active":true,"ecu_quantity":1000,"ecu_balance":800.5}}
+    }
+  ] | .[] | {"index":{}}, .' |   es_curl -X POST "${ES_HOST}/cb-e2e-src-credits-250/_bulk?refresh=true" -H 'Content-Type: application/x-ndjson' --data-binary @- >/dev/null
+es_curl -X PUT "${ES_HOST}/cb-e2e-cred-250-stage1" -H 'Content-Type: application/json' -d '{
+  "mappings": {
+    "dynamic": false,
+    "properties": {
+      "@timestamp": {"type": "date"},
+      "snapshot_day": {"type": "date"},
+      "event": {"properties": {"ingested": {"type": "date"}}},
+      "organization_id": {"type": "keyword"},
+      "credit_start": {"type": "date"},
+      "credit_end": {"type": "date"},
+      "credit_type": {"type": "keyword"},
+      "ecu_quantity": {"type": "long"},
+      "credit_entry_key": {"type": "keyword"},
+      "source_kind": {"type": "keyword"},
+      "poll_owner": {"type": "keyword"},
+      "poll_ts": {"type": "long"},
+      "ing_ts": {"type": "long"},
+      "active_ecu_quantity": {"type": "double"},
+      "active_ecu_balance": {"type": "double"},
+      "active_line_count": {"type": "long"},
+      "total_ecu_quantity": {"type": "double"},
+      "total_ecu_balance": {"type": "double"},
+      "total_line_count": {"type": "long"}
+    }
+  }
+}' >/dev/null
+run_batch_transform "cb-e2e-cred-250-t1" "billing_credits_lines" "cb-e2e-src-credits-250" "cb-e2e-cred-250-stage1" "${CRED_LINES_PIPELINE}" 100
+run_batch_transform "cb-e2e-cred-250-t2" "billing_credits" "cb-e2e-cred-250-stage1" "cb-e2e-cred-250-dest" "${CRED_PIPELINE}" 500
+es_curl "${ES_HOST}/cb-e2e-cred-250-dest/_search?size=10" | jq '{docs: [.hits.hits[] | {doc: .}]}' > e2e_credits_250_out.json
 
 # 3. billing_cost e2e (native overrides legacy + preserves group_first_seen_at & group_initial_backfill)
 es_curl -X PUT "${ES_HOST}/cb-e2e-src-bill" -H 'Content-Type: application/json' -d '{
@@ -850,3 +1011,107 @@ es_curl -X PUT "${ES_HOST}/cb-e2e-ds-stage1" -H 'Content-Type: application/json'
 }' >/dev/null
 jq -c '.docs[].doc._source | {"index":{}}, .' e2e_ds_overlap_out.json |   es_curl -X POST "${ES_HOST}/cb-e2e-ds-stage1/_bulk?refresh=true" -H 'Content-Type: application/x-ndjson' --data-binary @- >/dev/null
 run_preview_and_sim "proj_contrib" "cb-e2e-ds-stage1" "${USAGE_PIPELINE}" "e2e_proj_out.json"
+
+# 6. Mixed 0.1.0 (unmapped deployment_group / total_duration_ms with dynamic: false) + 0.2.0 usage shards
+OLDER_DAY="$(jq -nr '(((now - 21600) / 86400 | floor) * 86400 - 2 * 86400) | strftime("%Y-%m-%dT00:00:00Z")')"
+es_curl -X PUT "${ES_HOST}/cb-e2e-v1-usage" -H 'Content-Type: application/json' -d '{
+  "mappings": {
+    "dynamic": false,
+    "properties": {
+      "@timestamp": {"type": "date"},
+      "event": {"properties": {"ingested": {"type": "date"}}},
+      "doc_type": {"type": "keyword"},
+      "project_id": {"type": "keyword"},
+      "project_name": {"type": "keyword"},
+      "project_type": {"type": "keyword"},
+      "optimized_for": {"type": "keyword"},
+      "es_url": {"type": "keyword"},
+      "last_status": {"type": "keyword"},
+      "api_key_type": {"type": "keyword"},
+      "synthetics_status": {"type": "keyword"},
+      "index_count": {"type": "long"},
+      "datastream_count": {"type": "long"},
+      "ai_model_count": {"type": "long"},
+      "synthetics_monitor_count": {"type": "long"},
+      "updated_at": {"type": "date"},
+      "model_id": {"type": "keyword"},
+      "task_type": {"type": "keyword"},
+      "inference_count": {"type": "long"},
+      "average_inference_time_ms": {"type": "double"},
+      "total_inference_time_ms": {"type": "long"},
+      "monitor_id": {"type": "keyword"},
+      "monitor_name": {"type": "keyword"},
+      "monitor_namespace": {"type": "keyword"},
+      "monitor_type": {"type": "keyword"},
+      "check_count": {"type": "long"},
+      "up_count": {"type": "long"},
+      "down_count": {"type": "long"},
+      "locations_count": {"type": "long"},
+      "average_duration_ms": {"type": "double"},
+      "conf_chargeable_unit_rate": {"type": "double"},
+      "conf_chargeable_unit_rate_unit": {"type": "keyword"},
+      "conf_currency_symbol": {"type": "keyword"}
+    }
+  }
+}' >/dev/null
+es_curl -X PUT "${ES_HOST}/cb-e2e-v2-usage" -H 'Content-Type: application/json' -d '{
+  "mappings": {
+    "dynamic": false,
+    "properties": {
+      "@timestamp": {"type": "date"},
+      "event": {"properties": {"ingested": {"type": "date"}}},
+      "doc_type": {"type": "keyword"},
+      "project_id": {"type": "keyword"},
+      "project_name": {"type": "keyword"},
+      "project_type": {"type": "keyword"},
+      "deployment_group": {"type": "keyword"},
+      "optimized_for": {"type": "keyword"},
+      "es_url": {"type": "keyword"},
+      "last_status": {"type": "keyword"},
+      "api_key_type": {"type": "keyword"},
+      "synthetics_status": {"type": "keyword"},
+      "index_count": {"type": "long"},
+      "datastream_count": {"type": "long"},
+      "ai_model_count": {"type": "long"},
+      "synthetics_monitor_count": {"type": "long"},
+      "updated_at": {"type": "date"},
+      "model_id": {"type": "keyword"},
+      "task_type": {"type": "keyword"},
+      "inference_count": {"type": "long"},
+      "average_inference_time_ms": {"type": "double"},
+      "total_inference_time_ms": {"type": "long"},
+      "monitor_id": {"type": "keyword"},
+      "monitor_name": {"type": "keyword"},
+      "monitor_namespace": {"type": "keyword"},
+      "monitor_type": {"type": "keyword"},
+      "check_count": {"type": "long"},
+      "up_count": {"type": "long"},
+      "down_count": {"type": "long"},
+      "locations_count": {"type": "long"},
+      "average_duration_ms": {"type": "double"},
+      "total_duration_ms": {"type": "double"},
+      "conf_chargeable_unit_rate": {"type": "double"},
+      "conf_chargeable_unit_rate_unit": {"type": "keyword"},
+      "conf_currency_symbol": {"type": "keyword"}
+    }
+  }
+}' >/dev/null
+es_curl -X POST "${ES_HOST}/cb-e2e-v1-usage/_bulk?refresh=true" -H 'Content-Type: application/x-ndjson' --data-binary '
+{"index":{}}
+{"@timestamp":"'"${OLDER_DAY}"'","event":{"ingested":"'"${OLDER_DAY}"'"},"doc_type":"project_status","project_id":"proj-v1-upg","project_name":"V1 Old Name","project_type":"elasticsearch","optimized_for":"general_purpose","es_url":"https://v1.example","last_status":"ok","api_key_type":"hub_key","synthetics_status":"ok","index_count":4,"datastream_count":1,"ai_model_count":1,"synthetics_monitor_count":1,"updated_at":"'"${OLDER_DAY}"'","conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
+{"index":{}}
+{"@timestamp":"'"${OLDER_DAY}"'","event":{"ingested":"'"${OLDER_DAY}"'"},"doc_type":"ai_model","project_id":"proj-v1-upg","project_name":"V1 Old Name","project_type":"elasticsearch","model_id":"elser","task_type":"query_inference","inference_count":120,"average_inference_time_ms":10.0,"total_inference_time_ms":1200,"conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
+{"index":{}}
+{"@timestamp":"'"${OLDER_DAY}"'","event":{"ingested":"'"${OLDER_DAY}"'"},"doc_type":"synthetics_monitor","project_id":"proj-v1-upg","project_name":"V1 Old Name","project_type":"elasticsearch","monitor_id":"mon-v1","monitor_name":"V1 Ping","monitor_namespace":"default","monitor_type":"http","check_count":3,"up_count":3,"down_count":0,"locations_count":1,"average_duration_ms":100.0,"conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
+' >/dev/null
+es_curl -X POST "${ES_HOST}/cb-e2e-v2-usage/_bulk?refresh=true" -H 'Content-Type: application/x-ndjson' --data-binary '
+{"index":{}}
+{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"doc_type":"project_status","project_id":"proj-v1-upg","project_name":"V2 New Name","project_type":"elasticsearch","deployment_group":"finops-core","optimized_for":"vector","es_url":"https://v2.example","last_status":"ok","api_key_type":"cloud_key","synthetics_status":"ok","index_count":6,"datastream_count":2,"ai_model_count":1,"synthetics_monitor_count":1,"updated_at":"'"${HEALTHY_UPDATED_AT}"'","conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
+{"index":{}}
+{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"doc_type":"ai_model","project_id":"proj-v1-upg","project_name":"V2 New Name","project_type":"elasticsearch","deployment_group":"finops-core","model_id":"elser","task_type":"query_inference","inference_count":340,"average_inference_time_ms":10.0,"total_inference_time_ms":3400,"conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
+{"index":{}}
+{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"doc_type":"synthetics_monitor","project_id":"proj-v1-upg","project_name":"V2 New Name","project_type":"elasticsearch","deployment_group":"finops-core","monitor_id":"mon-v1","monitor_name":"V1 Ping","monitor_namespace":"default","monitor_type":"http","check_count":5,"up_count":5,"down_count":0,"locations_count":1,"average_duration_ms":100.0,"total_duration_ms":500.0,"conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
+' >/dev/null
+run_preview_and_sim "project_status" "cb-e2e-v1-usage,cb-e2e-v2-usage" "${USAGE_PIPELINE}" "e2e_v1_ps_out.json"
+run_preview_and_sim "ai_contrib" "cb-e2e-v1-usage,cb-e2e-v2-usage" "${USAGE_PIPELINE}" "e2e_v1_ai_out.json"
+run_preview_and_sim "synthetics_contrib" "cb-e2e-v1-usage,cb-e2e-v2-usage" "${USAGE_PIPELINE}" "e2e_v1_sy_out.json" 
