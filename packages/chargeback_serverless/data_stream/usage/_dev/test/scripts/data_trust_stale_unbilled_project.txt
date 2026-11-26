@@ -47,8 +47,11 @@ stdout '^ZAR$'
 exec jq -r 'length' new_group_rows.json
 stdout '^1$'
 
-exec jq -r '.[0].deployment_group' new_group_rows.json
-stdout '^replayed-new-grp$'
+exec jq -r '[.[].deployment_group] | sort | join(",")' new_group_rows.json
+stdout '^legacy-mixed-grp,multi-pol-new-grp,replayed-new-grp$'
+
+exec jq -r '.[] | select(.deployment_group == "legacy-mixed-grp") | .first_seen_day' new_group_rows.json
+stdout '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' 
 
 exec jq -r 'map(.idx_group) | index("serverless_billing_realized_pool_lookup") != null' health_rows.json
 stdout '^true$'
@@ -103,6 +106,12 @@ stdout '^true$'
 
 exec jq -r '[.docs[].doc._source.datastream] | any(. == "serverless_billing_credits_lines-1" or . == "partial-serverless_billing_credits_lines-1")' e2e_ds_overlap_out.json
 stdout '^false$'
+
+exec jq -r '(.old_alias_cnt == 0) and (.new_alias_cnt == 1)' e2e_move_on_creation.json
+stdout '^true$'
+
+exec jq -r '.docs[0].doc._source | (.group_initial_backfill == false) and ((.group_observations | length) == 2)' e2e_bill_multipol_out.json
+stdout '^true$'
 
 exec jq -r '.docs[0].doc._source | "\(.conf_chargeable_unit_rate)|\(.conf_chargeable_unit_rate_unit)|\(.conf_currency_symbol)"' e2e_conf_out.json
 stdout '^0\.92\|EUR\|€$'
@@ -169,14 +178,14 @@ es_curl() {
 }
 
 cleanup_transforms_and_indices() {
-  for tid in cb-e2e-cred-250-t1 cb-e2e-cred-250-t2; do
+  for tid in cb-e2e-cred-250-t1 cb-e2e-cred-250-t2 cb-e2e-move-t2; do
     curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" \
       -X POST "${ES_HOST}/_transform/${tid}/_stop?force=true&wait_for_completion=true" >/dev/null 2>&1 || true
     curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" \
       -X DELETE "${ES_HOST}/_transform/${tid}" >/dev/null 2>&1 || true
   done
   curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" \
-    -X DELETE "${ES_HOST}/cb-e2e-src-conf,cb-e2e-src-credits,cb-e2e-src-credits-leg,cb-e2e-src-credits-250,cb-e2e-cred-stage1,cb-e2e-cred-leg-stage1,cb-e2e-cred-250-stage1,cb-e2e-cred-250-dest,cb-e2e-src-bill,cb-e2e-src-ds,cb-e2e-src-overlap,cb-e2e-ds-stage1,cb-e2e-v1-usage,cb-e2e-v2-usage?ignore_unavailable=true" >/dev/null 2>&1 || true
+    -X DELETE "${ES_HOST}/cb-e2e-src-conf,cb-e2e-src-credits,cb-e2e-src-credits-leg,cb-e2e-src-credits-250,cb-e2e-cred-stage1,cb-e2e-cred-leg-stage1,cb-e2e-cred-250-stage1,cb-e2e-cred-250-dest,cb-e2e-src-bill,cb-e2e-src-ds,cb-e2e-src-overlap,cb-e2e-ds-stage1,cb-e2e-v1-usage,cb-e2e-v2-usage,cb-e2e-src-bill-multipol,cb-e2e-move-dest-1,cb-e2e-move-dest-2?ignore_unavailable=true" >/dev/null 2>&1 || true
 }
 
 cleanup() {
@@ -187,7 +196,7 @@ cleanup() {
   curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" \
     -X POST "${ES_HOST}/serverless_billing_cost_lookup-2,serverless_project_status_lookup-2,serverless_project_contribution_lookup-2/_delete_by_query?refresh=true" \
     -H 'Content-Type: application/json' \
-    -d '{"query":{"terms":{"project_id":["proj-healthy","proj-stale-unbilled","proj-inactive","proj-legacy-only","proj-currency-flip","proj-grp-backfill","proj-grp-new"]}}}' >/dev/null 2>&1 || true
+    -d '{"query":{"terms":{"project_id":["proj-healthy","proj-stale-unbilled","proj-inactive","proj-legacy-only","proj-currency-flip","proj-grp-backfill","proj-grp-new","proj-grp-legacy-mix-old","proj-grp-legacy-mix-new","proj-mpol"]}}}' >/dev/null 2>&1 || true
   curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" \
     -X POST "${ES_HOST}/serverless_billing_credits_lookup-1/_delete_by_query?refresh=true" \
     -H 'Content-Type: application/json' \
@@ -460,13 +469,92 @@ jq -n \
   }' | es_curl -X POST "${ES_HOST}/serverless_billing_cost_lookup-2/_doc?refresh=true&pipeline=${BILL_PIPELINE}" \
   -H 'Content-Type: application/json' -d @- >/dev/null
 
+# Legacy historical billing row (30d old, no group_first_seen_at) + recent native observation (4711847055)
+LEGACY_MIX_OLD_DAY="$(jq -nr '(((now - 21600) / 86400 | floor) * 86400 - 30 * 86400) | strftime("%Y-%m-%dT00:00:00Z")')"
+jq -n \
+  --arg ts "${LEGACY_MIX_OLD_DAY}" \
+  '{
+    "@timestamp": $ts,
+    "project_id": "proj-grp-legacy-mix-old",
+    "sku": "es.search-vcu",
+    "latest_snapshot": {
+      "project_name": "Legacy Mixed Group Old ES",
+      "project_type": "elasticsearch",
+      "deployment_group": "legacy-mixed-grp",
+      "total_ecu": 12.0,
+      "quantity_value": 12.0,
+      "organization_id": "org-health-test"
+    }
+  }' | es_curl -X POST "${ES_HOST}/serverless_billing_cost_lookup-2/_doc?refresh=true&pipeline=${BILL_PIPELINE}" \
+  -H 'Content-Type: application/json' -d @- >/dev/null
+
+jq -n \
+  --arg ts "${BILL_DAY}" \
+  --arg seen "${HEALTHY_UPDATED_AT}" \
+  '{
+    "@timestamp": $ts,
+    "project_id": "proj-grp-legacy-mix-new",
+    "sku": "es.search-vcu",
+    "latest_snapshot": {
+      "project_name": "Legacy Mixed Group New ES",
+      "project_type": "elasticsearch",
+      "deployment_group": "legacy-mixed-grp",
+      "total_ecu": 14.0,
+      "quantity_value": 14.0,
+      "organization_id": "org-health-test",
+      "group_first_seen_at": $seen,
+      "group_initial_backfill": false
+    }
+  }' | es_curl -X POST "${ES_HOST}/serverless_billing_cost_lookup-2/_doc?refresh=true&pipeline=${BILL_PIPELINE}" \
+  -H 'Content-Type: application/json' -d @- >/dev/null
+
+# Multi-policy group observation merge via billing_cost + lookup_billing (4711847113):
+# Established policy pol-1 (created 30d ago) observes multi-pol-new-grp after backfill (bf=false),
+# while newly added policy pol-2 (created today) runs initial backfill on REPLAY_OLD_DAY and BILL_DAY (bf=true).
+es_curl -X PUT "${ES_HOST}/cb-e2e-src-bill-multipol" -H 'Content-Type: application/json' -d '{
+  "mappings": {
+    "properties": {
+      "@timestamp": {"type": "date"},
+      "event": {"properties": {"ingested": {"type": "date"}}},
+      "data_stream": {"properties": {"dataset": {"type": "keyword"}, "namespace": {"type": "keyword"}}},
+      "doc_type": {"type": "keyword"},
+      "conf_policy_id": {"type": "keyword"},
+      "policy_created_at": {"type": "date"},
+      "project_id": {"type": "keyword"},
+      "project_name": {"type": "keyword"},
+      "project_type": {"type": "keyword"},
+      "deployment_group": {"type": "keyword"},
+      "sku": {"type": "keyword"},
+      "total_ecu": {"type": "double"},
+      "quantity_value": {"type": "double"},
+      "group_first_seen_at": {"type": "date"},
+      "group_initial_backfill": {"type": "boolean"},
+      "ess": {"properties": {"billing": {"properties": {"organization_id": {"type": "keyword"}}}}}
+    }
+  }
+}' >/dev/null
+es_curl -X POST "${ES_HOST}/cb-e2e-src-bill-multipol/_bulk?refresh=true" -H 'Content-Type: application/x-ndjson' --data-binary '
+{"index":{}}
+{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"chargeback_serverless.billing","namespace":"default"},"doc_type":"billing_line_item","conf_policy_id":"pol-1","policy_created_at":"'"${LEGACY_MIX_OLD_DAY}"'","project_id":"proj-mpol","project_name":"Multi Policy ES","project_type":"elasticsearch","deployment_group":"multi-pol-new-grp","sku":"aws.es-search-vcu_us-east-1","total_ecu":20.0,"quantity_value":20.0,"group_first_seen_at":"'"${HEALTHY_UPDATED_AT}"'","group_initial_backfill":false,"ess":{"billing":{"organization_id":"org-health-test"}}}
+{"index":{}}
+{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"chargeback_serverless.billing","namespace":"default"},"doc_type":"billing_line_item","conf_policy_id":"pol-2","policy_created_at":"'"${HEALTHY_UPDATED_AT}"'","project_id":"proj-mpol","project_name":"Multi Policy ES","project_type":"elasticsearch","deployment_group":"multi-pol-new-grp","sku":"aws.es-search-vcu_us-east-1","total_ecu":20.0,"quantity_value":20.0,"group_first_seen_at":"'"${REPLAY_OLD_DAY}"'","group_initial_backfill":true,"ess":{"billing":{"organization_id":"org-health-test"}}}
+{"index":{}}
+{"@timestamp":"'"${REPLAY_OLD_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"chargeback_serverless.billing","namespace":"default"},"doc_type":"billing_line_item","conf_policy_id":"pol-2","policy_created_at":"'"${HEALTHY_UPDATED_AT}"'","project_id":"proj-mpol","project_name":"Multi Policy ES","project_type":"elasticsearch","deployment_group":"multi-pol-new-grp","sku":"aws.es-search-vcu_us-east-1","total_ecu":15.0,"quantity_value":15.0,"group_first_seen_at":"'"${REPLAY_OLD_DAY}"'","group_initial_backfill":true,"ess":{"billing":{"organization_id":"org-health-test"}}}
+' >/dev/null
+T_MP_ID="$(es_curl "${ES_HOST}/_transform/_all" | jq -r '.transforms[] | select(.id | contains(".billing_cost-")) | .id')"
+es_curl "${ES_HOST}/_transform/${T_MP_ID}" | jq '.transforms[0] | {source: .source, pivot: .pivot, settings: .settings} | .source.index = ["cb-e2e-src-bill-multipol"]' > prev_tdef_mp.json
+es_curl -X POST "${ES_HOST}/_transform/_preview" -H 'Content-Type: application/json' -d @prev_tdef_mp.json > prev_mp_raw.json
+jq '{docs: [.preview[] | {"_index": "cb-e2e-preview", "_source": .}]}' prev_mp_raw.json > sim_mp_req.json
+es_curl -X POST "${ES_HOST}/_ingest/pipeline/${BILL_PIPELINE}/_simulate" -H 'Content-Type: application/json' -d @sim_mp_req.json > e2e_bill_multipol_out.json
+jq -c '.docs[].doc._source | {"index":{}}, .' e2e_bill_multipol_out.json | es_curl -X POST "${ES_HOST}/serverless_billing_cost_lookup-2/_bulk?refresh=true&pipeline=_none" -H 'Content-Type: application/x-ndjson' --data-binary @- >/dev/null
+
 NEWGRP_RULE="${DATA_STREAM_ROOT}/../../kibana/alerting_rule_template/chargeback_serverless-alert-new-group-detected.json"
 jq '{query: .attributes.params.esqlQuery.esql}' "${NEWGRP_RULE}" | \
   es_curl -X POST "${ES_HOST}/_query?format=json" -H 'Content-Type: application/json' -d @- > raw_newgrp_resp.json
 jq '
   .columns as $cols |
   [ .values[] | [ range(0; ($cols | length)) as $i | { ($cols[$i].name): .[$i] } ] | add ] |
-  map(select(.deployment_group == "backfill-grp" or .deployment_group == "replayed-new-grp"))
+  map(select(.deployment_group == "backfill-grp" or .deployment_group == "replayed-new-grp" or .deployment_group == "legacy-mixed-grp" or .deployment_group == "multi-pol-new-grp"))
 ' raw_newgrp_resp.json > new_group_rows.json
 
 # Retained stale optional rows (credits, ai_contrib, synthetics_contrib) with no matching active/unprocessed source must NOT alert
@@ -1164,3 +1252,19 @@ es_curl -X POST "${ES_HOST}/cb-e2e-v2-usage/_bulk?refresh=true" -H 'Content-Type
 run_preview_and_sim "project_status" "cb-e2e-v1-usage,cb-e2e-v2-usage" "${USAGE_PIPELINE}" "e2e_v1_ps_out.json"
 run_preview_and_sim "ai_contrib" "cb-e2e-v1-usage,cb-e2e-v2-usage" "${USAGE_PIPELINE}" "e2e_v1_ai_out.json"
 run_preview_and_sim "synthetics_contrib" "cb-e2e-v1-usage,cb-e2e-v2-usage" "${USAGE_PIPELINE}" "e2e_v1_sy_out.json" 
+
+# 2c. Live move_on_creation: true alias migration check (-1 -> -2)
+es_curl -X PUT "${ES_HOST}/cb-e2e-move-dest-1" -H 'Content-Type: application/json' -d '{"mappings":{"dynamic":false,"properties":{"@timestamp":{"type":"date"}}},"aliases":{"cb-e2e-move-alias":{}}}' >/dev/null
+T_AI_ID="$(es_curl "${ES_HOST}/_transform/_all" | jq -r '.transforms[] | select(.id | contains(".ai_contrib-")) | .id')"
+es_curl "${ES_HOST}/_transform/${T_AI_ID}" | jq '.transforms[0] | {
+  source: (.source | .index = ["cb-e2e-v2-usage"]),
+  dest: {index: "cb-e2e-move-dest-2", pipeline: .dest.pipeline, aliases: [{alias: "cb-e2e-move-alias", move_on_creation: true}]},
+  pivot: .pivot,
+  settings: .settings
+}' | es_curl -X PUT "${ES_HOST}/_transform/cb-e2e-move-t2" -H 'Content-Type: application/json' -d @- >/dev/null
+es_curl -X POST "${ES_HOST}/_transform/cb-e2e-move-t2/_start" >/dev/null
+wait_batch_transform "cb-e2e-move-t2"
+es_curl "${ES_HOST}/_alias/cb-e2e-move-alias" | jq '{
+  old_alias_cnt: (if has("cb-e2e-move-dest-1") then (.["cb-e2e-move-dest-1"].aliases | length) else 0 end),
+  new_alias_cnt: (if has("cb-e2e-move-dest-2") then (.["cb-e2e-move-dest-2"].aliases | keys | length) else 0 end)
+}' > e2e_move_on_creation.json

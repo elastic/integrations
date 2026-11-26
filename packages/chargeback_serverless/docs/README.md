@@ -60,9 +60,9 @@ The integration provisions ten continuous transforms on your FinOps hub project:
 
 During migrations from legacy `ess_billing` or `monitoring-indices*` pipelines, `chargeback_serverless` reads both native and legacy streams simultaneously and prefers native `chargeback_serverless.*` data per `(day, project_id)` bucket to avoid double-counting:
 
-- **`serverless_billing_cost_lookup`**: Reads `metrics-chargeback_serverless.billing-*` and `metrics-ess_billing.billing-*` (excluding `-metrics-ess_billing.billing-chargeback` and `-serverless_*_lookup*`), populates `ess.billing.*` compatibility fields, and extracts `chargeback_group:*` tags into `deployment_group`.
+- **`serverless_billing_cost_lookup`**: Reads `metrics-chargeback_serverless.billing-*` and `metrics-ess_billing.billing-*` (excluding `-metrics-ess_billing.billing-chargeback`, `-serverless_*_lookup*`, and `-serverless_billing_credits_lines*`), populates `ess.billing.*` compatibility fields, and extracts `chargeback_group:*` tags into `deployment_group`.
 - **`serverless_billing_credits_lookup`**: Stage-2 contract aggregation reading `serverless_billing_credits_lines-1` (which itself consumes `metrics-chargeback_serverless.billing-*` `credit_line_item` documents and legacy `metrics-ess_billing.credits-*`, excluding `-metrics-ess_billing.credits-chargeback*`).
-- **`serverless_datastream_contribution_lookup`**: Reads `metrics-chargeback_serverless.usage-*`, `monitoring-indices*`, and Cross-Cluster Search `*:monitoring-indices*` (excluding `-monitoring-indices-chargeback*` and `-serverless_*_lookup*`).
+- **`serverless_datastream_contribution_lookup`**: Reads `metrics-chargeback_serverless.usage-*`, `monitoring-indices*`, and Cross-Cluster Search `*:monitoring-indices*` (excluding `-monitoring-indices-chargeback*`, `-serverless_*_lookup*`, and `-serverless_billing_credits_lines*`).
 - **`serverless_project_contribution_lookup`**: Aggregates daily project totals directly from `serverless_datastream_contribution_lookup-2` so project denominators always equal the sum of selected data stream numerators, including when native and legacy streams overlap within the same project.
 
 To power stock ESS Billing dashboards from Chargeback Serverless without running `ess_billing` in parallel, add opt-in read aliases pointing `metrics-ess_billing.billing-chargeback` to the concrete `serverless_billing_cost_lookup-2` index and `metrics-ess_billing.credits-chargeback` to `serverless_billing_credits_lookup-1` (if you attached any custom alias to `serverless_*_lookup-1` in `0.1.0`, move it to `*-2` after upgrading to `0.2.0`).
@@ -182,6 +182,7 @@ The `metrics-chargeback_serverless.billing` data stream collects daily closed-da
 | group_initial_backfill | True when this chargeback_group value was already present during initial billing backfill. | boolean |
 | input.type | Type of Filebeat input. | keyword |
 | is_allocatable | True if charge is allocatable to project data streams. | boolean |
+| policy_created_at | Immutable timestamp when this Chargeback Serverless billing policy cursor was initialised. | date |
 | project_id | Serverless project identifier. | keyword |
 | project_name | Serverless project name. | keyword |
 | project_type | Serverless project type (elasticsearch, observability, security, vectordb, search). | keyword |

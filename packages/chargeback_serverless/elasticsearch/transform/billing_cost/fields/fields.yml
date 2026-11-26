@@ -13,18 +13,6 @@
 - name: project_type
   type: keyword
   description: Serverless project type (elasticsearch, observability, security, vectordb, search).
-# Version 0.2.0 metadata and compatibility fields are provisioned via destination index
-# serverless_billing_cost_lookup-2 (move_on_creation: true) because dynamic: false lookup
-# destinations are preserved across Fleet YAML upgrades.
-- name: deployment_group
-  type: keyword
-  description: Chargeback group extracted from chargeback_group:* project or deployment tags (indexed in -2 destination).
-- name: group_first_seen_at
-  type: date
-  description: Immutable timestamp when this chargeback_group value was first observed by the billing collector.
-- name: group_initial_backfill
-  type: boolean
-  description: True when this chargeback_group value was already present during initial billing backfill.
 - name: sku
   type: keyword
   description: Elastic Cloud billing SKU.
@@ -58,6 +46,18 @@
 - name: conf_currency_symbol
   type: keyword
   description: Configured currency display symbol (for example, $, €, R, £).
+- name: deployment_group
+  type: keyword
+  description: Chargeback group extracted from chargeback_group:* project or deployment tags (provisioned on serverless_billing_cost_lookup-2).
+- name: group_first_seen_at
+  type: date
+  description: Immutable timestamp when this chargeback_group value was first observed by the designated billing collector.
+- name: group_initial_backfill
+  type: boolean
+  description: True when this chargeback_group value was already present during initial billing backfill on the designated collector.
+- name: group_observations
+  type: keyword
+  description: Per-policy chargeback group observation records preserving policy creation timestamp, owner rank, emitter identity, initial-backfill flag, and first-seen timestamp.
 - name: doc_type
   type: keyword
   description: Source document type discriminator.

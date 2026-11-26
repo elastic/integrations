@@ -88,6 +88,15 @@ processors:
       if: ctx.group_first_seen_at != null
       ignore_failure: true
       tag: parse_group_first_seen_at
+  - date:
+      field: policy_created_at
+      target_field: policy_created_at
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.policy_created_at != null
+      ignore_failure: true
+      tag: parse_policy_created_at
   - fingerprint:
       if: "(ctx.doc_type == 'billing_line_item' || (ctx.doc_type == null && ctx.sku != null)) && ctx.error?.message == null"
       fields:

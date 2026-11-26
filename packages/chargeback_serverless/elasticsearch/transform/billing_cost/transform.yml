@@ -388,40 +388,7 @@ source:
             } catch (Exception e) {}
           }
           emit('');
-    cb_group_first_seen_at:
-      type: date
-      script:
-        source: |
-          try {
-            if (doc.containsKey('group_first_seen_at') && !doc['group_first_seen_at'].empty) {
-              emit(doc['group_first_seen_at'].value.toInstant().toEpochMilli());
-              return;
-            }
-          } catch (Exception e) {}
-          try {
-            def raw = params._source?.group_first_seen_at;
-            if (raw instanceof Number) {
-              emit(((Number)raw).longValue());
-            } else if (raw != null && raw.toString().trim() != '') {
-              emit(ZonedDateTime.parse(raw.toString().trim()).toInstant().toEpochMilli());
-            }
-          } catch (Exception e) {}
-    cb_group_initial_backfill:
-      type: boolean
-      script:
-        source: |
-          try {
-            if (doc.containsKey('group_initial_backfill') && !doc['group_initial_backfill'].empty) {
-              emit(Boolean.TRUE.equals(doc['group_initial_backfill'].value));
-              return;
-            }
-          } catch (Exception e) {}
-          try {
-            def raw = params._source?.group_initial_backfill;
-            if (raw != null) {
-              emit((raw instanceof Boolean) ? ((Boolean)raw).booleanValue() : raw.toString().trim().equalsIgnoreCase('true'));
-            }
-          } catch (Exception e) {}
+
     cb_sync_ms:
       type: long
       script:
@@ -456,43 +423,175 @@ source:
             } catch (Exception e) {}
           }
           emit(syncMs);
-    cb_group_first_seen_ms:
-      type: long
+    cb_group_obs_rec:
+      type: keyword
       script:
         source: |
+          String depGroup = '';
+          for (String tf : ['deployment_tags', 'deployment_tags.keyword', 'ess.billing.deployment_tags', 'ess.billing.deployment_tags.keyword']) {
+            if (depGroup != '') { break; }
+            try {
+              if (doc.containsKey(tf) && !doc[tf].empty) {
+                for (def tv : doc[tf]) {
+                  if (tv != null) {
+                    String s = tv.toString().trim();
+                    if (s.toLowerCase(Locale.ROOT).startsWith('chargeback_group:')) {
+                      String gv = s.substring('chargeback_group:'.length()).trim();
+                      if (gv != '') { depGroup = gv; break; }
+                    }
+                  }
+                }
+              }
+            } catch (Exception e) {}
+          }
+          if (depGroup == '') {
+            try {
+              for (def tags : [params._source?.deployment_tags, params._source?.ess?.billing?.deployment_tags]) {
+                if (depGroup != '') { break; }
+                if (tags instanceof List) {
+                  for (def tag : tags) {
+                    if (tag != null) {
+                      String s = tag.toString().trim();
+                      if (s.toLowerCase(Locale.ROOT).startsWith('chargeback_group:')) {
+                        String gv = s.substring('chargeback_group:'.length()).trim();
+                        if (gv != '') { depGroup = gv; break; }
+                      }
+                    }
+                  }
+                } else if (tags != null) {
+                  String s = tags.toString().trim();
+                  if (s.toLowerCase(Locale.ROOT).startsWith('chargeback_group:')) {
+                    String gv = s.substring('chargeback_group:'.length()).trim();
+                    if (gv != '') { depGroup = gv; }
+                  }
+                }
+              }
+            } catch (Exception e) {}
+          }
+          if (depGroup == '') {
+            for (String gf : ['deployment_group', 'deployment_group.keyword']) {
+              try {
+                if (doc.containsKey(gf) && !doc[gf].empty) {
+                  String v = doc[gf].value.toString().trim();
+                  if (v != '') { depGroup = v; break; }
+                }
+              } catch (Exception e) {}
+            }
+          }
+          if (depGroup == '') { return; }
+
+          long firstSeenMs = 0L;
           try {
             if (doc.containsKey('group_first_seen_at') && !doc['group_first_seen_at'].empty) {
-              long gs = doc['group_first_seen_at'].value.toInstant().toEpochMilli();
-              if (gs > 0L) { emit(gs); }
-              return;
+              firstSeenMs = doc['group_first_seen_at'].value.toInstant().toEpochMilli();
+            } else {
+              def rawFs = params._source?.group_first_seen_at;
+              if (rawFs instanceof Number) {
+                firstSeenMs = ((Number)rawFs).longValue();
+              } else if (rawFs != null && rawFs.toString().trim() != '') {
+                firstSeenMs = ZonedDateTime.parse(rawFs.toString().trim()).toInstant().toEpochMilli();
+              }
             }
           } catch (Exception e) {}
-          try {
-            def raw = params._source?.group_first_seen_at;
-            if (raw instanceof Number && ((Number)raw).longValue() > 0L) {
-              emit(((Number)raw).longValue());
-            } else if (raw != null && raw.toString().trim() != '') {
-              long gs = ZonedDateTime.parse(raw.toString().trim()).toInstant().toEpochMilli();
-              if (gs > 0L) { emit(gs); }
-            }
-          } catch (Exception e) {}
-    cb_group_initial_backfill_num:
-      type: long
-      script:
-        source: |
+
+          boolean hasBf = false;
+          boolean isBf = false;
           try {
             if (doc.containsKey('group_initial_backfill') && !doc['group_initial_backfill'].empty) {
-              emit(Boolean.TRUE.equals(doc['group_initial_backfill'].value) ? 1L : 0L);
-              return;
+              hasBf = true;
+              isBf = Boolean.TRUE.equals(doc['group_initial_backfill'].value);
+            } else if (params._source != null && params._source.get('group_initial_backfill') != null) {
+              hasBf = true;
+              def rawBf = params._source.get('group_initial_backfill');
+              isBf = (rawBf instanceof Boolean) ? ((Boolean)rawBf).booleanValue() : rawBf.toString().trim().equalsIgnoreCase('true');
             }
           } catch (Exception e) {}
+          if (firstSeenMs <= 0L && !hasBf) { return; }
+          if (firstSeenMs <= 0L) {
+            try {
+              if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+                firstSeenMs = doc['@timestamp'].value.toInstant().toEpochMilli();
+              } else if (params._source?.get('@timestamp') != null) {
+                firstSeenMs = ZonedDateTime.parse(params._source.get('@timestamp').toString().trim()).toInstant().toEpochMilli();
+              }
+            } catch (Exception e) {}
+          }
+          if (firstSeenMs <= 0L) { return; }
+
+          DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC);
+          String firstSeenIso = fmt.format(Instant.ofEpochMilli(firstSeenMs));
+
+          long polCreatedMs = 0L;
           try {
-            def raw = params._source?.group_initial_backfill;
-            if (raw != null) {
-              boolean bf = (raw instanceof Boolean) ? ((Boolean)raw).booleanValue() : raw.toString().trim().equalsIgnoreCase('true');
-              emit(bf ? 1L : 0L);
+            if (doc.containsKey('policy_created_at') && !doc['policy_created_at'].empty) {
+              polCreatedMs = doc['policy_created_at'].value.toInstant().toEpochMilli();
+            } else {
+              def rawPc = params._source?.policy_created_at;
+              if (rawPc instanceof Number) {
+                polCreatedMs = ((Number)rawPc).longValue();
+              } else if (rawPc != null && rawPc.toString().trim() != '') {
+                polCreatedMs = ZonedDateTime.parse(rawPc.toString().trim()).toInstant().toEpochMilli();
+              }
             }
           } catch (Exception e) {}
+          String polCreatedIso = polCreatedMs > 0L
+            ? fmt.format(Instant.ofEpochMilli(polCreatedMs))
+            : (isBf ? '9999-12-31T23:59:59.999Z' : '0000-01-01T00:00:00.000Z');
+
+          String ns = 'default';
+          try {
+            if (doc.containsKey('data_stream.namespace') && !doc['data_stream.namespace'].empty) {
+              String nsv = doc['data_stream.namespace'].value.toString().trim();
+              if (nsv != '') { ns = nsv; }
+            } else if (params._source?.data_stream instanceof Map && params._source.data_stream.namespace != null) {
+              String nsv = params._source.data_stream.namespace.toString().trim();
+              if (nsv != '') { ns = nsv; }
+            }
+          } catch (Exception e) {}
+
+          String expOwner = '';
+          for (String of : ['conf_owner_id', 'conf_owner_id.keyword']) {
+            try {
+              if (doc.containsKey(of) && !doc[of].empty) {
+                expOwner = doc[of].value.toString().trim();
+                if (expOwner != '') { break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (expOwner == '' && params._source?.conf_owner_id != null) {
+            expOwner = params._source.conf_owner_id.toString().trim();
+          }
+
+          String expRank = expOwner != '' ? '0' : '1';
+          String emitterRaw = '';
+          if (expOwner != '') {
+            emitterRaw = 'owner:' + ns + ':' + expOwner;
+          } else {
+            String polId = '';
+            for (String pf : ['conf_policy_id', 'package_policy_id', 'input.package_policy_id', 'elastic_agent.package_policy_id', 'input.id', 'elastic_agent.id', 'agent.id']) {
+              try {
+                if (doc.containsKey(pf) && !doc[pf].empty) {
+                  polId = doc[pf].value.toString().trim();
+                  if (polId != '') { break; }
+                }
+              } catch (Exception e) {}
+            }
+            if (polId == '' && params._source != null) {
+              for (def cand : [params._source.get('conf_policy_id'), params._source.get('package_policy_id'), params._source.input instanceof Map ? params._source.input.package_policy_id : null, params._source.elastic_agent instanceof Map ? params._source.elastic_agent.package_policy_id : null, params._source.input instanceof Map ? params._source.input.id : null, params._source.elastic_agent instanceof Map ? params._source.elastic_agent.id : null, params._source.agent instanceof Map ? params._source.agent.id : null]) {
+                if (cand != null && cand.toString().trim() != '') {
+                  polId = cand.toString().trim();
+                  break;
+                }
+              }
+            }
+            emitterRaw = 'pol:' + ns + ':' + (polId != '' ? polId : 'default');
+          }
+
+          String sep = Character.toString((char)31);
+          String tab = Character.toString((char)9);
+          String cleanGrp = depGroup.replace(sep, '').replace(tab, ' ');
+          String cleanEmit = emitterRaw.replace(sep, '').replace(tab, ' ');
+          emit(cleanGrp + sep + polCreatedIso + tab + expRank + tab + cleanEmit + tab + (isBf ? '1' : '0') + tab + firstSeenIso);
     cb_nat_rec:
       type: keyword
       script:
@@ -1196,17 +1295,16 @@ pivot:
             ing_ms:
               max:
                 field: cb_sync_ms
-    grp_meta:
+    grp_obs:
       terms:
-        field: cb_deployment_group
-        size: 20
+        field: cb_group_obs_rec
+        size: 50
+        order:
+          ing_ms: desc
       aggs:
-        first_seen:
-          min:
-            field: cb_group_first_seen_ms
-        any_backfill:
+        ing_ms:
           max:
-            field: cb_group_initial_backfill_num
+            field: cb_sync_ms
 settings:
   deduce_mappings: false
   unattended: true

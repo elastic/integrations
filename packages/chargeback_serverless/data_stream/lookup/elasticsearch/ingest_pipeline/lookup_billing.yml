@@ -51,14 +51,108 @@ processors:
         String bType = '';
         String bKind = '';
         String bUnit = '';
-        if (ctx.nat_snapshots instanceof Map || ctx.leg_intervals instanceof Map || ctx.grp_meta instanceof Map) {
+        if (ctx.nat_snapshots instanceof Map || ctx.leg_intervals instanceof Map || ctx.grp_obs instanceof Map || ctx.grp_meta instanceof Map) {
           String sep = Character.toString((char)31);
+          String tab = Character.toString((char)9);
+          Map mergedGrpObsByEmitter = new HashMap();
+          if (ctx.grp_obs instanceof Map) {
+            List goEntries = new ArrayList();
+            if (((Map)ctx.grp_obs).get('buckets') instanceof List) {
+              for (def bObj : (List)((Map)ctx.grp_obs).get('buckets')) {
+                if (bObj instanceof Map && ((Map)bObj).get('key') != null) {
+                  goEntries.add([((Map)bObj).get('key').toString(), bObj]);
+                }
+              }
+            } else {
+              for (def geObj : ((Map)ctx.grp_obs).entrySet()) {
+                Map.Entry ge = (Map.Entry)geObj;
+                if (ge.getKey() != null) {
+                  goEntries.add([ge.getKey().toString(), ge.getValue()]);
+                }
+              }
+            }
+            for (def pairObj : goEntries) {
+              List pair = (List)pairObj;
+              String recKey = pair.get(0).toString();
+              def valObj = pair.get(1);
+              int sIdx = recKey.indexOf(sep);
+              if (sIdx <= 0) { continue; }
+              String gk = recKey.substring(0, sIdx);
+              String payload = recKey.substring(sIdx + 1);
+              List pParts = new ArrayList();
+              int pSt = 0;
+              while (true) {
+                int tIdx = payload.indexOf(tab, pSt);
+                if (tIdx < 0) {
+                  pParts.add(payload.substring(pSt));
+                  break;
+                }
+                pParts.add(payload.substring(pSt, tIdx));
+                pSt = tIdx + 1;
+              }
+              if (pParts.size() < 5) { continue; }
+              String emitterId = pParts.get(2).toString();
+              long ingMs = 0L;
+              if (valObj instanceof Map) {
+                def im = ((Map)valObj).get('ing_ms');
+                if (im instanceof Number) {
+                  ingMs = ((Number)im).longValue();
+                } else if (im instanceof Map && ((Map)im).get('value') instanceof Number) {
+                  ingMs = ((Number)((Map)im).get('value')).longValue();
+                }
+              }
+              Map byEmit = (Map)mergedGrpObsByEmitter.get(gk);
+              if (byEmit == null) {
+                byEmit = new HashMap();
+                mergedGrpObsByEmitter.put(gk, byEmit);
+              }
+              List prevE = (List)byEmit.get(emitterId);
+              if (prevE == null) {
+                byEmit.put(emitterId, [ingMs, payload]);
+              } else {
+                long prevIng = ((Number)prevE.get(0)).longValue();
+                String prevPl = prevE.get(1).toString();
+                if (ingMs > prevIng || (ingMs == prevIng && payload.compareTo(prevPl) < 0)) {
+                  byEmit.put(emitterId, [ingMs, payload]);
+                }
+              }
+            }
+          }
+          Map mergedGrpObs = new HashMap();
           Map mergedGrpSeen = new HashMap();
           Map mergedGrpBf = new HashMap();
+          for (def ge : mergedGrpObsByEmitter.entrySet()) {
+            String gk = ((Map.Entry)ge).getKey().toString();
+            Map byEmit = (Map)((Map.Entry)ge).getValue();
+            List sortedObs = new ArrayList();
+            for (def ev : byEmit.values()) {
+              sortedObs.add(((List)ev).get(1).toString());
+            }
+            Collections.sort(sortedObs);
+            if (!sortedObs.isEmpty()) {
+              mergedGrpObs.put(gk, sortedObs);
+              String desPayload = sortedObs.get(0).toString();
+              List dParts = new ArrayList();
+              int dSt = 0;
+              while (true) {
+                int dIdx = desPayload.indexOf(tab, dSt);
+                if (dIdx < 0) {
+                  dParts.add(desPayload.substring(dSt));
+                  break;
+                }
+                dParts.add(desPayload.substring(dSt, dIdx));
+                dSt = dIdx + 1;
+              }
+              if (dParts.size() >= 5) {
+                mergedGrpBf.put(gk, dParts.get(3).toString() == '1');
+                mergedGrpSeen.put(gk, dParts.get(4).toString());
+              }
+            }
+          }
           if (ctx.grp_meta instanceof Map) {
             for (def ge : ((Map)ctx.grp_meta).entrySet()) {
               String gk = ge.getKey() != null ? ge.getKey().toString() : '';
-              if (gk == '' || !(ge.getValue() instanceof Map)) { continue; }
+              if (gk == '' || mergedGrpObs.containsKey(gk) || !(ge.getValue() instanceof Map)) { continue; }
               Map gv = (Map)ge.getValue();
               if (gv.get('first_seen') instanceof Number) {
                 long fs = Math.round(((Number)gv.get('first_seen')).doubleValue());
@@ -126,6 +220,9 @@ processors:
             }
             String outGrp = bestNat.get('deployment_group') != null ? bestNat.get('deployment_group').toString() : '';
             if (outGrp != '') {
+              if (mergedGrpObs.containsKey(outGrp)) {
+                bestNat.put('group_observations', mergedGrpObs.get(outGrp));
+              }
               if (mergedGrpSeen.containsKey(outGrp)) {
                 bestNat.put('group_first_seen_at', mergedGrpSeen.get(outGrp));
               }
@@ -246,6 +343,9 @@ processors:
               if (cUnit != '') { legOut.put('conf_chargeable_unit_rate_unit', cUnit); }
               if (cSym != '') { legOut.put('conf_currency_symbol', cSym); }
               if (depGroup != '') {
+                if (mergedGrpObs.containsKey(depGroup)) {
+                  legOut.put('group_observations', mergedGrpObs.get(depGroup));
+                }
                 if (mergedGrpSeen.containsKey(depGroup)) {
                   legOut.put('group_first_seen_at', mergedGrpSeen.get(depGroup));
                 }
@@ -260,6 +360,7 @@ processors:
           }
           ctx.remove('nat_snapshots');
           ctx.remove('leg_intervals');
+          ctx.remove('grp_obs');
           ctx.remove('grp_meta');
         }
         if (ctx.latest_snapshot instanceof Map) {
@@ -321,6 +422,9 @@ processors:
           if (snap.group_initial_backfill != null) {
             ctx.group_initial_backfill = (snap.group_initial_backfill instanceof Boolean) ? ((Boolean)snap.group_initial_backfill).booleanValue() : snap.group_initial_backfill.toString().trim().equalsIgnoreCase('true');
           }
+          if (snap.group_observations instanceof List) {
+            ctx.group_observations = snap.group_observations;
+          }
           ctx.remove('latest_snapshot');
         }
         if (ctx.conf_chargeable_unit_rate_unit instanceof Map) {
@@ -373,6 +477,14 @@ processors:
         if (ctx.deployment_group == null || ctx.deployment_group == '') {
           ctx.remove('group_first_seen_at');
           ctx.remove('group_initial_backfill');
+          ctx.remove('group_observations');
+        } else if (ctx.group_observations == null && (ctx.group_first_seen_at != null || ctx.group_initial_backfill != null)) {
+          String fbTab = Character.toString((char)9);
+          boolean fbBf = Boolean.TRUE.equals(ctx.group_initial_backfill);
+          String fbTs = ctx.group_first_seen_at != null ? ctx.group_first_seen_at.toString() : (ctx['@timestamp'] != null ? ctx['@timestamp'].toString() : '');
+          if (fbTs != '') {
+            ctx.group_observations = ['9999-12-31T23:59:59.999Z' + fbTab + '1' + fbTab + '_row_' + fbTab + (fbBf ? '1' : '0') + fbTab + fbTs];
+          }
         }
         if (ctx.total_ecu instanceof Number) {
           ctx.total_chargeable_units = ((Number)ctx.total_ecu).doubleValue();

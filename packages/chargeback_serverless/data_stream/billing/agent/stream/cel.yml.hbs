@@ -246,6 +246,7 @@ program: |-
   (is_v1_cursor ? "" : state.?cursor.replay_target_to.orValue("")).as(replay_target_to,
   now.format("2006-01-02T15:04:05.000Z").as(now_obs_ts,
   state.?cursor.backfill_complete.orValue(false).as(was_backfill_complete,
+  state.?cursor.policy_created_at.orValue((is_v1_cursor || was_backfill_complete) ? min(initial_from, now).format("2006-01-02T15:04:05.000Z") : now_obs_ts).as(policy_created_at,
   state.?cursor.known_groups.orValue([]).as(prev_known_groups,
   state.?cursor.recent_day_keys.orValue([]).filter(pk,
   has(pk.day) && pk.day != null && string(pk.day) >= replay_start_str
@@ -294,6 +295,7 @@ program: |-
   "conf_sig": conf_sig,
   "last_credit_day": cred_res.credit_day,
   "backfill_complete": was_backfill_complete,
+  "policy_created_at": policy_created_at,
   "known_groups": prev_known_groups,
   },
   "next_from": req.from.format(time_layout.RFC3339),
@@ -328,6 +330,7 @@ program: |-
   "conf_sig": conf_sig,
   "last_credit_day": cred_res.credit_day,
   "backfill_complete": was_backfill_complete,
+  "policy_created_at": policy_created_at,
   "known_groups": prev_known_groups,
   },
   "next_from": req.from.format(time_layout.RFC3339),
@@ -362,6 +365,7 @@ program: |-
   "conf_sig": conf_sig,
   "last_credit_day": cred_res.credit_day,
   "backfill_complete": was_backfill_complete,
+  "policy_created_at": policy_created_at,
   "known_groups": prev_known_groups,
   },
   "next_from": req.from.format(time_layout.RFC3339),
@@ -493,6 +497,7 @@ program: |-
   "conf_sig": conf_sig,
   "last_credit_day": cred_res.credit_day,
   "backfill_complete": was_backfill_complete,
+  "policy_created_at": policy_created_at,
   "known_groups": prev_known_groups,
   "disc_es_next": discovery.es_next,
   "disc_obs_next": discovery.obs_next,
@@ -528,6 +533,7 @@ program: |-
   "conf_sig": conf_sig,
   "last_credit_day": cred_res.credit_day,
   "backfill_complete": was_backfill_complete,
+  "policy_created_at": policy_created_at,
   "known_groups": prev_known_groups,
   },
   "next_from": req.from.format(time_layout.RFC3339),
@@ -881,6 +887,7 @@ program: |-
   "conf_sig": conf_sig,
   "last_credit_day": cred_res.credit_day,
   "backfill_complete": was_backfill_complete,
+  "policy_created_at": policy_created_at,
   "known_groups": prev_known_groups,
   },
   "next_from": req.from.format(time_layout.RFC3339),
@@ -933,7 +940,8 @@ program: |-
   size(matched_kg) > 0 ? e.with({
   "group_first_seen_at": string(matched_kg[0].first_seen),
   "group_initial_backfill": bool(matched_kg[0].backfill),
-  }) : e
+  "policy_created_at": policy_created_at,
+  }).with(clean_owner_id != "" ? { "conf_owner_id": clean_owner_id } : {}) : e
   )
   : e
   )
@@ -971,6 +979,7 @@ program: |-
   "conf_sig": conf_sig,
   "last_credit_day": cred_res.credit_day,
   "backfill_complete": was_backfill_complete || req.to >= latest_ready_to || (req.to + duration("26h") > now),
+  "policy_created_at": policy_created_at,
   "known_groups": updated_known_groups,
   },
   "next_from": (req.to + duration("26h") <= now) ? req.to.format(time_layout.RFC3339) : replay_start_str,
@@ -1006,6 +1015,7 @@ program: |-
   "conf_sig": conf_sig,
   "last_credit_day": cred_res.credit_day,
   "backfill_complete": was_backfill_complete,
+  "policy_created_at": policy_created_at,
   "known_groups": prev_known_groups,
   },
   "next_from": req.from.format(time_layout.RFC3339),
@@ -1029,6 +1039,7 @@ program: |-
   "conf_sig": conf_sig,
   "last_credit_day": cred_res.credit_day,
   "backfill_complete": was_backfill_complete,
+  "policy_created_at": policy_created_at,
   "known_groups": prev_known_groups,
   },
   "next_from": req.from.format(time_layout.RFC3339),
@@ -1042,7 +1053,7 @@ program: |-
   )
   )
   )
-  )))))))))))))))))))))))))
+  ))))))))))))))))))))))))))
   )
 {{#if tags.length}}
 tags:
