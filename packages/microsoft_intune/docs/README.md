@@ -85,7 +85,15 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ### Upgrading from version 0.3.x
 
-Version 0.4.0 replaces the two Event Hub inputs (one for `audit` and one for `managed_device`) with a single input. After the upgrade, you must enter the Event Hub settings again in the integration policy.
+Version 0.4.0 replaces the two Event Hub inputs (one for `audit` and one for `managed_device`) with a single input, and moves the Event Hub settings from the inputs to the integration settings. Fleet cannot carry the old values over, so existing integration policies are not upgraded automatically. They keep running version 0.3.x until you edit them.
+
+To upgrade an integration policy:
+
+1. In Kibana, go to **Management** > **Integrations** > **Installed integrations** > **Microsoft Intune** > **Integration policies**.
+2. Select **Upgrade** for the policy.
+3. Enter the **Azure Event Hub**, **Consumer Group**, **Connection String**, **Storage Account** and **Storage Account Key** again, and any advanced Event Hub settings you had changed.
+4. Under **Collect Microsoft Intune logs via Azure Event Hub**, reapply any options you had changed on the old inputs, such as **Preserve original event**, **Tags** or **Processors**.
+5. Select **Upgrade integration**.
 
 The default checkpoint container name (`azure-eventhub-input-<eventhub>`) has not changed. If you set a custom **Storage Account Container** on one of the old inputs, set the same value on the new input so that the agent continues from the existing checkpoints instead of reading the Event Hub again from the start.
 
