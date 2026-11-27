@@ -191,7 +191,7 @@ processors:
       target_field: host.name
       ignore_missing: true
       tag: lowercase_host_name
-      if: ctx.resource?.type instanceof String && (ctx.resource.type.toLowerCase().contains('instance') || ctx.resource.type.toLowerCase().contains('virtualmachine') || ctx.resource.type.toLowerCase().contains('kubernetesnode') || ctx.resource.type.equalsIgnoreCase('host'))
+      if: ctx.resource?.type instanceof String && (ctx.resource.type.toLowerCase().contains('instance') || ctx.resource.type.toLowerCase().contains('virtualmachine') || ctx.resource.type.toLowerCase().contains('kubernetespod') || ctx.resource.type.toLowerCase().contains('kubernetesnode') || ctx.resource.type.equalsIgnoreCase('host'))
   - script:
       lang: painless
       tag: set_user_name
@@ -323,7 +323,7 @@ processors:
       tag: append_resource_name_to_related_hosts
       value: '{{{resource.name}}}'
       allow_duplicates: false
-      if: ctx.resource?.name != null
+      if: ctx.resource?.name != null && ['AwsInstance', 'AWS_EC2_INSTANCE'].contains(ctx.resource?.type)
   - append:
       field: related.hosts
       tag: append_host_name_to_related_hosts

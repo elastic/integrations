@@ -43,7 +43,7 @@ The Upwind integration creates latest transforms that copy current findings into
 
 The source data streams keep historical events. The aliased transform destinations hold the latest finding per unique key so the Findings pages and flyouts show current posture. Vulnerability findings are retained for 90 days. Configuration findings are a full 24-hour posture sync and are retained for 26 hours.
 
-The transforms sync on `event.ingested`. Elasticsearch sets this field on ingest through the Fleet final pipeline, including Elastic Managed deployments.
+The transforms sync on `event.ingested`. Fleet-managed Elastic Agents add this field automatically.
 
 Using these transforms requires:
 

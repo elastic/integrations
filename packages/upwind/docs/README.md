@@ -44,7 +44,7 @@ The Upwind integration creates latest transforms that copy current findings into
 
 The source data streams keep historical events. The aliased transform destinations hold the latest finding per unique key so the Findings pages and flyouts show current posture. Vulnerability findings are retained for 90 days. Configuration findings are a full 24-hour posture sync and are retained for 26 hours.
 
-The transforms sync on `event.ingested`. Elasticsearch sets this field on ingest through the Fleet final pipeline, including Elastic Managed deployments.
+The transforms sync on `event.ingested`. Fleet-managed Elastic Agents add this field automatically.
 
 Using these transforms requires:
 
@@ -234,11 +234,11 @@ An example event for `threat_detections` looks as following:
 {
     "@timestamp": "2026-02-16T09:06:02.000Z",
     "agent": {
-        "ephemeral_id": "bf695222-9127-48ca-a64a-fa6f5bd79e84",
-        "id": "86435fbc-2740-4030-baf0-56121df4311e",
-        "name": "elastic-agent-20665",
+        "ephemeral_id": "7a842ca8-21ab-4f7a-b0e8-3ed39e1c5132",
+        "id": "a1c7c438-9abd-48b4-b968-91cf66ae060c",
+        "name": "elastic-agent-74915",
         "type": "filebeat",
-        "version": "9.4.4"
+        "version": "9.4.0"
     },
     "cloud": {
         "account": {
@@ -249,16 +249,16 @@ An example event for `threat_detections` looks as following:
     },
     "data_stream": {
         "dataset": "upwind.threat_detections",
-        "namespace": "22506",
+        "namespace": "18637",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "86435fbc-2740-4030-baf0-56121df4311e",
+        "id": "a1c7c438-9abd-48b4-b968-91cf66ae060c",
         "snapshot": false,
-        "version": "9.4.4"
+        "version": "9.4.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -268,7 +268,7 @@ An example event for `threat_detections` looks as following:
         "dataset": "upwind.threat_detections",
         "end": "2026-02-16T09:06:02.000Z",
         "id": "uwd-22222222222222bb",
-        "ingested": "2026-11-24T09:58:49Z",
+        "ingested": "2026-11-17T15:08:04Z",
         "kind": "alert",
         "module": "upwind",
         "original": "{\"category\":\"API_SECURITY\",\"description\":\"An XML input containing external entity references was detected.\",\"first_seen_time\":\"2026-01-31T03:03:11Z\",\"id\":\"uwd-22222222222222bb\",\"last_seen_time\":\"2026-02-16T09:06:02Z\",\"occurrence_count\":33,\"resource\":{\"cloud_account_id\":\"222222222222\",\"cloud_provider\":\"AWS\",\"cluster_id\":\"00000000-0000-0000-0000-000000000001\",\"id\":\"i-00000000000000000\",\"name\":\"host-2.example.com\",\"namespace\":\"app-stage\",\"region\":\"ap-southeast-1\",\"type\":\"KUBERNETES_DEPLOYMENT\"},\"severity\":\"CRITICAL\",\"status\":\"OPEN\",\"title\":\"OWASP API10:2023 XML External Entity (XXE) Injection Detected\",\"type\":\"custom_api_security\"}",
@@ -286,14 +286,14 @@ An example event for `threat_detections` looks as following:
     "observer": {
         "vendor": "Upwind"
     },
+    "organization": {
+        "id": "org-example-0001"
+    },
     "orchestrator": {
         "cluster": {
             "id": "00000000-0000-0000-0000-000000000001"
         },
         "namespace": "app-stage"
-    },
-    "organization": {
-        "id": "org-example-0001"
     },
     "resource": {
         "id": "i-00000000000000000",
@@ -427,13 +427,13 @@ An example event for `vulnerability_findings` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-11-20T09:00:00.000Z",
+    "@timestamp": "2026-03-16T22:15:00.000Z",
     "agent": {
-        "ephemeral_id": "4578d19c-b47d-4185-8edf-c0bcde7f0214",
-        "id": "8e005a92-d8b4-4e9c-a59c-037ad1bbc551",
-        "name": "elastic-agent-81333",
+        "ephemeral_id": "9e23ad1e-aecd-49e2-a525-917cfe211e02",
+        "id": "ba1c0bf1-e233-40b9-af00-f6d86d1d71ed",
+        "name": "elastic-agent-17945",
         "type": "filebeat",
-        "version": "9.4.4"
+        "version": "9.4.0"
     },
     "cloud": {
         "account": {
@@ -457,34 +457,37 @@ An example event for `vulnerability_findings` looks as following:
     },
     "data_stream": {
         "dataset": "upwind.vulnerability_findings",
-        "namespace": "82561",
+        "namespace": "37780",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "8e005a92-d8b4-4e9c-a59c-037ad1bbc551",
+        "id": "ba1c0bf1-e233-40b9-af00-f6d86d1d71ed",
         "snapshot": false,
-        "version": "9.4.4"
+        "version": "9.4.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "vulnerability"
         ],
-        "created": "2026-11-20T09:00:00.000Z",
+        "created": "2026-02-15T12:00:00.000Z",
         "dataset": "upwind.vulnerability_findings",
         "id": "uvf-22222222222222bb",
-        "ingested": "2026-11-24T09:59:40Z",
+        "ingested": "2026-11-25T10:48:06Z",
         "kind": "state",
         "module": "upwind",
-        "original": "{\"first_seen_time\":\"2026-02-15T12:00:00Z\",\"id\":\"uvf-22222222222222bb\",\"image\":{\"digest\":\"sha256:2222222222222222222222222222222222222222222222222222222222222222\",\"name\":\"checkout-frontend\",\"tag\":\"2.0.1\"},\"last_scan_time\":\"2026-11-20T09:00:00Z\",\"package\":{\"in_use\":true,\"name\":\"lodash\",\"type\":\"npm\",\"version\":\"4.17.20\"},\"remediation\":[{\"description\":\"Upgrade lodash to 4.17.21 or later.\",\"type\":\"UPGRADE_PACKAGE\"}],\"resource\":{\"cloud_account_id\":\"222222222222\",\"cloud_provider\":\"AWS\",\"cluster_id\":\"00000000-0000-0000-0000-000000000001\",\"id\":\"deploy-0000000000000001\",\"name\":\"checkout-frontend\",\"namespace\":\"app-stage\",\"region\":\"ap-southeast-1\",\"type\":\"KubernetesDeployment\",\"upwind_asset_id\":\"asset-example-002\"},\"source\":\"AGENTLESS_SCAN\",\"status\":\"IN_PROGRESS\",\"vulnerability\":{\"description\":\"Example command injection via template in lodash.\",\"epss_score\":\"0.03\",\"epss_severity\":\"low\",\"exploitable\":false,\"known_exploit_sources\":[],\"name\":\"CVE-2021-23337\",\"nvd_cve_id\":\"CVE-2021-23337\",\"nvd_cvss_v3_score\":\"7.2\",\"nvd_cvss_v3_severity\":\"high\"}}",
+        "original": "{\"first_seen_time\":\"2026-02-15T12:00:00Z\",\"id\":\"uvf-22222222222222bb\",\"image\":{\"digest\":\"sha256:2222222222222222222222222222222222222222222222222222222222222222\",\"name\":\"checkout-frontend\",\"tag\":\"2.0.1\"},\"last_scan_time\":\"2026-03-16T22:15:00Z\",\"package\":{\"in_use\":true,\"name\":\"lodash\",\"type\":\"npm\",\"version\":\"4.17.20\"},\"remediation\":[{\"description\":\"Upgrade lodash to 4.17.21 or later.\",\"type\":\"UPGRADE_PACKAGE\"}],\"resource\":{\"cloud_account_id\":\"222222222222\",\"cloud_provider\":\"AWS\",\"cluster_id\":\"00000000-0000-0000-0000-000000000001\",\"id\":\"deploy-0000000000000001\",\"name\":\"checkout-frontend\",\"namespace\":\"app-stage\",\"region\":\"ap-southeast-1\",\"type\":\"KubernetesDeployment\",\"upwind_asset_id\":\"asset-example-002\"},\"source\":\"AGENTLESS_SCAN\",\"status\":\"OPEN\",\"vulnerability\":{\"description\":\"Example command injection via template in lodash.\",\"epss_score\":\"0.03\",\"epss_severity\":\"low\",\"exploitable\":false,\"known_exploit_sources\":[],\"name\":\"CVE-2021-23337\",\"nvd_cve_id\":\"CVE-2021-23337\",\"nvd_cvss_v3_score\":\"7.2\",\"nvd_cvss_v3_severity\":\"high\"}}",
         "severity": 73,
         "start": "2026-02-15T12:00:00.000Z",
         "type": [
             "info"
         ]
+    },
+    "host": {
+        "name": "checkout-frontend"
     },
     "input": {
         "type": "cel"
@@ -509,6 +512,9 @@ An example event for `vulnerability_findings` looks as following:
     "related": {
         "hash": [
             "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+        ],
+        "hosts": [
+            "checkout-frontend"
         ]
     },
     "resource": {
@@ -524,7 +530,7 @@ An example event for `vulnerability_findings` looks as following:
     ],
     "upwind": {
         "vulnerability_findings": {
-            "last_scan_time": "2026-11-20T09:00:00.000Z",
+            "last_scan_time": "2026-03-16T22:15:00.000Z",
             "package": {
                 "in_use": true
             },
@@ -536,7 +542,7 @@ An example event for `vulnerability_findings` looks as following:
                 "upwind_asset_id": "asset-example-002"
             },
             "source": "AGENTLESS_SCAN",
-            "status": "IN_PROGRESS",
+            "status": "OPEN",
             "vulnerability": {
                 "epss_score": 0.03,
                 "epss_severity": "low",
@@ -649,13 +655,13 @@ An example event for `configuration_findings` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-11-24T09:57:11.662Z",
+    "@timestamp": "2026-11-25T10:47:04.885Z",
     "agent": {
-        "ephemeral_id": "93244345-b622-4a92-80cc-5a5ed65b96d2",
-        "id": "c05af90d-1ead-456d-a4ea-eb9cdebcf152",
-        "name": "elastic-agent-58477",
+        "ephemeral_id": "999b18c0-f9d2-4eeb-96ce-d611fc11f574",
+        "id": "8ca63308-a7e2-4524-b578-851206f20472",
+        "name": "elastic-agent-24961",
         "type": "filebeat",
-        "version": "9.4.4"
+        "version": "9.4.0"
     },
     "cloud": {
         "account": {
@@ -667,16 +673,16 @@ An example event for `configuration_findings` looks as following:
     },
     "data_stream": {
         "dataset": "upwind.configuration_findings",
-        "namespace": "62085",
+        "namespace": "97690",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "c05af90d-1ead-456d-a4ea-eb9cdebcf152",
+        "id": "8ca63308-a7e2-4524-b578-851206f20472",
         "snapshot": false,
-        "version": "9.4.4"
+        "version": "9.4.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -686,10 +692,10 @@ An example event for `configuration_findings` looks as following:
         "created": "2026-01-15T12:00:00.000Z",
         "dataset": "upwind.configuration_findings",
         "id": "ucf-11111111111111aa",
-        "ingested": "2026-11-24T09:57:11Z",
+        "ingested": "2026-11-25T10:47:04Z",
         "kind": "state",
         "module": "upwind",
-        "original": "{\"check\":{\"description\":\"Detects bucket policies or ACLs that expose objects publicly.\",\"id\":\"check-s3-public-read\",\"remediation\":\"Remove public principals from the bucket policy and enable Block Public Access.\",\"title\":\"S3 bucket should not allow public read access\"},\"description\":\"The S3 bucket policy grants public read access to objects.\",\"first_seen_time\":\"2026-01-15T12:00:00Z\",\"framework\":{\"cloud_provider\":\"AWS\",\"id\":\"cis-aws-v1\",\"status\":\"ENABLED\",\"title\":\"CIS AWS Foundations\",\"version\":\"1.5.0\"},\"id\":\"ucf-11111111111111aa\",\"last_seen_time\":\"2026-11-24T08:57:08Z\",\"last_sync_time\":\"2026-11-24T08:57:08Z\",\"resource\":{\"arn\":\"arn:aws:s3:::example-logs-bucket\",\"cloud_account_id\":\"111111111111\",\"cloud_account_name\":\"production\",\"cloud_provider\":\"AWS\",\"id\":\"arn:aws:s3:::example-logs-bucket\",\"name\":\"example-logs-bucket\",\"region\":\"us-east-1\",\"risk_categories\":[\"DATA_EXPOSURE\"],\"type\":\"AwsS3Bucket\",\"upwind_asset_id\":\"asset-s3-001\"},\"severity\":\"HIGH\",\"status\":\"FAIL\",\"title\":\"S3 bucket allows public read access\"}",
+        "original": "{\"check\":{\"description\":\"Detects bucket policies or ACLs that expose objects publicly.\",\"id\":\"check-s3-public-read\",\"remediation\":\"Remove public principals from the bucket policy and enable Block Public Access.\",\"title\":\"S3 bucket should not allow public read access\"},\"description\":\"The S3 bucket policy grants public read access to objects.\",\"first_seen_time\":\"2026-01-15T12:00:00Z\",\"framework\":{\"cloud_provider\":\"AWS\",\"id\":\"cis-aws-v1\",\"status\":\"ENABLED\",\"title\":\"CIS AWS Foundations\",\"version\":\"1.5.0\"},\"id\":\"ucf-11111111111111aa\",\"last_seen_time\":\"2026-11-25T09:47:01Z\",\"last_sync_time\":\"2026-11-25T09:47:01Z\",\"resource\":{\"arn\":\"arn:aws:s3:::example-logs-bucket\",\"cloud_account_id\":\"111111111111\",\"cloud_account_name\":\"production\",\"cloud_provider\":\"AWS\",\"id\":\"arn:aws:s3:::example-logs-bucket\",\"name\":\"example-logs-bucket\",\"region\":\"us-east-1\",\"risk_categories\":[\"DATA_EXPOSURE\"],\"type\":\"AwsS3Bucket\",\"upwind_asset_id\":\"asset-s3-001\"},\"severity\":\"HIGH\",\"status\":\"FAIL\",\"title\":\"S3 bucket allows public read access\"}",
         "outcome": "failure",
         "reason": "The S3 bucket policy grants public read access to objects.",
         "severity": 73,
@@ -707,11 +713,6 @@ An example event for `configuration_findings` looks as following:
     },
     "organization": {
         "id": "org-example-0001"
-    },
-    "related": {
-        "hosts": [
-            "example-logs-bucket"
-        ]
     },
     "resource": {
         "id": "arn:aws:s3:::example-logs-bucket",
@@ -748,8 +749,8 @@ An example event for `configuration_findings` looks as following:
                 "status": "ENABLED",
                 "version": "1.5.0"
             },
-            "last_seen_time": "2026-11-24T08:57:08.000Z",
-            "last_sync_time": "2026-11-24T08:57:08.000Z",
+            "last_seen_time": "2026-11-25T09:47:01.000Z",
+            "last_sync_time": "2026-11-25T09:47:01.000Z",
             "resource": {
                 "arn": "arn:aws:s3:::example-logs-bucket",
                 "risk_categories": "DATA_EXPOSURE",
