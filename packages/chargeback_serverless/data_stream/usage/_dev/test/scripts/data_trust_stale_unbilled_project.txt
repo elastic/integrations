@@ -51,6 +51,21 @@ stdout '^1$'
 exec jq -r '.[0].dep_group' tag_removed_spike_rows.json
 stdout '^ungrouped$'
 
+exec jq -r 'length' mixed_cur_spend_rows.json
+stdout '^1$'
+
+exec jq -r '.[0].spend' mixed_cur_spend_rows.json
+stdout '^2700(\.0)?$'
+
+exec jq -r '.[0].indexing_spend' mixed_cur_spend_rows.json
+stdout '^1800(\.0)?$'
+
+exec jq -r '.[0].search_spend' mixed_cur_spend_rows.json
+stdout '^900(\.0)?$'
+
+exec jq -r '.[0].unit' mixed_cur_spend_rows.json
+stdout '^ZAR$'
+
 exec jq -r 'length' new_group_rows.json
 stdout '^3$'
 
@@ -855,6 +870,51 @@ jq '
   [ .values[] | [ range(0; ($cols | length)) as $i | { ($cols[$i].name): .[$i] } ] | add ] |
   map(select(.project_id == "proj-tag-removed-spike"))
 ' raw_tag_removed_spike_resp.json > tag_removed_spike_rows.json
+
+# Mixed native (ZAR @ 18.0) + legacy-only (default USD @ 1.0) SKU currency normalisation fixture on project-spend alert (no conf coverage)
+jq -n \
+  --arg ts "${BILL_DAY}" \
+  '{
+    "@timestamp": $ts,
+    "project_id": "proj-mixed-cur-spend",
+    "sku": "es.search-vcu",
+    "has_native_billing": true,
+    "latest_snapshot": {
+      "project_name": "Mixed Currency Spend ES",
+      "project_type": "elasticsearch",
+      "total_ecu": 50.0,
+      "quantity_value": 50.0,
+      "conf_chargeable_unit_rate": 18.0,
+      "conf_chargeable_unit_rate_unit": "ZAR",
+      "conf_currency_symbol": "R"
+    }
+  }' | es_curl -X POST "${ES_HOST}/serverless_billing_cost_lookup-2/_doc?refresh=true&pipeline=${BILL_PIPELINE}" \
+  -H 'Content-Type: application/json' -d @- >/dev/null
+
+jq -n \
+  --arg ts "${BILL_DAY}" \
+  '{
+    "@timestamp": $ts,
+    "project_id": "proj-mixed-cur-spend",
+    "sku": "es.ingest-vcu",
+    "has_native_billing": false,
+    "latest_snapshot": {
+      "project_name": "Mixed Currency Spend ES",
+      "project_type": "elasticsearch",
+      "total_ecu": 100.0,
+      "quantity_value": 100.0
+    }
+  }' | es_curl -X POST "${ES_HOST}/serverless_billing_cost_lookup-2/_doc?refresh=true&pipeline=${BILL_PIPELINE}" \
+  -H 'Content-Type: application/json' -d @- >/dev/null
+
+SPEND_RULE="${DATA_STREAM_ROOT}/../../kibana/alerting_rule_template/chargeback_serverless-alert-project-spend.json"
+jq '{query: (.attributes.params.esqlQuery.esql | sub("threshold_spend = 200.0"; "threshold_spend = 2000.0"))}' "${SPEND_RULE}" | \
+  es_curl -X POST "${ES_HOST}/_query?format=json" -H 'Content-Type: application/json' -d @- > raw_mixed_cur_spend_resp.json
+jq '
+  .columns as $cols |
+  [ .values[] | [ range(0; ($cols | length)) as $i | { ($cols[$i].name): .[$i] } ] | add ] |
+  map(select(.project_id == "proj-mixed-cur-spend"))
+' raw_mixed_cur_spend_resp.json > mixed_cur_spend_rows.json
 
 # 7-day replay new-group fixture: backfill-grp (initial backfill) vs replayed-new-grp (new after backfill)
 jq -n \
