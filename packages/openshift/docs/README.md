@@ -28,7 +28,10 @@ This integration doesn't use Elastic Agent. The collector of the OpenShift Loggi
 The Red Hat OpenShift Logging integration collects log messages of the following types:
 * Application logs: container logs of user workloads, from all namespaces except `default`, `kube-*`, and `openshift-*`.
 * Infrastructure logs: container logs from the `default`, `kube-*`, and `openshift-*` namespaces, and the journald logs of the nodes.
-* Audit logs: audit events of the Kubernetes API server, the OpenShift API server, and the OAuth servers; Linux audit (`auditd`) records of the nodes; and OVN-Kubernetes ACL logs of network policies, admin network policies, and egress firewalls.
+* Audit logs:
+  * Audit events of the Kubernetes API server, the OpenShift API server, and the OAuth servers.
+  * Linux audit (`auditd`) records of the nodes.
+  * OVN-Kubernetes ACL logs of network policies, admin network policies, and egress firewalls.
 
 ### Supported use cases
 
@@ -49,7 +52,7 @@ This integration has no Elastic Agent input. You install its assets in Kibana an
 
 ### Set up steps in Kibana
 
-1. In Kibana, go to **Management** > **Integrations** and search for **Red Hat OpenShift Logging**.
+1. In Kibana, go to **Management** → **Integrations** and search for **Red Hat OpenShift Logging**.
 2. Open the integration, go to the **Settings** tab, and click **Install Red Hat OpenShift Logging assets**.
 
 Install the assets before you create the `ClusterLogForwarder`. Records that arrive before the assets are installed are stored in `logs-openshift-default` without being processed or routed.
@@ -149,7 +152,7 @@ POST _security/role/openshift_logging_writer
 - The collector logs `security_exception` or `action [indices:data/write/bulk[s]] is unauthorized`: The Elasticsearch user lacks `create_doc` or `auto_configure` on `logs-openshift*-*`. The routing rules write to `logs-openshift.<log type>-<namespace>`, so the privileges must cover these data streams as well.
 - The collector logs `Healthcheck failed` with `403 Forbidden` at startup, but data arrives: The Elasticsearch user lacks the `monitor` cluster privilege. Add it to the role.
 - The collector logs `index_not_found_exception` or writes to an index named `app-write`: The output still uses the defaults of OpenShift Logging 5. Set `index: logs-openshift-default` in the output.
-- Application logs have no `message` field: The `parse` filter removes `message` when it parses a log line as JSON. The integration copies the `message` or `msg` key of the parsed line back into `message`; other keys are available under `openshift.structured`.
+- Application logs have no `message` field: The `parse` filter removes `message` when it parses a log line as JSON. The integration copies the `message` or `msg` key of the parsed line back into `message`. The other keys are available under `openshift.structured`.
 
 ## Performance and scaling
 
@@ -235,7 +238,7 @@ The `application` data stream provides container logs of user workloads, with Ku
 | kubernetes.pod.ip | Kubernetes pod IP. | ip |
 | kubernetes.pod.name | Kubernetes pod name. | keyword |
 | kubernetes.pod.uid | Kubernetes pod UID. | keyword |
-| kubernetes.pod_owner | Owner reference of the pod as "\<Kind\>/\<name\>", kept only when the owner kind has no dedicated field (for example a custom controller). | keyword |
+| kubernetes.pod_owner | Owner reference of the pod in the form `Kind/name`. Only set when the owner kind has no dedicated field, for example a custom controller. | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name. | keyword |
 | kubernetes.statefulset.name | Kubernetes statefulset name. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
@@ -277,7 +280,7 @@ The `infrastructure` data stream provides container logs of the OpenShift platfo
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
-| journald.host.boot_id | The kernel boot ID for the boot the message was generated in. | keyword |
+| journald.host.boot_id | ID of the system startup in which the message was logged (journald _BOOT_ID). | keyword |
 | journald.process.capabilities | The effective capabilities of the process that logged the message. | keyword |
 | kubernetes.annotations.\* | Kubernetes pod annotations map. Dots in annotation keys are replaced with underscores. | object |
 | kubernetes.container.name | Kubernetes container name. | keyword |
@@ -294,7 +297,7 @@ The `infrastructure` data stream provides container logs of the OpenShift platfo
 | kubernetes.pod.ip | Kubernetes pod IP. | ip |
 | kubernetes.pod.name | Kubernetes pod name. | keyword |
 | kubernetes.pod.uid | Kubernetes pod UID. | keyword |
-| kubernetes.pod_owner | Owner reference of the pod as "\<Kind\>/\<name\>", kept only when the owner kind has no dedicated field (for example a custom controller). | keyword |
+| kubernetes.pod_owner | Owner reference of the pod in the form `Kind/name`. Only set when the owner kind has no dedicated field, for example a custom controller. | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name. | keyword |
 | kubernetes.statefulset.name | Kubernetes statefulset name. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
@@ -332,7 +335,7 @@ The `infrastructure` data stream provides container logs of the OpenShift platfo
 
 #### audit
 
-The `audit` data stream provides Kubernetes API server, OpenShift API server, and OAuth server audit events; Linux audit records of the nodes; and OVN-Kubernetes ACL logs.
+The `audit` data stream provides API server audit events of Kubernetes, OpenShift, and the OAuth servers, Linux audit records of the nodes, and OVN-Kubernetes ACL logs.
 
 ##### audit fields
 
@@ -341,7 +344,7 @@ The `audit` data stream provides Kubernetes API server, OpenShift API server, an
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
-| auditd.log | Fields of the Linux audit record that have no ECS equivalent, as key-value pairs, for example record_type, auid, ses, syscall, key, or the resolved names of the ENRICHED log format (AUID, UID, ...). | flattened |
+| auditd.log | Fields of the Linux audit record that have no ECS equivalent, as key-value pairs, for example record_type, auid, ses, syscall, key, or the names that the ENRICHED log format resolves, such as AUID and UID. | flattened |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
@@ -380,7 +383,7 @@ The `audit` data stream provides Kubernetes API server, OpenShift API server, an
 | kubernetes.audit.responseStatus.message | Human-readable description of the status of the operation. | text |
 | kubernetes.audit.responseStatus.metadata | Standard list metadata of the response status. | flattened |
 | kubernetes.audit.responseStatus.reason | Machine-readable reason for a Failure status. | keyword |
-| kubernetes.audit.responseStatus.status | Status of the operation, Success or Failure. | keyword |
+| kubernetes.audit.responseStatus.status | Status of the operation: Success or Failure. | keyword |
 | kubernetes.audit.sourceIPs | Source IPs, from where the request originated and intermediate proxies. | ip |
 | kubernetes.audit.stage | Stage of the request handling when this event instance was generated. | keyword |
 | kubernetes.audit.user.extra | Any additional information provided by the authenticator. | flattened |

@@ -33,7 +33,10 @@ This integration doesn't use Elastic Agent. The collector of the OpenShift Loggi
 The Red Hat OpenShift Logging integration collects log messages of the following types:
 * Application logs: container logs of user workloads, from all namespaces except `default`, `kube-*`, and `openshift-*`.
 * Infrastructure logs: container logs from the `default`, `kube-*`, and `openshift-*` namespaces, and the journald logs of the nodes.
-* Audit logs: audit events of the Kubernetes API server, the OpenShift API server, and the OAuth servers; Linux audit (`auditd`) records of the nodes; and OVN-Kubernetes ACL logs of network policies, admin network policies, and egress firewalls.
+* Audit logs:
+  * Audit events of the Kubernetes API server, the OpenShift API server, and the OAuth servers.
+  * Linux audit (`auditd`) records of the nodes.
+  * OVN-Kubernetes ACL logs of network policies, admin network policies, and egress firewalls.
 
 ### Supported use cases
 {{/* Add details on the use cases that can be enabled by using this integration. Explain why a user would want to install and use this integration. */}}
@@ -58,7 +61,7 @@ This includes how to add the integration, and how to configure the integration, 
 
 If multiple input types are supported, add instructions for each in a subsection.
 */}}
-1. In Kibana, go to **Management** > **Integrations** and search for **Red Hat OpenShift Logging**.
+1. In Kibana, go to **Management** → **Integrations** and search for **Red Hat OpenShift Logging**.
 2. Open the integration, go to the **Settings** tab, and click **Install Red Hat OpenShift Logging assets**.
 
 Install the assets before you create the `ClusterLogForwarder`. Records that arrive before the assets are installed are stored in `logs-openshift-default` without being processed or routed.
@@ -170,7 +173,7 @@ Do NOT use **bold** for issue names like "**No data is being collected**:".
 - The collector logs `security_exception` or `action [indices:data/write/bulk[s]] is unauthorized`: The Elasticsearch user lacks `create_doc` or `auto_configure` on `logs-openshift*-*`. The routing rules write to `logs-openshift.<log type>-<namespace>`, so the privileges must cover these data streams as well.
 - The collector logs `Healthcheck failed` with `403 Forbidden` at startup, but data arrives: The Elasticsearch user lacks the `monitor` cluster privilege. Add it to the role.
 - The collector logs `index_not_found_exception` or writes to an index named `app-write`: The output still uses the defaults of OpenShift Logging 5. Set `index: logs-openshift-default` in the output.
-- Application logs have no `message` field: The `parse` filter removes `message` when it parses a log line as JSON. The integration copies the `message` or `msg` key of the parsed line back into `message`; other keys are available under `openshift.structured`.
+- Application logs have no `message` field: The `parse` filter removes `message` when it parses a log line as JSON. The integration copies the `message` or `msg` key of the parsed line back into `message`. The other keys are available under `openshift.structured`.
 
 ## Performance and scaling
 {{/* Add any vendor specific performance and scaling information to this section.
@@ -216,7 +219,7 @@ The `infrastructure` data stream provides container logs of the OpenShift platfo
 
 #### audit
 
-The `audit` data stream provides Kubernetes API server, OpenShift API server, and OAuth server audit events; Linux audit records of the nodes; and OVN-Kubernetes ACL logs.
+The `audit` data stream provides API server audit events of Kubernetes, OpenShift, and the OAuth servers, Linux audit records of the nodes, and OVN-Kubernetes ACL logs.
 
 ##### audit fields
 
